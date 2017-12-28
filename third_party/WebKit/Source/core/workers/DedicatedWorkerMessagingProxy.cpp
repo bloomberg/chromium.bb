@@ -15,7 +15,6 @@
 #include "core/workers/DedicatedWorker.h"
 #include "core/workers/DedicatedWorkerObjectProxy.h"
 #include "core/workers/DedicatedWorkerThread.h"
-#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerOptions.h"
 #include "platform/CrossThreadFunctional.h"
@@ -34,9 +33,8 @@ struct DedicatedWorkerMessagingProxy::QueuedTask {
 
 DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     ExecutionContext* execution_context,
-    DedicatedWorker* worker_object,
-    WorkerClients* worker_clients)
-    : ThreadedMessagingProxyBase(execution_context, worker_clients),
+    DedicatedWorker* worker_object)
+    : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
   worker_object_proxy_ =
       DedicatedWorkerObjectProxy::Create(this, GetParentFrameTaskRunners());
@@ -56,9 +54,6 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     // created.
     return;
   }
-
-  // TODO(nhiroki): Move ReleaseWorkerClients() to DedicatedWorker for cleanup.
-  creation_params->worker_clients = ReleaseWorkerClients();
 
   InitializeWorkerThread(
       std::move(creation_params),

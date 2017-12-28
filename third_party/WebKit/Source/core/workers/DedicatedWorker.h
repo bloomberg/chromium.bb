@@ -26,6 +26,7 @@ class DedicatedWorkerMessagingProxy;
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
+class WorkerClients;
 class WorkerScriptLoader;
 struct GlobalScopeCreationParams;
 
@@ -78,11 +79,7 @@ class CORE_EXPORT DedicatedWorker final
 
   std::unique_ptr<GlobalScopeCreationParams> CreateGlobalScopeCreationParams();
 
-  // Creates a proxy to allow communicating with the worker's global scope.
-  // DedicatedWorker does not take ownership of the created proxy. The proxy
-  // is expected to manage its own lifetime, and delete itself in response to
-  // terminateWorkerGlobalScope().
-  DedicatedWorkerMessagingProxy* CreateMessagingProxy(ExecutionContext*);
+  WorkerClients* CreateWorkerClients();
 
   // [classic script only]
   // Callbacks for |script_loader_|.

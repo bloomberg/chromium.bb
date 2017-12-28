@@ -159,9 +159,9 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 class ThreadedWorkletMessagingProxyForTest
     : public ThreadedWorkletMessagingProxy {
  public:
-  ThreadedWorkletMessagingProxyForTest(ExecutionContext* execution_context,
-                                       WorkerClients* worker_clients)
-      : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {
+  explicit ThreadedWorkletMessagingProxyForTest(
+      ExecutionContext* execution_context)
+      : ThreadedWorkletMessagingProxy(execution_context) {
     worklet_object_proxy_ = std::make_unique<ThreadedWorkletObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }
@@ -199,8 +199,8 @@ class ThreadedWorkletTest : public ::testing::Test {
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
-    messaging_proxy_ = new ThreadedWorkletMessagingProxyForTest(
-        &page_->GetDocument(), WorkerClients::Create());
+    messaging_proxy_ =
+        new ThreadedWorkletMessagingProxyForTest(&page_->GetDocument());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 

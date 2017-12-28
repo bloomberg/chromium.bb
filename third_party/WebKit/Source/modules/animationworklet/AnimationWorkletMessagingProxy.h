@@ -12,7 +12,6 @@
 namespace blink {
 
 class ExecutionContext;
-class WorkerClients;
 class WorkerThread;
 
 // Acts as a proxy for the animation worklet global scopes that live on the
@@ -23,7 +22,7 @@ class WorkerThread;
 class AnimationWorkletMessagingProxy final
     : public ThreadedWorkletMessagingProxy {
  public:
-  AnimationWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
+  explicit AnimationWorkletMessagingProxy(ExecutionContext*);
 
   void Trace(blink::Visitor*) override;
 

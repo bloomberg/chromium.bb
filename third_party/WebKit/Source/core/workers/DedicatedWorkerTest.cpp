@@ -111,8 +111,7 @@ class DedicatedWorkerMessagingProxyForTest
  public:
   DedicatedWorkerMessagingProxyForTest(ExecutionContext* execution_context)
       : DedicatedWorkerMessagingProxy(execution_context,
-                                      nullptr /* workerObject */,
-                                      nullptr /* workerClients */) {
+                                      nullptr /* worker_object */) {
     worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }

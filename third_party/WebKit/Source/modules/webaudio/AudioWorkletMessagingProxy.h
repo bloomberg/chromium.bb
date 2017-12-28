@@ -24,7 +24,7 @@ class WorkerThread;
 // scope via AudioWorkletObjectProxy.
 class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
  public:
-  AudioWorkletMessagingProxy(ExecutionContext*, WorkerClients*, AudioWorklet*);
+  AudioWorkletMessagingProxy(ExecutionContext*, AudioWorklet*);
 
   // Since the creation of AudioWorkletProcessor needs to be done in the
   // different thread, this method is a wrapper for cross-thread task posting.

@@ -30,12 +30,12 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   void WorkletObjectDestroyed() final;
   void TerminateWorkletGlobalScope() final;
 
-  void Initialize();
+  void Initialize(WorkerClients*);
 
   void Trace(blink::Visitor*) override;
 
  protected:
-  ThreadedWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
+  explicit ThreadedWorkletMessagingProxy(ExecutionContext*);
 
   ThreadedWorkletObjectProxy& WorkletObjectProxy();
 
