@@ -22,12 +22,12 @@ namespace {
 // SHA256HashValues.
 struct SHA256ToHashValueComparator {
   bool operator()(const SHA256HashValue& lhs, const HashValue& rhs) const {
-    DCHECK_EQ(HASH_VALUE_SHA256, rhs.tag);
+    DCHECK_EQ(HASH_VALUE_SHA256, rhs.tag());
     return memcmp(lhs.data, rhs.data(), rhs.size()) < 0;
   }
 
   bool operator()(const HashValue& lhs, const SHA256HashValue& rhs) const {
-    DCHECK_EQ(HASH_VALUE_SHA256, lhs.tag);
+    DCHECK_EQ(HASH_VALUE_SHA256, lhs.tag());
     return memcmp(lhs.data(), rhs.data, lhs.size()) < 0;
   }
 };
@@ -43,7 +43,7 @@ HashValue::HashValue(const SHA256HashValue& hash)
 bool HashValue::FromString(const base::StringPiece value) {
   base::StringPiece base64_str;
   if (value.starts_with("sha256/")) {
-    tag = HASH_VALUE_SHA256;
+    tag_ = HASH_VALUE_SHA256;
     base64_str = value.substr(7);
   } else {
     return false;
@@ -61,26 +61,26 @@ std::string HashValue::ToString() const {
   std::string base64_str;
   base::Base64Encode(base::StringPiece(reinterpret_cast<const char*>(data()),
                                        size()), &base64_str);
-  switch (tag) {
-  case HASH_VALUE_SHA256:
-    return std::string("sha256/") + base64_str;
-  default:
-    NOTREACHED() << "Unknown HashValueTag " << tag;
-    return std::string("unknown/" + base64_str);
+  switch (tag_) {
+    case HASH_VALUE_SHA256:
+      return std::string("sha256/") + base64_str;
   }
+
+  NOTREACHED() << "Unknown HashValueTag " << tag_;
+  return std::string("unknown/" + base64_str);
 }
 
 size_t HashValue::size() const {
-  switch (tag) {
+  switch (tag_) {
     case HASH_VALUE_SHA256:
       return sizeof(fingerprint.sha256.data);
-    default:
-      NOTREACHED() << "Unknown HashValueTag " << tag;
-      // While an invalid tag should not happen, return a non-zero length
-      // to avoid compiler warnings when the result of size() is
-      // used with functions like memset.
-      return sizeof(fingerprint.sha256.data);
   }
+
+  NOTREACHED() << "Unknown HashValueTag " << tag_;
+  // While an invalid tag should not happen, return a non-zero length
+  // to avoid compiler warnings when the result of size() is
+  // used with functions like memset.
+  return sizeof(fingerprint.sha256.data);
 }
 
 unsigned char* HashValue::data() {
@@ -88,13 +88,55 @@ unsigned char* HashValue::data() {
 }
 
 const unsigned char* HashValue::data() const {
-  switch (tag) {
+  switch (tag_) {
     case HASH_VALUE_SHA256:
       return fingerprint.sha256.data;
-    default:
-      NOTREACHED() << "Unknown HashValueTag " << tag;
-      return NULL;
   }
+
+  NOTREACHED() << "Unknown HashValueTag " << tag_;
+  return nullptr;
+}
+
+bool operator==(const HashValue& lhs, const HashValue& rhs) {
+  if (lhs.tag_ != rhs.tag_)
+    return false;
+
+  switch (lhs.tag_) {
+    case HASH_VALUE_SHA256:
+      return lhs.fingerprint.sha256 == rhs.fingerprint.sha256;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool operator!=(const HashValue& lhs, const HashValue& rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator<(const HashValue& lhs, const HashValue& rhs) {
+  if (lhs.tag_ != rhs.tag_)
+    return false;
+
+  switch (lhs.tag_) {
+    case HASH_VALUE_SHA256:
+      return lhs.fingerprint.sha256 < rhs.fingerprint.sha256;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+bool operator>(const HashValue& lhs, const HashValue& rhs) {
+  return rhs < lhs;
+}
+
+bool operator<=(const HashValue& lhs, const HashValue& rhs) {
+  return !(lhs > rhs);
+}
+
+bool operator>=(const HashValue& lhs, const HashValue& rhs) {
+  return !(lhs < rhs);
 }
 
 bool IsSHA256HashInSortedArray(const HashValue& hash,
@@ -108,7 +150,7 @@ bool IsAnySHA256HashInSortedArray(const HashValueVector& hashes,
                                   const SHA256HashValue* list,
                                   size_t list_length) {
   for (const auto& hash : hashes) {
-    if (hash.tag != HASH_VALUE_SHA256)
+    if (hash.tag() != HASH_VALUE_SHA256)
       continue;
 
     if (IsSHA256HashInSortedArray(hash, list, list_length))

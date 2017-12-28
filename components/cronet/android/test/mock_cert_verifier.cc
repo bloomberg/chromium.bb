@@ -39,7 +39,7 @@ static bool CalculatePublicKeySha256(const net::X509Certificate& cert,
     return false;
   }
   // Calculate SHA256 hash of public key bytes.
-  out_hash_value->tag = net::HASH_VALUE_SHA256;
+  *out_hash_value = net::HashValue(net::HASH_VALUE_SHA256);
   crypto::SHA256HashString(spki_bytes, out_hash_value->data(),
                            crypto::kSHA256Length);
   return true;

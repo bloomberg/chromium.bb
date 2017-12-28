@@ -23,8 +23,8 @@ namespace {
 void IntersectOnWorkerThread(const net::CertificateList& certs1,
                              const net::CertificateList& certs2,
                              net::CertificateList* intersection) {
-  std::map<net::SHA256HashValue, scoped_refptr<net::X509Certificate>,
-           net::SHA256HashValueLessThan> fingerprints2;
+  std::map<net::SHA256HashValue, scoped_refptr<net::X509Certificate>>
+      fingerprints2;
 
   // Fill the map with fingerprints of certs from |certs2|.
   for (const auto& cert2 : certs2) {

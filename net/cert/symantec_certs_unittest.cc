@@ -42,15 +42,12 @@ TEST(SymantecCertsTest, IsLegacySymantecCert) {
 }
 
 TEST(SymantecCertsTest, AreSortedArrays) {
-  ASSERT_TRUE(std::is_sorted(kSymantecRoots,
-                             kSymantecRoots + kSymantecRootsLength,
-                             SHA256HashValueLessThan()));
+  ASSERT_TRUE(
+      std::is_sorted(kSymantecRoots, kSymantecRoots + kSymantecRootsLength));
   ASSERT_TRUE(std::is_sorted(kSymantecExceptions,
-                             kSymantecExceptions + kSymantecExceptionsLength,
-                             SHA256HashValueLessThan()));
+                             kSymantecExceptions + kSymantecExceptionsLength));
   ASSERT_TRUE(std::is_sorted(kSymantecManagedCAs,
-                             kSymantecManagedCAs + kSymantecManagedCAsLength,
-                             SHA256HashValueLessThan()));
+                             kSymantecManagedCAs + kSymantecManagedCAsLength));
 }
 
 }  // namespace net

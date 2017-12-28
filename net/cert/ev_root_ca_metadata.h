@@ -91,8 +91,7 @@ class NET_EXPORT_PRIVATE EVRootCAMetadata {
   ~EVRootCAMetadata();
 
 #if defined(USE_NSS_CERTS)
-  using PolicyOIDMap = std::
-      map<SHA256HashValue, std::vector<PolicyOID>, SHA256HashValueLessThan>;
+  using PolicyOIDMap = std::map<SHA256HashValue, std::vector<PolicyOID>>;
 
   // RegisterOID registers |policy|, a policy OID in dotted string form, and
   // writes the memoized form to |*out|. It returns true on success.
@@ -101,14 +100,12 @@ class NET_EXPORT_PRIVATE EVRootCAMetadata {
   PolicyOIDMap ev_policy_;
   std::set<PolicyOID> policy_oids_;
 #elif defined(OS_WIN)
-  using ExtraEVCAMap =
-      std::map<SHA256HashValue, std::string, SHA256HashValueLessThan>;
+  using ExtraEVCAMap = std::map<SHA256HashValue, std::string>;
 
   // extra_cas_ contains any EV CA metadata that was added at runtime.
   ExtraEVCAMap extra_cas_;
 #elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
-  using PolicyOIDMap = std::
-      map<SHA256HashValue, std::vector<std::string>, SHA256HashValueLessThan>;
+  using PolicyOIDMap = std::map<SHA256HashValue, std::vector<std::string>>;
 
   PolicyOIDMap ev_policy_;
   std::set<std::string> policy_oids_;

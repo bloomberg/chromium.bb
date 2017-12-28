@@ -37,12 +37,12 @@ std::string GetTestPinImpl(uint8_t label, HashValueTag tag, bool quoted) {
       reinterpret_cast<char*>(hash_value.data()), hash_value.size()), &base64);
 
   std::string ret;
-  switch (hash_value.tag) {
+  switch (hash_value.tag()) {
     case HASH_VALUE_SHA256:
       ret = "pin-sha256=";
       break;
     default:
-      NOTREACHED() << "Unknown HashValueTag " << hash_value.tag;
+      NOTREACHED() << "Unknown HashValueTag " << hash_value.tag();
       return std::string("ERROR");
   }
   if (quoted)

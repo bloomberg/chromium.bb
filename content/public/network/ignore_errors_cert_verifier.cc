@@ -27,7 +27,6 @@ using ::net::CertVerifier;
 using ::net::CompletionCallback;
 using ::net::HashValue;
 using ::net::SHA256HashValue;
-using ::net::SHA256HashValueLessThan;
 using ::net::X509Certificate;
 
 namespace content {
@@ -105,13 +104,12 @@ int IgnoreErrorsCertVerifier::Verify(const RequestParams& params,
   auto whitelist_end = whitelist_.end();
   auto fingerprints_begin = spki_fingerprints.begin();
   auto fingerprints_end = spki_fingerprints.end();
-  static const SHA256HashValueLessThan sha256_lt;
   bool ignore_errors = false;
   while (whitelist_begin != whitelist_end &&
          fingerprints_begin != fingerprints_end) {
-    if (sha256_lt(*whitelist_begin, *fingerprints_begin)) {
+    if (*whitelist_begin < *fingerprints_begin) {
       ++whitelist_begin;
-    } else if (sha256_lt(*fingerprints_begin, *whitelist_begin)) {
+    } else if (*fingerprints_begin < *whitelist_begin) {
       ++fingerprints_begin;
     } else {
       ignore_errors = true;

@@ -19,12 +19,12 @@ namespace {
 // RootCertData to a HashValue
 struct HashValueToRootCertDataComp {
   bool operator()(const HashValue& hash, const RootCertData& root_cert) {
-    DCHECK_EQ(HASH_VALUE_SHA256, hash.tag);
+    DCHECK_EQ(HASH_VALUE_SHA256, hash.tag());
     return memcmp(hash.data(), root_cert.sha256_spki_hash, 32) < 0;
   }
 
   bool operator()(const RootCertData& root_cert, const HashValue& hash) {
-    DCHECK_EQ(HASH_VALUE_SHA256, hash.tag);
+    DCHECK_EQ(HASH_VALUE_SHA256, hash.tag());
     return memcmp(root_cert.sha256_spki_hash, hash.data(), 32) < 0;
   }
 };
@@ -32,7 +32,7 @@ struct HashValueToRootCertDataComp {
 }  // namespace
 
 int32_t GetNetTrustAnchorHistogramIdForSPKI(const HashValue& spki_hash) {
-  if (spki_hash.tag != HASH_VALUE_SHA256)
+  if (spki_hash.tag() != HASH_VALUE_SHA256)
     return 0;
 
   auto* it = std::lower_bound(std::begin(kRootCerts), std::end(kRootCerts),

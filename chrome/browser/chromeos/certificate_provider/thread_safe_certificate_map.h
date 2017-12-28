@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 
 namespace net {
-class SHA256HashValueLessThan;
 class X509Certificate;
 struct SHA256HashValue;
 }
@@ -32,9 +31,7 @@ class ThreadSafeCertificateMap {
     std::string extension_id;
   };
   using FingerprintToCertAndExtensionMap =
-      std::map<net::SHA256HashValue,
-               std::unique_ptr<MapValue>,
-               net::SHA256HashValueLessThan>;
+      std::map<net::SHA256HashValue, std::unique_ptr<MapValue>>;
 
   ThreadSafeCertificateMap();
   ~ThreadSafeCertificateMap();

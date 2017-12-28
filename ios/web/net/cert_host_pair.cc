@@ -4,6 +4,8 @@
 
 #include "ios/web/net/cert_host_pair.h"
 
+#include <utility>
+
 #include "net/cert/x509_certificate.h"
 
 namespace web {
@@ -19,9 +21,7 @@ CertHostPair::CertHostPair(const CertHostPair& other) = default;
 CertHostPair::~CertHostPair() {}
 
 bool CertHostPair::operator<(const CertHostPair& other) const {
-  if (host_ != other.host_)
-    return host_ < other.host_;
-  return net::SHA256HashValueLessThan()(cert_hash_, other.cert_hash_);
+  return std::tie(host_, cert_hash_) < std::tie(other.host_, other.cert_hash_);
 }
 
 }  // web
