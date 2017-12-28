@@ -405,15 +405,17 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 static void
 proxy_destroy(struct wl_proxy *proxy)
 {
-	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED)
+	if (proxy->flags & WL_PROXY_FLAG_ID_DELETED) {
 		wl_map_remove(&proxy->display->objects, proxy->object.id);
-	else if (proxy->object.id < WL_SERVER_ID_START)
-		wl_map_insert_at(&proxy->display->objects, 0,
-				 proxy->object.id, WL_ZOMBIE_OBJECT);
-	else
+	} else if (proxy->object.id < WL_SERVER_ID_START) {
+		wl_map_insert_at(&proxy->display->objects,
+				 WL_MAP_ENTRY_ZOMBIE,
+				 proxy->object.id,
+				 WL_ZOMBIE_OBJECT);
+	} else {
 		wl_map_insert_at(&proxy->display->objects, 0,
 				 proxy->object.id, NULL);
-
+	}
 
 	proxy->flags |= WL_PROXY_FLAG_DESTROYED;
 

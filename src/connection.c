@@ -834,9 +834,18 @@ wl_connection_demarshal(struct wl_connection *connection,
 bool
 wl_object_is_zombie(struct wl_map *map, uint32_t id)
 {
-	struct wl_object *object = wl_map_lookup(map, id);
+	uint32_t flags;
 
-	return (object == WL_ZOMBIE_OBJECT);
+	/* Zombie objects only exist on the client side. */
+	if (map->side == WL_MAP_SERVER_SIDE)
+		return false;
+
+	/* Zombie objects can only have been created by the client. */
+	if (id >= WL_SERVER_ID_START)
+		return false;
+
+	flags = wl_map_lookup_flags(map, id);
+	return !!(flags & WL_MAP_ENTRY_ZOMBIE);
 }
 
 int

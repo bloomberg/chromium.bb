@@ -69,7 +69,8 @@ wl_interface_equal(const struct wl_interface *iface1,
  * flags.  If more flags are ever added, the implementation of wl_map will have
  * to change to allow for new flags */
 enum wl_map_entry_flags {
-	WL_MAP_ENTRY_LEGACY = (1 << 0)
+	WL_MAP_ENTRY_LEGACY = (1 << 0), /* Server side only */
+	WL_MAP_ENTRY_ZOMBIE = (1 << 0) /* Client side only */
 };
 
 struct wl_map {
