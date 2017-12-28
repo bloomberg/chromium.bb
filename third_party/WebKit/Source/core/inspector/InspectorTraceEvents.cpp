@@ -92,23 +92,6 @@ void SetCallStack(TracedValue* value) {
   v8::CpuProfiler::CollectSample(v8::Isolate::GetCurrent());
 }
 
-void InspectorTraceEvents::Init(CoreProbeSink* instrumenting_agents,
-                                protocol::UberDispatcher*,
-                                protocol::DictionaryValue*) {
-  instrumenting_agents_ = instrumenting_agents;
-  instrumenting_agents_->addInspectorTraceEvents(this);
-}
-
-void InspectorTraceEvents::Dispose() {
-  instrumenting_agents_->removeInspectorTraceEvents(this);
-  instrumenting_agents_ = nullptr;
-}
-
-void InspectorTraceEvents::Trace(blink::Visitor* visitor) {
-  visitor->Trace(instrumenting_agents_);
-  InspectorAgent::Trace(visitor);
-}
-
 void InspectorTraceEvents::WillSendRequest(
     ExecutionContext*,
     unsigned long identifier,

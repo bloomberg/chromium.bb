@@ -63,6 +63,7 @@ class FrameConsole;
 class FrameResourceCoordinator;
 class FrameSelection;
 class InputMethodController;
+class InspectorTraceEvents;
 class CoreProbeSink;
 class IdlenessDetector;
 class InterfaceRegistry;
@@ -348,6 +349,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<CoreProbeSink> probe_sink_;
   Member<PerformanceMonitor> performance_monitor_;
   Member<IdlenessDetector> idleness_detector_;
+  Member<InspectorTraceEvents> inspector_trace_events_;
 
   InterfaceRegistry* const interface_registry_;
   String instrumentation_token_;

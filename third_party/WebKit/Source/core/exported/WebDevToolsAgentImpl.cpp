@@ -250,12 +250,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
           web_local_frame_impl_->GetFrame(),
           web_local_frame_impl_->GetFrame()->GetInstrumentationToken())),
       resource_container_(new InspectorResourceContainer(inspected_frames_)),
-      trace_events_(new InspectorTraceEvents()),
       include_view_agents_(include_view_agents),
       layer_tree_id_(0) {
   DCHECK(IsMainThread());
   DCHECK(web_local_frame_impl_->GetFrame());
-  probe_sink_->addInspectorTraceEvents(trace_events_);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
@@ -268,7 +266,6 @@ void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_content_loader_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(resource_container_);
-  visitor->Trace(trace_events_);
   visitor->Trace(page_agents_);
   visitor->Trace(network_agents_);
   visitor->Trace(tracing_agents_);
@@ -279,8 +276,6 @@ void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
 void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(web_local_frame_impl_->GetFrame());
   DCHECK(inspected_frames_->Root()->View());
-  probe_sink_->removeInspectorTraceEvents(trace_events_);
-  trace_events_ = nullptr;
 
   Vector<int> session_ids;
   for (int session_id : sessions_.Keys())

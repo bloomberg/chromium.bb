@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
-#include "core/inspector/InspectorBaseAgent.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
@@ -70,14 +69,11 @@ class ExecuteScript;
 class ParseHTML;
 }
 
-class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
+class CORE_EXPORT InspectorTraceEvents
+    : public GarbageCollected<InspectorTraceEvents> {
  public:
   InspectorTraceEvents() {}
 
-  void Init(CoreProbeSink*,
-            protocol::UberDispatcher*,
-            protocol::DictionaryValue*) override;
-  void Dispose() override;
   void WillSendRequest(ExecutionContext*,
                        unsigned long identifier,
                        DocumentLoader*,
@@ -113,10 +109,9 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
 
   void PaintTiming(Document*, const char* name, double timestamp);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor*) {}
 
  private:
-  Member<CoreProbeSink> instrumenting_agents_;
   DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);
 };
 
