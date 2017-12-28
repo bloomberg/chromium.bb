@@ -36,9 +36,6 @@ namespace {
 
 void OutputCb(const scoped_refptr<VideoFrame>&) {}
 
-void OutputWithReleaseMailboxCb(VideoFrameFactory::ReleaseMailboxCB,
-                                const scoped_refptr<VideoFrame>&) {}
-
 std::unique_ptr<AndroidOverlay> CreateAndroidOverlayCb(
     const base::UnguessableToken&,
     AndroidOverlayConfig) {
@@ -64,7 +61,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
            base::TimeDelta timestamp,
            gfx::Size natural_size,
            PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-           OutputWithReleaseMailboxCB output_cb));
+           VideoDecoder::OutputCB output_cb));
   MOCK_METHOD1(MockRunAfterPendingVideoFrames,
                void(base::OnceClosure* closure));
   MOCK_METHOD0(CancelPendingCallbacks, void());
@@ -85,7 +82,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-      OutputWithReleaseMailboxCB output_cb) override {
+      VideoDecoder::OutputCB output_cb) override {
     MockCreateVideoFrame(output_buffer.get(), surface_texture_, timestamp,
                          natural_size, promotion_hint_cb, output_cb);
     last_output_buffer_ = std::move(output_buffer);
@@ -139,9 +136,9 @@ class MediaCodecVideoDecoderTest : public testing::Test {
         .WillByDefault(RunCallback<1>(surface_texture));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
-        gpu_preferences_, base::Bind(&OutputWithReleaseMailboxCb),
-        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
-        base::Bind(&CreateAndroidOverlayCb),
+        gpu_preferences_, device_info_.get(), codec_allocator_.get(),
+        std::move(surface_chooser),
+        base::BindRepeating(&CreateAndroidOverlayCb),
         base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                    base::Unretained(this)),
         std::move(video_frame_factory));
