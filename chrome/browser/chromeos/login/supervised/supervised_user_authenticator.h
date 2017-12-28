@@ -38,11 +38,10 @@ class SupervisedUserAuthenticator
                 bool add_key_attempt);
     ~AuthAttempt();
 
-    // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
-    // so we can have a copy we're sure to own, and can make available
-    // on the IO thread.  Must be called from the IO thread.
-    void RecordCryptohomeStatus(bool cryptohome_outcome,
-                                cryptohome::MountError cryptohome_code);
+    // Copy |cryptohome_code| into this object, so we can have a copy we're sure
+    // to own, and can make available on the IO thread.
+    // Must be called from the IO thread.
+    void RecordCryptohomeStatus(cryptohome::MountError cryptohome_code);
 
     // Copy |hash| into this object so we can have a copy we're sure to own
     // and can make available on the IO thread.
@@ -50,7 +49,6 @@ class SupervisedUserAuthenticator
     void RecordHash(const std::string& hash);
 
     bool cryptohome_complete();
-    bool cryptohome_outcome();
     bool hash_obtained();
     std::string hash();
     cryptohome::MountError cryptohome_code();
@@ -61,7 +59,6 @@ class SupervisedUserAuthenticator
 
    private:
     bool cryptohome_complete_;
-    bool cryptohome_outcome_;
     bool hash_obtained_;
     std::string hash_;
 

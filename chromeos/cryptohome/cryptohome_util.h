@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"
@@ -15,12 +16,23 @@
 
 namespace cryptohome {
 
+// Returns a MountError code from |reply|, returning MOUNT_ERROR_NONE
+// if the reply is well-formed and there is no error.
+CHROMEOS_EXPORT MountError
+BaseReplyToMountError(const base::Optional<BaseReply>& reply);
+
+// Extracts the mount hash from |reply|.
+// This method assumes |reply| is well-formed. To check if a reply
+// is well-formed, callers can check if BaseReplyToMountError returns
+// MOUNT_ERROR_NONE.
+CHROMEOS_EXPORT const std::string& BaseReplyToMountHash(const BaseReply& reply);
+
 // Creates an AuthorizationRequest from the given secret and label.
-AuthorizationRequest CHROMEOS_EXPORT
+CHROMEOS_EXPORT AuthorizationRequest
 CreateAuthorizationRequest(const std::string& label, const std::string& secret);
 
 // Converts the given KeyDefinition to a Key.
-void CHROMEOS_EXPORT KeyDefinitionToKey(const KeyDefinition& key_def, Key* key);
+CHROMEOS_EXPORT void KeyDefinitionToKey(const KeyDefinition& key_def, Key* key);
 
 // Converts CryptohomeErrorCode to MountError.
 CHROMEOS_EXPORT MountError

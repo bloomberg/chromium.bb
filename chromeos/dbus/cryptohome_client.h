@@ -79,7 +79,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Callback for the methods initiate asynchronous operations.
   // On success (i.e. the asynchronous operation is started), an |async_id|
-  // is returned, so the user code can identify the corresponding singal
+  // is returned, so the user code can identify the corresponding signal
   // handler invocation later.
   using AsyncMethodCallback = DBusMethodCallback<int /* async_id */>;
 
@@ -507,10 +507,10 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const cryptohome::CheckKeyRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
-  // Asynchronously calls MountEx method. |callback| is called after method
-  // call, and with reply protobuf.
-  // MountEx attempts to mount home dir using given authorization, and can
-  // create new home dir if necessary values are specified in |request|.
+  // Asynchronously calls MountEx method. Afterward, |callback| is called with
+  // the reply.
+  // MountEx attempts to mount home dir using given authorization,
+  // and can create new home dir if necessary values are specified in |request|.
   virtual void MountEx(const cryptohome::Identification& cryptohome_id,
                        const cryptohome::AuthorizationRequest& auth,
                        const cryptohome::MountRequest& request,

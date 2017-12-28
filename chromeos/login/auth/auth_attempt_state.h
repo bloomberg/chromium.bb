@@ -47,11 +47,10 @@ class CHROMEOS_EXPORT AuthAttemptState
   // requests (Mount/GetUsernameHash) are completed.
   void UsernameHashRequested();
 
-  // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
-  // so we can have a copy we're sure to own, and can make available
-  // on the UI thread.  Must be called from the UI thread.
-  void RecordCryptohomeStatus(bool cryptohome_outcome,
-                              cryptohome::MountError cryptohome_code);
+  // Copy |cryptohome_code| into this object, so we can have a copy we're sure
+  // to own, and can make available on the UI thread.
+  // Must be called from the UI thread.
+  void RecordCryptohomeStatus(cryptohome::MountError cryptohome_code);
 
   // Blow away locally stored cryptohome login status.
   // Must be called from the UI thread.
@@ -62,7 +61,6 @@ class CHROMEOS_EXPORT AuthAttemptState
   virtual bool is_first_time_user();
 
   virtual bool cryptohome_complete();
-  virtual bool cryptohome_outcome();
   virtual cryptohome::MountError cryptohome_code();
 
   virtual bool username_hash_obtained();
@@ -87,7 +85,6 @@ class CHROMEOS_EXPORT AuthAttemptState
 
   // Status of our cryptohome op attempt. Can only have one in flight at a time.
   bool cryptohome_complete_;
-  bool cryptohome_outcome_;
   cryptohome::MountError cryptohome_code_;
 
  private:

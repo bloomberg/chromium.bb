@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
                        PRE_CreateAndRemoveSupervisedUser) {
-  SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
+  SigninAsSupervisedUser(0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
                        PRE_CreateAndRemoveSupervisedUser) {
-  SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
+  SigninAsSupervisedUser(0, kTestSupervisedUserDisplayName);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserOwnerCreationTest,
@@ -199,18 +199,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
   StartFlowLoginAsManager();
   FillNewUserData(kTestSupervisedUserDisplayName);
 
-  base::RunLoop mount_wait_loop, add_key_wait_loop;
-  mock_homedir_methods_->set_mount_callback(mount_wait_loop.QuitClosure());
+  base::RunLoop add_key_wait_loop;
   mock_homedir_methods_->set_add_key_callback(add_key_wait_loop.QuitClosure());
-  EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, AddKeyEx(_, _, _, _)).Times(1);
 
   JSEval("$('supervised-user-creation-next-button').click()");
 
-  mount_wait_loop.Run();
   add_key_wait_loop.Run();
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
-  mock_homedir_methods_->set_mount_callback(base::Closure());
   mock_homedir_methods_->set_add_key_callback(base::Closure());
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
@@ -251,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserCreationTest,
                        PRE_CheckNoNotificationTray) {
-  SigninAsSupervisedUser(true, 0, kTestSupervisedUserDisplayName);
+  SigninAsSupervisedUser(0, kTestSupervisedUserDisplayName);
 
   // After sign-in, the tray should be visible.
   EXPECT_TRUE(GetWebNotificationTrayVisibility());

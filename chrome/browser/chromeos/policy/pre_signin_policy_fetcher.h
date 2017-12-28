@@ -15,6 +15,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/cached_policy_key_loader_chromeos.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
@@ -89,9 +90,7 @@ class PreSigninPolicyFetcher : public CloudPolicyClient::Observer {
   using RetrievePolicyResponseType =
       chromeos::SessionManagerClient::RetrievePolicyResponseType;
 
-  void OnMountTemporaryUserHome(bool success,
-                                cryptohome::MountError return_code,
-                                const std::string& mount_hash);
+  void OnMountTemporaryUserHome(base::Optional<cryptohome::BaseReply> reply);
 
   void OnCachedPolicyRetrieved(
       RetrievePolicyResponseType retrieve_policy_response,
