@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.content.pm.ActivityInfo;
-import android.support.test.filters.MediumTest;
 import android.view.Surface;
 
 import org.junit.After;
@@ -18,7 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.ui.display.DisplayAndroid;
@@ -172,9 +171,10 @@ public class ScreenOrientationListenerTest {
         return mCallbackHelper.getLastRotation();
     }
 
+    // @MediumTest
+    // @Feature({"ScreenOrientation"})
     @Test
-    @MediumTest
-    @Feature({"ScreenOrientation"})
+    @DisabledTest(message = "https://crbug.com/797175")
     public void testOrientationChanges() throws Exception {
         int rotation = lockOrientationAndWait(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         Assert.assertEquals(
@@ -252,9 +252,10 @@ public class ScreenOrientationListenerTest {
         return mCallbackHelper.getLastRotation();
     }
 
+    // @MediumTest
+    // @Feature({"ScreenOrientation"})
     @Test
-    @MediumTest
-    @Feature({"ScreenOrientation"})
+    @DisabledTest(message = "https://crbug.com/797175")
     public void testBasicValues() throws Exception {
         int rotation = lockOrientationValueAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
         Assert.assertEquals(
