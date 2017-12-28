@@ -3481,6 +3481,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSysInternals)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"enable-improved-language-settings",
+     flag_descriptions::kImprovedLanguageSettingsName,
+     flag_descriptions::kImprovedLanguageSettingsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(translate::kImprovedLanguageSettings)},
+
     {"enable-module-scripts-dynamic-import",
      flag_descriptions::kModuleScriptsDynamicImportName,
      flag_descriptions::kModuleScriptsDynamicImportDescription, kOsAll,

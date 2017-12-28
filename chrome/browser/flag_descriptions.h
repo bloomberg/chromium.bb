@@ -480,6 +480,9 @@ extern const char kIgnoreGpuBlacklistDescription[];
 extern const char kImportantSitesInCbdName[];
 extern const char kImportantSitesInCbdDescription[];
 
+extern const char kImprovedLanguageSettingsName[];
+extern const char kImprovedLanguageSettingsDescription[];
+
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
