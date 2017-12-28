@@ -19,6 +19,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(OomInterventionTabHelper);
 
 namespace {
 
+constexpr base::TimeDelta kRendererHighMemoryUsageDetectionWindow =
+    base::TimeDelta::FromSeconds(60);
+
 content::WebContents* g_last_visible_web_contents = nullptr;
 
 bool IsLastVisibleWebContents(content::WebContents* web_contents) {
@@ -73,11 +76,22 @@ OomInterventionTabHelper::OomInterventionTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       decider_(OomInterventionDecider::GetForBrowserContext(
-          web_contents->GetBrowserContext())) {
+          web_contents->GetBrowserContext())),
+      binding_(this),
+      weak_ptr_factory_(this) {
   OutOfMemoryReporter::FromWebContents(web_contents)->AddObserver(this);
 }
 
 OomInterventionTabHelper::~OomInterventionTabHelper() = default;
+
+void OomInterventionTabHelper::OnHighMemoryUsage(bool intervention_triggered) {
+  if (intervention_triggered) {
+    NearOomInfoBar::Show(web_contents(), this);
+    intervention_state_ = InterventionState::UI_SHOWN;
+  }
+  near_oom_detected_time_ = base::TimeTicks::Now();
+  renderer_detection_timer_.AbandonAndStop();
+}
 
 void OomInterventionTabHelper::AcceptIntervention() {
   RecordInterventionUserDecision(true);
@@ -217,6 +231,9 @@ void OomInterventionTabHelper::StartMonitoringIfNeeded() {
   if (subscription_)
     return;
 
+  if (intervention_)
+    return;
+
   if (near_oom_detected_time_)
     return;
 
@@ -231,7 +248,6 @@ void OomInterventionTabHelper::StopMonitoring() {
 void OomInterventionTabHelper::OnNearOomDetected() {
   DCHECK(web_contents()->IsVisible());
   DCHECK(!near_oom_detected_time_);
-  near_oom_detected_time_ = base::TimeTicks::Now();
   subscription_.reset();
 
   bool trigger_intervention = RendererPauseIsEnabled();
@@ -241,19 +257,33 @@ void OomInterventionTabHelper::OnNearOomDetected() {
     trigger_intervention = decider_->CanTriggerIntervention(host);
   }
 
-  if (trigger_intervention) {
-    content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
-    DCHECK(main_frame);
-    content::RenderProcessHost* render_process_host = main_frame->GetProcess();
-    DCHECK(render_process_host);
-    content::BindInterface(render_process_host,
-                           mojo::MakeRequest(&intervention_));
-    NearOomInfoBar::Show(web_contents(), this);
-    intervention_state_ = InterventionState::UI_SHOWN;
-  }
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  DCHECK(main_frame);
+  content::RenderProcessHost* render_process_host = main_frame->GetProcess();
+  DCHECK(render_process_host);
+  content::BindInterface(render_process_host,
+                         mojo::MakeRequest(&intervention_));
+  blink::mojom::OomInterventionHostPtr host;
+  binding_.Bind(mojo::MakeRequest(&host));
+  intervention_->StartDetection(std::move(host), trigger_intervention);
+
+  DCHECK(!renderer_detection_timer_.IsRunning());
+  renderer_detection_timer_.Start(
+      FROM_HERE, kRendererHighMemoryUsageDetectionWindow,
+      base::BindRepeating(&OomInterventionTabHelper::
+                              OnDetectionWindowElapsedWithoutHighMemoryUsage,
+                          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OomInterventionTabHelper::
+    OnDetectionWindowElapsedWithoutHighMemoryUsage() {
+  ResetInterventionState();
+  intervention_.reset();
+  StartMonitoringIfNeeded();
 }
 
 void OomInterventionTabHelper::ResetInterventionState() {
   near_oom_detected_time_.reset();
   intervention_state_ = InterventionState::NOT_TRIGGERED;
+  renderer_detection_timer_.AbandonAndStop();
 }
