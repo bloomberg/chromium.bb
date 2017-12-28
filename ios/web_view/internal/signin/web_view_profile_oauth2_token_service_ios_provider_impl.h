@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
 
