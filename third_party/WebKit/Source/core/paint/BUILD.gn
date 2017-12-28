@@ -253,9 +253,4 @@ blink_core_sources("paint") {
     "ng/ng_text_painter.cc",
     "ng/ng_text_painter.h",
   ]
-
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
 }

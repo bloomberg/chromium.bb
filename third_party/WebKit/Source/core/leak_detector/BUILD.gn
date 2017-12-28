@@ -11,9 +11,4 @@ blink_core_sources("leak_detector") {
     "BlinkLeakDetectorClient.h",
     "WebLeakDetector.cpp",
   ]
-
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
 }

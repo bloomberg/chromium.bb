@@ -64,9 +64,4 @@ blink_core_sources("xml") {
     "parser/XMLErrors.h",
     "parser/XMLParserInput.h",
   ]
-
-  configs += [
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
-  ]
 }
