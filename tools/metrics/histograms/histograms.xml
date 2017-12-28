@@ -53725,7 +53725,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NQE.RTT.NotAHangingRequest.HangingRequest" units="ms">
+<histogram name="NQE.RTT.HangingRequest" units="ms">
   <owner>tbansal@chromium.org</owner>
   <summary>
     HTTP RTT observation received by the network quality estimator.  Recorded
