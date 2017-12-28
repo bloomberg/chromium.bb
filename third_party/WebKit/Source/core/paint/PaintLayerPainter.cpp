@@ -530,7 +530,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
           LayoutRect(offset_from_root, LayoutSize(paint_layer_.Size())),
           LayoutRect(LayoutRect::InfiniteIntRect()), foreground_clip);
     } else {
-      paint_layer_for_fragments->CollectFragmentsForPaint(
+      paint_layer_for_fragments->CollectFragments(
           layer_fragments, local_painting_info.root_layer,
           local_painting_info.paint_dirty_rect, kUncachedClipRects,
           PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
@@ -805,7 +805,7 @@ PaintResult PaintLayerPainter::PaintLayerWithTransform(
   } else if (parent_layer) {
     ShouldRespectOverflowClipType respect_overflow_clip =
         ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
-    paint_layer_.CollectFragmentsForPaint(
+    paint_layer_.CollectFragments(
         layer_fragments, painting_info.root_layer,
         painting_info.paint_dirty_rect, kUncachedClipRects,
         PaintLayer::kUseGeometryMapper, kIgnorePlatformOverlayScrollbarSize,
