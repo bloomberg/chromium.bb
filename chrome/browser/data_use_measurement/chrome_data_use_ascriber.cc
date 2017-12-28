@@ -8,9 +8,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_observer.h"
 #include "components/data_use_measurement/content/content_url_request_classifier.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -46,12 +49,24 @@ ChromeDataUseAscriber::MainRenderFrameEntry::~MainRenderFrameEntry() {}
 
 ChromeDataUseAscriber::ChromeDataUseAscriber() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (base::FeatureList::IsEnabled(
+          page_load_capping::features::kDetectingHeavyPages)) {
+    page_capping_observer_ =
+        std::make_unique<page_load_capping::PageLoadObserver>();
+    AddObserver(page_capping_observer_.get());
+  }
 }
 
 ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(main_render_frame_entry_map_.empty());
   DCHECK(subframe_to_mainframe_map_.empty());
+
+  if (page_capping_observer_) {
+    // Remove the |page_capping_observer_| before the ObserverList is deleted.
+    RemoveObserver(page_capping_observer_.get());
+  }
+
   // DCHECK(pending_navigation_data_use_map_.empty());
   // DCHECK(data_use_recorders_.empty());
 }

@@ -9,7 +9,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -57,8 +59,12 @@ class ChromeDataUseAscriberTest : public testing::Test {
 
   void TearDown() override { recorders().clear(); }
 
+  void CreateAscriber() {
+    ascriber_ = std::make_unique<ChromeDataUseAscriber>();
+  }
+
   std::list<ChromeDataUseRecorder>& recorders() {
-    return ascriber_.data_use_recorders_;
+    return ascriber_->data_use_recorders_;
   }
 
   net::TestURLRequestContext* context() { return &context_; }
@@ -67,7 +73,7 @@ class ChromeDataUseAscriberTest : public testing::Test {
     return resource_context_.get();
   }
 
-  ChromeDataUseAscriber* ascriber() { return &ascriber_; }
+  ChromeDataUseAscriber* ascriber() { return ascriber_.get(); }
 
   std::unique_ptr<net::URLRequest> CreateNewRequest(std::string url,
                                                     bool is_main_frame,
@@ -89,14 +95,19 @@ class ChromeDataUseAscriberTest : public testing::Test {
     return request;
   }
 
+  DataUseAscriber::PageLoadObserver* page_load_capping_observer() {
+    return ascriber_->page_capping_observer_.get();
+  }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  ChromeDataUseAscriber ascriber_;
+  std::unique_ptr<ChromeDataUseAscriber> ascriber_;
   net::TestURLRequestContext context_;
   std::unique_ptr<content::MockResourceContext> resource_context_;
 };
 
 TEST_F(ChromeDataUseAscriberTest, NoRecorderWithoutFrame) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -127,6 +138,7 @@ TEST_F(ChromeDataUseAscriberTest, NoRecorderWithoutFrame) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -153,6 +165,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -179,6 +192,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -209,6 +223,7 @@ TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -246,6 +261,7 @@ TEST_F(ChromeDataUseAscriberTest, MainFrameNavigation) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
+  CreateAscriber();
   // A regression test that verifies that subframe requests in the second page
   // load in the same frame get attributed to the entry correctly.
   std::unique_ptr<net::URLRequest> page_load_a_main_frame_request =
@@ -314,6 +330,7 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAttributed) {
 // ascribed to the previous page load, and requests started after are ascribed
 // to the next page load.
 TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> page_load_a_mainresource = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
   std::unique_ptr<net::URLRequest> page_load_a_subresource =
@@ -415,6 +432,7 @@ TEST_F(ChromeDataUseAscriberTest, SubResourceRequestsAfterNavigationFinish) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, FailedMainFrameNavigation) {
+  CreateAscriber();
   std::unique_ptr<net::URLRequest> request = CreateNewRequest(
       "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
 
@@ -437,6 +455,12 @@ TEST_F(ChromeDataUseAscriberTest, FailedMainFrameNavigation) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
+  // Make sure that the page load capping observer does not DCHECK.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {page_load_capping::features::kDetectingHeavyPages}, {});
+
+  CreateAscriber();
   // TODO(rajendrant): Handle PlzNavigate (http://crbug/664233).
   MockPageLoadObserver mock_observer;
   ascriber()->AddObserver(&mock_observer);
@@ -489,6 +513,7 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
+  CreateAscriber();
   MockPageLoadObserver mock_observer;
   ascriber()->AddObserver(&mock_observer);
 
@@ -538,6 +563,19 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
   ascriber()->OnUrlRequestDestroyed(request.get());
 
   EXPECT_EQ(0u, recorders().size());
+}
+
+// Verify that the page load capping observer is only created when the feature
+// is enabled.
+TEST_F(ChromeDataUseAscriberTest, CappingObserverNeedsFeature) {
+  CreateAscriber();
+  EXPECT_FALSE(page_load_capping_observer());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {page_load_capping::features::kDetectingHeavyPages}, {});
+
+  CreateAscriber();
+  EXPECT_TRUE(page_load_capping_observer());
 }
 
 }  // namespace data_use_measurement
