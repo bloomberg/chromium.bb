@@ -766,6 +766,11 @@ const char kImportantSitesInCbdDescription[] =
     "Include the option to whitelist important sites in the clear browsing "
     "data dialog.";
 
+const char kImprovedLanguageSettingsName[] = "Improved Language Settings";
+const char kImprovedLanguageSettingsDescription[] =
+    "Set of changes for Language Settings. These changes are intended to fix "
+    "the major bugs related to Language Settings.";
+
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
