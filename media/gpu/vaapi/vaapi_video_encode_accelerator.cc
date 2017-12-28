@@ -43,7 +43,9 @@ const size_t kMinSurfacesToEncode = 2;
 // Subjectively chosen.
 const size_t kNumInputBuffers = 4;
 const size_t kMaxNumReferenceFrames = 4;
-const size_t kExtraOutputBufferSize = 8192;  // bytes
+
+// TODO(owenlin): Adjust the value after b/71367113 is fixed
+const size_t kExtraOutputBufferSize = 32768;  // bytes
 
 // We need up to kMaxNumReferenceFrames surfaces for reference, plus one
 // for input and one for encode (which will be added to the set of reference
