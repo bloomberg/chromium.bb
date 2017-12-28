@@ -219,6 +219,17 @@ bool LayoutListItem::PrepareForBlockDirectionAlign(
   return false;
 }
 
+void LayoutListItem::UpdateBlockLayout(bool relayout_children) {
+  DCHECK(NeedsLayout());
+  // The list marker needs to clear any floats that leave no room
+  // for it.
+  if (marker_) {
+    marker_->SetLogicalTop(marker_->LogicalTop() +
+                           GetClearDelta(marker_, LayoutUnit()));
+  }
+  LayoutBlockFlow::UpdateBlockLayout(relayout_children);
+}
+
 bool LayoutListItem::UpdateMarkerLocation() {
   DCHECK(marker_);
 
@@ -354,10 +365,7 @@ void LayoutListItem::PositionListMarker() {
     // pretty wrong (https://crbug.com/554160).
     // FIXME: Need to account for relative positioning in the layout overflow.
     if (Style()->IsLeftToRightDirection()) {
-      LayoutUnit marker_line_offset =
-          std::min(marker_->LineOffset(),
-                   LogicalLeftOffsetForLine(marker_->LogicalTop(),
-                                            kDoNotIndentText, LayoutUnit()));
+      LayoutUnit marker_line_offset = marker_->LineOffset();
       marker_logical_left = marker_line_offset - line_offset - PaddingStart() -
                             BorderStart() + marker_->MarginStart();
       marker_inline_box->MoveInInlineDirection(marker_logical_left -
@@ -390,10 +398,7 @@ void LayoutListItem::PositionListMarker() {
           hit_self_painting_layer = true;
       }
     } else {
-      LayoutUnit marker_line_offset =
-          std::max(marker_->LineOffset(),
-                   LogicalRightOffsetForLine(marker_->LogicalTop(),
-                                             kDoNotIndentText, LayoutUnit()));
+      LayoutUnit marker_line_offset = marker_->LineOffset();
       marker_logical_left = marker_line_offset - line_offset + PaddingStart() +
                             BorderStart() + marker_->MarginEnd();
       marker_inline_box->MoveInInlineDirection(marker_logical_left -

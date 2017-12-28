@@ -587,8 +587,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void RemoveFloatingObject(LayoutBox*);
   void RemoveFloatingObjectsBelow(FloatingObject*, LayoutUnit logical_offset);
 
-  LayoutUnit GetClearDelta(LayoutBox* child, LayoutUnit y_pos);
-
   bool HasOverhangingFloat(LayoutBox*);
   void AddIntrudingFloats(LayoutBlockFlow* prev,
                           LayoutUnit xoffset,
@@ -870,6 +868,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   }
 
   virtual ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const;
+
+  LayoutUnit GetClearDelta(LayoutBox* child, LayoutUnit y_pos);
 
  private:
   LayoutUnit CollapsedMarginBefore() const final {
