@@ -157,7 +157,7 @@ PairwiseInterpolationValue PathInterpolationFunctions::MaybeMergeSingles(
           .PathSegTypes();
   const Vector<SVGPathSegType>& end_types =
       ToSVGPathNonInterpolableValue(*end.non_interpolable_value).PathSegTypes();
-  if (!PathSegTypesMatch(start_types, end_types))
+  if (start_types.size() == 0 || !PathSegTypesMatch(start_types, end_types))
     return nullptr;
 
   return PairwiseInterpolationValue(std::move(start.interpolable_value),
