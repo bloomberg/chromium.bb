@@ -237,7 +237,7 @@ HitTestResult HitTestInDocument(Document* document,
     return HitTestResult();
 
   HitTestResult result(request, LayoutPoint(hit_point));
-  document->GetLayoutViewItem().HitTest(result);
+  document->GetLayoutView()->HitTest(result);
   return result;
 }
 
@@ -309,7 +309,7 @@ HeapVector<Member<Element>> TreeScope::ElementsFromPoint(double x,
                          HitTestRequest::kListBased |
                          HitTestRequest::kPenetratingList);
   HitTestResult result(request, LayoutPoint(hit_point));
-  document.GetLayoutViewItem().HitTest(result);
+  document.GetLayoutView()->HitTest(result);
 
   return ElementsFromHitTestResult(result);
 }

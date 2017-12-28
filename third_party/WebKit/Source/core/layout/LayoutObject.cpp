@@ -1118,8 +1118,7 @@ const LayoutBoxModelObject& LayoutObject::ContainerForPaintInvalidation()
   // frame's LayoutView so that we generate invalidations on the window.
   const LayoutView* layout_view = View();
   while (const LayoutObject* owner_object =
-             LayoutAPIShim::ConstLayoutObjectFrom(
-                 layout_view->GetFrame()->OwnerLayoutItem()))
+             layout_view->GetFrame()->OwnerLayoutObject())
     layout_view = owner_object->View();
 
   DCHECK(layout_view);

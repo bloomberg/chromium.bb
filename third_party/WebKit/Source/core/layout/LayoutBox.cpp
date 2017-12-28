@@ -1926,10 +1926,8 @@ void LayoutBox::SizeChanged() {
 bool LayoutBox::IntersectsVisibleViewport() const {
   LayoutRect rect = VisualOverflowRect();
   LayoutView* layout_view = View();
-  while (!layout_view->GetFrame()->OwnerLayoutItem().IsNull())
-    layout_view = LayoutAPIShim::LayoutObjectFrom(
-                      layout_view->GetFrame()->OwnerLayoutItem())
-                      ->View();
+  while (layout_view->GetFrame()->OwnerLayoutObject())
+    layout_view = layout_view->GetFrame()->OwnerLayoutObject()->View();
   MapToVisualRectInAncestorSpace(layout_view, rect);
   return rect.Intersects(LayoutRect(
       layout_view->GetFrameView()->GetScrollableArea()->VisibleContentRect()));

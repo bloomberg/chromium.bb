@@ -159,10 +159,6 @@ LayoutEmbeddedContent* Frame::OwnerLayoutObject() const {
   return DeprecatedLocalOwner()->GetLayoutEmbeddedContent();
 }
 
-LayoutEmbeddedContentItem Frame::OwnerLayoutItem() const {
-  return LayoutEmbeddedContentItem(OwnerLayoutObject());
-}
-
 Settings* Frame::GetSettings() const {
   if (GetPage())
     return &GetPage()->GetSettings();

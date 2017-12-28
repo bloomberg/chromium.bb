@@ -791,19 +791,19 @@ int Element::clientWidth() {
   bool in_quirks_mode = GetDocument().InQuirksMode();
   if ((!in_quirks_mode && GetDocument().documentElement() == this) ||
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
-    LayoutViewItem layout_view = GetDocument().GetLayoutViewItem();
-    if (!layout_view.IsNull()) {
+    auto* layout_view = GetDocument().GetLayoutView();
+    if (layout_view) {
       if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view.OverflowClipRect(LayoutPoint()).Width(),
-                   layout_view.StyleRef())
+                   layout_view->OverflowClipRect(LayoutPoint()).Width(),
+                   layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                 LayoutUnit(layout_view.GetLayoutSize().Width()),
-                 layout_view.StyleRef())
+                 LayoutUnit(layout_view->GetLayoutSize().Width()),
+                 layout_view->StyleRef())
           .Round();
     }
   }
@@ -827,19 +827,19 @@ int Element::clientHeight() {
 
   if ((!in_quirks_mode && GetDocument().documentElement() == this) ||
       (in_quirks_mode && IsHTMLElement() && GetDocument().body() == this)) {
-    LayoutViewItem layout_view = GetDocument().GetLayoutViewItem();
-    if (!layout_view.IsNull()) {
+    auto* layout_view = GetDocument().GetLayoutView();
+    if (layout_view) {
       if (!RuntimeEnabledFeatures::OverlayScrollbarsEnabled() ||
           !GetDocument().GetFrame()->IsLocalRoot())
         GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
       if (GetDocument().GetPage()->GetSettings().GetForceZeroLayoutHeight())
         return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                   layout_view.OverflowClipRect(LayoutPoint()).Height(),
-                   layout_view.StyleRef())
+                   layout_view->OverflowClipRect(LayoutPoint()).Height(),
+                   layout_view->StyleRef())
             .Round();
       return AdjustForAbsoluteZoom::AdjustLayoutUnit(
-                 LayoutUnit(layout_view.GetLayoutSize().Height()),
-                 layout_view.StyleRef())
+                 LayoutUnit(layout_view->GetLayoutSize().Height()),
+                 layout_view->StyleRef())
           .Round();
     }
   }

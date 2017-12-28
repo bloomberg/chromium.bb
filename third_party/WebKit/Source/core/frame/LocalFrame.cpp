@@ -194,7 +194,7 @@ void LocalFrame::CreateView(const IntSize& viewport_size,
     frame_view->SetParentVisible(true);
 
   // FIXME: Not clear what the right thing for OOPI is here.
-  if (!OwnerLayoutItem().IsNull()) {
+  if (OwnerLayoutObject()) {
     HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
     DCHECK(owner);
     // FIXME: OOPI might lead to us temporarily lying to a frame and telling it
@@ -443,10 +443,6 @@ LayoutView* LocalFrame::ContentLayoutObject() const {
   return GetDocument() ? GetDocument()->GetLayoutView() : nullptr;
 }
 
-LayoutViewItem LocalFrame::ContentLayoutItem() const {
-  return LayoutViewItem(ContentLayoutObject());
-}
-
 void LocalFrame::DidChangeVisibilityState() {
   if (GetDocument())
     GetDocument()->DidChangeVisibilityState();
@@ -563,10 +559,11 @@ bool LocalFrame::ShouldUsePrintingLayout() const {
 FloatSize LocalFrame::ResizePageRectsKeepingRatio(
     const FloatSize& original_size,
     const FloatSize& expected_size) const {
-  if (ContentLayoutItem().IsNull())
+  auto* layout_object = ContentLayoutObject();
+  if (!layout_object)
     return FloatSize();
 
-  bool is_horizontal = ContentLayoutItem().Style()->IsHorizontalWritingMode();
+  bool is_horizontal = layout_object->StyleRef().IsHorizontalWritingMode();
   float width = original_size.Width();
   float height = original_size.Height();
   if (!is_horizontal)
@@ -698,7 +695,7 @@ Document* LocalFrame::DocumentAtPoint(const LayoutPoint& point_in_root_frame) {
 
   LayoutPoint pt = View()->RootFrameToContents(point_in_root_frame);
 
-  if (ContentLayoutItem().IsNull())
+  if (!ContentLayoutObject())
     return nullptr;
   HitTestResult result = GetEventHandler().HitTestResultAtPoint(
       pt, HitTestRequest::kReadOnly | HitTestRequest::kActive);
@@ -746,14 +743,14 @@ void LocalFrame::RemoveSpellingMarkersUnderWords(const Vector<String>& words) {
 }
 
 String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
-  if (ContentLayoutItem().IsNull())
+  if (!ContentLayoutObject())
     return String();
 
   std::unique_ptr<JSONObject> layers;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     layers = View()->CompositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
   } else {
-    layers = ContentLayoutItem().Compositor()->LayerTreeAsJSON(
+    layers = ContentLayoutObject()->Compositor()->LayerTreeAsJSON(
         static_cast<LayerTreeFlags>(flags));
   }
 

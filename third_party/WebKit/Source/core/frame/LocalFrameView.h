@@ -77,8 +77,6 @@ class IntRect;
 class JSONArray;
 class JSONObject;
 class LayoutEmbeddedContent;
-class LayoutItem;
-class LayoutViewItem;
 class LocalFrame;
 class KURL;
 class Node;
@@ -141,10 +139,7 @@ class CORE_EXPORT LocalFrameView final
 
   Page* GetPage() const;
 
-  // TODO(pilgrim) replace all instances of layoutView() with layoutViewItem()
-  // https://crbug.com/499321
   LayoutView* GetLayoutView() const;
-  LayoutViewItem GetLayoutViewItem() const;
 
   // If false, prevents scrollbars on the viewport even if web content would
   // make them appear. Also prevents user-input scrolls (but not programmatic
@@ -360,14 +355,15 @@ class CORE_EXPORT LocalFrameView final
   void ClearFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
-  // layoutItem, and this view.
-  IntRect ConvertFromLayoutItem(const LayoutItem&, const IntRect&) const;
-  IntRect ConvertToLayoutItem(const LayoutItem&, const IntRect&) const;
-  IntPoint ConvertFromLayoutItem(const LayoutItem&, const IntPoint&) const;
-  IntPoint ConvertToLayoutItem(const LayoutItem&, const IntPoint&) const;
-  LayoutPoint ConvertFromLayoutItem(const LayoutItem&,
+  // layoutObject, and this view.
+  IntRect ConvertFromLayoutObject(const LayoutObject&, const IntRect&) const;
+  IntRect ConvertToLayoutObject(const LayoutObject&, const IntRect&) const;
+  IntPoint ConvertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
+  IntPoint ConvertToLayoutObject(const LayoutObject&, const IntPoint&) const;
+  LayoutPoint ConvertFromLayoutObject(const LayoutObject&,
+                                      const LayoutPoint&) const;
+  LayoutPoint ConvertToLayoutObject(const LayoutObject&,
                                     const LayoutPoint&) const;
-  LayoutPoint ConvertToLayoutItem(const LayoutItem&, const LayoutPoint&) const;
 
   bool IsFrameViewScrollCorner(LayoutScrollbarPart* scroll_corner) const {
     return scroll_corner_ == scroll_corner;

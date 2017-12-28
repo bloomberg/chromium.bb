@@ -34,7 +34,7 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
       RuntimeEnabledFeatures::TouchpadAndWheelScrollLatchingEnabled();
 
   Document* doc = frame_->GetDocument();
-  if (!doc || doc->GetLayoutViewItem().IsNull())
+  if (!doc || !doc->GetLayoutView())
     return WebInputEventResult::kNotHandled;
 
   LocalFrameView* view = frame_->View();
@@ -119,13 +119,13 @@ void MouseWheelEventManager::ElementRemoved(Node* target) {
 Node* MouseWheelEventManager::FindTargetNode(const WebMouseWheelEvent& event,
                                              const Document* doc,
                                              const LocalFrameView* view) {
-  DCHECK(doc && !doc->GetLayoutViewItem().IsNull() && view);
+  DCHECK(doc && doc->GetLayoutView() && view);
   LayoutPoint v_point =
       view->RootFrameToContents(FlooredIntPoint(event.PositionInRootFrame()));
 
   HitTestRequest request(HitTestRequest::kReadOnly);
   HitTestResult result(request, v_point);
-  doc->GetLayoutViewItem().HitTest(result);
+  doc->GetLayoutView()->HitTest(result);
 
   Node* node = result.InnerNode();
   // Wheel events should not dispatch to text nodes.

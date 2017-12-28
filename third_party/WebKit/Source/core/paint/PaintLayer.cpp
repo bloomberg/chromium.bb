@@ -1025,10 +1025,10 @@ PaintLayer::EnclosingLayerForPaintInvalidationCrossingFrameBoundaries() const {
     composited_layer = layer->EnclosingLayerForPaintInvalidation();
     if (!composited_layer) {
       CHECK(layer->GetLayoutObject().GetFrame());
-      LayoutItem owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutItem();
-      if (owner.IsNull())
+      auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
+      if (!owner)
         break;
-      layer = owner.EnclosingLayer();
+      layer = owner->EnclosingLayer();
     }
   }
   return composited_layer;
@@ -1861,7 +1861,7 @@ bool PaintLayer::HitTest(HitTestResult& result) {
 
   // LayoutView should make sure to update layout before entering hit testing
   DCHECK(!GetLayoutObject().GetFrame()->View()->LayoutPending());
-  DCHECK(!GetLayoutObject().GetDocument().GetLayoutViewItem().NeedsLayout());
+  DCHECK(!GetLayoutObject().GetDocument().GetLayoutView()->NeedsLayout());
 
   const HitTestRequest& request = result.GetHitTestRequest();
   const HitTestLocation& hit_test_location = result.GetHitTestLocation();
@@ -3410,10 +3410,10 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
 
     PaintLayer* container = layer->CompositingContainer();
     if (!container) {
-      LayoutItem owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutItem();
-      if (owner.IsNull())
+      auto* owner = layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
+      if (!owner)
         break;
-      container = owner.EnclosingLayer();
+      container = owner->EnclosingLayer();
     }
 
     if (container->needs_repaint_)

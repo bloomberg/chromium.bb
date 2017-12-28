@@ -1023,11 +1023,10 @@ void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
 
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   LocalFrame* frame = local_root_->GetFrame();
-  if (!frame || !frame->GetDocument() ||
-      frame->GetDocument()->GetLayoutViewItem().IsNull())
+  if (!frame || !frame->GetDocument() || !frame->GetDocument()->GetLayoutView())
     return nullptr;
 
-  return frame->GetDocument()->GetLayoutViewItem().Compositor();
+  return frame->GetDocument()->GetLayoutView()->Compositor();
 }
 
 void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {

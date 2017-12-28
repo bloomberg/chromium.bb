@@ -1043,9 +1043,9 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   LayoutRect layout_window_rect =
       LayoutRect(element_->GetDocument()
                      .View()
-                     ->GetLayoutViewItem()
-                     .LocalToAbsoluteQuad(FloatQuad(FloatRect(frame_rect_)),
-                                          kTraverseDocumentBoundaries)
+                     ->GetLayoutView()
+                     ->LocalToAbsoluteQuad(FloatQuad(FloatRect(frame_rect_)),
+                                           kTraverseDocumentBoundaries)
                      .BoundingBox());
   // Finally, adjust for scrolling of the root frame, which the above does not
   // take into account.
@@ -1079,10 +1079,7 @@ void WebPluginContainerImpl::CalculateGeometry(IntRect& window_rect,
   // document().layoutView() can be null when we receive messages from the
   // plugins while we are destroying a frame.
   // FIXME: Can we just check m_element->document().isActive() ?
-  if (!element_->GetLayoutObject()
-           ->GetDocument()
-           .GetLayoutViewItem()
-           .IsNull()) {
+  if (element_->GetLayoutObject()->GetDocument().GetLayoutView()) {
     // Take our element and get the clip rect from the enclosing layer and
     // frame view.
     ComputeClipRectsForPlugin(element_, window_rect, clip_rect,

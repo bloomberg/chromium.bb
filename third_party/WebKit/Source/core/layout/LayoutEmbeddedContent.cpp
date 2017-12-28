@@ -135,9 +135,9 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
     return true;
 
   if (Document* content_document = element->contentDocument()) {
-    LayoutViewItem view_item = content_document->GetLayoutViewItem();
-    if (!view_item.IsNull())
-      return view_item.UsesCompositing();
+    auto* layout_view = content_document->GetLayoutView();
+    if (layout_view)
+      return layout_view->UsesCompositing();
   }
 
   return false;
@@ -190,10 +190,10 @@ bool LayoutEmbeddedContent::NodeAtPoint(
             DocumentLifecycle::kCompositingClean);
 
   if (action == kHitTestForeground) {
-    LayoutViewItem child_root_item = frame_view->GetLayoutViewItem();
+    auto* child_layout_view = frame_view->GetLayoutView();
 
     if (VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-        !child_root_item.IsNull()) {
+        child_layout_view) {
       LayoutPoint adjusted_location = accumulated_offset + Location();
       LayoutPoint content_offset = LayoutPoint(BorderLeft() + PaddingLeft(),
                                                BorderTop() + PaddingTop()) -
@@ -207,7 +207,7 @@ bool LayoutEmbeddedContent::NodeAtPoint(
 
       // The frame's layout and style must be up to date if we reach here.
       bool is_inside_child_frame =
-          child_root_item.HitTestNoLifecycleUpdate(child_frame_result);
+          child_layout_view->HitTestNoLifecycleUpdate(child_frame_result);
 
       if (result.GetHitTestRequest().ListBased()) {
         result.Append(child_frame_result);

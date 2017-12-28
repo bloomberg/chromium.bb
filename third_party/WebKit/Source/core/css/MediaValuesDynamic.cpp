@@ -20,7 +20,7 @@ MediaValues* MediaValuesDynamic::Create(Document& document) {
 
 MediaValues* MediaValuesDynamic::Create(LocalFrame* frame) {
   if (!frame || !frame->View() || !frame->GetDocument() ||
-      frame->GetDocument()->GetLayoutViewItem().IsNull())
+      !frame->GetDocument()->GetLayoutView())
     return MediaValuesCached::Create();
   return new MediaValuesDynamic(frame);
 }

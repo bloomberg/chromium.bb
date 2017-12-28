@@ -2971,11 +2971,11 @@ void WebViewImpl::UpdateMainFrameLayoutSize() {
 IntSize WebViewImpl::ContentsSize() const {
   if (!GetPage()->MainFrame()->IsLocalFrame())
     return IntSize();
-  LayoutViewItem root =
-      GetPage()->DeprecatedLocalMainFrame()->ContentLayoutItem();
-  if (root.IsNull())
+  auto* layout_view =
+      GetPage()->DeprecatedLocalMainFrame()->ContentLayoutObject();
+  if (!layout_view)
     return IntSize();
-  return root.DocumentRect().Size();
+  return layout_view->DocumentRect().Size();
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
@@ -2989,15 +2989,14 @@ WebSize WebViewImpl::ContentsPreferredMinimumSize() {
   Document* document = page_->MainFrame()->IsLocalFrame()
                            ? page_->DeprecatedLocalMainFrame()->GetDocument()
                            : nullptr;
-  if (!document || document->GetLayoutViewItem().IsNull() ||
-      !document->documentElement() ||
+  if (!document || !document->GetLayoutView() || !document->documentElement() ||
       !document->documentElement()->GetLayoutBox())
     return WebSize();
 
   // Needed for computing MinPreferredWidth.
   FontCachePurgePreventer fontCachePurgePreventer;
-  int width_scaled = document->GetLayoutViewItem()
-                         .MinPreferredLogicalWidth()
+  int width_scaled = document->GetLayoutView()
+                         ->MinPreferredLogicalWidth()
                          .Round();  // Already accounts for zoom.
   int height_scaled =
       document->documentElement()->GetLayoutBox()->ScrollHeight().Round();
@@ -3642,10 +3641,10 @@ PaintLayerCompositor* WebViewImpl::Compositor() const {
     return nullptr;
 
   Document* document = frame->GetFrame()->GetDocument();
-  if (!document || document->GetLayoutViewItem().IsNull())
+  if (!document || !document->GetLayoutView())
     return nullptr;
 
-  return document->GetLayoutViewItem().Compositor();
+  return document->GetLayoutView()->Compositor();
 }
 
 GraphicsLayer* WebViewImpl::RootGraphicsLayer() {

@@ -98,7 +98,7 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
   HitTestRequest request(hit_type);
   HitTestResult result(request,
                        frame->View()->RootFrameToContents(point_in_root_frame));
-  frame->ContentLayoutItem().HitTest(result);
+  frame->ContentLayoutObject()->HitTest(result);
   Node* node = result.InnerPossiblyPseudoNode();
   while (node && node->getNodeType() == Node::kTextNode)
     node = node->parentNode();
@@ -1013,7 +1013,7 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
   }
 
   LocalFrame* frame = frame_impl_->GetFrame();
-  if (!frame || !frame->View() || frame->ContentLayoutItem().IsNull())
+  if (!frame || !frame->View() || !frame->ContentLayoutObject())
     return false;
   Node* node = HoveredNodeForEvent(
       frame, event, event.GetModifiers() & WebInputEvent::kShiftKey);

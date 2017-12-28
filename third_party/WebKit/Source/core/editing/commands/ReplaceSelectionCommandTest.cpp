@@ -111,12 +111,12 @@ TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
 // Helper function to set autosizing multipliers on a document.
 bool SetTextAutosizingMultiplier(Document* document, float multiplier) {
   bool multiplier_set = false;
-  for (LayoutItem layout_item = document->GetLayoutViewItem();
-       !layout_item.IsNull(); layout_item = layout_item.NextInPreOrder()) {
-    if (layout_item.Style()) {
-      layout_item.MutableStyleRef().SetTextAutosizingMultiplier(multiplier);
+  for (LayoutObject* layout_object = document->GetLayoutView(); layout_object;
+       layout_object = layout_object->NextInPreOrder()) {
+    if (layout_object->Style()) {
+      layout_object->MutableStyleRef().SetTextAutosizingMultiplier(multiplier);
 
-      EXPECT_EQ(multiplier, layout_item.Style()->TextAutosizingMultiplier());
+      EXPECT_EQ(multiplier, layout_object->Style()->TextAutosizingMultiplier());
       multiplier_set = true;
     }
   }

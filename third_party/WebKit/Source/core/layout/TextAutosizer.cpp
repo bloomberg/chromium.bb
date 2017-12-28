@@ -560,9 +560,9 @@ void TextAutosizer::UpdatePageInfo() {
   if (!page_info_.setting_enabled_ || document_->Printing()) {
     page_info_.page_needs_autosizing_ = false;
   } else {
-    LayoutViewItem layout_view_item = document_->GetLayoutViewItem();
+    auto* layout_view = document_->GetLayoutView();
     bool horizontal_writing_mode =
-        IsHorizontalWritingMode(layout_view_item.Style()->GetWritingMode());
+        IsHorizontalWritingMode(layout_view->StyleRef().GetWritingMode());
 
     // FIXME: With out-of-process iframes, the top frame can be remote and
     // doesn't have sizing information. Just return if this is the case.
@@ -637,8 +637,7 @@ IntSize TextAutosizer::WindowSize() const {
 }
 
 void TextAutosizer::ResetMultipliers() {
-  LayoutObject* layout_object =
-      LayoutAPIShim::LayoutObjectFrom(document_->GetLayoutViewItem());
+  LayoutObject* layout_object = document_->GetLayoutView();
   while (layout_object) {
     if (const ComputedStyle* style = layout_object->Style()) {
       if (style->TextAutosizingMultiplier() != 1)

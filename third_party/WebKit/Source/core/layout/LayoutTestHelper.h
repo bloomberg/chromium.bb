@@ -83,8 +83,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   void TearDown() override;
 
   LayoutView& GetLayoutView() const {
-    return *ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
-        GetDocument().View()->GetLayoutViewItem()));
+    return *GetDocument().View()->GetLayoutView();
   }
 
   Document& ChildDocument() {

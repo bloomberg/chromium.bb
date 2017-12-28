@@ -546,7 +546,7 @@ void FrameSelection::PaintCaret(GraphicsContext& context,
 }
 
 bool FrameSelection::Contains(const LayoutPoint& point) {
-  if (GetDocument().GetLayoutViewItem().IsNull())
+  if (!GetDocument().GetLayoutView())
     return false;
 
   // Treat a collapsed selection like no selection.
@@ -557,7 +557,7 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestResult result(request, point);
-  GetDocument().GetLayoutViewItem().HitTest(result);
+  GetDocument().GetLayoutView()->HitTest(result);
   Node* inner_node = result.InnerNode();
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
@@ -777,8 +777,8 @@ void FrameSelection::FocusedOrActiveStateChanged() {
   // Because LayoutObject::selectionBackgroundColor() and
   // LayoutObject::selectionForegroundColor() check if the frame is active,
   // we have to update places those colors were painted.
-  LayoutViewItem view = GetDocument().GetLayoutViewItem();
-  if (!view.IsNull())
+  auto* view = GetDocument().GetLayoutView();
+  if (view)
     layout_selection_->InvalidatePaintForSelection();
 
   // Caret appears in the active frame.
@@ -847,7 +847,7 @@ void FrameSelection::DidLayout() {
 }
 
 void FrameSelection::UpdateAppearance() {
-  DCHECK(!frame_->ContentLayoutItem().IsNull());
+  DCHECK(frame_->ContentLayoutObject());
   frame_caret_->ScheduleVisualUpdateForPaintInvalidationIfNeeded();
   layout_selection_->SetHasPendingSelection();
 }
@@ -939,9 +939,9 @@ String FrameSelection::SelectedTextForClipboard() const {
 
 LayoutRect FrameSelection::UnclippedBounds() const {
   LocalFrameView* view = frame_->View();
-  LayoutViewItem layout_view = frame_->ContentLayoutItem();
+  LayoutView* layout_view = frame_->ContentLayoutObject();
 
-  if (!view || layout_view.IsNull())
+  if (!view || !layout_view)
     return LayoutRect();
 
   view->UpdateLifecycleToLayoutClean();

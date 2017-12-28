@@ -395,7 +395,7 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   NavigateTo("about:blank");
   WebView()->UpdateAllLifecyclePhases();
   main_frame_widget->SetRootGraphicsLayer(
-      frame_view.GetLayoutViewItem().Compositor()->RootGraphicsLayer());
+      frame_view.GetLayoutView()->Compositor()->RootGraphicsLayer());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240),

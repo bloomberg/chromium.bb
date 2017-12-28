@@ -548,10 +548,10 @@ static void MakeLayerChildFrameMap(const LocalFrame* current_frame,
        child = child->Tree().NextSibling()) {
     if (!child->IsLocalFrame())
       continue;
-    const LayoutItem owner_layout_item = ToLocalFrame(child)->OwnerLayoutItem();
-    if (owner_layout_item.IsNull())
+    auto* owner_layout_object = ToLocalFrame(child)->OwnerLayoutObject();
+    if (!owner_layout_object)
       continue;
-    const PaintLayer* containing_layer = owner_layout_item.EnclosingLayer();
+    const PaintLayer* containing_layer = owner_layout_object->EnclosingLayer();
     LayerFrameMap::iterator iter = map->find(containing_layer);
     if (iter == map->end())
       map->insert(containing_layer, HeapVector<Member<const LocalFrame>>())
@@ -638,7 +638,7 @@ static void ProjectRectsToGraphicsLayerSpaceRecursive(
         continue;
 
       const PaintLayer* child_layer =
-          child_frame->View()->GetLayoutViewItem().Layer();
+          child_frame->View()->GetLayoutView()->Layer();
       if (layers_with_rects.Contains(child_layer)) {
         LayerFrameMap new_layer_child_frame_map;
         MakeLayerChildFrameMap(child_frame, &new_layer_child_frame_map);
@@ -679,10 +679,10 @@ static void ProjectRectsToGraphicsLayerSpace(
       if (layer->Parent()) {
         layer = layer->Parent();
       } else {
-        LayoutItem parent_doc_layout_item =
-            layer->GetLayoutObject().GetFrame()->OwnerLayoutItem();
-        if (!parent_doc_layout_item.IsNull()) {
-          layer = parent_doc_layout_item.EnclosingLayer();
+        auto* parent_doc_layout_object =
+            layer->GetLayoutObject().GetFrame()->OwnerLayoutObject();
+        if (parent_doc_layout_object) {
+          layer = parent_doc_layout_object->EnclosingLayer();
           touch_handler_in_child_frame = true;
         }
       }
@@ -693,7 +693,7 @@ static void ProjectRectsToGraphicsLayerSpace(
   MapCoordinatesFlags flags = kUseTransforms;
   if (touch_handler_in_child_frame)
     flags |= kTraverseDocumentBoundaries;
-  PaintLayer* root_layer = main_frame->ContentLayoutItem().Layer();
+  PaintLayer* root_layer = main_frame->ContentLayoutObject()->Layer();
   LayoutGeometryMap geometry_map(flags);
   geometry_map.PushMappingsToAncestor(root_layer, nullptr);
   LayerFrameMap layer_child_frame_map;
@@ -815,10 +815,9 @@ void ScrollingCoordinator::TouchEventTargetRectsDidChange() {
   // FIXME: scheduleAnimation() is just a method of forcing the compositor to
   // realize that it needs to commit here. We should expose a cleaner API for
   // this.
-  LayoutViewItem layout_view =
-      page_->DeprecatedLocalMainFrame()->ContentLayoutItem();
-  if (!layout_view.IsNull() && layout_view.Compositor() &&
-      layout_view.Compositor()->StaleInCompositingMode())
+  auto* layout_view = page_->DeprecatedLocalMainFrame()->ContentLayoutObject();
+  if (layout_view && layout_view->Compositor() &&
+      layout_view->Compositor()->StaleInCompositingMode())
     page_->DeprecatedLocalMainFrame()->View()->ScheduleAnimation();
 
   touch_event_target_rects_are_dirty_ = true;
@@ -964,10 +963,10 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
   DCHECK(IsMainThread());
 
   // We currently only support composited mode.
-  LayoutViewItem layout_view = frame_view->GetFrame().ContentLayoutItem();
-  if (layout_view.IsNull())
+  auto* layout_view = frame_view->GetFrame().ContentLayoutObject();
+  if (!layout_view)
     return false;
-  return layout_view.UsesCompositing();
+  return layout_view->UsesCompositing();
 }
 
 Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
@@ -1060,7 +1059,7 @@ static void AccumulateDocumentTouchEventTargetRects(
   // implemented by replacing the root cc::layer with the video layer so doing
   // this optimization causes the compositor to think that there are no
   // handlers, therefore skip it.
-  if (!document->GetLayoutViewItem().Compositor()->InOverlayFullscreenVideo()) {
+  if (!document->GetLayoutView()->Compositor()->InOverlayFullscreenVideo()) {
     for (const auto& event_target : *targets) {
       EventTarget* target = event_target.key;
       Node* node = target->ToNode();
@@ -1074,8 +1073,8 @@ static void AccumulateDocumentTouchEventTargetRects(
         continue;
       if (window || node == document || node == document->documentElement() ||
           node == document->body()) {
-        if (LayoutViewItem layout_view = document->GetLayoutViewItem()) {
-          layout_view.ComputeLayerHitTestRects(rects, supported_fast_actions);
+        if (auto* layout_view = document->GetLayoutView()) {
+          layout_view->ComputeLayerHitTestRects(rects, supported_fast_actions);
         }
         return;
       }
@@ -1193,11 +1192,10 @@ bool ScrollingCoordinator::IsForRootLayer(
     return false;
 
   // FIXME(305811): Refactor for OOPI.
-  LayoutViewItem layout_view_item =
-      page_->DeprecatedLocalMainFrame()->View()->GetLayoutViewItem();
-  return layout_view_item.IsNull()
-             ? false
-             : scrollable_area == layout_view_item.Layer()->GetScrollableArea();
+  if (auto* layout_view =
+          page_->DeprecatedLocalMainFrame()->View()->GetLayoutView())
+    return scrollable_area == layout_view->Layer()->GetScrollableArea();
+  return false;
 }
 
 bool ScrollingCoordinator::IsForMainFrame(

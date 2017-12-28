@@ -155,7 +155,7 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
   top_padding = bottom_padding = (rect.Height() / 2).ToUnsigned();
   HitTestResult result(request, center, top_padding, right_padding,
                        bottom_padding, left_padding);
-  document.GetFrame()->ContentLayoutItem().HitTest(result);
+  document.GetFrame()->ContentLayoutObject()->HitTest(result);
   HeapVector<Member<Element>> elements;
   Node* previous_node = nullptr;
   for (const auto hit_test_result_node : result.ListBasedTestResult()) {

@@ -1505,9 +1505,7 @@ WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
   AXObjectCacheImpl* cache =
       ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
-  return cache ? WebAXObject(cache->GetOrCreate(
-                     ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
-                         document->GetLayoutViewItem()))))
+  return cache ? WebAXObject(cache->GetOrCreate(document->GetLayoutView()))
                : WebAXObject();
 }
 

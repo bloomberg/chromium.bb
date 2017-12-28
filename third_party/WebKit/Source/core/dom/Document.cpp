@@ -180,7 +180,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameFetchContext.h"
@@ -732,7 +731,7 @@ Document::Document(const DocumentInit& initializer,
 }
 
 Document::~Document() {
-  DCHECK(GetLayoutViewItem().IsNull());
+  DCHECK(!GetLayoutView());
   DCHECK(!ParentTreeScope());
   // If a top document with a cache, verify that it was comprehensively
   // cleared during detach.
@@ -1547,7 +1546,7 @@ AtomicString Document::contentType() const {
 }
 
 Element* Document::ElementFromPoint(double x, double y) const {
-  if (GetLayoutViewItem().IsNull())
+  if (!GetLayoutView())
     return nullptr;
 
   return TreeScope::ElementFromPoint(x, y);
@@ -1555,13 +1554,13 @@ Element* Document::ElementFromPoint(double x, double y) const {
 
 HeapVector<Member<Element>> Document::ElementsFromPoint(double x,
                                                         double y) const {
-  if (GetLayoutViewItem().IsNull())
+  if (!GetLayoutView())
     return HeapVector<Member<Element>>();
   return TreeScope::ElementsFromPoint(x, y);
 }
 
 Range* Document::caretRangeFromPoint(int x, int y) {
-  if (GetLayoutViewItem().IsNull())
+  if (!GetLayoutView())
     return nullptr;
 
   HitTestResult result = HitTestInDocument(this, x, y);
@@ -2049,8 +2048,7 @@ void Document::PropagateStyleToViewport() {
             static_cast<OverscrollBehaviorType>(overscroll_behavior_y)));
   }
 
-  scoped_refptr<ComputedStyle> viewport_style =
-      GetLayoutViewItem().MutableStyle();
+  scoped_refptr<ComputedStyle> viewport_style = GetLayoutView()->MutableStyle();
   if (viewport_style->GetWritingMode() != root_writing_mode ||
       viewport_style->Direction() != root_direction ||
       viewport_style->VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
@@ -2084,7 +2082,7 @@ void Document::PropagateStyleToViewport() {
     new_style->SetScrollBehavior(scroll_behavior);
     new_style->SetOverscrollBehaviorX(overscroll_behavior_x);
     new_style->SetOverscrollBehaviorY(overscroll_behavior_y);
-    GetLayoutViewItem().SetStyle(new_style);
+    GetLayoutView()->SetStyle(new_style);
     SetupFontBuilder(*new_style);
   }
 }
@@ -2185,7 +2183,7 @@ void Document::UpdateStyleAndLayoutTree() {
 
   if (focused_element_ && !focused_element_->IsFocusable())
     ClearFocusedElementSoon();
-  GetLayoutViewItem().ClearHitTestCache();
+  GetLayoutView()->ClearHitTestCache();
 
   DCHECK(!DocumentAnimations::NeedsAnimationTimingUpdate(*this));
 
@@ -2236,9 +2234,9 @@ void Document::UpdateStyle() {
     scoped_refptr<ComputedStyle> viewport_style =
         StyleResolver::StyleForViewport(*this);
     StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
-        viewport_style.get(), GetLayoutViewItem().Style());
+        viewport_style.get(), GetLayoutView()->Style());
     if (local_change != kNoChange)
-      GetLayoutViewItem().SetStyle(std::move(viewport_style));
+      GetLayoutView()->SetStyle(std::move(viewport_style));
   }
 
   ClearNeedsStyleRecalc();
@@ -2318,13 +2316,13 @@ void Document::ViewportDefiningElementDidChange() {
 }
 
 void Document::NotifyLayoutTreeOfSubtreeChanges() {
-  if (!GetLayoutViewItem().WasNotifiedOfSubtreeChange())
+  if (!GetLayoutView()->WasNotifiedOfSubtreeChange())
     return;
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInLayoutSubtreeChange);
 
-  GetLayoutViewItem().HandleSubtreeModifications();
-  DCHECK(!GetLayoutViewItem().WasNotifiedOfSubtreeChange());
+  GetLayoutView()->HandleSubtreeModifications();
+  DCHECK(!GetLayoutView()->WasNotifiedOfSubtreeChange());
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kLayoutSubtreeChangeClean);
 }
@@ -3265,9 +3263,8 @@ void Document::ImplicitClose() {
     UpdateStyleAndLayoutTree();
 
     // Always do a layout after loading if needed.
-    if (View() && !GetLayoutViewItem().IsNull() &&
-        (!GetLayoutViewItem().FirstChild() ||
-         GetLayoutViewItem().NeedsLayout()))
+    if (View() && GetLayoutView() &&
+        (!GetLayoutView()->FirstChild() || GetLayoutView()->NeedsLayout()))
       View()->UpdateLayout();
 
     // TODO(bokan): This is a temporary fix to https://crbug.com/788486.
@@ -3279,7 +3276,7 @@ void Document::ImplicitClose() {
 
   load_event_progress_ = kLoadEventCompleted;
 
-  if (GetFrame() && !GetLayoutViewItem().IsNull() &&
+  if (GetFrame() && GetLayoutView() &&
       GetSettings()->GetAccessibilityEnabled()) {
     if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
       if (this == &AXObjectCacheOwner())
@@ -4083,7 +4080,7 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
     const HitTestRequest& request,
     const LayoutPoint& document_point,
     const WebMouseEvent& event) {
-  DCHECK(GetLayoutViewItem().IsNull() || GetLayoutViewItem().IsLayoutView());
+  DCHECK(!GetLayoutView() || GetLayoutView()->IsLayoutView());
 
   // LayoutView::hitTest causes a layout, and we don't want to hit that until
   // the first layout because until then, there is nothing shown on the screen -
@@ -4091,12 +4088,12 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   // page.  Furthermore, mousemove events before the first layout should not
   // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in EventHandler::hitTestResultAtPoint.
-  if (GetLayoutViewItem().IsNull() || !View() || !View()->DidFirstLayout())
+  if (!GetLayoutView() || !View() || !View()->DidFirstLayout())
     return MouseEventWithHitTestResults(event,
                                         HitTestResult(request, LayoutPoint()));
 
   HitTestResult result(request, document_point);
-  GetLayoutViewItem().HitTest(result);
+  GetLayoutView()->HitTest(result);
 
   if (!request.ReadOnly())
     UpdateHoverActiveState(request, result.InnerElement());
@@ -4373,9 +4370,9 @@ void Document::StyleResolverMayHaveChanged() {
     // or style recalc while sheets are still loading to avoid FOUC.
     pending_sheet_layout_ = kIgnoreLayoutWithPendingSheets;
 
-    DCHECK(!GetLayoutViewItem().IsNull() || ImportsController());
-    if (!GetLayoutViewItem().IsNull())
-      GetLayoutViewItem().InvalidatePaintForViewAndCompositedLayers();
+    DCHECK(GetLayoutView() || ImportsController());
+    if (GetLayoutView())
+      GetLayoutView()->InvalidatePaintForViewAndCompositedLayers();
   }
 }
 
@@ -5052,7 +5049,7 @@ bool Document::IsInInvisibleSubframe() const {
 
   // TODO(bokan): This looks like it doesn't work in OOPIF.
   DCHECK(GetFrame());
-  return GetFrame()->OwnerLayoutItem().IsNull();
+  return !GetFrame()->OwnerLayoutObject();
 }
 
 String Document::cookie(ExceptionState& exception_state) const {
@@ -5509,8 +5506,8 @@ void Document::SetEncodingData(const DocumentEncodingData& new_data) {
   if (should_use_visual_ordering != visually_ordered_) {
     visually_ordered_ = should_use_visual_ordering;
     // FIXME: How is possible to not have a layoutObject here?
-    if (!GetLayoutViewItem().IsNull()) {
-      GetLayoutViewItem().MutableStyleRef().SetRtlOrdering(
+    if (GetLayoutView()) {
+      GetLayoutView()->MutableStyleRef().SetRtlOrdering(
           visually_ordered_ ? EOrder::kVisual : EOrder::kLogical);
     }
     SetNeedsStyleRecalc(kSubtreeStyleChange,
@@ -7130,10 +7127,6 @@ void Document::SetShadowCascadeOrder(ShadowCascadeOrder order) {
 
   if (order > shadow_cascade_order_)
     shadow_cascade_order_ = order;
-}
-
-LayoutViewItem Document::GetLayoutViewItem() const {
-  return LayoutViewItem(layout_view_);
 }
 
 PropertyRegistry* Document::GetPropertyRegistry() {

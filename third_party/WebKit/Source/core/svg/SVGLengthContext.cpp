@@ -479,7 +479,7 @@ float SVGLengthContext::ResolveValue(const CSSPrimitiveValue& primitive_value,
     return 0;
 
   CSSToLengthConversionData conversion_data = CSSToLengthConversionData(
-      style, root_style, context_->GetDocument().GetLayoutViewItem(), 1.0f);
+      style, root_style, context_->GetDocument().GetLayoutView(), 1.0f);
   Length length = primitive_value.ConvertToLength(conversion_data);
   return ValueForLength(length, 1.0f, mode);
 }

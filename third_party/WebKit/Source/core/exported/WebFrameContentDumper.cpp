@@ -186,19 +186,14 @@ void FrameContentAsPlainText(size_t max_chars,
       continue;
     LocalFrame* cur_local_child = ToLocalFrame(cur_child);
     // Ignore the text of non-visible frames.
-    LayoutViewItem content_layout_item = cur_local_child->ContentLayoutItem();
-    LayoutEmbeddedContentItem owner_layout_item =
-        cur_local_child->OwnerLayoutItem();
-    if (content_layout_item.IsNull() || !content_layout_item.Size().Width() ||
-        !content_layout_item.Size().Height() ||
-        (content_layout_item.Location().X() +
-             content_layout_item.Size().Width() <=
-         0) ||
-        (content_layout_item.Location().Y() +
-             content_layout_item.Size().Height() <=
-         0) ||
-        (!owner_layout_item.IsNull() && owner_layout_item.Style() &&
-         owner_layout_item.Style()->Visibility() != EVisibility::kVisible)) {
+    LayoutView* layout_view = cur_local_child->ContentLayoutObject();
+    LayoutObject* owner_layout_object = cur_local_child->OwnerLayoutObject();
+    if (!layout_view || !layout_view->Size().Width() ||
+        !layout_view->Size().Height() ||
+        (layout_view->Location().X() + layout_view->Size().Width() <= 0) ||
+        (layout_view->Location().Y() + layout_view->Size().Height() <= 0) ||
+        (owner_layout_object && owner_layout_object->Style() &&
+         owner_layout_object->Style()->Visibility() != EVisibility::kVisible)) {
       continue;
     }
 

@@ -132,8 +132,7 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
   // TODO: Break dependency on LayoutObject.
   const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
   CSSToLengthConversionData conversion_data(
-      &style, root_style, LayoutViewItem(layout_object.View()),
-      style.EffectiveZoom());
+      &style, root_style, layout_object.View(), style.EffectiveZoom());
 
   switch (GetClassType()) {
     case kLinearGradientClass:
