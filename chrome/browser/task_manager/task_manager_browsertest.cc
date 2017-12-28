@@ -975,7 +975,8 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       MatchSubframe("http://e.com/"), ColumnSpecifier::MEMORY_FOOTPRINT, 1000));
 }
 
-IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, KillSubframe) {
+// Flaky, see https://crbug.com/797860.
+IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, DISABLED_KillSubframe) {
   ShowTaskManager();
 
   content::TestNavigationObserver navigation_observer(
