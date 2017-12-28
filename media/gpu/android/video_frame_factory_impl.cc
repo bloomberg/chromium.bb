@@ -94,7 +94,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    OutputWithReleaseMailboxCB output_cb) {
+    VideoDecoder::OutputCB output_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   gpu_task_runner_->PostTask(
       FROM_HERE,
@@ -143,7 +143,7 @@ void GpuVideoFrameFactory::CreateVideoFrame(
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
+    VideoDecoder::OutputCB output_cb,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   scoped_refptr<VideoFrame> frame;
@@ -172,9 +172,8 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   // dropped. Otherwise we could keep TextureRefs we don't need alive.
   auto release_cb = ScopedCallbackRunner(
       ToOnceCallback(BindToCurrentLoop(drop_texture_ref)), gpu::SyncToken());
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(output_cb, std::move(release_cb), std::move(frame)));
+  frame->SetReleaseMailboxCB(std::move(release_cb));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(output_cb, std::move(frame)));
 }
 
 void GpuVideoFrameFactory::CreateVideoFrameInternal(
@@ -250,7 +249,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
 
   // The frames must be copied when threaded texture mailboxes are in use
   // (http://crbug.com/582170).
-  if (stub_->GetGpuPreferences().enable_threaded_texture_mailboxes)
+  if (group->gpu_preferences().enable_threaded_texture_mailboxes)
     frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
 
   // We unconditionally mark the picture as overlayable, even if

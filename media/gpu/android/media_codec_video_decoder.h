@@ -54,7 +54,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
  public:
   MediaCodecVideoDecoder(
       const gpu::GpuPreferences& gpu_preferences,
-      VideoFrameFactory::OutputWithReleaseMailboxCB output_cb,
       DeviceInfo* device_info,
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
@@ -166,7 +165,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Forwards |frame| via |output_cb_| if |reset_generation| matches
   // |reset_generation_|.
   void ForwardVideoFrame(int reset_generation,
-                         VideoFrameFactory::ReleaseMailboxCB release_cb,
                          const scoped_refptr<VideoFrame>& frame);
 
   // Starts draining the codec by queuing an EOS if required. It skips the drain
@@ -223,7 +221,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // when the EOS is output.
   VideoDecoder::DecodeCB eos_decode_cb_;
 
-  VideoFrameFactory::OutputWithReleaseMailboxCB output_cb_;
+  VideoDecoder::OutputCB output_cb_;
   VideoDecoderConfig decoder_config_;
 
   // Codec specific data (SPS and PPS for H264). Some MediaCodecs initialize
