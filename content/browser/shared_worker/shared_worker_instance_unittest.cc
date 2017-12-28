@@ -41,8 +41,7 @@ class SharedWorkerInstanceTest : public testing::Test {
         blink::kWebContentSecurityPolicyTypeReport,
         blink::kWebAddressSpacePublic, browser_context_->GetResourceContext(),
         partition_id_,
-        blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-        base::UnguessableToken::Create());
+        blink::mojom::SharedWorkerCreationContextType::kNonsecure);
   }
 
   bool Matches(const SharedWorkerInstance& instance,
@@ -225,8 +224,7 @@ TEST_F(SharedWorkerInstanceTest, AddressSpace) {
         blink::kWebContentSecurityPolicyTypeReport,
         static_cast<blink::WebAddressSpace>(i),
         browser_context_->GetResourceContext(), partition_id_,
-        blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-        base::UnguessableToken::Create());
+        blink::mojom::SharedWorkerCreationContextType::kNonsecure);
     EXPECT_EQ(static_cast<blink::WebAddressSpace>(i),
               instance.creation_address_space());
   }

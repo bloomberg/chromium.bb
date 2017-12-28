@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
@@ -46,7 +47,9 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   ~SharedWorkerHost() override;
 
   // Starts the SharedWorker in the renderer process.
-  void Start(mojom::SharedWorkerFactoryPtr factory, bool pause_on_start);
+  void Start(mojom::SharedWorkerFactoryPtr factory,
+             bool pause_on_start,
+             const base::UnguessableToken& devtools_worker_token);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
