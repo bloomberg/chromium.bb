@@ -192,10 +192,6 @@ int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
 int av1_get_reference_mode_context(const AV1_COMMON *cm, const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_reference_mode_prob(const AV1_COMMON *cm,
-                                                   const MACROBLOCKD *xd) {
-  return cm->fc->comp_inter_prob[av1_get_reference_mode_context(cm, xd)];
-}
 static INLINE aom_cdf_prob *av1_get_reference_mode_cdf(const AV1_COMMON *cm,
                                                        const MACROBLOCKD *xd) {
   return xd->tile_ctx->comp_inter_cdf[av1_get_reference_mode_context(cm, xd)];

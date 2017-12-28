@@ -1268,8 +1268,6 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
     const int ctx = av1_get_reference_mode_context(cm, xd);
     const REFERENCE_MODE mode = (REFERENCE_MODE)aom_read_symbol(
         r, xd->tile_ctx->comp_inter_cdf[ctx], 2, ACCT_STR);
-    FRAME_COUNTS *counts = xd->counts;
-    if (counts) ++counts->comp_inter[ctx][mode];
     return mode;  // SINGLE_REFERENCE or COMPOUND_REFERENCE
   } else {
 #if CONFIG_REF_ADAPT

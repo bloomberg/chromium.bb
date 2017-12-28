@@ -1397,10 +1397,6 @@ static const aom_cdf_prob default_intra_inter_cdf[INTRA_INTER_CONTEXTS]
                                                    { AOM_CDF2(26240) }
                                                  };
 
-static const aom_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
-  190, 156, 91, 77, 22
-};
-
 static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(24290) },
             { AOM_CDF2(19956) },
@@ -3302,7 +3298,6 @@ static const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(
 #endif  // CONFIG_EXT_INTRA_MOD
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {
-  av1_copy(fc->comp_inter_prob, default_comp_inter_p);
   av1_copy(fc->palette_y_size_cdf, default_palette_y_size_cdf);
   av1_copy(fc->palette_uv_size_cdf, default_palette_uv_size_cdf);
   av1_copy(fc->palette_y_color_index_cdf, default_palette_y_color_index_cdf);
@@ -3416,10 +3411,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
-
-  for (i = 0; i < COMP_INTER_CONTEXTS; i++)
-    fc->comp_inter_prob[i] = av1_mode_mv_merge_probs(pre_fc->comp_inter_prob[i],
-                                                     counts->comp_inter[i]);
 
 #if CONFIG_EXT_COMP_REFS
   for (i = 0; i < COMP_REF_TYPE_CONTEXTS; i++)

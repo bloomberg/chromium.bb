@@ -226,6 +226,11 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_INTRABC
 
   if (!frame_is_intra_only(cm)) {
+    for (i = 0; i < COMP_INTER_CONTEXTS; ++i) {
+      av1_cost_tokens_from_cdf(x->comp_inter_cost[i], fc->comp_inter_cdf[i],
+                               NULL);
+    }
+
     for (i = 0; i < INTRA_INTER_CONTEXTS; ++i) {
       av1_cost_tokens_from_cdf(x->intra_inter_cost[i], fc->intra_inter_cdf[i],
                                NULL);

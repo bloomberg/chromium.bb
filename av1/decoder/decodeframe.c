@@ -3137,8 +3137,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.motion_mode)));
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
-  assert(!memcmp(cm->counts.comp_inter, zero_counts.comp_inter,
-                 sizeof(cm->counts.comp_inter)));
 #if CONFIG_EXT_COMP_REFS
   assert(!memcmp(cm->counts.comp_ref_type, zero_counts.comp_ref_type,
                  sizeof(cm->counts.comp_ref_type)));

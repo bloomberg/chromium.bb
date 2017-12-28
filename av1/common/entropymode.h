@@ -147,7 +147,6 @@ typedef struct frame_contexts {
                                   [CDF_SIZE(INTERINTRA_MODES)];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
-  aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_cdf_prob palette_y_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)];
   aom_cdf_prob palette_uv_size_cdf[PALATTE_BSIZE_CTXS][CDF_SIZE(PALETTE_SIZES)];
   aom_cdf_prob palette_y_color_index_cdf[PALETTE_SIZES]
@@ -320,7 +319,9 @@ typedef struct FRAME_COUNTS {
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
+#if CONFIG_ENTROPY_STATS
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
+#endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_EXT_COMP_REFS
   unsigned int comp_ref_type[COMP_REF_TYPE_CONTEXTS][2];
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];

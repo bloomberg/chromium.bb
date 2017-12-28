@@ -885,8 +885,10 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             rdc->single_ref_used_flag = 1;
 #endif  // !CONFIG_REF_ADAPT
           if (is_comp_ref_allowed(bsize)) {
+#if CONFIG_ENTROPY_STATS
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
+#endif  // CONFIG_ENTROPY_STATS
             if (allow_update_cdf)
               update_cdf(av1_get_reference_mode_cdf(cm, xd),
                          has_second_ref(mbmi), 2);
@@ -3906,7 +3908,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   if (cpi->sf.frame_parameter_update) {
     int i;
     RD_OPT *const rd_opt = &cpi->rd;
-    FRAME_COUNTS *counts = cpi->td.counts;
     RD_COUNTS *const rdc = &cpi->td.rd_counts;
 
     // This code does a single RD pass over the whole frame assuming
@@ -3961,12 +3962,16 @@ void av1_encode_frame(AV1_COMP *cpi) {
       // Use a flag that includes 4x4 blocks
       if (rdc->compound_ref_used_flag == 0) {
         cm->reference_mode = SINGLE_REFERENCE;
-        av1_zero(counts->comp_inter);
+#if CONFIG_ENTROPY_STATS
+        av1_zero(cpi->td.counts->comp_inter);
+#endif  // CONFIG_ENTROPY_STATS
 #if !CONFIG_REF_ADAPT
         // Use a flag that includes 4x4 blocks
       } else if (rdc->single_ref_used_flag == 0) {
         cm->reference_mode = COMPOUND_REFERENCE;
-        av1_zero(counts->comp_inter);
+#if CONFIG_ENTROPY_STATS
+        av1_zero(cpi->td.counts->comp_inter);
+#endif  // CONFIG_ENTROPY_STATS
 #endif  // !CONFIG_REF_ADAPT
       }
     }
