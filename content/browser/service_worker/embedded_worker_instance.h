@@ -343,9 +343,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Whether devtools is attached or not.
   bool devtools_attached_;
 
-  // Unique token identifying this worker for DevTools.
-  base::UnguessableToken devtools_worker_token_;
-
   // True if the script load request accessed the network. If the script was
   // served from HTTPCache or ServiceWorkerDatabase this value is false.
   bool network_accessed_for_script_;

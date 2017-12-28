@@ -12,34 +12,6 @@
 
 namespace content {
 
-ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
-    const ServiceWorkerContextCore* context,
-    base::WeakPtr<ServiceWorkerContextCore> context_weak,
-    int64_t version_id,
-    const GURL& url,
-    const GURL& scope,
-    const base::UnguessableToken& devtools_worker_token)
-    : context_(context),
-      context_weak_(context_weak),
-      version_id_(version_id),
-      url_(url),
-      scope_(scope),
-      devtools_worker_token_(devtools_worker_token) {
-  DCHECK(!devtools_worker_token_.is_empty());
-}
-
-ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
-    const ServiceWorkerIdentifier& other) = default;
-
-ServiceWorkerDevToolsManager::
-ServiceWorkerIdentifier::~ServiceWorkerIdentifier() {
-}
-
-bool ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::Matches(
-    const ServiceWorkerIdentifier& other) const {
-  return context_ == other.context_ && version_id_ == other.version_id_;
-}
-
 // static
 ServiceWorkerDevToolsManager* ServiceWorkerDevToolsManager::GetInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -69,38 +41,48 @@ void ServiceWorkerDevToolsManager::AddAllAgentHostsForBrowserContext(
   }
 }
 
-bool ServiceWorkerDevToolsManager::WorkerCreated(
+void ServiceWorkerDevToolsManager::WorkerCreated(
     int worker_process_id,
     int worker_route_id,
-    const ServiceWorkerIdentifier& service_worker_id,
-    bool is_installed_version) {
+    const ServiceWorkerContextCore* context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
+    int64_t version_id,
+    const GURL& url,
+    const GURL& scope,
+    bool is_installed_version,
+    base::UnguessableToken* devtools_worker_token,
+    bool* pause_on_start) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId worker_id(worker_process_id, worker_route_id);
   DCHECK(live_hosts_.find(worker_id) == live_hosts_.end());
 
   auto it = std::find_if(
       terminated_hosts_.begin(), terminated_hosts_.end(),
-      [&service_worker_id](ServiceWorkerDevToolsAgentHost* agent_host) {
-        return agent_host->Matches(service_worker_id);
+      [&context, &version_id](ServiceWorkerDevToolsAgentHost* agent_host) {
+        return agent_host->Matches(context, version_id);
       });
   if (it == terminated_hosts_.end()) {
+    *devtools_worker_token = base::UnguessableToken::Create();
     scoped_refptr<ServiceWorkerDevToolsAgentHost> host =
         new ServiceWorkerDevToolsAgentHost(worker_process_id, worker_route_id,
-                                           service_worker_id,
-                                           is_installed_version);
+                                           context, context_weak, version_id,
+                                           url, scope, is_installed_version,
+                                           *devtools_worker_token);
     live_hosts_[worker_id] = host;
     for (auto& observer : observer_list_)
       observer.WorkerCreated(host.get());
     if (debug_service_worker_on_start_)
       host->PauseForDebugOnStart();
-    return host->IsPausedForDebugOnStart();
+    *pause_on_start = host->IsPausedForDebugOnStart();
+    return;
   }
 
   ServiceWorkerDevToolsAgentHost* agent_host = *it;
   terminated_hosts_.erase(it);
   live_hosts_[worker_id] = agent_host;
   agent_host->WorkerRestarted(worker_process_id, worker_route_id);
-  return agent_host->IsAttached();
+  *devtools_worker_token = agent_host->devtools_worker_token();
+  *pause_on_start = agent_host->IsAttached();
 }
 
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
