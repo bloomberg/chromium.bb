@@ -47,6 +47,7 @@ struct hb_buffer_t;
 
 namespace blink {
 
+struct CharacterRange;
 class Font;
 template <typename TextContainerType>
 class PLATFORM_EXPORT ShapeResultSpacing;
@@ -78,6 +79,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // even when the result is in vertical flow.
   const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
+  CharacterRange GetCharacterRange(unsigned from, unsigned to) const;
   // The character start/end index of a range shape result.
   unsigned StartIndexForResult() const;
   unsigned EndIndexForResult() const;

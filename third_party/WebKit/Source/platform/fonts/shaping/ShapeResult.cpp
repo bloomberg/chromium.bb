@@ -37,7 +37,9 @@
 #include <memory>
 #include <utility>
 
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/Font.h"
+#include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -224,6 +226,12 @@ size_t ShapeResult::ByteSize() const {
     self_byte_size += runs_[i]->ByteSize();
   }
   return self_byte_size;
+}
+
+CharacterRange ShapeResult::GetCharacterRange(unsigned from,
+                                              unsigned to) const {
+  return ShapeResultBuffer::GetCharacterRange(this, Direction(), Width(), from,
+                                              to);
 }
 
 unsigned ShapeResult::StartIndexForResult() const {
