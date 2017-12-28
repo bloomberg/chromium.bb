@@ -512,6 +512,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
 
   if (InstanceCounters::CounterValue(
           InstanceCounters::kRTCPeerConnectionCounter) >= kMaxPeerConnections) {
+    closed_ = true;
+    stopped_ = true;
     exception_state.ThrowDOMException(kUnknownError,
                                       "Cannot create so many PeerConnections");
     return;
