@@ -737,8 +737,11 @@ void av1_idct32_new(const int32_t *input, int32_t *output,
 void av1_iadst4_new(const int32_t *input, int32_t *output,
                     const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
-  int bd = stage_range[0];
+  const int32_t size = 4;
+  int32_t stage = 0;
   int64_t s0, s1, s2, s3, s4, s5, s6, s7;
+  // stage 0;
+  range_check(stage, input, input, size, stage_range[stage]);
 
   int32_t x0 = input[0];
   int32_t x1 = input[1];
@@ -757,7 +760,7 @@ void av1_iadst4_new(const int32_t *input, int32_t *output,
   s4 = sinpi_1_9 * x2;
   s5 = sinpi_2_9 * x3;
   s6 = sinpi_4_9 * x3;
-  s7 = HIGHBD_WRAPLOW(x0 - x2 + x3, bd);
+  s7 = x0 - x2 + x3;
 
   s0 = s0 + s3 + s5;
   s1 = s1 - s4 - s6;
@@ -768,10 +771,12 @@ void av1_iadst4_new(const int32_t *input, int32_t *output,
   // The overall dynamic range is 14b (input) + 14b (multiplication scaling)
   // + 1b (addition) = 29b.
   // Hence the output bit depth is 15b.
-  output[0] = HIGHBD_WRAPLOW(dct_const_round_shift(s0 + s3), bd);
-  output[1] = HIGHBD_WRAPLOW(dct_const_round_shift(s1 + s3), bd);
-  output[2] = HIGHBD_WRAPLOW(dct_const_round_shift(s2), bd);
-  output[3] = HIGHBD_WRAPLOW(dct_const_round_shift(s0 + s1 - s3), bd);
+  stage = 3;
+  output[0] = (int32_t)dct_const_round_shift(s0 + s3);
+  output[1] = (int32_t)dct_const_round_shift(s1 + s3);
+  output[2] = (int32_t)dct_const_round_shift(s2);
+  output[3] = (int32_t)dct_const_round_shift(s0 + s1 - s3);
+  range_check(stage, input, output, size, stage_range[stage]);
 }
 
 void av1_iadst8_new(const int32_t *input, int32_t *output,
