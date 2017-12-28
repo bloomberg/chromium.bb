@@ -87,6 +87,10 @@ void DevToolsWindowTesting::SetCloseCallback(const base::Closure& closure) {
   close_callback_ = closure;
 }
 
+void DevToolsWindowTesting::SetOpenNewWindowForPopups(bool value) {
+  devtools_window_->SetOpenNewWindowForPopups(value);
+}
+
 // static
 void DevToolsWindowTesting::WindowClosed(DevToolsWindow* window) {
   DevToolsWindowTesting* testing = DevToolsWindowTesting::Find(window);

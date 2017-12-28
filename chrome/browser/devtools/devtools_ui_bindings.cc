@@ -225,6 +225,8 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override {}
   void ReadyForTest() override {}
+  void ConnectionReady() override {}
+  void SetOpenNewWindowForPopups(bool value) override {}
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override {}
   void ShowCertificateViewer(const std::string& cert_chain) override{};
@@ -1066,6 +1068,14 @@ void DevToolsUIBindings::Reattach(const DispatchCallback& callback) {
 
 void DevToolsUIBindings::ReadyForTest() {
   delegate_->ReadyForTest();
+}
+
+void DevToolsUIBindings::ConnectionReady() {
+  delegate_->ConnectionReady();
+}
+
+void DevToolsUIBindings::SetOpenNewWindowForPopups(bool value) {
+  delegate_->SetOpenNewWindowForPopups(value);
 }
 
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(

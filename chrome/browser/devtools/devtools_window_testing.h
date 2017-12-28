@@ -45,6 +45,7 @@ class DevToolsWindowTesting {
   content::WebContents* toolbox_web_contents();
   void SetInspectedPageBounds(const gfx::Rect& bounds);
   void SetCloseCallback(const base::Closure& closure);
+  void SetOpenNewWindowForPopups(bool value);
 
  private:
   friend class DevToolsWindow;

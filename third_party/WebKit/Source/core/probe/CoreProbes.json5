@@ -146,7 +146,6 @@
         "RecalculateStyle",
         "UpdateLayout",
         "willRunJavaScriptDialog",
-        "windowCreated",
         "windowOpen",
       ]
     },

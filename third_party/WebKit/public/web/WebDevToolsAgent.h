@@ -52,7 +52,6 @@ class WebDevToolsAgent {
                                           const WebString& message) = 0;
 
   virtual void InspectElementAt(int session_id, const WebPoint&) = 0;
-  virtual void FailedToRequestDevTools(int session_id) = 0;
 
   class MessageDescriptor {
    public:

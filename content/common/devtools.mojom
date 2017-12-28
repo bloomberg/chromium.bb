@@ -92,8 +92,4 @@ interface DevToolsSession {
 interface DevToolsSessionHost {
   // Dispatches protocol message (in chunks) to a remote debugging client.
   DispatchProtocolMessage(DevToolsMessageChunk chunk);
-
-  // Requests a new DevTools window for a frame with given routing id.
-  // TODO(dgozman): get rid of routing id when possible.
-  RequestNewWindow(int32 frame_routing_id) => (bool success);
 };

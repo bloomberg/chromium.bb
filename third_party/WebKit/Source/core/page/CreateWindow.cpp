@@ -335,8 +335,6 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
   page->GetChromeClient().Show(policy);
 
-  // This call may suspend the execution by running nested run loop.
-  probe::windowCreated(&opener_frame, &frame);
   created = true;
   return &frame;
 }
