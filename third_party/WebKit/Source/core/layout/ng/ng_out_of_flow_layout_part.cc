@@ -19,17 +19,16 @@
 namespace blink {
 
 NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
-    NGFragmentBuilder* container_builder,
-    bool contains_absolute,
-    bool contains_fixed,
-    const NGBoxStrut& scrollbar_sizes,
+    const NGBlockNode container,
     const NGConstraintSpace& container_space,
-    const ComputedStyle& container_style)
+    const ComputedStyle& container_style,
+    NGFragmentBuilder* container_builder)
     : container_builder_(container_builder),
-      contains_absolute_(contains_absolute),
-      contains_fixed_(contains_fixed) {
+      contains_absolute_(container.IsAbsoluteContainer()),
+      contains_fixed_(container.IsFixedContainer()) {
   NGBoxStrut borders_and_scrollers =
-      ComputeBorders(container_space, container_style) + scrollbar_sizes;
+      ComputeBorders(container_space, container_style) +
+      container.GetScrollbarSizes();
   NGPhysicalBoxStrut physical_borders = borders_and_scrollers.ConvertToPhysical(
       container_style.GetWritingMode(), container_style.Direction());
 

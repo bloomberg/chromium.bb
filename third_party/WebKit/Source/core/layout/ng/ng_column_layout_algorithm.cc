@@ -125,9 +125,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
 
-  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), Node().GetScrollbarSizes(),
-                        ConstraintSpace(), Style())
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
       .Run();
 
   // TODO(mstensho): Propagate baselines.
