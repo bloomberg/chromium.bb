@@ -934,7 +934,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 }
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
-  return [self.tabHeadersDelegate headerHeightForTab:self];
+  return [self.tabHeadersDelegate tabHeaderHeightForTab:self];
 }
 
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
@@ -1052,7 +1052,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
     return [self.tabSnapshottingDelegate snapshotEdgeInsetsForTab:self];
 
   if (self.tabHeadersDelegate) {
-    CGFloat headerHeight = [self.tabHeadersDelegate headerHeightForTab:self];
+    CGFloat headerHeight = [self.tabHeadersDelegate tabHeaderHeightForTab:self];
     return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
   }
 

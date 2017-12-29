@@ -45,10 +45,9 @@ extern NSString* const kSideSwipeDidStopNotification;
 // Called when the horizontal stack view is done and should be removed.
 - (void)sideSwipeViewDismissAnimationDidEnd:(UIView*)sideSwipeView;
 // Returns the main content view.
-- (UIView*)contentView;
-// Makes |tab| the currently visible tab, displaying its view.  Calls
-// -selectedTabChanged on the toolbar only if |newSelection| is YES.
-- (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection;
+- (UIView*)sideSwipeContentView;
+// Makes |tab| the currently visible tab, displaying its view.
+- (void)sideSwipeRedisplayTab:(Tab*)tab;
 // Check the invariant of "toolbar in front of infobar container which
 // is in front of content area." This DCHECK happens if addSubview and/or
 // insertSubview messed up the view ordering earlier.
@@ -57,7 +56,7 @@ extern NSString* const kSideSwipeDidStopNotification;
 // search bar.
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible;
 // Returns the height of the header view for the tab model's current tab.
-- (CGFloat)headerHeight;
+- (CGFloat)headerHeightForSideSwipe;
 // Returns |YES| if side swipe should be blocked from initiating, such as when
 // voice search is up, or if the tools menu is enabled.
 - (BOOL)preventSideSwipe;

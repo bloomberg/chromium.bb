@@ -20,8 +20,8 @@
 
 // Asks the implementor to show an error alert with the given |title| and
 // |message|.
-- (void)showErrorAlertWithStringTitle:(NSString*)title
-                              message:(NSString*)message;
+- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
+                                             message:(NSString*)message;
 
 @end
 

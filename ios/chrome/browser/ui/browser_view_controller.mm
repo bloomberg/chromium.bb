@@ -409,10 +409,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     LegacyFullscreenControllerDelegate,
                                     InfobarContainerStateDelegate,
                                     KeyCommandsPlumbing,
-                                    NetExportTabHelperDelegate,
                                     MainContentUI,
                                     ManageAccountsDelegate,
                                     MFMailComposeViewControllerDelegate,
+                                    NetExportTabHelperDelegate,
                                     NewTabPageControllerObserver,
                                     OverscrollActionsControllerDelegate,
                                     PageInfoPresentation,
@@ -422,10 +422,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     QRScannerPresenting,
                                     RepostFormTabHelperDelegate,
                                     SideSwipeControllerDelegate,
+                                    SigninPresenter,
                                     SKStoreProductViewControllerDelegate,
                                     SnapshotOverlayProvider,
                                     StoreKitLauncher,
-                                    SigninPresenter,
                                     TabDialogDelegate,
                                     TabHeadersDelegate,
                                     TabHistoryPresentation,
@@ -434,7 +434,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     TabStripPresentation,
                                     ToolsMenuConfigurationProvider,
                                     UIGestureRecognizerDelegate,
-                                    UpgradeCenterClientProtocol,
+                                    UpgradeCenterClient,
                                     VoiceSearchBarDelegate,
                                     VoiceSearchBarOwner,
                                     WebStatePrinter> {
@@ -687,6 +687,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Vertical offset for fullscreen toolbar.
 @property(nonatomic, strong) NSLayoutConstraint* toolbarOffsetConstraint;
 
+// Y-dimension offset for placement of the header.
+@property(nonatomic, readonly) CGFloat headerOffset;
+
+// Height of the header view for the tab model's current tab.
+@property(nonatomic, readonly) CGFloat headerHeight;
+
 // BVC initialization:
 // If the BVC is initialized with a valid browser state & tab model immediately,
 // the path is straightforward: functionality is enabled, and the UI is built
@@ -867,42 +873,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Called with the results of saving a picture in the photo album. If error is
 // nil the save succeeded.
 - (void)finishSavingImageWithError:(NSError*)error;
-// Provides a view that encompasses currently displayed infobar(s) or nil
-// if no infobar is presented.
-- (UIView*)infoBarOverlayViewForTab:(Tab*)tab;
-// Returns a vertical infobar offset relative to the tab content.
-- (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab;
-// Provides a view that encompasses the voice search bar if it's displayed or
-// nil if the voice search bar isn't displayed.
-- (UIView*)voiceSearchOverlayViewForTab:(Tab*)tab;
-// Returns a vertical voice search bar offset relative to the tab content.
-- (CGFloat)voiceSearchOverlayYOffsetForTab:(Tab*)tab;
 // Lazily instantiates |_voiceSearchController|.
 - (void)ensureVoiceSearchControllerCreated;
 // Lazily instantiates |_voiceSearchBar| and adds it to the view.
 - (void)ensureVoiceSearchBarCreated;
 // Shows/hides the voice search bar.
 - (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated;
-// The LogoAnimationControllerOwner to be used for the next logo transition
-// animation.
-- (id<LogoAnimationControllerOwner>)currentLogoAnimationControllerOwner;
 // Returns the footer view if one exists (e.g. the voice search bar).
 - (UIView*)footerView;
-// Returns the height of the header view for the tab model's current tab.
-- (CGFloat)headerHeight;
 // Sets the frame for the headers.
 - (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
                    atOffset:(CGFloat)headerOffset;
-// Returns the y coordinate for the footer's frame when animating the footer
-// in/out of fullscreen.
-- (CGFloat)footerYForHeaderOffset:(CGFloat)headerOffset;
-// Called when the animation for setting the header view's offset is finished.
-// |completed| should indicate if the animation finished completely or was
-// interrupted. |offset| should indicate the header offset after the animation.
-// |dragged| should indicate if the header moved due to the user dragging.
-- (void)fullScreenController:(LegacyFullscreenController*)controller
-    headerAnimationCompleted:(BOOL)completed
-                      offset:(CGFloat)offset;
 // Performs a search with the image at the given url. The referrer is used to
 // download the image.
 - (void)searchByImageAtURL:(const GURL&)url
@@ -914,7 +895,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Record the last tap point based on the |originPoint| (if any) passed in
 // |command|.
 - (void)setLastTapPoint:(OpenNewTabCommand*)command;
-// Get return the last stored |_lastTapPoint| if it's been set within the past
+// Returns the last stored |_lastTapPoint| if it's been set within the past
 // second.
 - (CGPoint)lastTapPoint;
 // Store the tap CGPoint in |_lastTapPoint| and the current timestamp.
@@ -1227,7 +1208,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (BOOL)isToolbarOnScreen {
-  return [self headerHeight] - [self currentHeaderOffset] > 0;
+  return self.headerHeight - [self currentHeaderOffset] > 0;
 }
 
 - (void)setInNewTabAnimation:(BOOL)inNewTabAnimation {
@@ -1258,6 +1239,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
   _hideStatusBar = hideStatusBar;
   [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (CGFloat)headerOffset {
+  if (IsIPadIdiom())
+    return StatusBarHeight();
+  return 0.0;
+}
+
+- (CGFloat)headerHeight {
+  return [self headerHeightForTab:[_model currentTab]];
 }
 
 #pragma mark - Public methods
@@ -1785,6 +1776,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  return (IsIPadIdiom() || _isOffTheRecord) ? UIStatusBarStyleLightContent
+                                            : UIStatusBarStyleDefault;
+}
+
 #pragma mark - Notification handling
 
 - (void)registerForNotifications {
@@ -2268,7 +2264,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)setUpViewLayout:(BOOL)initialLayout {
   DCHECK([self isViewLoaded]);
   CGFloat widthOfView = CGRectGetWidth([self view].bounds);
-  CGFloat minY = [self headerOffset];
+  CGFloat minY = self.headerOffset;
 
   // Update the fake toolbar background height.
   CGRect fakeStatusBarFrame = _fakeStatusBarView.frame;
@@ -2603,6 +2599,96 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return CGPointEqualToPoint(scrollOffset, CGPointZero);
 }
 
+- (NSArray<HeaderDefinition*>*)headerViews {
+  NSMutableArray<HeaderDefinition*>* results = [[NSMutableArray alloc] init];
+  if (![self isViewLoaded])
+    return results;
+
+  if (!IsIPadIdiom()) {
+    if (_toolbarCoordinator.toolbarViewController.view) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:_toolbarCoordinator
+                                                    .toolbarViewController.view
+                                headerBehaviour:Hideable
+                               heightAdjustment:0.0
+                                          inset:0.0]];
+    }
+  } else {
+    if (self.tabStripView) {
+      [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
+                                              headerBehaviour:Hideable
+                                             heightAdjustment:0.0
+                                                        inset:0.0]];
+    }
+    if (_toolbarCoordinator.toolbarViewController.view) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:_toolbarCoordinator
+                                                    .toolbarViewController.view
+                                headerBehaviour:Hideable
+                               heightAdjustment:0.0
+                                          inset:0.0]];
+    }
+    if ([_findBarController view]) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_findBarController view]
+                                headerBehaviour:Overlap
+                               heightAdjustment:0.0
+                                          inset:kIPadFindBarOverlap]];
+    }
+  }
+  return [results copy];
+}
+
+- (UIView*)footerView {
+  return _voiceSearchBar;
+}
+
+- (CGFloat)headerHeightForTab:(Tab*)tab {
+  id nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
+      [nativeController respondsToSelector:@selector(toolbarHeight)] &&
+      [nativeController toolbarHeight] > 0.0 && !IsIPadIdiom()) {
+    // On iPhone, don't add any header height for ToolbarOwner native
+    // controllers when they're displaying their own toolbar.
+    return 0;
+  }
+
+  NSArray<HeaderDefinition*>* views = [self headerViews];
+
+  CGFloat height = self.headerOffset;
+  for (HeaderDefinition* header in views) {
+    if (header.view && header.behaviour == Hideable) {
+      height += CGRectGetHeight([header.view frame]) -
+                header.heightAdjustement - header.inset;
+    }
+  }
+
+  return height - StatusBarHeight();
+}
+
+- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
+                   atOffset:(CGFloat)headerOffset {
+  CGFloat height = self.headerOffset;
+  for (HeaderDefinition* header in headers) {
+    CGFloat yOrigin = height - headerOffset - header.inset;
+    // Make sure the toolbarView's constraints are also updated.  Leaving the
+    // -setFrame call to minimize changes in this CL -- otherwise the way
+    // toolbar_view manages it's alpha changes would also need to be updated.
+    // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
+    // is enabled.
+    if (IsSafeAreaCompatibleToolbarEnabled() &&
+        header.view == _toolbarCoordinator.toolbarViewController.view &&
+        !IsIPadIdiom()) {
+      self.toolbarOffsetConstraint.constant = yOrigin;
+    }
+    CGRect frame = [header.view frame];
+    frame.origin.y = yOrigin;
+    [header.view setFrame:frame];
+    if (header.behaviour != Overlap)
+      height += CGRectGetHeight(frame);
+  }
+}
+
 #pragma mark - Tap handling
 
 - (void)setLastTapPoint:(OpenNewTabCommand*)command {
@@ -2708,8 +2794,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (UIImageView*)pageOpenCloseAnimationView {
   CGRect frame = [_contentArea bounds];
 
-  frame.size.height = frame.size.height - [self headerHeight];
-  frame.origin.y = [self headerHeight];
+  frame.size.height = frame.size.height - self.headerHeight;
+  frame.origin.y = self.headerHeight;
 
   UIImageView* pageView = [[UIImageView alloc] initWithFrame:frame];
   CGPoint center = CGPointMake(CGRectGetMidX(frame), CGRectGetMidY(frame));
@@ -2880,8 +2966,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return overlays;
 }
 
-#pragma mark - Infobar overlay
+#pragma mark - SnapshotOverlayProvider helpers
 
+// Provides a view that encompasses currently displayed infobar(s) or nil
+// if no infobar is presented.
 - (UIView*)infoBarOverlayViewForTab:(Tab*)tab {
   if (IsIPadIdiom()) {
     // Not using overlays on iPad because the content is pushed down by
@@ -2902,6 +2990,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return nil;
 }
 
+// Returns a vertical infobar offset relative to the tab content.
 - (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
   if (tab != [_model currentTab] || !_infoBarContainer) {
     // There is no UI representation for non-current tabs or there is
@@ -2919,8 +3008,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-#pragma mark - Voice search overlay
-
+// Provides a view that encompasses the voice search bar if it's displayed or
+// nil if the voice search bar isn't displayed.
 - (UIView*)voiceSearchOverlayViewForTab:(Tab*)tab {
   Tab* currentTab = [_model currentTab];
   if (tab && tab == currentTab && tab.isVoiceSearchResultsTab &&
@@ -2930,6 +3019,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return nil;
 }
 
+// Returns a vertical voice search bar offset relative to the tab content.
 - (CGFloat)voiceSearchOverlayYOffsetForTab:(Tab*)tab {
   if (tab != [_model currentTab] || [_voiceSearchBar isHidden]) {
     // There is no UI representation for non-current tabs or there is
@@ -2941,6 +3031,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     return CGRectGetMaxY(visibleFrame) - kVoiceSearchBarHeight;
   }
 }
+
+#pragma mark - Voice Search
 
 - (void)ensureVoiceSearchControllerCreated {
   if (!_voiceSearchController) {
@@ -2989,27 +3081,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     _voiceSearchBar.hidden = !show;
 }
 
-- (id<LogoAnimationControllerOwner>)currentLogoAnimationControllerOwner {
-  Protocol* ownerProtocol = @protocol(LogoAnimationControllerOwner);
-  if ([_voiceSearchBar conformsToProtocol:ownerProtocol] &&
-      self.shouldShowVoiceSearchBar) {
-    // Use |_voiceSearchBar| for VoiceSearch results tab and dismissal
-    // animations.
-    return static_cast<id<LogoAnimationControllerOwner>>(_voiceSearchBar);
-  }
-  id currentNativeController =
-      [self nativeControllerForTab:self.tabModel.currentTab];
-  Protocol* possibleOwnerProtocol =
-      @protocol(LogoAnimationControllerOwnerOwner);
-  if ([currentNativeController conformsToProtocol:possibleOwnerProtocol] &&
-      [currentNativeController logoAnimationControllerOwner]) {
-    // If the current native controller is showing a GLIF view (e.g. the NTP
-    // when there is no doodle), use that GLIFControllerOwner.
-    return [currentNativeController logoAnimationControllerOwner];
-  }
-  return nil;
-}
-
 #pragma mark - PassKitDialogProvider methods
 
 - (void)presentPassKitDialog:(NSData*)data {
@@ -3037,11 +3108,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                        }];
     }
   }
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-  return (IsIPadIdiom() || _isOffTheRecord) ? UIStatusBarStyleLightContent
-                                            : UIStatusBarStyleDefault;
 }
 
 #pragma mark - PasswordControllerDelegate methods
@@ -3332,87 +3398,16 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - LegacyFullscreenControllerDelegate methods
 
+// TODO(crbug.com/798064): Remove these methods and their helpers once the
+// fullscreen migration is complete.
 - (void)redrawHeader {
   for (HeaderDefinition* header in self.headerViews) {
     [header.view setNeedsLayout];
   }
 }
 
-- (CGFloat)headerOffset {
-  if (IsIPadIdiom())
-    return StatusBarHeight();
-  return 0.0;
-}
-
-- (NSArray<HeaderDefinition*>*)headerViews {
-  NSMutableArray<HeaderDefinition*>* results = [[NSMutableArray alloc] init];
-  if (![self isViewLoaded])
-    return results;
-
-  if (!IsIPadIdiom()) {
-    if (_toolbarCoordinator.toolbarViewController.view) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:_toolbarCoordinator
-                                                    .toolbarViewController.view
-                                headerBehaviour:Hideable
-                               heightAdjustment:0.0
-                                          inset:0.0]];
-    }
-  } else {
-    if (self.tabStripView) {
-      [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
-                                              headerBehaviour:Hideable
-                                             heightAdjustment:0.0
-                                                        inset:0.0]];
-    }
-    if (_toolbarCoordinator.toolbarViewController.view) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:_toolbarCoordinator
-                                                    .toolbarViewController.view
-                                headerBehaviour:Hideable
-                               heightAdjustment:0.0
-                                          inset:0.0]];
-    }
-    if ([_findBarController view]) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:[_findBarController view]
-                                headerBehaviour:Overlap
-                               heightAdjustment:0.0
-                                          inset:kIPadFindBarOverlap]];
-    }
-  }
-  return [results copy];
-}
-
-- (UIView*)footerView {
-  return _voiceSearchBar;
-}
-
-- (CGFloat)headerHeight {
-  return [self headerHeightForTab:[_model currentTab]];
-}
-
-- (CGFloat)headerHeightForTab:(Tab*)tab {
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
-      [nativeController respondsToSelector:@selector(toolbarHeight)] &&
-      [nativeController toolbarHeight] > 0.0 && !IsIPadIdiom()) {
-    // On iPhone, don't add any header height for ToolbarOwner native
-    // controllers when they're displaying their own toolbar.
-    return 0;
-  }
-
-  NSArray<HeaderDefinition*>* views = [self headerViews];
-
-  CGFloat height = [self headerOffset];
-  for (HeaderDefinition* header in views) {
-    if (header.view && header.behaviour == Hideable) {
-      height += CGRectGetHeight([header.view frame]) -
-                header.heightAdjustement - header.inset;
-    }
-  }
-
-  return height - StatusBarHeight();
+- (CGFloat)headerHeightForLegacyFullscreen {
+  return self.headerHeight;
 }
 
 - (BOOL)isTabWithIDCurrent:(NSString*)sessionID {
@@ -3427,51 +3422,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // Prerender tab does not have a toolbar, return |headerHeight| as promised by
   // API documentation.
   if (_insertedTabWasPrerenderedTab)
-    return [self headerHeight];
+    return self.headerHeight;
 
   UIView* topHeader = headers[0].view;
-  return -(topHeader.frame.origin.y - [self headerOffset]);
-}
-
-- (CGFloat)footerYForHeaderOffset:(CGFloat)headerOffset {
-  UIView* footer = [self footerView];
-  CGFloat headerHeight = [self headerHeight];
-  if (!footer || headerHeight == 0)
-    return 0.0;
-
-  CGFloat footerHeight = CGRectGetHeight(footer.frame);
-  CGFloat offset = headerOffset * footerHeight / headerHeight;
-  return std::ceil(CGRectGetHeight(self.view.bounds) - footerHeight + offset);
-}
-
-- (void)fullScreenController:(LegacyFullscreenController*)controller
-    headerAnimationCompleted:(BOOL)completed
-                      offset:(CGFloat)offset {
-  if (completed)
-    [controller setToolbarInsetsForHeaderOffset:offset];
-}
-
-- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
-                   atOffset:(CGFloat)headerOffset {
-  CGFloat height = [self headerOffset];
-  for (HeaderDefinition* header in headers) {
-    CGFloat yOrigin = height - headerOffset - header.inset;
-    // Make sure the toolbarView's constraints are also updated.  Leaving the
-    // -setFrame call to minimize changes in this CL -- otherwise the way
-    // toolbar_view manages it's alpha changes would also need to be updated.
-    // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
-    // is enabled.
-    if (IsSafeAreaCompatibleToolbarEnabled() &&
-        header.view == _toolbarCoordinator.toolbarViewController.view &&
-        !IsIPadIdiom()) {
-      self.toolbarOffsetConstraint.constant = yOrigin;
-    }
-    CGRect frame = [header.view frame];
-    frame.origin.y = yOrigin;
-    [header.view setFrame:frame];
-    if (header.behaviour != Overlap)
-      height += CGRectGetHeight(frame);
-  }
+  return -(topHeader.frame.origin.y - self.headerOffset);
 }
 
 - (void)fullScreenController:(LegacyFullscreenController*)fullScreenController
@@ -3553,10 +3507,30 @@ bubblePresenterForFeature:(const base::Feature&)feature
                completion:completion];
 }
 
-#pragma mark - VoiceSearchBarOwner
+#pragma mark - LegacyFullscreenControllerDelegate helpers
 
-- (id<VoiceSearchBar>)voiceSearchBar {
-  return _voiceSearchBar;
+// Returns the y coordinate for the footer's frame when animating the footer
+// in/out of fullscreen.
+- (CGFloat)footerYForHeaderOffset:(CGFloat)headerOffset {
+  UIView* footer = [self footerView];
+  CGFloat headerHeight = [self headerHeight];
+  if (!footer || headerHeight == 0)
+    return 0.0;
+
+  CGFloat footerHeight = CGRectGetHeight(footer.frame);
+  CGFloat offset = headerOffset * footerHeight / headerHeight;
+  return std::ceil(CGRectGetHeight(self.view.bounds) - footerHeight + offset);
+}
+
+// Called when the animation for setting the header view's offset is finished.
+// |completed| should indicate if the animation finished completely or was
+// interrupted. |offset| should indicate the header offset after the animation.
+// |dragged| should indicate if the header moved due to the user dragging.
+- (void)fullScreenController:(LegacyFullscreenController*)controller
+    headerAnimationCompleted:(BOOL)completed
+                      offset:(CGFloat)offset {
+  if (completed)
+    [controller setToolbarInsetsForHeaderOffset:offset];
 }
 
 #pragma mark - Install OverScrollActionController method.
@@ -3614,13 +3588,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (CGFloat)overscrollActionsControllerHeaderInset:
     (OverscrollActionsController*)controller {
   if (controller == [[[self tabModel] currentTab] overscrollActionsController])
-    return [self headerHeight];
+    return self.headerHeight;
   else
     return 0;
 }
 
 - (CGFloat)overscrollHeaderHeight {
-  return [self headerHeight] + StatusBarHeight();
+  return self.headerHeight + StatusBarHeight();
 }
 
 #pragma mark - TabSnapshottingDelegate methods.
@@ -3633,7 +3607,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return UIEdgeInsetsMake(headerHeight, 0.0, 0.0, 0.0);
 }
 
-#pragma mark - NewTabPageObserver methods.
+#pragma mark - NewTabPageControllerObserver methods.
 
 - (void)selectedPanelDidChange {
   [self updateToolbar];
@@ -3641,6 +3615,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 #pragma mark - CRWNativeContentProvider methods
 
+// TODO(crbug.com/725241): This method is deprecated and should be removed by
+// switching to DidFinishnavigation.
 - (id<CRWNativeContent>)controllerForURL:(const GURL&)url
                                withError:(NSError*)error
                                   isPost:(BOOL)isPost {
@@ -4542,7 +4518,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   CGRect frame = [_contentArea frame];
   if (!fullScreen) {
     // Changing the origin here is unnecessary, it's set in page_animation_util.
-    frame.size.height -= [self headerHeight];
+    frame.size.height -= self.headerHeight;
   }
 
   CGFloat shortAxis = frame.size.width;
@@ -4562,7 +4538,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return card;
 }
 
-#pragma mark - Tools Menu Configuration delegate
+#pragma mark - ToolsMenuConfigurationProvider
 
 - (void)prepareForToolsMenuPresentationByCoordinator:
     (ToolsMenuCoordinator*)coordinator {
@@ -5063,7 +5039,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 #pragma mark - ToolbarOwner
 
 - (CGFloat)toolbarHeight {
-  return [self headerHeight];
+  return self.headerHeight;
 }
 
 - (CGRect)toolbarFrame {
@@ -5200,7 +5176,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_toolbarCoordinator setTabCount:[_model count]];
 }
 
-#pragma mark - Upgrade Detection
+#pragma mark - UpgradeCenterClient
 
 - (void)showUpgrade:(UpgradeCenter*)center {
   // Add an infobar on all the open tabs.
@@ -5256,7 +5232,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return (![hitView isDescendantOfView:_contentArea]) ? NO : YES;
 }
 
-#pragma mark - SideSwipeController Delegate Methods
+#pragma mark - SideSwipeControllerDelegate
 
 - (void)sideSwipeViewDismissAnimationDidEnd:(UIView*)sideSwipeView {
   DCHECK(!IsIPadIdiom());
@@ -5274,8 +5250,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_infoBarContainer->view() setHidden:NO];
 }
 
-- (UIView*)contentView {
+- (UIView*)sideSwipeContentView {
   return _contentArea;
+}
+
+- (void)sideSwipeRedisplayTab:(Tab*)tab {
+  [self displayTab:tab isNewSelection:YES];
 }
 
 - (BOOL)preventSideSwipe {
@@ -5303,6 +5283,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
     [_infoBarContainer->view() setHidden:YES];
     [_voiceSearchBar setHidden:YES];
   }
+}
+
+- (CGFloat)headerHeightForSideSwipe {
+  return self.headerHeight;
 }
 
 - (BOOL)verifyToolbarViewPlacementInView:(UIView*)views {
@@ -5390,7 +5374,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self.dispatcher showSnackbarMessage:message];
 }
 
-#pragma mark - Show Mail Composer methods
+#pragma mark - NetExportTabHelperDelegate
 
 - (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
     showMailComposerWithContext:(ShowMailComposerContext*)context {
@@ -5434,12 +5418,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - StoreKitLauncher methods
+#pragma mark - SKStoreProductViewControllerDelegate
 
 - (void)productViewControllerDidFinish:
     (SKStoreProductViewController*)viewController {
   [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+#pragma mark - StoreKitLauncher methods
 
 - (void)openAppStore:(NSString*)appId {
   if (![appId length])
@@ -5459,7 +5445,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self.dialogPresenter cancelDialogForWebState:tab.webState];
 }
 
-#pragma mark - FKFeedbackPromptDelegate methods
+#pragma mark - AppRatingPromptDelegate
 
 - (void)userTappedRateApp:(UIView*)view {
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppRateChosen"));
@@ -5475,6 +5461,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)userTappedDismiss:(UIView*)view {
   base::RecordAction(base::UserMetricsAction("IOSRateThisAppDismissChosen"));
   _rateThisAppDialog = nil;
+}
+
+#pragma mark - VoiceSearchBarOwner
+
+- (id<VoiceSearchBar>)voiceSearchBar {
+  return _voiceSearchBar;
 }
 
 #pragma mark - VoiceSearchBarDelegate
@@ -5502,7 +5494,32 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [self currentLogoAnimationControllerOwner];
 }
 
-#pragma mark - ActivityService Providers
+#pragma mark - VoiceSearchPresenter helpers
+
+// The LogoAnimationControllerOwner to be used for the next logo transition
+// animation.
+- (id<LogoAnimationControllerOwner>)currentLogoAnimationControllerOwner {
+  Protocol* ownerProtocol = @protocol(LogoAnimationControllerOwner);
+  if ([_voiceSearchBar conformsToProtocol:ownerProtocol] &&
+      self.shouldShowVoiceSearchBar) {
+    // Use |_voiceSearchBar| for VoiceSearch results tab and dismissal
+    // animations.
+    return static_cast<id<LogoAnimationControllerOwner>>(_voiceSearchBar);
+  }
+  id currentNativeController =
+      [self nativeControllerForTab:self.tabModel.currentTab];
+  Protocol* possibleOwnerProtocol =
+      @protocol(LogoAnimationControllerOwnerOwner);
+  if ([currentNativeController conformsToProtocol:possibleOwnerProtocol] &&
+      [currentNativeController logoAnimationControllerOwner]) {
+    // If the current native controller is showing a GLIF view (e.g. the NTP
+    // when there is no doodle), use that GLIFControllerOwner.
+    return [currentNativeController logoAnimationControllerOwner];
+  }
+  return nil;
+}
+
+#pragma mark - ActivityServicePresentation
 
 - (void)presentActivityServiceViewController:(UIViewController*)controller {
   [self presentViewController:controller animated:YES completion:nil];
@@ -5513,7 +5530,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self.dialogPresenter tryToPresent];
 }
 
-#pragma mark - QRScanner Requirements
+- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
+                                             message:(NSString*)message {
+  [self showErrorAlertWithStringTitle:title message:message];
+}
+
+#pragma mark - QRScannerPresenting
 
 - (void)presentQRScannerViewController:(UIViewController*)controller {
   [self presentViewController:controller animated:YES completion:nil];
@@ -5525,7 +5547,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self dismissViewControllerAnimated:YES completion:completion];
 }
 
-#pragma mark - TabHistoryPresenter
+#pragma mark - TabHeadersDelegate
+
+- (CGFloat)tabHeaderHeightForTab:(Tab*)tab {
+  return [self headerHeightForTab:tab];
+}
+
+#pragma mark - TabHistoryPresentation
 
 - (UIView*)viewForTabHistoryPresentation {
   return self.view;
@@ -5565,7 +5593,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)printWebState:(web::WebState*)webState {
   if (webState == [_model currentTab].webState)
-    [self printTab];
+    [self.dispatcher printTab];
 }
 
 #pragma mark - RepostFormTabHelperDelegate
@@ -5602,7 +5630,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // TODO(crbug.com/256655): Move the origin.y below to -setUpViewLayout.
   // because the CGPointZero above will break reset the offset, but it's not
   // clear what removing that will do.
-  tabStripFrame.origin.y = [self headerOffset];
+  tabStripFrame.origin.y = self.headerOffset;
   tabStripFrame.size.width = CGRectGetWidth([self view].bounds);
   [self.tabStripView setFrame:tabStripFrame];
   [[self view] addSubview:tabStripView];

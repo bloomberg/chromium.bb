@@ -47,7 +47,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // Called to retrieve the current height of the header. Only called from
 // -setHeaderVisible:, so that method needs to be explicitly called when the
 // height changes.
-- (CGFloat)headerHeight;
+- (CGFloat)headerHeightForLegacyFullscreen;
 
 // Tests if the session ID matches the current tab.
 - (BOOL)isTabWithIDCurrent:(NSString*)sessionID;
