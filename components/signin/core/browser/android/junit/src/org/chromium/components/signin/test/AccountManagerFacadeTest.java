@@ -13,17 +13,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.testing.local.CustomShadowAsyncTask;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Test class for {@link AccountManagerFacade}.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
 public class AccountManagerFacadeTest {
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();
@@ -89,7 +92,8 @@ public class AccountManagerFacadeTest {
     private Account addTestAccount(String accountName) {
         Account account = AccountManagerFacade.createAccountFromName(accountName);
         AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
-        mDelegate.addAccountHolderBlocking(holder);
+        mDelegate.addAccountHolderExplicitly(holder);
+        Assert.assertFalse(AccountManagerFacade.get().isUpdatePending());
         return account;
     }
 }

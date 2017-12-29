@@ -2389,6 +2389,9 @@
         "test": "components_policy_junit_tests"
       },
       {
+        "test": "components_signin_junit_tests"
+      },
+      {
         "test": "components_variations_junit_tests"
       },
       {
@@ -4064,6 +4067,9 @@
       },
       {
         "test": "components_policy_junit_tests"
+      },
+      {
+        "test": "components_signin_junit_tests"
       },
       {
         "test": "components_variations_junit_tests"
