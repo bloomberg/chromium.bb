@@ -656,7 +656,8 @@ using translate::LanguageDetectionController;
 }
 
 // Tests that the Translate infobar is displayed after translation.
-- (void)testTranslateInfobar {
+// TODO(crbug.com/798063): test is flaky.
+- (void)FLAKY_testTranslateInfobar {
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioTranslateInfobar");
   std::map<GURL, std::string> responses;
