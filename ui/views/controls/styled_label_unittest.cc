@@ -562,7 +562,8 @@ TEST_P(MDStyledLabelTest, StyledRangeWithTooltip) {
 
 // https://crbug.com/793184
 #if defined(OS_MACOSX)
-#define MAYBE_SetTextContextAndDefaultStyle DISABLED_SetTextContextAndDefaultStyle
+#define MAYBE_SetTextContextAndDefaultStyle \
+  DISABLED_SetTextContextAndDefaultStyle
 #else
 #define MAYBE_SetTextContextAndDefaultStyle SetTextContextAndDefaultStyle
 #endif
