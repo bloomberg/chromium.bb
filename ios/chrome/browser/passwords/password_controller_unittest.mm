@@ -711,10 +711,6 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "<input id=\"un6'\" type='text' name=\"u6'\">"
      "<input id=\"pw6'\" type='password' name=\"p6'\">"
      "</form>"
-     "<form>"
-     "<input id='un8' type='text'>"
-     "<input id='pw8' type='password'>"
-     "</form>"
      "<iframe name='pf'></iframe>"
      "<script>"
      "  var doc = frames['pf'].document.open();"
@@ -727,7 +723,14 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "  doc.write('<input id=\\'pw8\\' type=\\'text\\' name=\\'p4\\'>');"
      "  doc.write('</form>');"
      "  doc.close();"
-     "</script>";
+     "</script>"
+     "<form>"
+     "<input id='un9' type='text'>"
+     "<input id='pw9' type='password'>"
+     "</form>"
+     "<form id='form10'></form>"
+     "<input id='un10' type='text' form='form10'>"
+     "<input id='pw10' type='password' form='form10'>";
 
 // A script that resets all text fields, including those in iframes.
 static NSString* kClearInputFieldsScript =
@@ -878,12 +881,22 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "un8",
+      "un9",
       "test_user",
-      "pw8",
+      "pw9",
       "test_password",
       YES,
-      @"un8=test_user;pw8=test_password;"
+      @"un9=test_user;pw9=test_password;"
+    },
+    {
+      base_url,
+      base_url,
+      "un10",
+      "test_user",
+      "pw10",
+      "test_password",
+      YES,
+      @"un10=test_user;pw10=test_password;"
     },
   };
   // clang-format on
