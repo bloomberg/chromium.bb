@@ -60,8 +60,8 @@ ScopedStyleResolver* ScopedStyleResolver::Parent() const {
 void ScopedStyleResolver::AddKeyframeRules(const RuleSet& rule_set) {
   const HeapVector<Member<StyleRuleKeyframes>> keyframes_rules =
       rule_set.KeyframesRules();
-  for (unsigned i = 0; i < keyframes_rules.size(); ++i)
-    AddKeyframeStyle(keyframes_rules[i]);
+  for (auto rule : keyframes_rules)
+    AddKeyframeStyle(rule);
 }
 
 void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
@@ -113,9 +113,9 @@ void ScopedStyleResolver::CollectFeaturesTo(
   features.DeviceDependentMediaQueryResults().AppendVector(
       device_dependent_media_query_results_);
 
-  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
-    DCHECK(author_style_sheets_[i]->ownerNode());
-    StyleSheetContents* contents = author_style_sheets_[i]->Contents();
+  for (auto sheet : author_style_sheets_) {
+    DCHECK(sheet->ownerNode());
+    StyleSheetContents* contents = sheet->Contents();
     if (contents->HasOneClient() ||
         visited_shared_style_sheet_contents.insert(contents).is_new_entry)
       features.Add(contents->GetRuleSet().Features());
@@ -216,11 +216,11 @@ void ScopedStyleResolver::KeyframesRulesAdded(const TreeScope& tree_scope) {
 void ScopedStyleResolver::CollectMatchingAuthorRules(
     ElementRuleCollector& collector,
     CascadeOrder cascade_order) {
-  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
-    DCHECK(author_style_sheets_[i]->ownerNode());
-    MatchRequest match_request(
-        &author_style_sheets_[i]->Contents()->GetRuleSet(), &scope_->RootNode(),
-        author_style_sheets_[i], i);
+  size_t sheet_index = 0;
+  for (auto sheet : author_style_sheets_) {
+    DCHECK(sheet->ownerNode());
+    MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
+                               &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingRules(match_request, cascade_order);
   }
 }
@@ -228,11 +228,11 @@ void ScopedStyleResolver::CollectMatchingAuthorRules(
 void ScopedStyleResolver::CollectMatchingShadowHostRules(
     ElementRuleCollector& collector,
     CascadeOrder cascade_order) {
-  for (size_t i = 0; i < author_style_sheets_.size(); ++i) {
-    DCHECK(author_style_sheets_[i]->ownerNode());
-    MatchRequest match_request(
-        &author_style_sheets_[i]->Contents()->GetRuleSet(), &scope_->RootNode(),
-        author_style_sheets_[i], i);
+  size_t sheet_index = 0;
+  for (auto sheet : author_style_sheets_) {
+    DCHECK(sheet->ownerNode());
+    MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
+                               &scope_->RootNode(), sheet, sheet_index++);
     collector.CollectMatchingShadowHostRules(match_request, cascade_order);
   }
 }
@@ -267,9 +267,8 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
   // Only consider the global author RuleSet for @page rules, as per the HTML5
   // spec.
   DCHECK(scope_->RootNode().IsDocumentNode());
-  for (size_t i = 0; i < author_style_sheets_.size(); ++i)
-    collector.MatchPageRules(
-        &author_style_sheets_[i]->Contents()->GetRuleSet());
+  for (auto sheet : author_style_sheets_)
+    collector.MatchPageRules(&sheet->Contents()->GetRuleSet());
 }
 
 void ScopedStyleResolver::Trace(blink::Visitor* visitor) {
@@ -282,10 +281,8 @@ void ScopedStyleResolver::Trace(blink::Visitor* visitor) {
 
 static void AddRules(RuleSet* rule_set,
                      const HeapVector<MinimalRuleData>& rules) {
-  for (unsigned i = 0; i < rules.size(); ++i) {
-    const MinimalRuleData& info = rules[i];
+  for (const auto& info : rules)
     rule_set->AddRule(info.rule_, info.selector_index_, info.flags_);
-  }
 }
 
 void ScopedStyleResolver::AddTreeBoundaryCrossingRules(
