@@ -37,25 +37,11 @@ namespace net {
 struct LoadTimingInfo;
 }
 
-namespace content {
-struct ResourceDevToolsInfo;
-}
-
 namespace IPC {
 
 template <>
 struct CONTENT_EXPORT ParamTraits<storage::DataElement> {
   typedef storage::DataElement param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> > {
-  typedef scoped_refptr<content::ResourceDevToolsInfo> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -137,7 +123,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(appcache_id)
   IPC_STRUCT_TRAITS_MEMBER(appcache_manifest_url)
   IPC_STRUCT_TRAITS_MEMBER(load_timing)
-  IPC_STRUCT_TRAITS_MEMBER(devtools_info)
+  IPC_STRUCT_TRAITS_MEMBER(raw_request_response_info)
   IPC_STRUCT_TRAITS_MEMBER(download_file_path)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_spdy)
   IPC_STRUCT_TRAITS_MEMBER(was_alpn_negotiated)

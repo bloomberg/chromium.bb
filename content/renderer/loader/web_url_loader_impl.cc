@@ -93,7 +93,7 @@ namespace content {
 
 namespace {
 
-using HeadersVector = ResourceDevToolsInfo::HeadersVector;
+using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
 
 class KeepAliveHandleWithChildProcessReference {
  public:
@@ -1183,25 +1183,27 @@ void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
     response->SetLoadTiming(timing);
   }
 
-  if (info.devtools_info.get()) {
+  if (info.raw_request_response_info.get()) {
     WebHTTPLoadInfo load_info;
 
-    load_info.SetHTTPStatusCode(info.devtools_info->http_status_code);
-    load_info.SetHTTPStatusText(
-        WebString::FromLatin1(info.devtools_info->http_status_text));
+    load_info.SetHTTPStatusCode(
+        info.raw_request_response_info->http_status_code);
+    load_info.SetHTTPStatusText(WebString::FromLatin1(
+        info.raw_request_response_info->http_status_text));
 
-    load_info.SetRequestHeadersText(
-        WebString::FromLatin1(info.devtools_info->request_headers_text));
-    load_info.SetResponseHeadersText(
-        WebString::FromLatin1(info.devtools_info->response_headers_text));
-    const HeadersVector& request_headers = info.devtools_info->request_headers;
+    load_info.SetRequestHeadersText(WebString::FromLatin1(
+        info.raw_request_response_info->request_headers_text));
+    load_info.SetResponseHeadersText(WebString::FromLatin1(
+        info.raw_request_response_info->response_headers_text));
+    const HeadersVector& request_headers =
+        info.raw_request_response_info->request_headers;
     for (HeadersVector::const_iterator it = request_headers.begin();
          it != request_headers.end(); ++it) {
       load_info.AddRequestHeader(WebString::FromLatin1(it->first),
                                  WebString::FromLatin1(it->second));
     }
     const HeadersVector& response_headers =
-        info.devtools_info->response_headers;
+        info.raw_request_response_info->response_headers;
     for (HeadersVector::const_iterator it = response_headers.begin();
          it != response_headers.end(); ++it) {
       load_info.AddResponseHeader(WebString::FromLatin1(it->first),

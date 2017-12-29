@@ -188,50 +188,6 @@ void ParamTraits<storage::DataElement>::Log(const param_type& p,
   l->append("<storage::DataElement>");
 }
 
-void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p.get() != nullptr);
-  if (p.get()) {
-    WriteParam(m, p->http_status_code);
-    WriteParam(m, p->http_status_text);
-    WriteParam(m, p->request_headers);
-    WriteParam(m, p->response_headers);
-    WriteParam(m, p->request_headers_text);
-    WriteParam(m, p->response_headers_text);
-  }
-}
-
-bool ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  bool has_object;
-  if (!ReadParam(m, iter, &has_object))
-    return false;
-  if (!has_object)
-    return true;
-  *r = new content::ResourceDevToolsInfo();
-  return
-      ReadParam(m, iter, &(*r)->http_status_code) &&
-      ReadParam(m, iter, &(*r)->http_status_text) &&
-      ReadParam(m, iter, &(*r)->request_headers) &&
-      ReadParam(m, iter, &(*r)->response_headers) &&
-      ReadParam(m, iter, &(*r)->request_headers_text) &&
-      ReadParam(m, iter, &(*r)->response_headers_text);
-}
-
-void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Log(
-    const param_type& p, std::string* l) {
-  l->append("(");
-  if (p.get()) {
-    LogParam(p->request_headers, l);
-    l->append(", ");
-    LogParam(p->response_headers, l);
-  }
-  l->append(")");
-}
-
 void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
                                              const param_type& p) {
   WriteParam(m, p.socket_log_id);

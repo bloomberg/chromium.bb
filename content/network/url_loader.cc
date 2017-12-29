@@ -362,7 +362,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response.get());
   if (report_raw_headers_) {
-    response->head.devtools_info = BuildDevToolsInfo(
+    response->head.raw_request_response_info = BuildRawRequestResponseInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;
@@ -415,7 +415,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
                            response_.get());
   if (report_raw_headers_) {
-    response_->head.devtools_info = BuildDevToolsInfo(
+    response_->head.raw_request_response_info = BuildRawRequestResponseInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());
     raw_request_headers_ = net::HttpRawRequestHeaders();
     raw_response_headers_ = nullptr;

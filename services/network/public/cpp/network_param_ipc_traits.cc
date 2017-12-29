@@ -6,6 +6,7 @@
 
 #include "ipc/ipc_message_utils.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 
 namespace IPC {
 
@@ -210,6 +211,51 @@ void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::Log(
     const param_type& p,
     std::string* l) {
   l->append("<SignedCertificateTimestamp>");
+}
+
+void ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p.get() != nullptr);
+  if (!p.get())
+    return;
+
+  WriteParam(m, p->http_status_code);
+  WriteParam(m, p->http_status_text);
+  WriteParam(m, p->request_headers);
+  WriteParam(m, p->response_headers);
+  WriteParam(m, p->request_headers_text);
+  WriteParam(m, p->response_headers_text);
+}
+
+bool ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object)
+    return true;
+  *r = new network::HttpRawRequestResponseInfo();
+  return ReadParam(m, iter, &(*r)->http_status_code) &&
+         ReadParam(m, iter, &(*r)->http_status_text) &&
+         ReadParam(m, iter, &(*r)->request_headers) &&
+         ReadParam(m, iter, &(*r)->response_headers) &&
+         ReadParam(m, iter, &(*r)->request_headers_text) &&
+         ReadParam(m, iter, &(*r)->response_headers_text);
+}
+
+void ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("(");
+  if (p.get()) {
+    LogParam(p->request_headers, l);
+    l->append(", ");
+    LogParam(p->response_headers, l);
+  }
+  l->append(")");
 }
 
 }  // namespace IPC
