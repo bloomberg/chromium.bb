@@ -104,6 +104,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Waits for the bookmark internal state to be done loading. If it does not
 // happen within a timeout, a GREYAssert is induced.
 + (void)waitForBookmarksToFinishLoading;
+
+// Waits for the matcher to return an element that is sufficiently visible.
++ (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

@@ -243,4 +243,20 @@ id ExecuteJavaScript(NSString* javascript,
                  }),
              @"Bookmark model did not load");
 }
+
++ (void)waitForElementWithMatcherSufficientlyVisible:(id<GREYMatcher>)matcher {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for element with matcher sufficiently visible"
+                  block:^BOOL {
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:matcher]
+                        assertWithMatcher:grey_sufficientlyVisible()
+                                    error:&error];
+                    return error == nil;
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for element with matcher %@ to become visible",
+             matcher);
+}
+
 @end

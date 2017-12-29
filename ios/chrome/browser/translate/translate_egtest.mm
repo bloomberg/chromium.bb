@@ -656,8 +656,7 @@ using translate::LanguageDetectionController;
 }
 
 // Tests that the Translate infobar is displayed after translation.
-// TODO(crbug.com/798063): test is flaky.
-- (void)FLAKY_testTranslateInfobar {
+- (void)testTranslateInfobar {
   const GURL URL =
       web::test::HttpServer::MakeUrl("http://scenarioTranslateInfobar");
   std::map<GURL, std::string> responses;
@@ -688,7 +687,7 @@ using translate::LanguageDetectionController;
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
                                    switchLabel)]
-      assertWithMatcher:grey_notNil()];
+      assertWithMatcher:grey_sufficientlyVisible()];
 
   // Toggle "Always Translate" and check the preference.
   [[EarlGrey
@@ -860,17 +859,25 @@ using translate::LanguageDetectionController;
   client->GetTranslateManager()->PageTranslated(
       "es", "en", translate::TranslateErrors::NONE);
 
+  // The infobar is presented with an animation. Wait for the "Done" button
+  // to become visibile before considering the animation as complete.
+  [ChromeEarlGrey
+      waitForElementWithMatcherSufficientlyVisible:
+          chrome_test_util::ButtonWithAccessibilityLabelId(IDS_DONE)];
+
   // Assert that the infobar is visible.
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_DONE)] assertWithMatcher:grey_notNil()];
+                                   IDS_DONE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_REVERT)]
-      assertWithMatcher:grey_notNil()];
+      assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_CLOSE)] assertWithMatcher:grey_notNil()];
+                                   IDS_CLOSE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end
