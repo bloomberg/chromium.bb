@@ -62,3 +62,7 @@
 #info-view .feature-red {
   color: rgb(255, 0, 0);
 }
+
+#copy-to-clipboard {
+  user-select: none;
+}
