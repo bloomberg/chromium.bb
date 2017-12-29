@@ -2,29 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_NETWORK_COOKIE_MANAGER_H_
-#define CONTENT_NETWORK_COOKIE_MANAGER_H_
+#ifndef SERVICES_NETWORK_COOKIE_MANAGER_H_
+#define SERVICES_NETWORK_COOKIE_MANAGER_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/cookies/cookie_store.h"
 #include "services/network/public/interfaces/cookie_manager.mojom.h"
 
 class GURL;
 
-namespace content {
+namespace network {
 
 // Wrap a cookie store in an implementation of the mojo cookie interface.
 
 // This is an IO thread object; all methods on this object must be called on
 // the IO thread.  Note that this does not restrict the locations from which
 // mojo messages may be sent to the object.
-class CONTENT_EXPORT CookieManager : public network::mojom::CookieManager {
+class CookieManager : public network::mojom::CookieManager {
  public:
   // Construct a CookieService that can serve mojo requests for the underlying
   // cookie store.  |*cookie_store| must outlive this object.
@@ -94,6 +93,6 @@ class CONTENT_EXPORT CookieManager : public network::mojom::CookieManager {
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_NETWORK_COOKIE_MANAGER_H_
+#endif  // SERVICES_NETWORK_COOKIE_MANAGER_H_

@@ -14,12 +14,12 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/network/cookie_manager.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/network/url_request_context_owner.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "services/network/cookie_manager.h"
 
 namespace net {
 class URLRequestContext;
@@ -142,7 +142,7 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
 
   mojo::Binding<mojom::NetworkContext> binding_;
 
-  std::unique_ptr<CookieManager> cookie_manager_;
+  std::unique_ptr<network::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
