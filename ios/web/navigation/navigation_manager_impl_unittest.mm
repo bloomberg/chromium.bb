@@ -2121,8 +2121,8 @@ TEST_P(NavigationManagerTest, VisibleItemDefaultsToLastCommittedItem) {
 TEST_P(NavigationManagerTest, LoadURLWithParamsWithExtraHeadersAndPostData) {
   NavigationManager::WebLoadParams params(GURL("http://www.url.com/0"));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  params.extra_headers.reset(@{@"Content-Type" : @"text/plain"});
-  params.post_data.reset([NSData data]);
+  params.extra_headers = @{@"Content-Type" : @"text/plain"};
+  params.post_data = [NSData data];
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem())
       .Times(1);

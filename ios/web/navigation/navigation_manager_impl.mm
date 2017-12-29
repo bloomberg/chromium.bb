@@ -40,8 +40,8 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
   is_renderer_initiated = other.is_renderer_initiated;
   transition_type = other.transition_type;
   user_agent_override_option = other.user_agent_override_option;
-  extra_headers.reset([other.extra_headers copy]);
-  post_data.reset([other.post_data copy]);
+  extra_headers = [other.extra_headers copy];
+  post_data = [other.post_data copy];
 
   return *this;
 }

@@ -183,8 +183,8 @@ static NSString* gUserAgentProduct = nil;
 
   web::NavigationManager::WebLoadParams params(net::GURLWithNSURL(request.URL));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  params.extra_headers.reset([request.allHTTPHeaderFields copy]);
-  params.post_data.reset([request.HTTPBody copy]);
+  params.extra_headers = [request.allHTTPHeaderFields copy];
+  params.post_data = [request.HTTPBody copy];
   _webState->GetNavigationManager()->LoadURLWithParams(params);
   [self updateCurrentURLs];
 }

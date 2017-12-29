@@ -324,7 +324,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool is_being_destroyed_;
 
   // The CRWWebController that backs this object.
-  base::scoped_nsobject<CRWWebController> web_controller_;
+  CRWWebController* web_controller_;
 
   // The NavigationManagerImpl that stores session info for this WebStateImpl.
   std::unique_ptr<NavigationManagerImpl> navigation_manager_;
@@ -373,7 +373,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Cached session history when web usage is disabled. It is used to restore
   // history into WKWebView when web usage is re-enabled.
-  base::scoped_nsobject<CRWSessionStorage> cached_session_storage_;
+  CRWSessionStorage* cached_session_storage_;
 
   // Favicons URLs received in OnFaviconUrlUpdated.
   // WebStateObserver:FaviconUrlUpdated must be called for same-document

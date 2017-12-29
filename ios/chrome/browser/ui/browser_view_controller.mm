@@ -2701,8 +2701,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     NSString* contentType = base::SysUTF8ToNSString(postData->first);
     NSData* data = [NSData dataWithBytes:(void*)postData->second.data()
                                   length:postData->second.length()];
-    params.post_data.reset(data);
-    params.extra_headers.reset(@{ @"Content-Type" : contentType });
+    params.post_data = data;
+    params.extra_headers = @{@"Content-Type" : contentType};
   }
 
   if (tabAddedCompletion) {
