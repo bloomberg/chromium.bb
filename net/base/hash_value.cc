@@ -116,7 +116,7 @@ bool operator!=(const HashValue& lhs, const HashValue& rhs) {
 
 bool operator<(const HashValue& lhs, const HashValue& rhs) {
   if (lhs.tag_ != rhs.tag_)
-    return false;
+    return lhs.tag_ < rhs.tag_;
 
   switch (lhs.tag_) {
     case HASH_VALUE_SHA256:
