@@ -119,7 +119,7 @@ bool ShelfWidget::IsUsingViewsShelf() {
       return true;
     case session_manager::SessionState::LOCKED:
     case session_manager::SessionState::LOGIN_SECONDARY:
-      return !switches::IsUsingWebUiLock();
+      return switches::IsUsingViewsLock();
     case session_manager::SessionState::UNKNOWN:
     case session_manager::SessionState::OOBE:
     case session_manager::SessionState::LOGIN_PRIMARY:

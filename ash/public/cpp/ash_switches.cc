@@ -185,8 +185,8 @@ bool IsUsingViewsLogin() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowViewsLogin);
 }
 
-bool IsUsingWebUiLock() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
+bool IsUsingViewsLock() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kShowWebUiLock);
 }
 
 }  // namespace switches

@@ -293,10 +293,15 @@ cr.define('cr.ui.login', function() {
      * The header bar should be hidden when views-based shelf is shown.
      */
     get showingViewsBasedShelf() {
-      return loadTimeData.valueExists('showMdLogin') &&
-          loadTimeData.getString('showMdLogin') == 'on' &&
+      var showingViewsLock = loadTimeData.valueExists('showViewsLock') &&
+          loadTimeData.getString('showViewsLock') == 'on' &&
           (this.displayType_ == DISPLAY_TYPE.LOCK ||
            this.displayType_ == DISPLAY_TYPE.USER_ADDING);
+      var showingViewsLogin = loadTimeData.valueExists('showViewsLogin') &&
+          loadTimeData.getString('showViewsLogin') == 'on' &&
+          (this.displayType_ == DISPLAY_TYPE.LOGIN ||
+           this.displayType_ == DISPLAY_TYPE.OOBE);
+      return showingViewsLock || showingViewsLogin;
     },
 
     /**

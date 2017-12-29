@@ -550,7 +550,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
                                ? "off"
                                : "on");
   localized_strings->SetString(
-      "showMdLogin", ash::switches::IsUsingWebUiLock() ? "off" : "on");
+      "showViewsLock", ash::switches::IsUsingViewsLock() ? "on" : "off");
+  localized_strings->SetString(
+      "showViewsLogin", ash::switches::IsUsingViewsLogin() ? "on" : "off");
   localized_strings->SetBoolean(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(features::kChangePictureVideoMode));

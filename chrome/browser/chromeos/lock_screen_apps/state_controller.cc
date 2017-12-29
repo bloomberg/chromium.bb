@@ -319,7 +319,7 @@ void StateController::RequestNewLockScreenNote(LockScreenNoteOrigin origin) {
   // This is not needed for requests that come from the lock UI as the lock
   // screen UI sends these requests *after* the note action launch animation.
   if (origin == LockScreenNoteOrigin::kStylusEject &&
-      ash::switches::IsUsingWebUiLock()) {
+      !ash::switches::IsUsingViewsLock()) {
     app_launch_delayed_for_animation_ = true;
     return;
   }

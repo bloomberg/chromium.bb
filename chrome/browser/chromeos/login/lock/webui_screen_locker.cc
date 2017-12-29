@@ -85,7 +85,7 @@ void WebUIScreenLocker::RequestPreload() {
 // static
 bool WebUIScreenLocker::ShouldPreloadLockScreen() {
   // Only preload webui lock screen when it is used.
-  if (!ash::switches::IsUsingWebUiLock())
+  if (ash::switches::IsUsingViewsLock())
     return false;
 
   // Bail for mash because IdleDetector/UserActivityDetector does not work

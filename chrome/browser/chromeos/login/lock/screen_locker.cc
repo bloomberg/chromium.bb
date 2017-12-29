@@ -201,7 +201,7 @@ void ScreenLocker::Init() {
 
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
-  if (ash::switches::IsUsingWebUiLock()) {
+  if (!ash::switches::IsUsingViewsLock()) {
     web_ui_.reset(new WebUIScreenLocker(this));
     delegate_ = web_ui_.get();
     web_ui_->LockScreen();

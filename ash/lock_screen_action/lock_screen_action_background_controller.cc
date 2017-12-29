@@ -27,7 +27,7 @@ LockScreenActionBackgroundController::Create() {
   // Web UI based lock screen implements its own background - use the stub
   // lock action background controller implementation unless md-based lock UI
   // is used.
-  if (switches::IsUsingWebUiLock())
+  if (!switches::IsUsingViewsLock())
     return std::make_unique<LockScreenActionBackgroundControllerStub>();
   return std::make_unique<LockScreenActionBackgroundControllerImpl>();
 }
