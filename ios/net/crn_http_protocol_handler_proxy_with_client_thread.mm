@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/time/time.h"
 #import "ios/net/protocol_handler_util.h"
 #include "net/base/auth.h"
@@ -34,9 +33,9 @@
   // the usual task posting functions.
   __weak NSThread* _clientThread;
   // The run loop modes to use when posting tasks to |clientThread_|.
-  base::scoped_nsobject<NSArray> _runLoopModes;
+  NSArray* _runLoopModes;
   // The request URL.
-  base::scoped_nsobject<NSString> _url;
+  NSString* _url;
   // The creation time of the request.
   base::Time _creationTime;
   // |requestComplete_| is used in debug to check that the client is not called
@@ -70,16 +69,16 @@
   DCHECK(clientThread);
   if ((self = [super init])) {
     _protocol = protocol;
-    _url.reset([[[[protocol request] URL] absoluteString] copy]);
+    _url = [[[[protocol request] URL] absoluteString] copy];
     _creationTime = base::Time::Now();
     _clientThread = clientThread;
     // Use the common run loop mode in addition to the client thread mode, in
     // hope that our tasks are executed even if the client thread changes mode
     // later on.
     if ([mode isEqualToString:NSRunLoopCommonModes])
-      _runLoopModes.reset(@[ NSRunLoopCommonModes ]);
+      _runLoopModes = @[ NSRunLoopCommonModes ];
     else
-      _runLoopModes.reset(@[ mode, NSRunLoopCommonModes ]);
+      _runLoopModes = @[ mode, NSRunLoopCommonModes ];
     _queuedBlocks = [[NSMutableArray alloc] init];
   }
   return self;

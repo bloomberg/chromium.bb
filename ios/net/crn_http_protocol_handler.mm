@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -210,10 +209,10 @@ class HttpProtocolHandlerCore
   std::unique_ptr<char, base::FreeDeleter> read_buffer_;
   int read_buffer_size_;
   scoped_refptr<WrappedIOBuffer> read_buffer_wrapper_;
-  base::scoped_nsobject<NSMutableURLRequest> request_;
-  base::scoped_nsobject<NSURLSessionTask> task_;
+  NSMutableURLRequest* request_;
+  NSURLSessionTask* task_;
   // Stream delegate to read the HTTPBodyStream.
-  base::scoped_nsobject<CRWHTTPStreamDelegate> stream_delegate_;
+  CRWHTTPStreamDelegate* stream_delegate_;
   // Vector of readers used to accumulate a POST data stream.
   std::vector<std::unique_ptr<UploadElementReader>> post_data_readers_;
 
@@ -238,8 +237,8 @@ HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLRequest* request)
   // from the absoluteString of the original URL, because mutableCopy only
   // shallowly copies the request, and just retains the non-threadsafe NSURL.
   thread_checker_.DetachFromThread();
-  task_.reset();
-  request_.reset([request mutableCopy]);
+  task_ = nil;
+  request_ = [request mutableCopy];
   // Will allocate read buffer with size |kIOBufferMinSize|.
   AllocateReadBuffer(0);
   [request_ setURL:request.URL];
@@ -247,7 +246,7 @@ HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLRequest* request)
 
 HttpProtocolHandlerCore::HttpProtocolHandlerCore(NSURLSessionTask* task)
     : HttpProtocolHandlerCore([task currentRequest]) {
-  task_.reset(task);
+  task_ = task;
 }
 
 void HttpProtocolHandlerCore::HandleStreamEvent(NSStream* stream,
@@ -329,7 +328,7 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
   // Stash the original URL in case we need to report it in an error.
   [request_ setURL:new_nsurl];
 
-  if (stream_delegate_.get())
+  if (stream_delegate_)
     StopListeningStream([request_ HTTPBodyStream]);
 
   // TODO(droger): See if we can share some code with URLRequest::Redirect() in
@@ -355,7 +354,7 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
       // the inclusion of a multipart Content-Type header in GET can cause
       // problems with some servers:
       // http://code.google.com/p/chromium/issues/detail?id=843
-      StripPostSpecificHeaders(request_.get());
+      StripPostSpecificHeaders(request_);
     }
   }
 
@@ -375,7 +374,7 @@ void HttpProtocolHandlerCore::OnReceivedRedirect(
   // Don't use |request_| or |response| anymore, as the client may be using them
   // on another thread and they are not re-entrant. As |request_| is mutable, it
   // is also important that it is not modified.
-  request_.reset(nil);
+  request_ = nil;
   request->Cancel();
   DCHECK_EQ(net_request_, request);
   StopNetRequest();
@@ -703,8 +702,8 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
 
   if ([request_ HTTPBodyStream]) {
     NSInputStream* input_stream = [request_ HTTPBodyStream];
-    stream_delegate_.reset(
-        [[CRWHTTPStreamDelegate alloc] initWithHttpProtocolHandlerCore:this]);
+    stream_delegate_ =
+        [[CRWHTTPStreamDelegate alloc] initWithHttpProtocolHandlerCore:this];
     [input_stream setDelegate:stream_delegate_];
     [input_stream scheduleInRunLoop:[NSRunLoop currentRunLoop]
                             forMode:NSDefaultRunLoopMode];
@@ -748,7 +747,7 @@ void HttpProtocolHandlerCore::StopNetRequest() {
     auto metrics = std::make_unique<net::MetricsDelegate::Metrics>();
 
     metrics->response_end_time = base::Time::Now();
-    metrics->task = task_;
+    metrics->task.reset(task_);
     metrics->response_info = net_request_->response_info();
     net_request_->GetLoadTimingInfo(&metrics->load_timing_info);
 
@@ -757,7 +756,7 @@ void HttpProtocolHandlerCore::StopNetRequest() {
 
   delete net_request_;
   net_request_ = nullptr;
-  if (stream_delegate_.get())
+  if (stream_delegate_)
     StopListeningStream([request_ HTTPBodyStream]);
 }
 
@@ -765,11 +764,11 @@ void HttpProtocolHandlerCore::StopListeningStream(NSStream* stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(stream);
   DCHECK(stream_delegate_);
-  DCHECK([stream delegate] == stream_delegate_.get());
+  DCHECK([stream delegate] == stream_delegate_);
   [stream setDelegate:nil];
   [stream removeFromRunLoop:[NSRunLoop currentRunLoop]
                     forMode:NSDefaultRunLoopMode];
-  stream_delegate_.reset(nil);
+  stream_delegate_ = nil;
   // Close the stream if needed.
   switch ([stream streamStatus]) {
     case NSStreamStatusOpening:
@@ -915,7 +914,7 @@ void HttpProtocolHandlerCore::StripPostSpecificHeaders(
 // NSURLRequest.
 @implementation CRNHTTPProtocolHandler {
   scoped_refptr<net::HttpProtocolHandlerCore> _core;
-  base::scoped_nsprotocol<id<CRNHTTPProtocolHandlerProxy>> _protocolProxy;
+  id<CRNHTTPProtocolHandlerProxy> _protocolProxy;
   __weak NSThread* _clientThread;
   BOOL _supportedURL;
   NSURLSessionTask* _task;
@@ -992,8 +991,7 @@ void HttpProtocolHandlerCore::StripPostSpecificHeaders(
   _clientThread = [NSThread currentThread];
 
   if (g_metrics_delegate) {
-    g_metrics_delegate->OnStartNetRequest(
-        base::scoped_nsobject<NSURLSessionTask>(_task));
+    g_metrics_delegate->OnStartNetRequest(_task);
   }
 
   // The closure passed to PostTask must to retain the _protocolProxy
@@ -1010,13 +1008,13 @@ void HttpProtocolHandlerCore::StripPostSpecificHeaders(
 
 - (id<CRNHTTPProtocolHandlerProxy>)getProtocolHandlerProxy {
   DCHECK_EQ([NSThread currentThread], _clientThread);
-  if (!_protocolProxy.get()) {
-    _protocolProxy.reset([[CRNHTTPProtocolHandlerProxyWithClientThread alloc]
+  if (!_protocolProxy) {
+    _protocolProxy = [[CRNHTTPProtocolHandlerProxyWithClientThread alloc]
         initWithProtocol:self
             clientThread:_clientThread
-             runLoopMode:[[NSRunLoop currentRunLoop] currentMode]]);
+             runLoopMode:[[NSRunLoop currentRunLoop] currentMode]];
   }
-  return _protocolProxy.get();
+  return _protocolProxy;
 }
 
 - (scoped_refptr<net::HttpProtocolHandlerCore>)getCore {
@@ -1037,7 +1035,7 @@ void HttpProtocolHandlerCore::StripPostSpecificHeaders(
 
 - (void)stopLoading {
   [self cancelRequest];
-  _protocolProxy.reset();
+  _protocolProxy = nil;
 }
 
 @end

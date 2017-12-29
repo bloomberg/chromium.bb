@@ -7,7 +7,6 @@
 #import "ios/chrome/test/block_cleanup_test.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/mac/foundation_util.h"
 
 void BlockCleanupTest::SetUp() {
@@ -32,8 +31,8 @@ void BlockCleanupTest::TearDown() {
 void BlockCleanupTest::SpinRunLoop(NSTimeInterval cleanup_time) {
   NSDate* cleanup_start = [NSDate date];
   while (fabs([cleanup_start timeIntervalSinceNow]) < cleanup_time) {
-    base::scoped_nsobject<NSDate> beforeDate(
-        [[NSDate alloc] initWithTimeIntervalSinceNow:cleanup_time]);
+    NSDate* beforeDate =
+        [[NSDate alloc] initWithTimeIntervalSinceNow:cleanup_time];
     [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
                              beforeDate:beforeDate];
   }

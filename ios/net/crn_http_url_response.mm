@@ -4,14 +4,13 @@
 
 #import "ios/net/crn_http_url_response.h"
 
-#include "base/mac/scoped_nsobject.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface CRNHTTPURLResponse () {
-  base::scoped_nsobject<NSString> _cr_HTTPVersion;
+  NSString* _cr_HTTPVersion;
 }
 @end
 
@@ -30,7 +29,7 @@
                 HTTPVersion:HTTPVersion
                headerFields:headerFields];
   if (self) {
-    _cr_HTTPVersion.reset([HTTPVersion copy]);
+    _cr_HTTPVersion = [HTTPVersion copy];
   }
   return self;
 }

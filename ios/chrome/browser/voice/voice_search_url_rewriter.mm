@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"

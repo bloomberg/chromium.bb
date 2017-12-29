@@ -4,7 +4,6 @@
 
 #import "ios/web/net/crw_ssl_status_updater.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #include "ios/web/navigation/navigation_manager_util.h"
 #import "ios/web/public/navigation_item.h"
