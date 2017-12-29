@@ -68,7 +68,7 @@ ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 ASH_PUBLIC_EXPORT bool IsSidebarEnabled();
 ASH_PUBLIC_EXPORT bool IsUsingViewsLogin();
-ASH_PUBLIC_EXPORT bool IsUsingWebUiLock();
+ASH_PUBLIC_EXPORT bool IsUsingViewsLock();
 
 }  // namespace switches
 }  // namespace ash
