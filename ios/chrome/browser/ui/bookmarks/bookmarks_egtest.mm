@@ -1201,8 +1201,7 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests the tapping on the secondary button of sign-in promo view in a warm
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
-// TODO(crbug.com/796618): Reenable this test.
-- (void)DISABLED_testSignInPromoWithWarmStateUsingSecondaryButton {
+- (void)testSignInPromoWithWarmStateUsingSecondaryButton {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 

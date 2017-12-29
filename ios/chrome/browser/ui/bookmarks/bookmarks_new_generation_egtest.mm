@@ -1985,8 +1985,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // Tests the tapping on the primary button of sign-in promo view in a warm
 // state makes the confirmaiton sheet appear, and the promo still appears after
 // dismissing the sheet.
-// TODO(crbug.com/796618): Reenable this test.
-- (void)DISABLED_testSignInPromoWithWarmStateUsingPrimaryButton {
+- (void)testSignInPromoWithWarmStateUsingPrimaryButton {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
@@ -2000,10 +1999,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that promo is visible.
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
-                                          grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   // Tap the Sign in button.
   [[EarlGrey
@@ -2019,10 +2016,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                      uppercaseString])] performAction:grey_tap()];
 
   // Check that the bookmarks UI reappeared and the cell is still here.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
-                                          grey_sufficientlyVisible(), nil)]
-      assertWithMatcher:grey_notNil()];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
 
   [BookmarksNewGenTestCase verifyPromoAlreadySeen:NO];
 }
@@ -2030,8 +2025,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // Tests the tapping on the secondary button of sign-in promo view in a warm
 // state makes the sign-in sheet appear, and the promo still appears after
 // dismissing the sheet.
-// TODO(crbug.com/796618): Reenable this test.
-- (void)DISABLED_testSignInPromoWithWarmStateUsingSecondaryButton {
+- (void)testSignInPromoWithWarmStateUsingSecondaryButton {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
