@@ -658,11 +658,11 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
     // TODO(dominicc): Remove this counter when Issue 590014 is fixed.
     if (element->HasTagName(HTMLNames::summaryTag)) {
-      MatchedPropertiesRange properties =
+      MatchedPropertiesRange matched_range =
           collector.MatchedResult().AuthorRules();
-      for (auto it = properties.begin(); it != properties.end(); ++it) {
+      for (const auto& matched : matched_range) {
         const CSSValue* value =
-            it->properties->GetPropertyCSSValue(CSSPropertyDisplay);
+            matched.properties->GetPropertyCSSValue(CSSPropertyDisplay);
         if (value && value->IsIdentifierValue() &&
             ToCSSIdentifierValue(*value).GetValueID() == CSSValueBlock) {
           UseCounter::Count(
@@ -1944,9 +1944,8 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   StyleRuleList* rules = collector.MatchedStyleRuleList();
   if (!rules)
     return;
-  for (size_t i = 0; i < rules->size(); i++)
-    state.Style()->AddCallbackSelector(
-        rules->at(i)->SelectorList().SelectorsText());
+  for (auto rule : *rules)
+    state.Style()->AddCallbackSelector(rule->SelectorList().SelectorsText());
 }
 
 // Font properties are also handled by FontStyleResolver outside the main
