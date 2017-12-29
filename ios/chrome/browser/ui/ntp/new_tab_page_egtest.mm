@@ -96,7 +96,7 @@ void SelectNewTabPagePanel(ntp_home::PanelIdentifier panel_type) {
 
 // Tests that all items are accessible on the bookmarks page.
 - (void)testAccessibilityOnBookmarks {
-  // TODO(crbug.com/782551): Rewrite this test for the new Bookmarks UI.
+  // TODO(crbug.com/753599): Remove this test when clean up old bookmarks.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 

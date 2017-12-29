@@ -151,8 +151,8 @@ TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
   }
 }
 
+// TODO(crbug.com/753599): Remove this test when clean up old bookmarks.
 TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
-  // TODO(crbug.com/782551): Rewrite this unittest for the new bookmark.
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     return;
   }
