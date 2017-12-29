@@ -25,7 +25,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/network_param_ipc_traits.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
@@ -148,19 +147,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(ssl_key_exchange_group)
   IPC_STRUCT_TRAITS_MEMBER(signed_certificate_timestamps)
   IPC_STRUCT_TRAITS_MEMBER(cors_exposed_header_names)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
-                          net::URLRequest::MAX_REFERRER_POLICY - 1)
-
-IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
-  IPC_STRUCT_TRAITS_MEMBER(status_code)
-  IPC_STRUCT_TRAITS_MEMBER(new_method)
-  IPC_STRUCT_TRAITS_MEMBER(new_url)
-  IPC_STRUCT_TRAITS_MEMBER(new_site_for_cookies)
-  IPC_STRUCT_TRAITS_MEMBER(new_referrer)
-  IPC_STRUCT_TRAITS_MEMBER(new_referrer_policy)
-  IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(net::MutableNetworkTrafficAnnotationTag)

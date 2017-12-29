@@ -16,8 +16,10 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_request_headers.h"
 #include "net/ssl/ssl_info.h"
+#include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/cors_error_status.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "url/ipc/url_param_traits.h"
 
 #ifndef INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
 #define INTERNAL_SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
@@ -25,7 +27,8 @@
 // services/network/public/cpp is currently packaged as a static library,
 // so there's no need for export defines; it's linked directly into whatever
 // other components need it.
-// This redefinition is present for the IPC macros below.
+// This redefinition is present for the IPC macros below, including in the
+// included header files.
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT
 
@@ -152,6 +155,19 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
   IPC_STRUCT_TRAITS_MEMBER(blocked_cross_site_document)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(net::URLRequest::ReferrerPolicy,
+                          net::URLRequest::MAX_REFERRER_POLICY - 1)
+
+IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
+  IPC_STRUCT_TRAITS_MEMBER(status_code)
+  IPC_STRUCT_TRAITS_MEMBER(new_method)
+  IPC_STRUCT_TRAITS_MEMBER(new_url)
+  IPC_STRUCT_TRAITS_MEMBER(new_site_for_cookies)
+  IPC_STRUCT_TRAITS_MEMBER(new_referrer)
+  IPC_STRUCT_TRAITS_MEMBER(new_referrer_policy)
+  IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_
