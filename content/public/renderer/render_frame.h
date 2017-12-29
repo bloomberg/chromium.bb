@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/previews_state.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/features/features.h"
@@ -48,7 +49,6 @@ class Origin;
 }
 
 namespace content {
-class ChildURLLoaderFactoryGetter;
 class ContextMenuClient;
 class PluginInstanceThrottler;
 class RenderAccessibility;
@@ -258,12 +258,12 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   // BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
-  // Returns a default ChildURLLoaderFactoryGetter for the RenderFrame.
-  // Used to obtain a right mojom::URLLoaderFactory.
-  virtual ChildURLLoaderFactoryGetter* GetDefaultURLLoaderFactoryGetter() = 0;
-
   // Set the accessibility mode to force creation of RenderAccessibility.
   virtual void SetAccessibilityModeForTest(ui::AXMode new_mode) = 0;
+
+  // Returns the URLLoaderFactory for the given GURL
+  virtual mojom::URLLoaderFactory* GetURLLoaderFactory(
+      const GURL& request_url) = 0;
 
  protected:
   ~RenderFrame() override {}
