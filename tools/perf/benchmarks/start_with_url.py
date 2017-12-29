@@ -91,7 +91,7 @@ class ExperimentalStartWithUrlCold(perf_benchmark.PerfBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     startup_category_filter = (
         chrome_trace_category_filter.ChromeTraceCategoryFilter(
-            filter_string='startup,toplevel'))
+            filter_string='startup,toplevel,Java,EarlyJava'))
     options = timeline_based_measurement.Options(
         overhead_level=startup_category_filter)
     options.config.enable_chrome_trace = True
