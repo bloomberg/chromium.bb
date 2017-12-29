@@ -887,21 +887,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   LayoutRect PaintingExtent(const PaintLayer* root_layer,
                             const LayoutSize& sub_pixel_accumulation,
                             GlobalPaintFlags);
-  void AppendSingleFragmentIgnoringPagination(
-      PaintLayerFragments&,
-      const PaintLayer* root_layer,
-      const LayoutRect& dirty_rect,
-      ClipRectsCacheSlot,
-      GeometryMapperOption,
-      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
-      ShouldRespectOverflowClipType = kRespectOverflowClip,
-      const LayoutPoint* offset_from_root = nullptr,
-      const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
 
-  // Use this method for callsites within paint, and |CollectFragments|
-  // otherwise. This is because non-paint use cases have not yet been
-  // migrated to use property trees.
-  void CollectFragmentsForPaint(
+  void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
       const LayoutRect& dirty_rect,
@@ -921,8 +908,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = nullptr,
-      const LayoutSize& sub_pixel_accumulation = LayoutSize(),
-      const LayoutRect* layer_bounding_box = nullptr) const;
+      const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
 
   LayoutPoint LayoutBoxLocation() const {
     return GetLayoutObject().IsBox() ? ToLayoutBox(GetLayoutObject()).Location()
