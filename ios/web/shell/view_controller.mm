@@ -11,7 +11,6 @@
 #include <memory>
 #include <utility>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
@@ -106,9 +105,9 @@ using web::NavigationManager;
              action:@selector(forward)];
   [forward setAccessibilityLabel:kWebShellForwardButtonAccessibilityLabel];
 
-  base::scoped_nsobject<UITextField> field([[UITextField alloc]
+  UITextField* field = [[UITextField alloc]
       initWithFrame:CGRectMake(88, 6, CGRectGetWidth([_toolbarView frame]) - 98,
-                               31)]);
+                               31)];
   [field setDelegate:self];
   [field setBackground:[[UIImage imageNamed:@"textfield_background"]
                            resizableImageWithCapInsets:UIEdgeInsetsMake(

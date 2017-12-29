@@ -5,7 +5,6 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
@@ -19,7 +18,7 @@
 
   // Map from a CRWJSInjectionManager class to its instance created for this
   // receiver.
-  base::scoped_nsobject<NSMutableDictionary> _managers;
+  NSMutableDictionary* _managers;
 }
 
 - (id)init {
@@ -32,7 +31,7 @@
   self = [super init];
   if (self) {
     _evaluator = evaluator;
-    _managers.reset([[NSMutableDictionary alloc] init]);
+    _managers = [[NSMutableDictionary alloc] init];
   }
   return self;
 }
@@ -58,8 +57,8 @@
   CRWJSInjectionManager* manager =
       [_managers objectForKey:jsInjectionManagerClass];
   if (!manager) {
-    base::scoped_nsobject<CRWJSInjectionManager> newManager(
-        [[jsInjectionManagerClass alloc] initWithReceiver:self]);
+    CRWJSInjectionManager* newManager =
+        [[jsInjectionManagerClass alloc] initWithReceiver:self];
     [_managers setObject:newManager forKey:jsInjectionManagerClass];
     manager = newManager;
   }
@@ -71,6 +70,6 @@
 
 @implementation CRWJSInjectionReceiver (Testing)
 - (NSDictionary*)managers {
-  return _managers.get();
+  return _managers;
 }
 @end

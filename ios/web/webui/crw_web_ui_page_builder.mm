@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -128,7 +127,7 @@ NSString* const kWebUIJSURL = @"chrome://resources/js/ios/web_ui.js";
 - (void)buildWebUIPageForHTML:(NSString*)HTML
                      webUIURL:(const GURL&)pageURL
             completionHandler:(web::WebUIPageCompletion)completionHandler {
-  __block base::scoped_nsobject<NSMutableString> webUIHTML([HTML mutableCopy]);
+  __block NSMutableString* webUIHTML = [HTML mutableCopy];
   NSSet* subresourceURLStrings = [self URLStringsFromHTML:webUIHTML];
   __block NSUInteger pendingSubresourceCount = [subresourceURLStrings count];
   if (!pendingSubresourceCount) {
