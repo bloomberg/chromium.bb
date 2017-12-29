@@ -359,6 +359,10 @@
     "label": "//components/policy/android:components_policy_junit_tests",
     "type": "junit_test",
   },
+  "components_signin_junit_tests": {
+    "label": "//components/signin/core/browser/android:components_signin_junit_tests",
+    "type": "junit_test",
+  },
   "components_unittests": {
     "label": "//components:components_unittests",
     "type": "windowed_test_launcher",
