@@ -1287,8 +1287,7 @@ INSTANTIATE_TEST_CASE_P(All, RootScrollerHitTest, ::testing::Bool());
 // Test that hit testing in the area revealed at the bottom of the screen
 // revealed by hiding the URL bar works properly when using a root scroller
 // when the target and scroller are in the same PaintLayer.
-// TODO(chrishtr): fix this for root scrollers.
-TEST_P(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
+TEST_P(RootScrollerHitTest, HitTestInAreaRevealedByURLBarSameLayer) {
   // Add a target at the bottom of the root scroller that's the size of the url
   // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
   // that we can hit this target.

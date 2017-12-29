@@ -490,16 +490,6 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // TODO(chrishtr): generalize to multiple fragments.
   output.MoveBy(
       -context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
-
-  if (layer_ != *context.root_layer &&
-      context.overlay_scrollbar_clip_behavior ==
-          kExcludeOverlayScrollbarSizeForHitTesting &&
-      context.root_layer->GetLayoutBox() &&
-      context.root_layer->GetLayoutBox()->ShouldClipOverflow()) {
-    output.Intersect(context.root_layer->GetLayoutBox()->OverflowClipRect(
-        LayoutPoint(), kExcludeOverlayScrollbarSizeForHitTesting));
-  }
-
   output.Move(context.sub_pixel_accumulation);
 }
 
