@@ -30,6 +30,7 @@
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -167,6 +168,18 @@ int RenderWidgetInputHandler::GetWidgetRoutingIdAtPoint(
                                    ->HitTestResultAt(blink::WebPoint(
                                        point_in_pixel.x(), point_in_pixel.y()))
                                    .GetNode();
+
+  // TODO(crbug.com/797828): When the node is null the caller may
+  // need to do extra checks. Like maybe update the layout and then
+  // call the hit-testing API. Either way it might be better to have
+  // a DCHECK for the node rather than a null check here.
+  if (result_node.IsNull()) {
+    auto* web_widget = widget_->GetWebWidget();
+    DCHECK(web_widget->IsWebFrameWidget());
+    auto* frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
+    blink::WebFrame* web_frame = frame_widget->LocalRoot();
+    return RenderFrame::GetRoutingIdForWebFrame(web_frame);
+  }
 
   blink::WebFrame* result_frame =
       blink::WebFrame::FromFrameOwnerElement(result_node);
