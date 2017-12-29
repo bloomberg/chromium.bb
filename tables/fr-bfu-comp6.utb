@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-28
+#-updated: 2017-12-29
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -83,7 +83,7 @@ space \x000D 0    # cr
 space \x00A0 a    # no-break space
 space \x007f 0
 
-punctuation = 2356
+#punctuation = 2356
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)

@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-28
+#-updated: 2017-12-29
 
 # liblouis: Unified French Grade 2 Table
 
@@ -219,7 +219,7 @@ nofor endword clables 146-45-234
 
 nofor before con begword cock 14-135-14-13
 
-before bmp begword com 36
+noback before bmp begword com 36
 nofor before bmpabr begword com 36
 begmidword comt 14-2456-2345
 
@@ -1958,7 +1958,7 @@ word mesdames		134-145-234
 word mesdemoiselles	134-134-234
 word messieurs		134-1235-234
 prfword mettre		134-356
-nofor word mettre 356-134-356
+nofor word mettre 134-356
 word commettre 36-134-356
 nofor word promettre 235-134-356
 nofor word transmettre 356-134-356
@@ -4652,46 +4652,43 @@ nofor correct $l[""]"(" ?
 #opérations mathématiques
 
 #éliminer les chaînes n'étant pas des expressions mathématiques
-nofor pass4 `[@6-36]!%frmath @13678
-nofor pass4 [@0-6-36]!%frmath @0-13678
-nofor pass4 `@6-36%frmath$s *
-nofor pass4 $s@6-36%frmath$s *
-nofor pass4 `@6-36%frmath~ *
-nofor pass4 $s@6-36%frmath~ *
-nofor pass4 `[@6-36]%frmath!%frmath @13678
-nofor pass4 [@0-6-36]%frmath!%frmath @0-13678
-nofor pass4 !%frmath[@6-36]%frmath @36-6
+nofor pass4 @6-36%frmath.$s @12345678*
+nofor pass4 @6-36%frmath.~ @12345678*
+nofor pass3 `[@6-36]!$s @13678
+nofor pass3 $s[@6-36]!$s @13678
+nofor pass3 $l[@6-36]$d @36-6
+nofor pass3 @12345678 ?
 
 #Une expression commençant par un point 6 est maintenant forcément une expression mathématique
 #Elle se termine par un espace, un letsign ou une fin de chaîne.
-nofor pass3 `@6 *#1=1
-nofor pass3 $s@6 *#1=1
-nofor pass3 $s!@6 *#1=0
-nofor pass3 @56 *#1=0
+nofor pass2 `@6 *#1=1
+nofor pass2 $s@6 *#1=1
+nofor pass2 $s!@6 *#1=0
+nofor pass2 @56 *#1=0
 
 #Traitement des opérateurs
-nofor pass3 #1=1[@36] @368	moins
-nofor pass3 #1=1[@235] @2358	plus
-nofor pass3 #1=1[@34] @348	divisé
-nofor pass3 #1=1[@35] @358	multiplié
-nofor pass3 #1=1[@236] @2368	parenthèse gauche
-nofor pass3 #1=1[@45-236] @23678	crochet gauche
-nofor pass3 #1=1[@12356] @23678	crochet gauche
-nofor pass3 #1=1[@356-12] @35678	crochet droit
-nofor pass3 #1=1[@23456] @35678	crochet droit
-nofor pass3 #1=1[@2356] @23568	égal
+nofor pass2 #1=1[@36] @368	moins
+nofor pass2 #1=1[@235] @2358	plus
+nofor pass2 #1=1[@34] @348	divisé
+nofor pass2 #1=1[@35] @358	multiplié
+nofor pass2 #1=1[@236] @2368	parenthèse gauche
+nofor pass2 #1=1[@45-236] @23678	crochet gauche
+nofor pass2 #1=1[@12356] @23678	crochet gauche
+nofor pass2 #1=1[@356-12] @35678	crochet droit
+nofor pass2 #1=1[@23456] @35678	crochet droit
+nofor pass2 #1=1[@2356] @23568	égal
 
 #Les chiffres
-nofor pass3 #1=1[@16] @18
-nofor pass3 #1=1[@126] @128
-nofor pass3 #1=1[@146] @148
-nofor pass3 #1=1[@1456] @1458
-nofor pass3 #1=1[@156] @158
-nofor pass3 #1=1[@1246] @1248
-nofor pass3 #1=1[@12456] @12458
-nofor pass3 #1=1[@1256] @1258
-nofor pass3 #1=1[@246] @248
-nofor pass3 #1=1[@3456] @3458
+nofor pass2 #1=1[@16] @18
+nofor pass2 #1=1[@126] @128
+nofor pass2 #1=1[@146] @148
+nofor pass2 #1=1[@1456] @1458
+nofor pass2 #1=1[@156] @158
+nofor pass2 #1=1[@1246] @1248
+nofor pass2 #1=1[@12456] @12458
+nofor pass2 #1=1[@1256] @1258
+nofor pass2 #1=1[@246] @248
+nofor pass2 #1=1[@3456] @3458
 
 nofor context @13678 "-"
 nofor context @23678 "["
