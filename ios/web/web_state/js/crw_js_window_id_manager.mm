@@ -4,7 +4,6 @@
 
 #import "ios/web/web_state/js/crw_js_window_id_manager.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "crypto/random.h"
@@ -22,9 +21,9 @@ const size_t kUniqueKeyLength = 16;
 
 @interface CRWJSWindowIDManager () {
   // Web view used for script evaluation to inject window ID.
-  base::scoped_nsobject<WKWebView> _webView;
+  WKWebView* _webView;
   // Backs up property with the same name.
-  base::scoped_nsobject<NSString> _windowID;
+  NSString* _windowID;
 }
 
 // Returns a string of randomized ASCII characters.
@@ -40,14 +39,14 @@ const size_t kUniqueKeyLength = 16;
 
 - (instancetype)initWithWebView:(WKWebView*)webView {
   if ((self = [super init])) {
-    _webView.reset(webView);
-    _windowID.reset([[self class] newUniqueKey]);
+    _webView = webView;
+    _windowID = [[self class] newUniqueKey];
   }
   return self;
 }
 
 - (void)inject {
-  _windowID.reset([[self class] newUniqueKey]);
+  _windowID = [[self class] newUniqueKey];
   NSString* script = [web::GetPageScript(@"window_id")
       stringByReplacingOccurrencesOfString:@"$(WINDOW_ID)"
                                 withString:_windowID];

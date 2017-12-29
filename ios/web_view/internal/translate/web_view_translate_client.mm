@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"

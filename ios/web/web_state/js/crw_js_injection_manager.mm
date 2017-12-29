@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/web_state/js/page_script_util.h"
@@ -20,7 +19,7 @@
 @implementation CRWJSInjectionManager {
   // JS to inject into the page. This may be nil if it has been purged due to
   // low memory.
-  base::scoped_nsobject<NSString> _injectObject;
+  NSString* _injectObject;
   // An object the can receive JavaScript injection.
   __weak CRWJSInjectionReceiver* _receiver;
 }
@@ -56,7 +55,7 @@
 }
 
 - (void)lowMemoryWarning:(NSNotification*)notify {
-  _injectObject.reset();
+  _injectObject = nil;
 }
 
 - (void)executeJavaScript:(NSString*)script
@@ -78,8 +77,8 @@
 
 - (NSString*)injectionContent {
   if (!_injectObject)
-    _injectObject.reset([[self staticInjectionContent] copy]);
-  return _injectObject.get();
+    _injectObject = [[self staticInjectionContent] copy];
+  return _injectObject;
 }
 
 - (NSString*)staticInjectionContent {

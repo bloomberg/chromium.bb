@@ -5,7 +5,6 @@
 #import "ios/web/web_state/js/crw_js_post_request_loader.h"
 
 #include "base/json/string_escape.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -32,7 +31,7 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
 }  // namespace
 
 @interface CRWJSPOSTRequestLoader () {
-  base::scoped_nsobject<NSString> _requestScript;
+  NSString* _requestScript;
 }
 
 // JavaScript used to execute POST requests. Lazily instantiated.
@@ -70,7 +69,7 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
 
 - (NSString*)requestScript {
   if (!_requestScript) {
-    _requestScript.reset([web::GetPageScript(@"post_request") copy]);
+    _requestScript = [web::GetPageScript(@"post_request") copy];
   }
   return _requestScript;
 }
@@ -122,7 +121,7 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
 
 - (void)handleMemoryWarning {
   // Request script can be recreated from file at any moment.
-  _requestScript.reset();
+  _requestScript = nil;
 }
 
 - (NSString*)scriptToExecutePOSTRequest:(NSURLRequest*)request {

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/app/web_main.h"
 #import "ios/web/public/web_client.h"
@@ -46,8 +45,8 @@
       static_cast<web::ShellWebClient*>(web::GetWebClient());
   web::BrowserState* browserState = client->browser_state();
 
-  base::scoped_nsobject<ViewController> controller(
-      [[ViewController alloc] initWithBrowserState:browserState]);
+  ViewController* controller =
+      [[ViewController alloc] initWithBrowserState:browserState];
   self.window.rootViewController = controller;
   return YES;
 }

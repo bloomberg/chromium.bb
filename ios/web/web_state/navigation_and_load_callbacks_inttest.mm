@@ -376,12 +376,12 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
     scoped_observer_.Add(web_state());
 
     // Stub out NativeContent objects.
-    provider_.reset([[TestNativeContentProvider alloc] init]);
-    content_.reset([[TestNativeContent alloc] initWithURL:GURL::EmptyGURL()
-                                               virtualURL:GURL::EmptyGURL()]);
+    provider_ = [[TestNativeContentProvider alloc] init];
+    content_ = [[TestNativeContent alloc] initWithURL:GURL::EmptyGURL()
+                                           virtualURL:GURL::EmptyGURL()];
 
     WebStateImpl* web_state_impl = reinterpret_cast<WebStateImpl*>(web_state());
-    web_state_impl->GetWebController().nativeProvider = provider_.get();
+    web_state_impl->GetWebController().nativeProvider = provider_;
   }
 
   void TearDown() override {
@@ -390,9 +390,9 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
   }
 
  protected:
-  base::scoped_nsobject<TestNativeContentProvider> provider_;
+  TestNativeContentProvider* provider_;
   std::unique_ptr<StrictMock<PolicyDeciderMock>> decider_;
-  base::scoped_nsobject<TestNativeContent> content_;
+  TestNativeContent* content_;
   StrictMock<WebStateObserverMock> observer_;
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   testing::InSequence callbacks_sequence_checker_;
@@ -672,7 +672,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentNavigation) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyNewNativePageFinishedContext(web_state(), url, &context));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  [provider_ setController:content_.get() forURL:url];
+  [provider_ setController:content_ forURL:url];
   LoadUrl(url);
 }
 
@@ -685,7 +685,7 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentReload) {
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  [provider_ setController:content_.get() forURL:url];
+  [provider_ setController:content_ forURL:url];
   LoadUrl(url);
 
   // Reload native content.

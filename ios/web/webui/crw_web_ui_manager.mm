@@ -9,7 +9,6 @@
 
 #include "base/json/string_escape.h"
 #import "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
@@ -133,9 +132,9 @@ const char kScriptCommandPrefix[] = "webui";
   GURL URL(resourceURL);
   [self fetchResourceWithURL:URL
            completionHandler:^(NSData* data) {
-             base::scoped_nsobject<NSString> resource(
+             NSString* resource =
                  [[NSString alloc] initWithData:data
-                                       encoding:NSUTF8StringEncoding]);
+                                       encoding:NSUTF8StringEncoding];
              completionHandler(resource, URL);
            }];
 }
@@ -144,8 +143,8 @@ const char kScriptCommandPrefix[] = "webui";
 
 - (void)loadWebUIPageForURL:(const GURL&)webUIURL
           completionHandler:(void (^)(NSString*))handler {
-  base::scoped_nsobject<CRWWebUIPageBuilder> pageBuilder(
-      [[CRWWebUIPageBuilder alloc] initWithDelegate:self]);
+  CRWWebUIPageBuilder* pageBuilder =
+      [[CRWWebUIPageBuilder alloc] initWithDelegate:self];
   [pageBuilder buildWebUIPageForURL:webUIURL completionHandler:handler];
 }
 
