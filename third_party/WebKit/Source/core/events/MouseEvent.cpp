@@ -29,7 +29,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/bindings/DOMWrapperWorld.h"

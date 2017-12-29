@@ -43,7 +43,7 @@
 namespace blink {
 
 class KeyboardEvent;
-class LayoutItem;
+class LayoutObject;
 class LocalFrameView;
 class MouseEvent;
 class TouchEvent;
@@ -60,10 +60,10 @@ class CORE_EXPORT WebMouseEventBuilder : public WebMouseEvent {
   // mousedown and mouseup. If the event mapping fails, the event type will
   // be set to Undefined.
   WebMouseEventBuilder(const LocalFrameView*,
-                       const LayoutItem,
+                       const LayoutObject*,
                        const MouseEvent&);
   WebMouseEventBuilder(const LocalFrameView*,
-                       const LayoutItem,
+                       const LayoutObject*,
                        const TouchEvent&);
 };
 
@@ -81,7 +81,7 @@ class CORE_EXPORT WebKeyboardEventBuilder : public WebKeyboardEvent {
 // exceeding that cap will be dropped.
 class CORE_EXPORT WebTouchEventBuilder : public WebTouchEvent {
  public:
-  WebTouchEventBuilder(const LayoutItem, const TouchEvent&);
+  WebTouchEventBuilder(const LayoutObject*, const TouchEvent&);
 };
 
 // Return a new transformed WebGestureEvent by applying the Widget's scale

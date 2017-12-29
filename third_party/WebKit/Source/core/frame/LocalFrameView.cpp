@@ -76,7 +76,6 @@
 #include "core/layout/api/LayoutBoxModel.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/api/LayoutItem.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

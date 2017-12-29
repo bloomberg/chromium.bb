@@ -62,7 +62,6 @@
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/Page.h"

@@ -261,7 +261,6 @@ blink_core_sources("layout") {
     "api/LayoutTextControlItem.h",
     "api/LayoutTextFragmentItem.h",
     "api/LayoutTextItem.h",
-    "api/LayoutViewItem.h",
     "api/LineLayoutAPIShim.h",
     "api/LineLayoutBR.h",
     "api/LineLayoutBlockFlow.h",

@@ -8,7 +8,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/geometry/DOMRect.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"

@@ -46,7 +46,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 

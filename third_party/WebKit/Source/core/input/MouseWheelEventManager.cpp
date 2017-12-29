@@ -12,7 +12,7 @@
 #include "core/input/EventHandlingUtil.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "public/platform/WebMouseWheelEvent.h"
 
 namespace blink {

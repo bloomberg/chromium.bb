@@ -69,7 +69,7 @@
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
 #include "core/inspector/MainThreadDebugger.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"

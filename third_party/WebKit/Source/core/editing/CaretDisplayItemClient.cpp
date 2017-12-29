@@ -34,7 +34,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutBlockItem.h"
 #include "core/layout/api/LayoutItem.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"

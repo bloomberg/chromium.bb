@@ -66,7 +66,6 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"

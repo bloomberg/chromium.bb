@@ -40,7 +40,7 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

@@ -64,7 +64,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/resource/ImageResourceContent.h"

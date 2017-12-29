@@ -44,7 +44,6 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/svg/LayoutSVGImage.h"

@@ -71,7 +71,7 @@
 #include "core/inspector/V8InspectorString.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameTree.h"

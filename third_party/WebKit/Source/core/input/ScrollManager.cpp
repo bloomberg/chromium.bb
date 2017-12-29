@@ -15,7 +15,7 @@
 #include "core/input/EventHandlingUtil.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
