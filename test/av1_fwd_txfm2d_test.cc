@@ -142,6 +142,11 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.6));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X16, 11, 1.5));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X32, 70, 7));
+#if CONFIG_TX64X64
+    if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X64, 70, 7));
+    }
+#endif  // CONFIG_TX64X64
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 2.9, 0.55));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 3.2, 0.56));
@@ -157,7 +162,6 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
 
 #if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X64, 70, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 16, 1.6));

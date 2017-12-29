@@ -495,21 +495,21 @@ static const TXFM_1D_CFG *fwd_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   },
   // IDENTITY
   {
-      &fwd_txfm_1d_cfg_identity_4,  &fwd_txfm_1d_cfg_identity_8,
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_32,
+      &fwd_txfm_1d_col_cfg_identity_4,  &fwd_txfm_1d_col_cfg_identity_8,
+      &fwd_txfm_1d_col_cfg_identity_16, &fwd_txfm_1d_col_cfg_identity_32,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_64,
+      &fwd_txfm_1d_col_cfg_identity_64,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_8,  &fwd_txfm_1d_cfg_identity_4,
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_8,
-      &fwd_txfm_1d_cfg_identity_32, &fwd_txfm_1d_cfg_identity_16,
+      &fwd_txfm_1d_col_cfg_identity_8,  &fwd_txfm_1d_col_cfg_identity_4,
+      &fwd_txfm_1d_col_cfg_identity_16, &fwd_txfm_1d_col_cfg_identity_8,
+      &fwd_txfm_1d_col_cfg_identity_32, &fwd_txfm_1d_col_cfg_identity_16,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_64, &fwd_txfm_1d_cfg_identity_32,
+      &fwd_txfm_1d_col_cfg_identity_64, &fwd_txfm_1d_col_cfg_identity_32,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_4,
-      &fwd_txfm_1d_cfg_identity_32, &fwd_txfm_1d_cfg_identity_8,
+      &fwd_txfm_1d_col_cfg_identity_16, &fwd_txfm_1d_col_cfg_identity_4,
+      &fwd_txfm_1d_col_cfg_identity_32, &fwd_txfm_1d_col_cfg_identity_8,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_64, &fwd_txfm_1d_cfg_identity_16,
+      &fwd_txfm_1d_col_cfg_identity_64, &fwd_txfm_1d_col_cfg_identity_16,
 #endif  // CONFIG_TX64X64
   },
 };
@@ -592,21 +592,21 @@ static const TXFM_1D_CFG *fwd_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   },
   // IDENTITY
   {
-      &fwd_txfm_1d_cfg_identity_4,  &fwd_txfm_1d_cfg_identity_8,
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_8,
+      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_32,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_64,
+      &fwd_txfm_1d_row_cfg_identity_64,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_4,  &fwd_txfm_1d_cfg_identity_8,
-      &fwd_txfm_1d_cfg_identity_8,  &fwd_txfm_1d_cfg_identity_16,
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_8,
+      &fwd_txfm_1d_row_cfg_identity_8,  &fwd_txfm_1d_row_cfg_identity_16,
+      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_32,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_32, &fwd_txfm_1d_cfg_identity_64,
+      &fwd_txfm_1d_row_cfg_identity_32, &fwd_txfm_1d_row_cfg_identity_64,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_4,  &fwd_txfm_1d_cfg_identity_16,
-      &fwd_txfm_1d_cfg_identity_8,  &fwd_txfm_1d_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_16,
+      &fwd_txfm_1d_row_cfg_identity_8,  &fwd_txfm_1d_row_cfg_identity_32,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_cfg_identity_16, &fwd_txfm_1d_cfg_identity_64,
+      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_64,
 #endif  // CONFIG_TX64X64
   },
 };

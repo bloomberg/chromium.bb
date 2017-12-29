@@ -23,7 +23,8 @@ static const int8_t fwd_stage_range_col_dct_4[4] = { 0, 1, 2, 2 };
 static const int8_t fwd_stage_range_row_dct_4[4] = { 2, 3, 3, 3 };
 static const int8_t fwd_stage_range_col_adst_4[6] = { 0, 0, 1, 2, 2, 2 };
 static const int8_t fwd_stage_range_row_adst_4[6] = { 2, 2, 2, 3, 3, 3 };
-static const int8_t fwd_stage_range_idx_4[1] = { 0 };
+static const int8_t fwd_stage_range_col_idx_4[1] = { 1 };
+static const int8_t fwd_stage_range_row_idx_4[1] = { 2 };
 
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_4[4] = { 13, 13, 13, 13 };
@@ -40,7 +41,8 @@ static const int8_t fwd_stage_range_col_dct_8[6] = { 0, 1, 2, 3, 3, 3 };
 static const int8_t fwd_stage_range_row_dct_8[6] = { 3, 4, 5, 5, 5, 5 };
 static const int8_t fwd_stage_range_col_adst_8[8] = { 0, 0, 1, 2, 2, 3, 3, 3 };
 static const int8_t fwd_stage_range_row_adst_8[8] = { 3, 3, 3, 4, 4, 5, 5, 5 };
-static const int8_t fwd_stage_range_idx_8[1] = { 0 };
+static const int8_t fwd_stage_range_col_idx_8[1] = { 1 };
+static const int8_t fwd_stage_range_row_idx_8[1] = { 4 };
 
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_8[6] = { 13, 13, 13, 13, 13, 13 };
@@ -64,7 +66,10 @@ static const int8_t fwd_stage_range_col_adst_16[10] = { 0, 0, 1, 2, 2,
 static const int8_t fwd_stage_range_row_adst_16[10] = {
   4, 4, 4, 5, 5, 6, 6, 7, 7, 7,
 };
-static const int8_t fwd_stage_range_idx_16[1] = { 0 };
+
+static const int8_t fwd_stage_range_col_idx_16[1] = { 2 };
+
+static const int8_t fwd_stage_range_row_idx_16[1] = { 6 };
 
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_16[8] = {
@@ -91,7 +96,8 @@ static const int8_t fwd_stage_range_col_adst_32[12] = { 0, 0, 1, 2, 2, 3,
                                                         3, 4, 4, 5, 5, 5 };
 static const int8_t fwd_stage_range_row_adst_32[12] = { 5, 5, 5, 6, 6, 7,
                                                         7, 8, 8, 9, 9, 9 };
-static const int8_t fwd_stage_range_idx_32[1] = { 0 };
+static const int8_t fwd_stage_range_col_idx_32[1] = { 2 };
+static const int8_t fwd_stage_range_row_idx_32[1] = { 7 };
 
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_32[10] = { 12, 12, 12, 12, 12,
@@ -112,7 +118,8 @@ static const int8_t fwd_stage_range_col_dct_64[12] = { 0, 1, 2, 3, 4, 5,
                                                        6, 6, 6, 6, 6, 6 };
 static const int8_t fwd_stage_range_row_dct_64[12] = { 6,  7,  8,  9,  10, 11,
                                                        11, 11, 11, 11, 11, 11 };
-static const int8_t fwd_stage_range_idx_64[1] = { 0 };
+static const int8_t fwd_stage_range_col_idx_64[1] = { 3 };
+static const int8_t fwd_stage_range_row_idx_64[1] = { 9 };
 
 // cos bit
 static const int8_t fwd_cos_bit_col_dct_64[12] = { 13, 13, 13, 13, 13, 13,
@@ -442,56 +449,105 @@ static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_adst_32 = {
   TXFM_TYPE_ADST32,             // .txfm_type
 };
 
-// identity does not need to differentiate between row and col
-//  ---------------- row/col config fwd_identity_4 ----------
-static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_4 = {
-  4,                      // .txfm_size
-  1,                      // .stage_num
-  fwd_shift_4,            // .shift
-  fwd_stage_range_idx_4,  // .stage_range
-  NULL,                   // .cos_bit
-  TXFM_TYPE_IDENTITY4,    // .txfm_type
+//  ---------------- col config fwd_identity_4 ----------
+static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_identity_4 = {
+  4,                          // .txfm_size
+  1,                          // .stage_num
+  fwd_shift_4,                // .shift
+  fwd_stage_range_col_idx_4,  // .stage_range
+  NULL,                       // .cos_bit
+  TXFM_TYPE_IDENTITY4,        // .txfm_type
 };
 
-//  ---------------- row/col config fwd_identity_8 ----------------
-static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_8 = {
-  8,                      // .txfm_size
-  1,                      // .stage_num
-  fwd_shift_8,            // .shift
-  fwd_stage_range_idx_8,  // .stage_range
-  NULL,                   // .cos_bit
-  TXFM_TYPE_IDENTITY8,    // .txfm_type
+//  ---------------- row config fwd_identity_4 ----------
+static const TXFM_1D_CFG fwd_txfm_1d_row_cfg_identity_4 = {
+  4,                          // .txfm_size
+  1,                          // .stage_num
+  fwd_shift_4,                // .shift
+  fwd_stage_range_row_idx_4,  // .stage_range
+  NULL,                       // .cos_bit
+  TXFM_TYPE_IDENTITY4,        // .txfm_type
 };
 
-//  ---------------- row/col config fwd_identity_16 ----------------
-static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_16 = {
-  16,                      // .txfm_size
-  1,                       // .stage_num
-  fwd_shift_16,            // .shift
-  fwd_stage_range_idx_16,  // .stage_range
-  NULL,                    // .cos_bit
-  TXFM_TYPE_IDENTITY16,    // .txfm_type
+//  ---------------- col config fwd_identity_8 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_identity_8 = {
+  8,                          // .txfm_size
+  1,                          // .stage_num
+  fwd_shift_8,                // .shift
+  fwd_stage_range_col_idx_8,  // .stage_range
+  NULL,                       // .cos_bit
+  TXFM_TYPE_IDENTITY8,        // .txfm_type
 };
 
-//  ---------------- row/col config fwd_identity_32 ----------------
-static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_32 = {
-  32,                      // .txfm_size
-  1,                       // .stage_num
-  fwd_shift_32,            // .shift
-  fwd_stage_range_idx_32,  // .stage_range
-  NULL,                    // .cos_bit
-  TXFM_TYPE_IDENTITY32,    // .txfm_type
+//  ---------------- row config fwd_identity_8 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_row_cfg_identity_8 = {
+  8,                          // .txfm_size
+  1,                          // .stage_num
+  fwd_shift_8,                // .shift
+  fwd_stage_range_row_idx_8,  // .stage_range
+  NULL,                       // .cos_bit
+  TXFM_TYPE_IDENTITY8,        // .txfm_type
+};
+
+//  ---------------- col config fwd_identity_16 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_identity_16 = {
+  16,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_16,                // .shift
+  fwd_stage_range_col_idx_16,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY16,        // .txfm_type
+};
+
+//  ---------------- row config fwd_identity_16 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_row_cfg_identity_16 = {
+  16,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_16,                // .shift
+  fwd_stage_range_row_idx_16,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY16,        // .txfm_type
+};
+
+//  ---------------- col config fwd_identity_32 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_identity_32 = {
+  32,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_32,                // .shift
+  fwd_stage_range_col_idx_32,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY32,        // .txfm_type
+};
+
+//  ---------------- row config fwd_identity_32 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_row_cfg_identity_32 = {
+  32,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_32,                // .shift
+  fwd_stage_range_row_idx_32,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY32,        // .txfm_type
 };
 
 #if CONFIG_TX64X64
-//  ---------------- row/col config fwd_identity_64 ----------------
-static const TXFM_1D_CFG fwd_txfm_1d_cfg_identity_64 = {
-  64,                      // .txfm_size
-  1,                       // .stage_num
-  fwd_shift_64,            // .shift
-  fwd_stage_range_idx_64,  // .stage_range
-  NULL,                    // .cos_bit
-  TXFM_TYPE_IDENTITY64,    // .txfm_type
+//  ---------------- col config fwd_identity_64 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_col_cfg_identity_64 = {
+  64,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_64,                // .shift
+  fwd_stage_range_col_idx_64,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY64,        // .txfm_type
+};
+
+//  ---------------- row config fwd_identity_64 ----------------
+static const TXFM_1D_CFG fwd_txfm_1d_row_cfg_identity_64 = {
+  64,                          // .txfm_size
+  1,                           // .stage_num
+  fwd_shift_64,                // .shift
+  fwd_stage_range_row_idx_64,  // .stage_range
+  NULL,                        // .cos_bit
+  TXFM_TYPE_IDENTITY64,        // .txfm_type
 };
 #endif  // CONFIG_TX64X64
 
