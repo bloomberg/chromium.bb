@@ -10,7 +10,6 @@
 #include <map>
 #include <string>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/payments/core/payment_instrument.h"
@@ -73,7 +72,7 @@ class IOSPaymentInstrument : public PaymentInstrument {
   std::string method_name_;
   GURL universal_link_;
   std::string app_name_;
-  base::scoped_nsobject<UIImage> icon_image_;
+  UIImage* icon_image_;
 
   id<PaymentRequestUIDelegate> payment_request_ui_delegate_;
 

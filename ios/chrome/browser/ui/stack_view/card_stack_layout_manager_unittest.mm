@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/card_stack_layout_manager.h"
+#include "base/macros.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/stack_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

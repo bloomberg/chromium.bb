@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_IOS_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/toolbar/toolbar_model_delegate.h"
 

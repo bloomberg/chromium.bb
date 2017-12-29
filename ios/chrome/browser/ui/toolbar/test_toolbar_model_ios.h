@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 

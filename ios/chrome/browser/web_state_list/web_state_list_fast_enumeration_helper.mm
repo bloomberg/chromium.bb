@@ -140,12 +140,11 @@ WebStateListFastEnumerationHelper::WebStateListFastEnumerationHelper(
 
 WebStateListFastEnumerationHelper::~WebStateListFastEnumerationHelper() {
   WebStateListFastEnumeration* fast_enumeration =
-      base::mac::ObjCCastStrict<WebStateListFastEnumeration>(
-          fast_enumeration_.get());
+      base::mac::ObjCCastStrict<WebStateListFastEnumeration>(fast_enumeration_);
   [fast_enumeration shutdown];
-  fast_enumeration_.reset();
+  fast_enumeration_ = nil;
 }
 
 id<NSFastEnumeration> WebStateListFastEnumerationHelper::GetFastEnumeration() {
-  return fast_enumeration_.get();
+  return fast_enumeration_;
 }

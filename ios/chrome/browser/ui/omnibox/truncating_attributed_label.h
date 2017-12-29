@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 
 typedef enum {
   OmniboxPopupTruncatingTail = 0x1,

@@ -8,7 +8,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-#include "base/mac/scoped_nsobject.h"
 
 @class StackCard;
 

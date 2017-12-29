@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 
 @class SideSwipeGestureRecognizer;
@@ -15,9 +14,9 @@
 @class TabModel;
 
 @interface SwipeView : UIView {
-  base::scoped_nsobject<UIImageView> image_;
-  base::scoped_nsobject<UIImageView> shadowView_;
-  base::scoped_nsobject<UIImageView> toolbarHolder_;
+  UIImageView* image_;
+  UIImageView* shadowView_;
+  UIImageView* toolbarHolder_;
 }
 @end
 
@@ -26,8 +25,8 @@
   UISwipeGestureRecognizerDirection direction_;
 
   // Card views currently displayed.
-  base::scoped_nsobject<SwipeView> leftCard_;
-  base::scoped_nsobject<SwipeView> rightCard_;
+  SwipeView* leftCard_;
+  SwipeView* rightCard_;
 
   // Most recent touch location.
   CGPoint currentPoint_;
@@ -39,7 +38,7 @@
   __weak TabModel* model_;
 
   // The image view containing the background image.
-  base::scoped_nsobject<UIImageView> backgroundView_;
+  UIImageView* backgroundView_;
 }
 
 @property(nonatomic, weak) id<SideSwipeControllerDelegate> delegate;

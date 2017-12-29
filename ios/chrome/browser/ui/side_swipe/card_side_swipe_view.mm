@@ -66,15 +66,15 @@ const CGFloat kResizeFactor = 4;
   if (self) {
     _topMargin = topMargin;
 
-    image_.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    image_ = [[UIImageView alloc] initWithFrame:CGRectZero];
     [image_ setClipsToBounds:YES];
     [image_ setContentMode:UIViewContentModeScaleAspectFill];
     [self addSubview:image_];
 
-    toolbarHolder_.reset([[UIImageView alloc] initWithFrame:CGRectZero]);
+    toolbarHolder_ = [[UIImageView alloc] initWithFrame:CGRectZero];
     [self addSubview:toolbarHolder_];
 
-    shadowView_.reset([[UIImageView alloc] initWithFrame:self.bounds]);
+    shadowView_ = [[UIImageView alloc] initWithFrame:self.bounds];
     [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
     [self addSubview:shadowView_];
 
@@ -189,10 +189,10 @@ const CGFloat kResizeFactor = 4;
 
     InstallBackgroundInView(background);
 
-    rightCard_.reset(
-        [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin]);
-    leftCard_.reset(
-        [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin]);
+    rightCard_ =
+        [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];
+    leftCard_ =
+        [[SwipeView alloc] initWithFrame:CGRectZero topMargin:topMargin];
     [rightCard_ setTranslatesAutoresizingMaskIntoConstraints:NO];
     [leftCard_ setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:rightCard_];

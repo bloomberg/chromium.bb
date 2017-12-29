@@ -27,11 +27,11 @@ InfoBarIOS::InfoBarIOS(std::unique_ptr<InfoBarDelegate> delegate)
 InfoBarIOS::~InfoBarIOS() {
   DCHECK(controller_);
   [controller_ detachView];
-  controller_.reset();
+  controller_ = nil;
 }
 
 void InfoBarIOS::SetController(InfoBarController* controller) {
-  controller_.reset(controller);
+  controller_ = controller;
 }
 
 void InfoBarIOS::Layout(CGRect container_bounds) {

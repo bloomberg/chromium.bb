@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
@@ -42,7 +41,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView {
   void DeleteSelf();
 
  protected:
-  base::scoped_nsobject<CardUnmaskPromptViewController> view_controller_;
+  CardUnmaskPromptViewController* view_controller_;
 
  private:
   // The controller |this| queries for logic and state.

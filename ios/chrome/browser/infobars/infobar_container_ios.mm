@@ -41,7 +41,7 @@ InfoBarContainerIOS::InfoBarContainerIOS(
     infobars::InfoBarContainer::Delegate* delegate)
     : InfoBarContainer(delegate), delegate_(delegate) {
   DCHECK(delegate);
-  container_view_.reset([[InfoBarContainerView alloc] init]);
+  container_view_ = [[InfoBarContainerView alloc] init];
   [container_view_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                        UIViewAutoresizingFlexibleTopMargin];
 }

@@ -51,7 +51,7 @@ void BrowserStateDataRemover::SetForgetLastUsername() {
 
 void BrowserStateDataRemover::RemoveBrowserStateData(ProceduralBlock callback) {
   DCHECK(!callback_);
-  callback_.reset([callback copy]);
+  callback_ = [callback copy];
 
   ClearBrowsingDataCommand* command = [[ClearBrowsingDataCommand alloc]
       initWithBrowserState:browser_state_
@@ -96,7 +96,7 @@ void BrowserStateDataRemover::ReadingListCleaned(
   }
 
   if (callback_)
-    callback_.get()();
+    callback_();
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 
 @class FormSuggestion;
 @protocol FormSuggestionViewClient;

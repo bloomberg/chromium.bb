@@ -26,7 +26,7 @@ void LegacyTabHelper::CreateForWebState(web::WebState* web_state) {
 Tab* LegacyTabHelper::GetTabForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   LegacyTabHelper* tab_helper = LegacyTabHelper::FromWebState(web_state);
-  return tab_helper ? tab_helper->tab_.get() : nil;
+  return tab_helper ? tab_helper->tab_ : nil;
 }
 
 LegacyTabHelper::~LegacyTabHelper() = default;

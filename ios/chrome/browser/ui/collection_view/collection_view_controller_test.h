@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/test/block_cleanup_test.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
@@ -122,7 +121,7 @@ class CollectionViewControllerTest : public BlockCleanupTest {
   void DeleteItem(int section, int item, ProceduralBlock completion_block);
 
  private:
-  base::scoped_nsobject<CollectionViewController> controller_;
+  CollectionViewController* controller_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_COLLECTION_VIEW_COLLECTION_VIEW_CONTROLLER_TEST_H_

@@ -9,7 +9,6 @@
 
 #include <string>
 #include "base/ios/block_types.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/sync/synced_sessions_bridge.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"

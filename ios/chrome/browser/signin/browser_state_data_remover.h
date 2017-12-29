@@ -6,7 +6,6 @@
 #define IOS_CHROME_BROWSER_SIGNIN_BROWSER_STATE_DATA_REMOVER_H_
 
 #include "base/ios/block_types.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browsing_data/ios_chrome_browsing_data_remover.h"
 
 namespace ios {
@@ -47,7 +46,7 @@ class BrowserStateDataRemover {
       bool reading_list_cleaned);
 
   ios::ChromeBrowserState* browser_state_;
-  base::scoped_nsprotocol<ProceduralBlock> callback_;
+  ProceduralBlock callback_;
   IOSChromeBrowsingDataRemover::CallbackSubscription callback_subscription_;
   std::unique_ptr<reading_list::ReadingListRemoverHelper>
       reading_list_remover_helper_;

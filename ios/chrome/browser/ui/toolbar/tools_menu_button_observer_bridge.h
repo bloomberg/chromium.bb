@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/reading_list/ios/reading_list_model_bridge_observer.h"
 
 @class ToolbarToolsMenuButton;

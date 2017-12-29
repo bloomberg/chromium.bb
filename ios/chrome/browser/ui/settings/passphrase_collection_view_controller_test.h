@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -57,8 +56,8 @@ class PassphraseCollectionViewControllerTest
 
   // Dummy navigation stack for testing self-removal.
   // Only valid when SetUpNavigationController has been called.
-  base::scoped_nsobject<UIViewController> dummy_controller_;
-  base::scoped_nsobject<UINavigationController> nav_controller_;
+  UIViewController* dummy_controller_;
+  UINavigationController* nav_controller_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSPHRASE_COLLECTION_VIEW_CONTROLLER_TEST_H_

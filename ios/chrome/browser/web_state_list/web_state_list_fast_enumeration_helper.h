@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 
 class WebStateList;
@@ -36,7 +35,7 @@ class WebStateListFastEnumerationHelper {
   id<NSFastEnumeration> GetFastEnumeration();
 
  private:
-  base::scoped_nsprotocol<id<NSFastEnumeration>> fast_enumeration_;
+  id<NSFastEnumeration> fast_enumeration_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateListFastEnumerationHelper);
 };

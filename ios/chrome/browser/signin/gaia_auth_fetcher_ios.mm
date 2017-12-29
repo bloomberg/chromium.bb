@@ -287,19 +287,19 @@ WKWebView* GaiaAuthFetcherIOSBridge::GetWKWebView() {
     return nil;
   }
   if (!web_view_) {
-    web_view_.reset(BuildWKWebView());
-    navigation_delegate_.reset(
-        [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this]);
+    web_view_ = BuildWKWebView();
+    navigation_delegate_ =
+        [[GaiaAuthFetcherNavigationDelegate alloc] initWithBridge:this];
     [web_view_ setNavigationDelegate:navigation_delegate_];
   }
-  return web_view_.get();
+  return web_view_;
 }
 
 void GaiaAuthFetcherIOSBridge::ResetWKWebView() {
   [web_view_ setNavigationDelegate:nil];
   [web_view_ stopLoading];
-  web_view_.reset();
-  navigation_delegate_.reset();
+  web_view_ = nil;
+  navigation_delegate_ = nil;
 }
 
 WKWebView* GaiaAuthFetcherIOSBridge::BuildWKWebView() {

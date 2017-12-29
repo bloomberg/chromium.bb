@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
 
 namespace web {

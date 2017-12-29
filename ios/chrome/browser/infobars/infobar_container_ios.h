@@ -9,7 +9,6 @@
 
 #include <stddef.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 
 @class InfoBarContainerView;
@@ -38,7 +37,7 @@ class InfoBarContainerIOS : public infobars::InfoBarContainer {
   void PlatformSpecificInfoBarStateChanged(bool is_animating) override;
 
  private:
-  base::scoped_nsobject<InfoBarContainerView> container_view_;
+  InfoBarContainerView* container_view_;
   InfoBarContainer::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainerIOS);

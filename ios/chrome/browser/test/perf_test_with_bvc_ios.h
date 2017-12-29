@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/test/base/perf_test_ios.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_provider.h"
@@ -51,12 +50,12 @@ class PerfTestWithBVC : public PerfTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestChromeBrowserState> incognito_chrome_browser_state_;
 
-  base::scoped_nsobject<TabModel> tab_model_;
-  base::scoped_nsobject<TabModel> otr_tab_model_;
+  TabModel* tab_model_;
+  TabModel* otr_tab_model_;
 
-  base::scoped_nsobject<BrowserViewControllerDependencyFactory> bvc_factory_;
-  base::scoped_nsobject<BrowserViewController> bvc_;
-  base::scoped_nsobject<UIWindow> window_;
+  BrowserViewControllerDependencyFactory* bvc_factory_;
+  BrowserViewController* bvc_;
+  UIWindow* window_;
 };
 
 #endif  // IOS_CHROME_BROWSER_TEST_PERF_TEST_WITH_BVC_IOS_H_

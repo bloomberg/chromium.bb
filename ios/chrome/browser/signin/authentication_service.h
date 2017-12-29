@@ -9,7 +9,6 @@
 #include <vector>
 
 #import "base/ios/block_types.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -196,10 +195,10 @@ class AuthenticationService : public KeyedService,
   bool is_reloading_credentials_;
 
   // Map between account IDs and their associated MDM error.
-  std::map<std::string, base::scoped_nsobject<NSDictionary>> cached_mdm_infos_;
+  std::map<std::string, NSDictionary*> cached_mdm_infos_;
 
-  base::scoped_nsobject<id> foreground_observer_;
-  base::scoped_nsobject<id> background_observer_;
+  id foreground_observer_;
+  id background_observer_;
 
   ScopedObserver<ios::ChromeIdentityService,
                  ios::ChromeIdentityService::Observer>
