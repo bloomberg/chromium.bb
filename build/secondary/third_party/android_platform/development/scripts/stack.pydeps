@@ -4,6 +4,7 @@
 ../../../../build/android/pylib/constants/__init__.py
 ../../../../build/android/pylib/symbols/__init__.py
 ../../../../build/android/pylib/symbols/elf_symbolizer.py
+../../../../tools/python/llvm_symbolizer.py
 ../../../catapult/devil/devil/__init__.py
 ../../../catapult/devil/devil/android/__init__.py
 ../../../catapult/devil/devil/android/constants/__init__.py
