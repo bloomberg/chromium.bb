@@ -459,6 +459,14 @@
                   '|third_party/WebKit/Source/core/svg/SVGScriptElement.*' \
                   '|third_party/WebKit/Source/core/xml/parser/XMLDocumentParser.*'
     },
+    'blink_scroll': {
+      'filepath': 'third_party/WebKit/Source/core/frame/.*View.*' \
+                  '|third_party/WebKit/Source/core/input/.*Scroll.*' \
+                  '|third_party/WebKit/Source/core/input/EventHandler.*' \
+                  '|third_party/WebKit/Source/core/page/scrolling/' \
+                  '|third_party/WebKit/Source/core/paint/.*ScrollableArea.*' \
+                  '|third_party/WebKit/Source/platform/scroll/'
+    },
     'blink_serviceworkers' : {
       'filepath': 'third_party/WebKit/Source/modules/serviceworkers' \
                   '|third_party/WebKit/LayoutTests/http/tests/serviceworker' \
@@ -505,9 +513,9 @@
     'blink_viewport_interaction': {
       'filepath': 'third_party/WebKit/Source/core/css/.*Viewport' \
                   '|third_party/WebKit/Source/core/dom/ViewportArguments' \
-                  '|third_party/WebKit/Source/core/html/HTMLMetaElement' \
-                  '|third_party/WebKit/Source/core/page/FrameView' \
-                  '|third_party/WebKit/Source/core/page/scrolling'
+                  '|third_party/WebKit/Source/core/frame/FrameView.*' \
+                  '|third_party/WebKit/Source/core/frame/.*Viewport.*' \
+                  '|third_party/WebKit/Source/core/html/HTMLMetaElement'
     },
     'blink_w3ctests': {
       'filepath': 'third_party/WebKit/LayoutTests/external/' \
@@ -1817,6 +1825,7 @@
     'blink_script': ['kouhei+script@chromium.org',
                      'hiroshige+script@chromium.org',
                      'kochi+script@chromium.org'],
+    'blink_scroll': ['bokan@chromium.org'],
     'blink_serviceworkers': ['falken+watch@chromium.org',
                              'horo+watch@chromium.org',
                              'jsbell+serviceworker@chromium.org',
@@ -1848,7 +1857,8 @@
                     'silviapf@chromium.org',
                     'srirama.m@samsung.com'],
     'blink_vibration': ['mlamouri+watch-blink@chromium.org'],
-    'blink_viewport_interaction': ['kenneth.christiansen@gmail.com'],
+    'blink_viewport_interaction': ['kenneth.christiansen@gmail.com',
+                                   'bokan@chromium.org'],
     'blink_w3ctests': ['blink-reviews-w3ctests@chromium.org'],
     'blink_webp': ['jzern@chromium.org',
                    'skal@google.com',
