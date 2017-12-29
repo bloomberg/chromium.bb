@@ -67,6 +67,7 @@ class BASE_EXPORT UnguessableToken {
 
   bool is_empty() const { return high_ == 0 && low_ == 0; }
 
+  // Hex representation of the unguessable token.
   std::string ToString() const;
 
   explicit operator bool() const { return !is_empty(); }

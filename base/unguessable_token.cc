@@ -14,7 +14,7 @@ UnguessableToken::UnguessableToken(uint64_t high, uint64_t low)
     : high_(high), low_(low) {}
 
 std::string UnguessableToken::ToString() const {
-  return base::StringPrintf("(%08" PRIX64 "%08" PRIX64 ")", high_, low_);
+  return base::StringPrintf("%08" PRIX64 "%08" PRIX64, high_, low_);
 }
 
 // static
@@ -35,7 +35,7 @@ UnguessableToken UnguessableToken::Deserialize(uint64_t high, uint64_t low) {
 }
 
 std::ostream& operator<<(std::ostream& out, const UnguessableToken& token) {
-  return out << token.ToString();
+  return out << "(" << token.ToString() << ")";
 }
 
 }  // namespace base

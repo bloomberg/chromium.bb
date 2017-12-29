@@ -278,13 +278,11 @@ bool IsMemoryAllocatorDumpNameWhitelisted(const std::string& name) {
     return true;
   }
 
-  // As are shared memory dumps. Note: we skip the first character after the
-  // slash and last character in the string as they are expected to be brackets.
-  if (base::StartsWith(name, "shared_memory/(", CompareCase::SENSITIVE)) {
-    for (size_t i = strlen("shared_memory/") + 1; i < name.size() - 1; i++)
+  if (base::StartsWith(name, "shared_memory/", CompareCase::SENSITIVE)) {
+    for (size_t i = strlen("shared_memory/"); i < name.size(); i++)
       if (!base::IsHexDigit(name[i]))
         return false;
-    return name.back() == ')';
+    return true;
   }
 
   // Remove special characters, numbers (including hexadecimal which are marked
