@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #import "ios/net/request_tracker.h"
@@ -313,13 +312,13 @@ class RequestTrackerImpl
   // Current page URL, as far as we know.
   GURL page_url_;
   // Userinfo attached to the page, passed back by the delegate.
-  base::scoped_nsobject<id> user_info_;
+  id user_info_;
   // A tracker identifier (a simple increasing number) used to store
   // certificates.
   int identifier_;
   // The string that identifies the tab this tracker serves. Used to index
   // g_trackers.
-  base::scoped_nsobject<NSString> request_group_id_;
+  NSString* request_group_id_;
   // Flag to synchronize deletion and callback creation. Lives on the IO thread.
   // True when this tracker has beed Close()d. If this is the case, no further
   // references to it should be generated (for example by binding it into a
