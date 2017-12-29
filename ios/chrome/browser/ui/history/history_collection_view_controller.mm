@@ -821,10 +821,10 @@ const CGFloat kSeparatorInset = 10;
   __weak HistoryCollectionViewController* weakSelf = self;
   web::ContextMenuParams params;
   params.location = touchLocation;
-  params.view.reset(self.collectionView);
+  params.view = self.collectionView;
   NSString* menuTitle =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
-  params.menu_title.reset([menuTitle copy]);
+  params.menu_title = [menuTitle copy];
 
   // Present sheet/popover using controller that is added to view hierarchy.
   // TODO(crbug.com/754642): Remove TopPresentedViewController().

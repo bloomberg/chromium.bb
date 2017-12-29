@@ -37,13 +37,13 @@ typedef PlatformTest ContextMenuParamsUtilsTest;
 // Tests the empty contructor.
 TEST_F(ContextMenuParamsUtilsTest, EmptyParams) {
   web::ContextMenuParams params;
-  EXPECT_EQ(params.menu_title.get(), nil);
+  EXPECT_EQ(params.menu_title, nil);
   EXPECT_FALSE(params.link_url.is_valid());
   EXPECT_FALSE(params.src_url.is_valid());
   EXPECT_EQ(params.referrer_policy, web::ReferrerPolicyDefault);
-  EXPECT_EQ(params.view.get(), nil);
+  EXPECT_EQ(params.view, nil);
   EXPECT_TRUE(CGPointEqualToPoint(params.location, CGPointZero));
-  EXPECT_EQ(params.link_text.get(), nil);
+  EXPECT_EQ(params.link_text, nil);
 }
 
 // Tests the the parsing of the element NSDictionary.
@@ -56,14 +56,14 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTest) {
     kContextMenuElementInnerText : @(kLinkText),
   });
 
-  EXPECT_NSEQ(params.menu_title.get(), @(kTitle));
+  EXPECT_NSEQ(params.menu_title, @(kTitle));
   EXPECT_EQ(params.link_url, GURL(kLinkUrl));
   EXPECT_EQ(params.src_url, GURL(kSrcUrl));
-  EXPECT_NSEQ(params.link_text.get(), @(kLinkText));
+  EXPECT_NSEQ(params.link_text, @(kLinkText));
   EXPECT_EQ(params.referrer_policy,
             web::ReferrerPolicyFromString(kReferrerPolicy));
 
-  EXPECT_EQ(params.view.get(), nil);
+  EXPECT_EQ(params.view, nil);
   EXPECT_TRUE(CGPointEqualToPoint(params.location, CGPointZero));
 }
 
@@ -75,7 +75,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestNoTitle) {
   base::string16 urlText = url_formatter::FormatUrl(GURL(kLinkUrl));
   NSString* title = base::SysUTF16ToNSString(urlText);
 
-  EXPECT_NSEQ(params.menu_title.get(), title);
+  EXPECT_NSEQ(params.menu_title, title);
 }
 
 // Tests title is set to "JavaScript" if there is no title and "href" links to
@@ -84,7 +84,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestJavascriptTitle) {
   web::ContextMenuParams params = web::ContextMenuParamsFromElementDictionary(@{
     kContextMenuElementHyperlink : @(kJavaScriptLinkUrl),
   });
-  EXPECT_NSEQ(params.menu_title.get(), @"JavaScript");
+  EXPECT_NSEQ(params.menu_title, @"JavaScript");
 }
 
 // Tests title is set to |src_url| if there is no title.
@@ -93,7 +93,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestSrcTitle) {
     kContextMenuElementSource : @(kSrcUrl),
   });
   EXPECT_EQ(params.src_url, GURL(kSrcUrl));
-  EXPECT_NSEQ(params.menu_title.get(), @(kSrcUrl));
+  EXPECT_NSEQ(params.menu_title, @(kSrcUrl));
 }
 
 // Tests title is set to nil if there is no title and src is a data URL.
@@ -102,7 +102,7 @@ TEST_F(ContextMenuParamsUtilsTest, DictionaryConstructorTestDataTitle) {
     kContextMenuElementSource : @(kDataUrl),
   });
   EXPECT_EQ(params.src_url, GURL(kDataUrl));
-  EXPECT_NSEQ(params.menu_title.get(), nil);
+  EXPECT_NSEQ(params.menu_title, nil);
 }
 
 }  // namespace web

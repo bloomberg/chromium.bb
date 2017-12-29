@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/referrer.h"
 #include "url/gurl.h"
@@ -21,7 +20,7 @@ struct ContextMenuParams {
   ~ContextMenuParams();
 
   // The title of the menu.
-  base::scoped_nsobject<NSString> menu_title;
+  NSString* menu_title;
 
   // The URL of the link that encloses the node the context menu was invoked on.
   GURL link_url;
@@ -34,14 +33,14 @@ struct ContextMenuParams {
   web::ReferrerPolicy referrer_policy;
 
   // The view in which to present the menu.
-  base::scoped_nsobject<UIView> view;
+  UIView* view;
 
   // The location in |view| to present the menu.
   CGPoint location;
 
   // The text associated with the link. It is either nil or nonempty (it can not
   // be empty).
-  base::scoped_nsobject<NSString> link_text;
+  NSString* link_text;
 };
 
 }  // namespace web

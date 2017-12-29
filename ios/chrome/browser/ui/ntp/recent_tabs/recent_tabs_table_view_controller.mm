@@ -632,7 +632,7 @@ enum CellType {
     // Get view coordinates in local space.
     CGPoint viewCoordinate = [longPressGesture locationInView:self.tableView];
     params.location = viewCoordinate;
-    params.view.reset(self.tableView);
+    params.view = self.tableView;
 
     // Present sheet/popover using controller that is added to view hierarchy.
     // TODO(crbug.com/754642): Remove TopPresentedViewController().
