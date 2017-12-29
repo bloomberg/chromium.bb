@@ -30,6 +30,7 @@ using chrome_test_util::SecondarySignInButton;
 
 + (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode
                             closeButton:(BOOL)closeButton {
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kSigninPromoViewId),
