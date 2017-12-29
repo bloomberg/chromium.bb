@@ -125,7 +125,7 @@ comp6 0 3456
 include digits6DotsPlusDot6.uti
 include litdigits6DotsPlusDot6.uti
 
-math + 235  # plus
+noback math + 235  # plus
 math - 36
 math * 35   # astérisque
 math / 34   # barre oblique
