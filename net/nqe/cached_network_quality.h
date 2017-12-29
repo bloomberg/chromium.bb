@@ -41,8 +41,6 @@ class NET_EXPORT_PRIVATE CachedNetworkQuality {
 
   base::TimeTicks last_update_time() { return last_update_time_; }
 
-  const NetworkQuality& network_quality() { return network_quality_; }
-
   EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
