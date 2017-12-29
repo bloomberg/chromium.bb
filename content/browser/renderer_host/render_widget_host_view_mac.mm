@@ -1086,12 +1086,8 @@ void RenderWidgetHostViewMac::SetTooltipText(
   }
 }
 
-void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
-  // Propagate the new size to the BrowserCompositor first, so it can update the
-  // size that will be returned by GetRequestedRendererSize before the RWHImpl
-  // requests it (which will happen in RWHVBase::UpdateScreenInfo).
+void RenderWidgetHostViewMac::OnSynchronizedDisplayPropertiesChanged() {
   browser_compositor_->WasResized();
-  RenderWidgetHostViewBase::UpdateScreenInfo(view);
 }
 
 gfx::Size RenderWidgetHostViewMac::GetRequestedRendererSize() const {
