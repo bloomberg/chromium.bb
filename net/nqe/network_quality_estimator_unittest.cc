@@ -384,6 +384,9 @@ TEST(NetworkQualityEstimatorTest, Caching) {
       request->Start();
       base::RunLoop().Run();
     }
+    histogram_tester.ExpectUniqueSample("NQE.RTT.ObservationSource",
+                                        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP,
+                                        2);
 
     base::RunLoop().RunUntilIdle();
 
@@ -423,6 +426,11 @@ TEST(NetworkQualityEstimatorTest, Caching) {
         "NQE.RTT.ObservationSource",
         NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE, 1);
     histogram_tester.ExpectBucketCount(
+        "NQE.RTT.ObservationSource",
+        NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE, 1);
+    histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 4);
+
+    histogram_tester.ExpectBucketCount(
         "NQE.Kbps.ObservationSource",
         NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE, 1);
     histogram_tester.ExpectTotalCount(
@@ -434,7 +442,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
                num_net_log_entries);
     EXPECT_NE(-1, estimator.GetNetLogLastIntegerValue(
                       NetLogEventType::NETWORK_QUALITY_CHANGED, "http_rtt_ms"));
-    EXPECT_EQ(
+    EXPECT_NE(
         -1, estimator.GetNetLogLastIntegerValue(
                 NetLogEventType::NETWORK_QUALITY_CHANGED, "transport_rtt_ms"));
     EXPECT_NE(-1, estimator.GetNetLogLastIntegerValue(
@@ -457,7 +465,7 @@ TEST(NetworkQualityEstimatorTest, Caching) {
     EXPECT_LE(2U, observer.effective_connection_types().size());
     EXPECT_EQ(estimator.GetEffectiveConnectionType(),
               observer.effective_connection_types().back());
-    EXPECT_EQ(1U, rtt_observer.observations().size());
+    EXPECT_EQ(2U, rtt_observer.observations().size());
     EXPECT_EQ(1U, throughput_observer.observations().size());
   }
 }
@@ -1564,6 +1572,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
 
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";
+  variation_params["add_default_platform_observations"] = "false";
   TestNetworkQualityEstimator estimator(variation_params,
                                         std::move(external_estimate_provider));
   estimator.SimulateNetworkChange(net::NetworkChangeNotifier::CONNECTION_WIFI,
