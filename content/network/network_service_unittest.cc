@@ -199,10 +199,10 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   StartLoadingURL(request, 0);
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
-  EXPECT_TRUE(!client()->response_head().devtools_info);
+  EXPECT_TRUE(!client()->response_head().raw_request_response_info);
   loader()->FollowRedirect();
   client()->RunUntilComplete();
-  EXPECT_TRUE(!client()->response_head().devtools_info);
+  EXPECT_TRUE(!client()->response_head().raw_request_response_info);
 }
 
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
@@ -215,33 +215,33 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   {
-    scoped_refptr<ResourceDevToolsInfo> devtools_info =
-        client()->response_head().devtools_info;
-    ASSERT_TRUE(devtools_info);
-    EXPECT_EQ(301, devtools_info->http_status_code);
-    EXPECT_EQ("Moved Permanently", devtools_info->http_status_text);
-    EXPECT_TRUE(base::StartsWith(devtools_info->request_headers_text,
+    scoped_refptr<network::HttpRawRequestResponseInfo> request_response_info =
+        client()->response_head().raw_request_response_info;
+    ASSERT_TRUE(request_response_info);
+    EXPECT_EQ(301, request_response_info->http_status_code);
+    EXPECT_EQ("Moved Permanently", request_response_info->http_status_text);
+    EXPECT_TRUE(base::StartsWith(request_response_info->request_headers_text,
                                  "GET /server-redirect?/echo HTTP/1.1\r\n",
                                  base::CompareCase::SENSITIVE));
-    EXPECT_GE(devtools_info->request_headers.size(), 1lu);
-    EXPECT_GE(devtools_info->response_headers.size(), 1lu);
-    EXPECT_TRUE(base::StartsWith(devtools_info->response_headers_text,
+    EXPECT_GE(request_response_info->request_headers.size(), 1lu);
+    EXPECT_GE(request_response_info->response_headers.size(), 1lu);
+    EXPECT_TRUE(base::StartsWith(request_response_info->response_headers_text,
                                  "HTTP/1.1 301 Moved Permanently\r",
                                  base::CompareCase::SENSITIVE));
   }
   loader()->FollowRedirect();
   client()->RunUntilComplete();
   {
-    scoped_refptr<ResourceDevToolsInfo> devtools_info =
-        client()->response_head().devtools_info;
-    EXPECT_EQ(200, devtools_info->http_status_code);
-    EXPECT_EQ("OK", devtools_info->http_status_text);
-    EXPECT_TRUE(base::StartsWith(devtools_info->request_headers_text,
+    scoped_refptr<network::HttpRawRequestResponseInfo> request_response_info =
+        client()->response_head().raw_request_response_info;
+    EXPECT_EQ(200, request_response_info->http_status_code);
+    EXPECT_EQ("OK", request_response_info->http_status_text);
+    EXPECT_TRUE(base::StartsWith(request_response_info->request_headers_text,
                                  "GET /echo HTTP/1.1\r\n",
                                  base::CompareCase::SENSITIVE));
-    EXPECT_GE(devtools_info->request_headers.size(), 1lu);
-    EXPECT_GE(devtools_info->response_headers.size(), 1lu);
-    EXPECT_TRUE(base::StartsWith(devtools_info->response_headers_text,
+    EXPECT_GE(request_response_info->request_headers.size(), 1lu);
+    EXPECT_GE(request_response_info->response_headers.size(), 1lu);
+    EXPECT_TRUE(base::StartsWith(request_response_info->response_headers_text,
                                  "HTTP/1.1 200 OK\r",
                                  base::CompareCase::SENSITIVE));
   }
@@ -257,22 +257,22 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
 
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head().devtools_info);
+  EXPECT_FALSE(client()->response_head().raw_request_response_info);
   service()->SetRawHeadersAccess(process_id, true);
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   {
-    scoped_refptr<ResourceDevToolsInfo> devtools_info =
-        client()->response_head().devtools_info;
-    ASSERT_TRUE(devtools_info);
-    EXPECT_EQ(200, devtools_info->http_status_code);
-    EXPECT_EQ("OK", devtools_info->http_status_text);
+    scoped_refptr<network::HttpRawRequestResponseInfo> request_response_info =
+        client()->response_head().raw_request_response_info;
+    ASSERT_TRUE(request_response_info);
+    EXPECT_EQ(200, request_response_info->http_status_code);
+    EXPECT_EQ("OK", request_response_info->http_status_text);
   }
 
   service()->SetRawHeadersAccess(process_id, false);
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head().devtools_info.get());
+  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
 }
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {

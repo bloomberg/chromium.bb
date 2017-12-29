@@ -14,13 +14,13 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
-#include "content/public/common/resource_devtools_info.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/effective_connection_type.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "url/gurl.h"
 
@@ -83,7 +83,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   // Actual request and response headers, as obtained from the network stack.
   // Only present if the renderer set report_raw_headers to true and had the
   // CanReadRawCookies permission.
-  scoped_refptr<ResourceDevToolsInfo> devtools_info;
+  scoped_refptr<network::HttpRawRequestResponseInfo> raw_request_response_info;
 
   // The path to a file that will contain the response body.  It may only
   // contain a portion of the response body at the time that the ResponseInfo

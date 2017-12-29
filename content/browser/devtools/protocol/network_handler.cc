@@ -39,7 +39,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/resource_devtools_info.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -50,6 +49,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace content {
@@ -1027,23 +1027,25 @@ void NetworkHandler::NavigationPreloadResponseReceived(
                             head.response_time <
                                 head.load_timing.request_start_time)
           .Build());
-  if (head.devtools_info) {
-    if (head.devtools_info->http_status_code) {
-      response->SetStatus(head.devtools_info->http_status_code);
-      response->SetStatusText(head.devtools_info->http_status_text);
+  if (head.raw_request_response_info) {
+    if (head.raw_request_response_info->http_status_code) {
+      response->SetStatus(head.raw_request_response_info->http_status_code);
+      response->SetStatusText(head.raw_request_response_info->http_status_text);
     }
-    if (head.devtools_info->request_headers.size()) {
+    if (head.raw_request_response_info->request_headers.size()) {
       response->SetRequestHeaders(
-          getHeaders(head.devtools_info->request_headers));
+          getHeaders(head.raw_request_response_info->request_headers));
     }
-    if (!head.devtools_info->request_headers_text.empty()) {
+    if (!head.raw_request_response_info->request_headers_text.empty()) {
       response->SetRequestHeadersText(
-          head.devtools_info->request_headers_text);
+          head.raw_request_response_info->request_headers_text);
     }
-    if (head.devtools_info->response_headers.size())
-      response->SetHeaders(getHeaders(head.devtools_info->response_headers));
-    if (!head.devtools_info->response_headers_text.empty())
-      response->SetHeadersText(head.devtools_info->response_headers_text);
+    if (head.raw_request_response_info->response_headers.size())
+      response->SetHeaders(
+          getHeaders(head.raw_request_response_info->response_headers));
+    if (!head.raw_request_response_info->response_headers_text.empty())
+      response->SetHeadersText(
+          head.raw_request_response_info->response_headers_text);
   }
   response->SetProtocol(getProtocol(url, head));
   response->SetRemoteIPAddress(head.socket_address.HostForURL());

@@ -74,8 +74,8 @@ void PopulateResourceResponse(
   if (request_info)
     response->head.previews_state = request_info->GetPreviewsState();
   if (info->ShouldReportRawHeaders()) {
-    response->head.devtools_info =
-        BuildDevToolsInfo(*request, raw_request_headers, raw_response_headers);
+    response->head.raw_request_response_info = BuildRawRequestResponseInfo(
+        *request, raw_request_headers, raw_response_headers);
   }
 
   response->head.effective_connection_type =

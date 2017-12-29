@@ -80,7 +80,7 @@ void SyncLoadContext::OnReceivedResponse(const ResourceResponseInfo& info) {
   response_->request_time = info.request_time;
   response_->response_time = info.response_time;
   response_->load_timing = info.load_timing;
-  response_->devtools_info = info.devtools_info;
+  response_->raw_request_response_info = info.raw_request_response_info;
   response_->download_file_path = info.download_file_path;
   response_->socket_address = info.socket_address;
 }

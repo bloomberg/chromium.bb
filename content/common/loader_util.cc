@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/strings/stringprintf.h"
-#include "content/public/common/resource_devtools_info.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
@@ -15,6 +14,7 @@
 #include "net/http/http_raw_request_headers.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/cpp/http_raw_request_response_info.h"
 
 namespace content {
 
@@ -51,11 +51,12 @@ bool ShouldSniffContent(net::URLRequest* url_request,
   return false;
 }
 
-scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
+scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers) {
-  scoped_refptr<ResourceDevToolsInfo> info = new ResourceDevToolsInfo();
+  scoped_refptr<network::HttpRawRequestResponseInfo> info =
+      new network::HttpRawRequestResponseInfo();
 
   const net::HttpResponseInfo& response_info = request.response_info();
   // Unparsed headers only make sense if they were sent as text, i.e. HTTP 1.x.
