@@ -61,7 +61,6 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/Page.h"

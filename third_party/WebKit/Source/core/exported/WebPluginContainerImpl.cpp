@@ -64,8 +64,8 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -757,8 +757,8 @@ void WebPluginContainerImpl::HandleMouseEvent(MouseEvent* event) {
 
   // TODO(dtapuska): Move WebMouseEventBuilder into the anonymous namespace
   // in this class.
-  WebMouseEventBuilder transformed_event(
-      &parent, LayoutItem(element_->GetLayoutObject()), *event);
+  WebMouseEventBuilder transformed_event(&parent, element_->GetLayoutObject(),
+                                         *event);
   if (transformed_event.GetType() == WebInputEvent::kUndefined)
     return;
 
@@ -991,8 +991,8 @@ void WebPluginContainerImpl::HandleGestureEvent(GestureEvent* event) {
 }
 
 void WebPluginContainerImpl::SynthesizeMouseEventIfPossible(TouchEvent* event) {
-  WebMouseEventBuilder web_event(
-      &ParentFrameView(), LayoutItem(element_->GetLayoutObject()), *event);
+  WebMouseEventBuilder web_event(&ParentFrameView(),
+                                 element_->GetLayoutObject(), *event);
   if (web_event.GetType() == WebInputEvent::kUndefined)
     return;
 

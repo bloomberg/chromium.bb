@@ -37,7 +37,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/api/LayoutAPIShim.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

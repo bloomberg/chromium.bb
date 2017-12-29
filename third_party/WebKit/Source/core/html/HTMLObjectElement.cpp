@@ -41,7 +41,7 @@
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
-#include "core/layout/api/LayoutEmbeddedItem.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 
 namespace blink {
@@ -250,7 +250,7 @@ void HTMLObjectElement::ReloadPluginOnAttributeChange(
 // TODO(schenney): crbug.com/572908 This should be unified with
 // HTMLEmbedElement::updatePlugin and moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::UpdatePluginInternal() {
-  DCHECK(!GetLayoutEmbeddedItem().ShowsUnavailablePluginIndicator());
+  DCHECK(!GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator());
   DCHECK(NeedsPluginUpdate());
   SetNeedsPluginUpdate(false);
   // TODO(schenney): crbug.com/572908 This should ASSERT

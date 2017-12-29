@@ -11,8 +11,8 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/intersection_observer/IntersectionObserverEntry.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 
 namespace blink {
 
