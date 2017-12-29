@@ -156,6 +156,17 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
      return null;
     }
 
+    /**
+     * Returns an array of input elements in a form.
+     * @param {Element} form A form element for which the input elements are
+     *   returned.
+     * @return {Array<InputElement>}
+     */
+    var getFormInputElements_ = function(form) {
+        return __gCrWeb.common.getFormControlElements(form).
+          filter(function(element) { return element.tagName === "INPUT"; });
+    }
+
   /**
    * Returns the password form with the given |identifier| as a JSON string.
    * @param {string} name The name of the form to extract.
@@ -224,7 +235,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       if (formData.action != normalizedFormAction)
         continue;
 
-      var inputs = form.getElementsByTagName('input');
+      var inputs = getFormInputElements_(form);
       var usernameInput =
           findInputByFieldIdentifier_(inputs, formData.fields[0].name);
       if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput)
@@ -301,7 +312,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @return {Object} Object of data from formElement.
    */
   __gCrWeb.getPasswordFormData = function(formElement) {
-    var inputs = formElement.getElementsByTagName('input');
+    var inputs = getFormInputElements_(formElement);
 
     var fields = [];
     var passwords = [];
