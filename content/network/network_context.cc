@@ -61,8 +61,8 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
       binding_(this, std::move(request)) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
-  cookie_manager_ =
-      std::make_unique<CookieManager>(url_request_context_->cookie_store());
+  cookie_manager_ = std::make_unique<network::CookieManager>(
+      url_request_context_->cookie_store());
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -84,8 +84,8 @@ NetworkContext::NetworkContext(
       network_service->net_log());
   url_request_context_ = url_request_context_owner_.url_request_context.get();
   network_service_->RegisterNetworkContext(this);
-  cookie_manager_ =
-      std::make_unique<CookieManager>(url_request_context_->cookie_store());
+  cookie_manager_ = std::make_unique<network::CookieManager>(
+      url_request_context_->cookie_store());
 }
 
 NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
@@ -94,7 +94,7 @@ NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
     : network_service_(network_service),
       url_request_context_(url_request_context),
       binding_(this, std::move(request)),
-      cookie_manager_(std::make_unique<CookieManager>(
+      cookie_manager_(std::make_unique<network::CookieManager>(
           url_request_context->cookie_store())) {
   // May be nullptr in tests.
   if (network_service_)

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/network/cookie_manager.h"
+#include "services/network/cookie_manager.h"
 
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -10,7 +10,7 @@
 #include "net/cookies/cookie_options.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace network {
 
 namespace {
 
@@ -195,8 +195,9 @@ void CookieManager::DeleteCookies(
 
   cookie_store_->DeleteAllCreatedBetweenWithPredicateAsync(
       start_time, end_time,
-      base::Bind(&PredicateWrapper::Predicate,
-                 std::make_unique<PredicateWrapper>(std::move(filter))),
+      base::BindRepeating(
+          &PredicateWrapper::Predicate,
+          std::make_unique<PredicateWrapper>(std::move(filter))),
       std::move(callback));
 }
 
@@ -211,17 +212,18 @@ void CookieManager::RequestNotification(
 
   notification_registration->subscription = cookie_store_->AddCallbackForCookie(
       url, name,
-      base::Bind(&CookieManager::CookieChanged,
-                 // base::Unretained is safe as destruction of the
-                 // CookieManager will also destroy the
-                 // notifications_registered list (which this object will be
-                 // inserted into, below), which will destroy the
-                 // CookieChangedSubscription, unregistering the callback.
-                 base::Unretained(this),
-                 // base::Unretained is safe as destruction of the
-                 // NotificationRegistration will also destroy the
-                 // CookieChangedSubscription, unregistering the callback.
-                 base::Unretained(notification_registration.get())));
+      base::BindRepeating(
+          &CookieManager::CookieChanged,
+          // base::Unretained is safe as destruction of the
+          // CookieManager will also destroy the
+          // notifications_registered list (which this object will be
+          // inserted into, below), which will destroy the
+          // CookieChangedSubscription, unregistering the callback.
+          base::Unretained(this),
+          // base::Unretained is safe as destruction of the
+          // NotificationRegistration will also destroy the
+          // CookieChangedSubscription, unregistering the callback.
+          base::Unretained(notification_registration.get())));
 
   notification_registration->notification_pointer.set_connection_error_handler(
       base::BindOnce(&CookieManager::NotificationPipeBroken,
@@ -247,18 +249,18 @@ void CookieManager::RequestGlobalNotifications(
       std::move(notification_pointer);
 
   notification_registration->subscription =
-      cookie_store_->AddCallbackForAllChanges(
-          base::Bind(&CookieManager::CookieChanged,
-                     // base::Unretained is safe as destruction of the
-                     // CookieManager will also destroy the
-                     // notifications_registered list (which this object will be
-                     // inserted into, below), which will destroy the
-                     // CookieChangedSubscription, unregistering the callback.
-                     base::Unretained(this),
-                     // base::Unretained is safe as destruction of the
-                     // NotificationRegistration will also destroy the
-                     // CookieChangedSubscription, unregistering the callback.
-                     base::Unretained(notification_registration.get())));
+      cookie_store_->AddCallbackForAllChanges(base::BindRepeating(
+          &CookieManager::CookieChanged,
+          // base::Unretained is safe as destruction of the
+          // CookieManager will also destroy the
+          // notifications_registered list (which this object will be
+          // inserted into, below), which will destroy the
+          // CookieChangedSubscription, unregistering the callback.
+          base::Unretained(this),
+          // base::Unretained is safe as destruction of the
+          // NotificationRegistration will also destroy the
+          // CookieChangedSubscription, unregistering the callback.
+          base::Unretained(notification_registration.get())));
 
   notification_registration->notification_pointer.set_connection_error_handler(
       base::BindOnce(&CookieManager::NotificationPipeBroken,
@@ -303,4 +305,4 @@ void CookieManager::CloneInterface(
   AddRequest(std::move(new_interface));
 }
 
-}  // namespace content
+}  // namespace network

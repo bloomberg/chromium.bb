@@ -1,0 +1,38 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+static_library("network_service") {
+  sources = [
+    "cookie_manager.cc",
+    "cookie_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/network/public/interfaces",
+    "//url",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "cookie_manager_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//net",
+    "//net:test_support",
+    "//services/network:network_service",
+    "//services/network/public/interfaces",
+    "//testing/gtest",
+  ]
+}

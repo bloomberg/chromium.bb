@@ -1513,7 +1513,6 @@ test("content_unittests") {
     "../common/throttling_url_loader_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
     "../common/webplugininfo_unittest.cc",
-    "../network/cookie_manager_unittest.cc",
     "../network/data_pipe_element_reader_unittest.cc",
     "../network/network_change_manager_unittest.cc",
     "../network/network_context_unittest.cc",
