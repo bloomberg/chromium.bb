@@ -405,7 +405,7 @@ TEST_F(HistoryStateOperationsTest, PushState) {
 // resets the page to a GET request.
 TEST_F(HistoryStateOperationsTest, ReplaceStatePostRequest) {
   // Add POST data to the current NavigationItem.
-  base::scoped_nsobject<NSData> post_data([NSData data]);
+  NSData* post_data = [NSData data];
   static_cast<web::NavigationItemImpl*>(GetLastCommittedItem())
       ->SetPostData(post_data);
   ASSERT_TRUE(GetLastCommittedItem()->HasPostData());

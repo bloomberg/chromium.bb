@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/voice/text_to_speech_listener.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +25,7 @@ NSString* const kValidVoiceSearchScript =
 
 @interface TestTTSListenerDelegate : NSObject<TextToSpeechListenerDelegate> {
   // Backing objects for properties of the same name.
-  base::scoped_nsobject<NSData> _expectedAudioData;
+  NSData* _expectedAudioData;
 }
 
 // The expected audio data to be returned by the TextToSpeechListener.
@@ -42,7 +41,7 @@ NSString* const kValidVoiceSearchScript =
 @synthesize audioDataReceived = _audioDataReceived;
 
 - (void)setExpectedAudioData:(NSData*)expectedAudioData {
-  _expectedAudioData.reset(expectedAudioData);
+  _expectedAudioData = expectedAudioData;
 }
 
 - (NSData*)expectedAudioData {
@@ -72,9 +71,9 @@ class TextToSpeechListenerTest : public web::WebTestWithWebState {
  public:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
-    delegate_.reset([[TestTTSListenerDelegate alloc] init]);
-    listener_.reset([[TextToSpeechListener alloc] initWithWebState:web_state()
-                                                          delegate:delegate_]);
+    delegate_ = [[TestTTSListenerDelegate alloc] init];
+    listener_ = [[TextToSpeechListener alloc] initWithWebState:web_state()
+                                                      delegate:delegate_];
   }
 
   void TestExtraction(NSString* html, NSData* expected_audio_data) {
@@ -86,8 +85,8 @@ class TextToSpeechListenerTest : public web::WebTestWithWebState {
   }
 
  private:
-  base::scoped_nsobject<TestTTSListenerDelegate> delegate_;
-  base::scoped_nsobject<TextToSpeechListener> listener_;
+  TestTTSListenerDelegate* delegate_;
+  TextToSpeechListener* listener_;
 };
 
 TEST_F(TextToSpeechListenerTest, ValidAudioDataTest) {

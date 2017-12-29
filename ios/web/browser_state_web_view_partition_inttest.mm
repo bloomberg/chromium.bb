@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/test_timeouts.h"
@@ -108,8 +107,8 @@ class BrowserStateWebViewPartitionTest : public web::WebIntTest {
   void LoadTestWebPage(WKWebView* web_view) {
     DCHECK(web_view);
 
-    base::scoped_nsobject<TestNavigationDelegate> navigation_delegate(
-        [[TestNavigationDelegate alloc] init]);
+    TestNavigationDelegate* navigation_delegate =
+        [[TestNavigationDelegate alloc] init];
 
     id old_navigation_delegate = web_view.navigationDelegate;
     web_view.navigationDelegate = navigation_delegate;

@@ -8,7 +8,6 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
