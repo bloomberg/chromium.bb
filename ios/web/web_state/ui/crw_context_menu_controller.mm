@@ -255,7 +255,7 @@ void CancelTouches(UIGestureRecognizer* gesture_recognizer) {
 - (void)showContextMenu {
   web::ContextMenuParams params =
       web::ContextMenuParamsFromElementDictionary(_DOMElementForLastTouch);
-  params.view.reset(_webView);
+  params.view = _webView;
   params.location = _locationForLastTouch;
   [_delegate webView:_webView handleContextMenu:params];
 }

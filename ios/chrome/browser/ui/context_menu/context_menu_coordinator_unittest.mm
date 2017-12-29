@@ -42,7 +42,7 @@ class ContextMenuCoordinatorTest : public PlatformTest {
 TEST_F(ContextMenuCoordinatorTest, ValidateIsVisible) {
   web::ContextMenuParams params;
   params.location = CGPointZero;
-  params.view.reset([view_controller_ view]);
+  params.view = [view_controller_ view];
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
                           params:params];
@@ -55,7 +55,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateIsVisible) {
 TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnStop) {
   web::ContextMenuParams params;
   params.location = CGPointZero;
-  params.view.reset([view_controller_ view]);
+  params.view = [view_controller_ view];
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
                           params:params];
@@ -70,7 +70,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateDismissalOnStop) {
 TEST_F(ContextMenuCoordinatorTest, ValidateActions) {
   web::ContextMenuParams params;
   params.location = CGPointZero;
-  params.view.reset([view_controller_ view]);
+  params.view = [view_controller_ view];
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
                           params:params];
@@ -105,7 +105,7 @@ TEST_F(ContextMenuCoordinatorTest, ValidateActions) {
 TEST_F(ContextMenuCoordinatorTest, CancelButtonExists) {
   web::ContextMenuParams params;
   params.location = CGPointZero;
-  params.view.reset([view_controller_ view]);
+  params.view = [view_controller_ view];
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
                           params:params];
@@ -130,8 +130,8 @@ TEST_F(ContextMenuCoordinatorTest, ValidateContextMenuParams) {
 
   web::ContextMenuParams params;
   params.location = location;
-  params.menu_title.reset(title);
-  params.view.reset([view_controller_ view]);
+  params.menu_title = title;
+  params.view = [view_controller_ view];
   menu_coordinator_ = [[ContextMenuCoordinator alloc]
       initWithBaseViewController:view_controller_
                           params:params];

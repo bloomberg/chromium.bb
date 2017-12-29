@@ -110,11 +110,11 @@ TEST_F(WebStateDelegateBridgeTest, OpenURLFromWebState) {
 TEST_F(WebStateDelegateBridgeTest, HandleContextMenu) {
   EXPECT_EQ(nil, [delegate_ contextMenuParams]);
   web::ContextMenuParams context_menu_params;
-  context_menu_params.menu_title.reset([@"Menu title" copy]);
+  context_menu_params.menu_title = [@"Menu title" copy];
   context_menu_params.link_url = GURL("http://www.url.com");
   context_menu_params.src_url = GURL("http://www.url.com/image.jpeg");
   context_menu_params.referrer_policy = web::ReferrerPolicyOrigin;
-  context_menu_params.view.reset([[UIView alloc] init]);
+  context_menu_params.view = [[UIView alloc] init];
   context_menu_params.location = CGPointMake(5.0, 5.0);
   bridge_->HandleContextMenu(nullptr, context_menu_params);
   web::ContextMenuParams* result_params = [delegate_ contextMenuParams];
