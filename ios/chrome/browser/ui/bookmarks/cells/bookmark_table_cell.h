@@ -41,9 +41,6 @@ class BookmarkNode;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
-// Returns the preferred image size for favicons.
-+ (CGFloat)preferredImageSize;
-
 // Identifier for -[UITableView registerClass:forCellWithReuseIdentifier:].
 + (NSString*)reuseIdentifier;
 
