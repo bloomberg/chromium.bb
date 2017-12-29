@@ -58,6 +58,9 @@ cr.define('extension_detail_view_tests', function() {
       expectTrue(testIsVisible('#icon'));
       expectTrue(testIsVisible('#enable-toggle'));
       expectFalse(testIsVisible('#extensions-options'));
+      expectTrue(
+          item.$.description.textContent.indexOf('This is an extension') !==
+          -1);
 
       // Check the checkboxes visibility and state. They should be visible
       // only if the associated option is enabled, and checked if the
