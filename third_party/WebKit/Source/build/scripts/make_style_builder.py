@@ -50,12 +50,14 @@ def calculate_apply_functions_to_declare(property_):
     # TODO(crbug.com/751354): Remove this hard coded list of supported
     # properties once all of them have been implemented
     if property_['custom_apply_functions_all']:
-        if (property_['upper_camel_name'] in
-                ['BorderImageOutset', 'BorderImageRepeat', 'BorderImageSlice',
-                 'BorderImageWidth', 'Clip', 'ColumnCount', 'ColumnGap',
-                 'ColumnWidth', 'WebkitMaskBoxImageOutset',
-                 'WebkitMaskBoxImageRepeat', 'WebkitMaskBoxImageSlice',
-                 'WebkitMaskBoxImageWidth', 'ZIndex']):
+        if (property_['upper_camel_name'] in [
+                'BackgroundAttachment', 'BackgroundBlendMode', 'BackgroundClip', 'BackgroundImage', 'BackgroundOrigin',
+                'BackgroundPositionX', 'BackgroundPositionY', 'BackgroundRepeatX', 'BackgroundRepeatY', 'BackgroundSize',
+                'BorderImageOutset', 'BorderImageRepeat', 'BorderImageSlice', 'BorderImageWidth', 'Clip', 'ColumnCount',
+                'ColumnGap', 'ColumnWidth', 'MaskSourceType', 'WebkitMaskBoxImageOutset', 'WebkitMaskBoxImageRepeat',
+                'WebkitMaskBoxImageSlice', 'WebkitMaskBoxImageWidth', 'WebkitMaskClip', 'WebkitMaskComposite', 'WebkitMaskImage',
+                'WebkitMaskOrigin', 'WebkitMaskPositionX', 'WebkitMaskPositionY', 'WebkitMaskRepeatX', 'WebkitMaskRepeatY',
+                'WebkitMaskSize', 'ZIndex']):
             property_['use_property_class_in_stylebuilder'] = True
 
 

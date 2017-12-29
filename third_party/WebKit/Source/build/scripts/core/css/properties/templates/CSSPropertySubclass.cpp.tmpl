@@ -1,0 +1,74 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'core/css/properties/templates/style_builder_functions.tmpl' import declare_initial, declare_inherit, declare_value %}
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+
+#include "core/css/properties/{{property.namespace_group.lower()}}s/{{property_classname}}.h"
+
+{% for include in includes %}
+#include "{{include}}"
+{% endfor %}
+
+namespace blink {
+namespace CSSLonghand {
+
+{% if property.custom_apply == "fill_layer" %}
+{% set layer_type = property.custom_apply_args['layer_type'] %}
+{% set fill_type = property.custom_apply_args['fill_type'] %}
+{{declare_initial(property.upper_camel_name)}} {
+  FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
+  currChild->Set{{fill_type}}(FillLayer::InitialFill{{fill_type}}(EFillLayerType::k{{layer_type}}));
+  for (currChild = currChild->Next(); currChild; currChild = currChild->Next())
+    currChild->Clear{{fill_type}}();
+}
+
+{{declare_inherit(property.upper_camel_name)}} {
+  FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
+  FillLayer* prevChild = 0;
+  const FillLayer* currParent = &state.ParentStyle()->{{layer_type}}Layers();
+  while (currParent && currParent->Is{{fill_type}}Set()) {
+    if (!currChild)
+      currChild = prevChild->EnsureNext();
+    currChild->Set{{fill_type}}(currParent->{{property.custom_apply_args['fill_type_getter']}}());
+    prevChild = currChild;
+    currChild = prevChild->Next();
+    currParent = currParent->Next();
+  }
+
+  while (currChild) {
+    // Reset any remaining layers to not have the property set.
+    currChild->Clear{{fill_type}}();
+    currChild = currChild->Next();
+  }
+}
+
+{{declare_value(property.upper_camel_name)}} {
+  FillLayer* currChild = &state.Style()->Access{{layer_type}}Layers();
+  FillLayer* prevChild = 0;
+  if (value.IsValueList() && !value.IsImageSetValue()) {
+    // Walk each value and put it into a layer, creating new layers as needed.
+    const CSSValueList& valueList = ToCSSValueList(value);
+    for (unsigned int i = 0; i < valueList.length(); i++) {
+      if (!currChild)
+        currChild = prevChild->EnsureNext();
+      CSSToStyleMap::MapFill{{fill_type}}(state, currChild, valueList.Item(i));
+      prevChild = currChild;
+      currChild = currChild->Next();
+    }
+  } else {
+    CSSToStyleMap::MapFill{{fill_type}}(state, currChild, value);
+    currChild = currChild->Next();
+  }
+  while (currChild) {
+    // Reset all remaining layers to not have the property set.
+    currChild->Clear{{fill_type}}();
+    currChild = currChild->Next();
+  }
+}
+{% endif %}
+
+}  // namespace CSSLonghand
+}  // namespace blink

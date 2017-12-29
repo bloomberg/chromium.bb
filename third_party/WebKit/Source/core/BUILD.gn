@@ -544,10 +544,12 @@ css_properties("make_core_generated_css_property_baseclass") {
 
 # FIXME: Need a better way to specify generated output files
 css_properties("make_core_generated_css_longhand_property_classes") {
-  script = "../build/scripts/core/css/properties/make_css_property_headers.py"
+  script =
+      "../build/scripts/core/css/properties/make_css_property_subclasses.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
   other_inputs = [
     "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",
+    "../build/scripts/core/css/properties/templates/CSSPropertySubclass.cpp.tmpl",
   ]
   outputs = [
     "$blink_core_output_dir/css/properties/longhands/AlignContent.h",
@@ -566,16 +568,26 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/BackdropFilter.h",
     "$blink_core_output_dir/css/properties/longhands/BackfaceVisibility.h",
     "$blink_core_output_dir/css/properties/longhands/BackgroundAttachment.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundAttachment.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundBlendMode.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundBlendMode.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundClip.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundClip.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundColor.h",
     "$blink_core_output_dir/css/properties/longhands/BackgroundImage.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundImage.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundOrigin.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundOrigin.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundPositionX.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundPositionX.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundPositionY.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundPositionY.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundRepeatX.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundRepeatX.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundRepeatY.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundRepeatY.cpp",
     "$blink_core_output_dir/css/properties/longhands/BackgroundSize.h",
+    "$blink_core_output_dir/css/properties/longhands/BackgroundSize.cpp",
     "$blink_core_output_dir/css/properties/longhands/BaselineShift.h",
     "$blink_core_output_dir/css/properties/longhands/BlockSize.h",
     "$blink_core_output_dir/css/properties/longhands/BorderBottomColor.h",
@@ -710,6 +722,7 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/MarkerStart.h",
     "$blink_core_output_dir/css/properties/longhands/Mask.h",
     "$blink_core_output_dir/css/properties/longhands/MaskSourceType.h",
+    "$blink_core_output_dir/css/properties/longhands/MaskSourceType.cpp",
     "$blink_core_output_dir/css/properties/longhands/MaskType.h",
     "$blink_core_output_dir/css/properties/longhands/MaxBlockSize.h",
     "$blink_core_output_dir/css/properties/longhands/MaxHeight.h",
@@ -921,14 +934,23 @@ css_properties("make_core_generated_css_longhand_property_classes") {
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskBoxImageSource.h",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskBoxImageWidth.h",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskClip.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskClip.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskComposite.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskComposite.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskImage.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskImage.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskOrigin.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskOrigin.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskPositionX.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskPositionX.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskPositionY.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskPositionY.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskRepeatX.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskRepeatX.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskRepeatY.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskRepeatY.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaskSize.h",
+    "$blink_core_output_dir/css/properties/longhands/WebkitMaskSize.cpp",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaxLogicalHeight.h",
     "$blink_core_output_dir/css/properties/longhands/WebkitMaxLogicalWidth.h",
     "$blink_core_output_dir/css/properties/longhands/WebkitMinLogicalHeight.h",
@@ -992,7 +1014,8 @@ css_properties("make_core_generated_css_longhand_property_classes") {
 
 # FIXME: Need a better way to specify generated output files
 css_properties("make_core_generated_css_shorthand_property_classes") {
-  script = "../build/scripts/core/css/properties/make_css_property_headers.py"
+  script =
+      "../build/scripts/core/css/properties/make_css_property_subclasses.py"
   in_files = [ "css/properties/CSSPropertyMethods.json5" ]
   other_inputs = [
     "../build/scripts/core/css/properties/templates/CSSPropertySubclass.h.tmpl",

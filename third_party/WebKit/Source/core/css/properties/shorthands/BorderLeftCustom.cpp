@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/css/properties/shorthands/BorderLeft.h"
+
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
