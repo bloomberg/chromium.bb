@@ -1435,11 +1435,6 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
       !layout_object_->IsBox())
     return nullptr;
 
-  auto* frame_view = DocumentFrameView();
-  if (!frame_view)
-    return nullptr;
-  frame_view->UpdateLifecycleToPrePaintClean();
-
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
