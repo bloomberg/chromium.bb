@@ -445,7 +445,57 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
 
 class DNSErrorPageTest : public ErrorPageTest {
  public:
-  DNSErrorPageTest() = default;
+  DNSErrorPageTest() {
+    if (!base::FeatureList::IsEnabled(features::kNetworkService))
+      return;
+
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindRepeating(
+            [](DNSErrorPageTest* owner,
+               content::URLLoaderInterceptor::RequestParams* params) {
+              // Handle mock failed request. The error code is embedded in the
+              // query.  Here we strip it out, and call OnComplete with it.
+              // TODO(dougt) mock.failed.request handling can be moved into the
+              // URLLoaderInterceptor implementation so that we can share this
+              // with other tests.
+              if (params->url_request.url.GetWithEmptyPath().spec() ==
+                  "http://mock.failed.request/") {
+                std::string query = params->url_request.url.query();
+                std::string error_code = query.substr(query.find("=") + 1);
+
+                int error = 0;
+                base::StringToInt(error_code, &error);
+                network::URLLoaderCompletionStatus status;
+                status.error_code = error;
+                params->client->OnComplete(status);
+                return true;
+              }
+
+              // Add an interceptor that serves LinkDoctor responses
+              if (google_util::LinkDoctorBaseURL() == params->url_request.url) {
+                // Send RequestCreated so that anyone blocking on
+                // WaitForRequests can continue.
+                BrowserThread::PostTask(
+                    BrowserThread::UI, FROM_HERE,
+                    base::BindOnce(&DNSErrorPageTest::RequestCreated,
+                                   base::Unretained(owner)));
+
+                return WriteFileToURLLoader(params, "mock-link-doctor.json");
+              }
+
+              // Add an interceptor for the search engine the error page will
+              // use.
+              if (params->url_request.url.host() ==
+                  owner->search_term_url_.host()) {
+                return WriteFileToURLLoader(params, "title3.html");
+              }
+
+              return false;
+            },
+            this),
+        true, true);
+  }
+
   ~DNSErrorPageTest() override = default;
 
   static void InstallMockInterceptors(
@@ -477,18 +527,45 @@ class DNSErrorPageTest : public ErrorPageTest {
                                               "\x01"));
   }
 
+  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
+
+  static bool WriteFileToURLLoader(
+      content::URLLoaderInterceptor::RequestParams* params,
+      std::string path) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    if (path[0] == '/')
+      path.erase(0, 1);
+
+    if (path == "favicon.ico")
+      return false;
+
+    base::FilePath file_path;
+    PathService::Get(chrome::DIR_TEST_DATA, &file_path);
+    file_path = file_path.AppendASCII(path);
+
+    std::string contents;
+    const bool result = base::ReadFileToString(file_path, &contents);
+    EXPECT_TRUE(result);
+
+    content::URLLoaderInterceptor::WriteResponse(
+        net::URLRequestTestJob::test_headers(), contents, params->client.get());
+    return true;
+  }
+
   void SetUpOnMainThread() override {
-    std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
-        new LinkDoctorInterceptor(this));
-    // Ownership of the |interceptor_| is passed to an object the IO thread, but
-    // a pointer is kept in the test fixture.  As soon as anything calls
-    // URLRequestFilter::ClearHandlers(), |interceptor_| can become invalid.
     UIThreadSearchTermsData search_terms_data(browser()->profile());
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DNSErrorPageTest::InstallMockInterceptors,
-                       GURL(search_terms_data.GoogleBaseURLValue()),
-                       base::Passed(&owned_interceptor)));
+    search_term_url_ = GURL(search_terms_data.GoogleBaseURLValue());
+
+    if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
+      std::unique_ptr<net::URLRequestInterceptor> owned_interceptor(
+          new LinkDoctorInterceptor(this));
+
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(&InstallMockInterceptors, search_term_url_,
+                         base::Passed(&owned_interceptor)));
+    }
   }
 
   void WaitForRequests(int32_t requests_to_wait_for) {
@@ -529,8 +606,9 @@ class DNSErrorPageTest : public ErrorPageTest {
   // These are only used on the UI thread.
   int32_t num_requests_ = 0;
   int32_t requests_to_wait_for_ = -1;
+  GURL search_term_url_;
   std::unique_ptr<base::RunLoop> run_loop_;
-
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 // Test an error with a file URL, and make sure it doesn't have a
@@ -785,6 +863,7 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest,
 IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, DNSError_DoClickLink) {
   // The first navigation should fail, and the second one should be the error
   // page.
+
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
   ExpectDisplayingNavigationCorrections(browser(), net::ERR_NAME_NOT_RESOLVED);

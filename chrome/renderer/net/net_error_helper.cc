@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -24,6 +25,7 @@
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/content_renderer_client.h"
@@ -303,9 +305,7 @@ void NetErrorHelper::FetchNavigationCorrections(
   correction_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
-      render_frame()
-          ->GetDefaultURLLoaderFactoryGetter()
-          ->GetNetworkLoaderFactory(),
+      render_frame()->GetURLLoaderFactory(navigation_correction_url),
       GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnNavigationCorrectionsFetched,
                      base::Unretained(this)));
@@ -330,9 +330,7 @@ void NetErrorHelper::SendTrackingRequest(
   tracking_fetcher_->Start(
       render_frame()->GetWebFrame(),
       blink::WebURLRequest::kRequestContextInternal,
-      render_frame()
-          ->GetDefaultURLLoaderFactoryGetter()
-          ->GetNetworkLoaderFactory(),
+      render_frame()->GetURLLoaderFactory(tracking_url),
       GetNetworkTrafficAnnotationTag(),
       base::BindOnce(&NetErrorHelper::OnTrackingRequestComplete,
                      base::Unretained(this)));

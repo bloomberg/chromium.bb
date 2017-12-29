@@ -7042,6 +7042,15 @@ void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }
 
+mojom::URLLoaderFactory* RenderFrameImpl::GetURLLoaderFactory(
+    const GURL& request_url) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    return GetSubresourceLoaderFactories().GetFactoryForRequest(request_url);
+  }
+
+  return GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(request_url);
+}
+
 blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
   if (frame_->GetDocument().IsPluginDocument())
     return frame_->GetDocument().To<WebPluginDocument>().Plugin();
