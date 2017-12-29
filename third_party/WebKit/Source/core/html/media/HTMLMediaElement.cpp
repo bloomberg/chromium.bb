@@ -67,7 +67,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/IntersectionGeometry.h"
 #include "core/layout/LayoutMedia.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"

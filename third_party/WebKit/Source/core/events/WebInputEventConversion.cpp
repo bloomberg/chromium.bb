@@ -76,15 +76,15 @@ FloatPoint FrameTranslation(const LocalFrameView* frame_view) {
 
 FloatPoint ConvertAbsoluteLocationForLayoutObjectFloat(
     const DoublePoint& location,
-    const LayoutItem layout_item) {
-  return layout_item.AbsoluteToLocal(FloatPoint(location), kUseTransforms);
+    const LayoutObject* layout_object) {
+  return layout_object->AbsoluteToLocal(FloatPoint(location), kUseTransforms);
 }
 
 // FIXME: Change |LocalFrameView| to const FrameView& after RemoteFrames get
 // RemoteFrameViews.
 void UpdateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
                                            const LocalFrameView* plugin_parent,
-                                           const LayoutItem layout_item,
+                                           const LayoutObject* layout_object,
                                            WebMouseEvent& web_event) {
   web_event.SetTimeStampSeconds(event.PlatformTimeStamp().InSeconds());
   web_event.SetModifiers(event.GetModifiers());
@@ -100,7 +100,7 @@ void UpdateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
   }
   web_event.SetPositionInScreen(event.screenX(), event.screenY());
   FloatPoint local_point = ConvertAbsoluteLocationForLayoutObjectFloat(
-      event.AbsoluteLocation(), layout_item);
+      event.AbsoluteLocation(), layout_object);
   web_event.SetPositionInWidget(local_point.X(), local_point.Y());
 }
 
@@ -170,7 +170,7 @@ WebTouchEvent TransformWebTouchEvent(LocalFrameView* frame_view,
 }
 
 WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
-                                           const LayoutItem layout_item,
+                                           const LayoutObject* layout_object,
                                            const MouseEvent& event) {
   if (event.NativeEvent()) {
     *static_cast<WebMouseEvent*>(this) =
@@ -185,7 +185,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
     }
 
     FloatPoint local_point =
-        layout_item.AbsoluteToLocal(absolute_location, kUseTransforms);
+        layout_object->AbsoluteToLocal(absolute_location, kUseTransforms);
     SetPositionInWidget(local_point.X(), local_point.Y());
     return;
   }
@@ -211,7 +211,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
 
   time_stamp_seconds_ = event.PlatformTimeStamp().InSeconds();
   modifiers_ = event.GetModifiers();
-  UpdateWebMouseEventFromCoreMouseEvent(event, plugin_parent, layout_item,
+  UpdateWebMouseEventFromCoreMouseEvent(event, plugin_parent, layout_object,
                                         *this);
 
   switch (event.button()) {
@@ -262,7 +262,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
 // Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a
 // mouse with touch input for plugins that don't support touch input).
 WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
-                                           const LayoutItem layout_item,
+                                           const LayoutObject* layout_object,
                                            const TouchEvent& event) {
   if (!event.touches())
     return;
@@ -309,7 +309,7 @@ WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
   click_count = (type_ == kMouseDown || type_ == kMouseUp);
 
   FloatPoint local_point = ConvertAbsoluteLocationForLayoutObjectFloat(
-      DoublePoint(touch->AbsoluteLocation()), layout_item);
+      DoublePoint(touch->AbsoluteLocation()), layout_object);
   SetPositionInWidget(local_point.X(), local_point.Y());
 
   pointer_type = WebPointerProperties::PointerType::kTouch;

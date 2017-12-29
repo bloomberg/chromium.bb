@@ -25,7 +25,7 @@
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/input/KeyboardEventManager.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"

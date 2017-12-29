@@ -43,7 +43,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/input/Touch.h"
 #include "core/input/TouchList.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/testing/URLTestHelpers.h"

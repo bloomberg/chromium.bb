@@ -37,7 +37,6 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/ColorBlend.h"
 #include "platform/graphics/Gradient.h"

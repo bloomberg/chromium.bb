@@ -14,7 +14,7 @@
 #include "core/geometry/DOMMatrixInit.h"
 #include "core/geometry/DOMPoint.h"
 #include "core/geometry/DOMPointInit.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

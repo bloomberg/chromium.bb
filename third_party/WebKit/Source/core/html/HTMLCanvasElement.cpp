@@ -63,7 +63,7 @@
 #include "core/input_type_names.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/layout/LayoutHTMLCanvas.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/page/ChromeClient.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintTiming.h"

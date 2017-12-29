@@ -10,7 +10,6 @@
 #include "core/css/MediaValuesCached.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/api/LayoutViewItem.h"
 
 namespace blink {
 

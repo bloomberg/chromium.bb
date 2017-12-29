@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "platform/graphics/ColorSpaceGamut.h"
 
 namespace blink {

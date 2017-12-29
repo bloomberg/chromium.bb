@@ -29,7 +29,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/Settings.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {

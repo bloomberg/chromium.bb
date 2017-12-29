@@ -4,7 +4,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/api/LayoutViewItem.h"
+#include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
