@@ -1136,10 +1136,6 @@ const char kPushApiBackgroundModeDescription[] =
     "running after the last window is closed, and to launch at OS startup, if "
     "the Push API needs it.";
 
-const char kPwaMinimalUiName[] = "Minimal-UI display mode for PWAs";
-const char kPwaMinimalUiDescription[] =
-    "Enables support for Minimal-UI display mode for installed PWAs";
-
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 

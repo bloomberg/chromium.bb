@@ -4,7 +4,6 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/android/shortcut_info.h"
-#include "chrome/common/chrome_features.h"
 
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
@@ -44,13 +43,9 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   if (manifest.display != blink::kWebDisplayModeUndefined)
     display = manifest.display;
 
-  if (manifest.display == blink::kWebDisplayModeMinimalUi &&
-      !base::FeatureList::IsEnabled(features::kPwaMinimalUi)) {
-    display = blink::kWebDisplayModeBrowser;
-  } else if (display == blink::kWebDisplayModeStandalone ||
-             display == blink::kWebDisplayModeFullscreen ||
-             (display == blink::kWebDisplayModeMinimalUi &&
-              base::FeatureList::IsEnabled(features::kPwaMinimalUi))) {
+  if (display == blink::kWebDisplayModeStandalone ||
+      display == blink::kWebDisplayModeFullscreen ||
+      display == blink::kWebDisplayModeMinimalUi) {
     source = SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
     // Set the orientation based on the manifest value, or ignore if the display
     // mode is different from 'standalone', 'fullscreen' or 'minimal-ui'.

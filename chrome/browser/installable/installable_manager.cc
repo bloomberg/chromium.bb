@@ -5,13 +5,11 @@
 #include "chrome/browser/installable/installable_manager.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/common/chrome_features.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -494,8 +492,7 @@ bool InstallableManager::IsManifestValidForWebApp(
 
   if (manifest.display != blink::kWebDisplayModeStandalone &&
       manifest.display != blink::kWebDisplayModeFullscreen &&
-      !(manifest.display == blink::kWebDisplayModeMinimalUi &&
-        base::FeatureList::IsEnabled(features::kPwaMinimalUi))) {
+      manifest.display != blink::kWebDisplayModeMinimalUi) {
     valid_manifest_->error = MANIFEST_DISPLAY_NOT_SUPPORTED;
     return false;
   }

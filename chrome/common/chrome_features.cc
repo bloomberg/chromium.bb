@@ -467,10 +467,6 @@ const base::Feature kPrintPdfAsImage{"PrintPdfAsImage",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables support for Minimal-UI PWA display mode.
-const base::Feature kPwaMinimalUi{"PwaMinimalUi",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if !defined(OS_ANDROID)
 const base::Feature kRemoveUsageOfDeprecatedGaiaSigninEndpoint{
     "RemoveUsageOfDeprecatedGaiaSigninEndpoint",
