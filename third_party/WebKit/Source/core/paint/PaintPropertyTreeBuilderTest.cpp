@@ -3735,6 +3735,31 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
   // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       FragmentedBecomesUnfragmentedClearPaginationOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+         width: 30px; height: 20px; position: relative;
+      }
+    </style>
+    <div style='columns: 2; height: 20px width: 400px'>
+       <div style='height: 20px'></div>
+       <div id=target></div>
+     </div>
+    </div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  EXPECT_EQ(LayoutPoint(LayoutUnit(392.5f), LayoutUnit(-20)),
+            target->FirstFragment().PaginationOffset());
+  Element* target_element = GetDocument().getElementById("target");
+
+  target_element->setAttribute(HTMLNames::styleAttr, "position: absolute");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(LayoutPoint(0, 0), target->FirstFragment().PaginationOffset());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, Reflection) {
   SetBodyInnerHTML(
       "<div id='filter' style='-webkit-box-reflect: below; height:1000px;'>"

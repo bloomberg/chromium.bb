@@ -1631,6 +1631,7 @@ void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
     context_.force_subtree_update = true;
     fragment.ClearPaintProperties();
   }
+  fragment.SetPaginationOffset(LayoutPoint());
 }
 
 void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
