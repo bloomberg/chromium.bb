@@ -58,6 +58,9 @@ class WebState;
 // Requests deletion of the current page snapshot from disk and memory.
 - (void)removeSnapshot;
 
+// Returns an image to use as replacement of a missing snapshot.
++ (UIImage*)defaultSnapshotImage;
+
 // The SnapshotGenerator delegate.
 @property(nonatomic, weak) id<SnapshotGeneratorDelegate> delegate;
 

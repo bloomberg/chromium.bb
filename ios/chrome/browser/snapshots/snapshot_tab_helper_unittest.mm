@@ -28,12 +28,9 @@ using ui::test::uiimage_utils::UIImagesAreEqual;
 using ui::test::uiimage_utils::UIImageWithSizeAndSolidColor;
 
 // SnapshotGeneratorDelegate used to test SnapshotTabHelper by allowing to
-// set a default snapshot image, control whether capturing a snapshot is
-// possible and to count the number of snapshot generated.
+// count the number of snapshot generated and control whether capturing a
+// snapshot is possible.
 @interface TabHelperSnapshotGeneratorDelegate : FakeSnapshotGeneratorDelegate
-
-// Initialize the delegate with the default snapshot image.
-- (instancetype)initWithDefaultSnapshotImage:(UIImage*)defaultSnapshotImage;
 
 // Returns the number of times a snapshot was captured (count the number of
 // calls to -willUpdateSnapshotForWebState:).
@@ -45,25 +42,12 @@ using ui::test::uiimage_utils::UIImageWithSizeAndSolidColor;
 
 @end
 
-@implementation TabHelperSnapshotGeneratorDelegate {
-  UIImage* _defaultSnapshotImage;
-}
+@implementation TabHelperSnapshotGeneratorDelegate
 
 @synthesize snapshotTakenCount = _snapshotTakenCount;
 @synthesize canTakeSnapshot = _canTakeSnapshot;
 
-- (instancetype)initWithDefaultSnapshotImage:(UIImage*)defaultSnapshotImage {
-  if ((self = [super init])) {
-    _defaultSnapshotImage = defaultSnapshotImage;
-  }
-  return self;
-}
-
 #pragma mark - SnapshotGeneratorDelegate
-
-- (UIImage*)defaultSnapshotImage {
-  return _defaultSnapshotImage;
-}
 
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
   return !_canTakeSnapshot;
@@ -112,10 +96,7 @@ class SnapshotTabHelperTest : public PlatformTest {
 
     // Create the SnapshotTabHelper with a fake delegate.
     snapshot_session_id_ = [[NSUUID UUID] UUIDString];
-    delegate_ = [[TabHelperSnapshotGeneratorDelegate alloc]
-        initWithDefaultSnapshotImage:UIImageWithSizeAndSolidColor(
-                                         kDefaultSnapshotSize,
-                                         [UIColor blueColor])];
+    delegate_ = [[TabHelperSnapshotGeneratorDelegate alloc] init];
     SnapshotTabHelper::CreateForWebState(&web_state_, snapshot_session_id_);
     SnapshotTabHelper::FromWebState(&web_state_)->SetDelegate(delegate_);
   }
@@ -205,7 +186,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotWebUsageDisabled) {
   run_loop.Run();
 
   ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(UIImagesAreEqual(snapshot, [delegate_ defaultSnapshotImage]));
+  EXPECT_TRUE(
+      UIImagesAreEqual(snapshot, SnapshotTabHelper::GetDefaultSnapshotImage()));
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
@@ -229,7 +211,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveColorSnapshotCannotTakeSnapshot) {
   run_loop.Run();
 
   ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(UIImagesAreEqual(snapshot, [delegate_ defaultSnapshotImage]));
+  EXPECT_TRUE(
+      UIImagesAreEqual(snapshot, SnapshotTabHelper::GetDefaultSnapshotImage()));
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
@@ -298,8 +281,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotWebUsageDisabled) {
   run_loop.Run();
 
   ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(
-      UIImagesAreEqual(snapshot, GreyImage([delegate_ defaultSnapshotImage])));
+  EXPECT_TRUE(UIImagesAreEqual(
+      snapshot, GreyImage(SnapshotTabHelper::GetDefaultSnapshotImage())));
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 
@@ -322,8 +305,8 @@ TEST_F(SnapshotTabHelperTest, RetrieveGreySnapshotCannotTakeSnapshot) {
   run_loop.Run();
 
   ASSERT_TRUE(snapshot);
-  EXPECT_TRUE(
-      UIImagesAreEqual(snapshot, GreyImage([delegate_ defaultSnapshotImage])));
+  EXPECT_TRUE(UIImagesAreEqual(
+      snapshot, GreyImage(SnapshotTabHelper::GetDefaultSnapshotImage())));
   EXPECT_EQ(delegate_.snapshotTakenCount, 0u);
 }
 

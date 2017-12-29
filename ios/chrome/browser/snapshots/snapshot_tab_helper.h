@@ -62,6 +62,9 @@ class SnapshotTabHelper : public web::WebStateObserver,
   // Requests deletion of the current page snapshot from disk and memory.
   void RemoveSnapshot();
 
+  // Returns an image to use as replacement of a missing snapshot.
+  static UIImage* GetDefaultSnapshotImage();
+
  private:
   SnapshotTabHelper(web::WebState* web_state, NSString* session_id);
 

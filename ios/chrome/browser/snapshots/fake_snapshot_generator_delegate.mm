@@ -10,10 +10,6 @@
 
 @implementation FakeSnapshotGeneratorDelegate
 
-- (UIImage*)defaultSnapshotImage {
-  return nil;
-}
-
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState {
   return YES;
 }

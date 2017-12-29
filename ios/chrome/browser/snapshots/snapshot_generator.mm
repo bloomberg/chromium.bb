@@ -191,7 +191,7 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
   // Return default snapshot without caching it if the generation failed.
   if (!snapshot)
-    return [_delegate defaultSnapshotImage];
+    return [[self class] defaultSnapshotImage];
 
   UIImage* snapshotToCache = snapshot;
   if (!visibleFrameOnly) {
@@ -252,6 +252,23 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
 
 - (void)removeSnapshot {
   [self.snapshotCache removeImageWithSessionID:_snapshotSessionId];
+}
+
++ (UIImage*)defaultSnapshotImage {
+  static UIImage* defaultSnapshotImage = nil;
+  if (!defaultSnapshotImage) {
+    CGRect frame = CGRectMake(0, 0, 2, 2);
+    UIGraphicsBeginImageContext(frame.size);
+    [[UIColor whiteColor] setFill];
+    CGContextFillRect(UIGraphicsGetCurrentContext(), frame);
+
+    UIImage* result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    defaultSnapshotImage =
+        [result stretchableImageWithLeftCapWidth:1 topCapHeight:1];
+  }
+  return defaultSnapshotImage;
 }
 
 #pragma mark - Private methods
