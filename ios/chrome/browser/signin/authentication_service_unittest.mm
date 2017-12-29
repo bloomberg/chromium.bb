@@ -220,8 +220,8 @@ class AuthenticationServiceTest : public PlatformTest,
 
   void SetCachedMDMInfo(ChromeIdentity* identity, NSDictionary* user_info) {
     authentication_service_
-        ->cached_mdm_infos_[base::SysNSStringToUTF8([identity gaiaID])]
-        .reset(user_info);
+        ->cached_mdm_infos_[base::SysNSStringToUTF8([identity gaiaID])] =
+        user_info;
   }
 
   bool HasCachedMDMInfo(ChromeIdentity* identity) {

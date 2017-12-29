@@ -123,20 +123,20 @@ void AuthenticationService::Initialize() {
   OnApplicationEnterForeground();
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  foreground_observer_.reset([center
-      addObserverForName:UIApplicationWillEnterForegroundNotification
-                  object:nil
-                   queue:nil
-              usingBlock:^(NSNotification* notification) {
-                OnApplicationEnterForeground();
-              }]);
-  background_observer_.reset([center
-      addObserverForName:UIApplicationDidEnterBackgroundNotification
-                  object:nil
-                   queue:nil
-              usingBlock:^(NSNotification* notification) {
-                OnApplicationEnterBackground();
-              }]);
+  foreground_observer_ =
+      [center addObserverForName:UIApplicationWillEnterForegroundNotification
+                          object:nil
+                           queue:nil
+                      usingBlock:^(NSNotification* notification) {
+                        OnApplicationEnterForeground();
+                      }];
+  background_observer_ =
+      [center addObserverForName:UIApplicationDidEnterBackgroundNotification
+                          object:nil
+                           queue:nil
+                      usingBlock:^(NSNotification* notification) {
+                        OnApplicationEnterBackground();
+                      }];
 
   identity_service_observer_.Add(
       ios::GetChromeBrowserProvider()->GetChromeIdentityService());
@@ -187,8 +187,7 @@ void AuthenticationService::OnApplicationEnterForeground() {
   ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
       static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
           token_service_->GetDelegate());
-  std::map<std::string, base::scoped_nsobject<NSDictionary>> cached_mdm_infos(
-      cached_mdm_infos_);
+  std::map<std::string, NSDictionary*> cached_mdm_infos(cached_mdm_infos_);
   cached_mdm_infos_.clear();
   for (const auto& cached_mdm_info : cached_mdm_infos) {
     token_service_delegate->AddOrUpdateAccount(cached_mdm_info.first);
@@ -413,7 +412,7 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
     return nil;
   }
 
-  return it->second.get();
+  return it->second;
 }
 
 bool AuthenticationService::HasCachedMDMErrorForIdentity(
@@ -489,8 +488,8 @@ bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
     }
   };
   if (identity_service->HandleMDMNotification(identity, user_info, callback)) {
-    cached_mdm_infos_[ChromeIdentityToAccountID(browser_state_, identity)]
-        .reset(user_info);
+    cached_mdm_infos_[ChromeIdentityToAccountID(browser_state_, identity)] =
+        user_info;
     return true;
   }
   return false;

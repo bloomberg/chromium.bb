@@ -64,8 +64,8 @@ CardUnmaskPromptViewBridge::~CardUnmaskPromptViewBridge() {
 }
 
 void CardUnmaskPromptViewBridge::Show() {
-  view_controller_.reset(
-      [[CardUnmaskPromptViewController alloc] initWithBridge:this]);
+  view_controller_ =
+      [[CardUnmaskPromptViewController alloc] initWithBridge:this];
   [view_controller_ setModalPresentationStyle:UIModalPresentationFormSheet];
   [view_controller_
       setModalTransitionStyle:UIModalTransitionStyleCoverVertical];

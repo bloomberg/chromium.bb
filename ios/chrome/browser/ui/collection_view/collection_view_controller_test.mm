@@ -28,13 +28,13 @@ CollectionViewControllerTest::~CollectionViewControllerTest() {}
 void CollectionViewControllerTest::TearDown() {
   // Delete the controller before deleting other test variables, such as a
   // profile, to ensure things are cleaned up in the same order as in Chrome.
-  controller_.reset();
+  controller_ = nil;
   BlockCleanupTest::TearDown();
 }
 
 void CollectionViewControllerTest::CreateController() {
   DCHECK(!controller_);
-  controller_.reset(InstantiateController());
+  controller_ = InstantiateController();
   // Force the model to be loaded.
   [controller_ loadModel];
   // Force the collectionView to be built.
@@ -44,19 +44,19 @@ void CollectionViewControllerTest::CreateController() {
 CollectionViewController* CollectionViewControllerTest::controller() {
   if (!controller_)
     CreateController();
-  return controller_.get();
+  return controller_;
 }
 
 void CollectionViewControllerTest::ResetController() {
-  controller_.reset();
+  controller_ = nil;
 }
 
 void CollectionViewControllerTest::CheckController() {
   EXPECT_TRUE([controller_ view]);
   EXPECT_TRUE([controller_ collectionView]);
   EXPECT_TRUE([controller_ collectionViewModel]);
-  EXPECT_EQ(controller_.get(), [controller_ collectionView].dataSource);
-  EXPECT_EQ(controller_.get(), [controller_ collectionView].delegate);
+  EXPECT_EQ(controller_, [controller_ collectionView].dataSource);
+  EXPECT_EQ(controller_, [controller_ collectionView].delegate);
 }
 
 int CollectionViewControllerTest::NumberOfSections() {

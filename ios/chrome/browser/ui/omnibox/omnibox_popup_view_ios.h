@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_popup_mediator.h"
@@ -57,14 +56,12 @@ class OmniboxPopupViewIOS : public OmniboxPopupView,
   void OnMatchSelectedForDeletion(const AutocompleteMatch& match) override;
   void OnScroll() override;
 
-  void SetMediator(OmniboxPopupMediator* mediator) {
-    mediator_.reset(mediator);
-  }
+  void SetMediator(OmniboxPopupMediator* mediator) { mediator_ = mediator; }
 
  private:
   std::unique_ptr<OmniboxPopupModel> model_;
   OmniboxPopupViewSuggestionsDelegate* delegate_;  // weak
-  base::scoped_nsobject<OmniboxPopupMediator> mediator_;
+  OmniboxPopupMediator* mediator_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_POPUP_VIEW_IOS_H_

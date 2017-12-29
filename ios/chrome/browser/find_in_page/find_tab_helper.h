@@ -8,7 +8,6 @@
 #include <Foundation/Foundation.h>
 
 #include "base/ios/block_types.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
@@ -85,7 +84,7 @@ class FindTabHelper : public web::WebStateObserver,
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The ObjC find in page controller.
-  base::scoped_nsobject<FindInPageController> controller_;
+  FindInPageController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FindTabHelper);
 };

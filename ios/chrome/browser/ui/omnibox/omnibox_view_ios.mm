@@ -173,11 +173,11 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       attributing_display_string_(nil),
       popup_provider_(nullptr) {
   DCHECK(field_);
-  field_delegate_.reset(
-      [[AutocompleteTextFieldDelegate alloc] initWithEditView:this]);
+  field_delegate_ =
+      [[AutocompleteTextFieldDelegate alloc] initWithEditView:this];
 
   if (@available(iOS 11.0, *)) {
-    paste_delegate_.reset([[OmniboxTextFieldPasteDelegate alloc] init]);
+    paste_delegate_ = [[OmniboxTextFieldPasteDelegate alloc] init];
     [field_ setPasteDelegate:paste_delegate_];
   }
 
@@ -286,7 +286,7 @@ bool OmniboxViewIOS::OnInlineAutocompleteTextMaybeChanged(
 
 void OmniboxViewIOS::OnBeforePossibleChange() {
   GetState(&state_before_change_);
-  marked_text_before_change_.reset([[field_ markedText] copy]);
+  marked_text_before_change_ = [[field_ markedText] copy];
 }
 
 bool OmniboxViewIOS::OnAfterPossibleChange(bool allow_keyword_ui_change) {

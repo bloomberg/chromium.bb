@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_TABS_LEGACY_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_TABS_LEGACY_TAB_HELPER_H_
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -25,7 +24,7 @@ class LegacyTabHelper : public web::WebStateUserData<LegacyTabHelper> {
   ~LegacyTabHelper() override;
 
   // The Tab instance associated with the WebState.
-  base::scoped_nsobject<Tab> tab_;
+  Tab* tab_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyTabHelper);
 };

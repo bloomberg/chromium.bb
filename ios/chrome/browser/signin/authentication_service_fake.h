@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 

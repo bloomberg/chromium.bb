@@ -97,30 +97,29 @@ void PerfTestWithBVC::SetUp() {
 
   // Tab models. The off-the-record (OTR) tab model is required for the stack
   // view controller, which is created in OpenStackView().
-  tab_model_.reset([[TabModel alloc]
-      initWithSessionWindow:session.sessionWindows[0]
-             sessionService:[SessionServiceIOS sharedService]
-               browserState:chrome_browser_state_.get()]);
-  otr_tab_model_.reset([[TabModel alloc]
+  tab_model_ =
+      [[TabModel alloc] initWithSessionWindow:session.sessionWindows[0]
+                               sessionService:[SessionServiceIOS sharedService]
+                                 browserState:chrome_browser_state_.get()];
+  otr_tab_model_ = [[TabModel alloc]
       initWithSessionWindow:session.sessionWindows[0]
              sessionService:[SessionServiceIOS sharedService]
                browserState:chrome_browser_state_
-                                ->GetOffTheRecordChromeBrowserState()]);
+                                ->GetOffTheRecordChromeBrowserState()];
 
   // Create the browser view controller with its testing factory.
-  bvc_factory_.reset([[BrowserViewControllerDependencyFactory alloc]
+  bvc_factory_ = [[BrowserViewControllerDependencyFactory alloc]
       initWithBrowserState:chrome_browser_state_.get()
-              webStateList:[tab_model_ webStateList]]);
-  bvc_.reset([[BrowserViewController alloc]
+              webStateList:[tab_model_ webStateList]];
+  bvc_ = [[BrowserViewController alloc]
                 initWithTabModel:tab_model_
                     browserState:chrome_browser_state_.get()
                dependencyFactory:bvc_factory_
-      applicationCommandEndpoint:nil]);
+      applicationCommandEndpoint:nil];
   [bvc_ setActive:YES];
 
   // Create a real window to give to the browser view controller.
-  window_.reset(
-      [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]]);
+  window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   [window_ makeKeyAndVisible];
   [window_ addSubview:[bvc_ view]];
   [[bvc_ view] setFrame:[[UIScreen mainScreen] bounds]];
@@ -132,14 +131,14 @@ void PerfTestWithBVC::TearDown() {
 
   // Documented example of how to clear out the browser view controller
   // and its associated data.
-  window_.reset();
+  window_ = nil;
   [bvc_ browserStateDestroyed];
   [bvc_ shutdown];
-  bvc_.reset();
-  bvc_factory_.reset();
-  tab_model_.reset();
+  bvc_ = nil;
+  bvc_factory_ = nil;
+  tab_model_ = nil;
   [otr_tab_model_ browserStateDestroyed];
-  otr_tab_model_.reset();
+  otr_tab_model_ = nil;
 
   // The base class |TearDown| method calls the run loop so the
   // NSAutoreleasePool can drain. This needs to be done before

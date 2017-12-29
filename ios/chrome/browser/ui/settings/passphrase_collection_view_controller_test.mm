@@ -104,10 +104,10 @@ void PassphraseCollectionViewControllerTest::SetUp() {
 
 void PassphraseCollectionViewControllerTest::SetUpNavigationController(
     UIViewController* test_controller) {
-  dummy_controller_.reset([[UIViewController alloc] init]);
-  nav_controller_.reset([[SettingsNavigationController alloc]
+  dummy_controller_ = [[UIViewController alloc] init];
+  nav_controller_ = [[SettingsNavigationController alloc]
       initWithRootViewController:dummy_controller_
                     browserState:chrome_browser_state_.get()
-                        delegate:nil]);
+                        delegate:nil];
   [nav_controller_ pushViewController:test_controller animated:NO];
 }

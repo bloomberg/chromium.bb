@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/infobars/core/infobar.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
@@ -46,7 +45,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarViewDelegate {
   void InfoBarDidCancel() override;
   void InfoBarButtonDidPress(NSUInteger button_id) override;
 
-  base::scoped_nsobject<InfoBarController> controller_;
+  InfoBarController* controller_;
   DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
 };
 

@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
