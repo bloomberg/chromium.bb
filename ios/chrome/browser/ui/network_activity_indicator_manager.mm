@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/threading/thread_checker.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,7 +14,7 @@
 #endif
 
 @interface NetworkActivityIndicatorManager () {
-  base::scoped_nsobject<NSMutableDictionary> _groupCounts;
+  NSMutableDictionary* _groupCounts;
   NSUInteger _totalCount;
   base::ThreadChecker _threadChecker;
 }
@@ -33,7 +32,7 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-    _groupCounts.reset([[NSMutableDictionary alloc] init]);
+    _groupCounts = [[NSMutableDictionary alloc] init];
     _totalCount = 0;
   }
   return self;

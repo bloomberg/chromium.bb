@@ -7,7 +7,6 @@
 #import <AVFoundation/AVFoundation.h>
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_player+subclassing.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 
@@ -17,9 +16,9 @@
 
 @interface TextToSpeechPlayer ()<AVAudioPlayerDelegate> {
   // The audio data to be played.
-  base::scoped_nsobject<NSData> _audioData;
+  NSData* _audioData;
   // The AVAudioPlayer playing TTS audio data.
-  base::scoped_nsobject<AVAudioPlayer> _player;
+  AVAudioPlayer* _player;
   // Whether playback has finished.
   BOOL _playbackFinished;
 }
@@ -69,7 +68,7 @@
 - (void)prepareToPlayAudioData:(NSData*)audioData {
   if (self.playingAudio)
     [self cancelPlayback];
-  _audioData.reset(audioData);
+  _audioData = audioData;
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kTTSAudioReadyForPlaybackNotification
                     object:self];
@@ -80,7 +79,7 @@
   if (self.playingAudio || !self.readyForPlayback)
     return;
   // Create the AVAudioPlayer and initiate playback.
-  _player.reset([[AVAudioPlayer alloc] initWithData:_audioData error:nil]);
+  _player = [[AVAudioPlayer alloc] initWithData:_audioData error:nil];
   [_player setMeteringEnabled:YES];
   [_player setDelegate:self];
   [_player setNumberOfLoops:0];
@@ -90,7 +89,7 @@
         postNotificationName:kTTSWillStartPlayingNotification
                       object:self];
   } else {
-    _player.reset();
+    _player = nil;
   }
 }
 
@@ -121,9 +120,9 @@
     return;
   _playbackFinished = YES;
   [_player stop];
-  _audioData.reset();
+  _audioData = nil;
   [_player setDelegate:nil];
-  _player.reset();
+  _player = nil;
   if (sendNotification) {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTTSDidStopPlayingNotification

@@ -49,7 +49,7 @@ extern UIKeyModifierFlags Cr_UIKeyModifierNone;
 //                            modifierFlags:UIKeyModifierCommand
 //                                    title:@"New Tab"
 //                                   action:^{
-//       base::scoped_nsobject<Foo> strongSelf([weakSelf retain]);
+//       Foo* strongSelf = weakSelf;
 //       if (!strongSelf)
 //         return;
 //       [strongSelf openNewTab];

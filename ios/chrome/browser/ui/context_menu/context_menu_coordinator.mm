@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -18,7 +17,7 @@
 
 @interface ContextMenuCoordinator () {
   // Coordinator handling the alert.
-  base::scoped_nsobject<ActionSheetCoordinator> _alertCoordinator;
+  ActionSheetCoordinator* _alertCoordinator;
 }
 @end
 
@@ -30,12 +29,12 @@
   self = [super initWithBaseViewController:viewController browserState:nullptr];
   if (self) {
     CGRect rect = CGRectMake(params.location.x, params.location.y, 1.0, 1.0);
-    _alertCoordinator.reset([[ActionSheetCoordinator alloc]
+    _alertCoordinator = [[ActionSheetCoordinator alloc]
         initWithBaseViewController:viewController
                              title:params.menu_title
                            message:nil
                               rect:rect
-                              view:params.view]);
+                              view:params.view];
   }
   return self;
 }

@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -19,11 +18,11 @@ using SafeModeCoordinatorTest = PlatformTest;
 TEST_F(SafeModeCoordinatorTest, RootVC) {
   // Expect that starting a safe mode coordinator will populate the root view
   // controller.
-  base::scoped_nsobject<UIWindow> window(
-      [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 100)]);
+  UIWindow* window =
+      [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   EXPECT_TRUE([window rootViewController] == nil);
-  base::scoped_nsobject<SafeModeCoordinator> safe_mode_coordinator(
-      [[SafeModeCoordinator alloc] initWithWindow:window]);
+  SafeModeCoordinator* safe_mode_coordinator =
+      [[SafeModeCoordinator alloc] initWithWindow:window];
   [safe_mode_coordinator start];
   EXPECT_FALSE([window rootViewController] == nil);
 }

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/mac/scoped_nsobject.h"
 #import "components/handoff/handoff_manager.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -29,7 +28,7 @@
   std::unique_ptr<PrefChangeRegistrar> _browserStatePrefChangeRegistrar;
 
   // Responsible for maintaining all state related to the Handoff feature.
-  base::scoped_nsobject<HandoffManager> _handoffManager;
+  HandoffManager* _handoffManager;
 }
 
 // If handoff is enabled for the active browser state, then this method ensures
@@ -76,12 +75,12 @@
       _browserState &&
       _browserState->GetPrefs()->GetBoolean(prefs::kIosHandoffToOtherDevices);
   if (!handoffEnabled) {
-    _handoffManager.reset();
+    _handoffManager = nil;
     return;
   }
 
   if (!_handoffManager)
-    _handoffManager.reset([[self class] createHandoffManager]);
+    _handoffManager = [[self class] createHandoffManager];
 }
 
 + (HandoffManager*)createHandoffManager {
@@ -101,7 +100,7 @@
 @implementation DeviceSharingManager (TestingOnly)
 
 - (HandoffManager*)handoffManager {
-  return _handoffManager.get();
+  return _handoffManager;
 }
 
 @end

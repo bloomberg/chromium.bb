@@ -9,7 +9,6 @@
 #include "base/containers/circular_deque.h"
 #import "base/ios/block_types.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -36,8 +35,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   // |_dialogCoordinatorsForWebStates|.
   base::circular_deque<web::WebState*> _queuedWebStates;
   // A map associating queued webStates with their coordinators.
-  std::map<web::WebState*, base::scoped_nsobject<AlertCoordinator>>
-      _dialogCoordinatorsForWebStates;
+  std::map<web::WebState*, AlertCoordinator*> _dialogCoordinatorsForWebStates;
 }
 
 // The delegate passed on initialization.
@@ -385,8 +383,7 @@ NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
   DCHECK_NE(webState, self.presentedDialogWebState);
   DCHECK(!_dialogCoordinatorsForWebStates[webState]);
   _queuedWebStates.push_back(webState);
-  _dialogCoordinatorsForWebStates[webState] =
-      base::scoped_nsobject<AlertCoordinator>(coordinator);
+  _dialogCoordinatorsForWebStates[webState] = coordinator;
 
   if (self.active && !self.showingDialog &&
       !self.delegate.dialogPresenterDelegateIsPresenting)
