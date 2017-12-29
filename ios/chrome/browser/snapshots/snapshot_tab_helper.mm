@@ -139,6 +139,11 @@ void SnapshotTabHelper::RemoveSnapshot() {
   [snapshot_generator_ removeSnapshot];
 }
 
+// static
+UIImage* SnapshotTabHelper::GetDefaultSnapshotImage() {
+  return [SnapshotGenerator defaultSnapshotImage];
+}
+
 SnapshotTabHelper::SnapshotTabHelper(web::WebState* web_state,
                                      NSString* session_id)
     : web_state_(web_state) {

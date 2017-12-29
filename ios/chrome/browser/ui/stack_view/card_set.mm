@@ -510,7 +510,7 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
         [view setImage:image];
       });
   if (!view.image)
-    [view setImage:[tab defaultSnapshotImage]];
+    [view setImage:SnapshotTabHelper::GetDefaultSnapshotImage()];
   view.closeButtonSide = self.closeButtonSide;
 
   return view;

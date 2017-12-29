@@ -114,7 +114,6 @@ using CardSetTestTabMock_url = const GURL& (^)();
   [[[tab stub] andReturnValue:OCMOCK_VALUE(no)] canGoForward];
   [[[tab stub] andReturn:title] title];
   [[[tab stub] andReturn:sessionID] tabId];
-  [[[tab stub] andReturn:nil] defaultSnapshotImage];
 
   [tabs_ addObject:tab];
   [observer_ tabModel:(TabModel*)self

@@ -17,9 +17,6 @@ class WebState;
 // Protocol for the SnapshotGenerator's delegate.
 @protocol SnapshotGeneratorDelegate
 
-// Returns the default image to return when the snapshot cannot be generated.
-- (UIImage*)defaultSnapshotImage;
-
 // Returns whether it is possible to capture a snapshot for |webState|.
 - (BOOL)canTakeSnapshotForWebState:(web::WebState*)webState;
 
