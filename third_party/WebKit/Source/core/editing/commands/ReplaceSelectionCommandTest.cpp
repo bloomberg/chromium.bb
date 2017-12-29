@@ -171,4 +171,18 @@ TEST_F(ReplaceSelectionCommandTest, TrailingNonVisibleTextCrash) {
             GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
 
+// This is a regression test for https://crbug.com/796840
+TEST_F(ReplaceSelectionCommandTest, CrashWithNoSelection) {
+  GetDocument().setDesignMode("on");
+  SetBodyContent("<div></div>");
+  ReplaceSelectionCommand::CommandOptions options = 0;
+  ReplaceSelectionCommand* command =
+      ReplaceSelectionCommand::Create(GetDocument(), 0, options);
+
+  // Crash should not occur on applying ReplaceSelectionCommand
+  EXPECT_FALSE(command->Apply());
+  EXPECT_EQ("<div></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink

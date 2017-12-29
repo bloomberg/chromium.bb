@@ -1143,10 +1143,11 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
 void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
   const VisibleSelection& selection = EndingVisibleSelection();
-  if (selection.IsNone() || !selection.IsValidFor(GetDocument())) {
-    NOTREACHED();
-    return;
-  }
+
+  // ReplaceSelectionCommandTest.CrashWithNoSelection hits below abort
+  // condition.
+  ABORT_EDITING_COMMAND_IF(selection.IsNone());
+  ABORT_EDITING_COMMAND_IF(!selection.IsValidFor(GetDocument()));
 
   if (!selection.RootEditableElement())
     return;
