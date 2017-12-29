@@ -31,7 +31,6 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
@@ -244,9 +243,7 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
 
   LayoutEmbeddedContent* layout_embedded_content =
       ToLayoutEmbeddedContent(GetLayoutObject());
-  LayoutEmbeddedContentItem layout_embedded_content_item =
-      LayoutEmbeddedContentItem(layout_embedded_content);
-  if (layout_embedded_content_item.IsNull())
+  if (!layout_embedded_content)
     return;
 
   if (embedded_content_view_) {
@@ -256,11 +253,10 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     if (doc) {
       CHECK_NE(doc->Lifecycle().GetState(), DocumentLifecycle::kStopping);
     }
-    layout_embedded_content_item.UpdateOnEmbeddedContentViewChange();
+    layout_embedded_content->UpdateOnEmbeddedContentViewChange();
 
-    DCHECK_EQ(GetDocument().View(),
-              layout_embedded_content_item.GetFrameView());
-    DCHECK(layout_embedded_content_item.GetFrameView());
+    DCHECK_EQ(GetDocument().View(), layout_embedded_content->GetFrameView());
+    DCHECK(layout_embedded_content->GetFrameView());
     embedded_content_view_->AttachToLayout();
   }
 

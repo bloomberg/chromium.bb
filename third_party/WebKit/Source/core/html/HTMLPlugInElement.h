@@ -34,7 +34,7 @@ namespace blink {
 
 class HTMLImageLoader;
 class LayoutEmbeddedContent;
-class LayoutEmbeddedItem;
+class LayoutEmbeddedObject;
 class WebPluginContainerImpl;
 
 enum PreferPlugInsForImagesOption {
@@ -112,7 +112,7 @@ class CORE_EXPORT HTMLPlugInElement
   virtual LayoutEmbeddedContent* LayoutEmbeddedContentForJSBindings() const;
 
   bool IsImageType();
-  LayoutEmbeddedItem GetLayoutEmbeddedItem() const;
+  LayoutEmbeddedObject* GetLayoutEmbeddedObject() const;
   bool AllowedToLoadFrameURL(const String& url);
   bool RequestObject(const Vector<String>& param_names,
                      const Vector<String>& param_values);

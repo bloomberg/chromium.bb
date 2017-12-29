@@ -35,7 +35,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/api/LayoutEmbeddedItem.h"
+#include "core/layout/LayoutEmbeddedObject.h"
 
 namespace blink {
 
@@ -144,7 +144,7 @@ void HTMLEmbedElement::ParametersForPlugin(Vector<String>& param_names,
 // FIXME: This should be unified with HTMLObjectElement::updatePlugin and
 // moved down into HTMLPluginElement.cpp
 void HTMLEmbedElement::UpdatePluginInternal() {
-  DCHECK(!GetLayoutEmbeddedItem().ShowsUnavailablePluginIndicator());
+  DCHECK(!GetLayoutEmbeddedObject()->ShowsUnavailablePluginIndicator());
   DCHECK(NeedsPluginUpdate());
   SetNeedsPluginUpdate(false);
 

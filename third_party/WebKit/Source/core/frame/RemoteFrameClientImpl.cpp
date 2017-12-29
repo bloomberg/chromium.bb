@@ -13,7 +13,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/api/LayoutItem.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/geometry/IntRect.h"

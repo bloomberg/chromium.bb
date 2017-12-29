@@ -37,8 +37,8 @@
 #include "core/frame/Settings.h"
 #include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/api/LayoutEmbeddedContentItem.h"
 #include "core/page/Page.h"
 #include "public/platform/TaskType.h"
 
