@@ -27,6 +27,19 @@ cr.define('gpu', function() {
                                      this.refresh.bind(this));
       browserBridge.addEventListener('clientInfoChange',
                                      this.refresh.bind(this));
+
+      // Add handler to 'copy to clipboard' button
+      document.getElementById('copy-to-clipboard').onclick = function() {
+        // Make sure nothing is selected
+        window.getSelection().removeAllRanges();
+
+        document.execCommand('selectAll');
+        document.execCommand('copy');
+
+        // And deselect everything at the end.
+        window.getSelection().removeAllRanges();
+      }
+
       this.refresh();
     },
 
@@ -35,8 +48,12 @@ cr.define('gpu', function() {
     */
     refresh: function(data) {
       function createSourcePermalink(revisionIdentifier, filepath) {
-        return 'https://chromium.googlesource.com/chromium/src/+/' +
-          revisionIdentifier + '/' + filepath;
+        if (revisionIdentifier.length !== 40) {
+          // If the revision id isn't a hash, just use the 0.0.0.0 version
+          // from the Chrome version string "Chrome/0.0.0.0".
+          revisionIdentifier = clientInfo.version.split('/')[1];
+        }
+        return `https://chromium.googlesource.com/chromium/src/+/${revisionIdentifier}/${filepath}`;
       }
 
       // Client info
@@ -46,7 +63,7 @@ cr.define('gpu', function() {
         this.setTable_('client-info', [
           {
             description: 'Data exported',
-            value: (new Date()).toLocaleString()
+            value: (new Date()).toISOString()
           },
           {
             description: 'Chrome version',
