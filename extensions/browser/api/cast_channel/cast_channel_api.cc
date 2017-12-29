@@ -393,6 +393,14 @@ void CastChannelSendFunction::AsyncWorkStart() {
     return;
   }
 
+  if (socket->ready_state() == cast_channel::ReadyState::CLOSED ||
+      !socket->transport()) {
+    SetResultFromError(params_->channel.channel_id,
+                       api::cast_channel::CHANNEL_ERROR_CHANNEL_NOT_OPEN);
+    AsyncWorkCompleted();
+    return;
+  }
+
   CastMessage message_to_send;
   if (!MessageInfoToCastMessage(params_->message, &message_to_send)) {
     SetResultFromError(params_->channel.channel_id,
