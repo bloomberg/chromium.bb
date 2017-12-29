@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
@@ -21,10 +20,9 @@ class ToolsMenuViewControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    configuration_.reset([[ToolsMenuConfiguration alloc]
-        initWithDisplayView:nil
-         baseViewController:nil]);
-    controller_.reset([[ToolsMenuViewController alloc] init]);
+    configuration_ = [[ToolsMenuConfiguration alloc] initWithDisplayView:nil
+                                                      baseViewController:nil];
+    controller_ = [[ToolsMenuViewController alloc] init];
   }
 
   // Returns tools menu view item by IDC value, null if not exit.
@@ -37,8 +35,8 @@ class ToolsMenuViewControllerTest : public PlatformTest {
     return nullptr;
   }
 
-  base::scoped_nsobject<ToolsMenuConfiguration> configuration_;
-  base::scoped_nsobject<ToolsMenuViewController> controller_;
+  ToolsMenuConfiguration* configuration_;
+  ToolsMenuViewController* controller_;
 };
 
 // Tests that "Request Desktop Site" is visible and enabled, and
@@ -46,7 +44,7 @@ class ToolsMenuViewControllerTest : public PlatformTest {
 // whose user agent type is NONE.
 TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeNONE) {
   [configuration_ setUserAgentType:web::UserAgentType::NONE];
-  [controller_ initializeMenuWithConfiguration:configuration_.get()];
+  [controller_ initializeMenuWithConfiguration:configuration_];
 
   ToolsMenuViewItem* desktop_item =
       GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);
@@ -63,7 +61,7 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeNONE) {
 // uses MOBILE user agent.
 TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeMOBILE) {
   [configuration_ setUserAgentType:web::UserAgentType::MOBILE];
-  [controller_ initializeMenuWithConfiguration:configuration_.get()];
+  [controller_ initializeMenuWithConfiguration:configuration_];
 
   ToolsMenuViewItem* desktop_item =
       GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);
@@ -82,7 +80,7 @@ TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeMOBILE) {
 // is invisible.
 TEST_F(ToolsMenuViewControllerTest, TestUserAgentTypeDESKTOP) {
   [configuration_ setUserAgentType:web::UserAgentType::DESKTOP];
-  [controller_ initializeMenuWithConfiguration:configuration_.get()];
+  [controller_ initializeMenuWithConfiguration:configuration_];
 
   ToolsMenuViewItem* desktop_item =
       GetToolsMenuViewItemWithTag(TOOLS_REQUEST_DESKTOP_SITE);

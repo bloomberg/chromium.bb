@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
 #include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/geolocation/location_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
@@ -25,14 +24,14 @@ namespace {
 class OmniboxGeolocationLocalStateTest : public PlatformTest {
  protected:
   OmniboxGeolocationLocalStateTest() {
-    location_manager_.reset([[LocationManager alloc] init]);
-    local_state_.reset([[OmniboxGeolocationLocalState alloc]
-        initWithLocationManager:location_manager_]);
+    location_manager_ = [[LocationManager alloc] init];
+    local_state_ = [[OmniboxGeolocationLocalState alloc]
+        initWithLocationManager:location_manager_];
   }
 
   IOSChromeScopedTestingLocalState scoped_local_state_;
-  base::scoped_nsobject<LocationManager> location_manager_;
-  base::scoped_nsobject<OmniboxGeolocationLocalState> local_state_;
+  LocationManager* location_manager_;
+  OmniboxGeolocationLocalState* local_state_;
 };
 
 TEST_F(OmniboxGeolocationLocalStateTest, LastAuthorizationAlertVersion) {
