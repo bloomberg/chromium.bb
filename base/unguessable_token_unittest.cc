@@ -80,13 +80,14 @@ TEST(UnguessableTokenTest, VerifyValueSerialization) {
 
 TEST(UnguessableTokenTest, VerifyToString) {
   UnguessableToken token = UnguessableToken::Deserialize(0x123, 0xABC);
-  std::string expected = "(0000012300000ABC)";
+  std::string expected = "0000012300000ABC";
 
   EXPECT_EQ(expected, token.ToString());
 
+  std::string expected_stream = "(0000012300000ABC)";
   std::stringstream stream;
   stream << token;
-  EXPECT_EQ(expected, stream.str());
+  EXPECT_EQ(expected_stream, stream.str());
 }
 
 TEST(UnguessableTokenTest, VerifySmallerThanOperator) {
