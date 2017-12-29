@@ -16,7 +16,7 @@ namespace infobars {
 class InfoBarManager;
 }
 
-@protocol UpgradeCenterClientProtocol
+@protocol UpgradeCenterClient
 
 // This is expected to call -addInfoBarToHelper:forTabId: for each tab to place
 // the infobars in the UI. The client must not unregister itself while in this
@@ -33,11 +33,11 @@ class InfoBarManager;
 // Registers a client and a |dispatcher| for the UpgradeCenter. Client and
 // |dispatcher| are not retained, unregisterClient: must be called before
 // the object goes away.
-- (void)registerClient:(id<UpgradeCenterClientProtocol>)client
+- (void)registerClient:(id<UpgradeCenterClient>)client
         withDispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Unregisters a client.
-- (void)unregisterClient:(id<UpgradeCenterClientProtocol>)client;
+- (void)unregisterClient:(id<UpgradeCenterClient>)client;
 
 // Clients should call this method when -showUpgrade: is called or when a new
 // tab is created. The infobar will not be created if it already exists or if

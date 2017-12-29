@@ -144,8 +144,8 @@
   _activityServiceDidEndPresentingWasCalled = YES;
 }
 
-- (void)showErrorAlertWithStringTitle:(NSString*)title
-                              message:(NSString*)message {
+- (void)showActivityServiceErrorAlertWithStringTitle:(NSString*)title
+                                             message:(NSString*)message {
   _latestErrorAlertTitle = [title copy];
   _latestErrorAlertMessage = [message copy];
 }

@@ -218,7 +218,7 @@ class UpgradeInfoBarDismissObserver
       upgradeInfoBarDelegates_;
   // Stores the clients of the upgrade center. These objectiveC objects are not
   // retained.
-  __strong NSHashTable<id<UpgradeCenterClientProtocol>>* clients_;
+  __strong NSHashTable<id<UpgradeCenterClient>>* clients_;
 #if DCHECK_IS_ON()
   BOOL inCallback_;
 #endif
@@ -290,7 +290,7 @@ class UpgradeInfoBarDismissObserver
     [self showUpgradeInfoBars];
 }
 
-- (void)registerClient:(id<UpgradeCenterClientProtocol>)client
+- (void)registerClient:(id<UpgradeCenterClient>)client
         withDispatcher:(id<ApplicationCommands>)dispatcher {
   [clients_ addObject:client];
   self.dispatcher = dispatcher;
@@ -298,7 +298,7 @@ class UpgradeInfoBarDismissObserver
     [client showUpgrade:self];
 }
 
-- (void)unregisterClient:(id<UpgradeCenterClientProtocol>)client {
+- (void)unregisterClient:(id<UpgradeCenterClient>)client {
 #if DCHECK_IS_ON()
   DCHECK(!inCallback_);
 #endif
@@ -381,7 +381,7 @@ class UpgradeInfoBarDismissObserver
   inCallback_ = YES;
 #endif
   upgradeInfoBarIsVisible_ = YES;
-  for (id<UpgradeCenterClientProtocol> upgradeClient in clients_)
+  for (id<UpgradeCenterClient> upgradeClient in clients_)
     [upgradeClient showUpgrade:self];
 #if DCHECK_IS_ON()
   inCallback_ = NO;

@@ -28,7 +28,7 @@ class UpgradeCenterTest : public PlatformTest {
 
 }  // namespace
 
-@interface FakeUpgradeCenterClient : NSObject<UpgradeCenterClientProtocol>
+@interface FakeUpgradeCenterClient : NSObject<UpgradeCenterClient>
 - (instancetype)initWithTest:(UpgradeCenterTest*)test;
 @end
 

@@ -65,7 +65,7 @@ CGFloat kHeaderHeight = 42.0;
   return currentPosition_;
 }
 
-- (CGFloat)headerHeight {
+- (CGFloat)headerHeightForLegacyFullscreen {
   return kHeaderHeight;
 }
 

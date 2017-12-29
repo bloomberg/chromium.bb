@@ -332,7 +332,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 }
 
 - (CGFloat)headerHeight {
-  return [self.delegate headerHeight];
+  return [self.delegate headerHeightForLegacyFullscreen];
 }
 
 - (CGFloat)topContentInsetCausedByHeader {

@@ -386,7 +386,8 @@ NSString* const kActivityServicesSnackbarCategory =
 - (void)showErrorAlert:(int)titleMessageId message:(int)messageId {
   NSString* title = l10n_util::GetNSString(titleMessageId);
   NSString* message = l10n_util::GetNSString(messageId);
-  [presentationProvider_ showErrorAlertWithStringTitle:title message:message];
+  [presentationProvider_ showActivityServiceErrorAlertWithStringTitle:title
+                                                              message:message];
 }
 
 - (void)showSnackbar:(NSString*)text {
