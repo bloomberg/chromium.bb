@@ -24,6 +24,7 @@ static_library("cpp") {
 
   public_deps = [
     "//services/network/public/interfaces",
+    "//url/ipc:url_ipc",
   ]
 
   deps = [
