@@ -81,9 +81,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     SigninPresenter,
     UIGestureRecognizerDelegate>
 
-// The app bar for the bookmarks.
-@property(nonatomic, strong) MDCAppBar* appBar;
-
 @end
 
 @implementation BookmarkHomeViewController

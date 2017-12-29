@@ -26,6 +26,7 @@ class BookmarkNode;
 @class BookmarkPanelView;
 @class BookmarkPromoController;
 @class BookmarkTableView;
+@class MDCAppBar;
 
 typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
   BookmarksContextBarNone,            // No state.
@@ -51,10 +52,10 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
 // The main view showing all the bookmarks.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkCollectionView* folderView;
 
-// The main view showing all the bookmarks. (Used only when the flag
-// kBookmarkNewGeneration is enabled)
+// The main view showing all the bookmarks.
 @property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
 
 // The view controller used to pick a folder in which to move the selected
@@ -65,24 +66,31 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 @property(nonatomic, weak) id<UrlLoader> loader;
 
 // The menu with all the folders.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkMenuView* menuView;
 
 // The navigation bar sits on top of the main content.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
 
-// The context bar at the bottom of the bookmarks. (Used only when the flag
-// kBookmarkNewGeneration is enabled)
+// The app bar for the bookmarks.
+@property(nonatomic, strong) MDCAppBar* appBar;
+
+// The context bar at the bottom of the bookmarks.
 @property(nonatomic, strong) BookmarkContextBar* contextBar;
 
 // At any point in time, there is exactly one collection view whose view is part
 // of the view hierarchy. This property determines what data is visible in the
 // collection view.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkMenuItem* primaryMenuItem;
 
 // This view holds a content view, and a menu view.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkPanelView* panelView;
 
 // Either the menu or the primaryView can scrollToTop.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, assign) BOOL scrollToTop;
 
 // This view is created and used if the model is not fully loaded yet by the
@@ -100,6 +108,7 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 
 // The layout code in this class relies on the assumption that the editingBar
 // has the same frame as the navigationBar.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) BookmarkEditingBar* editingBar;
 
 // The view controller to present when editing the current folder.
@@ -110,19 +119,19 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 @property(nonatomic, strong) BookmarkPromoController* bookmarkPromoController;
 
 // Whether the panel view can be brought into view and hidden by swipe gesture.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, assign) BOOL sideSwipingPossible;
 
 // The action sheet coordinator used when trying to edit a single bookmark.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 // The current state of the context bar UI.
 @property(nonatomic, assign) BookmarksContextBarState contextBarState;
 
 // When the view is first shown on the screen, this property represents the
-// cached value of the y of the content offset of the folder view. This
+// cached value of the y of the content offset of the table view. This
 // property is set to nil after it is used.
-// In the new UI, this value represents the visible row position of the cached
-// UI stack.
 @property(nonatomic, strong) NSNumber* cachedContentPosition;
 
 // This method should be called at most once in the life-cycle of the class.
@@ -131,6 +140,7 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 - (void)loadBookmarkViews;
 
 // Returns the width of the menu.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 - (CGFloat)menuWidth;
 
 // This method is called if the view needs to be loaded and the model is not
@@ -139,30 +149,37 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 
 // Updates the property 'primaryMenuItem'.
 // Updates the UI to reflect the new state of 'primaryMenuItem'.
+// TODO(crbug.com/753599): Remove this property when clean up old bookmarks.
 - (void)updatePrimaryMenuItem:(BookmarkMenuItem*)menuItem
                      animated:(BOOL)animated;
 
 // Caches the position in the collection view.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)cachePosition;
 
 // Whether the back button on the navigation bar should be shown.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (BOOL)shouldShowBackButtonOnNavigationBar;
 
 #pragma mark - Subclass overrides
 
 // Creates and returns actionSheetCoordinator. MUST
 // be overridden by subclass.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (ActionSheetCoordinator*)createActionSheetCoordinatorOnView:(UIView*)view;
 
 // Shows the editing bar, this method MUST be overridden by subclass to
 // tailor the behaviour according to device.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)showEditingBarAnimated:(BOOL)animated;
 
 // Hides the editing bar, this method MUST be overridden by subclass to
 // tailor the behaviour according to device.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)hideEditingBarAnimated:(BOOL)animated;
 
 // Returns the frame for editingBar, MUST be overridden by subclass.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (CGRect)editingBarFrame;
 
 #pragma mark - Navigation bar.
@@ -176,12 +193,14 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 //  (2)The primary view has type folder, and the relevant folder has changed.
 //  (3)The interface orientation changes.
 //  (4)viewWillAppear, as the interface orientation may have changed.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)updateNavigationBarAnimated:(BOOL)animated
                         orientation:(UIInterfaceOrientation)orientation;
 
 #pragma mark - Edit
 
 // This method updates the property, and resets the edit nodes.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated;
 
 // Instaneously updates the shadow of the edit bar.
@@ -191,6 +210,7 @@ typedef NS_ENUM(NSInteger, BookmarksContextBarState) {
 //  (3)The primary view's collection view is scrolled.
 // (2) is not necessary right now, as it is only possible to switch primary
 // views when |editing| is NO. When |editing| is NO, the shadow is never shown.
+// TODO(crbug.com/753599): Remove this method when clean up old bookmarks.
 - (void)updateEditBarShadow;
 
 @end

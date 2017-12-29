@@ -144,24 +144,21 @@ using chrome_test_util::RecentTabsMenuButton;
 }
 
 // Tests that keyboard commands are not registered when the Bookmarks UI is
-// shown on iPhone and registered on iPad.
+// shown.
 - (void)testKeyboardCommandsNotRegistered_BookmarksPresented {
-  // TODO(crbug.com/782551): Rewrite this test for the new Bookmarks UI.
+  // TODO(crbug.com/753599): Remove scoped feature list when clean up old
+  // bookmarks.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
 
   // Open Bookmarks
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
 
-  if (IsIPadIdiom()) {
-    [self verifyKeyboardCommandsAreRegistered];
-  } else {
-    [self verifyNoKeyboardCommandsAreRegistered];
+  [self verifyNoKeyboardCommandsAreRegistered];
 
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Exit")]
-        performAction:grey_tap()];
-  }
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that keyboard commands are not registered when the Recent Tabs UI is
