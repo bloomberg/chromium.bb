@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/FlexFlow.h"
+#include "core/css/properties/shorthands/BorderBottom.h"
+
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
 namespace CSSShorthand {
 
-bool FlexFlow::ParseShorthand(
+bool BorderBottom::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghands(
-      flexFlowShorthand(), important, context, range, properties);
+      borderBottomShorthand(), important, context, range, properties);
 }
 
 }  // namespace CSSShorthand

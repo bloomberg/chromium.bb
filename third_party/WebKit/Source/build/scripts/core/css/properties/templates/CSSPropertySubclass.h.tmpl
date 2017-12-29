@@ -9,14 +9,11 @@
 #ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
 #define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.namespace_group.upper()}}_{{property_classname}}_h
 
-{% for include in property.includes %}
+{% for include in includes %}
 #include "{{include}}"
 {% endfor %}
 
 namespace blink {
-
-class CSSValue;
-
 namespace CSS{{property.namespace_group}} {
 
 {% if property.is_property %}
