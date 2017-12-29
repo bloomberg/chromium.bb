@@ -130,8 +130,7 @@ class TabModelTest : public PlatformTest {
       session_storage.lastCommittedItemIndex = -1;
       [sessions addObject:session_storage];
     }
-    return base::scoped_nsobject<SessionWindowIOS>(
-        [[SessionWindowIOS alloc] initWithSessions:sessions selectedIndex:1]);
+    return [[SessionWindowIOS alloc] initWithSessions:sessions selectedIndex:1];
   }
 
   web::TestWebThreadBundle thread_bundle_;

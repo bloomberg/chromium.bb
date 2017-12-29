@@ -89,7 +89,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
   navigation_manager_->SetBrowserState(params.browser_state);
   // Send creation event and create the web controller.
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
-  web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
+  web_controller_ = [[CRWWebController alloc] initWithWebState:this];
 
   // Restore session history last because WKBasedNavigationManagerImpl relies on
   // CRWWebController to restore history into the web view.
@@ -170,7 +170,7 @@ CRWWebController* WebStateImpl::GetWebController() {
 
 void WebStateImpl::SetWebController(CRWWebController* web_controller) {
   [web_controller_ close];
-  web_controller_.reset(web_controller);
+  web_controller_ = web_controller;
 }
 
 void WebStateImpl::OnTitleChanged() {
@@ -550,11 +550,11 @@ void WebStateImpl::SetWebUsageEnabled(bool enabled) {
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     if (enabled) {
       if (cached_session_storage_) {
-        RestoreSessionStorage(cached_session_storage_.get());
+        RestoreSessionStorage(cached_session_storage_);
       }
-      cached_session_storage_.reset();
+      cached_session_storage_ = nil;
     } else {
-      cached_session_storage_.reset(BuildSessionStorage());
+      cached_session_storage_ = BuildSessionStorage();
     }
   }
 

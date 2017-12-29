@@ -1870,8 +1870,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       // the transient item's URL (as on other platforms).
       NavigationManager::WebLoadParams reloadParams(transientItem->GetURL());
       reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
-      reloadParams.extra_headers.reset(
-          [transientItem->GetHttpRequestHeaders() copy]);
+      reloadParams.extra_headers =
+          [transientItem->GetHttpRequestHeaders() copy];
       self.webState->GetNavigationManager()->LoadURLWithParams(reloadParams);
     } else {
       self.currentNavItem->SetTransitionType(

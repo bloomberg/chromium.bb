@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/browser_url_rewriter.h"
 #include "ios/web/public/navigation_item_list.h"
 #include "ios/web/public/referrer.h"
@@ -65,11 +64,11 @@ class NavigationManager {
     bool is_renderer_initiated;
 
     // Any extra HTTP headers to add to the load.
-    base::scoped_nsobject<NSDictionary> extra_headers;
+    NSDictionary* extra_headers;
 
     // Any post data to send with the load. When setting this, you should
     // generally set a Content-Type header as well.
-    base::scoped_nsobject<NSData> post_data;
+    NSData* post_data;
 
     // Create a new WebLoadParams with the given URL and defaults for all other
     // parameters.

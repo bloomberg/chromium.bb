@@ -727,8 +727,8 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
 
   // Load request using POST HTTP method.
   web::NavigationManager::WebLoadParams params(url);
-  params.post_data.reset([@"foo" dataUsingEncoding:NSUTF8StringEncoding]);
-  params.extra_headers.reset(@{@"Content-Type" : @"text/html"});
+  params.post_data = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
+  params.extra_headers = @{@"Content-Type" : @"text/html"};
   LoadWithParams(params);
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 }
