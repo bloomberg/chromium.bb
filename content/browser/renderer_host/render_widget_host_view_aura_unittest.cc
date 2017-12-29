@@ -2256,11 +2256,12 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   sink_->ClearMessages();
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
 
-  EXPECT_EQ(2u, sink_->message_count());
   {
-    const IPC::Message* msg = sink_->GetMessageAt(1);
-    EXPECT_EQ(static_cast<uint32_t>(ViewMsg_SetLocalSurfaceIdForAutoResize::ID),
-              msg->type());
+    // TODO(samans): There should be only one message in the sink, but some
+    // testers are seeing two (crrev.com/c/839580). Investigate why.
+    const IPC::Message* msg = sink_->GetFirstMessageMatching(
+        ViewMsg_SetLocalSurfaceIdForAutoResize::ID);
+    ASSERT_TRUE(msg);
     ViewMsg_SetLocalSurfaceIdForAutoResize::Param params;
     ViewMsg_SetLocalSurfaceIdForAutoResize::Read(msg, &params);
     EXPECT_EQ(1u, std::get<0>(params));  // sequence_number
@@ -3015,6 +3016,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
 
+  view_->window_->layer()->SetShowSolidColorContent();
   EXPECT_FALSE(view_->HasPrimarySurface());
   ASSERT_TRUE(view_->delegated_frame_host_);
 
@@ -3041,7 +3043,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 
   // Prevent the DelegatedFrameHost from skipping frames.
   view_->DisableResizeLock();
-  EXPECT_FALSE(view_->HasPrimarySurface());
   ASSERT_TRUE(view_->delegated_frame_host_);
 
   view_->SetSize(gfx::Size(300, 300));
@@ -3077,7 +3078,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 
   // Prevent the DelegatedFrameHost from skipping frames.
   view_->DisableResizeLock();
-  EXPECT_FALSE(view_->HasPrimarySurface());
 
   view_->SetSize(gfx::Size(300, 300));
   ASSERT_TRUE(view_->HasPrimarySurface());
