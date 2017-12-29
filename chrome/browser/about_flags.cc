@@ -3422,10 +3422,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kVoiceSearchOnLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
-    {"pwa-minimal-ui", flag_descriptions::kPwaMinimalUiName,
-     flag_descriptions::kPwaMinimalUiDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kPwaMinimalUi)},
-
     {"click-to-open-pdf", flag_descriptions::kClickToOpenPDFName,
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},

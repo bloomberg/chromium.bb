@@ -702,9 +702,6 @@ extern const char kPullToRefreshDescription[];
 extern const char kPushApiBackgroundModeName[];
 extern const char kPushApiBackgroundModeDescription[];
 
-extern const char kPwaMinimalUiName[];
-extern const char kPwaMinimalUiDescription[];
-
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
