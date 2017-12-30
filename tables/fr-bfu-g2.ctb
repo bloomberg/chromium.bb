@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-29
+#-updated: 2017-12-30
 
 # liblouis: Unified French Grade 2 Table
 
@@ -60,7 +60,7 @@ class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘;àî:ô"ï¸ë!)
 class bmpabr bmpBMP⠘;!6
 
 #For backtranslation, we need a class that contains vowels + contractions that begin by a vowel, excluding those which have similar dot patterns to digits.
-class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw„¸
+class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw¸
 class voyabr2 ⠼âêîôûëïüœ./,●
 class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw¸⠼âêîôûëïüœ./,●
 
@@ -500,6 +500,7 @@ nofor begmidword infl 35-126
 nofor begmidword infr 35-16
 nofor before voyabr3 midword ingl 35-345
 before puncEnd before space endword in 35
+before bmpabr begword incom 35-36 
 nofor before conabr begword indis 35-256 
 
 noback before con always ion 3456
@@ -642,7 +643,7 @@ noback begmidword qu 12345
 nofor before voyabr3 begmidword qu 12345
 nofor midendword quable 12345-45
 nofor endword quablement 12345-45-134
-always qu' 12345-3
+before apost sufword qu 12345
 nofor before conabr midword quien 12345-256
 endword que 12345
 endword ques 12345-234
@@ -873,15 +874,25 @@ word uns 136-234
 word vous 1236
 word y 13456
 
-begword c' 14-3
-begword d' 145-3
-begword j' 245-3
-begword l' 123-3
-begword m' 134-3
-begword n' 1345-3
-begword s' 234-3
+before apost sufword c 14
+before apost sufword d 145
+before apost sufword j 245
+before apost sufword l 123
+before apost sufword m 134
+before apost sufword n 1345
+before apost sufword s 234
+before apost sufword t 2345
+
+before apost sufword C 14
+before apost sufword D 145
+before apost sufword J 245
+before apost sufword L 123
+before apost sufword M 134
+before apost sufword N 1345
+before apost sufword S 234
+before apost sufword T 2345
+
 nofor begword souscr 356-25
-begword t' 2345-3
 
 ###
 ### 3. Mots représentés par deux ou plusieurs symboles
@@ -2374,8 +2385,7 @@ word quelconque		12345-14
 word quelconques	12345-14-234
 word quelque		12345-12345
 word quelques		12345-12345-234
-word quelqu'un 12345-12345-3-136
-word quelqu'une 12345-12345-3-136-1345
+before apost sufword quelqu 12345-12345
 word quelquefois	12345-124
 word question		12345-3456
 word questions		12345-3456-234
@@ -2821,6 +2831,7 @@ before apost sufword lorsqu 123-12345
 before apost sufword parce\squ 1234-456-12345
 before apost sufword presqu 235-12345
 before apost sufword puisqu 1234-12345
+before apost sufword tandis\squ 2345-456-12345
 
 #Lettres isolées
 contraction b
@@ -4642,8 +4653,6 @@ nofor pass3 [@36-134-356] @14-135-134-134-15-2345-2345-1235-15
 #gestion du tiret en début de mot
 noback correct [`"-"]$l "`-"
 noback correct $s["-"]$l "`-"
-noback pass4 `[@56]@1-36 ?
-noback pass2 [@6]@6-45-236 ?
 
 #Parenthèse dans un mot
 noback correct $l["("] "ø("
@@ -4736,41 +4745,12 @@ nofor pass3 @6$d[]@1 @56
 nofor pass3 @6$d[]@15 @56
 nofor pass3 $d@0[]$d @0-8-0
 
-# quelques suprressions de pts 56 en forward
+# quelques suprressions de pts 56 ou 6 en forward
 noback pass2 @6$d[@56]$l ?
 noback pass2 [@56]@1$s ?
 noback pass2 [@56]@15$s ?
-
-# Séquences de caractères particulières
-compbrl :// URLs
-compbrl ()
-compbrl www.
-compbrl ::
-compbrl .com
-compbrl .edu
-compbrl .gov
-compbrl .mil
-compbrl .net
-compbrl .org
-compbrl .exe
-compbrl .dll
-compbrl .ini
-compbrl .msi
-compbrl .doc
-compbrl .xml
-compbrl .xsl
-compbrl .htm
-compbrl .html
-compbrl .tex
-compbrl .txt
-compbrl .gif
-compbrl .jpg
-compbrl .png
-compbrl .ogg
-compbrl .mp3
-compbrl .wav
-compbrl .tar
-compbrl .zip
+noback pass2 `[@56]@1-36 ?
+noback pass2 [@6]@6-45-236 ?
 
 nofor word alvaralhão 1-123-1236-1-1235-1-123-125-1-135 
 word	cant	56-14-1456
@@ -4816,6 +4796,7 @@ word elektron 15-123-15-13-2345-1235-135-1345
 nofor word been 12-15-26
 nofor word pin's 1234-35-3-234
 nofor word traveller's 356-1-1236-15-456-236-3-56-234
+word w3c 2456-146-14
 nofor correct "angström" "angstrœm"
 nofor correct "Chrd\sRai" "Árd\sRí"
 nofor correct "compoly" "-poly"
@@ -4827,3 +4808,54 @@ nofor correct "Neels?" "Neelsen"
 nofor correct "eTtire" "eWire"
 noback pass2 @26[@56]@36 ?
 noback word aurone 1-136-1235-135-1345-15
+
+# Séquences de caractères particulières
+compbrl :// URLs
+compbrl ()
+compbrl www.
+compbrl ::
+compbrl .be
+compbrl .com
+compbrl .edu
+compbrl .fr
+compbrl .gov
+compbrl .mil
+compbrl .net
+compbrl .org
+
+compbrl .cfg
+compbrl .dll
+compbrl .doc
+compbrl .docx
+compbrl .exe
+compbrl .htm
+compbrl .html
+compbrl .ini
+compbrl .log
+compbrl .msi
+compbrl .odt
+compbrl .xls
+compbrl .xlsx
+compbrl .xml
+compbrl .xsl
+compbrl .tex
+compbrl .txt
+
+compbrl .gif
+compbrl .jpg
+compbrl .ico
+compbrl .png
+
+compbrl .avi
+compbrl .ogg
+compbrl .mkv
+compbrl .mp3
+compbrl .mp4
+compbrl .wav
+compbrl .wmv
+
+compbrl .7z
+compbrl .gz
+compbrl .rar
+compbrl .tar
+compbrl .zip
