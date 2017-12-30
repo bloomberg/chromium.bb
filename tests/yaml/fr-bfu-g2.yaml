@@ -23,6 +23,9 @@ tests:
     - ["4me", "⠠⠹⠍⠑"]
     - ["- Item 1", "⠰⠤ ⠨⠊⠞⠑⠍ ⠠⠡"]
     - ["- item 1", "⠰⠤ ⠊⠞⠑⠍ ⠠⠡"]
+    - ["d’être, l’unité. L’utilisation.", "⠙⠄⠣⠴⠂ ⠇⠄⠥⠝⠞⠲ ⠨⠇⠄⠥⠇⠡⠲"]
+    - ["d'être, l'unité. L'utilisation.", "⠙⠄⠣⠴⠂ ⠇⠄⠥⠝⠞⠲ ⠨⠇⠄⠥⠇⠡⠲"]
+    - ["desktop.ini", "⠙⠑⠎⠅⠞⠕⠏⠲⠊⠝⠊"]
   # ⠡ -> fr, ation (terminaison)
     - ["fruit", "⠡⠆⠞"]
     - ["cardiofréquencemètre,", "⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂"]
@@ -1173,6 +1176,8 @@ tests:
     - ["⠪⠎⠕⠏⠓⠁⠛⠑", "œsophage"]
     - ["⠪⠙⠊⠏⠑", "œdipe"]
     - ["⠦⠪⠝⠁⠝⠞⠓⠊⠟⠴⠂", "(œnanthique),"]
+    - ["⠙⠄⠣⠴⠂ ⠇⠄⠥⠝⠞⠲ ⠨⠇⠄⠥⠇⠡⠲", "d'être, l'unité. L'utilisation."]
+    
   # ⠡ -> fr, ation (terminaison)
     - ["⠡⠆⠞", "fruit"]
     - ["⠉⠈⠙⠊⠕⠡⠿⠟⠢⠉⠑⠍⠮⠴⠑⠂", "cardiofréquencemètre,"]
@@ -2236,4 +2241,3 @@ tests:
     - ["⠤⠫", "complet"]
     - ["⠤⠫⠍", "complément"]
     - ["⠤⠫⠍⠗", "complémentaire"]
-
