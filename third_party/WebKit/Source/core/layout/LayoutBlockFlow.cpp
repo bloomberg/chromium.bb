@@ -1709,6 +1709,18 @@ LayoutUnit LayoutBlockFlow::AdjustedMarginBeforeForPagination(
   return std::min(effective_margin, remaining_space);
 }
 
+static LayoutBlockFlow* PreviousBlockFlowInFormattingContext(
+    const LayoutBox& child) {
+  LayoutObject* prev = child.PreviousSibling();
+  while (prev && (!prev->IsLayoutBlockFlow() ||
+                  ToLayoutBlockFlow(prev)->CreatesNewFormattingContext())) {
+    prev = prev->PreviousSibling();
+  }
+  if (prev)
+    return ToLayoutBlockFlow(prev);
+  return nullptr;
+}
+
 LayoutUnit LayoutBlockFlow::CollapseMargins(
     LayoutBox& child,
     BlockChildrenLayoutInfo& layout_info,
@@ -1896,18 +1908,16 @@ LayoutUnit LayoutBlockFlow::CollapseMargins(
   if (logical_top < before_collapse_logical_top) {
     LayoutUnit old_logical_height = LogicalHeight();
     SetLogicalHeight(logical_top);
+    LayoutBlockFlow* previous_block_flow =
+        PreviousBlockFlowInFormattingContext(child);
     while (previous_block_flow) {
       auto lowest_float = previous_block_flow->LogicalTop() +
                           previous_block_flow->LowestFloatLogicalBottom();
-      if (lowest_float > logical_top)
-        AddOverhangingFloats(previous_block_flow, false);
-      else
+      if (lowest_float <= logical_top)
         break;
-      LayoutObject* prev = previous_block_flow->PreviousSibling();
-      if (prev && prev->IsLayoutBlockFlow())
-        previous_block_flow = ToLayoutBlockFlow(prev);
-      else
-        previous_block_flow = nullptr;
+      AddOverhangingFloats(previous_block_flow, false);
+      previous_block_flow =
+          PreviousBlockFlowInFormattingContext(*previous_block_flow);
     }
     SetLogicalHeight(old_logical_height);
   }
