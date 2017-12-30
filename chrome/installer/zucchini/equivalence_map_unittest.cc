@@ -215,11 +215,13 @@ TEST(EquivalenceMapTest, Build) {
                                    const ImageIndex new_index,
                                    double minimum_similarity) {
     EncodedView old_view(old_index);
+    EncodedView new_view(new_index);
+
     std::vector<offset_t> old_sa =
         MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality());
 
     EquivalenceMap equivalence_map;
-    equivalence_map.Build(old_sa, old_index, new_index, minimum_similarity);
+    equivalence_map.Build(old_sa, old_view, new_view, minimum_similarity);
 
     offset_t current_dst_offset = 0;
     offset_t coverage = 0;

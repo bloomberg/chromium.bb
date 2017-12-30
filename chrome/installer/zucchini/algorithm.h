@@ -7,7 +7,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <type_traits>
+#include <vector>
 
 #include "base/logging.h"
 
@@ -49,6 +51,15 @@ template <class T>
 constexpr T ceil(T x, T m) {
   static_assert(std::is_unsigned<T>::value, "Value type must be unsigned.");
   return T((x + m - 1) / m) * m;
+}
+
+// Sorts values in |container| and removes duplicates.
+template <class T>
+void SortAndUniquify(std::vector<T>* container) {
+  std::sort(container->begin(), container->end());
+  container->erase(std::unique(container->begin(), container->end()),
+                   container->end());
+  container->shrink_to_fit();
 }
 
 }  // namespace zucchini

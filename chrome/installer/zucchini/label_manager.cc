@@ -8,18 +8,9 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "chrome/installer/zucchini/algorithm.h"
 
 namespace zucchini {
-
-namespace {
-
-void SortAndUniquify(std::vector<offset_t>* offsets) {
-  std::sort(offsets->begin(), offsets->end());
-  offsets->erase(std::unique(offsets->begin(), offsets->end()), offsets->end());
-  offsets->shrink_to_fit();
-}
-
-}  // namespace
 
 /******** BaseLabelManager ********/
 
