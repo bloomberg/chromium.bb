@@ -12,6 +12,7 @@ namespace zucchini {
 
 EncodedView::EncodedView(const ImageIndex& image_index)
     : image_index_(image_index) {}
+EncodedView::~EncodedView() = default;
 
 EncodedView::value_type EncodedView::Projection(offset_t location) const {
   DCHECK_LT(location, image_index_.size());
@@ -26,9 +27,10 @@ EncodedView::value_type EncodedView::Projection(offset_t location) const {
   }
 
   // |location| points into a Reference.
-  Reference ref = image_index_.FindReference(type, location);
+  const ReferenceSet& ref_set = image_index_.refs(type);
+  IndirectReference ref = ref_set.at(location);
   DCHECK_GE(location, ref.location);
-  DCHECK_LT(location, ref.location + image_index_.GetTraits(type).width);
+  DCHECK_LT(location, ref.location + ref_set.width());
 
   // |location| is not the first byte of the reference.
   if (location != ref.location) {
@@ -36,15 +38,16 @@ EncodedView::value_type EncodedView::Projection(offset_t location) const {
     return kReferencePaddingProjection;
   }
 
+  const TargetPool& target_pool = ref_set.target_pool();
+
   // Targets with an associated Label will use its Label index in projection.
   // Otherwise, LabelBound() is used for all targets with no Label.
+  offset_t offset = target_pool.OffsetForKey(ref.target_key);
   value_type target =
-      IsMarked(ref.target)
-          ? UnmarkIndex(ref.target)
-          : image_index_.LabelBound(image_index_.GetPoolTag(type));
+      IsMarked(offset) ? UnmarkIndex(offset) : target_pool.label_bound();
 
-  // Projection is done on (|target|, |type|), shifted by a constant value to
-  // avoid collisions with raw content.
+  // Projection is done on (|target|, |type|), shifted by
+  // kBaseReferenceProjection to avoid collisions with raw content.
   value_type projection = target;
   projection *= image_index_.TypeCount();
   projection += type.value();
@@ -53,9 +56,10 @@ EncodedView::value_type EncodedView::Projection(offset_t location) const {
 
 size_t EncodedView::Cardinality() const {
   size_t max_width = 0;
-  for (uint8_t pool = 0; pool < image_index_.PoolCount(); ++pool) {
-    // LabelBound() + 1 for the extra case of references with no Label.
-    max_width = std::max(image_index_.LabelBound(PoolTag(pool)) + 1, max_width);
+  for (const auto& target_pool : image_index_.target_pools()) {
+    // TODO(etiennep): Remove "+ 1" after refactoring.
+    // label_bound() + 1 for the extra case of references with no Label.
+    max_width = std::max(target_pool.second.label_bound() + 1, max_width);
   }
   return max_width * image_index_.TypeCount() + kBaseReferenceProjection;
 }

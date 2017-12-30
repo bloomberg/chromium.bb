@@ -17,6 +17,7 @@
 #include "chrome/installer/zucchini/encoded_view.h"
 #include "chrome/installer/zucchini/equivalence_map.h"
 #include "chrome/installer/zucchini/image_index.h"
+#include "chrome/installer/zucchini/label_manager.h"
 #include "chrome/installer/zucchini/patch_writer.h"
 #include "chrome/installer/zucchini/suffix_array.h"
 
@@ -89,20 +90,21 @@ std::vector<offset_t> MakeNewTargetsFromEquivalenceMap(
   return new_targets;
 }
 
-std::vector<offset_t> FindExtraTargets(
-    const std::vector<Reference>& new_references,
-    const EquivalenceMap& equivalence_map) {
+std::vector<offset_t> FindExtraTargets(const ReferenceSet& new_references,
+                                       const EquivalenceMap& equivalence_map) {
   auto equivalence = equivalence_map.begin();
   std::vector<offset_t> targets;
-  for (const Reference& ref : new_references) {
+  for (const IndirectReference& ref : new_references) {
     while (equivalence != equivalence_map.end() &&
-           equivalence->eq.dst_end() <= ref.location)
+           equivalence->eq.dst_end() <= ref.location) {
       ++equivalence;
-
+    }
     if (equivalence == equivalence_map.end())
       break;
-    if (ref.location >= equivalence->eq.dst_offset && !IsMarked(ref.target))
-      targets.push_back(ref.target);
+    offset_t target_offset =
+        new_references.target_pool().OffsetForKey(ref.target_key);
+    if (ref.location >= equivalence->eq.dst_offset && !IsMarked(target_offset))
+      targets.push_back(target_offset);
   }
   return targets;
 }
@@ -122,7 +124,8 @@ EquivalenceMap CreateEquivalenceMap(
   // Build coarse equivalence map, where references with same types are
   // considered equivalent.
   equivalence_map.Build(MakeSuffixArrayFromImageIndex(*old_image_index),
-                        *old_image_index, *new_image_index,
+                        EncodedView(*old_image_index),
+                        EncodedView(*new_image_index),
                         kLargeEquivalenceSimilarity);
 
   // Associate targets from "old" to "new" image based on coarse
@@ -150,7 +153,8 @@ EquivalenceMap CreateEquivalenceMap(
   // on) are considered equivalent. Note that a different |min_similarity| is
   // used.
   equivalence_map.Build(MakeSuffixArrayFromImageIndex(*old_image_index),
-                        *old_image_index, *new_image_index,
+                        EncodedView(*old_image_index),
+                        EncodedView(*new_image_index),
                         kMinEquivalenceSimilarity);
 
   // Restore |old_image_index| and |new_image_index| to offsets.
@@ -225,10 +229,12 @@ bool GenerateReferencesDelta(const ImageIndex& old_index,
   // TODO(huangs): Investigate whether mixing all types is worthwhile.
   for (uint8_t type = 0; type < old_index.TypeCount(); ++type) {
     TypeTag type_tag(type);
-    size_t ref_width = old_index.GetTraits(type_tag).width;
 
-    const std::vector<Reference>& src_refs = old_index.GetReferences(type_tag);
-    const std::vector<Reference>& dst_refs = new_index.GetReferences(type_tag);
+    const ReferenceSet& src_refs = old_index.refs(type_tag);
+    const ReferenceSet& dst_refs = new_index.refs(type_tag);
+    const TargetPool& src_target_pool = old_index.pool(src_refs.pool_tag());
+    const TargetPool& dst_target_pool = new_index.pool(dst_refs.pool_tag());
+    offset_t ref_width = src_refs.width();
     auto dst_ref = dst_refs.begin();
 
     // For each equivalence, for each covered |dst_ref| and the matching
@@ -250,19 +256,23 @@ bool GenerateReferencesDelta(const ImageIndex& old_index,
 
       offset_t src_loc =
           equiv.src_offset + (dst_ref->location - equiv.dst_offset);
-      auto src_ref = std::lower_bound(
-          src_refs.begin(), src_refs.end(), src_loc,
-          [](const Reference& a, offset_t b) { return a.location < b; });
+      auto src_ref =
+          std::lower_bound(src_refs.begin(), src_refs.end(), src_loc,
+                           [](const IndirectReference& a, offset_t b) {
+                             return a.location < b;
+                           });
       for (; dst_ref != dst_refs.end() &&
              dst_ref->location + ref_width <= equiv.dst_end();
            ++dst_ref, ++src_ref) {
         // Local offset of |src_ref| should match that of |dst_ref|.
         DCHECK_EQ(src_ref->location - equiv.src_offset,
                   dst_ref->location - equiv.dst_offset);
-        DCHECK(IsMarked(dst_ref->target));
-        DCHECK(IsMarked(src_ref->target));
+        offset_t src_target = src_target_pool.OffsetForKey(src_ref->target_key);
+        offset_t dst_target = dst_target_pool.OffsetForKey(dst_ref->target_key);
+        DCHECK(IsMarked(dst_target));
+        DCHECK(IsMarked(src_target));
         reference_delta_sink->PutNext(static_cast<int32_t>(
-            UnmarkIndex(dst_ref->target) - UnmarkIndex(src_ref->target)));
+            UnmarkIndex(dst_target) - UnmarkIndex(src_target)));
       }
       if (dst_ref == dst_refs.end())
         break;  // Done.
@@ -291,8 +301,8 @@ bool GenerateRawElement(const std::vector<offset_t>& old_sa,
   ImageIndex new_image_index(new_image);
 
   EquivalenceMap equivalences;
-  equivalences.Build(old_sa, old_image_index, new_image_index,
-                     kMinEquivalenceSimilarity);
+  equivalences.Build(old_sa, EncodedView(old_image_index),
+                     EncodedView(new_image_index), kMinEquivalenceSimilarity);
 
   patch_writer->SetReferenceDeltaSink({});
   return GenerateEquivalencesAndExtraData(new_image, equivalences,
@@ -330,7 +340,7 @@ bool GenerateExecutableElement(ExecutableType exe_type,
   std::vector<OrderedLabelManager> old_label_managers(pool_count);
   for (uint8_t pool = 0; pool < old_image_index->PoolCount(); ++pool) {
     old_label_managers[pool].InsertOffsets(
-        old_image_index->GetTargets(PoolTag(pool)));
+        old_image_index->pool(PoolTag(pool)).targets());
   }
 
   EquivalenceMap equivalences = CreateEquivalenceMap(
@@ -352,9 +362,9 @@ bool GenerateExecutableElement(ExecutableType exe_type,
     // Find extra targets in |new_image_index|, emit into patch, merge them to
     // |new_labelsl_manager|, and update new references.
     OrderedLabelManager extra_label_manager;
-    for (TypeTag type : new_image_index->GetTypeTags(PoolTag(pool))) {
+    for (TypeTag type : new_image_index->pool(PoolTag(pool)).types()) {
       extra_label_manager.InsertOffsets(
-          FindExtraTargets(new_image_index->GetReferences(type), equivalences));
+          FindExtraTargets(new_image_index->refs(type), equivalences));
     }
     if (!GenerateExtraTargets(extra_label_manager.Labels(), PoolTag(pool),
                               patch_writer))

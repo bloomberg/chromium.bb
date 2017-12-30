@@ -5,6 +5,7 @@
 #include "chrome/installer/zucchini/encoded_view.h"
 
 #include <iterator>
+#include <numeric>
 #include <vector>
 
 #include "chrome/installer/zucchini/image_index.h"
@@ -114,9 +115,7 @@ class EncodedViewTest : public testing::Test {
   EncodedViewTest()
       : buffer_(20),
         image_index_(ConstBufferView(buffer_.data(), buffer_.size())) {
-    for (uint8_t i = 0; i < buffer_.size(); ++i) {
-      buffer_[i] = i;
-    }
+    std::iota(buffer_.begin(), buffer_.end(), 0);
     TestDisassembler disasm({2, TypeTag(0), PoolTag(0)},
                             {{1, 0}, {8, 1}, {10, 2}},
                             {4, TypeTag(1), PoolTag(0)}, {{3, 3}},

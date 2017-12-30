@@ -19,6 +19,8 @@ class EquivalenceMap;
 class ImageIndex;
 class OrderedLabelManager;
 class PatchElementWriter;
+class ReferenceDeltaSink;
+class ReferenceSet;
 
 // Creates an ImageIndex and initializes it with references from |disasm|.
 // Returns nullopt on error.
@@ -36,9 +38,8 @@ std::vector<offset_t> MakeNewTargetsFromEquivalenceMap(
 // Extracts all unmarked targets of references in |new_references| whose
 // location is found in an equivalence of |equivalences|, and returns these
 // targets in a new vector. |new_references| must be sorted in ascending order.
-std::vector<offset_t> FindExtraTargets(
-    const std::vector<Reference>& new_references,
-    const EquivalenceMap& equivalences);
+std::vector<offset_t> FindExtraTargets(const ReferenceSet& new_references,
+                                       const EquivalenceMap& equivalences);
 
 // Creates an EquivalenceMap from "old" image to "new" image and returns the
 // result. The params |*_image_index|:
