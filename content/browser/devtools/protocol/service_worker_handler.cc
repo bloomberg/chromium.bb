@@ -138,7 +138,7 @@ void DidFindRegistrationForDispatchSyncEventOnIO(
   // Keep the registration while dispatching the sync event.
   background_sync_manager->EmulateDispatchSyncEvent(
       tag, std::move(version), last_chance,
-      base::Bind(&StatusNoOpKeepingRegistration, std::move(registration)));
+      base::BindOnce(&StatusNoOpKeepingRegistration, std::move(registration)));
 }
 
 void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,

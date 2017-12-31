@@ -79,10 +79,10 @@ void TestBackgroundSyncManager::DispatchSyncEvent(
     const std::string& tag,
     scoped_refptr<ServiceWorkerVersion> active_version,
     bool last_chance,
-    const ServiceWorkerVersion::LegacyStatusCallback& callback) {
+    ServiceWorkerVersion::StatusCallback callback) {
   ASSERT_TRUE(dispatch_sync_callback_);
   last_chance_ = last_chance;
-  dispatch_sync_callback_.Run(active_version, callback);
+  dispatch_sync_callback_.Run(active_version, std::move(callback));
 }
 
 void TestBackgroundSyncManager::ScheduleDelayedTask(base::OnceClosure callback,
