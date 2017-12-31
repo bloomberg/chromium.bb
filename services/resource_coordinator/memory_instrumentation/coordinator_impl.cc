@@ -239,7 +239,7 @@ void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
   auto chrome_callback = base::Bind(
       &CoordinatorImpl::OnChromeMemoryDumpResponse, base::Unretained(this));
   auto os_callback = base::Bind(&CoordinatorImpl::OnOSMemoryDumpResponse,
-                                base::Unretained(this));
+                                base::Unretained(this), request->dump_guid);
   QueuedRequestDispatcher::SetUpAndDispatch(request, clients, chrome_callback,
                                             os_callback);
 
@@ -268,8 +268,7 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
   using ResponseType = QueuedRequest::PendingResponse::Type;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
-  if (request == nullptr) {
-    NOTREACHED() << "No current dump request.";
+  if (request == nullptr || request->dump_guid != dump_guid) {
     return;
   }
 
@@ -290,14 +289,14 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
 }
 
-void CoordinatorImpl::OnOSMemoryDumpResponse(mojom::ClientProcess* client,
+void CoordinatorImpl::OnOSMemoryDumpResponse(uint64_t dump_guid,
+                                             mojom::ClientProcess* client,
                                              bool success,
                                              OSMemDumpMap os_dumps) {
   using ResponseType = QueuedRequest::PendingResponse::Type;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   QueuedRequest* request = GetCurrentRequest();
-  if (request == nullptr) {
-    NOTREACHED() << "No current dump request.";
+  if (request == nullptr || request->dump_guid != dump_guid) {
     return;
   }
 
