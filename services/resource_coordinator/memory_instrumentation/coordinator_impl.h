@@ -102,7 +102,8 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
       std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_memory_dump);
 
   // Callback of RequestOSMemoryDump.
-  void OnOSMemoryDumpResponse(mojom::ClientProcess*,
+  void OnOSMemoryDumpResponse(uint64_t dump_guid,
+                              mojom::ClientProcess*,
                               bool success,
                               OSMemDumpMap);
 
