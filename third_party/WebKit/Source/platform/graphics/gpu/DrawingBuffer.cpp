@@ -295,7 +295,7 @@ bool DrawingBuffer::PrepareTransferableResourceInternal(
 
   TRACE_EVENT0("blink,rail", "DrawingBuffer::prepareMailbox");
 
-  // Resolve the multisampled buffer into m_backColorBuffer texture.
+  // Resolve the multisampled buffer into the texture attached to fbo_.
   ResolveIfNeeded();
 
   if (!using_gpu_compositing_ && !force_gpu_result) {
@@ -355,6 +355,16 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
   if (webgl_version_ > kWebGL1) {
     state_restorer_->SetPixelUnpackBufferBindingDirty();
     gl_->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+  }
+
+  if (premultiplied_alpha_false_texture_) {
+    // The rendering results are in this texture rather than the
+    // back_color_buffer_'s texture. Copy them in, multiplying the alpha channel
+    // into the color channels.
+    gl_->CopySubTextureCHROMIUM(premultiplied_alpha_false_texture_, 0,
+                                texture_target_, back_color_buffer_->texture_id,
+                                0, 0, 0, 0, 0, size_.Width(), size_.Height(),
+                                GL_FALSE, GL_TRUE, GL_FALSE);
   }
 
   // Specify the buffer that we will put in the mailbox.
@@ -774,8 +784,17 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
     produce_sync_token = front_color_buffer_->produce_sync_token;
   } else {
     src_gl->GenMailboxCHROMIUM(mailbox.name);
-    src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id,
-                                         mailbox.name);
+    if (premultiplied_alpha_false_texture_) {
+      // If this texture exists, then it holds the rendering results at this
+      // point, rather than back_color_buffer_. back_color_buffer_ receives the
+      // contents of this texture later, premultiplying alpha into the color
+      // channels.
+      src_gl->ProduceTextureDirectCHROMIUM(premultiplied_alpha_false_texture_,
+                                           mailbox.name);
+    } else {
+      src_gl->ProduceTextureDirectCHROMIUM(back_color_buffer_->texture_id,
+                                           mailbox.name);
+    }
     src_gl->GenUnverifiedSyncTokenCHROMIUM(produce_sync_token.GetData());
   }
 
@@ -818,7 +837,11 @@ WebLayer* DrawingBuffer::PlatformLayer() {
 
     layer_->SetOpaque(!want_alpha_channel_);
     layer_->SetBlendBackgroundColor(want_alpha_channel_);
-    layer_->SetPremultipliedAlpha(premultiplied_alpha_);
+    // If ShouldUseChromiumImage(), premultiplied_alpha_ has already been
+    // handled via CopySubTextureCHROMIUM, and does not need to be handled by
+    // the compositor.
+    layer_->SetPremultipliedAlpha(premultiplied_alpha_ &&
+                                  !ShouldUseChromiumImage());
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
     GraphicsLayer::RegisterContentsLayer(layer_->Layer());
   }
@@ -852,12 +875,16 @@ void DrawingBuffer::BeginDestruction() {
   if (depth_stencil_buffer_)
     gl_->DeleteRenderbuffers(1, &depth_stencil_buffer_);
 
+  if (premultiplied_alpha_false_texture_)
+    gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+
   size_ = IntSize();
 
   back_color_buffer_ = nullptr;
   front_color_buffer_ = nullptr;
   multisample_renderbuffer_ = 0;
   depth_stencil_buffer_ = 0;
+  premultiplied_alpha_false_texture_ = 0;
   multisample_fbo_ = 0;
   fbo_ = 0;
 
@@ -871,6 +898,50 @@ bool DrawingBuffer::ResizeDefaultFramebuffer(const IntSize& size) {
   DCHECK(state_restorer_);
   // Recreate m_backColorBuffer.
   back_color_buffer_ = CreateColorBuffer(size);
+
+  // Most OS compositors assume GpuMemoryBuffers contain premultiplied-alpha
+  // content. If the user created the context with premultipliedAlpha:false and
+  // GpuMemoryBuffers are being used, allocate a non-GMB texture which will hold
+  // the non-premultiplied rendering results. These will be copied into the GMB
+  // via CopySubTextureCHROMIUM, performing the premultiplication step then.
+  if (ShouldUseChromiumImage() && allocate_alpha_channel_ &&
+      !premultiplied_alpha_) {
+    state_restorer_->SetTextureBindingDirty();
+    // TODO(kbr): unify with code in CreateColorBuffer.
+    if (premultiplied_alpha_false_texture_) {
+      gl_->DeleteTextures(1, &premultiplied_alpha_false_texture_);
+      premultiplied_alpha_false_texture_ = 0;
+    }
+    gl_->GenTextures(1, &premultiplied_alpha_false_texture_);
+    // The command decoder forbids allocating "real" OpenGL textures with the
+    // GL_TEXTURE_RECTANGLE_ARB target. Allocate this temporary texture with
+    // type GL_TEXTURE_2D all the time. CopySubTextureCHROMIUM can handle
+    // copying between 2D and rectangular textures.
+    gl_->BindTexture(GL_TEXTURE_2D, premultiplied_alpha_false_texture_);
+    if (storage_texture_supported_) {
+      GLenum internal_storage_format = GL_RGBA8;
+      if (use_half_float_storage_) {
+        internal_storage_format = GL_RGBA16F_EXT;
+      }
+      gl_->TexStorage2DEXT(GL_TEXTURE_2D, 1, internal_storage_format,
+                           size.Width(), size.Height());
+    } else {
+      GLenum internal_format = GL_RGBA;
+      GLenum format = internal_format;
+      GLenum data_type = GL_UNSIGNED_BYTE;
+      if (use_half_float_storage_) {
+        if (webgl_version_ > kWebGL1) {
+          internal_format = GL_RGBA16F;
+          data_type = GL_HALF_FLOAT;
+        } else {
+          internal_format = GL_RGBA;
+          data_type = GL_HALF_FLOAT_OES;
+        }
+      }
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, internal_format, size.Width(),
+                      size.Height(), 0, format, data_type, nullptr);
+    }
+  }
 
   AttachColorBufferToReadFramebuffer();
 
@@ -1317,17 +1388,26 @@ void DrawingBuffer::AttachColorBufferToReadFramebuffer() {
 
   gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 
-  GLenum id = back_color_buffer_->texture_id;
+  GLenum id = 0;
+  GLenum texture_target = 0;
 
-  gl_->BindTexture(texture_target_, id);
+  if (premultiplied_alpha_false_texture_) {
+    id = premultiplied_alpha_false_texture_;
+    texture_target = GL_TEXTURE_2D;
+  } else {
+    id = back_color_buffer_->texture_id;
+    texture_target = texture_target_;
+  }
+
+  gl_->BindTexture(texture_target, id);
 
   if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
     gl_->FramebufferTexture2DMultisampleEXT(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target_, id, 0,
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture_target, id, 0,
         sample_count_);
   } else {
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              texture_target_, id, 0);
+                              texture_target, id, 0);
   }
 }
 
@@ -1449,13 +1529,6 @@ DrawingBuffer::ScopedStateRestorer::~ScopedStateRestorer() {
 bool DrawingBuffer::ShouldUseChromiumImage() {
   return RuntimeEnabledFeatures::WebGLImageChromiumEnabled() &&
          chromium_image_usage_ == kAllowChromiumImage &&
-#if defined(OS_MACOSX)
-         // Core Animation assumes that the incoming alpha channel is
-         // premultiplied into the color channels. Fall back to
-         // regular compositing if the user wants the alpha channel
-         // interpreted as separate.
-         premultiplied_alpha_ &&
-#endif
          Platform::Current()->GetGpuMemoryBufferManager();
 }
 
