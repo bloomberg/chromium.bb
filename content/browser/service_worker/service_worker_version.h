@@ -114,12 +114,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public base::RefCounted<ServiceWorkerVersion>,
       public EmbeddedWorkerInstance::Listener {
  public:
-  // TODO(crbug.com/755477): LegacyStatusCallback which does not use
-  // OnceCallback is deprecated and should be removed soon.
-  using LegacyStatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
   using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
-      base::Callback<void(blink::mojom::ServiceWorkerEventStatus, base::Time)>;
+      base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus,
+                              base::Time)>;
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVATED)
   // should be persisted unlike running status.

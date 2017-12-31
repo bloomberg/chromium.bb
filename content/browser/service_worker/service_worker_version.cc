@@ -674,8 +674,8 @@ ServiceWorkerVersion::SimpleEventCallback
 ServiceWorkerVersion::CreateSimpleEventCallback(int request_id) {
   // The weak reference to |this| is safe because storage of the callbacks, the
   // inflight responses of the ServiceWorkerEventDispatcher, is owned by |this|.
-  return base::Bind(&ServiceWorkerVersion::OnSimpleEventFinished,
-                    base::Unretained(this), request_id);
+  return base::BindOnce(&ServiceWorkerVersion::OnSimpleEventFinished,
+                        base::Unretained(this), request_id);
 }
 
 void ServiceWorkerVersion::RunAfterStartWorker(
