@@ -14,34 +14,30 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV",
+          "rect": [9, 9, 100, 100],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [9, 9, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='target'",
+          "rect": [9, 9, 50, 50],
+          "reason": "appeared"
+        }
+      ]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
       "position": [8, 8],
       "contentsOpaque": true,
       "drawsContent": false
-    },
-    {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
-      "name": "LayoutBlockFlow (relative positioned) DIV",
-      "position": [8, 8],
-      "bounds": [784, 52],
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (relative positioned) DIV",
-          "rect": [1, 1, 100, 100],
-          "reason": "disappeared"
-        }
-      ]
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow DIV id='target')",
-      "position": [9, 9],
-      "bounds": [100, 100]
     }
   ],
   "objectPaintInvalidations": [

@@ -152,11 +152,6 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
         properties.unclipped_absolute_bounding_box =
             EnclosingIntRect(geometry_map_.AbsoluteRect(
                 FloatRect(layer->BoundingBoxForCompositingOverlapTest())));
-        // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little
-        // sense, but removing this code will make JSGameBench sad.
-        // See https://codereview.chromium.org/13912020/
-        if (properties.unclipped_absolute_bounding_box.IsEmpty())
-          properties.unclipped_absolute_bounding_box.SetSize(IntSize(1, 1));
 
         ClipRect clip_rect;
         layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
