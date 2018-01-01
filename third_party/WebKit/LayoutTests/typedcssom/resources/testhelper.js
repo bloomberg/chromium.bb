@@ -70,13 +70,6 @@ function assert_style_value_array_equals(a, b) {
   }
 }
 
-// Creates a new div element with specified inline style.
-function newDivWithStyle(style) {
-  let target = document.createElement('div');
-  target.style = style;
-  return target;
-}
-
 const gValidUnits = [
   'number', 'percent', 'em', 'ex', 'ch',
   'ic', 'rem', 'lh', 'rlh', 'vw',
@@ -86,3 +79,27 @@ const gValidUnits = [
   'turn', 's', 'ms', 'Hz', 'kHz',
   'dpi', 'dpcm', 'dppx', 'fr',
 ];
+
+// Creates a new div element with specified inline style |cssText|.
+// The created element is deleted during test cleanup.
+function createDivWithStyle(test, cssText) {
+  let element = document.createElement('div');
+  element.style = cssText || '';
+  document.body.appendChild(element);
+  test.add_cleanup(() => {
+    element.remove();
+  });
+  return element;
+}
+
+// Creates a new div element with inline style |cssText| and returns
+// its inline style property map.
+function createInlineStyleMap(test, cssText) {
+  return createDivWithStyle(test, cssText).attributeStyleMap;
+}
+
+// Creates a new div element with inline style |cssText| and returns
+// its computed style property map.
+function createComputedStyleMap(test, cssText) {
+  return createDivWithStyle(test, cssText).computedStyleMap();
+}

@@ -6,25 +6,26 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/comparisons.js"></script>
 <script src="../resources/testhelper.js"></script>
+<body>
 <script>
 'use strict';
 
-function test_transform_normalization(cssText, expected) {
+function test_transform_normalization(test, cssText, expected) {
   assert_style_value_equals(CSSStyleValue.parse('transform', cssText), expected);
   assert_style_value_equals(
-      newDivWithStyle('transform: ' + cssText).attributeStyleMap.get('transform'),
+      createInlineStyleMap(test, 'transform: ' + cssText).get('transform'),
       expected);
 }
 
-test(() => {
-  test_transform_normalization('matrix(1, 2, 3, 4, 5, 6)',
+test(t => {
+  test_transform_normalization(t, 'matrix(1, 2, 3, 4, 5, 6)',
       new CSSTransformValue([
         new CSSMatrixComponent(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6]))
       ]));
 }, 'Normalizing a matrix() returns a CSSMatrixComponent');
 
-test(() => {
-  test_transform_normalization(
+test(t => {
+  test_transform_normalization(t,
       'matrix3d(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)',
       new CSSTransformValue([
         new CSSMatrixComponent(new DOMMatrixReadOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]))
@@ -145,13 +146,13 @@ const gTestCases = [
 ];
 
 for (const {cssText, expected, desc} of gTestCases) {
-  test(() => {
-    test_transform_normalization(cssText, new CSSTransformValue([expected]));
+  test(t => {
+    test_transform_normalization(t, cssText, new CSSTransformValue([expected]));
   }, 'Normalizing a ' + desc + ' returns a ' + expected.constructor.name);
 }
 
-test(() => {
-  test_transform_normalization(
+test(t => {
+  test_transform_normalization(t,
       'translate(1px) rotateX(90deg) perspective(1px) skew(90deg) scale3d(1, 2, 3)',
       new CSSTransformValue([
         new CSSTranslation(CSS.px(1), CSS.px(0)),
@@ -162,8 +163,8 @@ test(() => {
       ]));
 }, 'Normalizing a <transform-list> returns a CSSTransformValue containing all the transforms');
 
-test(() => {
-  test_transform_normalization(
+test(t => {
+  test_transform_normalization(t,
       'translate(calc(1px + 1em)) perspective(calc(1px + 1em))',
       new CSSTransformValue([
         new CSSTranslation(new CSSMathSum(CSS.px(1), CSS.em(1)), CSS.px(0)),

@@ -9,10 +9,9 @@
 <script>
 'use strict';
 
-function loadImageResource(imageValue) {
+function loadImageResource(test, imageValue) {
   // Set a CSSURLImageValue on an element so it can be loaded.
-  let target = newDivWithStyle('');
-  document.body.append(target);
+  let target = createDivWithStyle(test);
   target.attributeStyleMap.set('background-image', imageValue);
 
   // add a new Image element to know if the image resource has been loaded
@@ -45,7 +44,7 @@ test(() => {
 
 async_test(t => {
   const result = new CSSURLImageValue(gTestUrl);
-  let image = loadImageResource(result);
+  let image = loadImageResource(t, result);
 
   image.addEventListener('load', t.step_func_done(() => {
     assert_equals(result.url, gTestUrl);
@@ -58,7 +57,7 @@ async_test(t => {
 
 async_test(t => {
   const result = new CSSURLImageValue(gBase64TestUrl);
-  let image = loadImageResource(result);
+  let image = loadImageResource(t, result);
 
   image.addEventListener('load', t.step_func_done(() => {
     assert_equals(result.url, gBase64TestUrl);
@@ -71,7 +70,7 @@ async_test(t => {
 
 async_test(t => {
   const result = new CSSURLImageValue(gBadTestUrl);
-  let image = loadImageResource(result);
+  let image = loadImageResource(t, result);
 
   image.addEventListener('error', t.step_func_done(() => {
       assert_equals(result.url, gBadTestUrl);
