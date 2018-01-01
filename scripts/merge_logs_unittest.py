@@ -41,8 +41,8 @@ class ParseDateTest(ParseDateTestBase):
 
     # Status Log
     dt = merge_logs.ParseDate('Jul 31 09:17:02')
-    self.assertEqual(dt, datetime.datetime(2017, 7, 31, 9, 17, 2, 0,
-                                           TZOFFSET))
+    self.assertEqual(dt, datetime.datetime(datetime.datetime.now().year, 7, 31,
+                                           9, 17, 2, 0, TZOFFSET))
 
     # Sysinfo
     dt = merge_logs.ParseDate('2017-07-31T09:17:25.907285-07:00')
