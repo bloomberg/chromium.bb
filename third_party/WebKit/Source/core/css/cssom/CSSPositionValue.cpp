@@ -48,9 +48,11 @@ void CSSPositionValue::setY(CSSNumericValue* y,
 
 const CSSValue* CSSPositionValue::ToCSSValue(
     SecureContextMode secure_context_mode) const {
-  return CSSValuePair::Create(x_->ToCSSValue(secure_context_mode),
-                              y_->ToCSSValue(secure_context_mode),
-                              CSSValuePair::kKeepIdenticalValues);
+  const CSSValue* x = x_->ToCSSValue(secure_context_mode);
+  const CSSValue* y = y_->ToCSSValue(secure_context_mode);
+  if (!x || !y)
+    return nullptr;
+  return CSSValuePair::Create(x, y, CSSValuePair::kKeepIdenticalValues);
 }
 
 // static

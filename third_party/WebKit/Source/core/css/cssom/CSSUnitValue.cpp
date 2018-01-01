@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSUnitValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSResolutionUnits.h"
 #include "core/css/cssom/CSSMathMax.h"
 #include "core/css/cssom/CSSMathMin.h"
@@ -99,10 +100,6 @@ CSSStyleValue::StyleValueType CSSUnitValue::GetType() const {
   return StyleValueType::kUnknownType;
 }
 
-const CSSValue* CSSUnitValue::ToCSSValue(SecureContextMode) const {
-  return CSSPrimitiveValue::Create(value_, unit_);
-}
-
 CSSUnitValue* CSSUnitValue::ConvertTo(
     CSSPrimitiveValue::UnitType target_unit) const {
   if (unit_ == target_unit)
@@ -141,6 +138,15 @@ bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
 
   const CSSUnitValue& other_unit_value = ToCSSUnitValue(other);
   return value_ == other_unit_value.value_ && unit_ == other_unit_value.unit_;
+}
+
+const CSSPrimitiveValue* CSSUnitValue::ToCSSValue(SecureContextMode) const {
+  return CSSPrimitiveValue::Create(value_, unit_);
+}
+
+CSSCalcExpressionNode* CSSUnitValue::ToCalcExpressionNode() const {
+  return CSSCalcValue::CreateExpressionNode(
+      CSSPrimitiveValue::Create(value_, unit_));
 }
 
 }  // namespace blink

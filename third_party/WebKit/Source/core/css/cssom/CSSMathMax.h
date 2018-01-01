@@ -27,6 +27,11 @@ class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kMaxType; }
 
+  CSSCalcExpressionNode* ToCalcExpressionNode() const final {
+    // TODO(crbug.com/): Implement
+    return nullptr;
+  }
+
  private:
   CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}

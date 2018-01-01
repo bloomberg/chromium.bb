@@ -49,6 +49,11 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
     return value_->Equals(*other_negate.value_);
   }
 
+  CSSCalcExpressionNode* ToCalcExpressionNode() const final {
+    // TODO(crbug.com/xxx): Implement
+    return nullptr;
+  }
+
  private:
   CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}
