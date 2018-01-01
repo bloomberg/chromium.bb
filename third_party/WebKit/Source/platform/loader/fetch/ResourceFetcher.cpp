@@ -1317,9 +1317,10 @@ void ResourceFetcher::WarnUnusedPreloads() {
     if (resource && resource->IsLinkPreload() && resource->IsUnusedPreload()) {
       Context().AddWarningConsoleMessage(
           "The resource " + resource->Url().GetString() +
-              " was preloaded using link preload but not used within a few "
-              "seconds from the window's load event. Please make sure it "
-              "wasn't preloaded for nothing.",
+              " was preloaded using link preload but not used within a few " +
+              "seconds from the window's load event. Please make sure it " +
+              "Please make sure it has an appropriate `as` value and it is " +
+              "preloaded intentionally.",
           FetchContext::kJSSource);
     }
   }
