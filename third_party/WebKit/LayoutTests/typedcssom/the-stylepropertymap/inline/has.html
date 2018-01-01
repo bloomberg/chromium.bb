@@ -4,13 +4,13 @@
 <link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#check-if-stylepropertymap-has-a-property">
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<div id="target" style="width: 10px; --foo: auto; background-image: url('A'), url('B')"></div>
+<script src="../../resources/testhelper.js"></script>
+<body>
 <script>
 'use strict';
 
-const styleMap = document.getElementById('target').attributeStyleMap;
-
-test(() => {
+test(t => {
+  const styleMap = createInlineStyleMap(t);
   assert_throws(new TypeError(), () => styleMap.has('lemon'));
 }, 'Calling StylePropertyMap.has with an unsupported property throws a TypeError');
 
@@ -20,11 +20,12 @@ const gTestCases = [
   { property: 'width', expected: true, desc: 'a valid property' },
   { property: 'wIdTh', expected: true, desc: 'a valid property in mixed case' },
   { property: '--foo', expected: true, desc: 'a valid custom property' },
-  { property: 'background-image', expected: true, desc: 'a valid list-valued property' },
+  { property: 'transition-duration', expected: true, desc: 'a valid list-valued property' },
 ];
 
 for (const {property, expected, desc} of gTestCases) {
-  test(() => {
+  test(t => {
+    const styleMap = createInlineStyleMap(t, 'width: 10px; --foo: auto; transition-duration: 1s, 2s');
     assert_equals(styleMap.has(property), expected);
   }, 'Calling StylePropertyMap.has with ' + desc + ' returns ' + expected);
 }

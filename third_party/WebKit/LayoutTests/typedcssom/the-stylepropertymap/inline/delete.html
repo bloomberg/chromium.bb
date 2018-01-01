@@ -5,17 +5,18 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../resources/testhelper.js"></script>
+<body>
 <script>
 'use strict';
 
-test(() => {
-  let styleMap = newDivWithStyle('').attributeStyleMap;
+test(t => {
+  let styleMap = createInlineStyleMap(t, '');
   assert_throws(new TypeError(), () => styleMap.delete('lemon'));
   assert_throws(new TypeError(), () => styleMap.delete(null));
 }, 'Calling StylePropertyMap.delete with an unsupported property name throws a TypeError');
 
-test(() => {
-  const styleMap = newDivWithStyle('').attributeStyleMap;
+test(t => {
+  const styleMap = createInlineStyleMap(t, '');
   assert_false(styleMap.has('width'));
   styleMap.delete('width');
   assert_false(styleMap.has('width'));
@@ -29,8 +30,8 @@ const gTestCases = [
 ];
 
 for (const {style, property, desc} of gTestCases) {
-  test(() => {
-    const styleMap = newDivWithStyle(style).attributeStyleMap;
+  test(t => {
+    const styleMap = createInlineStyleMap(t, style);
     assert_true(styleMap.has(property));
     styleMap.delete(property);
     assert_false(styleMap.has(property));

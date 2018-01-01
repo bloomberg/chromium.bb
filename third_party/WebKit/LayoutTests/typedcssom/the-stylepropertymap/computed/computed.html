@@ -57,8 +57,8 @@ test(() => {
   assert_style_value_equals(result, CSS.percent(50));
 }, 'Computed StylePropertyMap contains computed values and not resolved values');
 
-test(() => {
-  let target = newDivWithStyle('width: 10px');
+test(t => {
+  let target = createDivWithStyle(t, 'width: 10px');
   const styleMap = target.attributeStyleMap;
   assert_style_value_equals(styleMap.get('width'), CSS.px(10));
 

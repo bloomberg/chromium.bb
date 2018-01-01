@@ -5,6 +5,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/testhelper.js"></script>
+<body>
 <script>
 'use strict';
 
@@ -25,8 +26,8 @@ test(() => {
   assert_equals(result.toString(), 'lemon');
 }, 'CSSKeywordValue from DOMString modified through "value" setter serializes correctly');
 
-test(() => {
-  let result = newDivWithStyle('width: auto').attributeStyleMap.get('width');
+test(t => {
+  let result = createInlineStyleMap(t, 'width: auto').get('width');
   result.value = 'lemon';
   assert_equals(result.toString(), 'lemon');
 }, 'CSSKeywordValue from CSSOM modified through "value" setter serializes correctly');
