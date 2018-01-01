@@ -20,6 +20,7 @@ import tempfile
 import zipfile
 
 import concurrent
+import demangle
 import describe
 import file_format
 import function_signature
@@ -71,22 +72,6 @@ def _StripLinkerAddedSymbolPrefixes(raw_symbols):
     elif full_name.startswith('rel.'):
       symbol.flags |= models.FLAG_REL
       symbol.full_name = full_name[4:]
-
-
-def _UnmangleRemainingSymbols(raw_symbols, tool_prefix):
-  """Uses c++filt to unmangle any symbols that need it."""
-  to_process = [s for s in raw_symbols if s.full_name.startswith('_Z')]
-  if not to_process:
-    return
-
-  logging.info('Unmangling %d names', len(to_process))
-  proc = subprocess.Popen([path_util.GetCppFiltPath(tool_prefix)],
-                          stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  stdout = proc.communicate('\n'.join(s.full_name for s in to_process))[0]
-  assert proc.returncode == 0
-
-  for i, line in enumerate(stdout.splitlines()):
-    to_process[i].full_name = line
 
 
 def _NormalizeNames(raw_symbols):
@@ -645,9 +630,9 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
 
   logging.info('Stripping linker prefixes from symbol names')
   _StripLinkerAddedSymbolPrefixes(raw_symbols)
-  # Map file for some reason doesn't unmangle all names.
-  # Unmangle prints its own log statement.
-  _UnmangleRemainingSymbols(raw_symbols, tool_prefix)
+  # Map file for some reason doesn't demangle all names.
+  # Demangle prints its own log statement.
+  demangle.DemangleRemainingSymbols(raw_symbols, tool_prefix)
 
   if elf_path:
     logging.info(
