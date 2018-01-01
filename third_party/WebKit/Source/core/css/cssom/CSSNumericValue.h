@@ -19,6 +19,7 @@ namespace blink {
 
 class CSSUnitValue;
 class ExceptionState;
+class CSSCalcExpressionNode;
 
 class CSSNumericValue;
 class CSSMathSum;
@@ -56,6 +57,8 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
 
   virtual bool Equals(const CSSNumericValue&) const = 0;
   const CSSNumericValueType& Type() const { return type_; }
+
+  virtual CSSCalcExpressionNode* ToCalcExpressionNode() const = 0;
 
  protected:
   static bool IsValidUnit(CSSPrimitiveValue::UnitType);

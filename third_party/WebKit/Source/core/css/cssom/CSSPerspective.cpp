@@ -70,8 +70,12 @@ const CSSFunctionValue* CSSPerspective::ToCSSValue(
     // https://github.com/w3c/css-houdini-drafts/issues/420
     return nullptr;
   }
+  const CSSValue* length = length_->ToCSSValue(secure_context_mode);
+  if (!length)
+    return nullptr;
+
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValuePerspective);
-  result->Append(*length_->ToCSSValue(secure_context_mode));
+  result->Append(*length);
   return result;
 }
 

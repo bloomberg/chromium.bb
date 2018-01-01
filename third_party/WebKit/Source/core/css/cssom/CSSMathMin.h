@@ -29,6 +29,11 @@ class CORE_EXPORT CSSMathMin final : public CSSMathVariadic {
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kMinType; }
 
+  CSSCalcExpressionNode* ToCalcExpressionNode() const final {
+    // TODO(crbug.com/): Implement
+    return nullptr;
+  }
+
  private:
   CSSMathMin(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}

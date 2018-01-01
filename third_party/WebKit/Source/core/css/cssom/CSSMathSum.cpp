@@ -4,6 +4,8 @@
 
 #include "core/css/cssom/CSSMathSum.h"
 
+#include "core/css/CSSCalculationValue.h"
+
 namespace blink {
 
 namespace {
@@ -91,6 +93,23 @@ WTF::Optional<CSSNumericSumValue> CSSMathSum::SumValue() const {
     return WTF::nullopt;
 
   return sum;
+}
+
+CSSCalcExpressionNode* CSSMathSum::ToCalcExpressionNode() const {
+  // TODO(crbug.com/782103): Handle the single value case correctly.
+  if (NumericValues().size() == 1)
+    return NumericValues()[0]->ToCalcExpressionNode();
+
+  CSSCalcExpressionNode* node = CSSCalcValue::CreateExpressionNode(
+      NumericValues()[0]->ToCalcExpressionNode(),
+      NumericValues()[1]->ToCalcExpressionNode(), kCalcAdd);
+
+  for (size_t i = 2; i < NumericValues().size(); i++) {
+    node = CSSCalcValue::CreateExpressionNode(
+        node, NumericValues()[i]->ToCalcExpressionNode(), kCalcAdd);
+  }
+
+  return node;
 }
 
 }  // namespace blink

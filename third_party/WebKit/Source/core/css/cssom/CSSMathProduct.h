@@ -27,6 +27,8 @@ class CORE_EXPORT CSSMathProduct final : public CSSMathVariadic {
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kProductType; }
 
+  CSSCalcExpressionNode* ToCalcExpressionNode() const final;
+
  private:
   CSSMathProduct(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}

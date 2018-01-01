@@ -311,6 +311,7 @@ blink_core_sources("css") {
     "cssom/CSSMathProduct.h",
     "cssom/CSSMathSum.cpp",
     "cssom/CSSMathSum.h",
+    "cssom/CSSMathValue.cpp",
     "cssom/CSSMathValue.h",
     "cssom/CSSMatrixComponent.cpp",
     "cssom/CSSMatrixComponent.h",

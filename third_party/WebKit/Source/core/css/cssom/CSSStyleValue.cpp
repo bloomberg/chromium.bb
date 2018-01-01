@@ -78,8 +78,8 @@ String CSSStyleValue::toString(
     const ExecutionContext* execution_context) const {
   const CSSValue* result =
       ToCSSValue(execution_context->GetSecureContextMode());
-  // TODO(meade): Remove this once all the number and length types are
-  // rewritten.
+  // TODO(crbug.com/782103): Remove this once all CSSStyleValues
+  // support toCSSValue().
   return result ? result->CssText() : "";
 }
 

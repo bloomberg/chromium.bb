@@ -27,6 +27,8 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
   // From CSSStyleValue.
   StyleValueType GetType() const final { return CSSStyleValue::kSumType; }
 
+  CSSCalcExpressionNode* ToCalcExpressionNode() const final;
+
  private:
   CSSMathSum(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
