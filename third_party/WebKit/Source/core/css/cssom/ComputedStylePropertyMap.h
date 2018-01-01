@@ -8,20 +8,20 @@
 #include "base/macros.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSSelector.h"
-#include "core/css/cssom/StylePropertyMapReadonly.h"
+#include "core/css/cssom/StylePropertyMapReadOnly.h"
 #include "core/dom/Node.h"
 
 namespace blink {
 
 // This class implements computed StylePropertMapReadOnly in the Typed CSSOM
 // API. The specification is here:
-// https://drafts.css-houdini.org/css-typed-om-1/#computed-stylepropertymapreadonly-objects
+// https://drafts.css-houdini.org/css-typed-om-1/#computed-StylePropertyMapReadOnly-objects
 //
 // The computed StylePropertyMapReadOnly retrieves computed styles and returns
 // them as CSSStyleValues. The IDL for this class is in StylePropertyMap.idl.
 // The computed StylePropertyMapReadOnly for an element is accessed via
 // element.computedStyleMap() (see ElementComputedStyleMap.idl/h)
-class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
+class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadOnly {
  public:
   static ComputedStylePropertyMap* Create(Node* node) {
     return new ComputedStylePropertyMap(node);
@@ -29,12 +29,12 @@ class CORE_EXPORT ComputedStylePropertyMap : public StylePropertyMapReadonly {
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(node_);
-    StylePropertyMapReadonly::Trace(visitor);
+    StylePropertyMapReadOnly::Trace(visitor);
   }
 
  protected:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
-      : StylePropertyMapReadonly(),
+      : StylePropertyMapReadOnly(),
         pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
         node_(node) {}
 

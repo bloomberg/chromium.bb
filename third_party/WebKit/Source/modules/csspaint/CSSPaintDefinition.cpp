@@ -99,7 +99,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   PaintRenderingContext2D* rendering_context = PaintRenderingContext2D::Create(
       container_size, color_params, context_settings_, zoom);
   PaintSize* paint_size = PaintSize::Create(specified_size);
-  StylePropertyMapReadonly* style_map =
+  StylePropertyMapReadOnly* style_map =
       FilteredComputedStylePropertyMap::Create(layout_object.GetNode(),
                                                native_invalidation_properties_,
                                                custom_invalidation_properties_);

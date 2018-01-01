@@ -9,7 +9,7 @@ callback UpdateFunction = CSSStyleValue (CSSStyleValue oldValue);
 [
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
-] interface StylePropertyMap : StylePropertyMapReadonly {
+] interface StylePropertyMap : StylePropertyMapReadOnly {
     [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or DOMString)... values);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
     [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or DOMString)... values);

@@ -6798,14 +6798,14 @@ interface StorageManager
     method estimate
     method persist
     method persisted
-interface StylePropertyMap : StylePropertyMapReadonly
+interface StylePropertyMap : StylePropertyMapReadOnly
     attribute @@toStringTag
     method append
     method constructor
     method delete
     method set
     method update
-interface StylePropertyMapReadonly
+interface StylePropertyMapReadOnly
     attribute @@toStringTag
     method @@iterator
     method constructor

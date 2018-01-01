@@ -4,7 +4,7 @@
 
 [
     Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
-] interface StylePropertyMapReadonly {
+] interface StylePropertyMapReadOnly {
     [RaisesException] CSSStyleValue? get(DOMString property);
     [RaisesException] sequence<CSSStyleValue> getAll(DOMString property);
     [RaisesException] boolean has(DOMString property);

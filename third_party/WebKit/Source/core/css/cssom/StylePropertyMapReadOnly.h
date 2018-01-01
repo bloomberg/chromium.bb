@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StylePropertyMapReadonly_h
-#define StylePropertyMapReadonly_h
+#ifndef StylePropertyMapReadOnly_h
+#define StylePropertyMapReadOnly_h
 
 #include "base/macros.h"
 #include "bindings/core/v8/Iterable.h"
@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class CORE_EXPORT StylePropertyMapReadonly
+class CORE_EXPORT StylePropertyMapReadOnly
     : public ScriptWrappable,
       public PairIterable<String, CSSStyleValueOrCSSStyleValueSequence> {
   DEFINE_WRAPPERTYPEINFO();
@@ -24,7 +24,7 @@ class CORE_EXPORT StylePropertyMapReadonly
   using StylePropertyMapEntry =
       std::pair<String, CSSStyleValueOrCSSStyleValueSequence>;
 
-  virtual ~StylePropertyMapReadonly() = default;
+  virtual ~StylePropertyMapReadOnly() = default;
 
   CSSStyleValue* get(const String& property_name, ExceptionState&);
   CSSStyleValueVector getAll(const String& property_name, ExceptionState&);
@@ -33,7 +33,7 @@ class CORE_EXPORT StylePropertyMapReadonly
   Vector<String> getProperties();
 
  protected:
-  StylePropertyMapReadonly() = default;
+  StylePropertyMapReadOnly() = default;
 
   virtual const CSSValue* GetProperty(CSSPropertyID) = 0;
   virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
@@ -46,7 +46,7 @@ class CORE_EXPORT StylePropertyMapReadonly
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadonly);
+  DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnly);
 };
 
 }  // namespace blink
