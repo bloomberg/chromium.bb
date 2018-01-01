@@ -334,7 +334,6 @@ source_set("blink_headers") {
     "platform/WebStorageNamespace.h",
     "platform/WebStorageQuotaCallbacks.h",
     "platform/WebStorageQuotaError.h",
-    "platform/WebStorageQuotaType.h",
     "platform/WebString.h",
     "platform/WebSurfaceLayerBridge.h",
     "platform/WebTextInputInfo.h",

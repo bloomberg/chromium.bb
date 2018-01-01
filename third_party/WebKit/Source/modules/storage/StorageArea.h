@@ -41,11 +41,11 @@ class Storage;
 class WebStorageArea;
 class WebStorageNamespace;
 
-enum StorageType { kLocalStorage, kSessionStorage };
-
 class MODULES_EXPORT StorageArea final
     : public GarbageCollectedFinalized<StorageArea> {
  public:
+  enum StorageType { kLocalStorage, kSessionStorage };
+
   static StorageArea* Create(std::unique_ptr<WebStorageArea>, StorageType);
 
   virtual ~StorageArea();

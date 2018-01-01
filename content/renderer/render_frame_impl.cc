@@ -5110,7 +5110,7 @@ void RenderFrameImpl::ReportFindInPageSelection(
 }
 
 void RenderFrameImpl::RequestStorageQuota(
-    blink::WebStorageQuotaType type,
+    blink::StorageType type,
     unsigned long long requested_size,
     blink::WebStorageQuotaCallbacks callbacks) {
   WebSecurityOrigin origin = frame_->GetDocument().GetSecurityOrigin();
@@ -5120,8 +5120,7 @@ void RenderFrameImpl::RequestStorageQuota(
     return;
   }
   RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
-      routing_id_, origin, static_cast<blink::StorageType>(type),
-      requested_size,
+      routing_id_, origin, type, requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
