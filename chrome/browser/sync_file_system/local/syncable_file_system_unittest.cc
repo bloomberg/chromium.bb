@@ -20,7 +20,6 @@
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/sandbox_file_system_test_helper.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 

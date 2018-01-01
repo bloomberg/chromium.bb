@@ -22,7 +22,6 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
 namespace base {

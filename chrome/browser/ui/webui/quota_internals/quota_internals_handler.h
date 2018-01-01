@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "storage/common/quota/quota_types.h"
 
 namespace base {
 class Value;

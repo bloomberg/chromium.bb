@@ -24,12 +24,13 @@
 #include "content/public/test/test_utils.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+
+using blink::StorageType;
 
 // Declared to shorten the line lengths.
-static const storage::StorageType kTemp = storage::kStorageTypeTemporary;
-static const storage::StorageType kPerm = storage::kStorageTypePersistent;
-static const storage::StorageType kSync = storage::kStorageTypeSyncable;
+static const StorageType kTemp = StorageType::kTemporary;
+static const StorageType kPerm = StorageType::kPersistent;
+static const StorageType kSync = StorageType::kSyncable;
 
 namespace content {
 
@@ -77,7 +78,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const GURL& origin,
-                         storage::StorageType type) {
+                         StorageType type) {
     usage_ = -1;
     client->GetOriginUsage(
         origin,
@@ -90,7 +91,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
-                                          storage::StorageType type) {
+                                          StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
         type,
@@ -101,7 +102,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
-                                          storage::StorageType type,
+                                          StorageType type,
                                           const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
@@ -115,7 +116,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
 
   blink::QuotaStatusCode DeleteOrigin(storage::QuotaClient* client,
                                       const GURL& origin_url,
-                                      storage::StorageType type) {
+                                      StorageType type) {
     delete_status_ = blink::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
         origin_url, type,

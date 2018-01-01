@@ -9,7 +9,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/ssl/channel_id_store.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 class Profile;
 class BrowsingDataFlashLSOHelper;
@@ -55,7 +55,7 @@ class SiteDataCountingHelper {
           special_storage_policy,
       const std::vector<content::LocalStorageUsageInfo>& infos);
   void GetQuotaOriginsCallback(const std::set<GURL>& origin_set,
-                               storage::StorageType type);
+                               blink::StorageType type);
   void SitesWithFlashDataCallback(const std::vector<std::string>& sites);
   void GetChannelIDsOnIOThread(
       const scoped_refptr<net::URLRequestContextGetter>& rq_context);

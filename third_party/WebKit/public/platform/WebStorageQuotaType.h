@@ -33,6 +33,8 @@
 
 namespace blink {
 
+// TODO(sashab): Remove this class and update callers to use blink::StorageType
+// instead.
 enum WebStorageQuotaType {
   kWebStorageQuotaTypeTemporary,
   kWebStorageQuotaTypePersistent,

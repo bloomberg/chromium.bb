@@ -19,6 +19,7 @@
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 using std::swap;
@@ -917,7 +918,7 @@ void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
 
   indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
       indexed_db_context_->TaskRunner(), origin_.GetURL(),
-      storage::kStorageTypeTemporary,
+      blink::StorageType::kTemporary,
       base::Bind(&IDBSequenceHelper::OnGotUsageAndQuotaForCommit,
                  weak_factory_.GetWeakPtr(), transaction_id));
 }

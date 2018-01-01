@@ -55,6 +55,7 @@ jumbo_component("blink_common") {
     "origin_trials/trial_token_validator.h",
     "page/launching_process_state.h",
     "quota/quota_status_code.h",
+    "quota/storage_type.h",
     "sandbox_flags.h",
   ]
 

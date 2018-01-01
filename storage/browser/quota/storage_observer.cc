@@ -11,12 +11,11 @@ namespace storage {
 // StorageObserver::Filter
 
 StorageObserver::Filter::Filter()
-    : storage_type(kStorageTypeUnknown) {
-}
+    : storage_type(blink::StorageType::kUnknown) {}
 
-StorageObserver::Filter::Filter(StorageType storage_type, const GURL& origin)
-    : storage_type(storage_type), origin(origin) {
-}
+StorageObserver::Filter::Filter(blink::StorageType storage_type,
+                                const GURL& origin)
+    : storage_type(storage_type), origin(origin) {}
 
 bool StorageObserver::Filter::operator==(const Filter& other) const {
   return storage_type == other.storage_type &&
@@ -29,15 +28,13 @@ StorageObserver::MonitorParams::MonitorParams()
     : dispatch_initial_state(false) {
 }
 
-StorageObserver::MonitorParams::MonitorParams(
-    StorageType storage_type,
-    const GURL& origin,
-    const base::TimeDelta& rate,
-    bool get_initial_state)
-        : filter(storage_type, origin),
-          rate(rate),
-          dispatch_initial_state(get_initial_state) {
-}
+StorageObserver::MonitorParams::MonitorParams(blink::StorageType storage_type,
+                                              const GURL& origin,
+                                              const base::TimeDelta& rate,
+                                              bool get_initial_state)
+    : filter(storage_type, origin),
+      rate(rate),
+      dispatch_initial_state(get_initial_state) {}
 
 StorageObserver::MonitorParams::MonitorParams(
     const Filter& filter,

@@ -97,8 +97,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -1372,7 +1372,7 @@ void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
     blink::WebStorageQuotaCallbacks callbacks) {
   QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
       ->QueryStorageUsageAndQuota(
-          storage_partition, static_cast<storage::StorageType>(type),
+          storage_partition, static_cast<blink::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "net/base/url_util.h"
 
+using blink::StorageType;
 using content::BrowserThread;
 
 namespace quota_internals {
@@ -40,22 +41,19 @@ void QuotaInternalsProxy::RequestInfo(
       &QuotaInternalsProxy::DidGetCapacity, weak_factory_.GetWeakPtr()));
 
   quota_manager_->GetGlobalUsage(
-      storage::kStorageTypeTemporary,
+      StorageType::kTemporary,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(),
-                 storage::kStorageTypeTemporary));
+                 weak_factory_.GetWeakPtr(), StorageType::kTemporary));
 
   quota_manager_->GetGlobalUsage(
-      storage::kStorageTypePersistent,
+      StorageType::kPersistent,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(),
-                 storage::kStorageTypePersistent));
+                 weak_factory_.GetWeakPtr(), StorageType::kPersistent));
 
   quota_manager_->GetGlobalUsage(
-      storage::kStorageTypeSyncable,
+      StorageType::kSyncable,
       base::Bind(&QuotaInternalsProxy::DidGetGlobalUsage,
-                 weak_factory_.GetWeakPtr(),
-                 storage::kStorageTypeSyncable));
+                 weak_factory_.GetWeakPtr(), StorageType::kSyncable));
 
   quota_manager_->DumpQuotaTable(
       base::Bind(&QuotaInternalsProxy::DidDumpQuotaTable,
@@ -97,7 +95,7 @@ RELAY_TO_HANDLER(ReportStatistics, const Statistics&)
 void QuotaInternalsProxy::DidGetSettings(
     const storage::QuotaSettings& settings) {
   // TODO(michaeln): also report the other config fields
-  GlobalStorageInfo info(storage::kStorageTypeTemporary);
+  GlobalStorageInfo info(StorageType::kTemporary);
   info.set_quota(settings.pool_size);
   ReportGlobalInfo(info);
 }
@@ -108,7 +106,7 @@ void QuotaInternalsProxy::DidGetCapacity(int64_t total_space,
   ReportAvailableSpace(available_space);
 }
 
-void QuotaInternalsProxy::DidGetGlobalUsage(storage::StorageType type,
+void QuotaInternalsProxy::DidGetGlobalUsage(StorageType type,
                                             int64_t usage,
                                             int64_t unlimited_usage) {
   GlobalStorageInfo info(type);
@@ -152,11 +150,10 @@ void QuotaInternalsProxy::DidDumpOriginInfoTable(
 }
 
 void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
-                                          storage::StorageType type,
+                                          StorageType type,
                                           int64_t usage) {
-  DCHECK(type == storage::kStorageTypeTemporary ||
-         type == storage::kStorageTypePersistent ||
-         type == storage::kStorageTypeSyncable);
+  DCHECK(type == StorageType::kTemporary || type == StorageType::kPersistent ||
+         type == StorageType::kSyncable);
 
   PerHostStorageInfo info(host, type);
   info.set_usage(usage);
@@ -173,7 +170,7 @@ void QuotaInternalsProxy::DidGetHostUsage(const std::string& host,
                  hosts_pending_.begin()->second);
 }
 
-void QuotaInternalsProxy::RequestPerOriginInfo(storage::StorageType type) {
+void QuotaInternalsProxy::RequestPerOriginInfo(StorageType type) {
   DCHECK(quota_manager_.get());
 
   std::set<GURL> origins;
@@ -202,8 +199,7 @@ void QuotaInternalsProxy::RequestPerOriginInfo(storage::StorageType type) {
   ReportPerHostInfo(host_info);
 }
 
-void QuotaInternalsProxy::VisitHost(const std::string& host,
-                                    storage::StorageType type) {
+void QuotaInternalsProxy::VisitHost(const std::string& host, StorageType type) {
   if (hosts_visited_.insert(std::make_pair(host, type)).second) {
     hosts_pending_.insert(std::make_pair(host, type));
     if (hosts_pending_.size() == 1) {
@@ -213,7 +209,7 @@ void QuotaInternalsProxy::VisitHost(const std::string& host,
 }
 
 void QuotaInternalsProxy::GetHostUsage(const std::string& host,
-                                       storage::StorageType type) {
+                                       StorageType type) {
   DCHECK(quota_manager_.get());
   quota_manager_->GetHostUsage(host,
                                type,

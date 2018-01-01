@@ -18,7 +18,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace quota_internals {
 
@@ -60,26 +60,26 @@ class QuotaInternalsProxy
   // Called on IO Thread by QuotaManager as callback.
   void DidGetSettings(const storage::QuotaSettings& settings);
   void DidGetCapacity(int64_t total_space, int64_t available_space);
-  void DidGetGlobalUsage(storage::StorageType type,
+  void DidGetGlobalUsage(blink::StorageType type,
                          int64_t usage,
                          int64_t unlimited_usage);
   void DidDumpQuotaTable(const QuotaTableEntries& entries);
   void DidDumpOriginInfoTable(const OriginInfoTableEntries& entries);
   void DidGetHostUsage(const std::string& host,
-                       storage::StorageType type,
+                       blink::StorageType type,
                        int64_t usage);
 
   // Helper. Called on IO Thread.
-  void RequestPerOriginInfo(storage::StorageType type);
-  void VisitHost(const std::string& host, storage::StorageType type);
-  void GetHostUsage(const std::string& host, storage::StorageType type);
+  void RequestPerOriginInfo(blink::StorageType type);
+  void VisitHost(const std::string& host, blink::StorageType type);
+  void GetHostUsage(const std::string& host, blink::StorageType type);
 
   // Used on UI Thread.
   QuotaInternalsHandler* handler_;
 
   // Used on IO Thread.
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  std::set<std::pair<std::string, storage::StorageType> > hosts_visited_,
+  std::set<std::pair<std::string, blink::StorageType>> hosts_visited_,
       hosts_pending_;
   std::vector<PerHostStorageInfo> report_pending_;
   base::WeakPtrFactory<QuotaInternalsProxy> weak_factory_;

@@ -38,6 +38,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace content {
 
@@ -668,8 +669,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
-      group_record_.origin,
-      storage::kStorageTypeTemporary,
+      group_record_.origin, blink::StorageType::kTemporary,
       base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 

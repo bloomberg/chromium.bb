@@ -9,6 +9,7 @@
 #include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace storage {
 class QuotaManager;
@@ -37,11 +38,11 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
   // content::mojom::QuotaDispatcherHost:
   void QueryStorageUsageAndQuota(
       const url::Origin& origin,
-      storage::StorageType storage_type,
+      blink::StorageType storage_type,
       QueryStorageUsageAndQuotaCallback callback) override;
   void RequestStorageQuota(int64_t render_frame_id,
                            const url::Origin& origin,
-                           storage::StorageType storage_type,
+                           blink::StorageType storage_type,
                            uint64_t requested_size,
                            RequestStorageQuotaCallback callback) override;
 
@@ -52,7 +53,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
                                     int64_t quota);
   void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
                                      const url::Origin& origin,
-                                     storage::StorageType storage_type,
+                                     blink::StorageType storage_type,
                                      uint64_t requested_quota,
                                      RequestStorageQuotaCallback callback,
                                      blink::QuotaStatusCode status,

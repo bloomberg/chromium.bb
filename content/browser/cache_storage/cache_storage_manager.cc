@@ -32,6 +32,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -422,7 +423,7 @@ void CacheStorageManager::DeleteOriginDidClose(
 
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin,
-      storage::kStorageTypeTemporary, -1 * origin_size);
+      blink::StorageType::kTemporary, -1 * origin_size);
   NotifyCacheListChanged(origin);
 
   if (IsMemoryBacked()) {

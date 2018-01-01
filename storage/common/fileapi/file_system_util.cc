@@ -247,34 +247,34 @@ std::string GetFileSystemName(const GURL& origin_url, FileSystemType type) {
 }
 
 FileSystemType QuotaStorageTypeToFileSystemType(
-    storage::StorageType storage_type) {
+    blink::StorageType storage_type) {
   switch (storage_type) {
-    case storage::kStorageTypeTemporary:
+    case blink::StorageType::kTemporary:
       return kFileSystemTypeTemporary;
-    case storage::kStorageTypePersistent:
+    case blink::StorageType::kPersistent:
       return kFileSystemTypePersistent;
-    case storage::kStorageTypeSyncable:
+    case blink::StorageType::kSyncable:
       return kFileSystemTypeSyncable;
-    case storage::kStorageTypeQuotaNotManaged:
-    case storage::kStorageTypeUnknown:
+    case blink::StorageType::kQuotaNotManaged:
+    case blink::StorageType::kUnknown:
       return kFileSystemTypeUnknown;
   }
   return kFileSystemTypeUnknown;
 }
 
-storage::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
+blink::StorageType FileSystemTypeToQuotaStorageType(FileSystemType type) {
   switch (type) {
     case kFileSystemTypeTemporary:
-      return storage::kStorageTypeTemporary;
+      return blink::StorageType::kTemporary;
     case kFileSystemTypePersistent:
-      return storage::kStorageTypePersistent;
+      return blink::StorageType::kPersistent;
     case kFileSystemTypeSyncable:
     case kFileSystemTypeSyncableForInternalSync:
-      return storage::kStorageTypeSyncable;
+      return blink::StorageType::kSyncable;
     case kFileSystemTypePluginPrivate:
-      return storage::kStorageTypeQuotaNotManaged;
+      return blink::StorageType::kQuotaNotManaged;
     default:
-      return storage::kStorageTypeUnknown;
+      return blink::StorageType::kUnknown;
   }
 }
 

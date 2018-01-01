@@ -21,6 +21,8 @@
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
+using blink::StorageType;
+
 namespace storage {
 namespace {
 
@@ -125,9 +127,7 @@ struct QuotaDatabase::QuotaTableImporter {
 
 // Clang requires explicit out-of-line constructors for them.
 QuotaDatabase::QuotaTableEntry::QuotaTableEntry()
-    : type(kStorageTypeUnknown),
-      quota(0) {
-}
+    : type(StorageType::kUnknown), quota(0) {}
 
 QuotaDatabase::QuotaTableEntry::QuotaTableEntry(const std::string& host,
                                                 StorageType type,
@@ -135,9 +135,7 @@ QuotaDatabase::QuotaTableEntry::QuotaTableEntry(const std::string& host,
     : host(host), type(type), quota(quota) {}
 
 QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry()
-    : type(kStorageTypeUnknown),
-      used_count(0) {
-}
+    : type(StorageType::kUnknown), used_count(0) {}
 
 QuotaDatabase::OriginInfoTableEntry::OriginInfoTableEntry(
     const GURL& origin,

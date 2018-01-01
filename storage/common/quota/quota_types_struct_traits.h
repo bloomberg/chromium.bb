@@ -6,26 +6,25 @@
 #define CONTENT_COMMON_QUOTA_MESSAGES_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "storage/common/quota/quota_types.h"
 #include "storage/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<storage::mojom::StorageType, storage::StorageType> {
-  static storage::mojom::StorageType ToMojom(
-      storage::StorageType storage_type) {
+struct EnumTraits<storage::mojom::StorageType, blink::StorageType> {
+  static storage::mojom::StorageType ToMojom(blink::StorageType storage_type) {
     switch (storage_type) {
-      case storage::kStorageTypeTemporary:
+      case blink::StorageType::kTemporary:
         return storage::mojom::StorageType::kTemporary;
-      case storage::kStorageTypePersistent:
+      case blink::StorageType::kPersistent:
         return storage::mojom::StorageType::kPersistent;
-      case storage::kStorageTypeSyncable:
+      case blink::StorageType::kSyncable:
         return storage::mojom::StorageType::kSyncable;
-      case storage::kStorageTypeQuotaNotManaged:
+      case blink::StorageType::kQuotaNotManaged:
         return storage::mojom::StorageType::kQuotaNotManaged;
-      case storage::kStorageTypeUnknown:
+      case blink::StorageType::kUnknown:
         return storage::mojom::StorageType::kUnknown;
     }
     NOTREACHED();
@@ -33,26 +32,26 @@ struct EnumTraits<storage::mojom::StorageType, storage::StorageType> {
   }
 
   static bool FromMojom(storage::mojom::StorageType storage_type,
-                        storage::StorageType* out) {
+                        blink::StorageType* out) {
     switch (storage_type) {
       case storage::mojom::StorageType::kTemporary:
-        *out = storage::kStorageTypeTemporary;
+        *out = blink::StorageType::kTemporary;
         return true;
       case storage::mojom::StorageType::kPersistent:
-        *out = storage::kStorageTypePersistent;
+        *out = blink::StorageType::kPersistent;
         return true;
       case storage::mojom::StorageType::kSyncable:
-        *out = storage::kStorageTypeSyncable;
+        *out = blink::StorageType::kSyncable;
         return true;
       case storage::mojom::StorageType::kQuotaNotManaged:
-        *out = storage::kStorageTypeQuotaNotManaged;
+        *out = blink::StorageType::kQuotaNotManaged;
         return true;
       case storage::mojom::StorageType::kUnknown:
-        *out = storage::kStorageTypeUnknown;
+        *out = blink::StorageType::kUnknown;
         return true;
     }
     NOTREACHED();
-    *out = storage::kStorageTypeUnknown;
+    *out = blink::StorageType::kUnknown;
     return false;
   }
 };

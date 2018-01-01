@@ -123,7 +123,7 @@ void MockStorageClient::DeleteOriginData(
                  weak_factory_.GetWeakPtr(), origin, type, callback));
 }
 
-bool MockStorageClient::DoesSupport(storage::StorageType type) const {
+bool MockStorageClient::DoesSupport(StorageType type) const {
   return true;
 }
 

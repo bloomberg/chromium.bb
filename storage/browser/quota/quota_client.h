@@ -13,8 +13,8 @@
 
 #include "base/callback.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -53,29 +53,29 @@ class STORAGE_EXPORT QuotaClient {
   // |origin_url| and |type|.
   // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void GetOriginUsage(const GURL& origin_url,
-                              StorageType type,
+                              blink::StorageType type,
                               const GetUsageCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that has data in the |type| storage.
   // Note it is safe to fire the callback after the QuotaClient is destructed.
-  virtual void GetOriginsForType(StorageType type,
+  virtual void GetOriginsForType(blink::StorageType type,
                                  const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Returns a list of origins that match the |host|.
   // Note it is safe to fire the callback after the QuotaClient is destructed.
-  virtual void GetOriginsForHost(StorageType type,
+  virtual void GetOriginsForHost(blink::StorageType type,
                                  const std::string& host,
                                  const GetOriginsCallback& callback) = 0;
 
   // Called by the QuotaManager.
   // Note it is safe to fire the callback after the QuotaClient is destructed.
   virtual void DeleteOriginData(const GURL& origin,
-                                StorageType type,
+                                blink::StorageType type,
                                 const DeletionCallback& callback) = 0;
 
-  virtual bool DoesSupport(StorageType type) const = 0;
+  virtual bool DoesSupport(blink::StorageType type) const = 0;
 };
 
 // TODO(dmikurube): Replace it to std::vector for efficiency.

@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "storage/browser/quota/quota_callbacks.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace storage {
 class QuotaManager;
@@ -28,10 +29,9 @@ class StorageInfoFetcher :
   void FetchStorageInfo(const FetchCallback& fetch_callback);
 
   // Asynchronously clears storage for the given host.
-  void ClearStorage(
-      const std::string& host,
-      storage::StorageType type,
-      const ClearCallback& clear_callback);
+  void ClearStorage(const std::string& host,
+                    blink::StorageType type,
+                    const ClearCallback& clear_callback);
 
  private:
   virtual ~StorageInfoFetcher();
@@ -60,7 +60,7 @@ class StorageInfoFetcher :
   storage::UsageInfoEntries entries_;
 
   // The storage type to delete.
-  storage::StorageType type_to_delete_;
+  blink::StorageType type_to_delete_;
 
   // The callback to use when fetching is complete.
   FetchCallback fetch_callback_;

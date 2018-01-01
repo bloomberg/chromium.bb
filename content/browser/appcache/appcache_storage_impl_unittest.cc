@@ -47,6 +47,8 @@
 
 namespace content {
 
+using blink::StorageType;
+
 namespace {
 
 const base::Time kZeroTime;
@@ -285,9 +287,9 @@ class AppCacheStorageImplTest : public testing::Test {
           async_(false) {}
 
     void GetUsageAndQuota(const GURL& origin,
-                          storage::StorageType type,
+                          StorageType type,
                           const UsageAndQuotaCallback& callback) override {
-      EXPECT_EQ(storage::kStorageTypeTemporary, type);
+      EXPECT_EQ(StorageType::kTemporary, type);
       if (async_) {
         base::SequencedTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::BindOnce(&MockQuotaManager::CallCallback,
@@ -320,19 +322,19 @@ class AppCacheStorageImplTest : public testing::Test {
 
     void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                const GURL& origin,
-                               storage::StorageType type) override {
+                               StorageType type) override {
       EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
-      EXPECT_EQ(storage::kStorageTypeTemporary, type);
+      EXPECT_EQ(StorageType::kTemporary, type);
       ++notify_storage_accessed_count_;
       last_origin_ = origin;
     }
 
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                const GURL& origin,
-                               storage::StorageType type,
+                               StorageType type,
                                int64_t delta) override {
       EXPECT_EQ(storage::QuotaClient::kAppcache, client_id);
-      EXPECT_EQ(storage::kStorageTypeTemporary, type);
+      EXPECT_EQ(StorageType::kTemporary, type);
       ++notify_storage_modified_count_;
       last_origin_ = origin;
       last_delta_ = delta;
@@ -344,11 +346,11 @@ class AppCacheStorageImplTest : public testing::Test {
     void NotifyOriginNoLongerInUse(const GURL& origin) override {}
     void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                               const GURL& origin,
-                              storage::StorageType type,
+                              StorageType type,
                               bool enabled) override {}
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const GURL& origin,
-                          storage::StorageType type,
+                          StorageType type,
                           const UsageAndQuotaCallback& callback) override {}
 
     int notify_storage_accessed_count_;

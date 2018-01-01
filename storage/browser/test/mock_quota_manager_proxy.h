@@ -11,7 +11,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_manager.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 using storage::QuotaManagerProxy;
@@ -35,12 +35,12 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   void NotifyOriginNoLongerInUse(const GURL& origin) override {}
   void SetUsageCacheEnabled(QuotaClient::ID client_id,
                             const GURL& origin,
-                            StorageType type,
+                            blink::StorageType type,
                             bool enabled) override {}
   void GetUsageAndQuota(
       base::SequencedTaskRunner* original_task_runner,
       const GURL& origin,
-      StorageType type,
+      blink::StorageType type,
       const QuotaManager::UsageAndQuotaCallback& callback) override;
 
   // Validates the |client_id| and updates the internal access count
@@ -49,7 +49,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // last_notified_type_.
   void NotifyStorageAccessed(QuotaClient::ID client_id,
                              const GURL& origin,
-                             StorageType type) override;
+                             blink::StorageType type) override;
 
   // Records the |origin|, |type| and |delta| as last_notified_origin_,
   // last_notified_type_ and last_notified_delta_ respecitvely.
@@ -57,13 +57,13 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   // updates the manager's internal usage information.
   void NotifyStorageModified(QuotaClient::ID client_id,
                              const GURL& origin,
-                             StorageType type,
+                             blink::StorageType type,
                              int64_t delta) override;
 
   int notify_storage_accessed_count() const { return storage_accessed_count_; }
   int notify_storage_modified_count() const { return storage_modified_count_; }
   GURL last_notified_origin() const { return last_notified_origin_; }
-  StorageType last_notified_type() const { return last_notified_type_; }
+  blink::StorageType last_notified_type() const { return last_notified_type_; }
   int64_t last_notified_delta() const { return last_notified_delta_; }
 
  protected:
@@ -77,7 +77,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   int storage_accessed_count_;
   int storage_modified_count_;
   GURL last_notified_origin_;
-  StorageType last_notified_type_;
+  blink::StorageType last_notified_type_;
   int64_t last_notified_delta_;
 
   QuotaClient* registered_client_;

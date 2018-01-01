@@ -17,9 +17,11 @@
 
 namespace content {
 
+using blink::StorageType;
+
 // Declared to shorten the line lengths.
-static const storage::StorageType kTemp = storage::kStorageTypeTemporary;
-static const storage::StorageType kPerm = storage::kStorageTypePersistent;
+static const StorageType kTemp = StorageType::kTemporary;
+static const StorageType kPerm = StorageType::kPersistent;
 
 // Base class for our test fixtures.
 class AppCacheQuotaClientTest : public testing::Test {
@@ -41,7 +43,7 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const GURL& origin,
-                         storage::StorageType type) {
+                         StorageType type) {
     usage_ = -1;
     AsyncGetOriginUsage(client, origin, type);
     base::RunLoop().RunUntilIdle();
@@ -49,7 +51,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
-                                          storage::StorageType type) {
+                                          StorageType type) {
     origins_.clear();
     AsyncGetOriginsForType(client, type);
     base::RunLoop().RunUntilIdle();
@@ -57,7 +59,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
-                                          storage::StorageType type,
+                                          StorageType type,
                                           const std::string& host) {
     origins_.clear();
     AsyncGetOriginsForHost(client, type, host);
@@ -66,7 +68,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   blink::QuotaStatusCode DeleteOriginData(storage::QuotaClient* client,
-                                          storage::StorageType type,
+                                          StorageType type,
                                           const GURL& origin) {
     delete_status_ = blink::QuotaStatusCode::kUnknown;
     AsyncDeleteOriginData(client, type, origin);
@@ -76,15 +78,14 @@ class AppCacheQuotaClientTest : public testing::Test {
 
   void AsyncGetOriginUsage(storage::QuotaClient* client,
                            const GURL& origin,
-                           storage::StorageType type) {
+                           StorageType type) {
     client->GetOriginUsage(
         origin, type,
         base::Bind(&AppCacheQuotaClientTest::OnGetOriginUsageComplete,
                    weak_factory_.GetWeakPtr()));
   }
 
-  void AsyncGetOriginsForType(storage::QuotaClient* client,
-                              storage::StorageType type) {
+  void AsyncGetOriginsForType(storage::QuotaClient* client, StorageType type) {
     client->GetOriginsForType(
         type,
         base::Bind(&AppCacheQuotaClientTest::OnGetOriginsComplete,
@@ -92,7 +93,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   void AsyncGetOriginsForHost(storage::QuotaClient* client,
-                              storage::StorageType type,
+                              StorageType type,
                               const std::string& host) {
     client->GetOriginsForHost(
         type, host,
@@ -101,7 +102,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   void AsyncDeleteOriginData(storage::QuotaClient* client,
-                             storage::StorageType type,
+                             StorageType type,
                              const GURL& origin) {
     client->DeleteOriginData(
         origin, type,

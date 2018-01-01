@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 class GURL;
 
@@ -35,7 +35,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void RevokeHostQuota(const std::string& host) override;
 
  private:
-  using PendingHosts = std::set<std::pair<std::string, storage::StorageType>>;
+  using PendingHosts = std::set<std::pair<std::string, blink::StorageType>>;
   using QuotaInfoMap = std::map<std::string, QuotaInfo>;
 
   explicit BrowsingDataQuotaHelperImpl(storage::QuotaManager* quota_manager);
@@ -48,7 +48,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void GotOrigins(PendingHosts* pending_hosts,
                   const base::Closure& completion,
                   const std::set<GURL>& origins,
-                  storage::StorageType type);
+                  blink::StorageType type);
 
   // Calls QuotaManager::GetHostUsage for each (origin, type) pair.
   void OnGetOriginsComplete(const FetchResultCallback& callback,
@@ -58,7 +58,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void GotHostUsage(QuotaInfoMap* quota_info,
                     const base::Closure& completion,
                     const std::string& host,
-                    storage::StorageType type,
+                    blink::StorageType type,
                     int64_t usage);
 
   // Called when all QuotaManager::GetHostUsage requests are complete.

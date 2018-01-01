@@ -95,18 +95,18 @@ class AppCacheHostTest : public testing::Test {
     void RegisterClient(storage::QuotaClient* client) override {}
     void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                                const GURL& origin,
-                               storage::StorageType type) override {}
+                               blink::StorageType type) override {}
     void NotifyStorageModified(storage::QuotaClient::ID client_id,
                                const GURL& origin,
-                               storage::StorageType type,
+                               blink::StorageType type,
                                int64_t delta) override {}
     void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                               const GURL& origin,
-                              storage::StorageType type,
+                              blink::StorageType type,
                               bool enabled) override {}
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const GURL& origin,
-                          storage::StorageType type,
+                          blink::StorageType type,
                           const UsageAndQuotaCallback& callback) override {}
 
     void NotifyOriginInUse(const GURL& origin) override { inuse_[origin] += 1; }

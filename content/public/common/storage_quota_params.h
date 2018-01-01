@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -19,13 +19,13 @@ namespace content {
 struct CONTENT_EXPORT StorageQuotaParams {
   StorageQuotaParams()
       : render_frame_id(MSG_ROUTING_NONE),
-        storage_type(storage::kStorageTypeTemporary),
+        storage_type(blink::StorageType::kTemporary),
         requested_size(0) {}
 
   int render_frame_id;
   // TODO(sashab): Change this to url::Origin, crbug.com/598424.
   GURL origin_url;
-  storage::StorageType storage_type;
+  blink::StorageType storage_type;
   uint64_t requested_size;
 };
 

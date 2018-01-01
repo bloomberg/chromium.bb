@@ -16,7 +16,7 @@
 #include "storage/browser/fileapi/task_runner_bound_observer_list.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -87,7 +87,7 @@ class SandboxFileSystemTestHelper {
 
   const GURL& origin() const { return origin_; }
   storage::FileSystemType type() const { return type_; }
-  storage::StorageType storage_type() const {
+  blink::StorageType storage_type() const {
     return storage::FileSystemTypeToQuotaStorageType(type_);
   }
   storage::FileSystemFileUtil* file_util() const { return file_util_; }

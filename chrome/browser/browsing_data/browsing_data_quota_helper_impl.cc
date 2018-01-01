@@ -20,6 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
 
+using blink::StorageType;
 using content::BrowserThread;
 using content::BrowserContext;
 
@@ -62,9 +63,9 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
     const FetchResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  const storage::StorageType types[] = {storage::kStorageTypeTemporary,
-                                        storage::kStorageTypePersistent,
-                                        storage::kStorageTypeSyncable};
+  const StorageType types[] = {StorageType::kTemporary,
+                               StorageType::kPersistent,
+                               StorageType::kSyncable};
 
   // Query hosts for each storage types. When complete, process the collected
   // hosts.
@@ -75,7 +76,7 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
                      weak_factory_.GetWeakPtr(), callback,
                      base::Owned(pending_hosts)));
 
-  for (const storage::StorageType& type : types) {
+  for (const StorageType& type : types) {
     quota_manager_->GetOriginsModifiedSince(
         type, base::Time(),
         base::Bind(&BrowsingDataQuotaHelperImpl::GotOrigins,
@@ -86,7 +87,7 @@ void BrowsingDataQuotaHelperImpl::FetchQuotaInfoOnIOThread(
 void BrowsingDataQuotaHelperImpl::GotOrigins(PendingHosts* pending_hosts,
                                              const base::Closure& completion,
                                              const std::set<GURL>& origins,
-                                             storage::StorageType type) {
+                                             StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const GURL& url : origins) {
     if (!BrowsingDataHelper::HasWebScheme(url))
@@ -111,7 +112,7 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
 
   for (const auto& itr : *pending_hosts) {
     const std::string& host = itr.first;
-    storage::StorageType type = itr.second;
+    StorageType type = itr.second;
     quota_manager_->GetHostUsage(
         host, type, base::Bind(&BrowsingDataQuotaHelperImpl::GotHostUsage,
                                weak_factory_.GetWeakPtr(), quota_info,
@@ -122,17 +123,17 @@ void BrowsingDataQuotaHelperImpl::OnGetOriginsComplete(
 void BrowsingDataQuotaHelperImpl::GotHostUsage(QuotaInfoMap* quota_info,
                                                const base::Closure& completion,
                                                const std::string& host,
-                                               storage::StorageType type,
+                                               StorageType type,
                                                int64_t usage) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   switch (type) {
-    case storage::kStorageTypeTemporary:
+    case StorageType::kTemporary:
       (*quota_info)[host].temporary_usage = usage;
       break;
-    case storage::kStorageTypePersistent:
+    case StorageType::kPersistent:
       (*quota_info)[host].persistent_usage = usage;
       break;
-    case storage::kStorageTypeSyncable:
+    case StorageType::kSyncable:
       (*quota_info)[host].syncable_usage = usage;
       break;
     default:

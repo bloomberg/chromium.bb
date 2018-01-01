@@ -17,6 +17,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/storage_browser_export.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -42,17 +43,17 @@ class STORAGE_EXPORT FileSystemQuotaClient : public storage::QuotaClient {
   storage::QuotaClient::ID id() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const GURL& origin_url,
-                      storage::StorageType type,
+                      blink::StorageType type,
                       const GetUsageCallback& callback) override;
-  void GetOriginsForType(storage::StorageType type,
+  void GetOriginsForType(blink::StorageType type,
                          const GetOriginsCallback& callback) override;
-  void GetOriginsForHost(storage::StorageType type,
+  void GetOriginsForHost(blink::StorageType type,
                          const std::string& host,
                          const GetOriginsCallback& callback) override;
   void DeleteOriginData(const GURL& origin,
-                        storage::StorageType type,
+                        blink::StorageType type,
                         const DeletionCallback& callback) override;
-  bool DoesSupport(storage::StorageType type) const override;
+  bool DoesSupport(blink::StorageType type) const override;
 
  private:
   base::SequencedTaskRunner* file_task_runner() const;

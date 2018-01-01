@@ -28,7 +28,7 @@ void CacheStorageQuotaClient::OnQuotaManagerDestroyed() {
 }
 
 void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
-                                             storage::StorageType type,
+                                             blink::StorageType type,
                                              const GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -41,7 +41,7 @@ void CacheStorageQuotaClient::GetOriginUsage(const GURL& origin_url,
 }
 
 void CacheStorageQuotaClient::GetOriginsForType(
-    storage::StorageType type,
+    blink::StorageType type,
     const GetOriginsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -54,7 +54,7 @@ void CacheStorageQuotaClient::GetOriginsForType(
 }
 
 void CacheStorageQuotaClient::GetOriginsForHost(
-    storage::StorageType type,
+    blink::StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -69,7 +69,7 @@ void CacheStorageQuotaClient::GetOriginsForHost(
 
 void CacheStorageQuotaClient::DeleteOriginData(
     const GURL& origin,
-    storage::StorageType type,
+    blink::StorageType type,
     const DeletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -86,10 +86,10 @@ void CacheStorageQuotaClient::DeleteOriginData(
   cache_manager_->DeleteOriginData(origin, callback);
 }
 
-bool CacheStorageQuotaClient::DoesSupport(storage::StorageType type) const {
+bool CacheStorageQuotaClient::DoesSupport(blink::StorageType type) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  return type == storage::kStorageTypeTemporary;
+  return type == blink::StorageType::kTemporary;
 }
 
 }  // namespace content

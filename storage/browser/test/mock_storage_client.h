@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -26,7 +27,7 @@ class QuotaManagerProxy;
 
 using storage::QuotaClient;
 using storage::QuotaManagerProxy;
-using storage::StorageType;
+using blink::StorageType;
 
 namespace content {
 
@@ -72,7 +73,7 @@ class MockStorageClient : public QuotaClient {
   void DeleteOriginData(const GURL& origin,
                         StorageType type,
                         const DeletionCallback& callback) override;
-  bool DoesSupport(storage::StorageType type) const override;
+  bool DoesSupport(StorageType type) const override;
 
  private:
   void RunGetOriginUsage(const GURL& origin_url,

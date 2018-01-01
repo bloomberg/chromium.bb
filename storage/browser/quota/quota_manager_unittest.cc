@@ -33,14 +33,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using storage::kStorageTypePersistent;
-using storage::kStorageTypeSyncable;
-using storage::kStorageTypeTemporary;
-using storage::kStorageTypeUnknown;
+using blink::QuotaStatusCode;
+using blink::StorageType;
 using storage::QuotaClient;
 using storage::QuotaManager;
-using blink::QuotaStatusCode;
-using storage::StorageType;
 using storage::UsageInfo;
 using storage::UsageInfoEntries;
 
@@ -49,9 +45,9 @@ namespace content {
 namespace {
 
 // For shorter names.
-const StorageType kTemp = kStorageTypeTemporary;
-const StorageType kPerm = kStorageTypePersistent;
-const StorageType kSync = kStorageTypeSyncable;
+const StorageType kTemp = StorageType::kTemporary;
+const StorageType kPerm = StorageType::kPersistent;
+const StorageType kSync = StorageType::kSyncable;
 
 const int kAllClients = QuotaClient::kAllClientsMask;
 
@@ -326,7 +322,7 @@ class QuotaManagerTest : public testing::Test {
 
   void GetOriginsModifiedSince(StorageType type, base::Time modified_since) {
     modified_origins_.clear();
-    modified_origins_type_ = kStorageTypeUnknown;
+    modified_origins_type_ = StorageType::kUnknown;
     quota_manager_->GetOriginsModifiedSince(
         type, modified_since,
         base::Bind(&QuotaManagerTest::DidGetModifiedOrigins,
@@ -549,8 +545,8 @@ TEST_F(QuotaManagerTest, GetUsageInfo) {
     } else if (info.host == "example.com" && info.type == kPerm) {
       EXPECT_EQ(40, info.usage);
     } else {
-      ADD_FAILURE()
-          << "Unexpected host, type: " << info.host << ", " << info.type;
+      ADD_FAILURE() << "Unexpected host, type: " << info.host << ", "
+                    << static_cast<int>(info.type);
     }
   }
 }
@@ -2173,7 +2169,7 @@ TEST_F(QuotaManagerTest, DumpOriginInfoTable) {
        itr != end; ++itr) {
     SCOPED_TRACE(testing::Message()
                  << "host = " << itr->origin << ", "
-                 << "type = " << itr->type << ", "
+                 << "type = " << static_cast<int>(itr->type) << ", "
                  << "used_count = " << itr->used_count);
     EXPECT_EQ(1u, entries.erase(
         make_pair(make_pair(itr->origin, itr->type),

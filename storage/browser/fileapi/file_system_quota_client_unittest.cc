@@ -20,11 +20,12 @@
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
+using blink::StorageType;
 using content::AsyncFileTestHelper;
 using storage::FileSystemQuotaClient;
 using storage::FileSystemURL;
@@ -37,8 +38,8 @@ const char kDummyURL2[] = "http://www.example.com";
 const char kDummyURL3[] = "http://www.bleh";
 
 // Declared to shorten the variable names.
-const storage::StorageType kTemporary = storage::kStorageTypeTemporary;
-const storage::StorageType kPersistent = storage::kStorageTypePersistent;
+const StorageType kTemporary = StorageType::kTemporary;
+const StorageType kPersistent = StorageType::kPersistent;
 
 }  // namespace
 
@@ -60,7 +61,7 @@ class FileSystemQuotaClientTest : public testing::Test {
     const char* name;
     int64_t size;
     const char* origin_url;
-    storage::StorageType type;
+    StorageType type;
   };
 
  protected:
@@ -70,7 +71,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   void GetOriginUsageAsync(FileSystemQuotaClient* quota_client,
                            const std::string& origin_url,
-                           storage::StorageType type) {
+                           StorageType type) {
     quota_client->GetOriginUsage(
         GURL(origin_url), type,
         base::Bind(&FileSystemQuotaClientTest::OnGetUsage,
@@ -79,14 +80,14 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   int64_t GetOriginUsage(FileSystemQuotaClient* quota_client,
                          const std::string& origin_url,
-                         storage::StorageType type) {
+                         StorageType type) {
     GetOriginUsageAsync(quota_client, origin_url, type);
     base::RunLoop().RunUntilIdle();
     return usage_;
   }
 
   const std::set<GURL>& GetOriginsForType(FileSystemQuotaClient* quota_client,
-                                          storage::StorageType type) {
+                                          StorageType type) {
     origins_.clear();
     quota_client->GetOriginsForType(
         type,
@@ -97,7 +98,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForHost(FileSystemQuotaClient* quota_client,
-                                          storage::StorageType type,
+                                          StorageType type,
                                           const std::string& host) {
     origins_.clear();
     quota_client->GetOriginsForHost(
@@ -110,7 +111,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   void RunAdditionalOriginUsageTask(FileSystemQuotaClient* quota_client,
                                     const std::string& origin_url,
-                                    storage::StorageType type) {
+                                    StorageType type) {
     quota_client->GetOriginUsage(
         GURL(origin_url), type,
         base::Bind(&FileSystemQuotaClientTest::OnGetAdditionalUsage,
@@ -119,7 +120,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   bool CreateFileSystemDirectory(const base::FilePath& file_path,
                                  const std::string& origin_url,
-                                 storage::StorageType storage_type) {
+                                 StorageType storage_type) {
     storage::FileSystemType type =
         storage::QuotaStorageTypeToFileSystemType(storage_type);
     FileSystemURL url = file_system_context_->CreateCrackedFileSystemURL(
@@ -133,7 +134,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   bool CreateFileSystemFile(const base::FilePath& file_path,
                             int64_t file_size,
                             const std::string& origin_url,
-                            storage::StorageType storage_type) {
+                            StorageType storage_type) {
     if (file_path.empty())
       return false;
 
@@ -183,7 +184,7 @@ class FileSystemQuotaClientTest : public testing::Test {
   int64_t ComputeFilePathsCostForOriginAndType(const TestFile* files,
                                                int num_files,
                                                const std::string& origin_url,
-                                               storage::StorageType type) {
+                                               StorageType type) {
     int64_t file_paths_cost = 0;
     for (int i = 0; i < num_files; i++) {
       if (files[i].type == type &&
@@ -200,7 +201,7 @@ class FileSystemQuotaClientTest : public testing::Test {
 
   void DeleteOriginData(FileSystemQuotaClient* quota_client,
                         const std::string& origin,
-                        storage::StorageType type) {
+                        StorageType type) {
     deletion_status_ = blink::QuotaStatusCode::kUnknown;
     quota_client->DeleteOriginData(
         GURL(origin), type,

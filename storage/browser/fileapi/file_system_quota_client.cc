@@ -21,7 +21,7 @@
 #include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/gurl.h"
 
-using storage::StorageType;
+using blink::StorageType;
 
 namespace storage {
 
@@ -177,8 +177,7 @@ void FileSystemQuotaClient::DeleteOriginData(
       callback);
 }
 
-bool FileSystemQuotaClient::DoesSupport(
-    storage::StorageType storage_type) const {
+bool FileSystemQuotaClient::DoesSupport(StorageType storage_type) const {
   FileSystemType type = QuotaStorageTypeToFileSystemType(storage_type);
   DCHECK(type != kFileSystemTypeUnknown);
   return file_system_context_->IsSandboxFileSystem(type);

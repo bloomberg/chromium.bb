@@ -7,6 +7,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
+using blink::StorageType;
 using storage::QuotaClient;
 
 namespace content {
@@ -62,9 +63,9 @@ void ServiceWorkerQuotaClient::OnQuotaManagerDestroyed() {
 
 void ServiceWorkerQuotaClient::GetOriginUsage(
     const GURL& origin,
-    storage::StorageType type,
+    StorageType type,
     const GetUsageCallback& callback) {
-  if (type != storage::StorageType::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(0);
     return;
   }
@@ -73,9 +74,9 @@ void ServiceWorkerQuotaClient::GetOriginUsage(
 }
 
 void ServiceWorkerQuotaClient::GetOriginsForType(
-    storage::StorageType type,
+    StorageType type,
     const GetOriginsCallback& callback) {
-  if (type != storage::StorageType::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }
@@ -83,10 +84,10 @@ void ServiceWorkerQuotaClient::GetOriginsForType(
 }
 
 void ServiceWorkerQuotaClient::GetOriginsForHost(
-    storage::StorageType type,
+    StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
-  if (type != storage::StorageType::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }
@@ -95,17 +96,17 @@ void ServiceWorkerQuotaClient::GetOriginsForHost(
 
 void ServiceWorkerQuotaClient::DeleteOriginData(
     const GURL& origin,
-    storage::StorageType type,
+    StorageType type,
     const DeletionCallback& callback) {
-  if (type != storage::StorageType::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(blink::QuotaStatusCode::kOk);
     return;
   }
   context_->DeleteForOrigin(origin, base::Bind(&ReportToQuotaStatus, callback));
 }
 
-bool ServiceWorkerQuotaClient::DoesSupport(storage::StorageType type) const {
-  return type == storage::StorageType::kStorageTypeTemporary;
+bool ServiceWorkerQuotaClient::DoesSupport(StorageType type) const {
+  return type == StorageType::kTemporary;
 }
 
 }  // namespace content
