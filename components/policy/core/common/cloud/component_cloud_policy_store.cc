@@ -13,7 +13,6 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -150,7 +149,7 @@ void ComponentCloudPolicyStore::Load() {
       const PolicyNamespace ns(constants.domain, id);
 
       // Validate the protobuf.
-      auto proto = base::MakeUnique<em::PolicyFetchResponse>();
+      auto proto = std::make_unique<em::PolicyFetchResponse>();
       if (!proto->ParseFromString(it->second)) {
         LOG(ERROR) << "Failed to parse the cached policy fetch response.";
         Delete(ns);

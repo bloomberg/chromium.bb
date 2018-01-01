@@ -4,7 +4,6 @@
 
 #include "components/policy/core/common/policy_scheduler.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace policy {
@@ -31,7 +30,7 @@ void PolicyScheduler::ScheduleDelayedTask(base::TimeDelta delay) {
   if (job_) {
     job_->Cancel();
   }
-  job_ = base::MakeUnique<base::CancelableClosure>(base::Bind(
+  job_ = std::make_unique<base::CancelableClosure>(base::Bind(
       &PolicyScheduler::RunScheduledTask, weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE,
                                                        job_->callback(), delay);

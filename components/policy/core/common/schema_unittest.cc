@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/policy/core/common/schema_internal.h"
@@ -642,7 +641,7 @@ TEST(SchemaTest, Validate) {
   bundle.Clear();
   bundle.SetBoolean("Boolean", true);
   bundle.SetInteger("Integer", 123);
-  bundle.Set("Null", base::MakeUnique<base::Value>());
+  bundle.Set("Null", std::make_unique<base::Value>());
   bundle.SetDouble("Number", 3.14);
   bundle.SetString("String", "omg");
 
@@ -805,7 +804,7 @@ TEST(SchemaTest, Validate) {
     base::DictionaryValue root;
 
     base::ListValue* list_value =
-        root.SetList("List", base::MakeUnique<base::ListValue>());
+        root.SetList("List", std::make_unique<base::ListValue>());
 
     // Test that there are not errors here.
     list_value->AppendInteger(12345);
@@ -831,9 +830,9 @@ TEST(SchemaTest, Validate) {
     ASSERT_TRUE(subschema.valid());
     base::ListValue root;
 
-    auto dict_value = base::MakeUnique<base::DictionaryValue>();
+    auto dict_value = std::make_unique<base::DictionaryValue>();
     base::ListValue* list_value =
-        dict_value->SetList("List", base::MakeUnique<base::ListValue>());
+        dict_value->SetList("List", std::make_unique<base::ListValue>());
     root.Append(std::move(dict_value));
 
     // Test that there are not errors here.

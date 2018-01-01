@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -83,7 +82,7 @@ std::unique_ptr<CloudPolicyClient>
 UserCloudPolicyManager::CreateCloudPolicyClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
-  return base::MakeUnique<CloudPolicyClient>(
+  return std::make_unique<CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       device_management_service, request_context,
       nullptr /* signing_service */);
@@ -121,7 +120,7 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
       !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {
     policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    base::MakeUnique<base::Value>(false),
+                    std::make_unique<base::Value>(false),
                     nullptr /* external_data_fetcher */);
   }
 }

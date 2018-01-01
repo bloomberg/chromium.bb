@@ -87,7 +87,7 @@ TEST_F(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>("http://chromium.org"), nullptr);
+             std::make_unique<base::Value>("http://chromium.org"), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -112,7 +112,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(false),
              nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
@@ -124,7 +124,7 @@ TEST_F(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   EXPECT_FALSE(boolean_value);
 
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true), nullptr);
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true), nullptr);
   UpdateProviderPolicy(policy);
   value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -151,7 +151,7 @@ TEST_F(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 TEST_F(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(2), nullptr);
+             POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policy);
   const base::Value* value = nullptr;
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
@@ -185,7 +185,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   PolicyMap policy;
   policy.Set(kTestPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>("http://www.chromium.org"), nullptr);
+             std::make_unique<base::Value>("http://www.chromium.org"), nullptr);
   UpdateProviderPolicy(policy);
   observer_.VerifyAndResetChangedKey(kTestPref);
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));

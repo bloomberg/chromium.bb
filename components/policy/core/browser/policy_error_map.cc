@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -142,20 +141,20 @@ bool PolicyErrorMap::IsReady() const {
 
 void PolicyErrorMap::AddError(const std::string& policy, int message_id) {
   AddError(
-      base::MakeUnique<SimplePendingError>(policy, message_id, std::string()));
+      std::make_unique<SimplePendingError>(policy, message_id, std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id) {
-  AddError(base::MakeUnique<DictSubkeyPendingError>(policy, subkey, message_id,
+  AddError(std::make_unique<DictSubkeyPendingError>(policy, subkey, message_id,
                                                     std::string()));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id) {
-  AddError(base::MakeUnique<ListItemPendingError>(policy, index, message_id,
+  AddError(std::make_unique<ListItemPendingError>(policy, index, message_id,
                                                   std::string()));
 }
 
@@ -163,14 +162,14 @@ void PolicyErrorMap::AddError(const std::string& policy,
                               int message_id,
                               const std::string& replacement) {
   AddError(
-      base::MakeUnique<SimplePendingError>(policy, message_id, replacement));
+      std::make_unique<SimplePendingError>(policy, message_id, replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& subkey,
                               int message_id,
                               const std::string& replacement) {
-  AddError(base::MakeUnique<DictSubkeyPendingError>(policy, subkey, message_id,
+  AddError(std::make_unique<DictSubkeyPendingError>(policy, subkey, message_id,
                                                     replacement));
 }
 
@@ -178,14 +177,14 @@ void PolicyErrorMap::AddError(const std::string& policy,
                               int index,
                               int message_id,
                               const std::string& replacement) {
-  AddError(base::MakeUnique<ListItemPendingError>(policy, index, message_id,
+  AddError(std::make_unique<ListItemPendingError>(policy, index, message_id,
                                                   replacement));
 }
 
 void PolicyErrorMap::AddError(const std::string& policy,
                               const std::string& error_path,
                               const std::string& message) {
-  AddError(base::MakeUnique<SchemaValidatingPendingError>(policy, error_path,
+  AddError(std::make_unique<SchemaValidatingPendingError>(policy, error_path,
                                                           message));
 }
 

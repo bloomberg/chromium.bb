@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,7 +82,7 @@ bool ConfigurationPolicyPrefStore::GetValue(const std::string& key,
 std::unique_ptr<base::DictionaryValue> ConfigurationPolicyPrefStore::GetValues()
     const {
   if (!prefs_)
-    return base::MakeUnique<base::DictionaryValue>();
+    return std::make_unique<base::DictionaryValue>();
   return prefs_->AsDictionaryValue();
 }
 
