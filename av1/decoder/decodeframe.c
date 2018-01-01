@@ -84,11 +84,6 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             int rtile_idx);
 #endif
 
-static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
-                                  size_t partition_size);
-static size_t read_uncompressed_header(AV1Decoder *pbi,
-                                       struct aom_read_bit_buffer *rb);
-
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_fwd_ref[0] = LAST_FRAME;
   cm->comp_fwd_ref[1] = LAST2_FRAME;
