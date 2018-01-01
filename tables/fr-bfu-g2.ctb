@@ -9,7 +9,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-30
+#-updated: 2018-01-01
 
 # liblouis: Unified French Grade 2 Table
 
@@ -34,6 +34,7 @@
 
 # Auteurs:
 #
+#André-Abush CLAUSE <dev@andreabc.net>
 #	Nicolas Pitre <nico@cam.org>
 #	Michel such <michel.such@free.fr>
 #
@@ -48,21 +49,28 @@
 # --------------------------------
 
 include fr-bfu-comp6.utb
+
 class con bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ
 class voy aeiouyéàèùâêîôûëïüœAEIOUYÉÀÈÙÂÊÄËÏÜŒ
 class bmp bmpBMP
 class apost '\X2019\X0092
 class puncEnd ,;.!?)]
-class frmath ⠼0123456789.,+-*/=()¤bàù
 
-#For backtranslation, we need a class that contains consonnants + contractions that begin by a consonnant.
-class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘;àî:ô"ï¸ë!)
-class bmpabr bmpBMP⠘;!6
+#Pour désabréger, il nous faut une classe contenant les consonnes et les abréviations commençant par une consonne
+class conabr bcçdfghjklmnpqrstvwxzBCÇDFGHJKLMNPQRSTVWXZ⠘⠆⠷⠩⠒⠹⠶⠻⠸⠫⠖⠴
+#Pour désabréger, extension de la classe bmp aux abréviations commençant par b, m ou p
+class bmpabr bmpBMP⠘⠆⠫⠖
 
-#For backtranslation, we need a class that contains vowels + contractions that begin by a vowel, excluding those which have similar dot patterns to digits.
-class voyabr aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw¸
-class voyabr2 ⠼âêîôûëïüœ./,●
-class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙ^k@?(´¨z⠠0ùw¸⠼âêîôûëïüœ./,●
+#Pour désabréger, il nous faut une classe contenant les voyelles et les abréviations commençant par une voyelle excepté celles dont la représentation peut être confondue avec un chiffre
+class voyabr aeiouyéàèùAEIOUYÉÀÈÙœŒ⠈⠅⠜⠢⠦⠐⠨⠵⠠⠾⠺⠬⠸
+
+#Pour désabréger, une classe contenant les abréviations identiques aux chiffres ou à certains opérateurs
+class voyabr2 ⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠲⠌⠂⠔
+#Enfin, une classe regroupant les deux précédentes pour simplifier certaines règles
+class voyabr3 aeiouyéàèùAEIOUYÉÀÈÙœŒ⠈⠅⠜⠢⠦⠐⠨⠵⠠⠾⠺⠬⠰⠸⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠲⠌⠂⠔
+
+#En désabrègement, cette classe permet de savoir si nous sommes dans une opération mathématique ou non
+class frmath ⠬⠼⠡⠣⠩⠹⠱⠫⠻⠳⠪⠲⠂⠖⠤⠌⠔⠶⠦⠴⠘⠃⠷⠾⠠⠄⠐⠣⠜
 
 #punctuation  56		so the line below compiles
 letsign 56
@@ -264,15 +272,15 @@ nofor endword drants 1456-1456-234
 nofor begword drêch 1456-126-12356
 nofor before con midword drien 1456-256
 nofor partword drion 1456-3456
+nofor before con midword dror 1456-56
 nofor begmidword drui 1456-23
 nofor before conabr begmidword drin 1456-35
 nofor endword drin 1456-35
 nofor before conabr always dran 1456-2
 nofor before voyabr3 midword drangl 1456-2-345
 nofor begword drôl 145-1235-1456-123
-nofor before con begmidword drou 1456-1256
-nofor endword drou 1456-1256
-nofor begmidword droui 1456-1256-24
+nofor partword drou 1456-1256
+
 nofor endword éau 123456-13
 nofor endword éaux 123456-13-1346
 nofor after conabr midword êch 126-12356
@@ -330,7 +338,7 @@ nofor after conabr after voyabr endword es 156
 nofor before voyabr3 always oëss 135-1246-2346
 
 word eu 15-136
-always eu 5
+partword eu 5
 nofor partword euc 5-14
 nofor partword eup 5-1234
 nofor before voyabr3 always eugl 5-345
@@ -391,6 +399,7 @@ nofor endword flant 126-1456
 nofor endword flants 126-1456-234
 nofor before con begmidword flû 126-156
 nofor endword fles 126-156
+nofor before con midword flor 126-56
 nofor endword flor 126-56
 nofor partword flou 126-1256
 nofor word flou 126-1256
@@ -865,6 +874,7 @@ word son 246
 word sons 246-234
 lowword sous 356
 sufword sous- 356-36
+nofor begword souscr 356-25
 word sur 125
 word te 2345
 word tous 2456
@@ -882,7 +892,6 @@ before apost sufword m 134
 before apost sufword n 1345
 before apost sufword s 234
 before apost sufword t 2345
-
 before apost sufword C 14
 before apost sufword D 145
 before apost sufword J 245
@@ -891,8 +900,6 @@ before apost sufword M 134
 before apost sufword N 1345
 before apost sufword S 234
 before apost sufword T 2345
-
-nofor begword souscr 356-25
 
 ###
 ### 3. Mots représentés par deux ou plusieurs symboles
@@ -2130,6 +2137,7 @@ word officieuse		135-124-234-15
 word officieuses	135-124-234-156
 word officieusement	135-124-234-134
 word officieux		135-124-1346
+word oms 135-134-234
 word opinion		135-1234
 word opinions		135-1234-234
 word op 56-135-1234
@@ -3335,7 +3343,7 @@ nofor partword folkl 124-135-123-13-123
 nofor begword frankl 16-2-13-123
 nofor begword ginkg 1245-35-13-1245
 nofor begword inuk 35-136-13
-nofor begword jackp 245-1-14-13-1234
+nofor before con begword jack 245-1-14-13
 nofor partword jork 245-56-13
 word kekchi 13-15-13-12356-24
 word ken 13-26
@@ -3374,7 +3382,7 @@ nofor before conabr begword krem 13-1235-345
 nofor begword krenné 13-1235-26-1345-123456
 nofor word krépis 13-1235-123456-1234-24-234
 nofor word kreuzer 13-1235-5-1356-236
-nofor begword krieg 13-1235-24-15-1245
+nofor partword krieg 13-1235-24-15-1245
 nofor begword krigeag 13-1235-24-1245-15-1-1245
 nofor word krill 13-1235-24-123-123
 nofor word kriss 13-1235-24-234-234
@@ -4663,6 +4671,7 @@ nofor correct $l[""]"(" ?
 #éliminer les chaînes n'étant pas des expressions mathématiques
 nofor pass4 @6-36%frmath.$s @12345678*
 nofor pass4 @6-36%frmath.~ @12345678*
+
 nofor pass3 `[@6-36]!$s @13678
 nofor pass3 $s[@6-36]!$s @13678
 nofor pass3 $l[@6-36]$d @36-6
@@ -4672,10 +4681,15 @@ nofor pass3 @12345678 ?
 #Elle se termine par un espace, un letsign ou une fin de chaîne.
 nofor pass2 `@6 *#1=1
 nofor pass2 $s@6 *#1=1
+nofor pass2 `!@6 *#1=0
 nofor pass2 $s!@6 *#1=0
 nofor pass2 @56 *#1=0
+#Cas particulier des mots finissant par "lieues"
+nofor pass2 @123-6-156~ *#1=0
+nofor pass2 @123-6-156$s *#1=0
 
 #Traitement des opérateurs
+nofor pass2 #1=1[@356-3-3] @3568	accolade droite
 nofor pass2 #1=1[@36] @368	moins
 nofor pass2 #1=1[@235] @2358	plus
 nofor pass2 #1=1[@34] @348	divisé
@@ -4686,6 +4700,8 @@ nofor pass2 #1=1[@12356] @23678	crochet gauche
 nofor pass2 #1=1[@356-12] @35678	crochet droit
 nofor pass2 #1=1[@23456] @35678	crochet droit
 nofor pass2 #1=1[@2356] @23568	égal
+nofor pass2 #1=1[@5-126] @238	inférieur à
+nofor pass2 #1=1[@5-345] @756	supérieur à
 
 #Les chiffres
 nofor pass2 #1=1[@16] @18
@@ -4699,15 +4715,24 @@ nofor pass2 #1=1[@1256] @1258
 nofor pass2 #1=1[@246] @248
 nofor pass2 #1=1[@3456] @3458
 
+nofor context @6-2368-6 "{"
+nofor context @6-2368-6-6-2368 "({"
+nofor context @6-6-2368-6-2368 "{("
+nofor context @6-6-2368 "{"
 nofor context @13678 "-"
 nofor context @23678 "["
 nofor context @35678 "]"
+nofor context @2378 "toto{"
+nofor context @3568 "}"
 nofor context @2358 "+"
 nofor context @348 "/"
 nofor context @358 "*"
 nofor context @23568 "="
 nofor context @368 "-"
 nofor context @2368 "("
+nofor context @238 "<"
+nofor context @756 ">"
+
 nofor context @18 "1"
 nofor context @128 "2"
 nofor context @148 "3"
@@ -4724,7 +4749,6 @@ noback pass2 @356-12[@6] ?
 noback correct [`"["] "`["
 #Fin opérations mathématiques
 
-nofor pass4 [@1456]@56-1235-125 @145-1235
 nofor pass2 $a[@36-3-36]$a @36-123-1-36
 nofor correct "grèo" "ïsso"
 nofor correct $l["-te-"]"il" "-t-"
@@ -4751,8 +4775,13 @@ noback pass2 [@56]@1$s ?
 noback pass2 [@56]@15$s ?
 noback pass2 `[@56]@1-36 ?
 noback pass2 [@6]@6-45-236 ?
+noback pass2 @5-126[@6]$dm ?
+noback pass2 @5-345[@6]$dm ?
+noback pass2 @6-6-236[@6] ?
+noback pass2 [@56]@56$l ?
 
 nofor word alvaralhão 1-123-1236-1-1235-1-123-125-1-135 
+word bmw 12-134-2456
 word	cant	56-14-1456
 word	chs	56-14-125-234
 noback word	cs	56-14-234
@@ -4796,7 +4825,6 @@ word elektron 15-123-15-13-2345-1235-135-1345
 nofor word been 12-15-26
 nofor word pin's 1234-35-3-234
 nofor word traveller's 356-1-1236-15-456-236-3-56-234
-word w3c 2456-146-14
 nofor correct "angström" "angstrœm"
 nofor correct "Chrd\sRai" "Árd\sRí"
 nofor correct "compoly" "-poly"

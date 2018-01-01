@@ -10,7 +10,7 @@
 #-author: Nicolas Pitre <nico@cam.org>
 #-author: The BRLTTY Team <http://brltty.com/>
 #-license: LGPLv2.1
-#-updated: 2017-12-29
+#-updated: 2017-12-30
 
 # liblouis: Unified French 6 dots Braille table
 
@@ -45,16 +45,6 @@
 
 undefined 0
 
-display 0 3456
-display 1 16
-display 2 126
-display 3 146
-display 4 1456
-display 5 156
-display 6 1246
-display 7 12456
-display 8 1256
-display 9 246
 display ¨ 46
 display : 25
 display " 2356
@@ -63,6 +53,7 @@ display - 36
 display . 256
 display / 34
 display * 35
+display | 456
 display ¸ 456
 display ¤ 45
 display  56
@@ -70,6 +61,8 @@ display ^ 4
 display \s 0
 display @ 345
 display ó 346
+display à 12356
+display ù 23456
 display [ 12356
 display ] 23456
 
@@ -116,7 +109,8 @@ uplow \x00cf\x00ef  12456 # i tréma (Ïï)
 uplow \x00d6\x00f6    246 # o tréma (Öö)
 uplow \x00dc\x00fc   1256 # u tréma (Üü)
 
-uplow \x00C5\x00e5 5-1,5-1       #*latin capital letter a with ring above
+uplow \x00C5\x00e5 5-1       #*latin capital letter a with ring above
+letter \x00d8 3456
 
 digit 0 3456
 litdigit        0      3456
