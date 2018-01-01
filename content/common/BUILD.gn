@@ -555,7 +555,6 @@ mojom("mojo_bindings") {
     "navigation_params.mojom",
     "page_state.mojom",
     "push_messaging.mojom",
-    "quota_dispatcher_host.mojom",
     "render_frame_message_filter.mojom",
     "render_message_filter.mojom",
     "render_widget_window_tree_client_factory.mojom",

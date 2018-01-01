@@ -13,10 +13,8 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/renderer/worker_thread.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_dispatcher_host.mojom.h"
 
 namespace blink {
 class WebStorageQuotaCallbacks;
@@ -80,7 +78,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
                             int64_t granted_quota);
   void DidFail(int request_id, blink::QuotaStatusCode error);
 
-  content::mojom::QuotaDispatcherHostPtr quota_host_;
+  blink::mojom::QuotaDispatcherHostPtr quota_host_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // TODO(sashab, nverne): Once default callbacks are available for dropped mojo

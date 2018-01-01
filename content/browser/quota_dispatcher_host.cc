@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/origin.h"
 
 using blink::StorageType;
@@ -28,7 +27,7 @@ void QuotaDispatcherHost::Create(
     int process_id,
     QuotaManager* quota_manager,
     scoped_refptr<QuotaPermissionContext> permission_context,
-    mojom::QuotaDispatcherHostRequest request) {
+    blink::mojom::QuotaDispatcherHostRequest request) {
   DCHECK(quota_manager);
   // TODO(sashab): Work out the conditions for permission_context to be set and
   // add a DCHECK for it here.
@@ -63,7 +62,7 @@ void QuotaDispatcherHost::RequestStorageQuota(
     const url::Origin& origin,
     StorageType storage_type,
     uint64_t requested_size,
-    mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
+    blink::mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
   if (storage_type != StorageType::kTemporary &&
       storage_type != StorageType::kPersistent) {
     // Unsupported storage types.
