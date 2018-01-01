@@ -19,6 +19,7 @@
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageQuotaError.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace blink {
 
@@ -124,7 +125,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   }
 
   Platform::Current()->QueryStorageUsageAndQuota(
-      WrapRefCounted(security_origin), kWebStorageQuotaTypeTemporary,
+      WrapRefCounted(security_origin), StorageType::kTemporary,
       new EstimateCallbacks(resolver));
   return promise;
 }

@@ -37,7 +37,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "public/platform/WebStorageQuotaType.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace blink {
 
@@ -58,7 +58,7 @@ class MODULES_EXPORT StorageQuotaClient
   virtual ~StorageQuotaClient();
 
   void RequestQuota(ScriptState*,
-                    WebStorageQuotaType,
+                    StorageType,
                     unsigned long long new_quota_in_bytes,
                     V8StorageQuotaCallback*,
                     V8StorageErrorCallback*);

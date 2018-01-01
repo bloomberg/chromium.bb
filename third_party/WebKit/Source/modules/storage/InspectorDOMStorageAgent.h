@@ -55,7 +55,7 @@ class MODULES_EXPORT InspectorDOMStorageAgent final
   void DidDispatchDOMStorageEvent(const String& key,
                                   const String& old_value,
                                   const String& new_value,
-                                  StorageType,
+                                  StorageArea::StorageType,
                                   const SecurityOrigin*);
 
  private:

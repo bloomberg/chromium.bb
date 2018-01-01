@@ -50,7 +50,6 @@
 #include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
-#include "WebStorageQuotaType.h"
 #include "WebString.h"
 #include "WebURLError.h"
 #include "WebURLLoader.h"
@@ -63,6 +62,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -702,7 +702,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // error code.
   virtual void QueryStorageUsageAndQuota(
       const WebSecurityOrigin& storage_partition,
-      WebStorageQuotaType,
+      StorageType,
       WebStorageQuotaCallbacks) {}
 
   // WebDatabase --------------------------------------------------------

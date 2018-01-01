@@ -14,15 +14,14 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/origin.h"
 
 using blink::QuotaStatusCode;
 using blink::StorageType;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
-using blink::WebStorageQuotaType;
 
 namespace content {
 
@@ -181,13 +180,6 @@ void QuotaDispatcher::DidFail(
   callback->DidFail(error);
   pending_quota_callbacks_.Remove(request_id);
 }
-
-static_assert(int(blink::kWebStorageQuotaTypeTemporary) ==
-                  int(StorageType::kTemporary),
-              "mismatching enums: kStorageTypeTemporary");
-static_assert(int(blink::kWebStorageQuotaTypePersistent) ==
-                  int(StorageType::kPersistent),
-              "mismatching enums: kStorageTypePersistent");
 
 static_assert(int(blink::kWebStorageQuotaErrorNotSupported) ==
                   int(blink::QuotaStatusCode::kErrorNotSupported),

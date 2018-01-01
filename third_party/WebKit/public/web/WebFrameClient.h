@@ -64,7 +64,6 @@
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebSourceLocation.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
-#include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebSuddenTerminationDisablerType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderFactory.h"
@@ -73,6 +72,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "v8/include/v8.h"
 
@@ -719,7 +719,7 @@ class BLINK_EXPORT WebFrameClient {
   // is called with an error code otherwise.
   // Note that the requesting quota size may not always be granted and
   // a smaller amount of quota than requested might be returned.
-  virtual void RequestStorageQuota(WebStorageQuotaType,
+  virtual void RequestStorageQuota(StorageType,
                                    unsigned long long new_quota_in_bytes,
                                    WebStorageQuotaCallbacks) {}
 

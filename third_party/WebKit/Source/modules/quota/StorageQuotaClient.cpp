@@ -37,7 +37,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebStorageQuotaType.h"
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
@@ -47,7 +46,7 @@ StorageQuotaClient::StorageQuotaClient() {}
 StorageQuotaClient::~StorageQuotaClient() {}
 
 void StorageQuotaClient::RequestQuota(ScriptState* script_state,
-                                      WebStorageQuotaType storage_type,
+                                      StorageType storage_type,
                                       unsigned long long new_quota_in_bytes,
                                       V8StorageQuotaCallback* success_callback,
                                       V8StorageErrorCallback* error_callback) {

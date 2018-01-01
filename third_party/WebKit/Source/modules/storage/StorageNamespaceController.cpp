@@ -18,9 +18,9 @@ namespace blink {
 #define STATIC_ASSERT_MATCHING_ENUM(enum_name1, enum_name2)                   \
   static_assert(static_cast<int>(enum_name1) == static_cast<int>(enum_name2), \
                 "mismatching enums: " #enum_name1)
-STATIC_ASSERT_MATCHING_ENUM(kLocalStorage,
+STATIC_ASSERT_MATCHING_ENUM(StorageArea::kLocalStorage,
                             ContentSettingsClient::StorageType::kLocal);
-STATIC_ASSERT_MATCHING_ENUM(kSessionStorage,
+STATIC_ASSERT_MATCHING_ENUM(StorageArea::kSessionStorage,
                             ContentSettingsClient::StorageType::kSession);
 
 const char* StorageNamespaceController::SupplementName() {
@@ -61,8 +61,9 @@ StorageNamespaceController::CreateSessionStorageNamespace() {
           web_view_client_->GetSessionStorageNamespaceId()));
 }
 
-bool StorageNamespaceController::CanAccessStorage(LocalFrame* frame,
-                                                  StorageType type) const {
+bool StorageNamespaceController::CanAccessStorage(
+    LocalFrame* frame,
+    StorageArea::StorageType type) const {
   DCHECK(frame->GetContentSettingsClient());
   return frame->GetContentSettingsClient()->AllowStorage(
       static_cast<ContentSettingsClient::StorageType>(type));

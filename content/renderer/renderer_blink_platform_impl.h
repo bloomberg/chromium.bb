@@ -209,7 +209,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void StopListening(blink::WebPlatformEventType) override;
   void QueryStorageUsageAndQuota(
       const blink::WebSecurityOrigin& storage_partition,
-      blink::WebStorageQuotaType,
+      blink::StorageType,
       blink::WebStorageQuotaCallbacks) override;
   blink::WebThread* CurrentThread() override;
   blink::BlameContext* GetTopLevelBlameContext() override;

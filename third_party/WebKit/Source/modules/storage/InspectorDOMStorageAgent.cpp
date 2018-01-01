@@ -188,13 +188,13 @@ void InspectorDOMStorageAgent::DidDispatchDOMStorageEvent(
     const String& key,
     const String& old_value,
     const String& new_value,
-    StorageType storage_type,
+    StorageArea::StorageType storage_type,
     const SecurityOrigin* security_origin) {
   if (!GetFrontend())
     return;
 
   std::unique_ptr<protocol::DOMStorage::StorageId> id =
-      GetStorageId(security_origin, storage_type == kLocalStorage);
+      GetStorageId(security_origin, storage_type == StorageArea::kLocalStorage);
 
   if (key.IsNull())
     GetFrontend()->domStorageItemsCleared(std::move(id));
