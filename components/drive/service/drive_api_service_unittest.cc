@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/drive/service/drive_api_service.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "google_apis/drive/dummy_auth_service.h"
@@ -48,7 +47,7 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
       new TestAuthService, request_context_getter.get(), task_runner.get(),
       kTestUserAgent, TRAFFIC_ANNOTATION_FOR_TESTS);
   std::unique_ptr<google_apis::drive::BatchUploadRequest> request =
-      base::MakeUnique<google_apis::drive::BatchUploadRequest>(&sender,
+      std::make_unique<google_apis::drive::BatchUploadRequest>(&sender,
                                                                url_generator);
   google_apis::drive::BatchUploadRequest* request_ptr = request.get();
   sender.StartRequestWithAuthRetry(std::move(request));

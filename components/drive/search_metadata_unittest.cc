@@ -14,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/i18n/string_search.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -43,7 +42,7 @@ bool FindAndHighlightWrapper(
   std::vector<std::unique_ptr<
       base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>
       queries;
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16(query_text)));
   return FindAndHighlight(text, queries, highlighted_text);
@@ -583,7 +582,7 @@ TEST(SearchMetadataSimpleTest, MultiTextBySingleQuery) {
   std::vector<std::unique_ptr<
       base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>
       queries;
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16("hello")));
 
@@ -619,10 +618,10 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_MultipleQueries) {
   std::vector<std::unique_ptr<
       base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>
       queries;
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16("hello")));
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16("good")));
 
@@ -636,10 +635,10 @@ TEST(SearchMetadataSimpleTest, FindAndHighlight_OverlappingHighlights) {
   std::vector<std::unique_ptr<
       base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>
       queries;
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16("morning")));
-  queries.push_back(base::MakeUnique<
+  queries.push_back(std::make_unique<
                     base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>(
       base::UTF8ToUTF16("ing,")));
 
