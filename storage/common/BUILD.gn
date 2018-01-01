@@ -56,16 +56,6 @@ component("common") {
   ]
 }
 
-mojom("mojo_bindings") {
-  sources = [
-    "quota/quota_types.mojom",
-  ]
-
-  public_deps = [
-    "//url/mojo:url_mojom_gurl",
-  ]
-}
-
 source_set("unittests") {
   testonly = true
 
