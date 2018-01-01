@@ -69,8 +69,8 @@ const GURL kOrigin2(kTestOrigin2);
 const GURL kOrigin3(kTestOrigin3);
 const GURL kOriginDevTools(kTestOriginDevTools);
 
-const storage::StorageType kTemporary = storage::kStorageTypeTemporary;
-const storage::StorageType kPersistent = storage::kStorageTypePersistent;
+const blink::StorageType kTemporary = blink::StorageType::kTemporary;
+const blink::StorageType kPersistent = blink::StorageType::kPersistent;
 
 const storage::QuotaClient::ID kClientFile = storage::QuotaClient::kFileSystem;
 

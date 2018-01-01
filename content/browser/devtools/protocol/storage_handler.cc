@@ -17,6 +17,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -88,7 +89,7 @@ void GetUsageAndQuotaOnIOThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   manager->GetUsageAndQuotaWithBreakdown(
-      url, storage::kStorageTypeTemporary,
+      url, blink::StorageType::kTemporary,
       base::Bind(&GotUsageAndQuotaDataCallback,
                  base::Passed(std::move(callback))));
 }

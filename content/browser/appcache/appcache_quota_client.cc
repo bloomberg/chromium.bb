@@ -13,6 +13,7 @@
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
 
+using blink::StorageType;
 using storage::QuotaClient;
 
 namespace {
@@ -63,7 +64,7 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
 }
 
 void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
-                                         storage::StorageType type,
+                                         StorageType type,
                                          const GetUsageCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(!quota_manager_is_destroyed_);
@@ -80,7 +81,7 @@ void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
     return;
   }
 
-  if (type != storage::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(0);
     return;
   }
@@ -95,13 +96,13 @@ void AppCacheQuotaClient::GetOriginUsage(const GURL& origin,
 }
 
 void AppCacheQuotaClient::GetOriginsForType(
-    storage::StorageType type,
+    StorageType type,
     const GetOriginsCallback& callback) {
   GetOriginsHelper(type, std::string(), callback);
 }
 
 void AppCacheQuotaClient::GetOriginsForHost(
-    storage::StorageType type,
+    StorageType type,
     const std::string& host,
     const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
@@ -113,7 +114,7 @@ void AppCacheQuotaClient::GetOriginsForHost(
 }
 
 void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
-                                           storage::StorageType type,
+                                           StorageType type,
                                            const DeletionCallback& callback) {
   DCHECK(!quota_manager_is_destroyed_);
 
@@ -130,7 +131,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   }
 
   current_delete_request_callback_ = callback;
-  if (type != storage::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     DidDeleteAppCachesForOrigin(net::OK);
     return;
   }
@@ -139,8 +140,8 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
       origin, GetServiceDeleteCallback()->callback());
 }
 
-bool AppCacheQuotaClient::DoesSupport(storage::StorageType type) const {
-  return type == storage::kStorageTypeTemporary;
+bool AppCacheQuotaClient::DoesSupport(StorageType type) const {
+  return type == StorageType::kTemporary;
 }
 
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
@@ -158,7 +159,7 @@ void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   RunFront(&pending_serial_requests_);
 }
 
-void AppCacheQuotaClient::GetOriginsHelper(storage::StorageType type,
+void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
                                            const std::string& opt_host,
                                            const GetOriginsCallback& callback) {
   DCHECK(!callback.is_null());
@@ -176,7 +177,7 @@ void AppCacheQuotaClient::GetOriginsHelper(storage::StorageType type,
     return;
   }
 
-  if (type != storage::kStorageTypeTemporary) {
+  if (type != StorageType::kTemporary) {
     callback.Run(std::set<GURL>());
     return;
   }

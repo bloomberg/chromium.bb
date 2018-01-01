@@ -59,9 +59,9 @@ void SiteDataCountingHelper::CountAndDestroySelfWhenFinished() {
     storage::GetOriginsCallback origins_callback =
         base::Bind(&SiteDataCountingHelper::GetQuotaOriginsCallback,
                    base::Unretained(this));
-    const storage::StorageType types[] = {storage::kStorageTypeTemporary,
-                                          storage::kStorageTypePersistent,
-                                          storage::kStorageTypeSyncable};
+    const blink::StorageType types[] = {blink::StorageType::kTemporary,
+                                        blink::StorageType::kPersistent,
+                                        blink::StorageType::kSyncable};
     for (auto type : types) {
       tasks_ += 1;
       BrowserThread::PostTask(
@@ -160,7 +160,7 @@ void SiteDataCountingHelper::GetCookiesCallback(
 
 void SiteDataCountingHelper::GetQuotaOriginsCallback(
     const std::set<GURL>& origin_set,
-    storage::StorageType type) {
+    blink::StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<GURL> origins(origin_set.begin(), origin_set.end());
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,

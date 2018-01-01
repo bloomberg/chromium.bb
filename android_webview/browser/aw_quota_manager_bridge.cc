@@ -16,8 +16,8 @@
 #include "content/public/common/content_client.h"
 #include "jni/AwQuotaManagerBridge_jni.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
@@ -48,7 +48,7 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
   ~GetOriginsTask();
 
   void OnOriginsObtained(const std::set<GURL>& origins,
-                         storage::StorageType type);
+                         blink::StorageType type);
 
   void OnUsageAndQuotaObtained(const GURL& origin,
                                blink::QuotaStatusCode status_code,
@@ -85,13 +85,13 @@ void GetOriginsTask::Run() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
-                 storage::kStorageTypeTemporary,
+                 blink::StorageType::kTemporary,
                  base::Time() /* Since beginning of time. */,
                  base::Bind(&GetOriginsTask::OnOriginsObtained, this)));
 }
 
 void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
-                                       storage::StorageType type) {
+                                       blink::StorageType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   num_callbacks_to_wait_ = origins.size();
   num_callbacks_received_ = 0u;
@@ -313,7 +313,7 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&QuotaManager::GetUsageAndQuota, GetQuotaManager(),
-                 GURL(origin), storage::kStorageTypeTemporary,
+                 GURL(origin), blink::StorageType::kTemporary,
                  base::Bind(&OnUsageAndQuotaObtained, ui_callback)));
 }
 

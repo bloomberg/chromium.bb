@@ -34,12 +34,10 @@ void StripUsageWithBreakdownCallback(
 }  // namespace
 
 UsageTracker::UsageTracker(const QuotaClientList& clients,
-                           StorageType type,
+                           blink::StorageType type,
                            SpecialStoragePolicy* special_storage_policy,
                            StorageMonitor* storage_monitor)
-    : type_(type),
-      storage_monitor_(storage_monitor),
-      weak_factory_(this) {
+    : type_(type), storage_monitor_(storage_monitor), weak_factory_(this) {
   for (auto* client : clients) {
     if (client->DoesSupport(type)) {
       client_tracker_map_[client->id()] = base::MakeUnique<ClientUsageTracker>(

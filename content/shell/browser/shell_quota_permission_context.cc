@@ -4,7 +4,7 @@
 
 #include "content/shell/browser/shell_quota_permission_context.h"
 
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace content {
 
@@ -14,7 +14,7 @@ void ShellQuotaPermissionContext::RequestQuotaPermission(
     const StorageQuotaParams& params,
     int render_process_id,
     const PermissionCallback& callback) {
-  if (params.storage_type != storage::kStorageTypePersistent) {
+  if (params.storage_type != blink::StorageType::kPersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
     callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);

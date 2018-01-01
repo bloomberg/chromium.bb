@@ -41,7 +41,6 @@
 #include "storage/browser/test/sandbox_file_system_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "storage/common/database/database_identifier.h"
-#include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::AsyncFileTestHelper;

@@ -17,9 +17,9 @@
 #include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "url/origin.h"
 
+using blink::StorageType;
 using storage::QuotaClient;
 using storage::QuotaManager;
-using storage::StorageType;
 
 namespace content {
 
@@ -49,7 +49,7 @@ QuotaDispatcherHost::QuotaDispatcherHost(
 
 void QuotaDispatcherHost::QueryStorageUsageAndQuota(
     const url::Origin& origin,
-    storage::StorageType storage_type,
+    StorageType storage_type,
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaForWebApps(
       origin.GetURL(), storage_type,
@@ -61,19 +61,19 @@ void QuotaDispatcherHost::QueryStorageUsageAndQuota(
 void QuotaDispatcherHost::RequestStorageQuota(
     int64_t render_frame_id,
     const url::Origin& origin,
-    storage::StorageType storage_type,
+    StorageType storage_type,
     uint64_t requested_size,
     mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
-  if (storage_type != storage::kStorageTypeTemporary &&
-      storage_type != storage::kStorageTypePersistent) {
+  if (storage_type != StorageType::kTemporary &&
+      storage_type != StorageType::kPersistent) {
     // Unsupported storage types.
     std::move(callback).Run(blink::QuotaStatusCode::kErrorNotSupported, 0, 0);
     return;
   }
 
-  DCHECK(storage_type == storage::kStorageTypeTemporary ||
-         storage_type == storage::kStorageTypePersistent);
-  if (storage_type == storage::kStorageTypePersistent) {
+  DCHECK(storage_type == StorageType::kTemporary ||
+         storage_type == StorageType::kPersistent);
+  if (storage_type == StorageType::kPersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
         origin.GetURL(), storage_type,
         base::Bind(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
@@ -100,7 +100,7 @@ void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
 void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
     int64_t render_frame_id,
     const url::Origin& origin,
-    storage::StorageType storage_type,
+    StorageType storage_type,
     uint64_t requested_quota,
     RequestStorageQuotaCallback callback,
     blink::QuotaStatusCode status,

@@ -45,7 +45,7 @@ MockQuotaManager::MockQuotaManager(
       weak_factory_(this) {}
 
 void MockQuotaManager::GetUsageAndQuota(const GURL& origin,
-                                        storage::StorageType type,
+                                        StorageType type,
                                         const UsageAndQuotaCallback& callback) {
   StorageInfo& info = usage_and_quota_map_[std::make_pair(origin, type)];
   callback.Run(blink::QuotaStatusCode::kOk, info.usage, info.quota);

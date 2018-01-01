@@ -4,7 +4,7 @@
 
 module storage.mojom;
 
-// TODO(sashab): Remove duplicate definition storage::StorageType.
+// TODO(sashab): Remove duplicate definition blink::StorageType.
 enum StorageType {
   kTemporary,
   kPersistent,

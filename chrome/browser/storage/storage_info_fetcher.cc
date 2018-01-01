@@ -35,10 +35,9 @@ void StorageInfoFetcher::FetchStorageInfo(const FetchCallback& fetch_callback) {
           base::Bind(&StorageInfoFetcher::OnGetUsageInfoInternal, this)));
 }
 
-void StorageInfoFetcher::ClearStorage(
-    const std::string& host,
-    storage::StorageType type,
-    const ClearCallback& clear_callback) {
+void StorageInfoFetcher::ClearStorage(const std::string& host,
+                                      blink::StorageType type,
+                                      const ClearCallback& clear_callback) {
   // Balanced in OnUsageCleared.
   AddRef();
 

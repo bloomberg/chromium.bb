@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \
@@ -208,7 +209,7 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetEvictionOrigin(
-        kStorageTypeTemporary, in_progress_eviction_origins_,
+        blink::StorageType::kTemporary, in_progress_eviction_origins_,
         settings.pool_size,
         base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionOrigin,
                    weak_factory_.GetWeakPtr()));
@@ -239,10 +240,10 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionOrigin(const GURL& origin) {
 
   in_progress_eviction_origins_.insert(origin);
 
-  quota_eviction_handler_->EvictOriginData(origin, kStorageTypeTemporary,
-      base::Bind(
-          &QuotaTemporaryStorageEvictor::OnEvictionComplete,
-          weak_factory_.GetWeakPtr()));
+  quota_eviction_handler_->EvictOriginData(
+      origin, blink::StorageType::kTemporary,
+      base::Bind(&QuotaTemporaryStorageEvictor::OnEvictionComplete,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionComplete(

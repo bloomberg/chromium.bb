@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "storage/common/quota/quota_types.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -52,6 +52,7 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/host_zoom_map_impl.h"
@@ -124,15 +125,16 @@ void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
 }
 
 void OnQuotaManagedOriginDeleted(const GURL& origin,
-                                 storage::StorageType type,
+                                 blink::StorageType type,
                                  size_t* deletion_task_count,
                                  const base::Closure& callback,
                                  blink::QuotaStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(*deletion_task_count, 0u);
   if (status != blink::QuotaStatusCode::kOk) {
-    DLOG(ERROR) << "Couldn't remove data of type " << type << " for origin "
-                << origin << ". Status: " << static_cast<int>(status);
+    DLOG(ERROR) << "Couldn't remove data of type " << static_cast<int>(type)
+                << " for origin " << origin
+                << ". Status: " << static_cast<int>(status);
   }
 
   (*deletion_task_count)--;
@@ -338,7 +340,7 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
       const StoragePartition::OriginMatcherFunction& origin_matcher,
       const base::Closure& callback,
       const std::set<GURL>& origins,
-      storage::StorageType quota_storage_type);
+      blink::StorageType quota_storage_type);
 
   // All of these data are accessed on IO thread.
   uint32_t remove_mask;
@@ -826,7 +828,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     // within the user-specified timeframe, and deal with the resulting set in
     // ClearQuotaManagedOriginsOnIOThread().
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypePersistent, begin,
+        blink::StorageType::kPersistent, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                    base::Unretained(this), base::RetainedRef(quota_manager),
                    special_storage_policy, origin_matcher, decrement_callback));
@@ -836,7 +838,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypeTemporary, begin,
+        blink::StorageType::kTemporary, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                    base::Unretained(this), base::RetainedRef(quota_manager),
                    special_storage_policy, origin_matcher, decrement_callback));
@@ -846,7 +848,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypeSyncable, begin,
+        blink::StorageType::kSyncable, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
                    base::Unretained(this), base::RetainedRef(quota_manager),
                    special_storage_policy, origin_matcher, decrement_callback));
@@ -855,14 +857,15 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
   DecrementTaskCountOnIO();
 }
 
-void
-StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread(
-    storage::QuotaManager* quota_manager,
-    const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
-    const StoragePartition::OriginMatcherFunction& origin_matcher,
-    const base::Closure& callback,
-    const std::set<GURL>& origins,
-    storage::StorageType quota_storage_type) {
+void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
+    ClearOriginsOnIOThread(
+        storage::QuotaManager* quota_manager,
+        const scoped_refptr<storage::SpecialStoragePolicy>&
+            special_storage_policy,
+        const StoragePartition::OriginMatcherFunction& origin_matcher,
+        const base::Closure& callback,
+        const std::set<GURL>& origins,
+        blink::StorageType quota_storage_type) {
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
   // origins.

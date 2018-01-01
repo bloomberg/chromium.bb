@@ -58,7 +58,9 @@ void DidGetGlobalUsageForLimitedGlobalUsage(const UsageCallback& callback,
 }  // namespace
 
 ClientUsageTracker::ClientUsageTracker(
-    UsageTracker* tracker, QuotaClient* client, StorageType type,
+    UsageTracker* tracker,
+    QuotaClient* client,
+    blink::StorageType type,
     SpecialStoragePolicy* special_storage_policy,
     StorageMonitor* storage_monitor)
     : tracker_(tracker),
@@ -487,7 +489,7 @@ void ClientUsageTracker::UpdateGlobalUsageValue(int64_t* usage_value,
 }
 
 bool ClientUsageTracker::IsStorageUnlimited(const GURL& origin) const {
-  if (type_ == kStorageTypeSyncable)
+  if (type_ == blink::StorageType::kSyncable)
     return false;
   return special_storage_policy_.get() &&
          special_storage_policy_->IsStorageUnlimited(origin);

@@ -168,6 +168,7 @@
 #include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
@@ -5119,7 +5120,7 @@ void RenderFrameImpl::RequestStorageQuota(
     return;
   }
   RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
-      routing_id_, origin, static_cast<storage::StorageType>(type),
+      routing_id_, origin, static_cast<blink::StorageType>(type),
       requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }

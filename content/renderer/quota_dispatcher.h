@@ -16,6 +16,7 @@
 #include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/renderer/worker_thread.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace blink {
 class WebStorageQuotaCallbacks;
@@ -55,11 +56,11 @@ class QuotaDispatcher : public WorkerThread::Observer {
   void WillStopCurrentWorkerThread() override;
 
   void QueryStorageUsageAndQuota(const url::Origin& origin,
-                                 storage::StorageType type,
+                                 blink::StorageType type,
                                  std::unique_ptr<Callback> callback);
   void RequestStorageQuota(int render_frame_id,
                            const url::Origin& origin,
-                           storage::StorageType type,
+                           blink::StorageType type,
                            int64_t requested_size,
                            std::unique_ptr<Callback> callback);
 

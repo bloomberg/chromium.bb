@@ -32,8 +32,8 @@
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
@@ -72,7 +72,7 @@ void LogHostedAppUnlimitedStorageUsage(
         FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         base::BindOnce(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
                        partition->GetQuotaManager(), launch_url,
-                       storage::kStorageTypePersistent,
+                       blink::StorageType::kPersistent,
                        base::Bind(&ReportQuotaUsage)));
   }
 }

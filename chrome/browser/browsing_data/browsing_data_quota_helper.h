@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "storage/common/quota/quota_types.h"
 
 class BrowsingDataQuotaHelper;
 class Profile;

@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::QuotaTemporaryStorageEvictor;
-using storage::StorageType;
+using blink::StorageType;
 
 namespace content {
 

@@ -309,8 +309,8 @@ void StorageMonitor::AddObserver(
   DCHECK(observer);
 
   // Check preconditions.
-  if (params.filter.storage_type == kStorageTypeUnknown ||
-      params.filter.storage_type == kStorageTypeQuotaNotManaged ||
+  if (params.filter.storage_type == blink::StorageType::kUnknown ||
+      params.filter.storage_type == blink::StorageType::kQuotaNotManaged ||
       params.filter.origin.is_empty()) {
     NOTREACHED();
     return;
@@ -332,7 +332,7 @@ void StorageMonitor::RemoveObserver(StorageObserver* observer) {
 }
 
 const StorageTypeObservers* StorageMonitor::GetStorageTypeObservers(
-    StorageType storage_type) const {
+    blink::StorageType storage_type) const {
   auto it = storage_type_observers_map_.find(storage_type);
   if (it != storage_type_observers_map_.end())
     return it->second.get();
@@ -343,8 +343,8 @@ const StorageTypeObservers* StorageMonitor::GetStorageTypeObservers(
 void StorageMonitor::NotifyUsageChange(const StorageObserver::Filter& filter,
                                        int64_t delta) {
   // Check preconditions.
-  if (filter.storage_type == kStorageTypeUnknown ||
-      filter.storage_type == kStorageTypeQuotaNotManaged ||
+  if (filter.storage_type == blink::StorageType::kUnknown ||
+      filter.storage_type == blink::StorageType::kQuotaNotManaged ||
       filter.origin.is_empty()) {
     NOTREACHED();
     return;

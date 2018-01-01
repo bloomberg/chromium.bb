@@ -17,11 +17,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::QuotaStatusCode;
-using storage::kStorageTypeTemporary;
+using blink::StorageType;
 using storage::QuotaClient;
 using storage::QuotaClientList;
 using storage::SpecialStoragePolicy;
-using storage::StorageType;
 using storage::UsageTracker;
 
 namespace content {
@@ -71,7 +70,7 @@ class MockQuotaClient : public QuotaClient {
   void GetOriginUsage(const GURL& origin,
                       StorageType type,
                       const GetUsageCallback& callback) override {
-    EXPECT_EQ(kStorageTypeTemporary, type);
+    EXPECT_EQ(StorageType::kTemporary, type);
     int64_t usage = GetUsage(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, usage));
@@ -79,7 +78,7 @@ class MockQuotaClient : public QuotaClient {
 
   void GetOriginsForType(StorageType type,
                          const GetOriginsCallback& callback) override {
-    EXPECT_EQ(kStorageTypeTemporary, type);
+    EXPECT_EQ(StorageType::kTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
          itr != usage_map_.end(); ++itr) {
@@ -92,7 +91,7 @@ class MockQuotaClient : public QuotaClient {
   void GetOriginsForHost(StorageType type,
                          const std::string& host,
                          const GetOriginsCallback& callback) override {
-    EXPECT_EQ(kStorageTypeTemporary, type);
+    EXPECT_EQ(StorageType::kTemporary, type);
     std::set<GURL> origins;
     for (UsageMap::const_iterator itr = usage_map_.begin();
          itr != usage_map_.end(); ++itr) {
@@ -106,14 +105,14 @@ class MockQuotaClient : public QuotaClient {
   void DeleteOriginData(const GURL& origin,
                         StorageType type,
                         const DeletionCallback& callback) override {
-    EXPECT_EQ(kStorageTypeTemporary, type);
+    EXPECT_EQ(StorageType::kTemporary, type);
     usage_map_.erase(origin);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, QuotaStatusCode::kOk));
   }
 
-  bool DoesSupport(storage::StorageType type) const override {
-    return type == storage::kStorageTypeTemporary;
+  bool DoesSupport(StorageType type) const override {
+    return type == StorageType::kTemporary;
   }
 
   int64_t GetUsage(const GURL& origin) {
@@ -143,9 +142,10 @@ class UsageTrackerTest : public testing::Test {
  public:
   UsageTrackerTest()
       : storage_policy_(new MockSpecialStoragePolicy()),
-        usage_tracker_(GetUsageTrackerList(), kStorageTypeTemporary,
-                       storage_policy_.get(), NULL) {
-  }
+        usage_tracker_(GetUsageTrackerList(),
+                       StorageType::kTemporary,
+                       storage_policy_.get(),
+                       NULL) {}
 
   ~UsageTrackerTest() override = default;
 

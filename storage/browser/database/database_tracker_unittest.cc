@@ -107,18 +107,18 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
 
   void NotifyStorageAccessed(storage::QuotaClient::ID client_id,
                              const GURL& origin,
-                             storage::StorageType type) override {
+                             blink::StorageType type) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
-    EXPECT_EQ(storage::kStorageTypeTemporary, type);
+    EXPECT_EQ(blink::StorageType::kTemporary, type);
     accesses_[origin] += 1;
   }
 
   void NotifyStorageModified(storage::QuotaClient::ID client_id,
                              const GURL& origin,
-                             storage::StorageType type,
+                             blink::StorageType type,
                              int64_t delta) override {
     EXPECT_EQ(storage::QuotaClient::kDatabase, client_id);
-    EXPECT_EQ(storage::kStorageTypeTemporary, type);
+    EXPECT_EQ(blink::StorageType::kTemporary, type);
     modifications_[origin].first += 1;
     modifications_[origin].second += delta;
   }
@@ -128,11 +128,11 @@ class TestQuotaManagerProxy : public storage::QuotaManagerProxy {
   void NotifyOriginNoLongerInUse(const GURL& origin) override {}
   void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                             const GURL& origin,
-                            storage::StorageType type,
+                            blink::StorageType type,
                             bool enabled) override {}
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const GURL& origin,
-                        storage::StorageType type,
+                        blink::StorageType type,
                         const UsageAndQuotaCallback& callback) override {}
 
   void SimulateQuotaManagerDestroyed() {

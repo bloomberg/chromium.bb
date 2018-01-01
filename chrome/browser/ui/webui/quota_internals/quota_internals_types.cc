@@ -12,17 +12,17 @@
 
 namespace {
 
-std::string StorageTypeToString(storage::StorageType type) {
+std::string StorageTypeToString(blink::StorageType type) {
   switch (type) {
-    case storage::kStorageTypeTemporary:
+    case blink::StorageType::kTemporary:
       return "temporary";
-    case storage::kStorageTypePersistent:
+    case blink::StorageType::kPersistent:
       return "persistent";
-    case storage::kStorageTypeSyncable:
+    case blink::StorageType::kSyncable:
       return "syncable";
-    case storage::kStorageTypeQuotaNotManaged:
+    case blink::StorageType::kQuotaNotManaged:
       return "quota not managed";
-    case storage::kStorageTypeUnknown:
+    case blink::StorageType::kUnknown:
       return "unknown";
   }
   return "unknown";
@@ -32,9 +32,8 @@ std::string StorageTypeToString(storage::StorageType type) {
 
 namespace quota_internals {
 
-GlobalStorageInfo::GlobalStorageInfo(storage::StorageType type)
-    : type_(type), usage_(-1), unlimited_usage_(-1), quota_(-1) {
-}
+GlobalStorageInfo::GlobalStorageInfo(blink::StorageType type)
+    : type_(type), usage_(-1), unlimited_usage_(-1), quota_(-1) {}
 
 GlobalStorageInfo::~GlobalStorageInfo() {}
 
@@ -53,9 +52,8 @@ std::unique_ptr<base::Value> GlobalStorageInfo::NewValue() const {
 }
 
 PerHostStorageInfo::PerHostStorageInfo(const std::string& host,
-                                       storage::StorageType type)
-    : host_(host), type_(type), usage_(-1), quota_(-1) {
-}
+                                       blink::StorageType type)
+    : host_(host), type_(type), usage_(-1), quota_(-1) {}
 
 PerHostStorageInfo::~PerHostStorageInfo() {}
 
@@ -72,13 +70,12 @@ std::unique_ptr<base::Value> PerHostStorageInfo::NewValue() const {
 }
 
 PerOriginStorageInfo::PerOriginStorageInfo(const GURL& origin,
-                                           storage::StorageType type)
+                                           blink::StorageType type)
     : origin_(origin),
       type_(type),
       host_(net::GetHostOrSpecFromURL(origin)),
       in_use_(-1),
-      used_count_(-1) {
-}
+      used_count_(-1) {}
 
 PerOriginStorageInfo::PerOriginStorageInfo(const PerOriginStorageInfo& other) =
     default;

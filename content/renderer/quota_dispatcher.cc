@@ -18,11 +18,11 @@
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/origin.h"
 
+using blink::QuotaStatusCode;
+using blink::StorageType;
 using blink::WebStorageQuotaCallbacks;
 using blink::WebStorageQuotaError;
 using blink::WebStorageQuotaType;
-using blink::QuotaStatusCode;
-using storage::StorageType;
 
 namespace content {
 
@@ -182,10 +182,10 @@ void QuotaDispatcher::DidFail(
 }
 
 static_assert(int(blink::kWebStorageQuotaTypeTemporary) ==
-                  int(storage::kStorageTypeTemporary),
+                  int(StorageType::kTemporary),
               "mismatching enums: kStorageTypeTemporary");
 static_assert(int(blink::kWebStorageQuotaTypePersistent) ==
-                  int(storage::kStorageTypePersistent),
+                  int(StorageType::kPersistent),
               "mismatching enums: kStorageTypePersistent");
 
 static_assert(int(blink::kWebStorageQuotaErrorNotSupported) ==

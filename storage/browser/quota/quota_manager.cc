@@ -37,7 +37,8 @@
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"
 #include "storage/browser/quota/storage_monitor.h"
 #include "storage/browser/quota/usage_tracker.h"
-#include "storage/common/quota/quota_types.h"
+
+using blink::StorageType;
 
 namespace storage {
 
@@ -82,12 +83,12 @@ const char QuotaManager::kEvictedOriginDaysSinceAccessHistogram[] =
 namespace {
 
 bool IsSupportedType(StorageType type) {
-  return type == kStorageTypeTemporary || type == kStorageTypePersistent ||
-         type == kStorageTypeSyncable;
+  return type == StorageType::kTemporary || type == StorageType::kPersistent ||
+         type == StorageType::kSyncable;
 }
 
 bool IsSupportedIncognitoType(StorageType type) {
-  return type == kStorageTypeTemporary || type == kStorageTypePersistent;
+  return type == StorageType::kTemporary || type == StorageType::kPersistent;
 }
 
 void CountOriginType(const std::set<GURL>& origins,
@@ -114,7 +115,7 @@ bool GetPersistentHostQuotaOnDBThread(const std::string& host,
                                       int64_t* quota,
                                       QuotaDatabase* database) {
   DCHECK(database);
-  database->GetHostQuota(host, kStorageTypePersistent, quota);
+  database->GetHostQuota(host, StorageType::kPersistent, quota);
   return true;
 }
 
@@ -122,7 +123,7 @@ bool SetPersistentHostQuotaOnDBThread(const std::string& host,
                                       int64_t* new_quota,
                                       QuotaDatabase* database) {
   DCHECK(database);
-  if (database->SetHostQuota(host, kStorageTypePersistent, *new_quota))
+  if (database->SetHostQuota(host, StorageType::kPersistent, *new_quota))
     return true;
   *new_quota = 0;
   return false;
@@ -184,7 +185,7 @@ bool BootstrapDatabaseOnDBThread(const std::set<GURL>* origins,
     return true;
 
   // Register existing origins with 0 last time access.
-  if (database->RegisterInitialOriginInfo(*origins, kStorageTypeTemporary)) {
+  if (database->RegisterInitialOriginInfo(*origins, StorageType::kTemporary)) {
     database->SetOriginDatabaseBootstrapped(true);
     return true;
   }
@@ -261,15 +262,15 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
     // Determine host_quota differently depending on type.
     if (is_unlimited_) {
       SetDesiredHostQuota(barrier, blink::QuotaStatusCode::kOk, kNoLimit);
-    } else if (type_ == kStorageTypeSyncable) {
+    } else if (type_ == StorageType::kSyncable) {
       SetDesiredHostQuota(barrier, blink::QuotaStatusCode::kOk,
                           kSyncableStorageDefaultHostQuota);
-    } else if (type_ == kStorageTypePersistent) {
+    } else if (type_ == StorageType::kPersistent) {
       manager()->GetPersistentHostQuota(
           host, base::Bind(&UsageAndQuotaHelper::SetDesiredHostQuota,
                            weak_factory_.GetWeakPtr(), barrier));
     } else {
-      DCHECK_EQ(kStorageTypeTemporary, type_);
+      DCHECK_EQ(StorageType::kTemporary, type_);
       // For temporary storage,  OnGotSettings will set the host quota.
     }
   }
@@ -294,7 +295,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                                               settings_.must_remain_available));
     callback_.Run(blink::QuotaStatusCode::kOk, host_usage_, host_quota,
                   std::move(host_usage_breakdown_));
-    if (type_ == kStorageTypeTemporary && !is_incognito_ && !is_unlimited_) {
+    if (type_ == StorageType::kTemporary && !is_incognito_ && !is_unlimited_) {
       UMA_HISTOGRAM_MBYTES("Quota.QuotaForOrigin", host_quota);
       if (host_quota > 0) {
         UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedByOrigin",
@@ -313,7 +314,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                      const QuotaSettings& settings) {
     settings_ = settings;
     barrier_closure.Run();
-    if (type_ == kStorageTypeTemporary && !is_unlimited_) {
+    if (type_ == StorageType::kTemporary && !is_unlimited_) {
       int64_t host_quota = is_session_only_
                                ? settings.session_only_per_host_quota
                                : settings.per_host_quota;
@@ -428,12 +429,12 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
         available_space_ > settings_.should_remain_available) {
       DCHECK(!global_usage_is_complete_);
       global_usage_ =
-          manager()->GetUsageTracker(kStorageTypeTemporary)->GetCachedUsage();
+          manager()->GetUsageTracker(StorageType::kTemporary)->GetCachedUsage();
       CallCompleted();
       return;
     }
     manager()->GetGlobalUsage(
-        kStorageTypeTemporary,
+        StorageType::kTemporary,
         base::Bind(&EvictionRoundInfoHelper::OnGotGlobalUsage,
                    weak_factory_.GetWeakPtr()));
   }
@@ -476,18 +477,21 @@ class QuotaManager::GetUsageInfoTask : public QuotaTask {
 
     remaining_trackers_ = 3;
     // This will populate cached hosts and usage info.
-    manager()->GetUsageTracker(kStorageTypeTemporary)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr(),
-                   kStorageTypeTemporary));
-    manager()->GetUsageTracker(kStorageTypePersistent)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr(),
-                   kStorageTypePersistent));
-    manager()->GetUsageTracker(kStorageTypeSyncable)->GetGlobalUsage(
-        base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
-                   weak_factory_.GetWeakPtr(),
-                   kStorageTypeSyncable));
+    manager()
+        ->GetUsageTracker(StorageType::kTemporary)
+        ->GetGlobalUsage(base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
+                                    weak_factory_.GetWeakPtr(),
+                                    StorageType::kTemporary));
+    manager()
+        ->GetUsageTracker(StorageType::kPersistent)
+        ->GetGlobalUsage(base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
+                                    weak_factory_.GetWeakPtr(),
+                                    StorageType::kPersistent));
+    manager()
+        ->GetUsageTracker(StorageType::kSyncable)
+        ->GetGlobalUsage(base::Bind(&GetUsageInfoTask::DidGetGlobalUsage,
+                                    weak_factory_.GetWeakPtr(),
+                                    StorageType::kSyncable));
   }
 
   void Completed() override {
@@ -875,7 +879,7 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
   }
   LazyInitialize();
 
-  bool is_session_only = type == kStorageTypeTemporary &&
+  bool is_session_only = type == StorageType::kTemporary &&
                          special_storage_policy_ &&
                          special_storage_policy_->IsStorageSessionOnly(origin);
   UsageAndQuotaHelper* helper = new UsageAndQuotaHelper(
@@ -1083,9 +1087,9 @@ bool QuotaManager::IsStorageUnlimited(const GURL& origin,
                                       StorageType type) const {
   // For syncable storage we should always enforce quota (since the
   // quota must be capped by the server limit).
-  if (type == kStorageTypeSyncable)
+  if (type == StorageType::kSyncable)
     return false;
-  if (type == kStorageTypeQuotaNotManaged)
+  if (type == StorageType::kQuotaNotManaged)
     return true;
   return special_storage_policy_.get() &&
          special_storage_policy_->IsStorageUnlimited(origin);
@@ -1114,19 +1118,19 @@ bool QuotaManager::ResetUsageTracker(StorageType type) {
   if (GetUsageTracker(type)->IsWorking())
     return false;
   switch (type) {
-    case kStorageTypeTemporary:
+    case StorageType::kTemporary:
       temporary_usage_tracker_.reset(new UsageTracker(
-          clients_, kStorageTypeTemporary, special_storage_policy_.get(),
+          clients_, StorageType::kTemporary, special_storage_policy_.get(),
           storage_monitor_.get()));
       return true;
-    case kStorageTypePersistent:
+    case StorageType::kPersistent:
       persistent_usage_tracker_.reset(new UsageTracker(
-          clients_, kStorageTypePersistent, special_storage_policy_.get(),
+          clients_, StorageType::kPersistent, special_storage_policy_.get(),
           storage_monitor_.get()));
       return true;
-    case kStorageTypeSyncable:
+    case StorageType::kSyncable:
       syncable_usage_tracker_.reset(new UsageTracker(
-          clients_, kStorageTypeSyncable, special_storage_policy_.get(),
+          clients_, StorageType::kSyncable, special_storage_policy_.get(),
           storage_monitor_.get()));
       return true;
     default:
@@ -1155,8 +1159,7 @@ QuotaManager::~QuotaManager() {
 }
 
 QuotaManager::EvictionContext::EvictionContext()
-    : evicted_type(kStorageTypeUnknown) {
-}
+    : evicted_type(StorageType::kUnknown) {}
 
 QuotaManager::EvictionContext::~EvictionContext() = default;
 
@@ -1171,15 +1174,15 @@ void QuotaManager::LazyInitialize() {
   database_.reset(new QuotaDatabase(is_incognito_ ? base::FilePath() :
       profile_path_.AppendASCII(kDatabaseName)));
 
-  temporary_usage_tracker_.reset(new UsageTracker(
-      clients_, kStorageTypeTemporary, special_storage_policy_.get(),
-      storage_monitor_.get()));
-  persistent_usage_tracker_.reset(new UsageTracker(
-      clients_, kStorageTypePersistent, special_storage_policy_.get(),
-      storage_monitor_.get()));
-  syncable_usage_tracker_.reset(new UsageTracker(
-      clients_, kStorageTypeSyncable, special_storage_policy_.get(),
-      storage_monitor_.get()));
+  temporary_usage_tracker_.reset(
+      new UsageTracker(clients_, StorageType::kTemporary,
+                       special_storage_policy_.get(), storage_monitor_.get()));
+  persistent_usage_tracker_.reset(
+      new UsageTracker(clients_, StorageType::kPersistent,
+                       special_storage_policy_.get(), storage_monitor_.get()));
+  syncable_usage_tracker_.reset(
+      new UsageTracker(clients_, StorageType::kSyncable,
+                       special_storage_policy_.get(), storage_monitor_.get()));
 
   if (!is_incognito_) {
     histogram_timer_.Start(
@@ -1219,7 +1222,7 @@ void QuotaManager::DidBootstrapDatabase(
     bool success) {
   is_database_bootstrapped_ = success;
   DidDatabaseWork(success);
-  GetLRUOrigin(kStorageTypeTemporary, did_get_origin_callback);
+  GetLRUOrigin(StorageType::kTemporary, did_get_origin_callback);
 }
 
 void QuotaManager::RegisterClient(QuotaClient* client) {
@@ -1229,15 +1232,15 @@ void QuotaManager::RegisterClient(QuotaClient* client) {
 
 UsageTracker* QuotaManager::GetUsageTracker(StorageType type) const {
   switch (type) {
-    case kStorageTypeTemporary:
+    case StorageType::kTemporary:
       return temporary_usage_tracker_.get();
-    case kStorageTypePersistent:
+    case StorageType::kPersistent:
       return persistent_usage_tracker_.get();
-    case kStorageTypeSyncable:
+    case StorageType::kSyncable:
       return syncable_usage_tracker_.get();
-    case kStorageTypeQuotaNotManaged:
+    case StorageType::kQuotaNotManaged:
       return NULL;
-    case kStorageTypeUnknown:
+    case StorageType::kUnknown:
       NOTREACHED();
   }
   return NULL;
@@ -1256,7 +1259,7 @@ void QuotaManager::NotifyStorageAccessedInternal(
     const GURL& origin, StorageType type,
     base::Time accessed_time) {
   LazyInitialize();
-  if (type == kStorageTypeTemporary && is_getting_eviction_origin_) {
+  if (type == StorageType::kTemporary && is_getting_eviction_origin_) {
     // Record the accessed origins while GetLRUOrigin task is runing
     // to filter out them from eviction.
     access_notified_origins_.insert(origin);
@@ -1368,10 +1371,10 @@ void QuotaManager::DeleteOriginDataInternal(const GURL& origin,
 
 void QuotaManager::ReportHistogram() {
   DCHECK(!is_incognito_);
-  GetGlobalUsage(kStorageTypeTemporary,
-                 base::Bind(
-                     &QuotaManager::DidGetTemporaryGlobalUsageForHistogram,
-                     weak_factory_.GetWeakPtr()));
+  GetGlobalUsage(
+      StorageType::kTemporary,
+      base::Bind(&QuotaManager::DidGetTemporaryGlobalUsageForHistogram,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
@@ -1380,7 +1383,7 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfTemporaryStorage", usage);
 
   std::set<GURL> origins;
-  GetCachedOrigins(kStorageTypeTemporary, &origins);
+  GetCachedOrigins(StorageType::kTemporary, &origins);
 
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
@@ -1395,10 +1398,10 @@ void QuotaManager::DidGetTemporaryGlobalUsageForHistogram(
   UMA_HISTOGRAM_COUNTS_1M("Quota.NumberOfUnlimitedTemporaryStorageOrigins",
                           unlimited_origins);
 
-  GetGlobalUsage(kStorageTypePersistent,
-                 base::Bind(
-                     &QuotaManager::DidGetPersistentGlobalUsageForHistogram,
-                     weak_factory_.GetWeakPtr()));
+  GetGlobalUsage(
+      StorageType::kPersistent,
+      base::Bind(&QuotaManager::DidGetPersistentGlobalUsageForHistogram,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
@@ -1407,7 +1410,7 @@ void QuotaManager::DidGetPersistentGlobalUsageForHistogram(
   UMA_HISTOGRAM_MBYTES("Quota.GlobalUsageOfPersistentStorage", usage);
 
   std::set<GURL> origins;
-  GetCachedOrigins(kStorageTypePersistent, &origins);
+  GetCachedOrigins(StorageType::kPersistent, &origins);
 
   size_t num_origins = origins.size();
   size_t protected_origins = 0;
@@ -1433,10 +1436,10 @@ void QuotaManager::DidDumpOriginInfoTableForHistogram(
     const OriginInfoTableEntries& entries) {
   using UsageMap = std::map<GURL, int64_t>;
   UsageMap usage_map;
-  GetUsageTracker(kStorageTypeTemporary)->GetCachedOriginsUsage(&usage_map);
+  GetUsageTracker(StorageType::kTemporary)->GetCachedOriginsUsage(&usage_map);
   base::Time now = base::Time::Now();
   for (const auto& info : entries) {
-    if (info.type != kStorageTypeTemporary)
+    if (info.type != StorageType::kTemporary)
       continue;
 
     // Ignore stale database entries. If there is no map entry, the origin's
@@ -1505,7 +1508,7 @@ void QuotaManager::GetEvictionOrigin(StorageType type,
   if (!is_database_bootstrapped_ && !eviction_disabled_) {
     // Once bootstrapped, GetLRUOrigin will be called.
     GetGlobalUsage(
-        kStorageTypeTemporary,
+        StorageType::kTemporary,
         base::Bind(&QuotaManager::BootstrapDatabaseForEviction,
                    weak_factory_.GetWeakPtr(), did_get_origin_callback));
     return;
@@ -1518,7 +1521,7 @@ void QuotaManager::EvictOriginData(const GURL& origin,
                                    StorageType type,
                                    const StatusCallback& callback) {
   DCHECK(io_thread_->BelongsToCurrentThread());
-  DCHECK_EQ(type, kStorageTypeTemporary);
+  DCHECK_EQ(type, StorageType::kTemporary);
 
   eviction_context_.evicted_origin = origin;
   eviction_context_.evicted_type = type;
@@ -1653,8 +1656,8 @@ void QuotaManager::GetStorageCapacity(const StorageCapacityCallback& callback) {
 void QuotaManager::ContinueIncognitoGetStorageCapacity(
     const QuotaSettings& settings) {
   int64_t current_usage =
-      GetUsageTracker(kStorageTypeTemporary)->GetCachedUsage();
-  current_usage += GetUsageTracker(kStorageTypePersistent)->GetCachedUsage();
+      GetUsageTracker(StorageType::kTemporary)->GetCachedUsage();
+  current_usage += GetUsageTracker(StorageType::kPersistent)->GetCachedUsage();
   int64_t available_space =
       std::max(INT64_C(0), settings.pool_size - current_usage);
   DidGetStorageCapacity(std::make_tuple(settings.pool_size, available_space));

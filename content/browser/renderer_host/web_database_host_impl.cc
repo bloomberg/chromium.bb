@@ -19,6 +19,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using storage::DatabaseUtil;
@@ -185,7 +186,7 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
 
   db_tracker_->quota_manager_proxy()->GetUsageAndQuota(
       db_tracker_->task_runner(), origin.GetURL(),
-      storage::kStorageTypeTemporary,
+      blink::StorageType::kTemporary,
       base::Bind(
           [](GetSpaceAvailableCallback callback, blink::QuotaStatusCode status,
              int64_t usage, int64_t quota) {

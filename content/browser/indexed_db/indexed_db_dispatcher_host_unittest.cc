@@ -172,7 +172,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
                 BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
             context_impl_,
             ChromeBlobStorageContext::GetFor(&browser_context_))) {
-    quota_manager_->SetQuota(GURL(kOrigin), storage::kStorageTypeTemporary,
+    quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
                              kTemporaryQuota);
   }
 

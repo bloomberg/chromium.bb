@@ -24,8 +24,8 @@
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -110,7 +110,7 @@ class CannedSyncableFileSystem
   storage::QuotaManager* quota_manager() { return quota_manager_.get(); }
   GURL origin() const { return origin_; }
   storage::FileSystemType type() const { return type_; }
-  storage::StorageType storage_type() const {
+  blink::StorageType storage_type() const {
     return FileSystemTypeToQuotaStorageType(type_);
   }
 

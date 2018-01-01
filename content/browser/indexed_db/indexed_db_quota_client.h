@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
-#include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -33,20 +33,20 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
   ID id() const override;
   void OnQuotaManagerDestroyed() override;
   CONTENT_EXPORT void GetOriginUsage(const GURL& origin_url,
-                                     storage::StorageType type,
+                                     blink::StorageType type,
                                      const GetUsageCallback& callback) override;
   CONTENT_EXPORT void GetOriginsForType(
-      storage::StorageType type,
+      blink::StorageType type,
       const GetOriginsCallback& callback) override;
   CONTENT_EXPORT void GetOriginsForHost(
-      storage::StorageType type,
+      blink::StorageType type,
       const std::string& host,
       const GetOriginsCallback& callback) override;
   CONTENT_EXPORT void DeleteOriginData(
       const GURL& origin,
-      storage::StorageType type,
+      blink::StorageType type,
       const DeletionCallback& callback) override;
-  bool DoesSupport(storage::StorageType type) const override;
+  bool DoesSupport(blink::StorageType type) const override;
 
  private:
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;

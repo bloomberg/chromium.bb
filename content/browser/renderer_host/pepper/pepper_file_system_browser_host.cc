@@ -26,7 +26,6 @@
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "storage/common/quota/quota_types.h"
 
 namespace content {
 

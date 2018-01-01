@@ -47,6 +47,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 using blink::mojom::CacheStorageError;
 
@@ -511,7 +512,7 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
   // can call Size, another scheduled operation.
   quota_manager_proxy_->GetUsageAndQuota(
       base::ThreadTaskRunnerHandle::Get().get(), origin_,
-      storage::kStorageTypeTemporary,
+      blink::StorageType::kTemporary,
       base::AdaptCallbackForRepeating(
           base::BindOnce(&CacheStorageCache::WriteSideDataDidGetQuota,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
@@ -559,7 +560,7 @@ void CacheStorageCache::BatchOperation(
     // than it's supposed to be.
     quota_manager_proxy_->GetUsageAndQuota(
         base::ThreadTaskRunnerHandle::Get().get(), origin_,
-        storage::kStorageTypeTemporary,
+        blink::StorageType::kTemporary,
         base::AdaptCallbackForRepeating(base::BindOnce(
             &CacheStorageCache::BatchDidGetUsageAndQuota,
             weak_ptr_factory_.GetWeakPtr(), operations, std::move(callback),
@@ -1565,7 +1566,7 @@ void CacheStorageCache::UpdateCacheSizeGotSize(
 
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin_,
-      storage::kStorageTypeTemporary, size_delta);
+      blink::StorageType::kTemporary, size_delta);
 
   if (cache_storage_)
     cache_storage_->NotifyCacheContentChanged(cache_name_);

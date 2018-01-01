@@ -16,8 +16,8 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "storage/browser/quota/quota_client.h"
-#include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/storage_type.h"
 
 class GURL;
 
@@ -39,7 +39,8 @@ typedef base::Callback<void(blink::QuotaStatusCode, int64_t)>
     AvailableSpaceCallback;
 typedef base::Callback<void(blink::QuotaStatusCode)> StatusCallback;
 typedef base::Callback<void(const std::set<GURL>& origins,
-                            StorageType type)> GetOriginsCallback;
+                            blink::StorageType type)>
+    GetOriginsCallback;
 typedef base::Callback<void(const UsageInfoEntries&)> GetUsageInfoCallback;
 typedef base::Callback<void(const GURL&)> GetOriginCallback;
 
