@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -731,10 +731,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   // for "id" field.
   FieldValueAndPropertiesMaskMap user_input;
   user_input[control_elements[2]] = std::make_pair(  // id
-      base::MakeUnique<base::string16>(control_elements[2].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[2].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
   user_input[control_elements[3]] = std::make_pair(  // password
-      base::MakeUnique<base::string16>(control_elements[3].Value().Utf16()),
+      std::make_unique<base::string16>(control_elements[3].Value().Utf16()),
       FieldPropertiesFlags::USER_TYPED);
 
   std::unique_ptr<PasswordForm> password_form = CreatePasswordFormFromWebForm(
