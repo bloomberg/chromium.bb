@@ -4,6 +4,7 @@
 
 #include "content/browser/webauth/authenticator_impl.h"
 
+#include <memory>
 #include <string>
 
 #include "base/base64url.h"
@@ -699,7 +700,7 @@ TEST_F(AuthenticatorImplTest, TestTimeout) {
       new base::TestMockTimeTaskRunner(base::Time::Now(),
                                        base::TimeTicks::Now()));
   std::unique_ptr<base::TickClock> tick_clock = task_runner->GetMockTickClock();
-  auto timer = base::MakeUnique<base::OneShotTimer>(tick_clock.get());
+  auto timer = std::make_unique<base::OneShotTimer>(tick_clock.get());
   timer->SetTaskRunner(task_runner);
   AuthenticatorPtr authenticator =
       ConnectToAuthenticator(connector.get(), std::move(timer));

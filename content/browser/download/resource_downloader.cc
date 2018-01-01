@@ -193,7 +193,7 @@ void ResourceDownloader::InterceptResponse(
 
   // Bind the new client.
   url_loader_client_binding_ =
-      base::MakeUnique<mojo::Binding<mojom::URLLoaderClient>>(
+      std::make_unique<mojo::Binding<mojom::URLLoaderClient>>(
           url_loader_client_.get(), std::move(endpoints->url_loader_client));
 }
 

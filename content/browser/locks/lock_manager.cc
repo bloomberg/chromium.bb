@@ -5,6 +5,7 @@
 #include "content/browser/locks/lock_manager.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/stl_util.h"
@@ -25,7 +26,7 @@ class LockHandleImpl final : public blink::mojom::LockHandle {
                                             int64_t lock_id) {
     blink::mojom::LockHandlePtr ptr;
     mojo::MakeStrongBinding(
-        base::MakeUnique<LockHandleImpl>(std::move(context), origin, lock_id),
+        std::make_unique<LockHandleImpl>(std::move(context), origin, lock_id),
         mojo::MakeRequest(&ptr));
     return ptr;
   }

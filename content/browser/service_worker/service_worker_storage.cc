@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -546,7 +547,7 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();
 
-  auto params = base::MakeUnique<DidDeleteRegistrationParams>(
+  auto params = std::make_unique<DidDeleteRegistrationParams>(
       registration_id, origin, std::move(callback));
 
   database_task_runner_->PostTask(

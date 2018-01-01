@@ -7,6 +7,8 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/stringprintf.h"
@@ -95,7 +97,7 @@ void RenderWidgetHostViewCocoaObserver::SetUpSwizzlers() {
   SEL selector = NSSelectorFromString([NSString
       stringWithUTF8String:base::StringPrintf("%s:", kDidAddSubview).c_str()]);
   rwhvcocoa_swizzlers_[kDidAddSubview] =
-      base::MakeUnique<ScopedObjCClassSwizzler>(
+      std::make_unique<ScopedObjCClassSwizzler>(
           GetRenderWidgetHostViewCocoaClassForTesting(),
           [RenderWidgetHostViewCocoaSwizzler class], selector);
 }
