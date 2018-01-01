@@ -1,0 +1,20 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x204
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x204
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x136
+      LayoutNGBlockFlow {P} at (0,0) size 784x40
+        LayoutText {#text} at (0,0) size 52x19
+        LayoutInline {I} at (0,0) size 0x0
+          LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 308x19
+          LayoutText {#text} at (0,0) size 739x39
+        LayoutText {#text} at (0,0) size 5x19
+      LayoutNGBlockFlow {DIV} at (0,56) size 784x80
+        LayoutNGBlockFlow (anonymous) at (0,0) size 784x40
+          LayoutText {#text} at (0,0) size 259x19
+          LayoutBR {BR} at (0,0) size 0x0
+          LayoutBR {BR} at (0,0) size 0x0
+          LayoutNGBlockFlow (floating) {DIV} at (0,40) size 100x100 [bgcolor=#008000]
+        LayoutNGBlockFlow {DIV} at (0,40) size 150x40
+          LayoutText {#text} at (0,0) size 46x39
