@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/mock_pref_change_callback.h"
@@ -85,7 +84,7 @@ TEST(PrefServiceTest, Observers) {
 
   TestingPrefServiceSimple prefs;
   prefs.SetUserPref(pref_name,
-                    base::MakeUnique<base::Value>("http://www.cnn.com"));
+                    std::make_unique<base::Value>("http://www.cnn.com"));
   prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
@@ -143,7 +142,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
   prefs.registry()->RegisterIntegerPref(kPrefName, kTestValue);
 
   // Check falling back to a recommended value.
-  prefs.SetUserPref(kPrefName, base::MakeUnique<base::Value>("not an integer"));
+  prefs.SetUserPref(kPrefName, std::make_unique<base::Value>("not an integer"));
   const PrefService::Preference* pref = prefs.FindPreference(kPrefName);
   ASSERT_TRUE(pref);
   const base::Value* value = pref->GetValue();
@@ -178,7 +177,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a user-set value.
-  prefs.SetUserPref(kPrefName, base::MakeUnique<base::Value>(kUserValue));
+  prefs.SetUserPref(kPrefName, std::make_unique<base::Value>(kUserValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -194,7 +193,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
 
   // Set a recommended value.
   prefs.SetRecommendedPref(kPrefName,
-                           base::MakeUnique<base::Value>(kRecommendedValue));
+                           std::make_unique<base::Value>(kRecommendedValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -316,7 +315,7 @@ TEST(PrefServiceTest, WriteablePrefStoreFlags) {
   for (size_t i = 0; i < arraysize(kRegistrationToWriteFlags); ++i) {
     RegistrationToWriteFlags entry = kRegistrationToWriteFlags[i];
     registry->RegisterDictionaryPref(entry.pref_name,
-                                     base::MakeUnique<base::DictionaryValue>(),
+                                     std::make_unique<base::DictionaryValue>(),
                                      entry.registration_flags);
 
     SCOPED_TRACE("Currently testing pref with name: " +
@@ -335,7 +334,7 @@ TEST(PrefServiceTest, WriteablePrefStoreFlags) {
     EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
 
     prefs->SetUserPrefValue(entry.pref_name,
-                            base::MakeUnique<base::DictionaryValue>());
+                            std::make_unique<base::DictionaryValue>());
     EXPECT_TRUE(flag_checker->last_write_flags_set());
     EXPECT_EQ(entry.write_flags, flag_checker->GetLastFlagsAndClear());
   }

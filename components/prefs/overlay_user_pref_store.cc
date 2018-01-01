@@ -39,9 +39,9 @@ OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* underlay)
 OverlayUserPrefStore::OverlayUserPrefStore(PersistentPrefStore* overlay,
                                            PersistentPrefStore* underlay)
     : overlay_observer_(
-          base::MakeUnique<OverlayUserPrefStore::ObserverAdapter>(true, this)),
+          std::make_unique<OverlayUserPrefStore::ObserverAdapter>(true, this)),
       underlay_observer_(
-          base::MakeUnique<OverlayUserPrefStore::ObserverAdapter>(false, this)),
+          std::make_unique<OverlayUserPrefStore::ObserverAdapter>(false, this)),
       overlay_(overlay),
       underlay_(underlay) {
   DCHECK(overlay->IsInitializationComplete());
