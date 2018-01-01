@@ -212,10 +212,10 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
 }
 
 TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, std::move(list));
-  auto manager = base::MakeUnique<URLBlacklistManager>(
+  auto manager = std::make_unique<URLBlacklistManager>(
       &pref_service_, URLBlacklistManager::OverrideBlacklistCallback());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlacklist::URL_IN_BLACKLIST,
@@ -223,10 +223,10 @@ TEST_F(URLBlacklistManagerTest, LoadBlacklistOnCreate) {
 }
 
 TEST_F(URLBlacklistManagerTest, LoadWhitelistOnCreate) {
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   list->AppendString("example.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlWhitelist, std::move(list));
-  auto manager = base::MakeUnique<URLBlacklistManager>(
+  auto manager = std::make_unique<URLBlacklistManager>(
       &pref_service_, URLBlacklistManager::OverrideBlacklistCallback());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(URLBlacklist::URL_IN_WHITELIST,
@@ -234,9 +234,9 @@ TEST_F(URLBlacklistManagerTest, LoadWhitelistOnCreate) {
 }
 
 TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
-  auto blacklist = base::MakeUnique<base::ListValue>();
+  auto blacklist = std::make_unique<base::ListValue>();
   blacklist->AppendString("*.google.com");
-  auto whitelist = base::MakeUnique<base::ListValue>();
+  auto whitelist = std::make_unique<base::ListValue>();
   whitelist->AppendString("mail.google.com");
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
                                std::move(blacklist));

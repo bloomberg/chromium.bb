@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -92,21 +91,21 @@ void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::Value>(policy_value), nullptr);
+                         std::make_unique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::Value>(policy_value), nullptr);
+                         std::make_unique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
   store_.policy_map_.Set(policy_name, policy_level(), policy_scope(),
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::Value>(policy_value), nullptr);
+                         std::make_unique<base::Value>(policy_value), nullptr);
 }
 
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
@@ -175,7 +174,7 @@ class CloudPolicyManagerTest : public testing::Test {
   void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("value"),
+                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value"),
                     nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);

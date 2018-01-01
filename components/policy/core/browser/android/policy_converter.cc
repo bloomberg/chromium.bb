@@ -12,7 +12,6 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -57,7 +56,7 @@ void PolicyConverter::SetPolicyBoolean(JNIEnv* env,
                                        const JavaRef<jstring>& policyKey,
                                        jboolean value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
-                 base::MakeUnique<base::Value>(static_cast<bool>(value)));
+                 std::make_unique<base::Value>(static_cast<bool>(value)));
 }
 
 void PolicyConverter::SetPolicyInteger(JNIEnv* env,
@@ -65,7 +64,7 @@ void PolicyConverter::SetPolicyInteger(JNIEnv* env,
                                        const JavaRef<jstring>& policyKey,
                                        jint value) {
   SetPolicyValue(ConvertJavaStringToUTF8(env, policyKey),
-                 base::MakeUnique<base::Value>(static_cast<int>(value)));
+                 std::make_unique<base::Value>(static_cast<int>(value)));
 }
 
 void PolicyConverter::SetPolicyString(JNIEnv* env,
@@ -74,7 +73,7 @@ void PolicyConverter::SetPolicyString(JNIEnv* env,
                                       const JavaRef<jstring>& value) {
   SetPolicyValue(
       ConvertJavaStringToUTF8(env, policyKey),
-      base::MakeUnique<base::Value>(ConvertJavaStringToUTF8(env, value)));
+      std::make_unique<base::Value>(ConvertJavaStringToUTF8(env, value)));
 }
 
 void PolicyConverter::SetPolicyStringArray(JNIEnv* env,
@@ -113,22 +112,22 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
 
   switch (schema.type()) {
     case base::Value::Type::NONE:
-      return base::MakeUnique<base::Value>();
+      return std::make_unique<base::Value>();
 
     case base::Value::Type::BOOLEAN: {
       std::string string_value;
       if (value->GetAsString(&string_value)) {
         if (string_value.compare("true") == 0)
-          return base::MakeUnique<base::Value>(true);
+          return std::make_unique<base::Value>(true);
 
         if (string_value.compare("false") == 0)
-          return base::MakeUnique<base::Value>(false);
+          return std::make_unique<base::Value>(false);
 
         return value;
       }
       int int_value = 0;
       if (value->GetAsInteger(&int_value))
-        return base::MakeUnique<base::Value>(int_value != 0);
+        return std::make_unique<base::Value>(int_value != 0);
 
       return value;
     }
@@ -138,7 +137,7 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       if (value->GetAsString(&string_value)) {
         int int_value = 0;
         if (base::StringToInt(string_value, &int_value))
-          return base::MakeUnique<base::Value>(int_value);
+          return std::make_unique<base::Value>(int_value);
       }
       return value;
     }
@@ -148,7 +147,7 @@ std::unique_ptr<base::Value> PolicyConverter::ConvertValueToSchema(
       if (value->GetAsString(&string_value)) {
         double double_value = 0;
         if (base::StringToDouble(string_value, &double_value))
-          return base::MakeUnique<base::Value>(double_value);
+          return std::make_unique<base::Value>(double_value);
       }
       return value;
     }

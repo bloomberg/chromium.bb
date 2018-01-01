@@ -352,7 +352,7 @@ class POLICY_EXPORT CloudPolicyValidator : public CloudPolicyValidatorBase {
           policy_response,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
     return base::WrapUnique<CloudPolicyValidator>(new CloudPolicyValidator(
-        std::move(policy_response), base::MakeUnique<PayloadProto>(),
+        std::move(policy_response), std::make_unique<PayloadProto>(),
         background_task_runner));
   }
 

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -101,7 +100,7 @@ void PolicyServiceImpl::AddObserver(PolicyDomain domain,
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<Observers>& list = observers_[domain];
   if (!list)
-    list = base::MakeUnique<Observers>();
+    list = std::make_unique<Observers>();
   list->AddObserver(observer);
 }
 

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/values.h"
@@ -298,19 +297,19 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   expected_value.SetInteger("int", 123);
   expected_value.SetString("string", "omg");
 
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   list->AppendString("first");
   list->AppendString("second");
   expected_value.Set("array", std::move(list));
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("sub", "value");
-  list = base::MakeUnique<base::ListValue>();
-  auto sub = base::MakeUnique<base::DictionaryValue>();
+  list = std::make_unique<base::ListValue>();
+  auto sub = std::make_unique<base::DictionaryValue>();
   sub->SetInteger("aaa", 111);
   sub->SetInteger("bbb", 222);
   list->Append(std::move(sub));
-  sub = base::MakeUnique<base::DictionaryValue>();
+  sub = std::make_unique<base::DictionaryValue>();
   sub->SetString("ccc", "333");
   sub->SetString("ddd", "444");
   list->Append(std::move(sub));
@@ -349,7 +348,7 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_keys::kKeyString, test_harness_->policy_level(),
            test_harness_->policy_scope(), test_harness_->policy_source(),
-           base::MakeUnique<base::Value>("value"), nullptr);
+           std::make_unique<base::Value>("value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
 }
@@ -367,9 +366,9 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   policy_dict.SetInteger("int", 789);
   policy_dict.SetString("string", "string value");
 
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   for (int i = 0; i < 2; ++i) {
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetInteger("subdictindex", i);
     dict->SetKey("subdict", policy_dict.Clone());
     list->Append(std::move(dict));

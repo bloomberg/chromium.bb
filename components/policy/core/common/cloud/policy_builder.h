@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -57,7 +56,7 @@ class PolicyBuilder {
   }
   void clear_policy_data() { policy_data_.reset(); }
   void CreatePolicyData() {
-    policy_data_ = base::MakeUnique<enterprise_management::PolicyData>();
+    policy_data_ = std::make_unique<enterprise_management::PolicyData>();
   }
 
   // Returns a reference to the policy protobuf being built. Note that the
@@ -155,7 +154,7 @@ class TypedPolicyBuilder : public PolicyBuilder {
   PayloadProto& payload() { return *payload_; }
   const PayloadProto& payload() const { return *payload_; }
   void clear_payload() { payload_.reset(); }
-  void CreatePayload() { payload_ = base::MakeUnique<PayloadProto>(); }
+  void CreatePayload() { payload_ = std::make_unique<PayloadProto>(); }
 
   // PolicyBuilder:
   void Build() override {

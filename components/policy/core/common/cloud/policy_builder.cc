@@ -281,7 +281,7 @@ std::string PolicyBuilder::GetBlob() const {
 }
 
 std::unique_ptr<em::PolicyFetchResponse> PolicyBuilder::GetCopy() const {
-  return base::MakeUnique<em::PolicyFetchResponse>(policy_);
+  return std::make_unique<em::PolicyFetchResponse>(policy_);
 }
 
 // static

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/signing_service.h"
@@ -676,7 +675,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
             << type << ", entity: " << entity_id << ", ignoring";
         continue;
       }
-      responses_[key] = base::MakeUnique<em::PolicyFetchResponse>(response);
+      responses_[key] = std::make_unique<em::PolicyFetchResponse>(response);
     }
     state_keys_to_upload_.clear();
     NotifyPolicyFetched();

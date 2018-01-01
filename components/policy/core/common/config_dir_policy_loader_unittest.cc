@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/policy/core/common/config_dir_policy_loader.h"
+#include <memory>
 
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -122,7 +122,7 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   base::DictionaryValue dict;
-  dict.Set(policy_name, base::MakeUnique<base::Value>(policy_value->Clone()));
+  dict.Set(policy_name, std::make_unique<base::Value>(policy_value->Clone()));
   WriteConfigFile(dict, NextConfigFileName());
 }
 
@@ -130,7 +130,7 @@ void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   base::DictionaryValue dict;
-  dict.Set(policy_name, base::MakeUnique<base::Value>(policy_value->Clone()));
+  dict.Set(policy_name, std::make_unique<base::Value>(policy_value->Clone()));
   WriteConfigFile(dict, NextConfigFileName());
 }
 

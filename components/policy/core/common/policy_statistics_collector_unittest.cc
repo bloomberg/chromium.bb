@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -109,7 +108,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   void SetPolicy(const std::string& name) {
     policy_map_.Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
                     nullptr);
   }
 

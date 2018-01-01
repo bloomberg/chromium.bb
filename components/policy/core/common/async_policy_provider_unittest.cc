@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -34,7 +33,7 @@ void SetPolicy(PolicyBundle* bundle,
                const std::string& value) {
   bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_PLATFORM, base::MakeUnique<base::Value>(value),
+           POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(value),
            nullptr);
 }
 

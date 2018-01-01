@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -131,10 +130,10 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::Value>("disabled"), nullptr);
+                         std::make_unique<base::Value>("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
-                         base::MakeUnique<base::Value>("maybe"), nullptr);
+                         std::make_unique<base::Value>("maybe"), nullptr);
   }
 
   void SetUp() override {
@@ -212,7 +211,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
     builder_.Build();
-    return base::MakeUnique<em::PolicyFetchResponse>(builder_.policy());
+    return std::make_unique<em::PolicyFetchResponse>(builder_.policy());
   }
 
   std::string CreateSerializedResponse() {
@@ -597,7 +596,7 @@ TEST_F(ComponentCloudPolicyServiceTest, LoadInvalidPolicyFromCache) {
   PolicyBundle expected_bundle;
   expected_bundle.Get(kTestExtensionNS)
       .Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("published"),
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("published"),
            nullptr);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }

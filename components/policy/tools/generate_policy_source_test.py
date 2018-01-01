@@ -13,33 +13,33 @@ class CppGenerationTest(unittest.TestCase):
     # Bools
     stmts, expr = generate_policy_source._GenerateDefaultValue(True)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::Value>(true)', expr)
+    self.assertEqual('std::make_unique<base::Value>(true)', expr)
     stmts, expr = generate_policy_source._GenerateDefaultValue(False)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::Value>(false)', expr)
+    self.assertEqual('std::make_unique<base::Value>(false)', expr)
 
     # Ints
     stmts, expr = generate_policy_source._GenerateDefaultValue(33)
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::Value>(33)', expr)
+    self.assertEqual('std::make_unique<base::Value>(33)', expr)
 
     # Strings
     stmts, expr = generate_policy_source._GenerateDefaultValue('foo')
     self.assertListEqual([], stmts)
-    self.assertEqual('base::MakeUnique<base::Value>("foo")', expr)
+    self.assertEqual('std::make_unique<base::Value>("foo")', expr)
 
     # Empty list
     stmts, expr = generate_policy_source._GenerateDefaultValue([])
     self.assertListEqual(
-        ['auto default_value = base::MakeUnique<base::ListValue>();'], stmts)
+        ['auto default_value = std::make_unique<base::ListValue>();'], stmts)
     self.assertEqual('std::move(default_value)', expr)
 
     # List with values
     stmts, expr = generate_policy_source._GenerateDefaultValue([1, '2'])
     self.assertListEqual([
-        'auto default_value = base::MakeUnique<base::ListValue>();',
-        'default_value->Append(base::MakeUnique<base::Value>(1));',
-        'default_value->Append(base::MakeUnique<base::Value>("2"));'
+        'auto default_value = std::make_unique<base::ListValue>();',
+        'default_value->Append(std::make_unique<base::Value>(1));',
+        'default_value->Append(std::make_unique<base::Value>("2"));'
       ], stmts)
     self.assertEqual('std::move(default_value)', expr)
 

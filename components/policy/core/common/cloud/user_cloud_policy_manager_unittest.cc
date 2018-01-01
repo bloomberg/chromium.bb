@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -36,7 +35,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
   void SetUp() override {
     // Set up a policy map for testing.
     policy_map_.Set("key", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("value"),
+                    POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value"),
                     nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);

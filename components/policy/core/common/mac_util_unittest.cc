@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +19,7 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   base::DictionaryValue root;
 
   // base::Value::Type::NONE
-  root.Set("null", base::MakeUnique<base::Value>());
+  root.Set("null", std::make_unique<base::Value>());
 
   // base::Value::Type::BOOLEAN
   root.SetBoolean("false", false);
@@ -39,17 +38,17 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   root.SetString("empty", "");
 
   // base::Value::Type::LIST
-  root.Set("emptyl", base::MakeUnique<base::Value>(base::Value::Type::LIST));
+  root.Set("emptyl", std::make_unique<base::Value>(base::Value::Type::LIST));
   base::ListValue list;
   for (base::DictionaryValue::Iterator it(root); !it.IsAtEnd(); it.Advance())
-    list.Append(base::MakeUnique<base::Value>(it.value().Clone()));
+    list.Append(std::make_unique<base::Value>(it.value().Clone()));
   EXPECT_EQ(root.size(), list.GetSize());
-  list.Append(base::MakeUnique<base::Value>(root.Clone()));
+  list.Append(std::make_unique<base::Value>(root.Clone()));
   root.SetKey("list", list.Clone());
 
   // base::Value::Type::DICTIONARY
   root.Set("emptyd",
-           base::MakeUnique<base::Value>(base::Value::Type::DICTIONARY));
+           std::make_unique<base::Value>(base::Value::Type::DICTIONARY));
   // Very meta.
   root.SetKey("dict", root.Clone());
 

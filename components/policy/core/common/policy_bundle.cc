@@ -5,7 +5,6 @@
 #include "components/policy/core/common/policy_bundle.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace policy {
 
@@ -19,7 +18,7 @@ PolicyMap& PolicyBundle::Get(const PolicyNamespace& ns) {
   DCHECK(ns.domain != POLICY_DOMAIN_CHROME || ns.component_id.empty());
   std::unique_ptr<PolicyMap>& policy = policy_bundle_[ns];
   if (!policy)
-    policy = base::MakeUnique<PolicyMap>();
+    policy = std::make_unique<PolicyMap>();
   return *policy;
 }
 

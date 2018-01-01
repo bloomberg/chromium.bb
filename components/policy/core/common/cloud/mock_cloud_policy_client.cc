@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -30,7 +30,7 @@ void MockCloudPolicyClient::SetPolicy(const std::string& policy_type,
                                       const std::string& settings_entity_id,
                                       const em::PolicyFetchResponse& policy) {
   responses_[std::make_pair(policy_type, settings_entity_id)] =
-      base::MakeUnique<enterprise_management::PolicyFetchResponse>(policy);
+      std::make_unique<enterprise_management::PolicyFetchResponse>(policy);
 }
 
 void MockCloudPolicyClient::SetFetchedInvalidationVersion(

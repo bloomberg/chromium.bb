@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -59,7 +58,7 @@ class PolicySchedulerTest : public testing::Test {
 };
 
 TEST_F(PolicySchedulerTest, Run) {
-  scheduler_ = base::MakeUnique<PolicyScheduler>(
+  scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&PolicySchedulerTest::DoTask, base::Unretained(this)),
       base::BindRepeating(&PolicySchedulerTest::OnTaskDone,
                           base::Unretained(this)),
@@ -70,7 +69,7 @@ TEST_F(PolicySchedulerTest, Run) {
 }
 
 TEST_F(PolicySchedulerTest, Loop) {
-  scheduler_ = base::MakeUnique<PolicyScheduler>(
+  scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&PolicySchedulerTest::DoTask, base::Unretained(this)),
       base::BindRepeating(&PolicySchedulerTest::OnTaskDone,
                           base::Unretained(this)),
@@ -81,7 +80,7 @@ TEST_F(PolicySchedulerTest, Loop) {
 }
 
 TEST_F(PolicySchedulerTest, Reschedule) {
-  scheduler_ = base::MakeUnique<PolicyScheduler>(
+  scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&PolicySchedulerTest::DoTask, base::Unretained(this)),
       base::BindRepeating(&PolicySchedulerTest::OnTaskDone,
                           base::Unretained(this)),
@@ -101,7 +100,7 @@ TEST_F(PolicySchedulerTest, Reschedule) {
 }
 
 TEST_F(PolicySchedulerTest, OverlappingTasks) {
-  scheduler_ = base::MakeUnique<PolicyScheduler>(
+  scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&PolicySchedulerTest::CaptureCallbackForSlowTask,
                           base::Unretained(this)),
       base::BindRepeating(&PolicySchedulerTest::OnTaskDone,

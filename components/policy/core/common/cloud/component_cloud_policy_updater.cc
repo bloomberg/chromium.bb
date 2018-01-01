@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
@@ -75,7 +74,7 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   }
 
   // Validate the policy before doing anything else.
-  auto policy_data = base::MakeUnique<em::PolicyData>();
+  auto policy_data = std::make_unique<em::PolicyData>();
   em::ExternalPolicyData data;
   if (!store_->ValidatePolicy(ns, std::move(response), policy_data.get(),
                               &data)) {

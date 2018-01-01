@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -39,7 +38,7 @@ PolicyHeaderService::CreatePolicyHeaderIOHelper(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   std::string initial_header_value = CreateHeaderValue();
   std::unique_ptr<PolicyHeaderIOHelper> helper =
-      base::MakeUnique<PolicyHeaderIOHelper>(server_url_, initial_header_value,
+      std::make_unique<PolicyHeaderIOHelper>(server_url_, initial_header_value,
                                              task_runner);
   helpers_.push_back(helper.get());
   return helper;

@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -115,7 +114,7 @@ bool ListPolicyHandler::CheckAndGetList(
   // Filter the list, rejecting any invalid strings.
   const base::Value::ListStorage& list = value->GetList();
   if (filtered_list)
-    *filtered_list = base::MakeUnique<base::ListValue>();
+    *filtered_list = std::make_unique<base::ListValue>();
   for (size_t list_index = 0; list_index < list.size(); ++list_index) {
     const base::Value& entry = list[list_index];
     if (entry.type() != list_entry_type_) {

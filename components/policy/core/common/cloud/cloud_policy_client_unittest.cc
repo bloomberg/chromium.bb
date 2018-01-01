@@ -15,7 +15,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -226,7 +225,7 @@ class CloudPolicyClientTest : public testing::Test {
 
     request_context_ =
         new net::TestURLRequestContextGetter(loop_.task_runner());
-    client_ = base::MakeUnique<CloudPolicyClient>(kMachineID, kMachineModel,
+    client_ = std::make_unique<CloudPolicyClient>(kMachineID, kMachineModel,
                                                   &service_, request_context_,
                                                   &fake_signing_service_);
     client_->AddPolicyTypeToFetch(policy_type_, std::string());
@@ -998,7 +997,7 @@ TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
   const std::vector<em::RemoteCommandResult> command_results(
       1, remote_command_request_.remote_command_request().command_results(0));
   client_->FetchRemoteCommands(
-      base::MakeUnique<RemoteCommandJob::UniqueIDType>(kLastCommandId),
+      std::make_unique<RemoteCommandJob::UniqueIDType>(kLastCommandId),
       command_results, callback);
 
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());

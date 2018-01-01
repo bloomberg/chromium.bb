@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/proxy_policy_provider.h"
+#include <memory>
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/policy/core/common/proxy_policy_provider.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,7 +55,7 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
   PolicyBundle bundle;
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("value"),
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("value"),
            nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
 
@@ -67,7 +67,7 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
   EXPECT_CALL(observer_, OnUpdatePolicy(&proxy_provider_));
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-           POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("new value"),
+           POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("new value"),
            nullptr);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
   Mock::VerifyAndClearExpectations(&observer_);

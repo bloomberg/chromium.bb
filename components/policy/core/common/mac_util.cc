@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 
@@ -47,7 +46,7 @@ void ArrayEntryToValue(const void* value, void* context) {
 
 std::unique_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
   if (CFCast<CFNullRef>(property))
-    return base::MakeUnique<base::Value>();
+    return std::make_unique<base::Value>();
 
   if (CFBooleanRef boolean = CFCast<CFBooleanRef>(property)) {
     return std::unique_ptr<base::Value>(

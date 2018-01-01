@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -88,10 +87,10 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
 
     PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
     policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("disabled"),
+               POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("disabled"),
                nullptr);
     policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>("maybe"),
+               POLICY_SOURCE_CLOUD, std::make_unique<base::Value>("maybe"),
                nullptr);
   }
 
@@ -110,12 +109,12 @@ class ComponentCloudPolicyStoreTest : public testing::Test {
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
     builder_.Build();
-    return base::MakeUnique<em::PolicyFetchResponse>(builder_.policy());
+    return std::make_unique<em::PolicyFetchResponse>(builder_.policy());
   }
 
   std::unique_ptr<em::PolicyData> CreatePolicyData() {
     builder_.Build();
-    return base::MakeUnique<em::PolicyData>(builder_.policy_data());
+    return std::make_unique<em::PolicyData>(builder_.policy_data());
   }
 
   std::string CreateSerializedResponse() {
