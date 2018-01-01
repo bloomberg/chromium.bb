@@ -50,7 +50,7 @@ struct EntryExpectation {
 // Returns a basic change list which contains some files and directories.
 std::vector<std::unique_ptr<ChangeList>> CreateBaseChangeList() {
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   // Add directories to the change list.
   ResourceEntry directory;
@@ -244,7 +244,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
 
 TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry new_folder;
   new_folder.set_resource_id("new_folder_resource_id");
@@ -288,7 +288,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectoryByTeamDriveChange) {
   constexpr char kTeamDriveId[] = "theTeamDriveId";
 
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   // Set up a Team Drive root directory.
   ResourceEntry team_drive;
@@ -297,7 +297,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectoryByTeamDriveChange) {
   team_drive.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
   team_drive.mutable_file_info()->set_is_directory(true);
 
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
   change_lists[0]->mutable_entries()->push_back(team_drive);
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp);
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
@@ -311,7 +311,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectoryByTeamDriveChange) {
   ASSERT_TRUE(team_drive_root);
   EXPECT_FALSE(team_drive_root->local_id().empty());
   change_lists.clear();
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   // Add files to the Team Drive directory.
   ResourceEntry new_folder;
@@ -367,7 +367,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectoryByTeamDriveChange) {
 
 TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("1_folder_resource_id");
@@ -406,7 +406,7 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
 
 TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("subdirectory_file_1_id");
@@ -438,7 +438,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
 
 TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("subdirectory_file_1_id");
@@ -478,7 +478,7 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
 TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   // Create ChangeList to add a file.
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("added_in_root_id");
@@ -503,7 +503,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
       base::FilePath::FromUTF8Unsafe("drive/root/Added file.txt")));
 
   // Create ChangeList to delete the file.
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   entry.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(entry);
@@ -526,7 +526,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
 TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   // Create ChangeList to add a file.
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("added_in_root_id");
@@ -552,7 +552,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/Directory 1/Added file.txt")));
 
   // Create ChangeList to delete the file.
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   entry.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(entry);
@@ -579,7 +579,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
   // Hence, the PDF file should be just ignored.
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   ResourceEntry file;
   file.set_resource_id("file_added_in_deleted_id");
@@ -696,7 +696,7 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
 
   // Create change lists.
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   // Add a new file with non-existing parent resource id to the change lists.
   ResourceEntry new_file;
@@ -722,7 +722,7 @@ TEST_F(ChangeListProcessorTest, ModificationDate) {
 
   // Create change lists with a new file.
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
 
   const base::Time now = base::Time::Now();
   ResourceEntry new_file_remote;
@@ -772,7 +772,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
   team_drive.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
 
   std::vector<std::unique_ptr<ChangeList>> change_lists;
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
   change_lists[0]->mutable_entries()->push_back(team_drive);
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
   change_lists[0]->mutable_parent_resource_ids()->push_back("");
@@ -800,7 +800,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
 
   // Second change, which updates Team Drive name
   change_lists.clear();
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
   team_drive.set_title(kNewName);
   change_lists[0]->mutable_entries()->push_back(team_drive);
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 2);
@@ -815,7 +815,7 @@ TEST_F(ChangeListProcessorTest, DeltaTeamDriveChange) {
 
   // Delete the team drive.
   change_lists.clear();
-  change_lists.push_back(base::MakeUnique<ChangeList>());
+  change_lists.push_back(std::make_unique<ChangeList>());
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 3);
   team_drive.set_deleted(true);
   change_lists[0]->mutable_parent_resource_ids()->push_back("");

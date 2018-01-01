@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/drive/drive_api_util.h"
 #include "google_apis/drive/auth_service.h"
@@ -331,7 +330,7 @@ CancelCallback DriveAPIService::GetAllTeamDriveList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<TeamDriveListRequest> request =
-      base::MakeUnique<TeamDriveListRequest>(sender_.get(), url_generator_,
+      std::make_unique<TeamDriveListRequest>(sender_.get(), url_generator_,
                                              callback);
   request->set_max_results(kMaxNumTeamDriveResourcePerRequest);
   request->set_fields(kTeamDrivesListFields);
@@ -344,7 +343,7 @@ CancelCallback DriveAPIService::GetAllFileList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesListRequest> request =
-      base::MakeUnique<FilesListRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesListRequest>(sender_.get(), url_generator_,
                                          callback);
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_q("trashed = false");  // Exclude trashed files.
@@ -429,7 +428,7 @@ CancelCallback DriveAPIService::SearchByTitle(
   query += " and trashed = false";
 
   std::unique_ptr<FilesListRequest> request =
-      base::MakeUnique<FilesListRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesListRequest>(sender_.get(), url_generator_,
                                          callback);
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_q(query);
@@ -444,7 +443,7 @@ CancelCallback DriveAPIService::GetChangeList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<ChangesListRequest> request =
-      base::MakeUnique<ChangesListRequest>(sender_.get(), url_generator_,
+      std::make_unique<ChangesListRequest>(sender_.get(), url_generator_,
                                            callback);
   request->set_max_results(kMaxNumFilesResourcePerRequest);
   request->set_start_change_id(start_changestamp);
@@ -460,7 +459,7 @@ CancelCallback DriveAPIService::GetRemainingChangeList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<ChangesListNextPageRequest> request =
-      base::MakeUnique<ChangesListNextPageRequest>(sender_.get(), callback);
+      std::make_unique<ChangesListNextPageRequest>(sender_.get(), callback);
   request->set_next_link(next_link);
   request->set_fields(kChangeListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -474,7 +473,7 @@ CancelCallback DriveAPIService::GetRemainingTeamDriveList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<TeamDriveListRequest> request =
-      base::MakeUnique<TeamDriveListRequest>(sender_.get(), url_generator_,
+      std::make_unique<TeamDriveListRequest>(sender_.get(), url_generator_,
                                              callback);
   request->set_page_token(page_token);
   request->set_fields(kTeamDrivesListFields);
@@ -489,7 +488,7 @@ CancelCallback DriveAPIService::GetRemainingFileList(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesListNextPageRequest> request =
-      base::MakeUnique<FilesListNextPageRequest>(sender_.get(), callback);
+      std::make_unique<FilesListNextPageRequest>(sender_.get(), callback);
   request->set_next_link(next_link);
   request->set_fields(kFileListFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -501,7 +500,7 @@ CancelCallback DriveAPIService::GetFileResource(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  std::unique_ptr<FilesGetRequest> request = base::MakeUnique<FilesGetRequest>(
+  std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
       sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
       callback);
   request->set_file_id(resource_id);
@@ -521,7 +520,7 @@ CancelCallback DriveAPIService::GetShareUrl(
                << "from the file manager.";
   }
 
-  std::unique_ptr<FilesGetRequest> request = base::MakeUnique<FilesGetRequest>(
+  std::unique_ptr<FilesGetRequest> request = std::make_unique<FilesGetRequest>(
       sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
       base::Bind(&ExtractShareUrlAndRun, callback));
   request->set_file_id(resource_id);
@@ -535,7 +534,7 @@ CancelCallback DriveAPIService::GetAboutResource(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  std::unique_ptr<AboutGetRequest> request = base::MakeUnique<AboutGetRequest>(
+  std::unique_ptr<AboutGetRequest> request = std::make_unique<AboutGetRequest>(
       sender_.get(), url_generator_, callback);
   request->set_fields(kAboutResourceFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -545,7 +544,7 @@ CancelCallback DriveAPIService::GetAppList(const AppListCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  return sender_->StartRequestWithAuthRetry(base::MakeUnique<AppsListRequest>(
+  return sender_->StartRequestWithAuthRetry(std::make_unique<AppsListRequest>(
       sender_.get(), url_generator_, google_apis::IsGoogleChromeAPIKeyUsed(),
       callback));
 }
@@ -561,7 +560,7 @@ CancelCallback DriveAPIService::DownloadFile(
   // get_content_callback may be null.
 
   return sender_->StartRequestWithAuthRetry(
-      base::MakeUnique<DownloadFileRequest>(
+      std::make_unique<DownloadFileRequest>(
           sender_.get(), url_generator_, resource_id, local_cache_path,
           download_action_callback, get_content_callback, progress_callback));
 }
@@ -574,7 +573,7 @@ CancelCallback DriveAPIService::DeleteResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesDeleteRequest> request =
-      base::MakeUnique<FilesDeleteRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesDeleteRequest>(sender_.get(), url_generator_,
                                            callback);
   request->set_file_id(resource_id);
   request->set_etag(etag);
@@ -588,7 +587,7 @@ CancelCallback DriveAPIService::TrashResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesTrashRequest> request =
-      base::MakeUnique<FilesTrashRequest>(
+      std::make_unique<FilesTrashRequest>(
           sender_.get(), url_generator_,
           base::Bind(&EntryActionCallbackAdapter, callback));
   request->set_file_id(resource_id);
@@ -605,7 +604,7 @@ CancelCallback DriveAPIService::AddNewDirectory(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesInsertRequest> request =
-      base::MakeUnique<FilesInsertRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesInsertRequest>(sender_.get(), url_generator_,
                                            callback);
   request->set_visibility(options.visibility);
   request->set_last_viewed_by_me_date(options.last_viewed_by_me_date);
@@ -628,7 +627,7 @@ CancelCallback DriveAPIService::CopyResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesCopyRequest> request =
-      base::MakeUnique<FilesCopyRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesCopyRequest>(sender_.get(), url_generator_,
                                          callback);
   request->set_file_id(resource_id);
   request->add_parent(parent_resource_id);
@@ -650,7 +649,7 @@ CancelCallback DriveAPIService::UpdateResource(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<FilesPatchRequest> request =
-      base::MakeUnique<FilesPatchRequest>(sender_.get(), url_generator_,
+      std::make_unique<FilesPatchRequest>(sender_.get(), url_generator_,
                                           callback);
   request->set_file_id(resource_id);
   request->set_title(new_title);
@@ -680,7 +679,7 @@ CancelCallback DriveAPIService::AddResourceToDirectory(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<ChildrenInsertRequest> request =
-      base::MakeUnique<ChildrenInsertRequest>(sender_.get(), url_generator_,
+      std::make_unique<ChildrenInsertRequest>(sender_.get(), url_generator_,
                                               callback);
   request->set_folder_id(parent_resource_id);
   request->set_id(resource_id);
@@ -695,7 +694,7 @@ CancelCallback DriveAPIService::RemoveResourceFromDirectory(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<ChildrenDeleteRequest> request =
-      base::MakeUnique<ChildrenDeleteRequest>(sender_.get(), url_generator_,
+      std::make_unique<ChildrenDeleteRequest>(sender_.get(), url_generator_,
                                               callback);
   request->set_child_id(resource_id);
   request->set_folder_id(parent_resource_id);
@@ -713,7 +712,7 @@ CancelCallback DriveAPIService::InitiateUploadNewFile(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<InitiateUploadNewFileRequest> request =
-      base::MakeUnique<InitiateUploadNewFileRequest>(
+      std::make_unique<InitiateUploadNewFileRequest>(
           sender_.get(), url_generator_, content_type, content_length,
           parent_resource_id, title, callback);
   request->set_modified_date(options.modified_date);
@@ -732,7 +731,7 @@ CancelCallback DriveAPIService::InitiateUploadExistingFile(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<InitiateUploadExistingFileRequest> request =
-      base::MakeUnique<InitiateUploadExistingFileRequest>(
+      std::make_unique<InitiateUploadExistingFileRequest>(
           sender_.get(), url_generator_, content_type, content_length,
           resource_id, options.etag, callback);
   request->set_parent_resource_id(options.parent_resource_id);
@@ -756,7 +755,7 @@ CancelCallback DriveAPIService::ResumeUpload(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithAuthRetry(
-      base::MakeUnique<ResumeUploadRequest>(
+      std::make_unique<ResumeUploadRequest>(
           sender_.get(), upload_url, start_position, end_position,
           content_length, content_type, local_file_path, callback,
           progress_callback));
@@ -770,7 +769,7 @@ CancelCallback DriveAPIService::GetUploadStatus(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithAuthRetry(
-      base::MakeUnique<GetUploadStatusRequest>(sender_.get(), upload_url,
+      std::make_unique<GetUploadStatusRequest>(sender_.get(), upload_url,
                                                content_length, callback));
 }
 
@@ -787,9 +786,9 @@ CancelCallback DriveAPIService::MultipartUploadNewFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithAuthRetry(
-      base::MakeUnique<google_apis::drive::SingleBatchableDelegateRequest>(
+      std::make_unique<google_apis::drive::SingleBatchableDelegateRequest>(
           sender_.get(),
-          base::MakeUnique<google_apis::drive::MultipartUploadNewFileDelegate>(
+          std::make_unique<google_apis::drive::MultipartUploadNewFileDelegate>(
               sender_->blocking_task_runner(), title, parent_resource_id,
               content_type, content_length, options.modified_date,
               options.last_viewed_by_me_date, local_file_path,
@@ -809,9 +808,9 @@ CancelCallback DriveAPIService::MultipartUploadExistingFile(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithAuthRetry(
-      base::MakeUnique<google_apis::drive::SingleBatchableDelegateRequest>(
+      std::make_unique<google_apis::drive::SingleBatchableDelegateRequest>(
           sender_.get(),
-          base::MakeUnique<
+          std::make_unique<
               google_apis::drive::MultipartUploadExistingFileDelegate>(
               sender_->blocking_task_runner(), options.title, resource_id,
               options.parent_resource_id, content_type, content_length,
@@ -834,7 +833,7 @@ CancelCallback DriveAPIService::AuthorizeApp(
   // clients or drive.google.com web UI.)
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {
     std::unique_ptr<google_apis::drive::FilesAuthorizeRequest> request =
-        base::MakeUnique<google_apis::drive::FilesAuthorizeRequest>(
+        std::make_unique<google_apis::drive::FilesAuthorizeRequest>(
             sender_.get(), url_generator_,
             base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
     request->set_app_id(app_id);
@@ -843,7 +842,7 @@ CancelCallback DriveAPIService::AuthorizeApp(
     return sender_->StartRequestWithAuthRetry(std::move(request));
   } else {
     std::unique_ptr<FilesGetRequest> request =
-        base::MakeUnique<FilesGetRequest>(
+        std::make_unique<FilesGetRequest>(
             sender_.get(), url_generator_,
             google_apis::IsGoogleChromeAPIKeyUsed(),
             base::Bind(&ExtractOpenUrlAndRun, app_id, callback));
@@ -860,7 +859,7 @@ CancelCallback DriveAPIService::UninstallApp(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<google_apis::drive::AppsDeleteRequest> request =
-      base::MakeUnique<google_apis::drive::AppsDeleteRequest>(
+      std::make_unique<google_apis::drive::AppsDeleteRequest>(
           sender_.get(), url_generator_, callback);
   request->set_app_id(app_id);
   return sender_->StartRequestWithAuthRetry(std::move(request));
@@ -875,7 +874,7 @@ google_apis::CancelCallback DriveAPIService::AddPermission(
   DCHECK(!callback.is_null());
 
   std::unique_ptr<google_apis::drive::PermissionsInsertRequest> request =
-      base::MakeUnique<google_apis::drive::PermissionsInsertRequest>(
+      std::make_unique<google_apis::drive::PermissionsInsertRequest>(
           sender_.get(), url_generator_, callback);
   request->set_id(resource_id);
   request->set_role(role);
@@ -932,7 +931,7 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
 std::unique_ptr<BatchRequestConfiguratorInterface>
 DriveAPIService::StartBatchRequest() {
   std::unique_ptr<google_apis::drive::BatchUploadRequest> request =
-      base::MakeUnique<google_apis::drive::BatchUploadRequest>(sender_.get(),
+      std::make_unique<google_apis::drive::BatchUploadRequest>(sender_.get(),
                                                                url_generator_);
   const base::WeakPtr<google_apis::drive::BatchUploadRequest> weak_ref =
       request->GetWeakPtrAsBatchUploadRequest();
@@ -943,7 +942,7 @@ DriveAPIService::StartBatchRequest() {
   // the sender is deleted. Resolve the circulating dependency and fix it.
   const google_apis::CancelCallback callback =
       sender_->StartRequestWithAuthRetry(std::move(request));
-  return base::MakeUnique<BatchRequestConfigurator>(
+  return std::make_unique<BatchRequestConfigurator>(
       weak_ref, sender_->blocking_task_runner(), url_generator_, callback);
 }
 

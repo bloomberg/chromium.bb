@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/files/file_path_watcher.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
@@ -135,7 +134,7 @@ void FileWriteWatcher::FileWriteWatcherImpl::StartWatchOnBlockingThread(
 
   // Start watching |path|.
   std::unique_ptr<PathWatchInfo> info =
-      base::MakeUnique<PathWatchInfo>(on_write_callback);
+      std::make_unique<PathWatchInfo>(on_write_callback);
   bool ok = info->watcher.Watch(
       path,
       false,  // recursive
