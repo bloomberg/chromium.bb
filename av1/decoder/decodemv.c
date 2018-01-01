@@ -1344,7 +1344,6 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
     const REFERENCE_MODE mode = read_block_reference_mode(cm, xd, r);
 
-    // FIXME(rbultje) I'm pretty sure this breaks segmentation ref frame coding
     if (mode == COMPOUND_REFERENCE) {
 #if CONFIG_EXT_COMP_REFS
       const COMP_REFERENCE_TYPE comp_ref_type = read_comp_reference_type(xd, r);
