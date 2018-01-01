@@ -118,6 +118,7 @@ mojom("mojo_platform_bindings") {
     "color_chooser/color_chooser.mojom",
     "feature_policy/feature_policy.mojom",
     "page/page_visibility_state.mojom",
+    "quota/quota_types.mojom",
     "service_worker/navigation_preload_state.mojom",
     "service_worker/service_worker.mojom",
     "service_worker/service_worker_client.mojom",

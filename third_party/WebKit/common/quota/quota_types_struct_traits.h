@@ -2,51 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_QUOTA_MESSAGES_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_QUOTA_MESSAGES_STRUCT_TRAITS_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_QUOTA_QUOTA_TYPES_STRUCT_TRAITS_H_
+#define THIRD_PARTY_WEBKIT_COMMON_QUOTA_QUOTA_TYPES_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "storage/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<storage::mojom::StorageType, blink::StorageType> {
-  static storage::mojom::StorageType ToMojom(blink::StorageType storage_type) {
+struct EnumTraits<blink::mojom::StorageType, blink::StorageType> {
+  static blink::mojom::StorageType ToMojom(blink::StorageType storage_type) {
     switch (storage_type) {
       case blink::StorageType::kTemporary:
-        return storage::mojom::StorageType::kTemporary;
+        return blink::mojom::StorageType::kTemporary;
       case blink::StorageType::kPersistent:
-        return storage::mojom::StorageType::kPersistent;
+        return blink::mojom::StorageType::kPersistent;
       case blink::StorageType::kSyncable:
-        return storage::mojom::StorageType::kSyncable;
+        return blink::mojom::StorageType::kSyncable;
       case blink::StorageType::kQuotaNotManaged:
-        return storage::mojom::StorageType::kQuotaNotManaged;
+        return blink::mojom::StorageType::kQuotaNotManaged;
       case blink::StorageType::kUnknown:
-        return storage::mojom::StorageType::kUnknown;
+        return blink::mojom::StorageType::kUnknown;
     }
     NOTREACHED();
-    return storage::mojom::StorageType::kUnknown;
+    return blink::mojom::StorageType::kUnknown;
   }
 
-  static bool FromMojom(storage::mojom::StorageType storage_type,
+  static bool FromMojom(blink::mojom::StorageType storage_type,
                         blink::StorageType* out) {
     switch (storage_type) {
-      case storage::mojom::StorageType::kTemporary:
+      case blink::mojom::StorageType::kTemporary:
         *out = blink::StorageType::kTemporary;
         return true;
-      case storage::mojom::StorageType::kPersistent:
+      case blink::mojom::StorageType::kPersistent:
         *out = blink::StorageType::kPersistent;
         return true;
-      case storage::mojom::StorageType::kSyncable:
+      case blink::mojom::StorageType::kSyncable:
         *out = blink::StorageType::kSyncable;
         return true;
-      case storage::mojom::StorageType::kQuotaNotManaged:
+      case blink::mojom::StorageType::kQuotaNotManaged:
         *out = blink::StorageType::kQuotaNotManaged;
         return true;
-      case storage::mojom::StorageType::kUnknown:
+      case blink::mojom::StorageType::kUnknown:
         *out = blink::StorageType::kUnknown;
         return true;
     }
@@ -57,46 +57,46 @@ struct EnumTraits<storage::mojom::StorageType, blink::StorageType> {
 };
 
 template <>
-struct EnumTraits<storage::mojom::QuotaStatusCode, blink::QuotaStatusCode> {
-  static storage::mojom::QuotaStatusCode ToMojom(
+struct EnumTraits<blink::mojom::QuotaStatusCode, blink::QuotaStatusCode> {
+  static blink::mojom::QuotaStatusCode ToMojom(
       blink::QuotaStatusCode status_code) {
     switch (status_code) {
       case blink::QuotaStatusCode::kOk:
-        return storage::mojom::QuotaStatusCode::kOk;
+        return blink::mojom::QuotaStatusCode::kOk;
       case blink::QuotaStatusCode::kErrorNotSupported:
-        return storage::mojom::QuotaStatusCode::kErrorNotSupported;
+        return blink::mojom::QuotaStatusCode::kErrorNotSupported;
       case blink::QuotaStatusCode::kErrorInvalidModification:
-        return storage::mojom::QuotaStatusCode::kErrorInvalidModification;
+        return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
       case blink::QuotaStatusCode::kErrorInvalidAccess:
-        return storage::mojom::QuotaStatusCode::kErrorInvalidAccess;
+        return blink::mojom::QuotaStatusCode::kErrorInvalidAccess;
       case blink::QuotaStatusCode::kErrorAbort:
-        return storage::mojom::QuotaStatusCode::kErrorAbort;
+        return blink::mojom::QuotaStatusCode::kErrorAbort;
       case blink::QuotaStatusCode::kUnknown:
-        return storage::mojom::QuotaStatusCode::kUnknown;
+        return blink::mojom::QuotaStatusCode::kUnknown;
     }
     NOTREACHED();
-    return storage::mojom::QuotaStatusCode::kUnknown;
+    return blink::mojom::QuotaStatusCode::kUnknown;
   }
 
-  static bool FromMojom(storage::mojom::QuotaStatusCode status_code,
+  static bool FromMojom(blink::mojom::QuotaStatusCode status_code,
                         blink::QuotaStatusCode* out) {
     switch (status_code) {
-      case storage::mojom::QuotaStatusCode::kOk:
+      case blink::mojom::QuotaStatusCode::kOk:
         *out = blink::QuotaStatusCode::kOk;
         return true;
-      case storage::mojom::QuotaStatusCode::kErrorNotSupported:
+      case blink::mojom::QuotaStatusCode::kErrorNotSupported:
         *out = blink::QuotaStatusCode::kErrorNotSupported;
         return true;
-      case storage::mojom::QuotaStatusCode::kErrorInvalidModification:
+      case blink::mojom::QuotaStatusCode::kErrorInvalidModification:
         *out = blink::QuotaStatusCode::kErrorInvalidModification;
         return true;
-      case storage::mojom::QuotaStatusCode::kErrorInvalidAccess:
+      case blink::mojom::QuotaStatusCode::kErrorInvalidAccess:
         *out = blink::QuotaStatusCode::kErrorInvalidAccess;
         return true;
-      case storage::mojom::QuotaStatusCode::kErrorAbort:
+      case blink::mojom::QuotaStatusCode::kErrorAbort:
         *out = blink::QuotaStatusCode::kErrorAbort;
         return true;
-      case storage::mojom::QuotaStatusCode::kUnknown:
+      case blink::mojom::QuotaStatusCode::kUnknown:
         *out = blink::QuotaStatusCode::kUnknown;
         return true;
     }
@@ -107,4 +107,4 @@ struct EnumTraits<storage::mojom::QuotaStatusCode, blink::QuotaStatusCode> {
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_QUOTA_MESSAGES_STRUCT_TRAITS_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_QUOTA_QUOTA_TYPES_STRUCT_TRAITS_H_

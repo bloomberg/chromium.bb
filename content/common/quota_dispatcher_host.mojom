@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "storage/common/quota/quota_types.mojom";
+import "third_party/WebKit/common/quota/quota_types.mojom";
 import "url/mojo/origin.mojom";
 
 // API for the renderer process to request quota information from the browser
@@ -17,8 +17,8 @@ import "url/mojo/origin.mojom";
 interface QuotaDispatcherHost {
   // Renderer process queries storage usage and quota from the browser process.
   QueryStorageUsageAndQuota(url.mojom.Origin origin,
-                            storage.mojom.StorageType storage_type) =>
-      (storage.mojom.QuotaStatusCode error,
+                            blink.mojom.StorageType storage_type) =>
+      (blink.mojom.QuotaStatusCode error,
        int64 current_usage,
        int64 current_quota);
 
@@ -26,9 +26,9 @@ interface QuotaDispatcherHost {
   // render_frame_id is used for showing the permissions UI.
   RequestStorageQuota(int64 render_frame_id,
                       url.mojom.Origin origin,
-                      storage.mojom.StorageType storage_type,
+                      blink.mojom.StorageType storage_type,
                       uint64 requested_size) =>
-      (storage.mojom.QuotaStatusCode error,
+      (blink.mojom.QuotaStatusCode error,
        int64 current_usage,
        int64 granted_quota);
 };
