@@ -6,10 +6,8 @@
 #define CONTENT_BROWSER_QUOTA_DISPATCHER_HOST_H_
 
 #include "base/macros.h"
-#include "content/common/quota_dispatcher_host.mojom.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_dispatcher_host.mojom.h"
 
 namespace storage {
 class QuotaManager;
@@ -22,12 +20,12 @@ class Origin;
 namespace content {
 class QuotaPermissionContext;
 
-class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
+class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
  public:
   static void Create(int process_id,
                      storage::QuotaManager* quota_manager,
                      scoped_refptr<QuotaPermissionContext> permission_context,
-                     mojom::QuotaDispatcherHostRequest request);
+                     blink::mojom::QuotaDispatcherHostRequest request);
 
   QuotaDispatcherHost(int process_id,
                       storage::QuotaManager* quota_manager,
@@ -35,7 +33,7 @@ class QuotaDispatcherHost : public mojom::QuotaDispatcherHost {
 
   ~QuotaDispatcherHost() override;
 
-  // content::mojom::QuotaDispatcherHost:
+  // blink::mojom::QuotaDispatcherHost:
   void QueryStorageUsageAndQuota(
       const url::Origin& origin,
       blink::StorageType storage_type,

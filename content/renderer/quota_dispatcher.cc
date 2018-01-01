@@ -59,7 +59,8 @@ int CurrentWorkerId() {
   return WorkerThread::GetCurrentId();
 }
 
-void BindConnectorOnMainThread(mojom::QuotaDispatcherHostRequest request) {
+void BindConnectorOnMainThread(
+    blink::mojom::QuotaDispatcherHostRequest request) {
   DCHECK(RenderThread::Get());
   RenderThread::Get()->GetConnector()->BindInterface(mojom::kBrowserServiceName,
                                                      std::move(request));
