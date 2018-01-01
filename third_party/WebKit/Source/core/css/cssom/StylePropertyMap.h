@@ -8,14 +8,14 @@
 #include "base/macros.h"
 #include "bindings/core/v8/css_style_value_or_string.h"
 #include "bindings/core/v8/v8_update_function.h"
-#include "core/css/cssom/StylePropertyMapReadonly.h"
+#include "core/css/cssom/StylePropertyMapReadOnly.h"
 
 namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
 
-class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadonly {
+class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

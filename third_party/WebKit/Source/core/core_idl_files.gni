@@ -97,7 +97,7 @@ core_idl_files =
                     "css/cssom/CSSUnparsedValue.idl",
                     "css/cssom/CSSVariableReferenceValue.idl",
                     "css/cssom/StylePropertyMap.idl",
-                    "css/cssom/StylePropertyMapReadonly.idl",
+                    "css/cssom/StylePropertyMapReadOnly.idl",
                     "dom/AccessibleNode.idl",
                     "dom/AccessibleNodeList.idl",
                     "dom/Attr.idl",

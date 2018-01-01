@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/StylePropertyMapReadonly.h"
+#include "core/css/cssom/StylePropertyMapReadOnly.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
@@ -22,7 +22,7 @@ class StylePropertyMapIterationSource final
           IterationSource {
  public:
   explicit StylePropertyMapIterationSource(
-      HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> values)
+      HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values)
       : index_(0), values_(values) {}
 
   bool Next(ScriptState*,
@@ -32,7 +32,7 @@ class StylePropertyMapIterationSource final
     if (index_ >= values_.size())
       return false;
 
-    const StylePropertyMapReadonly::StylePropertyMapEntry& pair =
+    const StylePropertyMapReadOnly::StylePropertyMapEntry& pair =
         values_.at(index_++);
     key = pair.first;
     value = pair.second;
@@ -47,7 +47,7 @@ class StylePropertyMapIterationSource final
 
  private:
   size_t index_;
-  const HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> values_;
+  const HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> values_;
 };
 
 bool ComparePropertyNames(const String& a, const String& b) {
@@ -58,13 +58,13 @@ bool ComparePropertyNames(const String& a, const String& b) {
 
 }  // namespace
 
-CSSStyleValue* StylePropertyMapReadonly::get(const String& property_name,
+CSSStyleValue* StylePropertyMapReadOnly::get(const String& property_name,
                                              ExceptionState& exception_state) {
   CSSStyleValueVector style_vector = getAll(property_name, exception_state);
   return style_vector.IsEmpty() ? nullptr : style_vector[0];
 }
 
-CSSStyleValueVector StylePropertyMapReadonly::getAll(
+CSSStyleValueVector StylePropertyMapReadOnly::getAll(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
@@ -83,12 +83,12 @@ CSSStyleValueVector StylePropertyMapReadonly::getAll(
   return StyleValueFactory::CssValueToStyleValueVector(property_id, *value);
 }
 
-bool StylePropertyMapReadonly::has(const String& property_name,
+bool StylePropertyMapReadOnly::has(const String& property_name,
                                    ExceptionState& exception_state) {
   return !getAll(property_name, exception_state).IsEmpty();
 }
 
-Vector<String> StylePropertyMapReadonly::getProperties() {
+Vector<String> StylePropertyMapReadOnly::getProperties() {
   Vector<String> result;
 
   ForEachProperty([&result](const String& name, const CSSValue&) {
@@ -99,9 +99,9 @@ Vector<String> StylePropertyMapReadonly::getProperties() {
   return result;
 }
 
-StylePropertyMapReadonly::IterationSource*
-StylePropertyMapReadonly::StartIteration(ScriptState*, ExceptionState&) {
-  HeapVector<StylePropertyMapReadonly::StylePropertyMapEntry> result;
+StylePropertyMapReadOnly::IterationSource*
+StylePropertyMapReadOnly::StartIteration(ScriptState*, ExceptionState&) {
+  HeapVector<StylePropertyMapReadOnly::StylePropertyMapEntry> result;
 
   ForEachProperty([&result](const String& property_name,
                             const CSSValue& css_value) {
