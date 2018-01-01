@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "components/autofill/core/browser/autofill_policy_handler.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/policy/core/common/policy_map.h"
@@ -29,7 +30,7 @@ TEST_F(AutofillPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutoFillEnabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(true), nullptr);
+             std::make_unique<base::Value>(true), nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -42,7 +43,7 @@ TEST_F(AutofillPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kAutoFillEnabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(false), nullptr);
+             std::make_unique<base::Value>(false), nullptr);
   PrefValueMap prefs;
   AutofillPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
