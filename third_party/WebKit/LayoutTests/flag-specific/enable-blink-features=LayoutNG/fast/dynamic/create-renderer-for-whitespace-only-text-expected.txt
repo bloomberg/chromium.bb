@@ -1,0 +1,61 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x248
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x248
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x232
+      LayoutNGBlockFlow {P} at (0,0) size 784x40
+        LayoutText {#text} at (0,0) size 52x19
+        LayoutInline {I} at (0,0) size 0x0
+          LayoutInline {A} at (0,0) size 0x0 [color=#0000EE]
+            LayoutText {#text} at (0,0) size 302x19
+          LayoutText {#text} at (0,0) size 782x39
+        LayoutText {#text} at (0,0) size 4x19
+      LayoutNGBlockFlow {P} at (0,56) size 784x20
+        LayoutText {#text} at (0,0) size 744x19
+      LayoutNGBlockFlow {P} at (0,92) size 784x20
+        LayoutText {#text} at (0,0) size 349x19
+      LayoutTable {TABLE} at (0,128) size 197x104 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 196x103
+          LayoutTableRow {TR} at (0,0) size 196x29
+            LayoutNGTableCell {TD} at (0,0) size 98x29 [border: (1px solid #000000)] [r=0 c=0 rs=1 cs=1]
+              LayoutNGBlockFlow {DIV} at (5,5) size 89x20
+                LayoutText {#text} at (0,0) size 23x19
+                LayoutText {#text} at (0,0) size 4x19
+                LayoutText {#text} at (0,0) size 22x19
+            LayoutNGTableCell {TD} at (98,0) size 98x29 [border: (1px solid #000000)] [r=0 c=1 rs=1 cs=1]
+              LayoutNGBlockFlow {DIV} at (5,5) size 89x20
+                LayoutText {#text} at (0,0) size 49x19
+          LayoutTableRow {TR} at (0,29) size 196x45
+            LayoutNGTableCell {TD} at (0,29) size 98x45 [border: (1px solid #000000)] [r=1 c=0 rs=1 cs=1]
+              LayoutNGBlockFlow {UL} at (5,5) size 89x20
+                LayoutInline {LI} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 23x19
+                LayoutText {#text} at (0,0) size 4x19
+                LayoutInline {LI} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 0x0
+            LayoutNGTableCell {TD} at (98,29) size 98x45 [border: (1px solid #000000)] [r=1 c=1 rs=1 cs=1]
+              LayoutNGBlockFlow {UL} at (5,5) size 89x20
+                LayoutInline {LI} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 23x19
+                LayoutText {#text} at (0,0) size 4x19
+                LayoutInline {LI} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 0x0
+          LayoutTableRow {TR} at (0,74) size 196x29
+            LayoutNGTableCell {TD} at (0,74) size 98x29 [border: (1px solid #000000)] [r=2 c=0 rs=1 cs=1]
+              LayoutNGBlockFlow {DIV} at (5,5) size 89x20
+                LayoutInline {DIV} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 23x19
+                LayoutText {#text} at (0,0) size 4x19
+                LayoutInline {DIV} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 0x0
+            LayoutNGTableCell {TD} at (98,74) size 98x29 [border: (1px solid #000000)] [r=2 c=1 rs=1 cs=1]
+              LayoutNGBlockFlow {DIV} at (5,5) size 89x20
+                LayoutInline {DIV} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 23x19
+                LayoutText {#text} at (0,0) size 4x19
+                LayoutInline {DIV} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 22x19
+                LayoutText {#text} at (0,0) size 0x0
