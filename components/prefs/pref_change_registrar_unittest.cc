@@ -4,9 +4,10 @@
 
 #include "components/prefs/pref_change_registrar.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "components/prefs/pref_observer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -160,10 +161,10 @@ TEST_F(ObserveSetOfPreferencesTest, IsManaged) {
   std::unique_ptr<PrefChangeRegistrar> pref_set(CreatePrefChangeRegistrar());
   EXPECT_FALSE(pref_set->IsManaged());
   pref_service_->SetManagedPref(kHomePage,
-                                base::MakeUnique<Value>("http://crbug.com"));
+                                std::make_unique<Value>("http://crbug.com"));
   EXPECT_TRUE(pref_set->IsManaged());
   pref_service_->SetManagedPref(kHomePageIsNewTabPage,
-                                base::MakeUnique<Value>(true));
+                                std::make_unique<Value>(true));
   EXPECT_TRUE(pref_set->IsManaged());
   pref_service_->RemoveManagedPref(kHomePage);
   EXPECT_TRUE(pref_set->IsManaged());
@@ -185,17 +186,17 @@ TEST_F(ObserveSetOfPreferencesTest, Observe) {
 
   EXPECT_CALL(*this, OnPreferenceChanged(kHomePage));
   pref_service_->SetUserPref(kHomePage,
-                             base::MakeUnique<Value>("http://crbug.com"));
+                             std::make_unique<Value>("http://crbug.com"));
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnPreferenceChanged(kHomePageIsNewTabPage));
   pref_service_->SetUserPref(kHomePageIsNewTabPage,
-                             base::MakeUnique<Value>(true));
+                             std::make_unique<Value>(true));
   Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, OnPreferenceChanged(_)).Times(0);
   pref_service_->SetUserPref(kApplicationLocale,
-                             base::MakeUnique<Value>("en_US.utf8"));
+                             std::make_unique<Value>("en_US.utf8"));
   Mock::VerifyAndClearExpectations(this);
 }
 

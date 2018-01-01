@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -19,37 +18,37 @@ PrefRegistrySimple::~PrefRegistrySimple() {
 
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value),
                      NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value),
                      NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value),
                      NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterStringPref(const std::string& path,
                                             const std::string& default_value) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value),
                      NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterFilePathPref(
     const std::string& path,
     const base::FilePath& default_value) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value.value()),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value.value()),
                      NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterListPref(const std::string& path) {
-  RegisterPreference(path, base::MakeUnique<base::ListValue>(),
+  RegisterPreference(path, std::make_unique<base::ListValue>(),
                      NO_REGISTRATION_FLAGS);
 }
 
@@ -60,7 +59,7 @@ void PrefRegistrySimple::RegisterListPref(
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path) {
-  RegisterPreference(path, base::MakeUnique<base::DictionaryValue>(),
+  RegisterPreference(path, std::make_unique<base::DictionaryValue>(),
                      NO_REGISTRATION_FLAGS);
 }
 
@@ -73,52 +72,52 @@ void PrefRegistrySimple::RegisterDictionaryPref(
 void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
                                            int64_t default_value) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::Int64ToString(default_value)),
+      path, std::make_unique<base::Value>(base::Int64ToString(default_value)),
       NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
                                             uint64_t default_value) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::NumberToString(default_value)),
+      path, std::make_unique<base::Value>(base::NumberToString(default_value)),
       NO_REGISTRATION_FLAGS);
 }
 
 void PrefRegistrySimple::RegisterBooleanPref(const std::string& path,
                                              bool default_value,
                                              uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value), flags);
+  RegisterPreference(path, std::make_unique<base::Value>(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterIntegerPref(const std::string& path,
                                              int default_value,
                                              uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value), flags);
+  RegisterPreference(path, std::make_unique<base::Value>(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterDoublePref(const std::string& path,
                                             double default_value,
                                             uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value), flags);
+  RegisterPreference(path, std::make_unique<base::Value>(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterStringPref(const std::string& path,
                                             const std::string& default_value,
                                             uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value), flags);
+  RegisterPreference(path, std::make_unique<base::Value>(default_value), flags);
 }
 
 void PrefRegistrySimple::RegisterFilePathPref(
     const std::string& path,
     const base::FilePath& default_value,
     uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::Value>(default_value.value()),
+  RegisterPreference(path, std::make_unique<base::Value>(default_value.value()),
                      flags);
 }
 
 void PrefRegistrySimple::RegisterListPref(const std::string& path,
                                           uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::ListValue>(), flags);
+  RegisterPreference(path, std::make_unique<base::ListValue>(), flags);
 }
 
 void PrefRegistrySimple::RegisterListPref(
@@ -130,7 +129,7 @@ void PrefRegistrySimple::RegisterListPref(
 
 void PrefRegistrySimple::RegisterDictionaryPref(const std::string& path,
                                                 uint32_t flags) {
-  RegisterPreference(path, base::MakeUnique<base::DictionaryValue>(), flags);
+  RegisterPreference(path, std::make_unique<base::DictionaryValue>(), flags);
 }
 
 void PrefRegistrySimple::RegisterDictionaryPref(
@@ -144,7 +143,7 @@ void PrefRegistrySimple::RegisterInt64Pref(const std::string& path,
                                            int64_t default_value,
                                            uint32_t flags) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::Int64ToString(default_value)),
+      path, std::make_unique<base::Value>(base::Int64ToString(default_value)),
       flags);
 }
 
@@ -152,6 +151,6 @@ void PrefRegistrySimple::RegisterUint64Pref(const std::string& path,
                                             uint64_t default_value,
                                             uint32_t flags) {
   RegisterPreference(
-      path, base::MakeUnique<base::Value>(base::NumberToString(default_value)),
+      path, std::make_unique<base::Value>(base::NumberToString(default_value)),
       flags);
 }

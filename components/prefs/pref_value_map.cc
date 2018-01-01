@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 PrefValueMap::PrefValueMap() {}
@@ -92,7 +91,7 @@ bool PrefValueMap::GetBoolean(const std::string& key,
 }
 
 void PrefValueMap::SetBoolean(const std::string& key, bool value) {
-  SetValue(key, base::MakeUnique<base::Value>(value));
+  SetValue(key, std::make_unique<base::Value>(value));
 }
 
 bool PrefValueMap::GetString(const std::string& key,
@@ -103,7 +102,7 @@ bool PrefValueMap::GetString(const std::string& key,
 
 void PrefValueMap::SetString(const std::string& key,
                              const std::string& value) {
-  SetValue(key, base::MakeUnique<base::Value>(value));
+  SetValue(key, std::make_unique<base::Value>(value));
 }
 
 bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
@@ -112,11 +111,11 @@ bool PrefValueMap::GetInteger(const std::string& key, int* value) const {
 }
 
 void PrefValueMap::SetInteger(const std::string& key, const int value) {
-  SetValue(key, base::MakeUnique<base::Value>(value));
+  SetValue(key, std::make_unique<base::Value>(value));
 }
 
 void PrefValueMap::SetDouble(const std::string& key, const double value) {
-  SetValue(key, base::MakeUnique<base::Value>(value));
+  SetValue(key, std::make_unique<base::Value>(value));
 }
 
 void PrefValueMap::GetDifferingKeys(
@@ -159,7 +158,7 @@ void PrefValueMap::GetDifferingKeys(
 }
 
 std::unique_ptr<base::DictionaryValue> PrefValueMap::AsDictionaryValue() const {
-  auto dictionary = base::MakeUnique<base::DictionaryValue>();
+  auto dictionary = std::make_unique<base::DictionaryValue>();
   for (const auto& value : prefs_) {
     dictionary->Set(value.first, value.second->CreateDeepCopy());
   }

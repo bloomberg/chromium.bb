@@ -405,19 +405,19 @@ void PrefService::Set(const std::string& path, const base::Value& value) {
 }
 
 void PrefService::SetBoolean(const std::string& path, bool value) {
-  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
+  SetUserPrefValue(path, std::make_unique<base::Value>(value));
 }
 
 void PrefService::SetInteger(const std::string& path, int value) {
-  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
+  SetUserPrefValue(path, std::make_unique<base::Value>(value));
 }
 
 void PrefService::SetDouble(const std::string& path, double value) {
-  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
+  SetUserPrefValue(path, std::make_unique<base::Value>(value));
 }
 
 void PrefService::SetString(const std::string& path, const std::string& value) {
-  SetUserPrefValue(path, base::MakeUnique<base::Value>(value));
+  SetUserPrefValue(path, std::make_unique<base::Value>(value));
 }
 
 void PrefService::SetFilePath(const std::string& path,
@@ -427,7 +427,7 @@ void PrefService::SetFilePath(const std::string& path,
 
 void PrefService::SetInt64(const std::string& path, int64_t value) {
   SetUserPrefValue(path,
-                   base::MakeUnique<base::Value>(base::Int64ToString(value)));
+                   std::make_unique<base::Value>(base::Int64ToString(value)));
 }
 
 int64_t PrefService::GetInt64(const std::string& path) const {
@@ -449,7 +449,7 @@ int64_t PrefService::GetInt64(const std::string& path) const {
 
 void PrefService::SetUint64(const std::string& path, uint64_t value) {
   SetUserPrefValue(path,
-                   base::MakeUnique<base::Value>(base::NumberToString(value)));
+                   std::make_unique<base::Value>(base::NumberToString(value)));
 }
 
 uint64_t PrefService::GetUint64(const std::string& path) const {
