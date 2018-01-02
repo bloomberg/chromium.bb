@@ -39,11 +39,6 @@ class WebState;
 // kTabModelTabKey.
 extern NSString* const kTabModelTabDidFinishLoadingNotification;
 
-// All tabs have finished their shutdown sequences.
-// NOTE: This notification is not sent when closing a single tab that happens
-// to be the last tab.
-extern NSString* const kTabModelAllTabsDidCloseNotification;
-
 // ---------------------------------------------------------------------------
 
 namespace TabModelConstants {

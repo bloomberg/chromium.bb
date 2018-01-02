@@ -69,8 +69,6 @@
 
 NSString* const kTabModelTabDidFinishLoadingNotification =
     @"kTabModelTabDidFinishLoadingNotification";
-NSString* const kTabModelAllTabsDidCloseNotification =
-    @"kTabModelAllTabsDidCloseNotification";
 
 namespace {
 
@@ -472,9 +470,7 @@ void CleanCertificatePolicyCache(
 
 - (void)closeAllTabs {
   _webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabModelAllTabsDidCloseNotification
-                    object:self];
+  [_observers tabModelClosedAllTabs:self];
 }
 
 - (void)haltAllTabs {
