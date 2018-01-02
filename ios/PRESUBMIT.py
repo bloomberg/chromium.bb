@@ -12,11 +12,19 @@ import os
 
 TODO_PATTERN = r'TO[D]O\(([^\)]*)\)'
 CRBUG_PATTERN = r'crbug\.com/\d+$'
-ARC_COMPILE_GUARD = '''\
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-'''
+ARC_COMPILE_GUARD = [
+    '#if !defined(__has_feature) || !__has_feature(objc_arc)',
+    '#error "This file requires ARC support."',
+    '#endif',
+]
+
+def IsSubListOf(needle, hay):
+  """Returns whether there is a slice of |hay| equal to |needle|."""
+  for i, line in enumerate(hay):
+    if line == needle[0]:
+      if needle == hay[i:i+len(needle)]:
+        return True
+  return False
 
 def _CheckARCCompilationGuard(input_api, output_api):
   """ Checks whether new objc files have proper ARC compile guards."""
@@ -29,8 +37,8 @@ def _CheckARCCompilationGuard(input_api, output_api):
     if ext not in ('.m', '.mm'):
       continue
 
-    if ARC_COMPILE_GUARD not in f.NewContents():
-        files_without_headers.append(f.LocalPath())
+    if not IsSubListOf(ARC_COMPILE_GUARD, f.NewContents()):
+      files_without_headers.append(f.LocalPath())
 
   if not files_without_headers:
     return []
@@ -39,9 +47,8 @@ def _CheckARCCompilationGuard(input_api, output_api):
   error_message = '\n'.join([
       'Found new Objective-C implementation file%(plural)s without compile'
       ' guard%(plural)s. Please use the following compile guard'
-      ':' % {'plural': plural_suffix},
-      ARC_COMPILE_GUARD,
-  ] + files_without_headers) + '\n'
+      ':' % {'plural': plural_suffix}
+  ] + ARC_COMPILE_GUARD + files_without_headers) + '\n'
 
   return [output_api.PresubmitError(error_message)]
 
