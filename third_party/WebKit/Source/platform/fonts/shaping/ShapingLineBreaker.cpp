@@ -387,8 +387,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeToEnd(unsigned start,
   TextDirection direction = result_->Direction();
   if (first_safe == start) {
     // If |start| is safe-to-break no reshape is needed.
-    line_result = ShapeResult::Create(font_, 0, direction);
-    result_->CopyRange(start, range_end, line_result.get());
+    line_result = result_->SubRange(start, range_end);
   } else if (first_safe < range_end) {
     // Otherwise reshape to |first_safe|, then copy the rest.
     line_result = Shape(direction, start, first_safe);

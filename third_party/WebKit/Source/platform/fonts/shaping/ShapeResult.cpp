@@ -195,15 +195,20 @@ void ShapeResult::RunInfo::SetGlyphAndPositions(unsigned index,
   data.offset = FloatSize(offset_x, offset_y);
 }
 
-ShapeResult::ShapeResult(const Font* font,
+ShapeResult::ShapeResult(const SimpleFontData* font_data,
                          unsigned num_characters,
                          TextDirection direction)
     : width_(0),
-      primary_font_(const_cast<SimpleFontData*>(font->PrimaryFont())),
+      primary_font_(font_data),
       num_characters_(num_characters),
       num_glyphs_(0),
       direction_(static_cast<unsigned>(direction)),
       has_vertical_offsets_(0) {}
+
+ShapeResult::ShapeResult(const Font* font,
+                         unsigned num_characters,
+                         TextDirection direction)
+    : ShapeResult(font->PrimaryFont(), num_characters, direction) {}
 
 ShapeResult::ShapeResult(const ShapeResult& other)
     : width_(other.width_),
@@ -812,6 +817,14 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
   target->CheckConsistency();
 #endif
+}
+
+scoped_refptr<ShapeResult> ShapeResult::SubRange(unsigned start_offset,
+                                                 unsigned end_offset) const {
+  scoped_refptr<ShapeResult> sub_range =
+      Create(primary_font_.get(), 0, Direction());
+  CopyRange(start_offset, end_offset, sub_range.get());
+  return sub_range;
 }
 
 #if DCHECK_IS_ON()
