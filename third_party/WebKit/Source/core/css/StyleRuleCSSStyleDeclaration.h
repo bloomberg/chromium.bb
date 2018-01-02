@@ -23,37 +23,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PropertySetCSSStyleDeclaration_h
-#define PropertySetCSSStyleDeclaration_h
+#ifndef StyleRuleCSSStyleDeclaration_h
+#define StyleRuleCSSStyleDeclaration_h
 
-#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
+#include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/HashMap.h"
 
 namespace blink {
 
+class CSSRule;
 class MutableCSSPropertyValueSet;
-class PropertyRegistry;
 
-class PropertySetCSSStyleDeclaration
-    : public AbstractPropertySetCSSStyleDeclaration {
+class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
  public:
-  PropertySetCSSStyleDeclaration(MutableCSSPropertyValueSet& property_set)
-      : property_set_(&property_set) {}
-
-  virtual void Trace(blink::Visitor*);
-
- protected:
-  MutableCSSPropertyValueSet& PropertySet() const final {
-    DCHECK(property_set_);
-    return *property_set_;
+  static StyleRuleCSSStyleDeclaration* Create(
+      MutableCSSPropertyValueSet& property_set,
+      CSSRule* parent_rule) {
+    return new StyleRuleCSSStyleDeclaration(property_set, parent_rule);
   }
 
-  PropertyRegistry* GetPropertyRegistry() const override { return nullptr; }
+  void Reattach(MutableCSSPropertyValueSet&);
 
-  Member<MutableCSSPropertyValueSet> property_set_;  // Cannot be null
+  virtual void Trace(blink::Visitor*);
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+
+ protected:
+  StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);
+  ~StyleRuleCSSStyleDeclaration() override;
+
+  CSSStyleSheet* ParentStyleSheet() const override;
+
+  CSSRule* parentRule() const override { return parent_rule_; }
+
+  void WillMutate() override;
+  void DidMutate(MutationType) override;
+  PropertyRegistry* GetPropertyRegistry() const final;
+
+  TraceWrapperMember<CSSRule> parent_rule_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // StyleRuleCSSStyleDeclaration_h

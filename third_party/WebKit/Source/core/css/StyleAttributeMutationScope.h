@@ -20,16 +20,43 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/PropertySetCSSStyleDeclaration.h"
+#ifndef StyleAttributeMutationScope_h
+#define StyleAttributeMutationScope_h
 
-#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
-#include "core/css/CSSPropertyValueSet.h"
+#include "platform/heap/Member.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 
-void PropertySetCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
-  visitor->Trace(property_set_);
-  AbstractPropertySetCSSStyleDeclaration::Trace(visitor);
-}
+class AbstractPropertySetCSSStyleDeclaration;
+class MutationObserverInterestGroup;
+class MutationRecord;
+
+class StyleAttributeMutationScope {
+  STACK_ALLOCATED();
+
+ public:
+  StyleAttributeMutationScope(AbstractPropertySetCSSStyleDeclaration*);
+
+  ~StyleAttributeMutationScope();
+
+  void EnqueueMutationRecord() { should_deliver_ = true; }
+
+  void DidInvalidateStyleAttr() { should_notify_inspector_ = true; }
+
+ private:
+  static unsigned scope_count_;
+  static AbstractPropertySetCSSStyleDeclaration* current_decl_;
+  static bool should_notify_inspector_;
+  static bool should_deliver_;
+
+  Member<MutationObserverInterestGroup> mutation_recipients_;
+  Member<MutationRecord> mutation_;
+  AtomicString old_value_;
+  DISALLOW_COPY_AND_ASSIGN(StyleAttributeMutationScope);
+};
 
 }  // namespace blink
+
+#endif

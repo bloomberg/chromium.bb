@@ -5,7 +5,7 @@
 #ifndef KeyframeStyleRuleCSSStyleDeclaration_h
 #define KeyframeStyleRuleCSSStyleDeclaration_h
 
-#include "core/css/PropertySetCSSStyleDeclaration.h"
+#include "core/css/StyleRuleCSSStyleDeclaration.h"
 
 namespace blink {
 

@@ -7,6 +7,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 blink_core_sources("css") {
   split_count = 10
   sources = [
+    "AbstractPropertySetCSSStyleDeclaration.cpp",
+    "AbstractPropertySetCSSStyleDeclaration.h",
     "ActiveStyleSheets.cpp",
     "ActiveStyleSheets.h",
     "BasicShapeFunctions.cpp",
@@ -207,6 +209,8 @@ blink_core_sources("css") {
     "FontSizeFunctions.cpp",
     "FontSizeFunctions.h",
     "HashTools.h",
+    "InlineCSSStyleDeclaration.cpp",
+    "InlineCSSStyleDeclaration.h",
     "KeyframeStyleRuleCSSStyleDeclaration.cpp",
     "KeyframeStyleRuleCSSStyleDeclaration.h",
     "LocalFontFaceSource.cpp",
@@ -261,6 +265,8 @@ blink_core_sources("css") {
     "SelectorQuery.h",
     "ShadowTreeStyleSheetCollection.cpp",
     "ShadowTreeStyleSheetCollection.h",
+    "StyleAttributeMutationScope.cpp",
+    "StyleAttributeMutationScope.h",
     "StyleAutoColor.h",
     "StyleChangeReason.cpp",
     "StyleChangeReason.h",
@@ -279,6 +285,8 @@ blink_core_sources("css") {
     "StylePropertyShorthandCustom.cpp",
     "StyleRule.cpp",
     "StyleRule.h",
+    "StyleRuleCSSStyleDeclaration.cpp",
+    "StyleRuleCSSStyleDeclaration.h",
     "StyleRuleImport.cpp",
     "StyleRuleImport.h",
     "StyleRuleKeyframe.cpp",
