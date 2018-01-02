@@ -39,20 +39,20 @@ class TransTestBase {
 
  protected:
   void RunInvAccuracyCheck() {
-    tran_low_t input[64];
-    tran_low_t output[64];
-    double ref_input[64];
-    double ref_output[64];
-
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     const int count_test_block = 5000;
     for (int ti = 0; ti < count_test_block; ++ti) {
+      tran_low_t input[64];
+      double ref_input[64];
       for (int ni = 0; ni < txfm_size_; ++ni) {
         input[ni] = rnd.Rand8() - rnd.Rand8();
         ref_input[ni] = static_cast<double>(input[ni]);
       }
 
+      tran_low_t output[64];
       inv_txfm_(input, output);
+
+      double ref_output[64];
       libaom_test::reference_idct_1d(ref_input, ref_output, txfm_size_);
 
       for (int ni = 0; ni < txfm_size_; ++ni) {
