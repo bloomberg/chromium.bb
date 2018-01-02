@@ -68,6 +68,8 @@ class VRDisplayFrameRequestCallback
       : vr_display_(vr_display) {}
   ~VRDisplayFrameRequestCallback() override {}
   void Invoke(double high_res_time_ms) override {
+    if (Id() != vr_display_->PendingMagicWindowVSyncId())
+      return;
     double monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
       monotonic_time = WTF::CurrentTimeTicksInSeconds();
@@ -221,6 +223,7 @@ void VRDisplay::RequestVSync() {
     if (pending_magic_window_vsync_)
       return;
     magic_window_vsync_waiting_for_pose_.Reset();
+    magic_window_pose_request_time_ = WTF::CurrentTimeTicks();
     magic_window_provider_->GetPose(
         WTF::Bind(&VRDisplay::OnMagicWindowPose, WrapWeakPersistent(this)));
     pending_magic_window_vsync_ = true;
@@ -256,6 +259,7 @@ void VRDisplay::RequestVSync() {
   // before rAF (b), after rAF (c), or not at all (d). If rAF isn't called at
   // all, there won't be future frames.
 
+  pending_magic_window_vsync_ = false;
   pending_presenting_vsync_ = true;
   vr_presentation_provider_->GetVSync(
       WTF::Bind(&VRDisplay::OnPresentingVSync, WrapWeakPersistent(this)));
@@ -919,6 +923,7 @@ void VRDisplay::StopPresenting() {
   did_submit_this_frame_ = false;
   frame_transport_method_ = FrameTransport::kUninitialized;
   wait_for_previous_render_ = WaitPrevStrategy::kUninitialized;
+  RequestVSync();
 }
 
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
@@ -1049,21 +1054,26 @@ void VRDisplay::OnMagicWindowVSync(double timestamp) {
   if (is_presenting_)
     return;
   vr_frame_id_ = -1;
-  WTF::TimeDelta pose_age = WTF::CurrentTimeTicks() - magic_window_pose_time_;
-  if (pose_age < kMagicWindowPoseAgeThreshold) {
-    ProcessScheduledAnimations(timestamp);
-  } else {
-    // The VSync got triggered before ever getting a pose, or the pose is
+  WTF::TimeDelta pose_age =
+      WTF::CurrentTimeTicks() - magic_window_pose_received_time_;
+  if (pose_age >= kMagicWindowPoseAgeThreshold &&
+      magic_window_pose_request_time_ > magic_window_pose_received_time_) {
+    // The VSync got triggered before ever receiving a pose, or the pose is
     // stale. Defer the animation until a pose arrives to avoid passing null
-    // poses to the application.
+    // poses to the application, but only do this if we have an outstanding
+    // unresolved GetPose request. For example, the pose might be stale after
+    // exiting VR Browser magic window mode due to a longish transition, but we
+    // need to use it anyway if it's from the current frame's GetPose.
     magic_window_vsync_waiting_for_pose_ =
         WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
                   WrapWeakPersistent(this), timestamp);
+  } else {
+    ProcessScheduledAnimations(timestamp);
   }
 }
 
 void VRDisplay::OnMagicWindowPose(device::mojom::blink::VRPosePtr pose) {
-  magic_window_pose_time_ = WTF::CurrentTimeTicks();
+  magic_window_pose_received_time_ = WTF::CurrentTimeTicks();
   if (!in_animation_frame_) {
     frame_pose_ = std::move(pose);
   } else {

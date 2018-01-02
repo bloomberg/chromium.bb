@@ -100,6 +100,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   void FocusChanged();
 
   void OnMagicWindowVSync(double timestamp);
+  int PendingMagicWindowVSyncId() { return pending_magic_window_vsync_id_; }
 
   void Trace(blink::Visitor*) override;
   void TraceWrappers(const ScriptWrappableVisitor*) const override;
@@ -248,7 +249,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool pending_magic_window_vsync_ = false;
   int pending_magic_window_vsync_id_ = -1;
   base::OnceClosure magic_window_vsync_waiting_for_pose_;
-  WTF::TimeTicks magic_window_pose_time_;
+  WTF::TimeTicks magic_window_pose_request_time_;
+  WTF::TimeTicks magic_window_pose_received_time_;
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;
