@@ -62,7 +62,7 @@ class MODULES_EXPORT DeprecatedStorageQuotaCallbacksImpl final
                                     unsigned long long quota_in_bytes) override;
   void DidGrantStorageQuota(unsigned long long usage_in_bytes,
                             unsigned long long granted_quota_in_bytes) override;
-  void DidFail(WebStorageQuotaError) override;
+  void DidFail(QuotaStatusCode) override;
 
  private:
   DeprecatedStorageQuotaCallbacksImpl(V8StorageUsageCallback*,

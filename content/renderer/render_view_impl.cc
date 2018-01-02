@@ -236,7 +236,6 @@ using blink::WebSecurityPolicy;
 using blink::WebSettings;
 using blink::WebSize;
 using blink::WebStorageQuotaCallbacks;
-using blink::WebStorageQuotaError;
 using blink::WebString;
 using blink::WebTappedInfo;
 using blink::WebTextDirection;

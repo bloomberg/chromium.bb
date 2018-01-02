@@ -70,7 +70,7 @@ void DeprecatedStorageQuotaCallbacksImpl::DidGrantStorageQuota(
     quota_callback_->InvokeAndReportException(nullptr, granted_quota_in_bytes);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::DidFail(WebStorageQuotaError error) {
+void DeprecatedStorageQuotaCallbacksImpl::DidFail(QuotaStatusCode error) {
   if (error_callback_) {
     error_callback_->InvokeAndReportException(
         nullptr, DOMError::Create(static_cast<ExceptionCode>(error)));

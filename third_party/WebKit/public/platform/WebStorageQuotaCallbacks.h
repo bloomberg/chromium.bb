@@ -33,7 +33,7 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
-#include "WebStorageQuotaError.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 
 namespace blink {
 
@@ -67,7 +67,7 @@ class WebStorageQuotaCallbacks {
       unsigned long long usage_in_bytes,
       unsigned long long granted_quota_in_bytes);
 
-  BLINK_PLATFORM_EXPORT void DidFail(WebStorageQuotaError);
+  BLINK_PLATFORM_EXPORT void DidFail(QuotaStatusCode);
 
  private:
   WebPrivatePtr<StorageQuotaCallbacks> private_;
