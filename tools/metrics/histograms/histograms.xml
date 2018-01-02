@@ -42948,6 +42948,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Sites can send an Expect-CT header to Chrome to indicate that they intend
+    their sites to comply with Chrome's Certificate Transparency policy. This
+    histogram is recorded on connection setup, whenever Chrome connects to an
+    Expect-CT site using a publicly trusted root. The histogram records the CT
+    policy compliance status of the connection.
+  </summary>
+</histogram>
+
+<histogram name="Net.ExpectCTHeader.PolicyComplianceOnHeaderProcessing"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    Sites can send an Expect-CT header to Chrome to indicate that they intend
+    their sites to comply with Chrome's Certificate Transparency policy. This
+    histogram is recorded whenever an Expect-CT header is successfully parsed on
+    a connection that chains to a publicly trusted root. The histogram records
+    the CT policy compliance status of the connection on which the header was
+    received.
+  </summary>
+</histogram>
+
 <histogram name="Net.ExpectCTHeaderResult" enum="ExpectCTHeaderResult">
   <obsolete>
     Deprecated 04/2017.
