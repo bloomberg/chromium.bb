@@ -698,43 +698,6 @@ ScopedJavaLocalRef<jobject> WebContentsAndroid::GetOrCreateEventForwarder(
   return native_view->GetEventForwarder();
 }
 
-void WebContentsAndroid::CreateJavaBridgeDispatcherHost(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& retained_javascript_objects) {
-  DCHECK(!java_bridge_dispatcher_host_);
-  java_bridge_dispatcher_host_ = new GinJavaBridgeDispatcherHost(
-      web_contents_, retained_javascript_objects);
-}
-
-void WebContentsAndroid::SetAllowJavascriptInterfacesInspection(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  DCHECK(java_bridge_dispatcher_host_);
-  java_bridge_dispatcher_host_->SetAllowObjectContentsInspection(allow);
-}
-
-void WebContentsAndroid::AddJavascriptInterface(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& /* obj */,
-    const JavaParamRef<jobject>& object,
-    const JavaParamRef<jstring>& name,
-    const JavaParamRef<jclass>& safe_annotation_clazz) {
-  DCHECK(java_bridge_dispatcher_host_);
-  java_bridge_dispatcher_host_->AddNamedObject(
-      ConvertJavaStringToUTF8(env, name), object, safe_annotation_clazz);
-}
-
-void WebContentsAndroid::RemoveJavascriptInterface(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& /* obj */,
-    const JavaParamRef<jstring>& name) {
-  DCHECK(java_bridge_dispatcher_host_);
-  java_bridge_dispatcher_host_->RemoveNamedObject(
-      ConvertJavaStringToUTF8(env, name));
-}
-
 void WebContentsAndroid::OnFinishGetContentBitmap(
     const JavaRef<jobject>& obj,
     const JavaRef<jobject>& callback,
