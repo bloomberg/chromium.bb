@@ -16,11 +16,11 @@ class CheckARCCompilationGuardTest(unittest.TestCase):
 
   def testGoodImplementationFiles(self):
     """Test that .m and .mm files with a guard don't raise any errors."""
-    text = "foobar \n" + PRESUBMIT.ARC_COMPILE_GUARD
+    lines = ["foobar"] + PRESUBMIT.ARC_COMPILE_GUARD
     mock_input = PRESUBMIT_test_mocks.MockInputApi()
     mock_input.files = [
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.mm', text),
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.m', text),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.mm', lines),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.m', lines),
     ]
     mock_output = PRESUBMIT_test_mocks.MockOutputApi()
     errors = PRESUBMIT._CheckARCCompilationGuard(mock_input, mock_output)
@@ -28,11 +28,11 @@ class CheckARCCompilationGuardTest(unittest.TestCase):
 
   def testBadImplementationFiles(self):
     """Test that .m and .mm files without a guard raise an error."""
-    text = "foobar \n"
+    lines = ["foobar"]
     mock_input = PRESUBMIT_test_mocks.MockInputApi()
     mock_input.files = [
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.mm', text),
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.m', text),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.mm', lines),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.m', lines),
     ]
     mock_output = PRESUBMIT_test_mocks.MockOutputApi()
     errors = PRESUBMIT._CheckARCCompilationGuard(mock_input, mock_output)
@@ -43,12 +43,12 @@ class CheckARCCompilationGuardTest(unittest.TestCase):
 
   def testOtherFiles(self):
     """Test that other files without a guard don't raise errors."""
-    text = "foobar \n"
+    lines = ["foobar"]
     mock_input = PRESUBMIT_test_mocks.MockInputApi()
     mock_input.files = [
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.h', text),
-      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.cc', text),
-      PRESUBMIT_test_mocks.MockFile('ios/path/BUILD.gn', text),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.h', lines),
+      PRESUBMIT_test_mocks.MockFile('ios/path/foo_controller.cc', lines),
+      PRESUBMIT_test_mocks.MockFile('ios/path/BUILD.gn', lines),
     ]
     mock_output = PRESUBMIT_test_mocks.MockOutputApi()
     errors = PRESUBMIT._CheckARCCompilationGuard(mock_input, mock_output)
