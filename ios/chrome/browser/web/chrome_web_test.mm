@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
+#import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,10 +18,12 @@
 
 ChromeWebTest::~ChromeWebTest() {}
 
-ChromeWebTest::ChromeWebTest() : web::WebTestWithWebState() {
-  TestChromeBrowserState::Builder browser_state_builder;
-  chrome_browser_state_ = browser_state_builder.Build();
-}
+ChromeWebTest::ChromeWebTest(std::unique_ptr<web::WebClient> web_client)
+    : web::WebTestWithWebState(std::move(web_client)),
+      chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+
+ChromeWebTest::ChromeWebTest()
+    : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
 
 void ChromeWebTest::SetUp() {
   web::WebTestWithWebState::SetUp();

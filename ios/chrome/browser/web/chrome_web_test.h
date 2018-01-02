@@ -11,6 +11,10 @@
 
 class TestChromeBrowserState;
 
+namespace web {
+class WebClient;
+}  // namespace web
+
 // Test fixture that exposes a TestChromeBrowserState to allow configuring
 // the BrowserState in tests.
 class ChromeWebTest : public web::WebTestWithWebState {
@@ -19,6 +23,7 @@ class ChromeWebTest : public web::WebTestWithWebState {
 
  protected:
   ChromeWebTest();
+  explicit ChromeWebTest(std::unique_ptr<web::WebClient> web_client);
   // WebTest implementation.
   void SetUp() override;
   void TearDown() override;
