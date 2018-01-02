@@ -1063,8 +1063,8 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
   EXPECT_EQ(1U, visits.size());
 }
 
-// Test that ClearOldOnDemandFavicons() deletes favicons associated only to
-// unstarred page URLs.
+// Test that ClearOldOnDemandFaviconsIfPossible() deletes favicons associated
+// only to unstarred page URLs.
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
@@ -1084,7 +1084,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
   GURL page_url("http://google.com/");
   ASSERT_NE(0, thumb_db_->AddIconMapping(page_url, icon_id));
 
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold());
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold());
 
   // The icon gets deleted.
   EXPECT_FALSE(thumb_db_->GetIconMappingsForPageURL(page_url, nullptr));
@@ -1092,8 +1092,8 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
   EXPECT_FALSE(thumb_db_->GetFaviconBitmaps(icon_id, nullptr));
 }
 
-// Test that ClearOldOnDemandFavicons() deletes favicons associated to at least
-// one starred page URL.
+// Test that ClearOldOnDemandFaviconsIfPossible() deletes favicons associated to
+// at least one starred page URL.
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
@@ -1116,7 +1116,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
   GURL page_url2("http://google.com/2");
   ASSERT_NE(0, thumb_db_->AddIconMapping(page_url2, icon_id));
 
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold());
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold());
 
   // Nothing gets deleted.
   EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
@@ -1131,15 +1131,15 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
   EXPECT_EQ(icon_id, icon_mapping[1].icon_id);
 }
 
-// Test that ClearOldOnDemandFavicons() has effect if the last clearing was long
-// time age (such as 2 days ago).
+// Test that ClearOldOnDemandFaviconsIfPossible() has effect if the last
+// clearing was long time age (such as 2 days ago).
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
 
   // Previous clearing (2 days ago).
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold() -
-                                    base::TimeDelta::FromDays(2));
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold() -
+                                              base::TimeDelta::FromDays(2));
 
   // The blob does not encode any real bitmap, obviously.
   const unsigned char kBlob[] = "0";
@@ -1156,7 +1156,7 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
   GURL page_url("http://google.com/");
   ASSERT_NE(0, thumb_db_->AddIconMapping(page_url, icon_id));
 
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold());
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold());
 
   // The icon gets deleted.
   EXPECT_FALSE(thumb_db_->GetIconMappingsForPageURL(page_url, nullptr));
@@ -1164,16 +1164,16 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
   EXPECT_FALSE(thumb_db_->GetFaviconBitmaps(icon_id, nullptr));
 }
 
-// Test that ClearOldOnDemandFavicons() deletes favicons associated to at least
-// one starred page URL.
+// Test that ClearOldOnDemandFaviconsIfPossible() deletes favicons associated to
+// at least one starred page URL.
 TEST_F(ExpireHistoryTest,
        ClearOldOnDemandFaviconsDoesNotDeleteAfterShortDelay) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
 
   // Previous clearing (5 minutes ago).
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold() -
-                                    base::TimeDelta::FromMinutes(5));
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold() -
+                                              base::TimeDelta::FromMinutes(5));
 
   // The blob does not encode any real bitmap, obviously.
   const unsigned char kBlob[] = "0";
@@ -1192,7 +1192,7 @@ TEST_F(ExpireHistoryTest,
   GURL page_url2("http://google.com/2");
   ASSERT_NE(0, thumb_db_->AddIconMapping(page_url2, icon_id));
 
-  expirer_.ClearOldOnDemandFavicons(GetOldFaviconThreshold());
+  expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold());
 
   // Nothing gets deleted.
   EXPECT_TRUE(thumb_db_->GetFaviconHeader(icon_id, nullptr, nullptr));
