@@ -107,16 +107,17 @@ const CGFloat kAppendButtonSize = 48.0;
 - (void)layoutAccessoryViews {
   LayoutRect imageViewLayout = LayoutRectMake(
       IsCompactTablet() ? kLeadingPaddingIpadCompact : kLeadingPaddingIpad,
-      CGRectGetWidth(self.bounds),
+      CGRectGetWidth(self.contentView.bounds),
       floor((_rowHeight - kImageDimensionLength) / 2), kImageDimensionLength,
       kImageDimensionLength);
   _imageView.frame = LayoutRectGetRect(imageViewLayout);
 
-  LayoutRect trailingAccessoryLayout = LayoutRectMake(
-      CGRectGetWidth(self.bounds) - kAppendButtonSize -
-          kAppendButtonTrailingMargin,
-      CGRectGetWidth(self.bounds), floor((_rowHeight - kAppendButtonSize) / 2),
-      kAppendButtonSize, kAppendButtonSize);
+  LayoutRect trailingAccessoryLayout =
+      LayoutRectMake(CGRectGetWidth(self.contentView.bounds) -
+                         kAppendButtonSize - kAppendButtonTrailingMargin,
+                     CGRectGetWidth(self.contentView.bounds),
+                     floor((_rowHeight - kAppendButtonSize) / 2),
+                     kAppendButtonSize, kAppendButtonSize);
   _appendButton.frame = LayoutRectGetRect(trailingAccessoryLayout);
 }
 
