@@ -111,6 +111,11 @@
             "value": ["referrersEnabled", {"type":"boolean"}],
             "description": "If enabled, Chrome sends <code>referer</code> headers with your requests. Yes, the name of this preference doesn't match the misspelled header. No, we're not going to change it. The value of this preference is of type boolean, and the default value is <code>true</code>."
           },
+          "doNotTrackEnabled": {
+            "$ref": "types.ChromeSetting",
+            "value": ["doNotTrackEnabled", {"type":"boolean"}],
+            "description": "If enabled, Chrome sends 'Do Not Track' (<code>DNT: 1</code>) header with your requests. The value of this preference is of type boolean, and the default value is <code>false</code>."
+          },
           "protectedContentEnabled": {
             "$ref": "types.ChromeSetting",
             "value": ["protectedContentEnabled", {"type":"boolean"}],
