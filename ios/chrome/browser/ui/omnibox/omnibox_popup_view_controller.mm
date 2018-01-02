@@ -153,6 +153,13 @@ UIColor* BackgroundColorIncognito() {
   [self layoutRows];
 }
 
+#pragma mark - Properties accessors
+
+- (void)setIncognito:(BOOL)incognito {
+  DCHECK(!self.viewLoaded);
+  _incognito = incognito;
+}
+
 #pragma mark - AutocompleteResultConsumer
 
 - (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
