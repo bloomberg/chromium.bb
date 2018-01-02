@@ -4,7 +4,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/image_util.h"
+#import "ios/chrome/browser/ui/image_util/image_util.h"
 
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image.h"
@@ -25,10 +25,9 @@ UIColor* DominantColorForImage(const gfx::Image& image, CGFloat opacity) {
 UIImage* StretchableImageFromUIImage(UIImage* image,
                                      NSInteger left_cap_width,
                                      NSInteger top_cap_height) {
-  UIEdgeInsets insets =
-      UIEdgeInsetsMake(top_cap_height, left_cap_width,
-                       image.size.height - top_cap_height + 1.0,
-                       image.size.width - left_cap_width + 1.0);
+  UIEdgeInsets insets = UIEdgeInsetsMake(
+      top_cap_height, left_cap_width, image.size.height - top_cap_height + 1.0,
+      image.size.width - left_cap_width + 1.0);
   return [image resizableImageWithCapInsets:insets];
 }
 

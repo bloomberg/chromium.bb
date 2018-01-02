@@ -7,7 +7,6 @@
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <PassKit/PassKit.h>
-#import <Photos/Photos.h>
 #import <QuartzCore/QuartzCore.h>
 
 #include <stdint.h>
@@ -18,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/format_macros.h"
 #include "base/i18n/rtl.h"
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
@@ -35,7 +33,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_restrictions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/favicon/ios/web_favicon_driver.h"
@@ -82,7 +79,6 @@
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
-#import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -156,6 +152,7 @@
 #import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_presentation.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/image_util/image_saver.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/main/main_feature_flags.h"
@@ -252,7 +249,6 @@
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "net/base/mac/url_conversions.h"
-#include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -661,9 +657,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
 // A weak reference to the view of the tab strip on tablet.
 @property(nonatomic, weak) UIView* tabStripView;
+// Helper for saving images.
+@property(nonatomic, strong) ImageSaver* imageSaver;
 
-// The user agent type used to load the currently visible page. User agent type
-// is NONE if there is no visible page or visible page is a native page.
+// The user agent type used to load the currently visible page. User agent
+// type is NONE if there is no visible page or visible page is a native
+// page.
 @property(nonatomic, assign, readonly) web::UserAgentType userAgentType;
 
 // Returns the header views, all the chrome on top of the page, including the
@@ -904,35 +903,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Returns the native controller being used by |tab|'s web controller.
 - (id)nativeControllerForTab:(Tab*)tab;
 
-// Saving Images
-// -------------
-// Saves the image or display error message, based on privacy settings.
-- (void)managePermissionAndSaveImage:(NSData*)data
-                   withFileExtension:(NSString*)fileExtension;
-// Saves the image. In order to keep the metadata of the image, the image is
-// saved as a temporary file on disk then saved in photos. Saving will happen
-// on a background sequence and the completion block will be invoked on that
-// sequence.
-- (void)saveImage:(NSData*)data
-    withFileExtension:(NSString*)fileExtension
-           completion:(void (^)(BOOL, NSError*))completionBlock;
-// Called when Chrome has been denied access to the photos or videos and the
-// user can change it.
-// Shows a privacy alert on the main queue, allowing the user to go to Chrome's
-// settings. Dismiss previous alert if it has not been dismissed yet.
-- (void)displayImageErrorAlertWithSettingsOnMainQueue;
-// Shows a privacy alert allowing the user to go to Chrome's settings. Dismiss
-// previous alert if it has not been dismissed yet.
-- (void)displayImageErrorAlertWithSettings:(NSURL*)settingURL;
-// Called when Chrome has been denied access to the photos or videos and the
-// user cannot change it.
-// Shows a privacy alert on the main queue, with errorContent as the message.
-// Dismisses previous alert if it has not been dismissed yet.
-- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent;
-// Called with the results of saving a picture in the photo album. If error is
-// nil the save succeeded.
-- (void)finishSavingImageWithError:(NSError*)error;
-
 // Voice Search
 // ------------
 // Lazily instantiates |_voiceSearchController|.
@@ -969,6 +939,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 @synthesize tabTipBubblePresenter = _tabTipBubblePresenter;
 @synthesize incognitoTabTipBubblePresenter = _incognitoTabTipBubblePresenter;
 @synthesize toolbarOffsetConstraint = _toolbarOffsetConstraint;
+@synthesize imageSaver = _imageSaver;
 // DialogPresenterDelegate property
 @synthesize dialogPresenterDelegateIsPresenting =
     _dialogPresenterDelegateIsPresenting;
@@ -2156,6 +2127,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
       _browserState->GetRequestContext());
+  self.imageSaver = [[ImageSaver alloc] initWithBaseViewController:self];
   _dominantColorCache = [[NSMutableDictionary alloc] init];
 
   // Register for bookmark changed notification (BookmarkModel may be null
@@ -3173,167 +3145,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return nativeController ? nativeController : _temporaryNativeController;
 }
 
-#pragma mark - Private Methods: Saving Images
-
-- (void)managePermissionAndSaveImage:(NSData*)data
-                   withFileExtension:(NSString*)fileExtension {
-  switch ([PHPhotoLibrary authorizationStatus]) {
-    // User was never asked for permission to access photos.
-    case PHAuthorizationStatusNotDetermined: {
-      [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-        // Call -saveImage again to check if chrome needs to display an error or
-        // saves the image.
-        if (status != PHAuthorizationStatusNotDetermined)
-          [self managePermissionAndSaveImage:data
-                           withFileExtension:fileExtension];
-      }];
-      break;
-    }
-
-    // The application doesn't have permission to access photo and the user
-    // cannot grant it.
-    case PHAuthorizationStatusRestricted:
-      [self displayPrivacyErrorAlertOnMainQueue:
-                l10n_util::GetNSString(
-                    IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE)];
-      break;
-
-    // The application doesn't have permission to access photo and the user
-    // can grant it.
-    case PHAuthorizationStatusDenied:
-      [self displayImageErrorAlertWithSettingsOnMainQueue];
-      break;
-
-    // The application has permission to access the photos.
-    default:
-      __weak BrowserViewController* weakSelf = self;
-      [self saveImage:data
-          withFileExtension:fileExtension
-                 completion:^(BOOL success, NSError* error) {
-                   [weakSelf finishSavingImageWithError:error];
-                 }];
-      break;
-  }
-}
-
-- (void)saveImage:(NSData*)data
-    withFileExtension:(NSString*)fileExtension
-           completion:(void (^)(BOOL, NSError*))completion {
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindBlockArc(^{
-        base::AssertBlockingAllowed();
-
-        NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
-            stringByAppendingString:fileExtension];
-        NSURL* fileURL = [NSURL
-            fileURLWithPath:[NSTemporaryDirectory()
-                                stringByAppendingPathComponent:fileName]];
-        NSError* error = nil;
-        [data writeToURL:fileURL options:NSDataWritingAtomic error:&error];
-        if (error) {
-          if (completion)
-            completion(NO, error);
-          return;
-        }
-
-        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-          [PHAssetChangeRequest
-              creationRequestForAssetFromImageAtFileURL:fileURL];
-        }
-            completionHandler:^(BOOL success, NSError* error) {
-              base::PostTaskWithTraits(
-                  FROM_HERE,
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                  base::BindBlockArc(^{
-                    base::AssertBlockingAllowed();
-                    if (completion)
-                      completion(success, error);
-
-                    // Cleanup the temporary file.
-                    NSError* deleteFileError = nil;
-                    [[NSFileManager defaultManager]
-                        removeItemAtURL:fileURL
-                                  error:&deleteFileError];
-                  }));
-            }];
-      }));
-}
-
-- (void)displayImageErrorAlertWithSettingsOnMainQueue {
-  NSURL* settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
-  BOOL canGoToSetting =
-      [[UIApplication sharedApplication] canOpenURL:settingURL];
-  if (canGoToSetting) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self displayImageErrorAlertWithSettings:settingURL];
-    });
-  } else {
-    [self displayPrivacyErrorAlertOnMainQueue:
-              l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE)];
-  }
-}
-
-- (void)displayImageErrorAlertWithSettings:(NSURL*)settingURL {
-  // Dismiss current alert.
-  [_alertCoordinator stop];
-
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-  NSString* message = l10n_util::GetNSString(
-      IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS);
-
-  _alertCoordinator =
-      [[AlertCoordinator alloc] initWithBaseViewController:self
-                                                     title:title
-                                                   message:message];
-
-  [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
-
-  [_alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_GO_TO_SETTINGS)
-                action:^{
-                  OpenUrlWithCompletionHandler(settingURL, nil);
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [_alertCoordinator start];
-}
-
-- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSString* title =
-        l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-    [self showErrorAlertWithStringTitle:title message:errorContent];
-  });
-}
-
-// This callback is triggered when the image is effectively saved onto the photo
-// album, or if the save failed for some reason.
-- (void)finishSavingImageWithError:(NSError*)error {
-  // Was there an error?
-  if (error) {
-    // Saving photo failed even though user has granted access to Photos.
-    // Display the error information from the NSError object for user.
-    NSString* errorMessage = [NSString
-        stringWithFormat:@"%@ (%@ %" PRIdNS ")", [error localizedDescription],
-                         [error domain], [error code]];
-    // This code may be execute outside of the main thread. Make sure to display
-    // the error on the main thread.
-    [self displayPrivacyErrorAlertOnMainQueue:errorMessage];
-  } else {
-    // Ideally this should show an infobar with a link to switch to
-    // the photo application. The current behaviour is to create the photo there
-    // but not providing any link to it is suboptimal.
-  }
-}
-
 #pragma mark - Private Methods: Voice Search
 
 - (void)ensureVoiceSearchControllerCreated {
@@ -3887,29 +3698,10 @@ bubblePresenterForFeature:(const base::Feature&)feature
               referrer:(const web::Referrer&)referrer {
   DCHECK(url.is_valid());
 
-  image_fetcher::IOSImageDataFetcherCallback callback = ^(
-      NSData* data, const image_fetcher::RequestMetadata& metadata) {
-    DCHECK(data);
-
-    if ([data length] == 0) {
-      [self displayPrivacyErrorAlertOnMainQueue:
-                l10n_util::GetNSString(
-                    IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
-      return;
-    }
-
-    base::FilePath::StringType extension;
-
-    bool extensionSuccess =
-        net::GetPreferredExtensionForMimeType(metadata.mime_type, &extension);
-    if (!extensionSuccess || extension.length() == 0) {
-      extension = "png";
-    }
-
-    NSString* fileExtension =
-        [@"." stringByAppendingString:base::SysUTF8ToNSString(extension)];
-    [self managePermissionAndSaveImage:data withFileExtension:fileExtension];
-  };
+  image_fetcher::IOSImageDataFetcherCallback callback =
+      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
+        [self.imageSaver saveImageData:data withMetadata:metadata];
+      };
   _imageFetcher->FetchImageDataWebpDecoded(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
       web::PolicyForNavigation(url, referrer));
