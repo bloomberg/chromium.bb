@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
@@ -77,7 +78,7 @@ using web::WebStateImpl;
 
 // Private methods in BrowserViewController to test.
 @interface BrowserViewController (
-    Testing)<CRWNativeContentProvider, PassKitDialogProvider>
+    Testing)<CRWNativeContentProvider, PassKitDialogProvider, TabModelObserver>
 - (void)pageLoadStarted:(NSNotification*)notification;
 - (void)pageLoadComplete:(NSNotification*)notification;
 - (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
@@ -333,32 +334,6 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   UIWindow* window_;
 };
 
-// TODO(crbug.com/228714): These tests pretty much only tested that BVC passed
-// notifications on to the toolbar, and that the toolbar worked correctly. The
-// former should be an integration test, and the latter should be a toolbar
-// test.  Leaving DISABLED_ for now to remind us to move them to toolbar tests.
-TEST_F(BrowserViewControllerTest, DISABLED_TestPageLoadStarted) {
-  NSDictionary* userInfoWithThisTab =
-      [NSDictionary dictionaryWithObject:tab_ forKey:kTabModelTabKey];
-  NSNotification* notification = [NSNotification
-      notificationWithName:kTabModelTabWillStartLoadingNotification
-                    object:nil
-                  userInfo:userInfoWithThisTab];
-  [bvc_ pageLoadStarted:notification];
-  EXPECT_TRUE([bvc_ testing_isLoading]);
-}
-
-TEST_F(BrowserViewControllerTest, DISABLED_TestPageLoadComplete) {
-  NSDictionary* userInfoWithThisTab =
-      [NSDictionary dictionaryWithObject:tab_ forKey:kTabModelTabKey];
-  NSNotification* notification = [NSNotification
-      notificationWithName:kTabModelTabDidFinishLoadingNotification
-                    object:nil
-                  userInfo:userInfoWithThisTab];
-  [bvc_ pageLoadComplete:notification];
-  EXPECT_FALSE([bvc_ testing_isLoading]);
-}
-
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
   id tabMock = (id)tab_;
   [[tabMock expect] wasShown];
@@ -382,13 +357,7 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
 TEST_F(BrowserViewControllerTest, TestTabDeselected) {
   OCMockObject* tabMock = static_cast<OCMockObject*>(tab_);
   [[tabMock expect] wasHidden];
-  NSDictionary* userInfoWithThisTab =
-      [NSDictionary dictionaryWithObject:tab_ forKey:kTabModelTabKey];
-  NSNotification* notification =
-      [NSNotification notificationWithName:kTabModelTabDeselectedNotification
-                                    object:nil
-                                  userInfo:userInfoWithThisTab];
-  [bvc_ tabDeselected:notification];
+  [bvc_ tabModel:nil didDeselectTab:tab_];
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
 

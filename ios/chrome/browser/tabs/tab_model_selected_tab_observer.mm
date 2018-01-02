@@ -40,10 +40,7 @@
     // Avoid artificially extending the lifetime of oldTab until the global
     // autoreleasepool is purged.
     @autoreleasepool {
-      [[NSNotificationCenter defaultCenter]
-          postNotificationName:kTabModelTabDeselectedNotification
-                        object:_tabModel
-                      userInfo:@{kTabModelTabKey : oldTab}];
+      [_tabModel notifyTabWasDeselected:oldTab];
     }
   }
 

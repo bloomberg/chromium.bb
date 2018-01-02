@@ -688,28 +688,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // The webState of the active tab.
 @property(nonatomic, readonly) web::WebState* currentWebState;
 
-// Notification Handling
-// ---------------------
-// Registers for notifications.
-- (void)registerForNotifications;
-// Called when a tab is starting to load. If it's a link click or form
-// submission, the user is navigating away from any entries in the forward
-// history. Tell the toolbar so it can update the UI appropriately.
-// See the warning on [Tab webWillStartLoadingURL] about invocation of this
-// method sequence by malicious pages.
-- (void)pageLoadStarting:(NSNotification*)notify;
-// Called when a tab actually starts loading.
-- (void)pageLoadStarted:(NSNotification*)notify;
-// Called when a tab finishes loading. Update the Omnibox with the url and
-// stop any page load progess display.
-- (void)pageLoadComplete:(NSNotification*)notify;
-// Called when a tab is deselected in the model.
-// This notification also occurs when a tab is closed.
-- (void)tabDeselected:(NSNotification*)notify;
-// Animates sliding current tab and rotate-entering new tab while new tab loads
-// in background on the iPhone only.
-- (void)tabWasAdded:(NSNotification*)notify;
-
 // BVC initialization
 // ------------------
 // If the BVC is initialized with a valid browser state & tab model immediately,
@@ -1845,262 +1823,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - ** Private BVC Methods **
 
-#pragma mark - Private Methods: Notification handling
-
-- (void)registerForNotifications {
-  DCHECK(_model);
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(pageLoadStarting:)
-                        name:kTabModelTabWillStartLoadingNotification
-                      object:_model];
-  [defaultCenter addObserver:self
-                    selector:@selector(pageLoadStarted:)
-                        name:kTabModelTabDidStartLoadingNotification
-                      object:_model];
-  [defaultCenter addObserver:self
-                    selector:@selector(pageLoadComplete:)
-                        name:kTabModelTabDidFinishLoadingNotification
-                      object:_model];
-  [defaultCenter addObserver:self
-                    selector:@selector(tabDeselected:)
-                        name:kTabModelTabDeselectedNotification
-                      object:_model];
-  [defaultCenter addObserver:self
-                    selector:@selector(tabWasAdded:)
-                        name:kTabModelNewTabWillOpenNotification
-                      object:_model];
-}
-
-- (void)pageLoadStarting:(NSNotification*)notify {
-  Tab* tab = notify.userInfo[kTabModelTabKey];
-  DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
-
-  // Stop any Find in Page searches and close the find bar when navigating to a
-  // new page.
-  [self closeFindInPage];
-
-  if (tab == [_model currentTab]) {
-    // TODO(pinkerton): Fill in here about hiding the forward button on
-    // navigation.
-  }
-}
-
-- (void)pageLoadStarted:(NSNotification*)notify {
-  Tab* tab = notify.userInfo[kTabModelTabKey];
-  DCHECK(tab);
-  if (tab == [_model currentTab]) {
-    if (![self isTabNativePage:tab]) {
-      [_toolbarCoordinator currentPageLoadStarted];
-    }
-    [self updateVoiceSearchBarVisibilityAnimated:NO];
-  }
-}
-
-- (void)pageLoadComplete:(NSNotification*)notify {
-  // Update the UI, but only if the current tab.
-  Tab* tab = notify.userInfo[kTabModelTabKey];
-  if (tab == [_model currentTab]) {
-    // There isn't any need to update the toolbar here. When the page finishes,
-    // it will have already sent us |-tabModel:didChangeTab:| which will do it.
-  }
-
-  BOOL loadingSucceeded = [notify.userInfo[kTabModelPageLoadSuccess] boolValue];
-
-  [self tabLoadComplete:tab withSuccess:loadingSucceeded];
-}
-
-- (void)tabDeselected:(NSNotification*)notify {
-  DCHECK(notify);
-  Tab* tab = notify.userInfo[kTabModelTabKey];
-  DCHECK(tab);
-  [tab wasHidden];
-  [self dismissPopups];
-}
-
-- (void)tabWasAdded:(NSNotification*)notify {
-  Tab* tab = notify.userInfo[kTabModelTabKey];
-  DCHECK(tab);
-
-  _temporaryNativeController = nil;
-
-  // When adding new tabs, check what kind of reminder infobar should
-  // be added to the new tab. Try to add only one of them.
-  // This check is done when a new tab is added either through the Tools Menu
-  // "New Tab" or through "New Tab" in Stack View Controller. This method
-  // is called after a new tab has added and finished initial navigation.
-  // If this is added earlier, the initial navigation may end up clearing
-  // the infobar(s) that are just added. See http://crbug/340250 for details.
-  web::WebState* webState = tab.webState;
-  DCHECK(webState);
-
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webState);
-  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
-                                             forTabId:[tab tabId]];
-  if (!ReSignInInfoBarDelegate::Create(_browserState, tab,
-                                       self /* id<SigninPresenter> */)) {
-    DisplaySyncErrors(_browserState, tab, self /* id<SyncPresenter> */);
-  }
-
-  // The rest of this function initiates the new tab animation, which is
-  // phone-specific.  Call the foreground tab added completion block; for
-  // iPhones, this will get executed after the animation has finished.
-  if (IsIPadIdiom()) {
-    if (self.foregroundTabWasAddedCompletionBlock) {
-      // This callback is called before webState is activated (on
-      // kTabModelNewTabWillOpenNotification notification). Dispatch the
-      // callback asynchronously to be sure the activation is complete.
-      dispatch_async(dispatch_get_main_queue(), ^() {
-        // Test existence again as the block may have been deleted.
-        if (self.foregroundTabWasAddedCompletionBlock) {
-          self.foregroundTabWasAddedCompletionBlock();
-          self.foregroundTabWasAddedCompletionBlock = nil;
-        }
-      });
-    }
-    return;
-  }
-
-  // Do nothing if browsing is currently suspended.  The BVC will set everything
-  // up correctly when browsing resumes.
-  if (!self.visible || ![_model webUsageEnabled])
-    return;
-
-  BOOL inBackground = [notify.userInfo[kTabModelOpenInBackgroundKey] boolValue];
-
-  // Block that starts voice search at the end of new Tab animation if
-  // necessary.
-  ProceduralBlock startVoiceSearchIfNecessaryBlock = ^void() {
-    if (_startVoiceSearchAfterNewTabAnimation) {
-      _startVoiceSearchAfterNewTabAnimation = NO;
-      [self startVoiceSearchWithOriginView:nil];
-    }
-  };
-
-  self.inNewTabAnimation = YES;
-  if (!inBackground) {
-    UIView* animationParentView = _contentArea;
-    // Create the new page image, and load with the new tab snapshot except if
-    // it is the NTP.
-    CGFloat newPageOffset = 0;
-    UIView* newPage;
-    CGFloat offset = 0;
-    if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
-        !_isOffTheRecord && !IsIPadIdiom()) {
-      offset = 0;
-      animationParentView = self.view;
-      newPage = tab.view;
-      newPage.userInteractionEnabled = NO;
-      // Compute a frame for the new page by removing the status bar height from
-      // the bounds of |self.view|.
-      CGRect viewBounds, remainder;
-      CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
-                   CGRectMinYEdge);
-      newPage.frame = viewBounds;
-    } else {
-      UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
-      tab.view.frame = _contentArea.bounds;
-      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
-                                 ->UpdateSnapshot(/*with_overlays=*/true,
-                                                  /*visible_frame_only=*/true);
-      newPage = pageScreenshot;
-      offset =
-          pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
-    }
-    newPageOffset = newPage.frame.origin.y;
-
-    [animationParentView addSubview:newPage];
-    CGPoint origin = [self lastTapPoint];
-    page_animation_util::AnimateInPaperWithAnimationAndCompletion(
-        newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL, ^{
-          [tab view].frame = _contentArea.bounds;
-          newPage.userInteractionEnabled = YES;
-          [newPage removeFromSuperview];
-          self.inNewTabAnimation = NO;
-          // Use the model's currentTab here because it is possible that it can
-          // be reset to a new value before the new Tab animation finished (e.g.
-          // if another Tab shows a dialog via |dialogPresenter|). However, that
-          // tab's view hasn't been displayed yet because it was in a new tab
-          // animation.
-          Tab* currentTab = [_model currentTab];
-          if (currentTab) {
-            [self tabSelected:currentTab notifyToolbar:NO];
-          }
-          startVoiceSearchIfNecessaryBlock();
-
-          if (self.foregroundTabWasAddedCompletionBlock) {
-            self.foregroundTabWasAddedCompletionBlock();
-            self.foregroundTabWasAddedCompletionBlock = nil;
-          }
-        });
-  } else {
-    // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
-    // snapshot before adding the views needed for the background animation.
-    Tab* topTab = [_model currentTab];
-    UIImage* image =
-        SnapshotTabHelper::FromWebState(topTab.webState)
-            ->UpdateSnapshot(/*with_overlays=*/true,
-                             /*visible_frame_only=*/self.isToolbarOnScreen);
-
-    // The size of the |image| above can be wrong if the snapshot fails, grab
-    // the correct size here.
-    CGRect imageFrame = CGRectZero;
-    if (self.isToolbarOnScreen) {
-      imageFrame = UIEdgeInsetsInsetRect(
-          _contentArea.bounds, [self snapshotEdgeInsetsForTab:topTab]);
-    } else {
-      imageFrame = [topTab.webState->GetView() bounds];
-    }
-
-    // Add three layers in order on top of the contentArea for the animation:
-    // 1. The black "background" screen.
-    UIView* background = [[UIView alloc] initWithFrame:[_contentArea bounds]];
-    InstallBackgroundInView(background);
-    [_contentArea addSubview:background];
-
-    // 2. A CardView displaying the data from the current tab.
-    CardView* topCard = [self addCardViewInFullscreen:!self.isToolbarOnScreen];
-    NSString* title = [topTab title];
-    if (![title length])
-      title = [topTab urlDisplayString];
-    [topCard setTitle:title];
-    [topCard setImage:image];
-    [topCard setFavicon:nil];
-
-    favicon::FaviconDriver* faviconDriver =
-        favicon::WebFaviconDriver::FromWebState(topTab.webState);
-    if (faviconDriver && faviconDriver->FaviconIsValid()) {
-      gfx::Image favicon = faviconDriver->GetFavicon();
-      if (!favicon.IsEmpty())
-        [topCard setFavicon:favicon.ToUIImage()];
-    }
-
-    // 3. A new, blank CardView to represent the new tab being added.
-    // Launch the new background tab animation.
-    page_animation_util::AnimateNewBackgroundPageWithCompletion(
-        topCard, [_contentArea frame], imageFrame, IsPortrait(), ^{
-          [background removeFromSuperview];
-          [topCard removeFromSuperview];
-          self.inNewTabAnimation = NO;
-          // Resnapshot the top card if it has its own toolbar, as the toolbar
-          // will be captured in the new tab animation, but isn't desired for
-          // the stack view snapshots.
-          id nativeController = [self nativeControllerForTab:topTab];
-          if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-            SnapshotTabHelper::FromWebState(topTab.webState)
-                ->UpdateSnapshot(/*with_overlays=*/true,
-                                 /*visible_frame_only=*/true);
-          }
-          startVoiceSearchIfNecessaryBlock();
-        });
-    // Reset the foreground tab completion block so that it can never be
-    // called more than once regardless of foreground/background tab
-    // appearances.
-    self.foregroundTabWasAddedCompletionBlock = nil;
-  }
-}
-
 #pragma mark - Private Methods: BVC Initialization
 
 - (void)updateWithTabModel:(TabModel*)model
@@ -2122,8 +1844,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   NSUInteger count = [_model count];
   for (NSUInteger index = 0; index < count; ++index)
     [self installDelegatesForTab:[_model tabAtIndex:index]];
-
-  [self registerForNotifications];
 
   _imageFetcher = base::MakeUnique<image_fetcher::IOSImageDataFetcherWrapper>(
       _browserState->GetRequestContext());
@@ -4965,12 +4685,218 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [self tabSelected:newTab notifyToolbar:YES];
 }
 
-// Observer method, tab changed.
+- (void)tabModel:(TabModel*)model willStartLoadingTab:(Tab*)tab {
+  // Stop any Find in Page searches and close the find bar when navigating to a
+  // new page.
+  [self closeFindInPage];
+}
+
 - (void)tabModel:(TabModel*)model didChangeTab:(Tab*)tab {
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
   if (tab == [_model currentTab]) {
     [self updateToolbar];
   }
+}
+
+- (void)tabModel:(TabModel*)model didStartLoadingTab:(Tab*)tab {
+  if (tab == [_model currentTab]) {
+    if (![self isTabNativePage:tab]) {
+      [_toolbarCoordinator currentPageLoadStarted];
+    }
+    [self updateVoiceSearchBarVisibilityAnimated:NO];
+  }
+}
+
+- (void)tabModel:(TabModel*)model
+    didFinishLoadingTab:(Tab*)tab
+                suceess:(BOOL)success {
+  [self tabLoadComplete:tab withSuccess:success];
+}
+
+- (void)tabModel:(TabModel*)model
+    newTabWillOpen:(Tab*)tab
+      inBackground:(BOOL)background {
+  DCHECK(tab);
+  _temporaryNativeController = nil;
+
+  // When adding new tabs, check what kind of reminder infobar should
+  // be added to the new tab. Try to add only one of them.
+  // This check is done when a new tab is added either through the Tools Menu
+  // "New Tab" or through "New Tab" in Stack View Controller. This method
+  // is called after a new tab has added and finished initial navigation.
+  // If this is added earlier, the initial navigation may end up clearing
+  // the infobar(s) that are just added. See http://crbug/340250 for details.
+  web::WebState* webState = tab.webState;
+  DCHECK(webState);
+
+  infobars::InfoBarManager* infoBarManager =
+      InfoBarManagerImpl::FromWebState(webState);
+  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
+                                             forTabId:[tab tabId]];
+  if (!ReSignInInfoBarDelegate::Create(_browserState, tab,
+                                       self /* id<SigninPresenter> */)) {
+    DisplaySyncErrors(_browserState, tab, self /* id<SyncPresenter> */);
+  }
+
+  // The rest of this function initiates the new tab animation, which is
+  // phone-specific.  Call the foreground tab added completion block; for
+  // iPhones, this will get executed after the animation has finished.
+  if (IsIPadIdiom()) {
+    if (self.foregroundTabWasAddedCompletionBlock) {
+      // This callback is called before webState is activated (on
+      // kTabModelNewTabWillOpenNotification notification). Dispatch the
+      // callback asynchronously to be sure the activation is complete.
+      dispatch_async(dispatch_get_main_queue(), ^() {
+        // Test existence again as the block may have been deleted.
+        if (self.foregroundTabWasAddedCompletionBlock) {
+          self.foregroundTabWasAddedCompletionBlock();
+          self.foregroundTabWasAddedCompletionBlock = nil;
+        }
+      });
+    }
+    return;
+  }
+
+  // Do nothing if browsing is currently suspended.  The BVC will set everything
+  // up correctly when browsing resumes.
+  if (!self.visible || ![_model webUsageEnabled])
+    return;
+
+  // Block that starts voice search at the end of new Tab animation if
+  // necessary.
+  ProceduralBlock startVoiceSearchIfNecessaryBlock = ^void() {
+    if (_startVoiceSearchAfterNewTabAnimation) {
+      _startVoiceSearchAfterNewTabAnimation = NO;
+      [self startVoiceSearchWithOriginView:nil];
+    }
+  };
+
+  self.inNewTabAnimation = YES;
+  if (!background) {
+    UIView* animationParentView = _contentArea;
+    // Create the new page image, and load with the new tab snapshot except if
+    // it is the NTP.
+    CGFloat newPageOffset = 0;
+    UIView* newPage;
+    CGFloat offset = 0;
+    if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
+        !_isOffTheRecord && !IsIPadIdiom()) {
+      offset = 0;
+      animationParentView = self.view;
+      newPage = tab.view;
+      newPage.userInteractionEnabled = NO;
+      // Compute a frame for the new page by removing the status bar height from
+      // the bounds of |self.view|.
+      CGRect viewBounds, remainder;
+      CGRectDivide(self.view.bounds, &remainder, &viewBounds, StatusBarHeight(),
+                   CGRectMinYEdge);
+      newPage.frame = viewBounds;
+    } else {
+      UIImageView* pageScreenshot = [self pageOpenCloseAnimationView];
+      tab.view.frame = _contentArea.bounds;
+      pageScreenshot.image = SnapshotTabHelper::FromWebState(tab.webState)
+                                 ->UpdateSnapshot(/*with_overlays=*/true,
+                                                  /*visible_frame_only=*/true);
+      newPage = pageScreenshot;
+      offset =
+          pageScreenshot.frame.size.height - pageScreenshot.image.size.height;
+    }
+    newPageOffset = newPage.frame.origin.y;
+
+    [animationParentView addSubview:newPage];
+    CGPoint origin = [self lastTapPoint];
+    page_animation_util::AnimateInPaperWithAnimationAndCompletion(
+        newPage, -newPageOffset, offset, origin, _isOffTheRecord, NULL, ^{
+          [tab view].frame = _contentArea.bounds;
+          newPage.userInteractionEnabled = YES;
+          [newPage removeFromSuperview];
+          self.inNewTabAnimation = NO;
+          // Use the model's currentTab here because it is possible that it can
+          // be reset to a new value before the new Tab animation finished (e.g.
+          // if another Tab shows a dialog via |dialogPresenter|). However, that
+          // tab's view hasn't been displayed yet because it was in a new tab
+          // animation.
+          Tab* currentTab = [_model currentTab];
+          if (currentTab) {
+            [self tabSelected:currentTab notifyToolbar:NO];
+          }
+          startVoiceSearchIfNecessaryBlock();
+
+          if (self.foregroundTabWasAddedCompletionBlock) {
+            self.foregroundTabWasAddedCompletionBlock();
+            self.foregroundTabWasAddedCompletionBlock = nil;
+          }
+        });
+  } else {
+    // SnapshotTabHelper::UpdateSnapshot will force a screen redraw, so take the
+    // snapshot before adding the views needed for the background animation.
+    Tab* topTab = [_model currentTab];
+    UIImage* image =
+        SnapshotTabHelper::FromWebState(topTab.webState)
+            ->UpdateSnapshot(/*with_overlays=*/true,
+                             /*visible_frame_only=*/self.isToolbarOnScreen);
+
+    // The size of the |image| above can be wrong if the snapshot fails, grab
+    // the correct size here.
+    CGRect imageFrame = CGRectZero;
+    if (self.isToolbarOnScreen) {
+      imageFrame = UIEdgeInsetsInsetRect(
+          _contentArea.bounds, [self snapshotEdgeInsetsForTab:topTab]);
+    } else {
+      imageFrame = [topTab.webState->GetView() bounds];
+    }
+
+    // Add three layers in order on top of the contentArea for the animation:
+    // 1. The black "background" screen.
+    UIView* background = [[UIView alloc] initWithFrame:[_contentArea bounds]];
+    InstallBackgroundInView(background);
+    [_contentArea addSubview:background];
+
+    // 2. A CardView displaying the data from the current tab.
+    CardView* topCard = [self addCardViewInFullscreen:!self.isToolbarOnScreen];
+    NSString* title = [topTab title];
+    if (![title length])
+      title = [topTab urlDisplayString];
+    [topCard setTitle:title];
+    [topCard setImage:image];
+    [topCard setFavicon:nil];
+
+    favicon::FaviconDriver* faviconDriver =
+        favicon::WebFaviconDriver::FromWebState(topTab.webState);
+    if (faviconDriver && faviconDriver->FaviconIsValid()) {
+      gfx::Image favicon = faviconDriver->GetFavicon();
+      if (!favicon.IsEmpty())
+        [topCard setFavicon:favicon.ToUIImage()];
+    }
+
+    // 3. A new, blank CardView to represent the new tab being added.
+    // Launch the new background tab animation.
+    page_animation_util::AnimateNewBackgroundPageWithCompletion(
+        topCard, [_contentArea frame], imageFrame, IsPortrait(), ^{
+          [background removeFromSuperview];
+          [topCard removeFromSuperview];
+          self.inNewTabAnimation = NO;
+          // Resnapshot the top card if it has its own toolbar, as the toolbar
+          // will be captured in the new tab animation, but isn't desired for
+          // the stack view snapshots.
+          id nativeController = [self nativeControllerForTab:topTab];
+          if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
+            SnapshotTabHelper::FromWebState(topTab.webState)
+                ->UpdateSnapshot(/*with_overlays=*/true,
+                                 /*visible_frame_only=*/true);
+          }
+          startVoiceSearchIfNecessaryBlock();
+        });
+    // Reset the foreground tab completion block so that it can never be
+    // called more than once regardless of foreground/background tab
+    // appearances.
+    self.foregroundTabWasAddedCompletionBlock = nil;
+  }
+}
+
+- (void)tabModel:(TabModel*)model didDeselectTab:(Tab*)tab {
+  [tab wasHidden];
+  [self dismissPopups];
 }
 
 // Observer method, tab replaced.
