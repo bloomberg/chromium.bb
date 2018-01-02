@@ -10,11 +10,11 @@ test(function() {
     // Assign a value which is exactly representable as double but not float.
     var doubleValue = 1.000000000000004;
     cue.line = doubleValue;
-    assert_not_equals(cue.line, doubleValue);
+    assert_equals(cue.line, doubleValue);
     cue.position = doubleValue;
-    assert_not_equals(cue.position, doubleValue);
+    assert_equals(cue.position, doubleValue);
     cue.size = doubleValue;
-    assert_not_equals(cue.size, doubleValue);
+    assert_equals(cue.size, doubleValue);
 
     // Assign a value which is exactly representable as float but is non-integral.
     var floatValue = 1.5;

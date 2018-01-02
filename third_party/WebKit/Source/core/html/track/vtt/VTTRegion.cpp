@@ -51,14 +51,14 @@ namespace blink {
 // https://dvcs.w3.org/hg/text-tracks/raw-file/default/608toVTT/region.html
 
 // The region occupies by default 100% of the width of the video viewport.
-static const float kDefaultWidth = 100;
+static const double kDefaultWidth = 100;
 
 // The region has, by default, 3 lines of text.
 static const int kDefaultHeightInLines = 3;
 
 // The region and viewport are anchored in the bottom left corner.
-static const float kDefaultAnchorPointX = 0;
-static const float kDefaultAnchorPointY = 100;
+static const double kDefaultAnchorPointX = 0;
+static const double kDefaultAnchorPointY = 100;
 
 // The region doesn't have scrolling text, by default.
 static const bool kDefaultScroll = false;
@@ -87,8 +87,8 @@ VTTRegion::VTTRegion()
     : id_(g_empty_string),
       width_(kDefaultWidth),
       lines_(kDefaultHeightInLines),
-      region_anchor_(FloatPoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
-      viewport_anchor_(FloatPoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
+      region_anchor_(DoublePoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
+      viewport_anchor_(DoublePoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
       scroll_(kDefaultScroll),
       current_top_(0),
       scroll_timer_(Platform::Current()->CurrentThread()->GetWebTaskRunner(),
@@ -218,10 +218,10 @@ void VTTRegion::ParseSettingValue(RegionSetting setting, VTTScanner& input) {
       break;
     }
     case kWidth: {
-      float float_width;
-      if (VTTParser::ParseFloatPercentageValue(input, float_width) &&
+      double width;
+      if (VTTParser::ParsePercentageValue(input, width) &&
           ParsedEntireRun(input, value_run))
-        width_ = float_width;
+        width_ = width;
       else
         DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Width";
       break;
@@ -235,8 +235,8 @@ void VTTRegion::ParseSettingValue(RegionSetting setting, VTTScanner& input) {
       break;
     }
     case kRegionAnchor: {
-      FloatPoint anchor;
-      if (VTTParser::ParseFloatPercentageValuePair(input, ',', anchor) &&
+      DoublePoint anchor;
+      if (VTTParser::ParsePercentageValuePair(input, ',', anchor) &&
           ParsedEntireRun(input, value_run))
         region_anchor_ = anchor;
       else
@@ -244,8 +244,8 @@ void VTTRegion::ParseSettingValue(RegionSetting setting, VTTScanner& input) {
       break;
     }
     case kViewportAnchor: {
-      FloatPoint anchor;
-      if (VTTParser::ParseFloatPercentageValuePair(input, ',', anchor) &&
+      DoublePoint anchor;
+      if (VTTParser::ParsePercentageValuePair(input, ',', anchor) &&
           ParsedEntireRun(input, value_run))
         viewport_anchor_ = anchor;
       else

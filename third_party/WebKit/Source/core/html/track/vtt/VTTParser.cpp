@@ -50,10 +50,10 @@ using namespace HTMLNames;
 const unsigned kFileIdentifierLength = 6;
 const unsigned kRegionIdentifierLength = 6;
 
-bool VTTParser::ParseFloatPercentageValue(VTTScanner& value_scanner,
-                                          float& percentage) {
-  float number;
-  if (!value_scanner.ScanFloat(number))
+bool VTTParser::ParsePercentageValue(VTTScanner& value_scanner,
+                                     double& percentage) {
+  double number;
+  if (!value_scanner.ScanDouble(number))
     return false;
   // '%' must be present and at the end of the setting value.
   if (!value_scanner.Scan('%'))
@@ -64,21 +64,21 @@ bool VTTParser::ParseFloatPercentageValue(VTTScanner& value_scanner,
   return true;
 }
 
-bool VTTParser::ParseFloatPercentageValuePair(VTTScanner& value_scanner,
-                                              char delimiter,
-                                              FloatPoint& value_pair) {
-  float first_coord;
-  if (!ParseFloatPercentageValue(value_scanner, first_coord))
+bool VTTParser::ParsePercentageValuePair(VTTScanner& value_scanner,
+                                         char delimiter,
+                                         DoublePoint& value_pair) {
+  double first_coord;
+  if (!ParsePercentageValue(value_scanner, first_coord))
     return false;
 
   if (!value_scanner.Scan(delimiter))
     return false;
 
-  float second_coord;
-  if (!ParseFloatPercentageValue(value_scanner, second_coord))
+  double second_coord;
+  if (!ParsePercentageValue(value_scanner, second_coord))
     return false;
 
-  value_pair = FloatPoint(first_coord, second_coord);
+  value_pair = DoublePoint(first_coord, second_coord);
   return true;
 }
 

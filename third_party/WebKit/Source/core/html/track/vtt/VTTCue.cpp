@@ -228,8 +228,8 @@ VTTCue::VTTCue(Document& document,
                const String& text)
     : TextTrackCue(start_time, end_time),
       text_(text),
-      line_position_(std::numeric_limits<float>::quiet_NaN()),
-      text_position_(std::numeric_limits<float>::quiet_NaN()),
+      line_position_(std::numeric_limits<double>::quiet_NaN()),
+      text_position_(std::numeric_limits<double>::quiet_NaN()),
       cue_size_(100),
       writing_direction_(kHorizontal),
       text_alignment_(TextAlignment::kCenter),
@@ -316,20 +316,19 @@ void VTTCue::setLine(const DoubleOrAutoKeyword& position) {
   // On setting, the WebVTT cue line must be set to the new value; if the new
   // value is the string "auto", then it must be interpreted as the special
   // value auto.  ("auto" is translated to NaN.)
-  float float_position;
+  double line_position;
   if (position.IsAutoKeyword()) {
     if (LineIsAuto())
       return;
-    float_position = std::numeric_limits<float>::quiet_NaN();
+    line_position = std::numeric_limits<double>::quiet_NaN();
   } else {
     DCHECK(position.IsDouble());
-    float_position = clampTo<float>(position.GetAsDouble());
-    if (line_position_ == float_position)
+    line_position = position.GetAsDouble();
+    if (line_position_ == line_position)
       return;
   }
-
   CueWillChange();
-  line_position_ = float_position;
+  line_position_ = line_position;
   CueDidChange();
 }
 
@@ -384,22 +383,22 @@ void VTTCue::setPosition(const DoubleOrAutoKeyword& position,
   // IndexSizeError exception must be thrown. Otherwise, the WebVTT cue
   // position must be set to the new value; if the new value is the string
   // "auto", then it must be interpreted as the special value auto.
-  float float_position;
+  double text_position;
   if (position.IsAutoKeyword()) {
     if (TextPositionIsAuto())
       return;
-    float_position = std::numeric_limits<float>::quiet_NaN();
+    text_position = std::numeric_limits<double>::quiet_NaN();
   } else {
     DCHECK(position.IsDouble());
     if (IsInvalidPercentage(position.GetAsDouble(), exception_state))
       return;
-    float_position = clampTo<float>(position.GetAsDouble());
-    if (text_position_ == float_position)
+    text_position = position.GetAsDouble();
+    if (text_position_ == text_position)
       return;
   }
 
   CueWillChange();
-  text_position_ = float_position;
+  text_position_ = text_position;
   CueDidChange();
 }
 
@@ -448,12 +447,11 @@ void VTTCue::setSize(double size, ExceptionState& exception_state) {
     return;
 
   // Otherwise, WebVTT cue size must be set to the new value.
-  float float_size = clampTo<float>(size);
-  if (cue_size_ == float_size)
+  if (cue_size_ == size)
     return;
 
   CueWillChange();
-  cue_size_ = float_size;
+  cue_size_ = size;
   CueDidChange();
 }
 
@@ -546,7 +544,7 @@ void VTTCue::setRegion(VTTRegion* region) {
   CueDidChange();
 }
 
-float VTTCue::CalculateComputedLine() const {
+double VTTCue::CalculateComputedLine() const {
   // https://w3c.github.io/webvtt/#cue-computed-line
   // A WebVTT cue has a computed line whose value is that returned by the
   // following algorithm, which is defined in terms of the other aspects of
@@ -646,7 +644,7 @@ static CSSValueID DetermineTextDirection(DocumentFragment* vtt_root) {
   return IsLtr(text_direction) ? CSSValueLtr : CSSValueRtl;
 }
 
-float VTTCue::CalculateComputedPosition() const {
+double VTTCue::CalculateComputedPosition() const {
   // https://w3c.github.io/webvtt/#cue-computed-position
 
   // 1. If the position is numeric, then return the value of the position and
@@ -723,8 +721,8 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
 
   // 4. Determine the value of maximum size for cue as per the appropriate
   // rules from the following list:
-  float computed_position = CalculateComputedPosition();
-  float maximum_size = computed_position;
+  double computed_position = CalculateComputedPosition();
+  double maximum_size = computed_position;
   if (computed_position_alignment == PositionAlignment::kLineLeft) {
     maximum_size = 100 - computed_position;
   } else if (computed_position_alignment == PositionAlignment::kLineRight) {
@@ -786,7 +784,7 @@ VTTDisplayParameters VTTCue::CalculateDisplayParameters() const {
 
   // A cue has a computed line whose value is defined in terms of
   // the other aspects of the cue.
-  float computed_line = CalculateComputedLine();
+  double computed_line = CalculateComputedLine();
 
   // 8. Determine the value of whichever of x-position or y-position is not
   // yet calculated for cue as per the appropriate rules from the following
@@ -976,7 +974,7 @@ VTTCue::CueSetting VTTCue::SettingName(VTTScanner& input) const {
   return kNone;
 }
 
-static bool ScanPercentage(VTTScanner& input, float& number) {
+static bool ScanPercentage(VTTScanner& input, double& number) {
   // https://w3c.github.io/webvtt/#parse-a-percentage-string
 
   // 1. Let input be the string being parsed.
@@ -1051,7 +1049,7 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
       case kLine: {
         // If name is a case-sensitive match for "line"
         // Steps 1 - 2 Handled below.
-        float number;
+        double number;
         // 3. If linepos does not contain at least one ASCII digit, then
         //    jump to the step labeled next setting.
         // 4. If the last character in linepos is a U+0025 PERCENT SIGN
@@ -1086,7 +1084,7 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
           // 5. Interpret linepos as a (potentially signed) real number, and
           //    let number be that number.
           bool is_negative = input.Scan('-');
-          if (!input.ScanFloat(number))
+          if (!input.ScanDouble(number))
             break;
           // Negate number if it was preceded by a hyphen-minus - unless it's
           // zero.
@@ -1126,7 +1124,7 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
       }
       case kPosition: {
         // If name is a case-sensitive match for "position".
-        float number;
+        double number;
         // Steps 1 - 2 Handled below.
         // 3. If parse a percentage string from colpos doesn't fail, let
         //    number be the returned percentage, otherwise jump to the step
@@ -1165,7 +1163,7 @@ void VTTCue::ParseSettings(const VTTRegionMap* region_map,
       }
       case kSize: {
         // If name is a case-sensitive match for "size"
-        float number;
+        double number;
         // 1. If parse a percentage string from value doesn't fail, let
         //    number be the returned percentage, otherwise jump to the step
         //    labeled next setting.

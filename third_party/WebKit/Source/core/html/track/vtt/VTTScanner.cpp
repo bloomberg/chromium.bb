@@ -136,7 +136,7 @@ unsigned VTTScanner::ScanDigits(int& number) {
   return num_digits;
 }
 
-bool VTTScanner::ScanFloat(float& number) {
+bool VTTScanner::ScanDouble(double& number) {
   Run integer_run = CollectWhile<IsASCIIDigit>();
   SeekTo(integer_run.end());
   Run decimal_run(GetPosition(), GetPosition(), is8_bit_);
@@ -152,25 +152,29 @@ bool VTTScanner::ScanFloat(float& number) {
     return false;
   }
 
-  size_t length_of_float =
+  size_t length_of_double =
       Run(integer_run.Start(), GetPosition(), is8_bit_).length();
   bool valid_number;
-  if (is8_bit_)
+  if (is8_bit_) {
+    number = CharactersToDouble(integer_run.Start(), length_of_double,
+                                &valid_number);
+  } else {
     number =
-        CharactersToFloat(integer_run.Start(), length_of_float, &valid_number);
-  else
-    number =
-        CharactersToFloat(reinterpret_cast<const UChar*>(integer_run.Start()),
-                          length_of_float, &valid_number);
+        CharactersToDouble(reinterpret_cast<const UChar*>(integer_run.Start()),
+                           length_of_double, &valid_number);
+  }
+
+  if (number == std::numeric_limits<double>::infinity())
+    return false;
 
   if (!valid_number)
-    number = std::numeric_limits<float>::max();
+    number = std::numeric_limits<double>::max();
   return true;
 }
 
-bool VTTScanner::ScanPercentage(float& percentage) {
+bool VTTScanner::ScanPercentage(double& percentage) {
   Position saved_position = GetPosition();
-  if (!ScanFloat(percentage))
+  if (!ScanDouble(percentage))
     return false;
   if (Scan('%'))
     return true;
@@ -178,5 +182,4 @@ bool VTTScanner::ScanPercentage(float& percentage) {
   SeekTo(saved_position);
   return false;
 }
-
 }  // namespace blink
