@@ -484,10 +484,13 @@ void LegacyInputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
 }
 
 void LegacyInputRouterImpl::OnSetTouchAction(cc::TouchAction touch_action) {
-  // Synthetic touchstart events should get filtered out in RenderWidget.
-  DCHECK(touch_event_queue_->IsPendingAckTouchStart());
   TRACE_EVENT1("input", "LegacyInputRouterImpl::OnSetTouchAction", "action",
                touch_action);
+
+  // It is possible we get a touch action for a touch start that is no longer
+  // in the queue. eg. Events that have fired the Touch ACK timeout.
+  if (!touch_event_queue_->IsPendingAckTouchStart())
+    return;
 
   touch_action_filter_.OnSetTouchAction(touch_action);
 
