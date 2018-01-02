@@ -77,6 +77,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrLongOrBoo
 template <>
 struct NativeValueTraits<DoubleOrLongOrBooleanSequence> : public NativeValueTraitsBase<DoubleOrLongOrBooleanSequence> {
   CORE_EXPORT static DoubleOrLongOrBooleanSequence NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static DoubleOrLongOrBooleanSequence NullValue() { return DoubleOrLongOrBooleanSequence(); }
 };
 
 template <>

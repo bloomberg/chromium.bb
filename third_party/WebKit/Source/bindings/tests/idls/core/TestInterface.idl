@@ -131,6 +131,10 @@
     [SecureContext,Exposed=Window,RuntimeEnabled=SecureFeature] attribute bool secureContextWindowExposedRuntimeEnabledAttribute;
     [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] void secureContextWorkerExposedRuntimeEnabledMethod();
     [SecureContext,Exposed=Worker,RuntimeEnabled=SecureFeature] attribute bool secureContextWorkerExposedRuntimeEnabledAttribute;
+
+    // Arguments that are sequences or records of nullable types.
+    void methodWithNullableSequences(sequence<double?> numbers, sequence<DOMString?> strings, sequence<Element?> elements, sequence<(double or DOMString)?> unions);
+    void methodWithNullableRecords(record<DOMString, double?> numbers, record<DOMString, DOMString?> strings, record<DOMString, Element?> elements, record<DOMString, (double or DOMString)?> unions);
 };
 
 TestInterface implements TestImplements;

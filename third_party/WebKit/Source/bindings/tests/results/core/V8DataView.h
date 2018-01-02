@@ -52,6 +52,7 @@ class V8DataView {
 template <>
 struct NativeValueTraits<TestDataView> : public NativeValueTraitsBase<TestDataView> {
   CORE_EXPORT static TestDataView* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestDataView* NullValue() { return nullptr; }
 };
 
 template <>

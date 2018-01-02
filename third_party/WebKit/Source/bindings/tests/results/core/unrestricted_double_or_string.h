@@ -75,6 +75,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubl
 template <>
 struct NativeValueTraits<UnrestrictedDoubleOrString> : public NativeValueTraitsBase<UnrestrictedDoubleOrString> {
   CORE_EXPORT static UnrestrictedDoubleOrString NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static UnrestrictedDoubleOrString NullValue() { return UnrestrictedDoubleOrString(); }
 };
 
 template <>

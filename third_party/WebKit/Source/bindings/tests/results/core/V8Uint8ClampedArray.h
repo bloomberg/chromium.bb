@@ -47,6 +47,7 @@ class V8Uint8ClampedArray {
 template <>
 struct NativeValueTraits<TestUint8ClampedArray> : public NativeValueTraitsBase<TestUint8ClampedArray> {
   CORE_EXPORT static TestUint8ClampedArray* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestUint8ClampedArray* NullValue() { return nullptr; }
 };
 
 template <>

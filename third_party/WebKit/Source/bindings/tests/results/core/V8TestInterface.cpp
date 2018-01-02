@@ -18,6 +18,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
+#include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"
@@ -1762,6 +1763,72 @@ static void secureContextWorkerExposedRuntimeEnabledMethodMethod(const v8::Funct
   impl->secureContextWorkerExposedRuntimeEnabledMethod();
 }
 
+static void methodWithNullableSequencesMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "methodWithNullableSequences");
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 4)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(4, info.Length()));
+    return;
+  }
+
+  Vector<Optional<double>> numbers;
+  Vector<String> strings;
+  HeapVector<Member<Element>> elements;
+  HeapVector<DoubleOrString> unions;
+  numbers = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  strings = NativeValueTraits<IDLSequence<IDLNullable<IDLString>>>::NativeValue(info.GetIsolate(), info[1], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  elements = NativeValueTraits<IDLSequence<IDLNullable<Element>>>::NativeValue(info.GetIsolate(), info[2], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  unions = NativeValueTraits<IDLSequence<IDLNullable<DoubleOrString>>>::NativeValue(info.GetIsolate(), info[3], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  impl->methodWithNullableSequences(numbers, strings, elements, unions);
+}
+
+static void methodWithNullableRecordsMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "methodWithNullableRecords");
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 4)) {
+    exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(4, info.Length()));
+    return;
+  }
+
+  Vector<std::pair<String, Optional<double>>> numbers;
+  Vector<std::pair<String, String>> strings;
+  HeapVector<std::pair<String, Member<Element>>> elements;
+  HeapVector<std::pair<String, DoubleOrString>> unions;
+  numbers = NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLDouble>>>::NativeValue(info.GetIsolate(), info[0], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  strings = NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLString>>>::NativeValue(info.GetIsolate(), info[1], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  elements = NativeValueTraits<IDLRecord<IDLString, IDLNullable<Element>>>::NativeValue(info.GetIsolate(), info[2], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  unions = NativeValueTraits<IDLRecord<IDLString, IDLNullable<DoubleOrString>>>::NativeValue(info.GetIsolate(), info[3], exceptionState);
+  if (exceptionState.HadException())
+    return;
+
+  impl->methodWithNullableRecords(numbers, strings, elements, unions);
+}
+
 static void implementsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
@@ -3088,6 +3155,18 @@ void V8TestInterface::secureContextWorkerExposedRuntimeEnabledMethodMethodCallba
   TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledMethodMethod(info);
 }
 
+void V8TestInterface::methodWithNullableSequencesMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithNullableSequences");
+
+  TestInterfaceImplementationV8Internal::methodWithNullableSequencesMethod(info);
+}
+
+void V8TestInterface::methodWithNullableRecordsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_methodWithNullableRecords");
+
+  TestInterfaceImplementationV8Internal::methodWithNullableRecordsMethod(info);
+}
+
 void V8TestInterface::implementsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_implementsVoidMethod");
 
@@ -3438,6 +3517,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = 
     {"alwaysExposedStaticMethod", V8TestInterface::alwaysExposedStaticMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"staticReturnDOMWrapperMethod", V8TestInterface::staticReturnDOMWrapperMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"legacyInterfaceTypeCheckingMethod", V8TestInterface::legacyInterfaceTypeCheckingMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"methodWithNullableSequences", V8TestInterface::methodWithNullableSequencesMethodCallback, 4, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"methodWithNullableRecords", V8TestInterface::methodWithNullableRecordsMethodCallback, 4, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"implementsVoidMethod", V8TestInterface::implementsVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"implementsComplexMethod", V8TestInterface::implementsComplexMethodMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
     {"implementsCustomVoidMethod", V8TestInterface::implementsCustomVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},

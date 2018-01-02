@@ -53,6 +53,20 @@ void TestDictionary::setDictionaryMember(Dictionary value) {
   dictionary_member_ = value;
 }
 
+void TestDictionary::setDoubleOrNullOrDoubleOrNullSequenceMember(const DoubleOrDoubleOrNullSequence& value) {
+  double_or_null_or_double_or_null_sequence_member_ = value;
+}
+
+void TestDictionary::setDoubleOrNullRecordMember(const Vector<std::pair<String, Optional<double>>>& value) {
+  double_or_null_record_member_ = value;
+  has_double_or_null_record_member_ = true;
+}
+
+void TestDictionary::setDoubleOrNullSequenceMember(const Vector<Optional<double>>& value) {
+  double_or_null_sequence_member_ = value;
+  has_double_or_null_sequence_member_ = true;
+}
+
 void TestDictionary::setDoubleOrStringMember(const DoubleOrString& value) {
   double_or_string_member_ = value;
 }
@@ -60,6 +74,16 @@ void TestDictionary::setDoubleOrStringMember(const DoubleOrString& value) {
 void TestDictionary::setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>& value) {
   double_or_string_sequence_member_ = value;
   has_double_or_string_sequence_member_ = true;
+}
+
+void TestDictionary::setElementOrNullRecordMember(const HeapVector<std::pair<String, Member<Element>>>& value) {
+  element_or_null_record_member_ = value;
+  has_element_or_null_record_member_ = true;
+}
+
+void TestDictionary::setElementOrNullSequenceMember(const HeapVector<Member<Element>>& value) {
+  element_or_null_sequence_member_ = value;
+  has_element_or_null_sequence_member_ = true;
 }
 
 void TestDictionary::setEnumSequenceMember(const Vector<String>& value) {
@@ -95,6 +119,16 @@ void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
 void TestDictionary::setRecordMember(const Vector<std::pair<String, int8_t>>& value) {
   record_member_ = value;
   has_record_member_ = true;
+}
+
+void TestDictionary::setStringOrNullRecordMember(const Vector<std::pair<String, String>>& value) {
+  string_or_null_record_member_ = value;
+  has_string_or_null_record_member_ = true;
+}
+
+void TestDictionary::setStringOrNullSequenceMember(const Vector<String>& value) {
+  string_or_null_sequence_member_ = value;
+  has_string_or_null_sequence_member_ = true;
 }
 
 void TestDictionary::setStringSequenceMember(const Vector<String>& value) {
@@ -139,14 +173,27 @@ void TestDictionary::setUnionMemberWithSequenceDefault(const DoubleOrDoubleSeque
   union_member_with_sequence_default_ = value;
 }
 
+void TestDictionary::setUnionOrNullRecordMember(const HeapVector<std::pair<String, DoubleOrString>>& value) {
+  union_or_null_record_member_ = value;
+  has_union_or_null_record_member_ = true;
+}
+
+void TestDictionary::setUnionOrNullSequenceMember(const HeapVector<DoubleOrString>& value) {
+  union_or_null_sequence_member_ = value;
+  has_union_or_null_sequence_member_ = true;
+}
+
 void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
 }
 
 void TestDictionary::Trace(blink::Visitor* visitor) {
+  visitor->Trace(double_or_null_or_double_or_null_sequence_member_);
   visitor->Trace(double_or_string_member_);
   visitor->Trace(double_or_string_sequence_member_);
   visitor->Trace(element_or_null_member_);
+  visitor->Trace(element_or_null_record_member_);
+  visitor->Trace(element_or_null_sequence_member_);
   visitor->Trace(event_target_member_);
   visitor->Trace(garbage_collected_record_member_);
   visitor->Trace(internal_dictionary_sequence_member_);
@@ -163,6 +210,8 @@ void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(uint8_array_member_);
   visitor->Trace(union_in_record_member_);
   visitor->Trace(union_member_with_sequence_default_);
+  visitor->Trace(union_or_null_record_member_);
+  visitor->Trace(union_or_null_sequence_member_);
   visitor->Trace(union_with_typedefs_);
   IDLDictionaryBase::Trace(visitor);
 }

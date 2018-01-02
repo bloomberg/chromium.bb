@@ -82,6 +82,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOr
 template <>
 struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> : public NativeValueTraitsBase<BooleanOrStringOrUnrestrictedDouble> {
   CORE_EXPORT static BooleanOrStringOrUnrestrictedDouble NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static BooleanOrStringOrUnrestrictedDouble NullValue() { return BooleanOrStringOrUnrestrictedDouble(); }
 };
 
 template <>

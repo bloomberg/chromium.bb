@@ -87,6 +87,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBuff
 template <>
 struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> : public NativeValueTraitsBase<StringOrArrayBufferOrArrayBufferView> {
   CORE_EXPORT static StringOrArrayBufferOrArrayBufferView NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static StringOrArrayBufferOrArrayBufferView NullValue() { return StringOrArrayBufferOrArrayBufferView(); }
 };
 
 template <>

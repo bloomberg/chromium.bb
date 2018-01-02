@@ -77,6 +77,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, ByteStringOrNodeL
 template <>
 struct NativeValueTraits<ByteStringOrNodeList> : public NativeValueTraitsBase<ByteStringOrNodeList> {
   CORE_EXPORT static ByteStringOrNodeList NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static ByteStringOrNodeList NullValue() { return ByteStringOrNodeList(); }
 };
 
 template <>

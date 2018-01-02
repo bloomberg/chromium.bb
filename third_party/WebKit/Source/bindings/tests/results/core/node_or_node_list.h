@@ -78,6 +78,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& i
 template <>
 struct NativeValueTraits<NodeOrNodeList> : public NativeValueTraitsBase<NodeOrNodeList> {
   CORE_EXPORT static NodeOrNodeList NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static NodeOrNodeList NullValue() { return NodeOrNodeList(); }
 };
 
 template <>

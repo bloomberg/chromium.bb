@@ -304,6 +304,23 @@ TEST(ToV8Test, withScriptState) {
   EXPECT_EQ(1234.0, actual_as_number);
 }
 
+TEST(ToV8Test, nullableDouble) {
+  V8TestingScope scope;
+  v8::Local<v8::Object> global = scope.GetContext()->Global();
+  v8::Isolate* isolate = scope.GetIsolate();
+  {
+    v8::Local<v8::Value> actual =
+        ToV8(WTF::Optional<double>(42.0), global, isolate);
+    ASSERT_TRUE(actual->IsNumber());
+    EXPECT_EQ(42.0, actual.As<v8::Number>()->Value());
+  }
+  {
+    v8::Local<v8::Value> actual =
+        ToV8(WTF::Optional<double>(), global, isolate);
+    EXPECT_TRUE(actual->IsNull());
+  }
+}
+
 }  // namespace
 
 }  // namespace blink

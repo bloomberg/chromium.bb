@@ -65,6 +65,7 @@ class V8TestConstants {
 template <>
 struct NativeValueTraits<TestConstants> : public NativeValueTraitsBase<TestConstants> {
   CORE_EXPORT static TestConstants* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestConstants* NullValue() { return nullptr; }
 };
 
 template <>

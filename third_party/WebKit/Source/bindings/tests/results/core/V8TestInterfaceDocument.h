@@ -59,6 +59,7 @@ class V8TestInterfaceDocument {
 template <>
 struct NativeValueTraits<TestInterfaceDocument> : public NativeValueTraitsBase<TestInterfaceDocument> {
   CORE_EXPORT static TestInterfaceDocument* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceDocument* NullValue() { return nullptr; }
 };
 
 template <>

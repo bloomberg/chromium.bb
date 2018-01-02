@@ -75,6 +75,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble&
 template <>
 struct NativeValueTraits<TestEnumOrDouble> : public NativeValueTraitsBase<TestEnumOrDouble> {
   CORE_EXPORT static TestEnumOrDouble NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestEnumOrDouble NullValue() { return TestEnumOrDouble(); }
 };
 
 template <>

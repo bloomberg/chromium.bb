@@ -60,6 +60,7 @@ class V8TestAttributeGetters {
 template <>
 struct NativeValueTraits<TestAttributeGetters> : public NativeValueTraitsBase<TestAttributeGetters> {
   CORE_EXPORT static TestAttributeGetters* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestAttributeGetters* NullValue() { return nullptr; }
 };
 
 template <>

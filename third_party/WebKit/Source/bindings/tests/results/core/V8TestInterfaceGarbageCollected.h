@@ -70,6 +70,7 @@ class V8TestInterfaceGarbageCollected {
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollected> : public NativeValueTraitsBase<TestInterfaceGarbageCollected> {
   CORE_EXPORT static TestInterfaceGarbageCollected* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceGarbageCollected* NullValue() { return nullptr; }
 };
 
 template <>

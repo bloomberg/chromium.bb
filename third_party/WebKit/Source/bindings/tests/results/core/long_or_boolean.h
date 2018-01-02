@@ -75,6 +75,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, LongOrBoolean& im
 template <>
 struct NativeValueTraits<LongOrBoolean> : public NativeValueTraitsBase<LongOrBoolean> {
   CORE_EXPORT static LongOrBoolean NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static LongOrBoolean NullValue() { return LongOrBoolean(); }
 };
 
 template <>

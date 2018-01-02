@@ -77,6 +77,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarb
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> : public NativeValueTraitsBase<TestInterfaceGarbageCollectedOrString> {
   CORE_EXPORT static TestInterfaceGarbageCollectedOrString NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceGarbageCollectedOrString NullValue() { return TestInterfaceGarbageCollectedOrString(); }
 };
 
 template <>
