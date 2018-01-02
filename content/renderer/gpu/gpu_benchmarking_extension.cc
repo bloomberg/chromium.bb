@@ -559,11 +559,6 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("visualViewportY", &GpuBenchmarking::VisualViewportY)
       .SetMethod("visualViewportHeight", &GpuBenchmarking::VisualViewportHeight)
       .SetMethod("visualViewportWidth", &GpuBenchmarking::VisualViewportWidth)
-      // TODO(bokan): Temporary bit on gpuBenchmarking to let telemetry know
-      // when changes to gesture methods have landed in Chrome and it can start
-      // passing visual viewport coordinates. Will be removed once all changes
-      // are rolled. crbug.com/610021.
-      .SetValue("gesturesExpectedInViewportCoordinates", 1)
       .SetMethod("clearImageCache", &GpuBenchmarking::ClearImageCache)
       .SetMethod("runMicroBenchmark", &GpuBenchmarking::RunMicroBenchmark)
       .SetMethod("sendMessageToMicroBenchmark",
