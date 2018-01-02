@@ -1375,6 +1375,53 @@ TEST_F(SurfaceSynchronizationTest, MultiLevelLateArrivingDependency) {
   EXPECT_FALSE(child_surface1()->has_deadline());
 }
 
+// This test verifies that a late arriving CompositorFrame does not activate
+// if its dependent CompositorFrame has been dropped in the intervening time.
+// This test also verifies that there is no crash when the dependent
+// CompositorFrame is evicted and replaced by a new pending CompositorFrame.
+TEST_F(SurfaceSynchronizationTest, MissingActiveFrameWithLateDependencies) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  display_support().SubmitCompositorFrame(
+      display_id.local_surface_id(),
+      MakeCompositorFrame({parent_id1}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+
+  EXPECT_TRUE(display_surface()->HasPendingFrame());
+  EXPECT_FALSE(display_surface()->HasActiveFrame());
+  EXPECT_TRUE(display_surface()->has_deadline());
+
+  // Advance BeginFrames to trigger a deadline. This activates the
+  // CompositorFrame submitted above.
+  for (int i = 0; i < 3; ++i) {
+    SendNextBeginFrame();
+    EXPECT_TRUE(display_surface()->has_deadline());
+  }
+  SendNextBeginFrame();
+  EXPECT_FALSE(display_surface()->has_deadline());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+
+  display_support().EvictCurrentSurface();
+  display_support().SubmitCompositorFrame(
+      display_id.local_surface_id(),
+      MakeCompositorFrame({parent_id2}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+
+  // A late arriving CompositorFrame will not activate immediately if the
+  // dependent CompositorFrame has been evicted.
+  parent_support().SubmitCompositorFrame(
+      parent_id1.local_surface_id(),
+      MakeCompositorFrame({child_id1}, empty_surface_ids(),
+                          std::vector<TransferableResource>()));
+  EXPECT_TRUE(parent_surface()->has_deadline());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_FALSE(parent_surface()->HasActiveFrame());
+}
+
 // This test verifies that CompositorFrames submitted to a surface referenced
 // by a parent CompositorFrame as a fallback will be rejected and ACK'ed
 // immediately.
