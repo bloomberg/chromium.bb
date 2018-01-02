@@ -30,12 +30,6 @@ void TabModelNotificationObserver::WebStateInsertedAt(
     return;
 
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kTabModelNewTabWillOpenNotification
-                    object:tab_model_
-                  userInfo:@{
-                    kTabModelTabKey : tab,
-                    kTabModelOpenInBackgroundKey : @(!activating)
-                  }];
+  [tab_model_ notifyNewTabWillOpen:tab inBackground:!activating];
 }
 

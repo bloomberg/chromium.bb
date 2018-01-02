@@ -67,21 +67,10 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabModelTabWillStartLoadingNotification =
-    @"kTabModelTabWillStartLoadingNotification";
-NSString* const kTabModelTabDidStartLoadingNotification =
-    @"kTabModelTabDidStartLoadingNotification";
 NSString* const kTabModelTabDidFinishLoadingNotification =
     @"kTabModelTabDidFinishLoadingNotification";
 NSString* const kTabModelAllTabsDidCloseNotification =
     @"kTabModelAllTabsDidCloseNotification";
-NSString* const kTabModelTabDeselectedNotification =
-    @"kTabModelTabDeselectedNotification";
-NSString* const kTabModelNewTabWillOpenNotification =
-    @"kTabModelNewTabWillOpenNotification";
-NSString* const kTabModelTabKey = @"tab";
-NSString* const kTabModelPageLoadSuccess = @"pageLoadSuccess";
-NSString* const kTabModelOpenInBackgroundKey = @"shouldOpenInBackground";
 
 namespace {
 
@@ -159,7 +148,7 @@ void CleanCertificatePolicyCache(
   // The delegate for sync.
   std::unique_ptr<TabModelSyncedWindowDelegate> _syncedWindowDelegate;
 
-  // The observer that sends kTabModelNewTabWillOpenNotification notifications.
+  // The observer that calls -notifyNewTabWillOpen on this object.
   TabModelNotificationObserver* _tabModelNotificationObserver;
 
   // Counters for metrics.
@@ -498,6 +487,25 @@ void CleanCertificatePolicyCache(
   [_observers tabModel:self didChangeTab:tab];
 }
 
+- (void)notifyTabLoading:(Tab*)tab {
+  [_observers tabModel:self willStartLoadingTab:tab];
+  [self notifyTabChanged:tab];
+  [_observers tabModel:self didStartLoadingTab:tab];
+}
+
+- (void)notifyTabFinishedLoading:(Tab*)tab success:(BOOL)success {
+  [self notifyTabChanged:tab];
+  [_observers tabModel:self didFinishLoadingTab:tab success:success];
+}
+
+- (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background {
+  [_observers tabModel:self newTabWillOpen:tab inBackground:background];
+}
+
+- (void)notifyTabWasDeselected:(Tab*)tab {
+  [_observers tabModel:self didDeselectTab:tab];
+}
+
 - (void)addObserver:(id<TabModelObserver>)observer {
   [_observers addObserver:observer];
 }
@@ -659,8 +667,8 @@ void CleanCertificatePolicyCache(
   DCHECK(_browserState);
   DCHECK(window);
 
-  // Disable sending the kTabModelNewTabWillOpenNotification notification
-  // while restoring a session as it breaks the BVC (see crbug.com/763964).
+  // Disable calling -notifyNewTabWillOpen: while restoring a session as it
+  // breaks the BVC (see crbug.com/763964).
   base::ScopedClosureRunner enableTabModelNotificationObserver;
   if (_tabModelNotificationObserver) {
     _tabModelNotificationObserver->SetDisabled(true);

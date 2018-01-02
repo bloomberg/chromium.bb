@@ -765,19 +765,7 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   }
   GURL lastCommittedURL = webState->GetLastCommittedURL();
 
-  if (_parentTabModel) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabModelTabWillStartLoadingNotification
-                      object:_parentTabModel
-                    userInfo:@{kTabModelTabKey : self}];
-  }
-  [_parentTabModel notifyTabChanged:self];
-  if (_parentTabModel) {
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabModelTabDidStartLoadingNotification
-                      object:_parentTabModel
-                    userInfo:@{kTabModelTabKey : self}];
-  }
+  [_parentTabModel notifyTabLoading:self];
 
   web::NavigationItem* previousItem = nullptr;
   if (details.previous_item_index >= 0) {
@@ -832,17 +820,14 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
     [self handleExportableFile:headers.get()];
   }
 
-  [_parentTabModel notifyTabChanged:self];
+  [_parentTabModel notifyTabFinishedLoading:self success:loadSuccess];
 
   if (_parentTabModel) {
+    // This notification is deprecated, and no further observers of it should
+    // be added.
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabModelTabDidFinishLoadingNotification
-                      object:_parentTabModel
-                    userInfo:[NSDictionary
-                                 dictionaryWithObjectsAndKeys:
-                                     self, kTabModelTabKey,
-                                     [NSNumber numberWithBool:loadSuccess],
-                                     kTabModelPageLoadSuccess, nil]];
+                      object:_parentTabModel];
   }
 
   if (!self.isPrerenderTab) {

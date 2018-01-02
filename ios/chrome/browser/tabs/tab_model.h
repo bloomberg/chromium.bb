@@ -32,37 +32,17 @@ struct Referrer;
 class WebState;
 }
 
-// A list of notifications about changes in the model or changes in tab
-// state.
-
-// A tab is about to load a URL. The tab in question is in the userInfo under
-// kTabModelTabKey. This may fire multiple times during a load, for example, on
-// redirects.
-extern NSString* const kTabModelTabWillStartLoadingNotification;
-// A tab started to load a URL. The tab in question is in the userInfo under
-// kTabModelTabKey.
-extern NSString* const kTabModelTabDidStartLoadingNotification;
+// When a tab finishes loading a URL, a notification with the following key is
+// sent. This notification is DEPRECATED and no further observers of it should
+// be added.
 // A tab finished loading a URL. The tab in question is in the userInfo under
 // kTabModelTabKey.
 extern NSString* const kTabModelTabDidFinishLoadingNotification;
+
 // All tabs have finished their shutdown sequences.
 // NOTE: This notification is not sent when closing a single tab that happens
 // to be the last tab.
 extern NSString* const kTabModelAllTabsDidCloseNotification;
-// A tab has lost its status as the currently selected tab. The tab in question
-// is in the userInfo under kTabModelTabKey.
-extern NSString* const kTabModelTabDeselectedNotification;
-// A new tab has been created from a link.
-extern NSString* const kTabModelNewTabWillOpenNotification;
-
-// Keys for the userInfo included with the above notifications:
-
-// Key that indicates whether to open the next tab in the background.
-extern NSString* const kTabModelOpenInBackgroundKey;
-// Key for the tab.
-extern NSString* const kTabModelTabKey;
-// Key for the status of the page load. The value is a NSNumber.
-extern NSString* const kTabModelPageLoadSuccess;
 
 // ---------------------------------------------------------------------------
 
@@ -194,9 +174,23 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Notifies observers that the given |tab| was changed.
 - (void)notifyTabChanged:(Tab*)tab;
 
+// Notifies observers that the given tab is loading a new URL.
+- (void)notifyTabLoading:(Tab*)tab;
+
+// Notifies observers that the given tab finished loading. |success| is YES if
+// the load was successful, NO otherwise.
+- (void)notifyTabFinishedLoading:(Tab*)tab success:(BOOL)success;
+
+// Notifies observers that the given tab will open. If it isn't the active tab,
+// |background| is YES, NO otherwise.
+- (void)notifyNewTabWillOpen:(Tab*)tab inBackground:(BOOL)background;
+
 // Notifies observers that the snapshot for the given |tab| changed was changed
 // to |image|.
 - (void)notifyTabSnapshotChanged:(Tab*)tab withImage:(UIImage*)image;
+
+// Notifies observers that |tab| was deselected.
+- (void)notifyTabWasDeselected:(Tab*)tab;
 
 // Adds |observer| to the list of observers. |observer| is not retained. Does
 // nothing if |observer| is already in the list. Any added observers must be

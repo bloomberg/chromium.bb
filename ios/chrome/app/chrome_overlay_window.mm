@@ -55,6 +55,7 @@
   if (IsIPadIdiom()) {
     _sizeClassRecorder = [[SizeClassRecorder alloc]
         initWithHorizontalSizeClass:self.traitCollection.horizontalSizeClass];
+    // Remove use of this notification.
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(pageLoaded:)
