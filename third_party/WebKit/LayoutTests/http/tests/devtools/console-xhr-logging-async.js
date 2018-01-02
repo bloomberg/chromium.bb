@@ -16,19 +16,25 @@
 
   function step1() {
     Common.settingForTest('monitoringXHREnabled').set(true);
-    makeRequest(step2);
+    makeRequest(() => {
+      TestRunner.deprecatedRunAfterPendingDispatches(() => {
+        TestRunner.addResult('XHR with logging enabled: ');
+        // Sorting console messages to prevent flakiness.
+        TestRunner.addResults(ConsoleTestRunner.dumpConsoleMessagesIntoArray().sort());
+        Console.ConsoleView.clearConsole();
+        step2();
+      });
+    });
   }
 
   function step2() {
     Common.settingForTest('monitoringXHREnabled').set(false);
-    makeRequest(step3);
-  }
-
-  function step3() {
-    function finish() {
-      ConsoleTestRunner.dumpConsoleMessages();
-      TestRunner.completeTest();
-    }
-    TestRunner.deprecatedRunAfterPendingDispatches(finish);
+    makeRequest(() => {
+      TestRunner.deprecatedRunAfterPendingDispatches(() => {
+        TestRunner.addResult('XHR with logging disabled: ');
+        ConsoleTestRunner.dumpConsoleMessages();
+        TestRunner.completeTest();
+      });
+    });
   }
 })();
