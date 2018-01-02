@@ -71,9 +71,9 @@ That way, people who don't use your interface don't need to know about or care
 about `BigImplementationDetail`.
 
 You can do this for helper functions, too.  Note that if there is more than one
-class in the .cc file, it can aid clarity to define your file-scope helpers in
-an anonymous namespace just above the class that uses them, instead of at the
-top of the file.
+class in the .cc file, it can aid clarity to define your translation-unit-scope
+helpers in an anonymous namespace just above the class that uses them, instead
+of at the top of the file.
 
 ## Stop inlining code in headers
 
@@ -272,10 +272,10 @@ consideration is simply what would make code most readable.
 
 This is especially true in testing code.  Test framework classes don't tend to
 be instantiated separately and passed around as objects; they're effectively
-just bundles of file-scope functionality coupled with a mechanism to reset state
-between tests.  In these cases, defining the test functions inline at their
-declaration sites has little negative effect and can reduce the amount of
-"boilerplate" in the test file.
+just bundles of translation-unit-scope functionality coupled with a mechanism
+to reset state between tests.  In these cases, defining the test functions
+inline at their declaration sites has little negative effect and can reduce the
+amount of "boilerplate" in the test file.
 
 Different reviewers may have different opinions here; use good judgment.
 
