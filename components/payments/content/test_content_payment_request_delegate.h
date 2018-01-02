@@ -27,6 +27,7 @@ class TestContentPaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void ShowDialog(PaymentRequest* request) override;
   void CloseDialog() override;
   void ShowErrorMessage() override;
+  void ShowProcessingSpinner() override;
   bool IsBrowserWindowActive() const override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;

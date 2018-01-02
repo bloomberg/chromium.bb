@@ -213,7 +213,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
   // We also need to set the state when no region data is provided.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -257,7 +259,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // We also need to set the state when no region data is provided.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -303,7 +307,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
 
   std::string country_code(GetSelectedCountryCode());
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -457,7 +463,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // value can be set as the state.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
   SetCommonFields();
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -498,7 +506,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   // Now any textual value can be set for the ADDRESS_HOME_STATE.
   SetFieldTestValue(autofill::ADDRESS_HOME_STATE);
   SetCommonFields();
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
@@ -564,7 +574,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Wait until the web database has been updated and the notification sent.
   base::RunLoop data_loop;
@@ -664,7 +676,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   SetEditorTextfieldValue(base::UTF8ToUTF16("+61 2 9374 4000"),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION});
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
 }
 
@@ -720,7 +733,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   SetEditorTextfieldValue(base::ASCIIToUTF16(kCountryWithoutStatesPhoneNumber),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
-  ResetEventWaiter(DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION);
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::BACK_TO_PAYMENT_SHEET_NAVIGATION,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN});
 
   // Verifying the data is in the DB.
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();

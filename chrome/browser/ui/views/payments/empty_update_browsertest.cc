@@ -26,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestEmptyUpdateTest, NoCrash) {
   OpenShippingAddressSectionScreen();
 
   ResetEventWaiterForSequence(
-      std::list<DialogEvent>{DialogEvent::DIALOG_CLOSED});
+      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
 
   ClickOnChildInListViewAndWait(
       /* child_index=*/0, /*total_num_children=*/1,

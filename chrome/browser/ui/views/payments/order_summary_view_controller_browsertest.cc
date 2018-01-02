@@ -53,8 +53,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // Go to the shipping address screen and select the first address (MI state).
   ClickOnBackArrow();
   OpenShippingAddressSectionScreen();
-  ResetEventWaiterForSequence(std::list<DialogEvent>{
-      DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/0, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW,
@@ -97,8 +99,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestOrderSummaryViewControllerTest,
   // Go to the shipping address screen and select the second address (CA state).
   ClickOnBackArrow();
   OpenShippingAddressSectionScreen();
-  ResetEventWaiterForSequence(std::list<DialogEvent>{
-      DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW,

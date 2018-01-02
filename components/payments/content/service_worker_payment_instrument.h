@@ -14,6 +14,8 @@
 
 namespace payments {
 
+class PaymentRequestDelegate;
+
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentInstrument : public PaymentInstrument {
  public:
@@ -22,7 +24,8 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
       const GURL& top_level_origin,
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
-      std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info);
+      std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
+      PaymentRequestDelegate* payment_request_delegate);
   ~ServiceWorkerPaymentInstrument() override;
 
   // The callback for ValidateCanMakePayment.
@@ -75,6 +78,9 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   // Weak pointer is fine here since the owner of this object is
   // PaymentRequestState which also owns PaymentResponseHelper.
   Delegate* delegate_;
+
+  // Weak pointer that must outlive this object.
+  PaymentRequestDelegate* payment_request_delegate_;
 
   // PaymentAppProvider::CanMakePayment result of this payment instrument.
   bool can_make_payment_result_;

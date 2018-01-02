@@ -92,7 +92,7 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
         std::make_unique<ServiceWorkerPaymentInstrument>(
             context, top_level_origin, frame_origin, spec_,
-            std::move(app.second));
+            std::move(app.second), payment_request_delegate_);
     instrument->ValidateCanMakePayment(
         base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
                        weak_ptr_factory_.GetWeakPtr()));

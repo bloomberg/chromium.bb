@@ -75,6 +75,11 @@ void ChromePaymentRequestDelegate::ShowErrorMessage() {
     dialog_->ShowErrorMessage();
 }
 
+void ChromePaymentRequestDelegate::ShowProcessingSpinner() {
+  if (dialog_)
+    dialog_->ShowProcessingSpinner();
+}
+
 autofill::PersonalDataManager*
 ChromePaymentRequestDelegate::GetPersonalDataManager() {
   // Autofill uses the original profile's PersonalDataManager to make data
