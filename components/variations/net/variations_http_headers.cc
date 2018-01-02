@@ -12,6 +12,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace variations {
@@ -116,6 +117,14 @@ std::set<std::string> GetVariationHeaderNames() {
   std::set<std::string> headers;
   headers.insert(kClientData);
   return headers;
+}
+
+void StripVariationHeaderIfNeeded(const GURL& new_location,
+                                  net::URLRequest* request) {
+  if (!internal::ShouldAppendVariationHeaders(new_location)) {
+    for (const std::string& header : GetVariationHeaderNames())
+      request->RemoveRequestHeaderByName(header);
+  }
 }
 
 namespace internal {

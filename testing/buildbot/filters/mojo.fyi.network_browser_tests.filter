@@ -848,6 +848,10 @@
 -ContinueWhereILeftOffTest.SessionCookies
 -RestartTest.SessionCookies
 
+
+# Requires a replacement for ChromeNetworkDelegate.
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
+
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
 -SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
