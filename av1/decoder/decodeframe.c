@@ -2088,10 +2088,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC))
 #endif  // CONFIG_INTRABC
   {
-// Loopfilter the whole frame.
-#if CONFIG_OBU
+    // Loopfilter the whole frame.
     if (endTile == cm->tile_rows * cm->tile_cols - 1)
-#endif
 #if CONFIG_LOOPFILTER_LEVEL
       if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
         av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
@@ -2105,8 +2103,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                               0);
       }
 #else
-    av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                          cm->lf.filter_level, 0, 0);
+      av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                            cm->lf.filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
   }
   if (cm->frame_parallel_decode)
@@ -2123,12 +2121,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif  // CONFIG_EXT_TILE
 
-#if !CONFIG_OBU
-  // Get last tile data.
-  TileData *const td = pbi->tile_data + tile_cols * tile_rows - 1;
-#else
   TileData *const td = pbi->tile_data + endTile;
-#endif
 
   return aom_reader_find_end(&td->bit_reader);
 }
@@ -3389,13 +3382,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (initialize_flag) setup_frame_info(pbi);
 
-#if CONFIG_OBU
   *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
-#else
-  *p_data_end =
-      decode_tiles(pbi, data + pbi->uncomp_hdr_size + pbi->first_partition_size,
-                   data_end, startTile, endTile);
-#endif
 
 #if CONFIG_MONO_VIDEO
   // If the bit stream is monochrome, set the U and V buffers to a constant.
