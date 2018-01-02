@@ -17901,7 +17901,6 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
       internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
 
-  std::vector<int32_t> level_size(levels);
   {
     GLsizei level_width = width;
     GLsizei level_height = height;
@@ -17912,13 +17911,14 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     for (int ii = 0; ii < levels; ++ii) {
       uint32_t size;
       if (is_compressed_format) {
+	GLsizei level_size;
         if (!GetCompressedTexSizeInBytes(function_name,
                                          level_width, level_height, level_depth,
-                                         internal_format, &level_size[ii])) {
+                                         internal_format, &level_size)) {
           // GetCompressedTexSizeInBytes() already generates a GL error.
           return;
         }
-        size = static_cast<uint32_t>(level_size[ii]);
+        size = static_cast<uint32_t>(level_size);
       } else {
         if (!GLES2Util::ComputeImageDataSizesES3(level_width,
                                                  level_height,
