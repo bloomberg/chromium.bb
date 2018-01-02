@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
@@ -470,7 +469,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
 
     EXPECT_FALSE(socket_);
-    socket_ = base::MakeUnique<net::StaticSocketDataProvider>(
+    socket_ = std::make_unique<net::StaticSocketDataProvider>(
         reads_list->data(), reads_list->size(), writes_list->data(),
         writes_list->size());
     mock_socket_factory_->AddSocketDataProvider(socket_.get());
@@ -747,10 +746,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     std::unique_ptr<net::StaticSocketDataProvider> socket;
     if (!redirect_once) {
-      socket = base::MakeUnique<net::StaticSocketDataProvider>(
+      socket = std::make_unique<net::StaticSocketDataProvider>(
           reads, arraysize(reads), writes, arraysize(writes));
     } else {
-      socket = base::MakeUnique<net::StaticSocketDataProvider>(
+      socket = std::make_unique<net::StaticSocketDataProvider>(
           redirect_reads, arraysize(redirect_reads), redirect_writes,
           arraysize(redirect_writes));
     }

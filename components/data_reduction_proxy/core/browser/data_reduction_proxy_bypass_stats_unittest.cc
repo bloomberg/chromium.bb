@@ -109,7 +109,7 @@ class DataReductionProxyBypassStatsTest : public testing::Test {
 
  protected:
   std::unique_ptr<DataReductionProxyBypassStats> BuildBypassStats() {
-    return base::MakeUnique<DataReductionProxyBypassStats>(
+    return std::make_unique<DataReductionProxyBypassStats>(
         test_context_->config(), test_context_->unreachable_callback());
   }
 

@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -78,7 +77,7 @@ void AddInt64ToListPref(size_t index,
                         base::ListValue* list_update) {
   int64_t value = GetInt64PrefValue(*list_update, index) + length;
   list_update->Set(index,
-                   base::MakeUnique<base::Value>(base::Int64ToString(value)));
+                   std::make_unique<base::Value>(base::Int64ToString(value)));
 }
 
 // DailyContentLengthUpdate maintains a data saving pref. The pref is a list
@@ -529,7 +528,7 @@ DataReductionProxyCompressionStats::HistoricNetworkStatsInfoToValue() {
   int64_t total_received = GetInt64(prefs::kHttpReceivedContentLength);
   int64_t total_original = GetInt64(prefs::kHttpOriginalContentLength);
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("historic_received_content_length",
                   base::Int64ToString(total_received));
@@ -542,7 +541,7 @@ std::unique_ptr<base::Value>
 DataReductionProxyCompressionStats::SessionNetworkStatsInfoToValue() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("session_received_content_length",
                   base::Int64ToString(session_total_received_));
@@ -666,7 +665,7 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
   for (const auto& connection_usage : data_usage->connection_usage()) {
     for (const auto& site_usage : connection_usage.site_usage()) {
       data_usage_map_[site_usage.hostname()] =
-          base::MakeUnique<PerSiteDataUsage>(site_usage);
+          std::make_unique<PerSiteDataUsage>(site_usage);
     }
   }
 
@@ -1187,7 +1186,7 @@ void DataReductionProxyCompressionStats::RecordDataUseByHost(
 
   std::string normalized_host = NormalizeHostname(data_usage_host);
   auto j = data_usage_map_.insert(
-      std::make_pair(normalized_host, base::MakeUnique<PerSiteDataUsage>()));
+      std::make_pair(normalized_host, std::make_unique<PerSiteDataUsage>()));
   PerSiteDataUsage* per_site_usage = j.first->second.get();
   per_site_usage->set_hostname(normalized_host);
   per_site_usage->set_original_size(per_site_usage->original_size() +
@@ -1245,7 +1244,7 @@ void DataReductionProxyCompressionStats::GetHistoricalDataUsageImpl(
     // This use case is unlikely to occur in practice since current data usage
     // should have sufficient time to load before user tries to view data usage.
     get_data_usage_callback.Run(
-        base::MakeUnique<std::vector<DataUsageBucket>>());
+        std::make_unique<std::vector<DataUsageBucket>>());
     return;
   }
 #endif

@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
@@ -31,7 +30,7 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
     : TestDataReductionProxyConfig(
-          base::MakeUnique<TestDataReductionProxyParams>(),
+          std::make_unique<TestDataReductionProxyParams>(),
           io_task_runner,
           net_log,
           configurator,
@@ -56,7 +55,7 @@ TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest() {
-  config_values_ = base::MakeUnique<TestDataReductionProxyParams>();
+  config_values_ = std::make_unique<TestDataReductionProxyParams>();
 }
 
 TestDataReductionProxyParams* TestDataReductionProxyConfig::test_params() {
