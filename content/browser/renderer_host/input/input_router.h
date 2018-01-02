@@ -8,7 +8,7 @@
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
-#include "content/browser/renderer_host/input/touch_event_queue.h"
+#include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -26,7 +26,7 @@ class InputRouter : public IPC::Listener {
   struct CONTENT_EXPORT Config {
     Config();
     GestureEventQueue::Config gesture_config;
-    TouchEventQueue::Config touch_config;
+    PassthroughTouchEventQueue::Config touch_config;
   };
 
   ~InputRouter() override {}

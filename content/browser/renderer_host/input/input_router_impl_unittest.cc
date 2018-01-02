@@ -399,11 +399,11 @@ class InputRouterImplTest : public testing::Test {
   InputRouterImpl* input_router() const { return input_router_.get(); }
 
   bool TouchEventQueueEmpty() const {
-    return input_router()->touch_event_queue_->Empty();
+    return input_router()->touch_event_queue_.Empty();
   }
 
   bool TouchEventTimeoutEnabled() const {
-    return input_router()->touch_event_queue_->IsAckTimeoutEnabled();
+    return input_router()->touch_event_queue_.IsAckTimeoutEnabled();
   }
 
   bool HasPendingEvents() const { return input_router_->HasPendingEvents(); }
