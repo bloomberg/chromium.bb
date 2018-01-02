@@ -42,6 +42,7 @@
 #include "platform/heap/HeapTestUtilities.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/SelfKeepAlive.h"
+#include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -6251,6 +6252,20 @@ TEST(HeapTest, StackGrowthDirection) {
   // and has a builtin assumption that the stack grows towards
   // lower addresses.
   EXPECT_EQ(kGrowsTowardsLower, StackGrowthDirection());
+}
+
+TEST(HeapTest, StackFrameDepthDisabledByDefault) {
+  StackFrameDepth depth;
+  // Only allow recursion after explicitly enabling the stack limit.
+  EXPECT_FALSE(depth.IsSafeToRecurse());
+}
+
+TEST(HeapTest, StackFrameDepthEnable) {
+  StackFrameDepth depth;
+  StackFrameDepthScope scope(&depth);
+  // The scope may fail to enable recursion when the stack is close to the
+  // limit. In all other cases we should be able to safely recurse.
+  EXPECT_TRUE(depth.IsSafeToRecurse() || !depth.IsEnabled());
 }
 
 class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
