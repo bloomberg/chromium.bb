@@ -31,6 +31,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.io.ByteArrayInputStream;
@@ -440,8 +441,8 @@ public class VisualStateTest {
         };
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            awContents.getWebContents().addPossiblyUnsafeJavascriptInterface(
-                    pageChangeNotifier, "pageChangeNotifier", null);
+            JavascriptInjector.fromWebContents(awContents.getWebContents())
+                    .addPossiblyUnsafeInterface(pageChangeNotifier, "pageChangeNotifier", null);
             awContents.loadUrl(WAIT_FOR_JS_DETACHED_TEST_URL);
         });
 

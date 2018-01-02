@@ -10,6 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivity;
@@ -104,11 +105,10 @@ public final class JavaBridgeTestCommon {
                 @Override
                 public void run() {
                     WebContents webContents = mCallback.getWebContentsForTestCommon();
-                    webContents.addPossiblyUnsafeJavascriptInterface(
-                            object1, name1, requiredAnnotation);
+                    JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents);
+                    injector.addPossiblyUnsafeInterface(object1, name1, requiredAnnotation);
                     if (object2 != null && name2 != null) {
-                        webContents.addPossiblyUnsafeJavascriptInterface(
-                                object2, name2, requiredAnnotation);
+                        injector.addPossiblyUnsafeInterface(object2, name2, requiredAnnotation);
                     }
                     webContents.getNavigationController().reload(true);
                 }

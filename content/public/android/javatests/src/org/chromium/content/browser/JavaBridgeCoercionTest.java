@@ -706,7 +706,7 @@ public class JavaBridgeCoercionTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getWebContents().addPossiblyUnsafeJavascriptInterface(
+                mActivityTestRule.getJavascriptInjector().addPossiblyUnsafeInterface(
                         selfConsuming, "selfConsuming", null);
             }
         });

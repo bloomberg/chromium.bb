@@ -72,6 +72,7 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
@@ -411,6 +412,8 @@ public class AwContents implements SmartClipProvider {
     // to move the holder of those internal objects to AwContents. Note that they are still
     // used by WebContents, and AwContents doesn't have to know what's inside the holder.
     private WebContentsInternals mWebContentsInternals;
+
+    private JavascriptInjector mJavascriptInjector;
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -1225,7 +1228,7 @@ public class AwContents implements SmartClipProvider {
         Map<String, Pair<Object, Class>> javascriptInterfaces =
                 new HashMap<String, Pair<Object, Class>>();
         if (mContentViewCore != null) {
-            javascriptInterfaces.putAll(mWebContents.getJavascriptInterfaces());
+            javascriptInterfaces.putAll(getJavascriptInjector().getInterfaces());
         }
 
         setNewAwContents(popupNativeAwContents);
@@ -1251,9 +1254,16 @@ public class AwContents implements SmartClipProvider {
         for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
             @SuppressWarnings("unchecked")
             Class<? extends Annotation> requiredAnnotation = entry.getValue().second;
-            mWebContents.addPossiblyUnsafeJavascriptInterface(
+            getJavascriptInjector().addPossiblyUnsafeInterface(
                     entry.getValue().first, entry.getKey(), requiredAnnotation);
         }
+    }
+
+    private JavascriptInjector getJavascriptInjector() {
+        if (mJavascriptInjector == null) {
+            mJavascriptInjector = JavascriptInjector.fromWebContents(mWebContents);
+        }
+        return mJavascriptInjector;
     }
 
     @VisibleForTesting
@@ -1419,7 +1429,7 @@ public class AwContents implements SmartClipProvider {
      */
     public void disableJavascriptInterfacesInspection() {
         if (!isDestroyedOrNoOperation(WARN)) {
-            mWebContents.setAllowJavascriptInterfacesInspection(false);
+            getJavascriptInjector().setAllowInspection(false);
         }
     }
 
@@ -2674,7 +2684,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * @see WebContents#addPossiblyUnsafeJavascriptInterface(Object, String, Class)
+     * @see JavascriptInjector#addPossiblyUnsafeInterface(Object, String, Class)
      */
     @SuppressLint("NewApi")  // JavascriptInterface requires API level 17.
     public void addJavascriptInterface(Object object, String name) {
@@ -2685,17 +2695,17 @@ public class AwContents implements SmartClipProvider {
             requiredAnnotation = JavascriptInterface.class;
         }
 
-        mWebContents.addPossiblyUnsafeJavascriptInterface(object, name, requiredAnnotation);
+        getJavascriptInjector().addPossiblyUnsafeInterface(object, name, requiredAnnotation);
     }
 
     /**
      * @see android.webkit.WebView#removeJavascriptInterface(String)
      */
     public void removeJavascriptInterface(String interfaceName) {
-        if (TRACE) Log.i(TAG, "%s removeJavascriptInterface=%s", this, interfaceName);
+        if (TRACE) Log.i(TAG, "%s removeInterface=%s", this, interfaceName);
         if (isDestroyedOrNoOperation(WARN)) return;
 
-        mWebContents.removeJavascriptInterface(interfaceName);
+        getJavascriptInjector().removeInterface(interfaceName);
     }
 
     /**

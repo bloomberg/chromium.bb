@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,7 +22,6 @@ class GURL;
 
 namespace content {
 
-class GinJavaBridgeDispatcherHost;
 class WebContentsImpl;
 
 // Android wrapper around WebContents that provides safer passage from java and
@@ -267,9 +265,6 @@ class CONTENT_EXPORT WebContentsAndroid
   WebContentsImpl* web_contents_;
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
-
-  // Manages injecting Java objects.
-  scoped_refptr<GinJavaBridgeDispatcherHost> java_bridge_dispatcher_host_;
 
   base::WeakPtrFactory<WebContentsAndroid> weak_factory_;
 

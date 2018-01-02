@@ -148,7 +148,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getWebContents().addPossiblyUnsafeJavascriptInterface(
+                mActivityTestRule.getJavascriptInjector().addPossiblyUnsafeInterface(
                         new Object(), "testObject", null);
             }
         });
@@ -172,7 +172,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getWebContents().removeJavascriptInterface("testObject");
+                mActivityTestRule.getJavascriptInjector().removeInterface("testObject");
             }
         });
         // Check that the Java object is being held by the Java bridge, thus it's not
@@ -196,7 +196,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getWebContents().removeJavascriptInterface("foo");
+                mActivityTestRule.getJavascriptInjector().removeInterface("foo");
                 mActivityTestRule.getWebContents().getNavigationController().reload(true);
             }
         });
@@ -953,7 +953,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getWebContents().setAllowJavascriptInterfacesInspection(false);
+                mActivityTestRule.getJavascriptInjector().setAllowInspection(false);
             }
         });
 

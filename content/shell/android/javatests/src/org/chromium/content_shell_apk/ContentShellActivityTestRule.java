@@ -19,6 +19,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCoreImpl;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
+import org.chromium.content_public.browser.JavascriptInjector;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -104,6 +105,10 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public RenderCoordinates getRenderCoordinates() {
         return mDelegate.getRenderCoordinates();
+    }
+
+    public JavascriptInjector getJavascriptInjector() {
+        return JavascriptInjector.fromWebContents(getWebContents());
     }
 
     /**
