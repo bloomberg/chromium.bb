@@ -485,10 +485,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Used to display the Print UI. Nil if not visible.
   PrintController* _printController;
 
-  // Records the set of domains for which full screen alert has already been
-  // shown.
-  NSMutableSet* _fullScreenAlertShown;
-
   // Adapter to let BVC be the delegate for WebState.
   std::unique_ptr<web::WebStateDelegateBridge> _webStateDelegate;
 
@@ -679,31 +675,22 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // dismissed, it remains allocated so that |userEngaged| remains accessible.
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* tabTipBubblePresenter;
-
 // Used to display the new incognito tab tip in-product help promotion bubble.
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
 
 // Vertical offset for fullscreen toolbar.
 @property(nonatomic, strong) NSLayoutConstraint* toolbarOffsetConstraint;
-
 // Y-dimension offset for placement of the header.
 @property(nonatomic, readonly) CGFloat headerOffset;
-
 // Height of the header view for the tab model's current tab.
 @property(nonatomic, readonly) CGFloat headerHeight;
 
-// BVC initialization:
-// If the BVC is initialized with a valid browser state & tab model immediately,
-// the path is straightforward: functionality is enabled, and the UI is built
-// when -viewDidLoad is called.
-// If the BVC is initialized without a browser state or tab model, the tab model
-// and browser state may or may not be provided before -viewDidLoad is called.
-// In most cases, they will not, to improve startup performance.
-// In order to handle this, initialization of various aspects of BVC have been
-// broken out into the following functions, which have expectations (enforced
-// with DCHECKs) regarding |_browserState|, |_model|, and [self isViewLoaded].
+// The webState of the active tab.
+@property(nonatomic, readonly) web::WebState* currentWebState;
 
+// Notification Handling
+// ---------------------
 // Registers for notifications.
 - (void)registerForNotifications;
 // Called when a tab is starting to load. If it's a link click or form
@@ -723,6 +710,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Animates sliding current tab and rotate-entering new tab while new tab loads
 // in background on the iPhone only.
 - (void)tabWasAdded:(NSNotification*)notify;
+
+// BVC initialization
+// ------------------
+// If the BVC is initialized with a valid browser state & tab model immediately,
+// the path is straightforward: functionality is enabled, and the UI is built
+// when -viewDidLoad is called.
+// If the BVC is initialized without a browser state or tab model, the tab model
+// and browser state may or may not be provided before -viewDidLoad is called.
+// In most cases, they will not, to improve startup performance.
+// In order to handle this, initialization of various aspects of BVC have been
+// broken out into the following functions, which have expectations (enforced
+// with DCHECKs) regarding |_browserState|, |_model|, and [self isViewLoaded].
 
 // Updates non-view-related functionality with the given browser state and tab
 // model.
@@ -748,21 +747,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)displayTab:(Tab*)tab isNewSelection:(BOOL)newSelection;
 // Initializes the bookmark interaction controller if not already initialized.
 - (void)initializeBookmarkInteractionController;
-// Add all delegates to the provided |tab|.
-- (void)installDelegatesForTab:(Tab*)tab;
-// Remove delegates from the provided |tab|.
-- (void)uninstallDelegatesForTab:(Tab*)tab;
-// Show the bookmarks page.
-- (void)showAllBookmarks;
-// Shows a panel within the New Tab Page.
-- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel;
-// Dismisses the "rate this app" dialog.
-- (void)dismissRateThisAppDialog;
-// Whether the given tab's URL is an application specific URL.
-- (BOOL)isTabNativePage:(Tab*)tab;
-// Returns the view to use when animating a page in or out, positioning it to
-// fill the content area but not actually adding it to the view hierarchy.
-- (UIImageView*)pageOpenCloseAnimationView;
+// Installs the BVC as overscroll actions controller of |nativeContent| if
+// needed. Sets the style of the overscroll actions toolbar.
+- (void)setOverScrollActionControllerToStaticNativeContent:
+    (StaticHtmlNativeContent*)nativeContent;
+
+// UI Configuration, update and Layout
+// -----------------------------------
 // Updates the toolbar display based on the current tab.
 - (void)updateToolbar;
 // Starts or stops broadcasting the toolbar UI and main content UI depending on
@@ -777,7 +768,31 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // TODO(crbug.com/522721): Support size changes for all popups and modal
 // dialogs.
 - (void)dismissPopups;
+// Returns whether |tab| is scrolled to the top.
+- (BOOL)isTabScrolledToTop:(Tab*)tab;
+// Returns the footer view if one exists (e.g. the voice search bar).
+- (UIView*)footerView;
+// Returns the header height needed for |tab|.
+- (CGFloat)headerHeightForTab:(Tab*)tab;
+// Sets the frame for the headers.
+- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
+                   atOffset:(CGFloat)headerOffset;
+// Adds a CardView on top of the contentArea either taking the size of the full
+// screen or just the size of the space under the header.
+// Returns the CardView that was added.
+- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen;
 
+// Showing and Dismissing child UI
+// -------------------------------
+// Show the bookmarks page.
+- (void)showAllBookmarks;
+// Shows a panel within the New Tab Page.
+- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel;
+// Dismisses the "rate this app" dialog.
+- (void)dismissRateThisAppDialog;
+
+// Bubble Views
+// ------------
 // Returns a bubble associated with an in-product help promotion if
 // it is valid to show the promotion and |nil| otherwise. |feature| is the
 // base::Feature object associated with the given promotion. |direction| is the
@@ -813,14 +828,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Presents a bubble associated with the new incognito tab tip in-product help
 // promotion. This method requires that |self.browserState| is not NULL.
 - (void)presentNewIncognitoTabTipBubble;
-// Presents the New Tab Tip or New Incognito Tab Tip Bubble if one is
-// eligible. Only one can be eligible per session (as enforced by the
-// FeatureEngagementTracker). If neither is eligible, neither bubble is
-// presented. This method requires that |self.browserState| is not NULL.
-- (void)presentBubblesIfEligible;
-// Returns whether |tab| is scrolled to the top.
-- (BOOL)isTabScrolledToTop:(Tab*)tab;
 
+// Find Bar UI
+// -----------
 // Update find bar with model data. If |shouldFocus| is set to YES, the text
 // field will become first responder.
 - (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus;
@@ -832,21 +842,70 @@ bubblePresenterForFeature:(const base::Feature&)feature
 - (void)showFindBarWithAnimation:(BOOL)animate
                       selectText:(BOOL)selectText
                      shouldFocus:(BOOL)shouldFocus;
+// Redisplays the find bar if necessary furing a view controller size change,
+// using the transition coordinator |coordinator|.
+- (void)reshowFindBarIfNeededWithCoordinator:
+    (id<UIViewControllerTransitionCoordinator>)coordinator;
 
-// Adds a CardView on top of the contentArea either taking the size of the full
-// screen or just the size of the space under the header.
-// Returns the CardView that was added.
-- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen;
+// Alerts
+// ------
+// Shows a self-dismissing snackbar displaying |message|.
+- (void)showSnackbar:(NSString*)message;
+// Shows an alert dialog with |title| and |message|.
+- (void)showErrorAlertWithStringTitle:(NSString*)title
+                              message:(NSString*)message;
+
+// Tap Handling
+// ------------
+// Record the last tap point based on the |originPoint| (if any) passed in
+// |command|.
+- (void)setLastTapPoint:(OpenNewTabCommand*)command;
+// Returns the last stored |_lastTapPoint| if it's been set within the past
+// second.
+- (CGPoint)lastTapPoint;
+// Store the tap CGPoint in |_lastTapPoint| and the current timestamp.
+- (void)saveContentAreaTapLocation:(UIGestureRecognizer*)gestureRecognizer;
+
+// Tab creation and selection
+// --------------------------
 // Called when either a tab finishes loading or when a tab with finished content
 // is added directly to the model via pre-rendering. The tab must be non-nil and
 // must be a member of the tab model controlled by this BrowserViewController.
 - (void)tabLoadComplete:(Tab*)tab withSuccess:(BOOL)success;
-// Evaluates Javascript asynchronously using the current page context.
-- (void)openJavascript:(NSString*)javascript;
-// Shows a self-dismissing snackbar displaying |message|.
-- (void)showSnackbar:(NSString*)message;
-// Induces an intentional crash in the browser process.
-- (void)induceBrowserCrash;
+// Adds a new tab with |url| and |postData| at the end of the model, and make it
+// the selected tab and return it.
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                     postData:(TemplateURLRef::PostContent*)postData
+                   transition:(ui::PageTransition)transition;
+// Internal method that all of the similar public and private methods call.
+// Adds a new tab with |url| and |postData| (if not null) at |position| in the
+// tab model (or at the end if |position is NSNotFound|, with |transition| as
+// the page transition type. If |tabAddedCompletion| is nonnull, it's called
+// synchronously after the tab is added.
+- (Tab*)addSelectedTabWithURL:(const GURL&)url
+                     postData:(TemplateURLRef::PostContent*)postData
+                      atIndex:(NSUInteger)position
+                   transition:(ui::PageTransition)transition
+           tabAddedCompletion:(ProceduralBlock)tabAddedCompletion;
+// Whether the given tab's URL is an application specific URL.
+- (BOOL)isTabNativePage:(Tab*)tab;
+// Returns the view to use when animating a page in or out, positioning it to
+// fill the content area but not actually adding it to the view hierarchy.
+- (UIImageView*)pageOpenCloseAnimationView;
+// Add all delegates to the provided |tab|.
+- (void)installDelegatesForTab:(Tab*)tab;
+// Remove delegates from the provided |tab|.
+- (void)uninstallDelegatesForTab:(Tab*)tab;
+// Called when a tab is selected in the model. Make any required view changes.
+// The notification will not be sent when the tab is already the selected tab.
+// |notifyToolbar| indicates whether the toolbar is notified that the tab has
+// changed.
+- (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar;
+// Returns the native controller being used by |tab|'s web controller.
+- (id)nativeControllerForTab:(Tab*)tab;
+
+// Saving Images
+// -------------
 // Saves the image or display error message, based on privacy settings.
 - (void)managePermissionAndSaveImage:(NSData*)data
                    withFileExtension:(NSString*)fileExtension;
@@ -873,43 +932,21 @@ bubblePresenterForFeature:(const base::Feature&)feature
 // Called with the results of saving a picture in the photo album. If error is
 // nil the save succeeded.
 - (void)finishSavingImageWithError:(NSError*)error;
+
+// Voice Search
+// ------------
 // Lazily instantiates |_voiceSearchController|.
 - (void)ensureVoiceSearchControllerCreated;
 // Lazily instantiates |_voiceSearchBar| and adds it to the view.
 - (void)ensureVoiceSearchBarCreated;
 // Shows/hides the voice search bar.
 - (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated;
-// Returns the footer view if one exists (e.g. the voice search bar).
-- (UIView*)footerView;
-// Sets the frame for the headers.
-- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
-                   atOffset:(CGFloat)headerOffset;
-// Performs a search with the image at the given url. The referrer is used to
-// download the image.
-- (void)searchByImageAtURL:(const GURL&)url
-                  referrer:(const web::Referrer)referrer;
-// Saves the image at the given URL on the system's album.  The referrer is used
-// to download the image.
-- (void)saveImageAtURL:(const GURL&)url referrer:(const web::Referrer&)referrer;
 
-// Record the last tap point based on the |originPoint| (if any) passed in
-// |command|.
-- (void)setLastTapPoint:(OpenNewTabCommand*)command;
-// Returns the last stored |_lastTapPoint| if it's been set within the past
-// second.
-- (CGPoint)lastTapPoint;
-// Store the tap CGPoint in |_lastTapPoint| and the current timestamp.
-- (void)saveContentAreaTapLocation:(UIGestureRecognizer*)gestureRecognizer;
-// Returns the native controller being used by |tab|'s web controller.
-- (id)nativeControllerForTab:(Tab*)tab;
-// Installs the BVC as overscroll actions controller of |nativeContent| if
-// needed. Sets the style of the overscroll actions toolbar.
-- (void)setOverScrollActionControllerToStaticNativeContent:
-    (StaticHtmlNativeContent*)nativeContent;
-// Whether the BVC should declare keyboard commands.
-- (BOOL)shouldRegisterKeyboardCommands;
+// Reading List
+// ------------
 // Adds the given url to the reading list.
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title;
+
 @end
 
 @implementation BrowserViewController
@@ -991,10 +1028,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _inNewTabAnimation = NO;
     if (model && browserState)
       [self updateWithTabModel:model browserState:browserState];
-    if ([[NSUserDefaults standardUserDefaults]
-            boolForKey:@"fullScreenShowAlert"]) {
-      _fullScreenAlertShown = [[NSMutableSet alloc] init];
-    }
   }
   return self;
 }
@@ -1105,6 +1138,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (DialogPresenter*)dialogPresenter {
   return _dialogPresenter;
+}
+
+- (KeyCommandsProvider*)keyCommandsProvider {
+  if (!_keyCommandsProvider) {
+    _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
+  }
+  return _keyCommandsProvider;
 }
 
 - (BOOL)canUseDesktopUserAgent {
@@ -1241,6 +1281,46 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self setNeedsStatusBarAppearanceUpdate];
 }
 
+- (NSArray<HeaderDefinition*>*)headerViews {
+  NSMutableArray<HeaderDefinition*>* results = [[NSMutableArray alloc] init];
+  if (![self isViewLoaded])
+    return results;
+
+  if (!IsIPadIdiom()) {
+    if (_toolbarCoordinator.toolbarViewController.view) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:_toolbarCoordinator
+                                                    .toolbarViewController.view
+                                headerBehaviour:Hideable
+                               heightAdjustment:0.0
+                                          inset:0.0]];
+    }
+  } else {
+    if (self.tabStripView) {
+      [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
+                                              headerBehaviour:Hideable
+                                             heightAdjustment:0.0
+                                                        inset:0.0]];
+    }
+    if (_toolbarCoordinator.toolbarViewController.view) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:_toolbarCoordinator
+                                                    .toolbarViewController.view
+                                headerBehaviour:Hideable
+                               heightAdjustment:0.0
+                                          inset:0.0]];
+    }
+    if ([_findBarController view]) {
+      [results addObject:[HeaderDefinition
+                             definitionWithView:[_findBarController view]
+                                headerBehaviour:Overlap
+                               heightAdjustment:0.0
+                                          inset:kIPadFindBarOverlap]];
+    }
+  }
+  return [results copy];
+}
+
 - (CGFloat)headerOffset {
   if (IsIPadIdiom())
     return StatusBarHeight();
@@ -1249,6 +1329,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (CGFloat)headerHeight {
   return [self headerHeightForTab:[_model currentTab]];
+}
+
+- (web::WebState*)currentWebState {
+  return [[_model currentTab] webState];
 }
 
 #pragma mark - Public methods
@@ -1454,6 +1538,40 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return YES;
 }
 
+#pragma mark - UIResponder
+
+- (NSArray*)keyCommands {
+  if (![self shouldRegisterKeyboardCommands]) {
+    return nil;
+  }
+  return [self.keyCommandsProvider
+      keyCommandsForConsumer:self
+          baseViewController:self
+                  dispatcher:self.dispatcher
+                 editingText:![self isFirstResponder]];
+}
+
+#pragma mark - UIResponder helpers
+
+// Whether the BVC should declare keyboard commands.
+- (BOOL)shouldRegisterKeyboardCommands {
+  if ([self presentedViewController])
+    return NO;
+
+  if (_voiceSearchController && _voiceSearchController->IsVisible())
+    return NO;
+
+  // If there is no first responder, try to make the webview the first
+  // responder.
+  if (!GetFirstResponder()) {
+    web::WebState* webState = _model.currentTab.webState;
+    if (webState)
+      [webState->GetWebViewProxy() becomeFirstResponder];
+  }
+
+  return YES;
+}
+
 #pragma mark - UIViewController
 
 // Perform additional set up after loading the view, typically from a nib.
@@ -1643,33 +1761,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self reshowFindBarIfNeededWithCoordinator:coordinator];
 }
 
-- (void)reshowFindBarIfNeededWithCoordinator:
-    (id<UIViewControllerTransitionCoordinator>)coordinator {
-  if (![_findBarController isFindInPageShown])
-    return;
-
-  // Record focused state.
-  BOOL isFocusedBeforeReshow = [_findBarController isFocused];
-
-  [self hideFindBarWithAnimation:NO];
-
-  __weak BrowserViewController* weakSelf = self;
-  void (^completion)(id<UIViewControllerTransitionCoordinatorContext>) = ^(
-      id<UIViewControllerTransitionCoordinatorContext> context) {
-    BrowserViewController* strongSelf = weakSelf;
-    if (strongSelf)
-      [strongSelf showFindBarWithAnimation:NO
-                                selectText:NO
-                               shouldFocus:isFocusedBeforeReshow];
-  };
-
-  BOOL enqueued =
-      [coordinator animateAlongsideTransition:nil completion:completion];
-  if (!enqueued) {
-    completion(nil);
-  }
-}
-
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
   // It is an error to call this method when no VC is being presented.
@@ -1781,7 +1872,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                             : UIStatusBarStyleDefault;
 }
 
-#pragma mark - Notification handling
+#pragma mark - ** Private BVC Methods **
+
+#pragma mark - Private Methods: Notification handling
 
 - (void)registerForNotifications {
   DCHECK(_model);
@@ -2037,7 +2130,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
-#pragma mark - UI Configuration and Layout
+#pragma mark - Private Methods: BVC Initialization
 
 - (void)updateWithTabModel:(TabModel*)model
               browserState:(ios::ChromeBrowserState*)browserState {
@@ -2364,6 +2457,23 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                 dispatcher:self.dispatcher];
 }
 
+- (void)setOverScrollActionControllerToStaticNativeContent:
+    (StaticHtmlNativeContent*)nativeContent {
+  if (!IsIPadIdiom()) {
+    OverscrollActionsController* controller =
+        [[OverscrollActionsController alloc]
+            initWithScrollView:[nativeContent scrollView]];
+    [controller setDelegate:self];
+    OverscrollStyle style = _isOffTheRecord
+                                ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
+                                : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
+    controller.style = style;
+    nativeContent.overscrollActionsController = controller;
+  }
+}
+
+#pragma mark - Private Methods: UI Configuration, update and Layout
+
 // Update the state of back and forward buttons, hiding the forward button if
 // there is nowhere to go. Assumes the model's current tab is up to date.
 - (void)updateToolbar {
@@ -2420,6 +2530,130 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
 }
+
+- (BOOL)isTabScrolledToTop:(Tab*)tab {
+  CGPoint scrollOffset =
+      tab.webState->GetWebViewProxy().scrollViewProxy.contentOffset;
+
+  // If there is a native controller, use the native controller's scroll offset.
+  id nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
+      [nativeController respondsToSelector:@selector(scrollOffset)]) {
+    scrollOffset = [nativeController scrollOffset];
+  }
+  return CGPointEqualToPoint(scrollOffset, CGPointZero);
+}
+
+- (UIView*)footerView {
+  return _voiceSearchBar;
+}
+
+- (CGFloat)headerHeightForTab:(Tab*)tab {
+  id nativeController = [self nativeControllerForTab:tab];
+  if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
+      [nativeController respondsToSelector:@selector(toolbarHeight)] &&
+      [nativeController toolbarHeight] > 0.0 && !IsIPadIdiom()) {
+    // On iPhone, don't add any header height for ToolbarOwner native
+    // controllers when they're displaying their own toolbar.
+    return 0;
+  }
+
+  NSArray<HeaderDefinition*>* views = [self headerViews];
+
+  CGFloat height = self.headerOffset;
+  for (HeaderDefinition* header in views) {
+    if (header.view && header.behaviour == Hideable) {
+      height += CGRectGetHeight([header.view frame]) -
+                header.heightAdjustement - header.inset;
+    }
+  }
+
+  return height - StatusBarHeight();
+}
+
+- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
+                   atOffset:(CGFloat)headerOffset {
+  CGFloat height = self.headerOffset;
+  for (HeaderDefinition* header in headers) {
+    CGFloat yOrigin = height - headerOffset - header.inset;
+    // Make sure the toolbarView's constraints are also updated.  Leaving the
+    // -setFrame call to minimize changes in this CL -- otherwise the way
+    // toolbar_view manages it's alpha changes would also need to be updated.
+    // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
+    // is enabled.
+    if (IsSafeAreaCompatibleToolbarEnabled() &&
+        header.view == _toolbarCoordinator.toolbarViewController.view &&
+        !IsIPadIdiom()) {
+      self.toolbarOffsetConstraint.constant = yOrigin;
+    }
+    CGRect frame = [header.view frame];
+    frame.origin.y = yOrigin;
+    [header.view setFrame:frame];
+    if (header.behaviour != Overlap)
+      height += CGRectGetHeight(frame);
+  }
+}
+
+- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen {
+  CGRect frame = [_contentArea frame];
+  if (!fullScreen) {
+    // Changing the origin here is unnecessary, it's set in page_animation_util.
+    frame.size.height -= self.headerHeight;
+  }
+
+  CGFloat shortAxis = frame.size.width;
+  CGFloat shortInset = kCardImageInsets.left + kCardImageInsets.right;
+  shortAxis -= shortInset + 2 * page_animation_util::kCardMargin;
+  CGFloat aspectRatio = frame.size.height / frame.size.width;
+  CGFloat longAxis = std::floor(aspectRatio * shortAxis);
+  CGFloat longInset = kCardImageInsets.top + kCardImageInsets.bottom;
+  CGSize cardSize = CGSizeMake(shortAxis + shortInset, longAxis + longInset);
+  CGRect cardFrame = {frame.origin, cardSize};
+
+  CardView* card =
+      [[CardView alloc] initWithFrame:cardFrame isIncognito:_isOffTheRecord];
+  card.closeButtonSide = IsPortrait() ? CardCloseButtonSide::TRAILING
+                                      : CardCloseButtonSide::LEADING;
+  [_contentArea addSubview:card];
+  return card;
+}
+
+#pragma mark - Private Methods: Showing and Dismissing Child UI
+
+- (void)showAllBookmarks {
+  DCHECK(self.visible || self.dismissingModal);
+  GURL URL(kChromeUIBookmarksURL);
+  Tab* tab = [_model currentTab];
+  web::NavigationManager::WebLoadParams params(URL);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [tab navigationManager]->LoadURLWithParams(params);
+}
+
+- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel {
+  DCHECK(self.visible || self.dismissingModal);
+  GURL url(kChromeUINewTabURL);
+  std::string fragment(NewTabPage::FragmentFromIdentifier(panel));
+  if (fragment != "") {
+    GURL::Replacements replacement;
+    replacement.SetRefStr(fragment);
+    url = url.ReplaceComponents(replacement);
+  }
+  Tab* tab = [_model currentTab];
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  [tab navigationManager]->LoadURLWithParams(params);
+}
+
+- (void)dismissRateThisAppDialog {
+  if (_rateThisAppDialog) {
+    base::RecordAction(base::UserMetricsAction(
+        "IOSRateThisAppDialogDismissedProgramatically"));
+    [_rateThisAppDialog dismiss];
+    _rateThisAppDialog = nil;
+  }
+}
+
+#pragma mark - Private Methods: Bubble views
 
 - (BubbleViewControllerPresenter*)
 bubblePresenterForFeature:(const base::Feature&)feature
@@ -2586,110 +2820,109 @@ bubblePresenterForFeature:(const base::Feature&)feature
   [_toolbarCoordinator triggerToolsMenuButtonAnimation];
 }
 
-- (BOOL)isTabScrolledToTop:(Tab*)tab {
-  CGPoint scrollOffset =
-      tab.webState->GetWebViewProxy().scrollViewProxy.contentOffset;
+#pragma mark - Private Methods: Find Bar UI
 
-  // If there is a native controller, use the native controller's scroll offset.
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController conformsToProtocol:@protocol(CRWNativeContent)] &&
-      [nativeController respondsToSelector:@selector(scrollOffset)]) {
-    scrollOffset = [nativeController scrollOffset];
-  }
-  return CGPointEqualToPoint(scrollOffset, CGPointZero);
+- (void)hideFindBarWithAnimation:(BOOL)animate {
+  [_findBarController hideFindBarView:animate];
 }
 
-- (NSArray<HeaderDefinition*>*)headerViews {
-  NSMutableArray<HeaderDefinition*>* results = [[NSMutableArray alloc] init];
-  if (![self isViewLoaded])
-    return results;
+- (void)showFindBarWithAnimation:(BOOL)animate
+                      selectText:(BOOL)selectText
+                     shouldFocus:(BOOL)shouldFocus {
+  DCHECK(_findBarController);
+  Tab* tab = [_model currentTab];
+  DCHECK(tab);
+  CRWWebController* webController = tab.webController;
 
-  if (!IsIPadIdiom()) {
-    if (_toolbarCoordinator.toolbarViewController.view) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:_toolbarCoordinator
-                                                    .toolbarViewController.view
-                                headerBehaviour:Hideable
-                               heightAdjustment:0.0
-                                          inset:0.0]];
-    }
+  CGRect referenceFrame = CGRectZero;
+  if (IsIPadIdiom()) {
+    referenceFrame = webController.visibleFrame;
+    referenceFrame.origin.y -= kIPadFindBarOverlap;
   } else {
-    if (self.tabStripView) {
-      [results addObject:[HeaderDefinition definitionWithView:self.tabStripView
-                                              headerBehaviour:Hideable
-                                             heightAdjustment:0.0
-                                                        inset:0.0]];
-    }
-    if (_toolbarCoordinator.toolbarViewController.view) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:_toolbarCoordinator
-                                                    .toolbarViewController.view
-                                headerBehaviour:Hideable
-                               heightAdjustment:0.0
-                                          inset:0.0]];
-    }
-    if ([_findBarController view]) {
-      [results addObject:[HeaderDefinition
-                             definitionWithView:[_findBarController view]
-                                headerBehaviour:Overlap
-                               heightAdjustment:0.0
-                                          inset:kIPadFindBarOverlap]];
-    }
-  }
-  return [results copy];
-}
-
-- (UIView*)footerView {
-  return _voiceSearchBar;
-}
-
-- (CGFloat)headerHeightForTab:(Tab*)tab {
-  id nativeController = [self nativeControllerForTab:tab];
-  if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)] &&
-      [nativeController respondsToSelector:@selector(toolbarHeight)] &&
-      [nativeController toolbarHeight] > 0.0 && !IsIPadIdiom()) {
-    // On iPhone, don't add any header height for ToolbarOwner native
-    // controllers when they're displaying their own toolbar.
-    return 0;
+    referenceFrame = _contentArea.frame;
   }
 
-  NSArray<HeaderDefinition*>* views = [self headerViews];
-
-  CGFloat height = self.headerOffset;
-  for (HeaderDefinition* header in views) {
-    if (header.view && header.behaviour == Hideable) {
-      height += CGRectGetHeight([header.view frame]) -
-                header.heightAdjustement - header.inset;
-    }
-  }
-
-  return height - StatusBarHeight();
+  CGRect omniboxFrame = [_toolbarCoordinator visibleOmniboxFrame];
+  [_findBarController addFindBarView:animate
+                            intoView:self.view
+                           withFrame:referenceFrame
+                      alignWithFrame:omniboxFrame
+                          selectText:selectText];
+  [self updateFindBar:YES shouldFocus:shouldFocus];
 }
 
-- (void)setFramesForHeaders:(NSArray<HeaderDefinition*>*)headers
-                   atOffset:(CGFloat)headerOffset {
-  CGFloat height = self.headerOffset;
-  for (HeaderDefinition* header in headers) {
-    CGFloat yOrigin = height - headerOffset - header.inset;
-    // Make sure the toolbarView's constraints are also updated.  Leaving the
-    // -setFrame call to minimize changes in this CL -- otherwise the way
-    // toolbar_view manages it's alpha changes would also need to be updated.
-    // TODO(crbug.com/778822): This can be cleaned up when the new fullscreen
-    // is enabled.
-    if (IsSafeAreaCompatibleToolbarEnabled() &&
-        header.view == _toolbarCoordinator.toolbarViewController.view &&
-        !IsIPadIdiom()) {
-      self.toolbarOffsetConstraint.constant = yOrigin;
+- (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus {
+  // TODO(crbug.com/731045): This early return temporarily replaces a DCHECK.
+  // For unknown reasons, this DCHECK sometimes was hit in the wild, resulting
+  // in a crash.
+  if (![_model currentTab]) {
+    return;
+  }
+  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
+  if (helper && helper->IsFindUIActive()) {
+    if (initialUpdate && !_isOffTheRecord) {
+      helper->RestoreSearchTerm();
     }
-    CGRect frame = [header.view frame];
-    frame.origin.y = yOrigin;
-    [header.view setFrame:frame];
-    if (header.behaviour != Overlap)
-      height += CGRectGetHeight(frame);
+
+    [self setFramesForHeaders:[self headerViews]
+                     atOffset:[self currentHeaderOffset]];
+    [_findBarController updateView:helper->GetFindResult()
+                     initialUpdate:initialUpdate
+                    focusTextfield:shouldFocus];
+  } else {
+    [self hideFindBarWithAnimation:YES];
   }
 }
 
-#pragma mark - Tap handling
+- (void)reshowFindBarIfNeededWithCoordinator:
+    (id<UIViewControllerTransitionCoordinator>)coordinator {
+  if (![_findBarController isFindInPageShown])
+    return;
+
+  // Record focused state.
+  BOOL isFocusedBeforeReshow = [_findBarController isFocused];
+
+  [self hideFindBarWithAnimation:NO];
+
+  __weak BrowserViewController* weakSelf = self;
+  void (^completion)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        BrowserViewController* strongSelf = weakSelf;
+        if (strongSelf)
+          [strongSelf showFindBarWithAnimation:NO
+                                    selectText:NO
+                                   shouldFocus:isFocusedBeforeReshow];
+      };
+
+  BOOL enqueued =
+      [coordinator animateAlongsideTransition:nil completion:completion];
+  if (!enqueued) {
+    completion(nil);
+  }
+}
+
+#pragma mark - Private Methods: Alerts
+
+- (void)showErrorAlertWithStringTitle:(NSString*)title
+                              message:(NSString*)message {
+  // Dismiss current alert.
+  [_alertCoordinator stop];
+
+  _alertCoordinator = [_dependencyFactory alertCoordinatorWithTitle:title
+                                                            message:message
+                                                     viewController:self];
+  [_alertCoordinator start];
+}
+
+- (void)showSnackbar:(NSString*)text {
+  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+  message.accessibilityLabel = text;
+  message.duration = 2.0;
+  message.category = kBrowserViewControllerSnackbarCategory;
+  [self.dispatcher showSnackbarMessage:message];
+}
+
+#pragma mark - Private Methods: Tap handling
 
 - (void)setLastTapPoint:(OpenNewTabCommand*)command {
   if (CGPointEqualToPoint(command.originPoint, CGPointZero)) {
@@ -2716,7 +2949,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   _lastTapTime = CACurrentMediaTime();
 }
 
-#pragma mark - Tab creation and selection
+#pragma mark - Private Methods: Tab creation and selection
 
 // Called when either a tab finishes loading or when a tab with finished content
 // is added directly to the model via pre-rendering.
@@ -2779,7 +3012,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return tab;
 }
 
-// Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab {
   web::WebState* webState = tab.webState;
   if (!webState)
@@ -2914,10 +3146,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   SnapshotTabHelper::FromWebState(tab.webState)->SetDelegate(nil);
 }
 
-// Called when a tab is selected in the model. Make any required view changes.
-// The notification will not be sent when the tab is already the selected tab.
-// |notifyToolbar| indicates whether the toolbar is notified that the tab has
-// changed.
 - (void)tabSelected:(Tab*)tab notifyToolbar:(BOOL)notifyToolbar {
   DCHECK(tab);
 
@@ -2939,6 +3167,238 @@ bubblePresenterForFeature:(const base::Feature&)feature
     }
   }
 }
+
+- (id)nativeControllerForTab:(Tab*)tab {
+  id nativeController = tab.webController.nativeController;
+  return nativeController ? nativeController : _temporaryNativeController;
+}
+
+#pragma mark - Private Methods: Saving Images
+
+- (void)managePermissionAndSaveImage:(NSData*)data
+                   withFileExtension:(NSString*)fileExtension {
+  switch ([PHPhotoLibrary authorizationStatus]) {
+    // User was never asked for permission to access photos.
+    case PHAuthorizationStatusNotDetermined: {
+      [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+        // Call -saveImage again to check if chrome needs to display an error or
+        // saves the image.
+        if (status != PHAuthorizationStatusNotDetermined)
+          [self managePermissionAndSaveImage:data
+                           withFileExtension:fileExtension];
+      }];
+      break;
+    }
+
+    // The application doesn't have permission to access photo and the user
+    // cannot grant it.
+    case PHAuthorizationStatusRestricted:
+      [self displayPrivacyErrorAlertOnMainQueue:
+                l10n_util::GetNSString(
+                    IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE)];
+      break;
+
+    // The application doesn't have permission to access photo and the user
+    // can grant it.
+    case PHAuthorizationStatusDenied:
+      [self displayImageErrorAlertWithSettingsOnMainQueue];
+      break;
+
+    // The application has permission to access the photos.
+    default:
+      __weak BrowserViewController* weakSelf = self;
+      [self saveImage:data
+          withFileExtension:fileExtension
+                 completion:^(BOOL success, NSError* error) {
+                   [weakSelf finishSavingImageWithError:error];
+                 }];
+      break;
+  }
+}
+
+- (void)saveImage:(NSData*)data
+    withFileExtension:(NSString*)fileExtension
+           completion:(void (^)(BOOL, NSError*))completion {
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindBlockArc(^{
+        base::AssertBlockingAllowed();
+
+        NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
+            stringByAppendingString:fileExtension];
+        NSURL* fileURL = [NSURL
+            fileURLWithPath:[NSTemporaryDirectory()
+                                stringByAppendingPathComponent:fileName]];
+        NSError* error = nil;
+        [data writeToURL:fileURL options:NSDataWritingAtomic error:&error];
+        if (error) {
+          if (completion)
+            completion(NO, error);
+          return;
+        }
+
+        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
+          [PHAssetChangeRequest
+              creationRequestForAssetFromImageAtFileURL:fileURL];
+        }
+            completionHandler:^(BOOL success, NSError* error) {
+              base::PostTaskWithTraits(
+                  FROM_HERE,
+                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                  base::BindBlockArc(^{
+                    base::AssertBlockingAllowed();
+                    if (completion)
+                      completion(success, error);
+
+                    // Cleanup the temporary file.
+                    NSError* deleteFileError = nil;
+                    [[NSFileManager defaultManager]
+                        removeItemAtURL:fileURL
+                                  error:&deleteFileError];
+                  }));
+            }];
+      }));
+}
+
+- (void)displayImageErrorAlertWithSettingsOnMainQueue {
+  NSURL* settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+  BOOL canGoToSetting =
+      [[UIApplication sharedApplication] canOpenURL:settingURL];
+  if (canGoToSetting) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self displayImageErrorAlertWithSettings:settingURL];
+    });
+  } else {
+    [self displayPrivacyErrorAlertOnMainQueue:
+              l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE)];
+  }
+}
+
+- (void)displayImageErrorAlertWithSettings:(NSURL*)settingURL {
+  // Dismiss current alert.
+  [_alertCoordinator stop];
+
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
+  NSString* message = l10n_util::GetNSString(
+      IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS);
+
+  _alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:self
+                                                     title:title
+                                                   message:message];
+
+  [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                               action:nil
+                                style:UIAlertActionStyleCancel];
+
+  [_alertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(
+                           IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_GO_TO_SETTINGS)
+                action:^{
+                  OpenUrlWithCompletionHandler(settingURL, nil);
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [_alertCoordinator start];
+}
+
+- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSString* title =
+        l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
+    [self showErrorAlertWithStringTitle:title message:errorContent];
+  });
+}
+
+// This callback is triggered when the image is effectively saved onto the photo
+// album, or if the save failed for some reason.
+- (void)finishSavingImageWithError:(NSError*)error {
+  // Was there an error?
+  if (error) {
+    // Saving photo failed even though user has granted access to Photos.
+    // Display the error information from the NSError object for user.
+    NSString* errorMessage = [NSString
+        stringWithFormat:@"%@ (%@ %" PRIdNS ")", [error localizedDescription],
+                         [error domain], [error code]];
+    // This code may be execute outside of the main thread. Make sure to display
+    // the error on the main thread.
+    [self displayPrivacyErrorAlertOnMainQueue:errorMessage];
+  } else {
+    // Ideally this should show an infobar with a link to switch to
+    // the photo application. The current behaviour is to create the photo there
+    // but not providing any link to it is suboptimal.
+  }
+}
+
+#pragma mark - Private Methods: Voice Search
+
+- (void)ensureVoiceSearchControllerCreated {
+  if (!_voiceSearchController) {
+    VoiceSearchProvider* provider =
+        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
+    if (provider) {
+      _voiceSearchController =
+          provider->CreateVoiceSearchController(_browserState);
+      _voiceSearchController->SetDelegate(
+          [_toolbarCoordinator voiceSearchDelegate]);
+    }
+  }
+}
+
+- (void)ensureVoiceSearchBarCreated {
+  if (_voiceSearchBar)
+    return;
+
+  CGFloat width = CGRectGetWidth([[self view] bounds]);
+  CGFloat y = CGRectGetHeight([[self view] bounds]) - kVoiceSearchBarHeight;
+  CGRect frame = CGRectMake(0.0, y, width, kVoiceSearchBarHeight);
+  _voiceSearchBar = ios::GetChromeBrowserProvider()
+                        ->GetVoiceSearchProvider()
+                        ->BuildVoiceSearchBar(frame, self.dispatcher);
+  [_voiceSearchBar setVoiceSearchBarDelegate:self];
+  [_voiceSearchBar setHidden:YES];
+  [_voiceSearchBar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
+                                       UIViewAutoresizingFlexibleWidth];
+  [self.view insertSubview:_voiceSearchBar
+              belowSubview:_infoBarContainer->view()];
+}
+
+- (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated {
+  // Voice search bar exists and is shown/hidden.
+  BOOL show = self.shouldShowVoiceSearchBar;
+  if (_voiceSearchBar && _voiceSearchBar.hidden != show)
+    return;
+
+  // Voice search bar doesn't exist and thus is not visible.
+  if (!_voiceSearchBar && !show)
+    return;
+
+  if (animated)
+    [_voiceSearchBar animateToBecomeVisible:show];
+  else
+    _voiceSearchBar.hidden = !show;
+}
+
+#pragma mark - Private Methods: Reading List
+
+- (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
+  base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
+
+  ReadingListModel* readingModel =
+      ReadingListModelFactory::GetForBrowserState(_browserState);
+  readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
+                         reading_list::ADDED_VIA_CURRENT_APP);
+
+  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
+  [self showSnackbar:l10n_util::GetNSString(
+                         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
+}
+
+#pragma mark - ** Protocol Implementations and Helpers **
 
 #pragma mark - SnapshotOverlayProvider methods
 
@@ -3030,55 +3490,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     CGRect visibleFrame = [[_model currentTab].webController visibleFrame];
     return CGRectGetMaxY(visibleFrame) - kVoiceSearchBarHeight;
   }
-}
-
-#pragma mark - Voice Search
-
-- (void)ensureVoiceSearchControllerCreated {
-  if (!_voiceSearchController) {
-    VoiceSearchProvider* provider =
-        ios::GetChromeBrowserProvider()->GetVoiceSearchProvider();
-    if (provider) {
-      _voiceSearchController =
-          provider->CreateVoiceSearchController(_browserState);
-      _voiceSearchController->SetDelegate(
-          [_toolbarCoordinator voiceSearchDelegate]);
-    }
-  }
-}
-
-- (void)ensureVoiceSearchBarCreated {
-  if (_voiceSearchBar)
-    return;
-
-  CGFloat width = CGRectGetWidth([[self view] bounds]);
-  CGFloat y = CGRectGetHeight([[self view] bounds]) - kVoiceSearchBarHeight;
-  CGRect frame = CGRectMake(0.0, y, width, kVoiceSearchBarHeight);
-  _voiceSearchBar = ios::GetChromeBrowserProvider()
-                        ->GetVoiceSearchProvider()
-                        ->BuildVoiceSearchBar(frame, self.dispatcher);
-  [_voiceSearchBar setVoiceSearchBarDelegate:self];
-  [_voiceSearchBar setHidden:YES];
-  [_voiceSearchBar setAutoresizingMask:UIViewAutoresizingFlexibleTopMargin |
-                                       UIViewAutoresizingFlexibleWidth];
-  [self.view insertSubview:_voiceSearchBar
-              belowSubview:_infoBarContainer->view()];
-}
-
-- (void)updateVoiceSearchBarVisibilityAnimated:(BOOL)animated {
-  // Voice search bar exists and is shown/hidden.
-  BOOL show = self.shouldShowVoiceSearchBar;
-  if (_voiceSearchBar && _voiceSearchBar.hidden != show)
-    return;
-
-  // Voice search bar doesn't exist and thus is not visible.
-  if (!_voiceSearchBar && !show)
-    return;
-
-  if (animated)
-    [_voiceSearchBar animateToBecomeVisible:show];
-  else
-    _voiceSearchBar.hidden = !show;
 }
 
 #pragma mark - PassKitDialogProvider methods
@@ -3396,6 +3807,114 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                       completionHandler:handler];
 }
 
+#pragma mark - CRWWebStateDelegate helpers
+
+// Evaluates Javascript asynchronously using the current page context.
+- (void)openJavascript:(NSString*)javascript {
+  DCHECK(javascript);
+  javascript = [javascript stringByRemovingPercentEncoding];
+  web::WebState* webState = [[_model currentTab] webState];
+  if (webState) {
+    webState->ExecuteJavaScript(base::SysNSStringToUTF16(javascript));
+  }
+}
+
+// Performs a search with the image at the given url. The referrer is used to
+// download the image.
+- (void)searchByImageAtURL:(const GURL&)url
+                  referrer:(const web::Referrer)referrer {
+  DCHECK(url.is_valid());
+  __weak BrowserViewController* weakSelf = self;
+  const GURL image_source_url = url;
+  image_fetcher::IOSImageDataFetcherCallback callback =
+      ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
+        DCHECK(data);
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [weakSelf searchByImageData:data atURL:image_source_url];
+        });
+      };
+  _imageFetcher->FetchImageDataWebpDecoded(
+      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
+      web::PolicyForNavigation(url, referrer));
+}
+
+// Performs a search using |data| and |imageURL| as inputs.
+- (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
+  NSData* imageData = data;
+  UIImage* image = [UIImage imageWithData:imageData];
+  // Downsize the image if its area exceeds kSearchByImageMaxImageArea AND
+  // (either its width exceeds kSearchByImageMaxImageWidth OR its height exceeds
+  // kSearchByImageMaxImageHeight).
+  if (image &&
+      image.size.height * image.size.width > kSearchByImageMaxImageArea &&
+      (image.size.width > kSearchByImageMaxImageWidth ||
+       image.size.height > kSearchByImageMaxImageHeight)) {
+    CGSize newImageSize =
+        CGSizeMake(kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight);
+    image = [image gtm_imageByResizingToSize:newImageSize
+                         preserveAspectRatio:YES
+                                   trimToFit:NO];
+    imageData = UIImageJPEGRepresentation(image, 1.0);
+  }
+
+  char const* bytes = reinterpret_cast<const char*>([imageData bytes]);
+  std::string byteString(bytes, [imageData length]);
+
+  TemplateURLService* templateUrlService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
+  const TemplateURL* defaultURL =
+      templateUrlService->GetDefaultSearchProvider();
+  DCHECK(!defaultURL->image_url().empty());
+  DCHECK(defaultURL->image_url_ref().IsValid(
+      templateUrlService->search_terms_data()));
+  TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
+  search_args.image_url = imageURL;
+  search_args.image_thumbnail_content = byteString;
+
+  // Generate the URL and populate |post_content| with the content type and
+  // HTTP body for the request.
+  TemplateURLRef::PostContent post_content;
+  GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
+      search_args, templateUrlService->search_terms_data(), &post_content));
+  [self addSelectedTabWithURL:result
+                     postData:&post_content
+                   transition:ui::PAGE_TRANSITION_TYPED];
+}
+
+// Saves the image at the given URL on the system's album.  The referrer is used
+// to download the image.
+- (void)saveImageAtURL:(const GURL&)url
+              referrer:(const web::Referrer&)referrer {
+  DCHECK(url.is_valid());
+
+  image_fetcher::IOSImageDataFetcherCallback callback = ^(
+      NSData* data, const image_fetcher::RequestMetadata& metadata) {
+    DCHECK(data);
+
+    if ([data length] == 0) {
+      [self displayPrivacyErrorAlertOnMainQueue:
+                l10n_util::GetNSString(
+                    IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
+      return;
+    }
+
+    base::FilePath::StringType extension;
+
+    bool extensionSuccess =
+        net::GetPreferredExtensionForMimeType(metadata.mime_type, &extension);
+    if (!extensionSuccess || extension.length() == 0) {
+      extension = "png";
+    }
+
+    NSString* fileExtension =
+        [@"." stringByAppendingString:base::SysUTF8ToNSString(extension)];
+    [self managePermissionAndSaveImage:data withFileExtension:fileExtension];
+  };
+  _imageFetcher->FetchImageDataWebpDecoded(
+      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
+      web::PolicyForNavigation(url, referrer));
+}
+
 #pragma mark - LegacyFullscreenControllerDelegate methods
 
 // TODO(crbug.com/798064): Remove these methods and their helpers once the
@@ -3531,23 +4050,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                       offset:(CGFloat)offset {
   if (completed)
     [controller setToolbarInsetsForHeaderOffset:offset];
-}
-
-#pragma mark - Install OverScrollActionController method.
-
-- (void)setOverScrollActionControllerToStaticNativeContent:
-    (StaticHtmlNativeContent*)nativeContent {
-  if (!IsIPadIdiom()) {
-    OverscrollActionsController* controller =
-        [[OverscrollActionsController alloc]
-            initWithScrollView:[nativeContent scrollView]];
-    [controller setDelegate:self];
-    OverscrollStyle style = _isOffTheRecord
-                                ? OverscrollStyle::REGULAR_PAGE_INCOGNITO
-                                : OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
-    controller.style = style;
-    nativeContent.overscrollActionsController = controller;
-  }
 }
 
 #pragma mark - OverscrollActionsControllerDelegate methods.
@@ -3762,11 +4264,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return downloadController;
 }
 
-- (id)nativeControllerForTab:(Tab*)tab {
-  id nativeController = tab.webController.nativeController;
-  return nativeController ? nativeController : _temporaryNativeController;
-}
-
 #pragma mark - DialogPresenterDelegate methods
 
 - (void)dialogPresenter:(DialogPresenter*)presenter
@@ -3854,301 +4351,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-#pragma mark - Context menu methods
-
-- (void)searchByImageAtURL:(const GURL&)url
-                  referrer:(const web::Referrer)referrer {
-  DCHECK(url.is_valid());
-  __weak BrowserViewController* weakSelf = self;
-  const GURL image_source_url = url;
-  image_fetcher::IOSImageDataFetcherCallback callback = ^(
-      NSData* data, const image_fetcher::RequestMetadata& metadata) {
-    DCHECK(data);
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf searchByImageData:data atURL:image_source_url];
-    });
-  };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
-}
-
-- (void)searchByImageData:(NSData*)data atURL:(const GURL&)imageURL {
-  NSData* imageData = data;
-  UIImage* image = [UIImage imageWithData:imageData];
-  // Downsize the image if its area exceeds kSearchByImageMaxImageArea AND
-  // (either its width exceeds kSearchByImageMaxImageWidth OR its height exceeds
-  // kSearchByImageMaxImageHeight).
-  if (image &&
-      image.size.height * image.size.width > kSearchByImageMaxImageArea &&
-      (image.size.width > kSearchByImageMaxImageWidth ||
-       image.size.height > kSearchByImageMaxImageHeight)) {
-    CGSize newImageSize =
-        CGSizeMake(kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight);
-    image = [image gtm_imageByResizingToSize:newImageSize
-                         preserveAspectRatio:YES
-                                   trimToFit:NO];
-    imageData = UIImageJPEGRepresentation(image, 1.0);
-  }
-
-  char const* bytes = reinterpret_cast<const char*>([imageData bytes]);
-  std::string byteString(bytes, [imageData length]);
-
-  TemplateURLService* templateUrlService =
-      ios::TemplateURLServiceFactory::GetForBrowserState(_browserState);
-  const TemplateURL* defaultURL =
-      templateUrlService->GetDefaultSearchProvider();
-  DCHECK(!defaultURL->image_url().empty());
-  DCHECK(defaultURL->image_url_ref().IsValid(
-      templateUrlService->search_terms_data()));
-  TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
-  search_args.image_url = imageURL;
-  search_args.image_thumbnail_content = byteString;
-
-  // Generate the URL and populate |post_content| with the content type and
-  // HTTP body for the request.
-  TemplateURLRef::PostContent post_content;
-  GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
-      search_args, templateUrlService->search_terms_data(), &post_content));
-  [self addSelectedTabWithURL:result
-                     postData:&post_content
-                   transition:ui::PAGE_TRANSITION_TYPED];
-}
-
-- (void)saveImageAtURL:(const GURL&)url
-              referrer:(const web::Referrer&)referrer {
-  DCHECK(url.is_valid());
-
-  image_fetcher::IOSImageDataFetcherCallback callback = ^(
-      NSData* data, const image_fetcher::RequestMetadata& metadata) {
-    DCHECK(data);
-
-    if ([data length] == 0) {
-      [self displayPrivacyErrorAlertOnMainQueue:
-                l10n_util::GetNSString(
-                    IDS_IOS_SAVE_IMAGE_NO_INTERNET_CONNECTION)];
-      return;
-    }
-
-    base::FilePath::StringType extension;
-
-    bool extensionSuccess =
-        net::GetPreferredExtensionForMimeType(metadata.mime_type, &extension);
-    if (!extensionSuccess || extension.length() == 0) {
-      extension = "png";
-    }
-
-    NSString* fileExtension =
-        [@"." stringByAppendingString:base::SysUTF8ToNSString(extension)];
-    [self managePermissionAndSaveImage:data withFileExtension:fileExtension];
-  };
-  _imageFetcher->FetchImageDataWebpDecoded(
-      url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
-      web::PolicyForNavigation(url, referrer));
-}
-
-- (void)managePermissionAndSaveImage:(NSData*)data
-                   withFileExtension:(NSString*)fileExtension {
-  switch ([PHPhotoLibrary authorizationStatus]) {
-    // User was never asked for permission to access photos.
-    case PHAuthorizationStatusNotDetermined: {
-      [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
-        // Call -saveImage again to check if chrome needs to display an error or
-        // saves the image.
-        if (status != PHAuthorizationStatusNotDetermined)
-          [self managePermissionAndSaveImage:data
-                           withFileExtension:fileExtension];
-      }];
-      break;
-    }
-
-    // The application doesn't have permission to access photo and the user
-    // cannot grant it.
-    case PHAuthorizationStatusRestricted:
-      [self displayPrivacyErrorAlertOnMainQueue:
-                l10n_util::GetNSString(
-                    IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE)];
-      break;
-
-    // The application doesn't have permission to access photo and the user
-    // can grant it.
-    case PHAuthorizationStatusDenied:
-      [self displayImageErrorAlertWithSettingsOnMainQueue];
-      break;
-
-    // The application has permission to access the photos.
-    default:
-      __weak BrowserViewController* weakSelf = self;
-      [self saveImage:data
-          withFileExtension:fileExtension
-                 completion:^(BOOL success, NSError* error) {
-                   [weakSelf finishSavingImageWithError:error];
-                 }];
-      break;
-  }
-}
-
-- (void)saveImage:(NSData*)data
-    withFileExtension:(NSString*)fileExtension
-           completion:(void (^)(BOOL, NSError*))completion {
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindBlockArc(^{
-        base::AssertBlockingAllowed();
-
-        NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
-            stringByAppendingString:fileExtension];
-        NSURL* fileURL = [NSURL
-            fileURLWithPath:[NSTemporaryDirectory()
-                                stringByAppendingPathComponent:fileName]];
-        NSError* error = nil;
-        [data writeToURL:fileURL options:NSDataWritingAtomic error:&error];
-        if (error) {
-          if (completion)
-            completion(NO, error);
-          return;
-        }
-
-        [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-          [PHAssetChangeRequest
-              creationRequestForAssetFromImageAtFileURL:fileURL];
-        }
-            completionHandler:^(BOOL success, NSError* error) {
-              base::PostTaskWithTraits(
-                  FROM_HERE,
-                  {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                   base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-                  base::BindBlockArc(^{
-                    base::AssertBlockingAllowed();
-                    if (completion)
-                      completion(success, error);
-
-                    // Cleanup the temporary file.
-                    NSError* deleteFileError = nil;
-                    [[NSFileManager defaultManager]
-                        removeItemAtURL:fileURL
-                                  error:&deleteFileError];
-                  }));
-            }];
-      }));
-}
-
-- (void)displayImageErrorAlertWithSettingsOnMainQueue {
-  NSURL* settingURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
-  BOOL canGoToSetting =
-      [[UIApplication sharedApplication] canOpenURL:settingURL];
-  if (canGoToSetting) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self displayImageErrorAlertWithSettings:settingURL];
-    });
-  } else {
-    [self displayPrivacyErrorAlertOnMainQueue:
-              l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE)];
-  }
-}
-
-- (void)displayImageErrorAlertWithSettings:(NSURL*)settingURL {
-  // Dismiss current alert.
-  [_alertCoordinator stop];
-
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-  NSString* message = l10n_util::GetNSString(
-      IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS);
-
-  _alertCoordinator =
-      [[AlertCoordinator alloc] initWithBaseViewController:self
-                                                     title:title
-                                                   message:message];
-
-  [_alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                               action:nil
-                                style:UIAlertActionStyleCancel];
-
-  [_alertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(
-                           IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_GO_TO_SETTINGS)
-                action:^{
-                  OpenUrlWithCompletionHandler(settingURL, nil);
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [_alertCoordinator start];
-}
-
-- (void)displayPrivacyErrorAlertOnMainQueue:(NSString*)errorContent {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    NSString* title =
-        l10n_util::GetNSString(IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_TITLE);
-    [self showErrorAlertWithStringTitle:title message:errorContent];
-  });
-}
-
-// This callback is triggered when the image is effectively saved onto the photo
-// album, or if the save failed for some reason.
-- (void)finishSavingImageWithError:(NSError*)error {
-  // Was there an error?
-  if (error) {
-    // Saving photo failed even though user has granted access to Photos.
-    // Display the error information from the NSError object for user.
-    NSString* errorMessage = [NSString
-        stringWithFormat:@"%@ (%@ %" PRIdNS ")", [error localizedDescription],
-                         [error domain], [error code]];
-    // This code may be execute outside of the main thread. Make sure to display
-    // the error on the main thread.
-    [self displayPrivacyErrorAlertOnMainQueue:errorMessage];
-  } else {
-    // TODO(noyau): Ideally I'd like to show an infobar with a link to switch to
-    // the photo application. The current behaviour is to create the photo there
-    // but not providing any link to it is suboptimal. That's what Safari is
-    // doing, and what the PM want, but it doesn't make it right.
-  }
-}
-
-#pragma mark - Showing popups
-
-- (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
-  base::RecordAction(UserMetricsAction("MobileReadingListAdd"));
-
-  ReadingListModel* readingModel =
-      ReadingListModelFactory::GetForBrowserState(_browserState);
-  readingModel->AddEntry(URL, base::SysNSStringToUTF8(title),
-                         reading_list::ADDED_VIA_CURRENT_APP);
-
-  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self showSnackbar:l10n_util::GetNSString(
-                         IDS_IOS_READING_LIST_SNACKBAR_MESSAGE)];
-}
-
-#pragma mark - Keyboard commands management
-
-- (BOOL)shouldRegisterKeyboardCommands {
-  if ([self presentedViewController])
-    return NO;
-
-  if (_voiceSearchController && _voiceSearchController->IsVisible())
-    return NO;
-
-  // If there is no first responder, try to make the webview the first
-  // responder.
-  if (!GetFirstResponder()) {
-    web::WebState* webState = _model.currentTab.webState;
-    if (webState)
-      [webState->GetWebViewProxy() becomeFirstResponder];
-  }
-
-  return YES;
-}
-
-- (KeyCommandsProvider*)keyCommandsProvider {
-  if (!_keyCommandsProvider) {
-    _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
-  }
-  return _keyCommandsProvider;
-}
-
 #pragma mark - KeyCommandsPlumbing
 
 - (BOOL)isOffTheRecord {
@@ -4221,29 +4423,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return _mainContentUIUpdater.state;
 }
 
-#pragma mark - UIResponder
-
-- (NSArray*)keyCommands {
-  if (![self shouldRegisterKeyboardCommands]) {
-    return nil;
-  }
-  return [self.keyCommandsProvider
-      keyCommandsForConsumer:self
-          baseViewController:self
-                  dispatcher:self.dispatcher
-                 editingText:![self isFirstResponder]];
-}
-
-// Induce an intentional crash in the browser process.
-- (void)induceBrowserCrash {
-  CHECK(false);
-  // Call another function, so that the above CHECK can't be tail-call
-  // optimized. This ensures that this method's name will show up in the stack
-  // for easier identification.
-  CHECK(true);
-}
-
-#pragma mark - UrlLoader (public protocol)
+#pragma mark - UrlLoader (Public)
 
 - (void)loadURL:(const GURL&)url
              referrer:(const web::Referrer&)referrer
@@ -4371,12 +4551,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     prerenderService->CancelPrerender();
   }
   DCHECK([_model currentTab]);
-  if ([self currentWebState])
-    [self currentWebState]->ExecuteUserJavaScript(script);
-}
-
-- (web::WebState*)currentWebState {
-  return [[_model currentTab] webState];
+  if (self.currentWebState)
+    self.currentWebState->ExecuteUserJavaScript(script);
 }
 
 // Load a new URL on a new page/tab.
@@ -4434,16 +4610,18 @@ bubblePresenterForFeature:(const base::Feature&)feature
           sessionTab->navigations));
 }
 
-- (void)openJavascript:(NSString*)javascript {
-  DCHECK(javascript);
-  javascript = [javascript stringByRemovingPercentEncoding];
-  web::WebState* webState = [[_model currentTab] webState];
-  if (webState) {
-    webState->ExecuteJavaScript(base::SysNSStringToUTF16(javascript));
-  }
+#pragma mark - UrlLoader helpers
+
+// Induce an intentional crash in the browser process.
+- (void)induceBrowserCrash {
+  CHECK(false);
+  // Call another function, so that the above CHECK can't be tail-call
+  // optimized. This ensures that this method's name will show up in the stack
+  // for easier identification.
+  CHECK(true);
 }
 
-#pragma mark - WebToolbarDelegate methods
+#pragma mark - WebToolbarDelegate (Public)
 
 - (void)locationBarDidBecomeFirstResponder {
   if (_locationBarHasFocus)
@@ -4514,29 +4692,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return _toolbarModelIOS.get();
 }
 
-- (CardView*)addCardViewInFullscreen:(BOOL)fullScreen {
-  CGRect frame = [_contentArea frame];
-  if (!fullScreen) {
-    // Changing the origin here is unnecessary, it's set in page_animation_util.
-    frame.size.height -= self.headerHeight;
-  }
-
-  CGFloat shortAxis = frame.size.width;
-  CGFloat shortInset = kCardImageInsets.left + kCardImageInsets.right;
-  shortAxis -= shortInset + 2 * page_animation_util::kCardMargin;
-  CGFloat aspectRatio = frame.size.height / frame.size.width;
-  CGFloat longAxis = std::floor(aspectRatio * shortAxis);
-  CGFloat longInset = kCardImageInsets.top + kCardImageInsets.bottom;
-  CGSize cardSize = CGSizeMake(shortAxis + shortInset, longAxis + longInset);
-  CGRect cardFrame = {frame.origin, cardSize};
-
-  CardView* card =
-      [[CardView alloc] initWithFrame:cardFrame isIncognito:_isOffTheRecord];
-  card.closeButtonSide = IsPortrait() ? CardCloseButtonSide::TRAILING
-                                      : CardCloseButtonSide::LEADING;
-  [_contentArea addSubview:card];
-  return card;
-}
 
 #pragma mark - ToolsMenuConfigurationProvider
 
@@ -4949,94 +5104,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-#pragma mark - Find Bar
-
-- (void)hideFindBarWithAnimation:(BOOL)animate {
-  [_findBarController hideFindBarView:animate];
-}
-
-- (void)showFindBarWithAnimation:(BOOL)animate
-                      selectText:(BOOL)selectText
-                     shouldFocus:(BOOL)shouldFocus {
-  DCHECK(_findBarController);
-  Tab* tab = [_model currentTab];
-  DCHECK(tab);
-  CRWWebController* webController = tab.webController;
-
-  CGRect referenceFrame = CGRectZero;
-  if (IsIPadIdiom()) {
-    referenceFrame = webController.visibleFrame;
-    referenceFrame.origin.y -= kIPadFindBarOverlap;
-  } else {
-    referenceFrame = _contentArea.frame;
-  }
-
-  CGRect omniboxFrame = [_toolbarCoordinator visibleOmniboxFrame];
-  [_findBarController addFindBarView:animate
-                            intoView:self.view
-                           withFrame:referenceFrame
-                      alignWithFrame:omniboxFrame
-                          selectText:selectText];
-  [self updateFindBar:YES shouldFocus:shouldFocus];
-}
-
-- (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus {
-  // TODO(crbug.com/731045): This early return temporarily replaces a DCHECK.
-  // For unknown reasons, this DCHECK sometimes was hit in the wild, resulting
-  // in a crash.
-  if (![_model currentTab]) {
-    return;
-  }
-  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
-  if (helper && helper->IsFindUIActive()) {
-    if (initialUpdate && !_isOffTheRecord) {
-      helper->RestoreSearchTerm();
-    }
-
-    [self setFramesForHeaders:[self headerViews]
-                     atOffset:[self currentHeaderOffset]];
-    [_findBarController updateView:helper->GetFindResult()
-                     initialUpdate:initialUpdate
-                    focusTextfield:shouldFocus];
-  } else {
-    [self hideFindBarWithAnimation:YES];
-  }
-}
-
-- (void)showAllBookmarks {
-  DCHECK(self.visible || self.dismissingModal);
-  GURL URL(kChromeUIBookmarksURL);
-  Tab* tab = [_model currentTab];
-  web::NavigationManager::WebLoadParams params(URL);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [tab navigationManager]->LoadURLWithParams(params);
-}
-
-- (void)showNTPPanel:(ntp_home::PanelIdentifier)panel {
-  DCHECK(self.visible || self.dismissingModal);
-  GURL url(kChromeUINewTabURL);
-  std::string fragment(NewTabPage::FragmentFromIdentifier(panel));
-  if (fragment != "") {
-    GURL::Replacements replacement;
-    replacement.SetRefStr(fragment);
-    url = url.ReplaceComponents(replacement);
-  }
-  Tab* tab = [_model currentTab];
-  web::NavigationManager::WebLoadParams params(url);
-  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [tab navigationManager]->LoadURLWithParams(params);
-}
-
-- (void)dismissRateThisAppDialog {
-  if (_rateThisAppDialog) {
-    base::RecordAction(base::UserMetricsAction(
-        "IOSRateThisAppDialogDismissedProgramatically"));
-    [_rateThisAppDialog dismiss];
-    _rateThisAppDialog = nil;
-  }
-}
-
-#pragma mark - ToolbarOwner
+#pragma mark - ToolbarOwner (Public)
 
 - (CGFloat)toolbarHeight {
   return self.headerHeight;
@@ -5353,27 +5421,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // No-op -- required by BookmarkModelBridgeObserver but not used.
 }
 
-#pragma mark - Alerts
-
-- (void)showErrorAlertWithStringTitle:(NSString*)title
-                              message:(NSString*)message {
-  // Dismiss current alert.
-  [_alertCoordinator stop];
-
-  _alertCoordinator = [_dependencyFactory alertCoordinatorWithTitle:title
-                                                            message:message
-                                                     viewController:self];
-  [_alertCoordinator start];
-}
-
-- (void)showSnackbar:(NSString*)text {
-  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
-  message.accessibilityLabel = text;
-  message.duration = 2.0;
-  message.category = kBrowserViewControllerSnackbarCategory;
-  [self.dispatcher showSnackbarMessage:message];
-}
-
 #pragma mark - NetExportTabHelperDelegate
 
 - (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
@@ -5484,7 +5531,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
 }
 
-#pragma mark - VoiceSearchPresenter
+#pragma mark - VoiceSearchPresenter (Public)
 
 - (UIView*)voiceSearchButton {
   return _voiceSearchButton;
@@ -5674,7 +5721,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 }
 
-#pragma mark - SyncPresenter
+#pragma mark - SyncPresenter (Public)
 
 - (void)showReauthenticateSignin {
   [self.dispatcher
