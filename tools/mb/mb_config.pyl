@@ -765,6 +765,13 @@
       'v8_linux_blink_rel': 'release_trybot',
       'v8_linux_chromium_gn_rel': 'release_trybot',
     },
+
+    'tryserver.webrtc': {
+      'win_chromium_webrtc_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'mac_chromium_webrtc_compile_rel_ng': 'gpu_tests_release_trybot',
+      'linux_chromium_webrtc_compile_rel_ng': 'release_trybot',
+      'android_webrtc_compile_rel': 'android_release_trybot',
+    },
   },
 
 
