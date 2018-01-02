@@ -1,0 +1,13 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 837
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x837 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 785x837
+    LayoutNGBlockFlow {BODY} at (8,32) size 769x773
+      LayoutNGBlockFlow {P} at (32,0) size 705x113 [color=#000080]
+        LayoutText {#text} at (0,0) size 673x110
+      LayoutNGBlockFlow (floating) {DIV} at (0,145) size 384.50x380 [color=#FFFFFF] [bgcolor=#0000FF]
+        LayoutText {#text} at (0,0) size 385x379
+      LayoutNGBlockFlow {DIV} at (0,145) size 769x520 [color=#C0C0C0]
+        LayoutText {#text} at (0,0) size 769x519
+      LayoutNGBlockFlow {P} at (32,697) size 705x76 [color=#000080]
+        LayoutText {#text} at (0,0) size 686x75

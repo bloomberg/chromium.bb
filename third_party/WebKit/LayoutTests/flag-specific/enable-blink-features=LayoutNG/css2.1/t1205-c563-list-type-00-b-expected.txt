@@ -1,0 +1,53 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x356
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x356
+    LayoutNGBlockFlow {BODY} at (8,16) size 784x324 [color=#000080]
+      LayoutNGBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 458x19
+      LayoutNGBlockFlow {UL} at (0,36) size 784x60
+        LayoutNGListItem {LI} at (40,0) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 25x19
+        LayoutNGListItem {LI} at (40,20) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 25x19
+        LayoutNGListItem {LI} at (40,40) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 25x19
+      LayoutNGBlockFlow {UL} at (0,112) size 784x60
+        LayoutNGListItem {LI} at (40,0) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 34x19
+        LayoutNGListItem {LI} at (40,20) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 34x19
+        LayoutNGListItem {LI} at (40,40) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 10x20
+            LayoutText (anonymous) at (0,0) size 10x19
+          LayoutText {#text} at (0,0) size 34x19
+      LayoutNGBlockFlow {UL} at (0,188) size 784x60
+        LayoutNGListItem {LI} at (40,0) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 14x20
+            LayoutText (anonymous) at (0,0) size 14x19
+          LayoutText {#text} at (0,0) size 41x19
+        LayoutNGListItem {LI} at (40,20) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 14x20
+            LayoutText (anonymous) at (0,0) size 14x19
+          LayoutText {#text} at (0,0) size 41x19
+        LayoutNGListItem {LI} at (40,40) size 744x20
+          LayoutNGBlockFlow (anonymous) at (-18,0) size 14x20
+            LayoutText (anonymous) at (0,0) size 14x19
+          LayoutText {#text} at (0,0) size 41x19
+      LayoutNGBlockFlow {UL} at (0,264) size 784x60 [color=#FF0000]
+        LayoutNGListItem {LI} at (40,0) size 744x20
+          LayoutText {#text} at (0,0) size 4x19
+        LayoutNGListItem {LI} at (40,20) size 744x20
+          LayoutText {#text} at (0,0) size 4x19
+        LayoutNGListItem {LI} at (40,40) size 744x20
+          LayoutText {#text} at (0,0) size 4x19
