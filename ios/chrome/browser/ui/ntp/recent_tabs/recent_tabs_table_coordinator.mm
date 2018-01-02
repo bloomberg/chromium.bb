@@ -251,4 +251,9 @@
   [self.delegate updateNtpBarShadowForPanelController:self];
 }
 
+- (void)refreshSessionsViewRecentTabsTableViewController:
+    (RecentTabsTableViewController*)controller {
+  [self refreshSessionsView];
+}
+
 @end
