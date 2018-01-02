@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/client/hit_test_data_provider.h"
@@ -104,7 +103,7 @@ bool ClientLayerTreeFrameSink::BindToClient(
   if (synthetic_begin_frame_source_) {
     client->SetBeginFrameSource(synthetic_begin_frame_source_.get());
   } else {
-    begin_frame_source_ = base::MakeUnique<ExternalBeginFrameSource>(this);
+    begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
     begin_frame_source_->OnSetBeginFrameSourcePaused(begin_frames_paused_);
     client->SetBeginFrameSource(begin_frame_source_.get());
   }

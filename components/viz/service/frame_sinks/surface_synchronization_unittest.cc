@@ -166,9 +166,9 @@ class SurfaceSynchronizationTest : public testing::Test {
     testing::Test::SetUp();
 
     begin_frame_source_ =
-        base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
+        std::make_unique<FakeExternalBeginFrameSource>(0.f, false);
     begin_frame_source_->SetClient(&begin_frame_source_client_);
-    now_src_ = base::MakeUnique<base::SimpleTestTickClock>();
+    now_src_ = std::make_unique<base::SimpleTestTickClock>();
     frame_sink_manager_.surface_manager()->AddObserver(&surface_observer_);
     supports_[kDisplayFrameSink] = std::make_unique<CompositorFrameSinkSupport>(
         &support_client_, &frame_sink_manager_, kDisplayFrameSink, kIsRoot,

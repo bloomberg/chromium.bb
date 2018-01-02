@@ -4,6 +4,8 @@
 
 #include "components/viz/service/gl/gpu_service_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
@@ -115,7 +117,7 @@ GpuServiceImpl::GpuServiceImpl(
       gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
+      bindings_(std::make_unique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
 #if defined(OS_CHROMEOS)
@@ -187,19 +189,19 @@ void GpuServiceImpl::InitializeWithHost(
 
   sync_point_manager_ = sync_point_manager;
   if (!sync_point_manager_) {
-    owned_sync_point_manager_ = base::MakeUnique<gpu::SyncPointManager>();
+    owned_sync_point_manager_ = std::make_unique<gpu::SyncPointManager>();
     sync_point_manager_ = owned_sync_point_manager_.get();
   }
 
   shutdown_event_ = shutdown_event;
   if (!shutdown_event_) {
-    owned_shutdown_event_ = base::MakeUnique<base::WaitableEvent>(
+    owned_shutdown_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     shutdown_event_ = owned_shutdown_event_.get();
   }
 
-  scheduler_ = base::MakeUnique<gpu::Scheduler>(
+  scheduler_ = std::make_unique<gpu::Scheduler>(
       base::ThreadTaskRunnerHandle::Get(), sync_point_manager_);
 
   // Defer creation of the render thread. This is to prevent it from handling
@@ -556,7 +558,7 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
       client_id, client_tracing_id, is_gpu_host);
 
   mojo::MessagePipe pipe;
-  gpu_channel->Init(base::MakeUnique<gpu::SyncChannelFilteredSender>(
+  gpu_channel->Init(std::make_unique<gpu::SyncChannelFilteredSender>(
       pipe.handle0.release(), gpu_channel, io_runner_, shutdown_event_));
 
   media_gpu_channel_manager_->AddChannel(client_id);

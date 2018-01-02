@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "cc/resources/display_resource_provider.h"
@@ -2428,12 +2427,12 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
 class SurfaceAggregatorWithResourcesTest : public testing::Test {
  public:
   void SetUp() override {
-    shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
+    shared_bitmap_manager_ = std::make_unique<cc::TestSharedBitmapManager>();
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             nullptr, shared_bitmap_manager_.get());
 
-    aggregator_ = base::MakeUnique<SurfaceAggregator>(
+    aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false);
     aggregator_->set_output_is_secure(true);
   }

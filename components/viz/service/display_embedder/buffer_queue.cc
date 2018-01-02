@@ -5,7 +5,6 @@
 #include "components/viz/service/display_embedder/buffer_queue.h"
 
 #include "base/containers/adapters.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/viz/common/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -285,7 +284,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
   allocated_count_++;
   gl_->BindTexture(texture_target_, texture);
   gl_->BindTexImage2DCHROMIUM(texture_target_, id);
-  return base::MakeUnique<AllocatedSurface>(this, std::move(buffer), texture,
+  return std::make_unique<AllocatedSurface>(this, std::move(buffer), texture,
                                             id, stencil, gfx::Rect(size_));
 }
 

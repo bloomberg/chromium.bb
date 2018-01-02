@@ -10,7 +10,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -90,7 +89,7 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::AllocateSharedBitmap(
 
   SharedBitmapId id = SharedBitmap::GenerateId();
   handle_map_[id] = data;
-  return base::MakeUnique<ServerSharedBitmap>(data->pixels.get(), data, id,
+  return std::make_unique<ServerSharedBitmap>(data->pixels.get(), data, id,
                                               this);
 }
 
@@ -110,14 +109,14 @@ std::unique_ptr<SharedBitmap> ServerSharedBitmapManager::GetSharedBitmapFromId(
     return nullptr;
 
   if (data->pixels) {
-    return base::MakeUnique<ServerSharedBitmap>(data->pixels.get(), data, id,
+    return std::make_unique<ServerSharedBitmap>(data->pixels.get(), data, id,
                                                 nullptr);
   }
   if (!data->memory->memory()) {
     return nullptr;
   }
 
-  return base::MakeUnique<ServerSharedBitmap>(
+  return std::make_unique<ServerSharedBitmap>(
       static_cast<uint8_t*>(data->memory->memory()), data, id, nullptr);
 }
 
@@ -166,7 +165,7 @@ bool ServerSharedBitmapManager::ChildAllocatedSharedBitmap(
   if (handle_map_.find(id) != handle_map_.end())
     return false;
   auto data = base::MakeRefCounted<BitmapData>(buffer_size);
-  data->memory = base::MakeUnique<base::SharedMemory>(handle, false);
+  data->memory = std::make_unique<base::SharedMemory>(handle, false);
   data->memory->Map(data->buffer_size);
   data->memory->Close();
   handle_map_[id] = std::move(data);

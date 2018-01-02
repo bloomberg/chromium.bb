@@ -4,6 +4,8 @@
 
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -76,7 +78,7 @@ bool DirectLayerTreeFrameSink::BindToClient(
   support_ = support_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, is_root,
       capabilities_.delegated_sync_points_required);
-  begin_frame_source_ = base::MakeUnique<ExternalBeginFrameSource>(this);
+  begin_frame_source_ = std::make_unique<ExternalBeginFrameSource>(this);
   client_->SetBeginFrameSource(begin_frame_source_.get());
 
   // Avoid initializing GL context here, as this should be sharing the

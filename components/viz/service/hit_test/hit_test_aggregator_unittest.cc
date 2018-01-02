@@ -5,6 +5,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
 #include <map>
+#include <memory>
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -96,7 +97,7 @@ class TestGpuRootCompositorFrameSink : public HitTestAggregatorDelegate {
       : frame_sink_manager_(frame_sink_manager),
         frame_sink_id_(frame_sink_id),
         aggregator_(
-            base::MakeUnique<TestHitTestAggregator>(hit_test_manager, this)) {}
+            std::make_unique<TestHitTestAggregator>(hit_test_manager, this)) {}
   ~TestGpuRootCompositorFrameSink() override = default;
 
   // HitTestAggregatorDelegate:
@@ -192,7 +193,7 @@ class TestFrameSinkManagerImpl : public FrameSinkManagerImpl {
   void CreateRootCompositorFrameSinkLocal(TestHitTestManager* hit_test_manager,
                                           const FrameSinkId& frame_sink_id) {
     compositor_frame_sinks_[frame_sink_id] =
-        base::MakeUnique<TestGpuRootCompositorFrameSink>(hit_test_manager, this,
+        std::make_unique<TestGpuRootCompositorFrameSink>(hit_test_manager, this,
                                                          frame_sink_id);
   }
 
@@ -242,10 +243,10 @@ class HitTestAggregatorTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    frame_sink_manager_ = base::MakeUnique<TestFrameSinkManagerImpl>();
-    host_frame_sink_manager_ = base::MakeUnique<TestHostFrameSinkManager>();
+    frame_sink_manager_ = std::make_unique<TestFrameSinkManagerImpl>();
+    host_frame_sink_manager_ = std::make_unique<TestHostFrameSinkManager>();
     hit_test_manager_ =
-        base::MakeUnique<TestHitTestManager>(frame_sink_manager_.get());
+        std::make_unique<TestHitTestManager>(frame_sink_manager_.get());
     frame_sink_manager_->SetLocalClient(host_frame_sink_manager_.get());
     frame_sink_manager_->CreateRootCompositorFrameSinkLocal(
         hit_test_manager_.get(), kDisplayFrameSink);

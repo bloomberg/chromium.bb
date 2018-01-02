@@ -102,7 +102,7 @@ Surface* SurfaceManager::CreateSurface(
   auto it = surface_map_.find(surface_info.id());
   if (it == surface_map_.end()) {
     surface_map_[surface_info.id()] =
-        base::MakeUnique<Surface>(surface_info, this, surface_client,
+        std::make_unique<Surface>(surface_info, this, surface_client,
                                   begin_frame_source, needs_sync_tokens);
     if (lifetime_type_ == LifetimeType::REFERENCES) {
       // We can get into a situation where multiple CompositorFrames arrive for

@@ -4,7 +4,6 @@
 
 #include "components/viz/test/viz_test_suite.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "components/viz/test/paths.h"
@@ -22,7 +21,7 @@ void VizTestSuite::Initialize() {
   gl::GLSurfaceTestSupport::InitializeOneOff();
   Paths::RegisterPathProvider();
 
-  message_loop_ = base::MakeUnique<base::MessageLoop>();
+  message_loop_ = std::make_unique<base::MessageLoop>();
 
   base::ThreadIdNameManager::GetInstance()->SetName(
       base::PlatformThread::CurrentId(), "Main");

@@ -4,8 +4,9 @@
 
 #include "components/viz/service/main/viz_main_impl.h"
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
@@ -87,8 +88,8 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome --mus) with Mus running in the browser process.
   if (!base::PowerMonitor::Get()) {
-    power_monitor_ = base::MakeUnique<base::PowerMonitor>(
-        base::MakeUnique<base::PowerMonitorDeviceSource>());
+    power_monitor_ = std::make_unique<base::PowerMonitor>(
+        std::make_unique<base::PowerMonitorDeviceSource>());
   }
 
   if (!gpu_init_) {
@@ -125,7 +126,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
 
   CreateUkmRecorderIfNeeded(dependencies.connector);
 
-  gpu_service_ = base::MakeUnique<GpuServiceImpl>(
+  gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
       io_thread_ ? io_thread_->task_runner()
                  : dependencies_.io_thread_task_runner,
