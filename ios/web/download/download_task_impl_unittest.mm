@@ -250,6 +250,43 @@ TEST_F(DownloadTaskImplTest, Cancelling) {
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
+// Tests restarting failed download task.
+TEST_F(DownloadTaskImplTest, Restarting) {
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  CRWFakeNSURLSessionTask* session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // Download has failed.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  NSError* error = [NSError errorWithDomain:NSURLErrorDomain
+                                       code:NSURLErrorNotConnectedToInternet
+                                   userInfo:nil];
+  SimulateDownloadCompletion(session_task, error);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+
+  // Restart the task.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // Download has finished.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  SimulateDownloadCompletion(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
+  EXPECT_EQ(0, task_->GetErrorCode());
+  EXPECT_EQ(100, task_->GetPercentComplete());
+
+  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
+}
+
 // Tests sucessfull download of response with only one
 // URLSession:dataTask:didReceiveData: callback.
 TEST_F(DownloadTaskImplTest, SmallResponseDownload) {
