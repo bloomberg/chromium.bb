@@ -13,11 +13,18 @@
 #include "components/feature_engagement/test/test_tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
+#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/wait_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,13 +32,37 @@
 
 namespace {
 
-// The minimum number of times Chrome must be opened in order for an In Product
-// Help feature to be shown.
-const int kMinChromeOpensRequired = 5;
+// The minimum number of times Chrome must be opened in order for the Reading
+// List Badge to be shown.
+const int kMinChromeOpensRequiredForReadingList = 5;
+
+// The minimum number of times Chrome must be opened in order for the New Tab
+// Tip to be shown.
+const int kMinChromeOpensRequiredForNewTabTip = 3;
 
 // Matcher for the Reading List Text Badge.
 id<GREYMatcher> ReadingListTextBadge() {
   return grey_accessibilityID(@"kReadingListTextBadgeAccessibilityIdentifier");
+}
+
+// Matcher for the New Tab Tip Bubble.
+id<GREYMatcher> NewTabTipBubble() {
+  return grey_accessibilityLabel(
+      l10n_util::GetNSStringWithFixup(IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT));
+}
+
+// Opens and closes the tab switcher.
+void OpenAndCloseTabSwitcher() {
+  id<GREYMatcher> openTabSwitcherMatcher =
+      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherOpenButton()
+                    : chrome_test_util::ShowTabsButton();
+  [[EarlGrey selectElementWithMatcher:openTabSwitcherMatcher]
+      performAction:grey_tap()];
+  id<GREYMatcher> closeTabSwitcherMatcher =
+      IsIPadIdiom() ? chrome_test_util::TabletTabSwitcherCloseButton()
+                    : chrome_test_util::ShowTabsButton();
+  [[EarlGrey selectElementWithMatcher:closeTabSwitcherMatcher]
+      performAction:grey_tap()];
 }
 
 // Create a test FeatureEngagementTracker.
@@ -76,6 +107,24 @@ void EnableBadgedReadingListTriggering(
       badged_reading_list_params);
 }
 
+// Enables the New Tab Tip to be triggered for |feature_list|.
+void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
+  std::map<std::string, std::string> new_tab_tip_params;
+
+  new_tab_tip_params["event_1"] =
+      "name:chrome_opened;comparator:>=3;window:90;storage:90";
+  new_tab_tip_params["event_trigger"] =
+      "name:new_tab_tip_trigger;comparator:<2;window:1095;storage:"
+      "1095";
+  new_tab_tip_params["event_used"] =
+      "name:new_tab_opened;comparator:==0;window:90;storage:90";
+  new_tab_tip_params["session_rate"] = "==0";
+  new_tab_tip_params["availability"] = "any";
+
+  feature_list.InitAndEnableFeatureWithParameters(
+      feature_engagement::kIPHNewTabTipFeature, new_tab_tip_params);
+}
+
 }  // namespace
 
 // Tests related to the triggering of In Product Help features.
@@ -98,7 +147,7 @@ void EnableBadgedReadingListTriggering(
 
   // Ensure that Chrome has been launched enough times for the Badged Reading
   // List to appear.
-  for (int index = 0; index < kMinChromeOpensRequired; index++) {
+  for (int index = 0; index < kMinChromeOpensRequiredForReadingList; index++) {
     SimulateChromeOpenedEvent();
   }
 
@@ -148,9 +197,9 @@ void EnableBadgedReadingListTriggering(
   // configuration provided by |scoped_feature_list|.
   LoadFeatureEngagementTracker();
 
-  // Ensure that Chrome has been launched enough times to mee the trigger
-  // condition
-  for (int index = 0; index < kMinChromeOpensRequired; index++) {
+  // Ensure that Chrome has been launched enough times to meet the trigger
+  // condition.
+  for (int index = 0; index < kMinChromeOpensRequiredForReadingList; index++) {
     SimulateChromeOpenedEvent();
   }
 
@@ -161,6 +210,59 @@ void EnableBadgedReadingListTriggering(
   [ChromeEarlGreyUI openToolsMenu];
 
   [[EarlGrey selectElementWithMatcher:ReadingListTextBadge()]
+      assertWithMatcher:grey_notVisible()];
+}
+
+// Verifies that the New Tab Tip appears when all conditions are met.
+- (void)testNewTabTipPromoShouldShow {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  EnableNewTabTipTriggering(scoped_feature_list);
+
+  // Ensure that the FeatureEngagementTracker picks up the new feature
+  // configuration provided by |scoped_feature_list|.
+  LoadFeatureEngagementTracker();
+
+  // Ensure that Chrome has been launched enough times to meet the trigger
+  // condition.
+  for (int index = 0; index < kMinChromeOpensRequiredForNewTabTip; index++) {
+    SimulateChromeOpenedEvent();
+  }
+
+  // Navigate to a page other than the NTP to allow for the New Tab Tip to
+  // appear.
+  [ChromeEarlGrey loadURL:GURL("chrome://flags")];
+
+  // Open and close the tab switcher to trigger the New Tab tip.
+  OpenAndCloseTabSwitcher();
+
+  // Verify that the New Tab Tip appeared.
+  [[EarlGrey selectElementWithMatcher:NewTabTipBubble()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verifies that the New Tab Tip does not appear if all conditions are met,
+// but the NTP is open.
+- (void)testNewTabTipPromoDoesNotAppearOnNTP {
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  EnableNewTabTipTriggering(scoped_feature_list);
+
+  // Ensure that the FeatureEngagementTracker picks up the new feature
+  // configuration provided by |scoped_feature_list|.
+  LoadFeatureEngagementTracker();
+
+  // Ensure that Chrome has been launched enough times to meet the trigger
+  // condition.
+  for (int index = 0; index < kMinChromeOpensRequiredForNewTabTip; index++) {
+    SimulateChromeOpenedEvent();
+  }
+
+  // Open and close the tab switcher to potentially trigger the New Tab Tip.
+  OpenAndCloseTabSwitcher();
+
+  // Verify that the New Tab Tip did not appear.
+  [[EarlGrey selectElementWithMatcher:NewTabTipBubble()]
       assertWithMatcher:grey_notVisible()];
 }
 
