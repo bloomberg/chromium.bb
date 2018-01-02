@@ -19,9 +19,6 @@ class TickClock;
 }
 
 namespace net {
-class HostPortPair;
-class HttpRequestHeaders;
-class HttpResponseHeaders;
 class NetLog;
 class ProxyInfo;
 class ProxyServer;
@@ -58,16 +55,7 @@ class DataReductionProxyDelegate
                       const net::ProxyRetryInfoMap& proxy_retry_info,
                       net::ProxyInfo* result) override;
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
-  void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
-                             net::HttpRequestHeaders* extra_headers) override;
-  void OnTunnelConnectCompleted(const net::HostPortPair& endpoint,
-                                const net::HostPortPair& proxy_server,
-                                int net_error) override;
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override;
-  void OnTunnelHeadersReceived(
-      const net::HostPortPair& origin,
-      const net::HostPortPair& proxy_server,
-      const net::HttpResponseHeaders& response_headers) override;
 
   void SetTickClockForTesting(base::TickClock* tick_clock);
 

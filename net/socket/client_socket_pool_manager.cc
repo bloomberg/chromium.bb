@@ -177,8 +177,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
           proxy_tcp_params, ssl_params, QUIC_VERSION_UNSUPPORTED, user_agent,
           origin_host_port, session->http_auth_cache(),
           session->http_auth_handler_factory(), session->spdy_session_pool(),
-          session->quic_stream_factory(), force_tunnel || using_ssl,
-          session->context().proxy_delegate);
+          session->quic_stream_factory(), force_tunnel || using_ssl);
     } else {
       DCHECK(proxy_info.is_socks());
       char socks_version;

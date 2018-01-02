@@ -29,8 +29,7 @@ TEST(HttpProxyClientSocketTest, Tag) {
   // non-owning pointer to it.
   connection->SetSocket(std::unique_ptr<StreamSocket>(tagging_sock));
   HttpProxyClientSocket socket(std::move(connection), "", HostPortPair(),
-                               HostPortPair(), nullptr, false, false,
-                               NextProto(), nullptr, false);
+                               nullptr, false, false, NextProto(), false);
 
   EXPECT_EQ(tagging_sock->tag(), SocketTag());
 #if defined(OS_ANDROID)

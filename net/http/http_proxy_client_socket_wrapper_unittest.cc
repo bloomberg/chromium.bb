@@ -269,7 +269,7 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
       /*transport_params=*/nullptr, ssl_params, quic_version_, kUserAgent,
       endpoint_host_port_, &http_auth_cache_, http_auth_handler_factory_.get(),
       /*spdy_session_pool=*/nullptr, quic_stream_factory_.get(),
-      /*tunnel=*/true, /*proxy_delegate=*/nullptr, net_log_));
+      /*tunnel=*/true, net_log_));
 
   TestCompletionCallback callback;
   client_socket_wrapper_->Connect(callback.callback());

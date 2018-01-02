@@ -18,9 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "net/base/net_errors.h"
-#include "net/base/proxy_delegate.h"
 #include "net/base/test_completion_callback.h"
-#include "net/base/test_proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_headers.h"
@@ -169,26 +167,21 @@ class HttpProxyClientSocketPoolTest
 
   // Returns the a correctly constructed HttpProxyParms
   // for the HTTP or HTTPS proxy.
-  scoped_refptr<HttpProxySocketParams> CreateParams(
-      bool tunnel,
-      ProxyDelegate* proxy_delegate) {
-    return scoped_refptr<HttpProxySocketParams>(new HttpProxySocketParams(
+  scoped_refptr<HttpProxySocketParams> CreateParams(bool tunnel) {
+    return base::MakeRefCounted<HttpProxySocketParams>(
         CreateHttpProxyParams(), CreateHttpsProxyParams(),
         QUIC_VERSION_UNSUPPORTED, std::string(),
         HostPortPair("www.google.com", tunnel ? 443 : 80),
         session_->http_auth_cache(), session_->http_auth_handler_factory(),
-        session_->spdy_session_pool(), session_->quic_stream_factory(), tunnel,
-        proxy_delegate));
+        session_->spdy_session_pool(), session_->quic_stream_factory(), tunnel);
   }
 
-  scoped_refptr<HttpProxySocketParams> CreateTunnelParams(
-      ProxyDelegate* proxy_delegate) {
-    return CreateParams(true, proxy_delegate);
+  scoped_refptr<HttpProxySocketParams> CreateTunnelParams() {
+    return CreateParams(true);
   }
 
-  scoped_refptr<HttpProxySocketParams> CreateNoTunnelParams(
-      ProxyDelegate* proxy_delegate) {
-    return CreateParams(false, proxy_delegate);
+  scoped_refptr<HttpProxySocketParams> CreateNoTunnelParams() {
+    return CreateParams(false);
   }
 
   MockClientSocketFactory* socket_factory() {
@@ -268,17 +261,13 @@ INSTANTIATE_TEST_CASE_P(HttpProxyType,
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
 
-  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
-  int rv = handle_.Init("a", CreateNoTunnelParams(proxy_delegate.get()), LOW,
+  int rv = handle_.Init("a", CreateNoTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         CompletionCallback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
-  EXPECT_FALSE(proxy_delegate->on_before_tunnel_request_called());
-  EXPECT_FALSE(proxy_delegate->on_tunnel_headers_received_called());
-  EXPECT_TRUE(proxy_delegate->on_tunnel_request_completed_called());
 
   bool is_secure_proxy = GetParam() == HTTPS || GetParam() == SPDY;
   histogram_tester().ExpectTotalCount(
@@ -292,7 +281,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
 TEST_P(HttpProxyClientSocketPoolTest, SetSocketRequestPriorityOnInit) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
   EXPECT_EQ(
-      OK, handle_.Init("a", CreateNoTunnelParams(NULL), HIGHEST,
+      OK, handle_.Init("a", CreateNoTunnelParams(), HIGHEST,
                        ClientSocketPool::RespectLimits::ENABLED,
                        CompletionCallback(), pool_.get(), NetLogWithSource()));
   EXPECT_EQ(HIGHEST, GetLastTransportRequestPriority());
@@ -332,7 +321,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
              spdy_reads, arraysize(spdy_reads), spdy_writes,
              arraysize(spdy_writes));
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -366,9 +355,7 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
       "Host: www.google.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
-      "Foo: " +
-      proxy_host_port + "\r\n\r\n";
+      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n";
   MockWrite writes[] = {
     MockWrite(SYNCHRONOUS, 0, request.c_str()),
   };
@@ -380,21 +367,13 @@ TEST_P(HttpProxyClientSocketPoolTest, HaveAuth) {
              NULL, 0);
   AddAuthToCache();
 
-  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
-  int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
-  proxy_delegate->VerifyOnTunnelHeadersReceived(
-      "www.google.com:443",
-      proxy_host_port.c_str(),
-      "HTTP/1.1 200 Connection Established");
-  proxy_delegate->VerifyOnTunnelRequestCompleted(
-      "www.google.com:443",
-      proxy_host_port.c_str());
 }
 
 TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
@@ -405,9 +384,7 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
       "CONNECT www.google.com:443 HTTP/1.1\r\n"
       "Host: www.google.com:443\r\n"
       "Proxy-Connection: keep-alive\r\n"
-      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n"
-      "Foo: " +
-      proxy_host_port + "\r\n\r\n";
+      "Proxy-Authorization: Basic Zm9vOmJhcg==\r\n\r\n";
   MockWrite writes[] = {
     MockWrite(ASYNC, 0, request.c_str()),
   };
@@ -431,8 +408,7 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
              arraysize(spdy_writes));
   AddAuthToCache();
 
-  std::unique_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
-  int rv = handle_.Init("a", CreateTunnelParams(proxy_delegate.get()), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -443,9 +419,6 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
   EXPECT_TRUE(handle_.is_initialized());
   ASSERT_TRUE(handle_.socket());
   EXPECT_TRUE(handle_.socket()->IsConnected());
-  proxy_delegate->VerifyOnTunnelRequestCompleted(
-      "www.google.com:443",
-      proxy_host_port.c_str());
 }
 
 // Make sure that HttpProxyConnectJob passes on its priority to its
@@ -470,7 +443,7 @@ TEST_P(HttpProxyClientSocketPoolTest,
 
   EXPECT_EQ(
       ERR_IO_PENDING,
-      handle_.Init("a", CreateTunnelParams(NULL), MEDIUM,
+      handle_.Init("a", CreateTunnelParams(), MEDIUM,
                    ClientSocketPool::RespectLimits::ENABLED,
                    callback_.callback(), pool_.get(), NetLogWithSource()));
   EXPECT_EQ(MEDIUM, GetLastTransportRequestPriority());
@@ -486,7 +459,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TCPError) {
 
   socket_factory()->AddSocketDataProvider(data_.get());
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -519,7 +492,7 @@ TEST_P(HttpProxyClientSocketPoolTest, SSLError) {
   }
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -551,7 +524,7 @@ TEST_P(HttpProxyClientSocketPoolTest, SslClientAuth) {
   }
   socket_factory()->AddSSLSocketDataProvider(ssl_data_.get());
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -594,7 +567,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
              arraysize(spdy_writes));
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -634,7 +607,7 @@ TEST_P(HttpProxyClientSocketPoolTest, Tunnel1xxResponse) {
   Initialize(reads, arraysize(reads), writes, arraysize(writes),
              NULL, 0, NULL, 0);
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -673,7 +646,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
              arraysize(spdy_writes));
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
@@ -730,7 +703,7 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
              arraysize(spdy_writes));
   AddAuthToCache();
 
-  int rv = handle_.Init("a", CreateTunnelParams(NULL), LOW,
+  int rv = handle_.Init("a", CreateTunnelParams(), LOW,
                         ClientSocketPool::RespectLimits::ENABLED,
                         callback_.callback(), pool_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));

@@ -11,7 +11,6 @@
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
-#include "net/base/proxy_delegate.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
@@ -30,12 +29,10 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const std::string& user_agent,
     const HostPortPair& endpoint,
-    const HostPortPair& proxy_server,
     HttpAuthController* http_auth_controller,
     bool tunnel,
     bool using_spdy,
     NextProto negotiated_protocol,
-    ProxyDelegate* proxy_delegate,
     bool is_https_proxy)
     : io_callback_(base::Bind(&HttpProxyClientSocket::OnIOComplete,
                               base::Unretained(this))),
@@ -48,8 +45,6 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       negotiated_protocol_(negotiated_protocol),
       is_https_proxy_(is_https_proxy),
       redirect_has_load_timing_info_(false),
-      proxy_server_(proxy_server),
-      proxy_delegate_(proxy_delegate),
       net_log_(transport_->socket()->NetLog()) {
   // Synthesize the bits of a request that we actually use.
   request_.url = GURL("https://" + endpoint.ToString());
@@ -405,10 +400,6 @@ int HttpProxyClientSocket::DoSendRequest() {
     HttpRequestHeaders authorization_headers;
     if (auth_->HaveAuth())
       auth_->AddAuthorizationHeader(&authorization_headers);
-    if (proxy_delegate_) {
-      proxy_delegate_->OnBeforeTunnelRequest(proxy_server_,
-                                             &authorization_headers);
-    }
     std::string user_agent;
     if (!request_.extra_headers.GetHeader(HttpRequestHeaders::kUserAgent,
                                           &user_agent)) {
@@ -454,13 +445,6 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
   net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS,
       base::Bind(&HttpResponseHeaders::NetLogCallback, response_.headers));
-
-  if (proxy_delegate_) {
-    proxy_delegate_->OnTunnelHeadersReceived(
-        HostPortPair::FromURL(request_.url),
-        proxy_server_,
-        *response_.headers);
-  }
 
   switch (response_.headers->response_code()) {
     case 200:  // OK

@@ -194,13 +194,6 @@ void DataReductionProxyDelegate::OnResolveProxy(
   }
 }
 
-void DataReductionProxyDelegate::OnTunnelConnectCompleted(
-    const net::HostPortPair& endpoint,
-    const net::HostPortPair& proxy_server,
-    int net_error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
 void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
                                             int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -214,24 +207,11 @@ void DataReductionProxyDelegate::OnFallback(const net::ProxyServer& bad_proxy,
     bypass_stats_->OnProxyFallback(bad_proxy, net_error);
 }
 
-void DataReductionProxyDelegate::OnBeforeTunnelRequest(
-    const net::HostPortPair& proxy_server,
-    net::HttpRequestHeaders* extra_headers) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
 bool DataReductionProxyDelegate::IsTrustedSpdyProxy(
     const net::ProxyServer& proxy_server) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return proxy_server.is_valid() && proxy_server.is_https() && config_ &&
          config_->IsDataReductionProxy(proxy_server, nullptr);
-}
-
-void DataReductionProxyDelegate::OnTunnelHeadersReceived(
-    const net::HostPortPair& origin,
-    const net::HostPortPair& proxy_server,
-    const net::HttpResponseHeaders& response_headers) {
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void DataReductionProxyDelegate::SetTickClockForTesting(
