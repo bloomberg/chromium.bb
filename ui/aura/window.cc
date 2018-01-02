@@ -1091,6 +1091,12 @@ const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
 }
 
 viz::FrameSinkId Window::GetFrameSinkId() const {
+  if (IsRootWindow()) {
+    DCHECK(host_);
+    auto* compositor = host_->compositor();
+    DCHECK(compositor);
+    return compositor->frame_sink_id();
+  }
   return port_->GetFrameSinkId();
 }
 

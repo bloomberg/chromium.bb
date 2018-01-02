@@ -15,6 +15,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/base/class_property.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -56,7 +57,11 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
   // seems them at the time the window is created.
   for (auto& pair : init_params.properties)
     window_mus->SetPropertyFromServer(pair.first, &pair.second);
-  CreateCompositor(viz::FrameSinkId());
+  // If window-server is hosting viz, then use the FrameSinkId from the server.
+  // In other cases, let a valid FrameSinkId be selected by
+  // context_factory_private().
+  CreateCompositor(switches::IsMusHostingViz() ? window_mus->GetFrameSinkId()
+                                               : viz::FrameSinkId());
   if (!init_params.uses_real_accelerated_widget) {
     gfx::AcceleratedWidget accelerated_widget;
 // We need accelerated widget numbers to be different for each window and

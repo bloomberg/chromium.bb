@@ -3181,6 +3181,12 @@ TEST_P(WindowTest, WindowDestroyCompletesAnimations) {
   animator->RemoveObserver(&observer);
 }
 
+TEST_P(WindowTest, RootWindowUsesCompositorFrameSinkId) {
+  EXPECT_EQ(host()->compositor()->frame_sink_id(),
+            root_window()->GetFrameSinkId());
+  EXPECT_TRUE(root_window()->GetFrameSinkId().is_valid());
+}
+
 TEST_P(WindowTest, LocalSurfaceIdChanges) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
