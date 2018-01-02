@@ -5121,7 +5121,7 @@ void RenderFrameImpl::RequestStorageQuota(
   }
   RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
       routing_id_, origin, type, requested_size,
-      QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+      std::make_unique<blink::WebStorageQuotaCallbacks>(callbacks));
 }
 
 blink::WebPresentationClient* RenderFrameImpl::PresentationClient() {

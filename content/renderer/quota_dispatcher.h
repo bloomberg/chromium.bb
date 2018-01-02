@@ -33,16 +33,6 @@ namespace content {
 // TODO(sashab): Change this to be per-execution context instead of per-process.
 class QuotaDispatcher : public WorkerThread::Observer {
  public:
-  // TODO(sashab): Remove this wrapper, using lambdas or just the web callback
-  // itself.
-  class Callback {
-   public:
-    virtual ~Callback() {}
-    virtual void DidQueryStorageUsageAndQuota(int64_t usage, int64_t quota) = 0;
-    virtual void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) = 0;
-    virtual void DidFail(blink::QuotaStatusCode status) = 0;
-  };
-
   explicit QuotaDispatcher(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~QuotaDispatcher() override;
@@ -53,18 +43,16 @@ class QuotaDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void QueryStorageUsageAndQuota(const url::Origin& origin,
-                                 blink::StorageType type,
-                                 std::unique_ptr<Callback> callback);
-  void RequestStorageQuota(int render_frame_id,
-                           const url::Origin& origin,
-                           blink::StorageType type,
-                           int64_t requested_size,
-                           std::unique_ptr<Callback> callback);
-
-  // Creates a new Callback instance for WebStorageQuotaCallbacks.
-  static std::unique_ptr<Callback> CreateWebStorageQuotaCallbacksWrapper(
-      blink::WebStorageQuotaCallbacks callbacks);
+  void QueryStorageUsageAndQuota(
+      const url::Origin& origin,
+      blink::StorageType type,
+      std::unique_ptr<blink::WebStorageQuotaCallbacks> callback);
+  void RequestStorageQuota(
+      int render_frame_id,
+      const url::Origin& origin,
+      blink::StorageType type,
+      int64_t requested_size,
+      std::unique_ptr<blink::WebStorageQuotaCallbacks> callback);
 
  private:
   // Message handlers.
@@ -84,7 +72,8 @@ class QuotaDispatcher : public WorkerThread::Observer {
   // TODO(sashab, nverne): Once default callbacks are available for dropped mojo
   // callbacks (crbug.com/775358), use them to call DidFail for them in the
   // destructor and remove this.
-  base::IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
+  base::IDMap<std::unique_ptr<blink::WebStorageQuotaCallbacks>>
+      pending_quota_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaDispatcher);
 };
