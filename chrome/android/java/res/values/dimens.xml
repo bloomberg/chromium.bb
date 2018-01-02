@@ -139,7 +139,6 @@
     <dimen name="promo_dialog_illustration_margin">24dp</dimen>
     <dimen name="promo_dialog_illustration_width">150dp</dimen>
     <dimen name="promo_dialog_padding">16dp</dimen>
-    <dimen name="promo_dialog_max_width">600dp</dimen>
     <dimen name="promo_dialog_max_content_width">320dp</dimen>
     <dimen name="promo_dialog_min_scrollable_height">100dp</dimen>
     <dimen name="promo_dialog_title_text_size">23sp</dimen>
@@ -190,6 +189,12 @@
     <!-- Alert dialog -->
     <dimen name="dialog_padding_top">@dimen/abc_dialog_padding_top_material</dimen>
     <dimen name="dialog_padding_sides">@dimen/abc_dialog_padding_material</dimen>
+    <dimen name="dialog_max_width">600dp</dimen>
+
+    <!-- ModalDialogView dimensions -->
+    <dimen name="modal_dialog_control_padding_vertical">4dp</dimen>
+    <dimen name="modal_dialog_control_padding_horizontal">12dp</dimen>
+    <dimen name="tab_modal_scrim_vertical_margin">16dp</dimen>
 
     <!-- Tab Strip Dimensions -->
     <dimen name="tab_strip_height">0dp</dimen>
