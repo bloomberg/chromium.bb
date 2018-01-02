@@ -272,16 +272,6 @@ void CanvasAsyncBlobCreator::ScheduleAsyncBlobCreation(const double& quality) {
   }
 }
 
-SkImageInfo GetImageInfo(scoped_refptr<StaticBitmapImage> image) {
-  sk_sp<SkImage> skia_image = image->PaintImageForCurrentFrame().GetSkImage();
-  SkColorType color_type = kN32_SkColorType;
-  if (skia_image->colorSpace() && skia_image->colorSpace()->gammaIsLinear())
-    color_type = kRGBA_F16_SkColorType;
-  return SkImageInfo::Make(skia_image->width(), skia_image->height(),
-                           color_type, skia_image->alphaType(),
-                           skia_image->refColorSpace());
-}
-
 void CanvasAsyncBlobCreator::LoadStaticBitmapImage() {
   DCHECK(image_ && !static_bitmap_image_loaded_);
   if (image_->IsTextureBacked()) {
