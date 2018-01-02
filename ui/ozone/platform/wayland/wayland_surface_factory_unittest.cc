@@ -19,7 +19,7 @@ namespace ui {
 
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest() : surface_factory(&connection) {}
+  WaylandSurfaceFactoryTest() : surface_factory(connection.get()) {}
 
   ~WaylandSurfaceFactoryTest() override {}
 

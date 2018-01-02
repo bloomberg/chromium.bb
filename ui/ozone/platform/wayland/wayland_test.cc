@@ -11,17 +11,22 @@ using ::testing::_;
 
 namespace ui {
 
-WaylandTest::WaylandTest()
-    : window(&delegate, &connection, gfx::Rect(0, 0, 800, 600)) {}
+WaylandTest::WaylandTest() {
+  // TODO(tonikitoo): Set the proper KeyboardLayoutEngine instance here,
+  // before the WaylandConnection is instantiated.
+  connection.reset(new WaylandConnection);
+  window = std::make_unique<WaylandWindow>(&delegate, connection.get(),
+                                           gfx::Rect(0, 0, 800, 600));
+}
 
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server.Start(GetParam()));
-  ASSERT_TRUE(connection.Initialize());
+  ASSERT_TRUE(connection->Initialize());
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget));
-  ASSERT_TRUE(window.Initialize());
+  ASSERT_TRUE(window->Initialize());
   ASSERT_NE(widget, gfx::kNullAcceleratedWidget);
 
   // Wait for the client to flush all pending requests from initialization.

@@ -43,7 +43,7 @@ class WaylandPointerTest : public WaylandTest {
 
 TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
-  WaylandWindow other_window(&other_delegate, &connection,
+  WaylandWindow other_window(&other_delegate, connection.get(),
                              gfx::Rect(0, 0, 10, 10));
   gfx::AcceleratedWidget other_widget = gfx::kNullAcceleratedWidget;
   EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_, _))
