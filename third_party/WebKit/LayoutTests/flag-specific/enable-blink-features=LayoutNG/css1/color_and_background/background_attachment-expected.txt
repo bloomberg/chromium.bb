@@ -1,0 +1,103 @@
+layer at (0,0) size 800x600 scrollHeight 1279
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x1279 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x1278.53
+    LayoutNGBlockFlow {BODY} at (8,8) size 784x1262.53 [bgcolor=#CCCCCC]
+      LayoutNGBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 355x19
+      LayoutNGBlockFlow {PRE} at (0,36) size 784x32
+        LayoutText {#text} at (0,0) size 872x16
+      LayoutNGBlockFlow {P} at (0,99) size 784x100
+        LayoutText {#text} at (0,0) size 779x99
+      LayoutNGBlockFlow {P} at (0,215) size 784x20
+        LayoutText {#text} at (0,0) size 507x19
+      LayoutNGBlockFlow {H4} at (0,284.27) size 784x20
+        LayoutInline {A} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 220x19
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutNGBlockFlow {P} at (0,325.53) size 784x100
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 41x19
+        LayoutText {#text} at (0,0) size 82x19
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 42x19
+        LayoutText {#text} at (0,0) size 38x19
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 68x19
+        LayoutText {#text} at (0,0) size 78x19
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 62x19
+        LayoutText {#text} at (0,0) size 20x19
+        LayoutBR {BR} at (0,0) size 0x0
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 121x19
+        LayoutText {#text} at (0,0) size 33x19
+        LayoutBR {BR} at (0,0) size 0x0
+      LayoutNGBlockFlow {P} at (0,441.53) size 784x40
+        LayoutText {#text} at (0,0) size 782x39
+      LayoutNGBlockFlow {PRE} at (0,497.53) size 784x80
+        LayoutText {#text} at (0,0) size 296x80
+      LayoutNGBlockFlow {P} at (0,593.53) size 784x60
+        LayoutInline {EM} at (0,0) size 0x0
+          LayoutText {#text} at (0,0) size 72x19
+        LayoutText {#text} at (0,0) size 766x59
+      LayoutTable {TABLE} at (0,669.53) size 784x593 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x591
+          LayoutTableRow {TR} at (0,0) size 782x28
+            LayoutNGTableCell {TD} at (0,0) size 782x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 0x0
+                LayoutText {#text} at (0,0) size 161x19
+          LayoutTableRow {TR} at (0,28) size 782x563
+            LayoutNGTableCell {TD} at (0,295) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 4x19
+            LayoutNGTableCell {TD} at (12,28) size 770x562.53 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutNGBlockFlow {P} at (4,4) size 762x100
+                LayoutText {#text} at (0,0) size 747x99
+              LayoutNGBlockFlow {P} at (4,120) size 762x20
+                LayoutText {#text} at (0,0) size 507x19
+              LayoutNGBlockFlow {H4} at (4,189.27) size 762x20
+                LayoutInline {A} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 220x19
+                LayoutText {#text} at (0,0) size 0x0
+              LayoutNGBlockFlow {P} at (4,230.53) size 762x100
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 41x19
+                LayoutText {#text} at (0,0) size 82x19
+                LayoutBR {BR} at (0,0) size 0x0
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 42x19
+                LayoutText {#text} at (0,0) size 38x19
+                LayoutBR {BR} at (0,0) size 0x0
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 68x19
+                LayoutText {#text} at (0,0) size 78x19
+                LayoutBR {BR} at (0,0) size 0x0
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 62x19
+                LayoutText {#text} at (0,0) size 20x19
+                LayoutBR {BR} at (0,0) size 0x0
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 121x19
+                LayoutText {#text} at (0,0) size 33x19
+                LayoutBR {BR} at (0,0) size 0x0
+              LayoutNGBlockFlow {P} at (4,346.53) size 762x40
+                LayoutText {#text} at (0,0) size 718x39
+              LayoutNGBlockFlow {PRE} at (4,402.53) size 762x80
+                LayoutText {#text} at (0,0) size 296x80
+              LayoutNGBlockFlow {P} at (4,498.53) size 762x60
+                LayoutInline {EM} at (0,0) size 0x0
+                  LayoutText {#text} at (0,0) size 72x19
+                LayoutText {#text} at (0,0) size 741x59
+layer at (8,89) size 784x2 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (0,81) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,259) size 784x2 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (0,251) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,269) size 784x2 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (0,261) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (25,863) size 762x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (4,156) size 762x2 [border: (1px inset #EEEEEE)]
+layer at (25,873) size 762x2 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+  LayoutNGBlockFlow {HR} at (4,166) size 762x2 [border: (1px inset #EEEEEE)]

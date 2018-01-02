@@ -1,0 +1,7 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x70
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x70
+    LayoutNGBlockFlow {BODY} at (25,25) size 750x20 [color=#FFFFFF] [bgcolor=#000080]
+      LayoutNGBlockFlow {P} at (0,0) size 750x20
+        LayoutText {#text} at (0,0) size 665x19
