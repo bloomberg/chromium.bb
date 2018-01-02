@@ -4,11 +4,6 @@ per-file *.idl=set noparent
 per-file *.json=file://extensions/common/api/API_OWNERS
 per-file *.idl=file://extensions/common/api/API_OWNERS
 
-per-file *view*.json=fsamuel@chromium.org
-per-file *view*.json=lazyboy@chromium.org
-per-file *view*.json=hanxi@chromium.org
-per-file *view*.json=wjmaclean@chromium.org
-per-file *view*.json=lfg@chromium.org
-per-file *view*.json=paulmeyer@chromium.org
+per-file *view*.json=file://components/guest_view/OWNERS
 
 # COMPONENT: Platform>Extensions>API
