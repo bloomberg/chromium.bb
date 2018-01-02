@@ -2061,8 +2061,12 @@ static void set_lpf_parameters(
 
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
-  const int mi_row = (y << scale_vert) >> MI_SIZE_LOG2;
-  const int mi_col = (x << scale_horz) >> MI_SIZE_LOG2;
+  // for sub8x8 block, chroma prediction mode is obtained from the bottom/right
+  // mi structure of the co-located 8x8 luma block. so for chroma plane, mi_row
+  // and mi_col should map to the bottom/right mi structure, i.e, both mi_row
+  // and mi_col should be odd number for chroma plane.
+  const int mi_row = scale_vert | ((y << scale_vert) >> MI_SIZE_LOG2);
+  const int mi_col = scale_horz | ((x << scale_horz) >> MI_SIZE_LOG2);
   MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
   const MB_MODE_INFO *mbmi = &mi[0]->mbmi;
 
