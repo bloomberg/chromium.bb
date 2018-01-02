@@ -1034,6 +1034,8 @@ crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
+crbug.com/798121 fast/history/history-back-twice-with-subframes-assert.html [ Timeout Pass ]
+
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
