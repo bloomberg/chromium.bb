@@ -10,7 +10,6 @@
  */
 
 #include <assert.h>
-#include <stdlib.h>  // qsort()
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
