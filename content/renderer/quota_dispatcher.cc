@@ -21,7 +21,6 @@
 using blink::QuotaStatusCode;
 using blink::StorageType;
 using blink::WebStorageQuotaCallbacks;
-using blink::WebStorageQuotaError;
 
 namespace content {
 
@@ -31,6 +30,7 @@ static base::LazyInstance<base::ThreadLocalPointer<QuotaDispatcher>>::Leaky
 namespace {
 
 // QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
+// TODO(sashab): Remove this class.
 class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
  public:
   explicit WebStorageQuotaDispatcherCallback(
@@ -44,9 +44,7 @@ class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
   void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) override {
     callbacks_.DidGrantStorageQuota(usage, granted_quota);
   }
-  void DidFail(QuotaStatusCode error) override {
-    callbacks_.DidFail(static_cast<WebStorageQuotaError>(error));
-  }
+  void DidFail(QuotaStatusCode error) override { callbacks_.DidFail(error); }
 
  private:
   blink::WebStorageQuotaCallbacks callbacks_;
@@ -180,12 +178,5 @@ void QuotaDispatcher::DidFail(
   callback->DidFail(error);
   pending_quota_callbacks_.Remove(request_id);
 }
-
-static_assert(int(blink::kWebStorageQuotaErrorNotSupported) ==
-                  int(blink::QuotaStatusCode::kErrorNotSupported),
-              "mismatching enums: kQuotaErrorNotSupported");
-static_assert(int(blink::kWebStorageQuotaErrorAbort) ==
-                  int(blink::QuotaStatusCode::kErrorAbort),
-              "mismatching enums: kQuotaErrorAbort");
 
 }  // namespace content

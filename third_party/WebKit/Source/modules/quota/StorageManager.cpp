@@ -18,7 +18,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebStorageQuotaError.h"
+#include "third_party/WebKit/common/quota/quota_status_code.h"
 #include "third_party/WebKit/common/quota/storage_type.h"
 
 namespace blink {
@@ -50,7 +50,9 @@ class EstimateCallbacks final : public StorageQuotaCallbacks {
     resolver_->Resolve(estimate);
   }
 
-  void DidFail(WebStorageQuotaError error) override {
+  void DidFail(QuotaStatusCode error) override {
+    // TODO(sashab): Replace this with a switch statement, and remove the enum
+    // values from QuotaStatusCode.
     resolver_->Reject(DOMException::Create(static_cast<ExceptionCode>(error)));
   }
 
@@ -154,10 +156,10 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
   resolver->Resolve(status == PermissionStatus::GRANTED);
 }
 
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorNotSupported, kNotSupportedError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidModification,
+STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorNotSupported, kNotSupportedError);
+STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorInvalidModification,
                    kInvalidModificationError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorInvalidAccess, kInvalidAccessError);
-STATIC_ASSERT_ENUM(kWebStorageQuotaErrorAbort, kAbortError);
+STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorInvalidAccess, kInvalidAccessError);
+STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorAbort, kAbortError);
 
 }  // namespace blink

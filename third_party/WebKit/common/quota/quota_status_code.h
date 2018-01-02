@@ -7,8 +7,7 @@
 
 namespace blink {
 
-// These values are used by WebStorageQuotaError and need to match
-// dom/ExceptionState.h.
+// These values need to match dom/ExceptionState.h.
 // TODO(sashab): Remove this and use mojom::storage::QuotaStatusCode instead.
 enum class QuotaStatusCode {
   kOk = 0,
