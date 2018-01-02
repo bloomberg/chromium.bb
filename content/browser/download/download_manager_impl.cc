@@ -756,6 +756,7 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 void DownloadManagerImpl::InterceptNavigation(
     std::unique_ptr<ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
+    const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     net::CertStatus cert_status,
@@ -774,7 +775,7 @@ void DownloadManagerImpl::InterceptNavigation(
       on_download_checks_done = base::BindOnce(
           &DownloadManagerImpl::InterceptNavigationOnChecksComplete,
           weak_factory_.GetWeakPtr(), web_contents_getter,
-          std::move(resource_request), std::move(url_chain),
+          std::move(resource_request), std::move(url_chain), suggested_filename,
           std::move(response), cert_status,
           std::move(url_loader_client_endpoints));
 
@@ -989,6 +990,7 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
+    const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -1001,7 +1003,8 @@ void DownloadManagerImpl::InterceptNavigationOnChecksComplete(
       base::BindOnce(&DownloadManagerImpl::CreateDownloadHandlerForNavigation,
                      weak_factory_.GetWeakPtr(), web_contents_getter,
                      std::move(resource_request), std::move(url_chain),
-                     std::move(response), std::move(cert_status),
+                     suggested_filename, std::move(response),
+                     std::move(cert_status),
                      std::move(url_loader_client_endpoints)));
 }
 
@@ -1011,6 +1014,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
     ResourceRequestInfo::WebContentsGetter web_contents_getter,
     std::unique_ptr<ResourceRequest> resource_request,
     std::vector<GURL> url_chain,
+    const base::Optional<std::string>& suggested_filename,
     scoped_refptr<ResourceResponse> response,
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
@@ -1020,7 +1024,7 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
       ResourceDownloader::InterceptNavigationResponse(
           download_manager, std::move(resource_request),
           std::move(web_contents_getter), std::move(url_chain),
-          std::move(response), std::move(cert_status),
+          suggested_filename, std::move(response), std::move(cert_status),
           std::move(url_loader_client_endpoints));
 
   BrowserThread::PostTask(

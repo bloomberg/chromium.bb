@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/download/download_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -103,6 +104,7 @@ ResourceDownloader::InterceptNavigationResponse(
     std::unique_ptr<ResourceRequest> resource_request,
     const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     std::vector<GURL> url_chain,
+    const base::Optional<std::string>& suggested_filename,
     const scoped_refptr<ResourceResponse>& response,
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
@@ -110,7 +112,7 @@ ResourceDownloader::InterceptNavigationResponse(
       delegate, std::move(resource_request), web_contents_getter,
       DownloadItem::kInvalidId);
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
-                                cert_status,
+                                suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));
   return downloader;
 }
@@ -174,15 +176,19 @@ void ResourceDownloader::Start(
 void ResourceDownloader::InterceptResponse(
     const scoped_refptr<ResourceResponse>& response,
     std::vector<GURL> url_chain,
+    const base::Optional<std::string>& suggested_filename,
     net::CertStatus cert_status,
     mojom::URLLoaderClientEndpointsPtr endpoints) {
   // Set the URLLoader.
   url_loader_.Bind(std::move(endpoints->url_loader));
 
   // Create the new URLLoaderClient that will intercept the navigation.
+  auto save_info = std::make_unique<DownloadSaveInfo>();
+  if (suggested_filename.has_value())
+    save_info->suggested_name = base::UTF8ToUTF16(suggested_filename.value());
   url_loader_client_ = std::make_unique<DownloadResponseHandler>(
-      resource_request_.get(), this, std::make_unique<DownloadSaveInfo>(),
-      false, false, false, std::move(url_chain));
+      resource_request_.get(), this, std::move(save_info), false, false, false,
+      std::move(url_chain));
 
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   net::SSLInfo info;

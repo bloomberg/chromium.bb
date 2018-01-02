@@ -1528,7 +1528,8 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   // defined state should the navigation fail.
   if (!had_placeholder_client_document_loader &&
       type == kFrameLoadTypeStandard &&
-      navigation_policy == kNavigationPolicyCurrentTab) {
+      (navigation_policy == kNavigationPolicyCurrentTab ||
+       navigation_policy == kNavigationPolicyHandledByClient)) {
     frame_->GetDocument()->CheckCompleted();
   }
   DetachDocumentLoader(provisional_document_loader_);

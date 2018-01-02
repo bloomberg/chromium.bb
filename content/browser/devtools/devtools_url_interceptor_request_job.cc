@@ -142,7 +142,8 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
       resource_request_info->ShouldReportRawHeaders(),
       resource_request_info->IsAsync(),
       resource_request_info->GetPreviewsState(), resource_request_info->body(),
-      resource_request_info->initiated_in_secure_context());
+      resource_request_info->initiated_in_secure_context(),
+      resource_request_info->suggested_filename());
   extra_data->AssociateWithRequest(request_.get());
 
   if (request_details.post_data)

@@ -15,7 +15,6 @@ var blob = new Blob(['hello world!'], {type: 'text/plain'});
 var url = URL.createObjectURL(blob);
 anchorElement.href = url;
 anchorElement.click();
-URL.revokeObjectURL(url);
 </script>
 </body>
 </html>

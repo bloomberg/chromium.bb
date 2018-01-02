@@ -55,5 +55,10 @@ struct BeginNavigationParams {
   // If the transition type is a client side redirect, then this holds the URL
   // of the page that had the client side redirect.
   url.mojom.Url client_side_redirect_url;
+
+  // If the anchor element that triggered this navigation had a download
+  // attribute, this field will be set to the attribute's (possibly empty)
+  // value.
+  string? suggested_filename;
 };
 

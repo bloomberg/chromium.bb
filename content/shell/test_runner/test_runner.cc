@@ -2556,6 +2556,7 @@ void TestRunner::SetUseMockTheme(bool use) {
 
 void TestRunner::WaitUntilExternalURLLoad() {
   layout_test_runtime_flags_.set_wait_until_external_url_load(true);
+  layout_test_runtime_flags_.set_wait_until_done(true);
   OnLayoutTestRuntimeFlagsChanged();
 }
 

@@ -71,6 +71,11 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
 
   bool allow_download_;
 
+  // If this request was triggered by an anchor tag with a download attribute,
+  // the |suggested_filename_| will be the (possibly empty) value of said
+  // attribute.
+  base::Optional<std::string> suggested_filename_;
+
   // Current URL that is being navigated, updated after redirection.
   GURL url_;
 
