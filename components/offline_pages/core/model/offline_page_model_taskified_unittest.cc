@@ -650,6 +650,37 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
       2);
 }
 
+TEST_F(OfflinePageModelTaskifiedTest, SavePageOnBackground) {
+  auto archiver = BuildArchiver(kTestUrl, ArchiverResult::SUCCESSFULLY_CREATED);
+  OfflinePageTestArchiver* archiver_ptr = archiver.get();
+
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = kTestUrl;
+  save_page_params.client_id = kTestClientId1;
+  save_page_params.original_url = kTestUrl2;
+  save_page_params.is_background = true;
+  save_page_params.use_page_problem_detectors = false;
+
+  base::MockCallback<SavePageCallback> callback;
+  EXPECT_CALL(callback, Run(Eq(SavePageResult::SUCCESS), A<int64_t>()));
+  model()->SavePage(save_page_params, std::move(archiver), callback.Get());
+  EXPECT_TRUE(archiver_ptr->create_archive_called());
+  // |remove_popup_overlay| should be turned on on background mode.
+  EXPECT_TRUE(archiver_ptr->create_archive_params().remove_popup_overlay);
+
+  PumpLoop();
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, SavePageWithNullArchiver) {
+  SavePageWithExpectedResult(kTestUrl, kTestClientId1, GURL(),
+                             kEmptyRequestOrigin, nullptr,
+                             SavePageResult::CONTENT_UNAVAILABLE);
+  histogram_tester()->ExpectUniqueSample(
+      model_utils::AddHistogramSuffix(kTestClientId1,
+                                      "OfflinePages.SavePageResult"),
+      static_cast<int>(SavePageResult::CONTENT_UNAVAILABLE), 1);
+}
+
 TEST_F(OfflinePageModelTaskifiedTest, AddPage) {
   // Creates a fresh page.
   page_generator()->SetArchiveDirectory(temporary_dir_path());
