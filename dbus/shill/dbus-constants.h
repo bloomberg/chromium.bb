@@ -122,6 +122,7 @@ const char kEapUseProactiveKeyCachingProperty[] = "EAP.UseProactiveKeyCaching";
 const char kEapPinProperty[] = "EAP.PIN";
 const char kEapPasswordProperty[] = "EAP.Password";
 const char kEapKeyMgmtProperty[] = "EAP.KeyMgmt";
+const char kEapUseLoginPasswordProperty[] = "EAP.UseLoginPassword";
 
 // Flimflam Cellular Service property names.
 const char kTechnologyFamilyProperty[] = "Cellular.Family";
