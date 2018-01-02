@@ -63,7 +63,7 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
       const int width = tx_size_wide[tx_size];
       const int height = tx_size_high[tx_size];
       levels_ = set_levels(levels_buf_, width);
-      memset(levels_buf_, 0, sizeof(*levels_buf_) * MAX_TX_SQUARE);
+      memset(levels_buf_, 0, sizeof(levels_buf_));
 
       for (int i = 0; i < kNumTests && !result; ++i) {
         InitLevels(width, height, i);
@@ -89,7 +89,7 @@ class TxbTest : public ::testing::TestWithParam<GetLevelCountsFunc> {
       const int width = tx_size_wide[tx_size];
       const int height = tx_size_high[tx_size];
       levels_ = set_levels(levels_buf_, width);
-      memset(levels_buf_, 0, sizeof(*levels_buf_) * MAX_TX_SQUARE);
+      memset(levels_buf_, 0, sizeof(levels_buf_));
       InitLevels(width, height, 0);
 
       aom_usec_timer_start(&timer);
