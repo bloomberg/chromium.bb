@@ -97,6 +97,7 @@ extern "C" {
 #undef COUNT          // Defined by X11/extensions/XI.h to 0
 #undef CREATE         // Defined by X11/extensions/XI.h to 1
 #undef DeviceAdded    // Defined by X11/extensions/XI.h to 0
+#undef DeviceMode     // Defined by X11/extensions/XI.h to 1
 #undef DeviceRemoved  // Defined by X11/extensions/XI.h to 1
 }
 
