@@ -14,7 +14,7 @@ for (const unit of gValidUnits) {
     assert_not_equals(result, null);
     assert_equals(result.constructor.name, CSSUnitValue.name);
     assert_equals(result.value, 12.3);
-    assert_equals(result.unit, unit);
+    assert_equals(result.unit, unit.toLowerCase());
   }, 'CSS.' + unit + ' returns a CSSUnitValue with correct value and unit');
 }
 

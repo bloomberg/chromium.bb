@@ -16,7 +16,7 @@ PASS CSS.vmin returns a CSSUnitValue with correct value and unit
 PASS CSS.vmax returns a CSSUnitValue with correct value and unit
 PASS CSS.cm returns a CSSUnitValue with correct value and unit
 PASS CSS.mm returns a CSSUnitValue with correct value and unit
-FAIL CSS.Q returns a CSSUnitValue with correct value and unit assert_equals: expected "Q" but got "q"
+PASS CSS.Q returns a CSSUnitValue with correct value and unit
 PASS CSS.in returns a CSSUnitValue with correct value and unit
 PASS CSS.pt returns a CSSUnitValue with correct value and unit
 PASS CSS.pc returns a CSSUnitValue with correct value and unit
@@ -27,8 +27,8 @@ PASS CSS.rad returns a CSSUnitValue with correct value and unit
 PASS CSS.turn returns a CSSUnitValue with correct value and unit
 PASS CSS.s returns a CSSUnitValue with correct value and unit
 PASS CSS.ms returns a CSSUnitValue with correct value and unit
-FAIL CSS.Hz returns a CSSUnitValue with correct value and unit assert_equals: expected "Hz" but got "hz"
-FAIL CSS.kHz returns a CSSUnitValue with correct value and unit assert_equals: expected "kHz" but got "khz"
+PASS CSS.Hz returns a CSSUnitValue with correct value and unit
+PASS CSS.kHz returns a CSSUnitValue with correct value and unit
 PASS CSS.dpi returns a CSSUnitValue with correct value and unit
 PASS CSS.dpcm returns a CSSUnitValue with correct value and unit
 PASS CSS.dppx returns a CSSUnitValue with correct value and unit
