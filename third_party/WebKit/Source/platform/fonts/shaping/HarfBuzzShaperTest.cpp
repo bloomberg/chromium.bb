@@ -776,6 +776,19 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeSegmentGlyphBoundingBox) {
   EXPECT_NEAR(result->Width(), result->Bounds().Width(), result->Width() * .1);
 }
 
+TEST_F(HarfBuzzShaperTest, SubRange) {
+  String string(u"Hello world");
+  TextDirection direction = TextDirection::kRtl;
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  scoped_refptr<ShapeResult> sub_range = result->SubRange(4, 7);
+  DCHECK_EQ(4u, sub_range->StartIndexForResult());
+  DCHECK_EQ(7u, sub_range->EndIndexForResult());
+  DCHECK_EQ(3u, sub_range->NumCharacters());
+  DCHECK_EQ(result->Direction(), sub_range->Direction());
+}
+
 TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
   FontDescription::VariantLigatures ligatures;
   ligatures.common = FontDescription::kEnabledLigaturesState;

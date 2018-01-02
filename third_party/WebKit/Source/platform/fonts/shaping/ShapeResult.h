@@ -124,6 +124,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                          const TextRun&) const;
 
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+  scoped_refptr<ShapeResult> SubRange(unsigned start_offset,
+                                      unsigned end_offset) const;
 
   String ToString() const;
   void ToString(StringBuilder*) const;
@@ -138,10 +140,16 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 #endif
 
  protected:
-
+  ShapeResult(const SimpleFontData*, unsigned num_characters, TextDirection);
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
+  static scoped_refptr<ShapeResult> Create(const SimpleFontData* font_data,
+                                           unsigned num_characters,
+                                           TextDirection direction) {
+    return base::AdoptRef(
+        new ShapeResult(font_data, num_characters, direction));
+  }
   static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return base::AdoptRef(new ShapeResult(other));
   }
@@ -166,7 +174,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   float width_;
   FloatRect glyph_bounding_box_;
   Vector<std::unique_ptr<RunInfo>> runs_;
-  scoped_refptr<SimpleFontData> primary_font_;
+  scoped_refptr<const SimpleFontData> primary_font_;
 
   unsigned num_characters_;
   unsigned num_glyphs_ : 30;
