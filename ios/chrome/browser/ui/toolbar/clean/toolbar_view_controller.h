@@ -41,14 +41,15 @@
 
 // The dispatcher for this view controller.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
-// The location bar view, containing the omnibox.
-@property(nonatomic, strong) UIView* locationBarView;
 // The ToolsMenu button.
 @property(nonatomic, strong, readonly) ToolbarToolsMenuButton* toolsMenuButton;
 // Whether the toolbar is in the expanded state or not.
 @property(nonatomic, assign) BOOL expanded;
 // Omnibox focuser.
 @property(nonatomic, weak) id<OmniboxFocuser> omniboxFocuser;
+
+// Sets the location bar view, containing the omnibox.
+- (void)setLocationBarView:(UIView*)locationBarView;
 
 // Adds the toolbar expanded state animations to |animator|, and changes the
 // toolbar constraints in preparation for the animation.
