@@ -1236,9 +1236,8 @@ static void JNI_PrefServiceBridge_SetDownloadDefaultDirectory(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& directory) {
   std::string path(ConvertJavaStringToUTF8(env, directory));
-  base::FilePath file_path;
   GetPrefService()->SetFilePath(prefs::kDownloadDefaultDirectory,
-                                file_path.Append(FILE_PATH_LITERAL(path)));
+                                base::FilePath(FILE_PATH_LITERAL(path)));
 }
 
 const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
