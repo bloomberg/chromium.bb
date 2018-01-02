@@ -214,6 +214,11 @@ static constexpr float kOmniboxShadowOffset = 0.015f;
 static constexpr float kOmniboxShadowIntensity = 0.4f;
 static constexpr int kOmniboxTransitionMs = 300;
 
+static constexpr float kOmniboxTextFieldIconSizeDMM = 0.05f;
+static constexpr float kOmniboxTextFieldIconButtonSizeDMM = 0.064f;
+static constexpr float kOmniboxTextFieldIconButtonRadiusDMM = 0.006f;
+static constexpr float kOmniboxTextFieldIconButtonHoverOffsetDMM = 0.0f;
+
 static constexpr float kSuggestionHeightDMM = 0.088f;
 static constexpr float kSuggestionGapDMM = 0.0018f;
 static constexpr float kSuggestionLineGapDMM = 0.01f;

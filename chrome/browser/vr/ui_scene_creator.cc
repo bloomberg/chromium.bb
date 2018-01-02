@@ -261,6 +261,22 @@ std::unique_ptr<Rect> CreateOmniboxSpacer(Model* model) {
   return spacer;
 }
 
+// Util to bind the visibility of the given control element to the given
+// property in the model and the visibility of the voice search UI root.
+#define BIND_VISIBILITY_CONTROL_FOR_VOICE(control_element, model, property) \
+  control_element->AddBinding(base::MakeUnique<Binding<bool>>(              \
+      VR_BIND_LAMBDA(                                                       \
+          [](Model* model, UiElement* voice_search_root) {                  \
+            return model->property &&                                       \
+                   voice_search_root->GetTargetOpacity() == 0.f;            \
+          },                                                                \
+          base::Unretained(model),                                          \
+          base::Unretained(                                                 \
+              scene_->GetUiElementByName(kSpeechRecognitionRoot))),         \
+      VR_BIND_LAMBDA([](UiElement* control,                                 \
+                        const bool& value) { control->SetVisible(value); }, \
+                     base::Unretained(control_element))))
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -325,6 +341,27 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
+  element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
+                              kPhaseNone);
+  element->set_hit_testable(false);
+  element->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_,
+      active_modal_prompt_type != kModalPromptTypeExitVRForSiteInfo, UiElement,
+      element.get(), SetVisible));
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
+
+  element = Create<UiElement>(k2dBrowsingOpacityControlForAudioPermissionPrompt,
+                              kPhaseNone);
+  element->set_hit_testable(false);
+  element->AddBinding(
+      VR_BIND(bool, Model, model_,
+              active_modal_prompt_type !=
+                  kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
+              UiElement, element.get(),
+              SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
+  scene_->AddUiElement(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
+                       std::move(element));
+
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
   element->set_hit_testable(false);
   element->SetTransitionedProperties({OPACITY});
@@ -334,23 +371,8 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
       VR_BIND_FUNC(bool, Model, model_,
                    default_browsing_enabled() || model->fullscreen_enabled(),
                    UiElement, element.get(), SetVisible));
-  element->AddBinding(base::MakeUnique<Binding<ModalPromptType>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->active_modal_prompt_type; },
-                     base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const ModalPromptType& t) {
-            if (t == kModalPromptTypeExitVRForSiteInfo) {
-              e->SetVisibleImmediately(false);
-            } else if (
-                t ==
-                kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission) {
-              e->SetOpacity(kModalPromptFadeOpacity);
-            } else {
-              e->SetVisible(true);
-            }
-          },
-          base::Unretained(element.get()))));
-  scene_->AddUiElement(k2dBrowsingVisibiltyControlForVoice, std::move(element));
+  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
+                       std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
   element->SetTranslate(0, kContentVerticalOffset, -kContentDistance);
@@ -996,20 +1018,13 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& value) { e->SetVisible(value); },
           base::Unretained(root))));
-  auto* browser_control =
-      scene_->GetUiElementByName(k2dBrowsingVisibiltyControlForVoice);
-  browser_control->AddBinding(base::MakeUnique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* model, UiElement* voice_search_root) {
-            // The browser foreground should be hidden until the voice search UI
-            // goes away.
-            return model->browsing_enabled() &&
-                   voice_search_root->GetTargetOpacity() == 0.f;
-          },
-          base::Unretained(model_), base::Unretained(root)),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const bool& value) { e->SetVisible(value); },
-          base::Unretained(browser_control))));
+
+  BIND_VISIBILITY_CONTROL_FOR_VOICE(
+      scene_->GetUiElementByName(k2dBrowsingVisibiltyControlForVoice), model_,
+      browsing_enabled());
+  BIND_VISIBILITY_CONTROL_FOR_VOICE(
+      scene_->GetUiElementByName(kOmniboxVisibiltyControlForVoice), model_,
+      omnibox_editing_enabled());
 }
 
 void UiSceneCreator::CreateController() {
@@ -1100,9 +1115,14 @@ std::unique_ptr<TextInput> UiSceneCreator::CreateTextInput(
 }
 
 void UiSceneCreator::CreateKeyboard() {
+  auto visibility_control_root =
+      Create<UiElement>(kKeyboardVisibilityControlForVoice, kPhaseNone);
+  visibility_control_root->set_hit_testable(false);
+  BIND_VISIBILITY_CONTROL_FOR_VOICE(visibility_control_root.get(), model_,
+                                    editing_input);
+
   auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kKeyboardDistance);
   scaler->SetName(kKeyboardDmmRoot);
-  scene_->AddUiElement(kRoot, std::move(scaler));
 
   auto keyboard = base::MakeUnique<Keyboard>();
   keyboard->SetKeyboardDelegate(keyboard_delegate_);
@@ -1110,7 +1130,9 @@ void UiSceneCreator::CreateKeyboard() {
   keyboard->SetTranslate(0.0, kKeyboardVerticalOffsetDMM, 0.0);
   keyboard->AddBinding(VR_BIND_FUNC(bool, Model, model_, editing_input,
                                     UiElement, keyboard.get(), SetVisible));
-  scene_->AddUiElement(kKeyboardDmmRoot, std::move(keyboard));
+  scaler->AddChild(std::move(keyboard));
+  visibility_control_root->AddChild(std::move(scaler));
+  scene_->AddUiElement(kRoot, std::move(visibility_control_root));
 }
 
 void UiSceneCreator::CreateUrlBar() {
@@ -1192,8 +1214,24 @@ void UiSceneCreator::CreateUrlBar() {
 }
 
 void UiSceneCreator::CreateOmnibox() {
+  auto visibility_control_root =
+      Create<UiElement>(kOmniboxVisibiltyControlForVoice, kPhaseNone);
+  visibility_control_root->set_hit_testable(false);
+
   auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kUrlBarDistance);
   scaler->SetName(kOmniboxDmmRoot);
+
+  auto visibility_toggle_for_audio_permission = Create<UiElement>(
+      kOmniboxVisibilityControlForAudioPermissionPrompt, kPhaseNone);
+  visibility_toggle_for_audio_permission->set_hit_testable(false);
+  // Note that wnen the audio permissions prompt is triggered from the omnibox
+  // editing mode, we don't change the opacity of the background like we do in
+  // the default browsing case.
+  visibility_toggle_for_audio_permission->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_,
+      active_modal_prompt_type !=
+          kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
+      UiElement, visibility_toggle_for_audio_permission.get(), SetVisible));
 
   auto omnibox_root = base::MakeUnique<UiElement>();
   omnibox_root->SetName(kOmniboxRoot);
@@ -1258,7 +1296,8 @@ void UiSceneCreator::CreateOmnibox() {
   VR_BIND_COLOR(model_, omnibox_container.get(),
                 &ColorScheme::omnibox_background, &Rect::SetColor);
 
-  float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM;
+  float width = kOmniboxWidthDMM - 2 * kOmniboxTextMarginDMM -
+                kOmniboxTextFieldIconSizeDMM;
   auto omnibox_text_field =
       CreateTextInput(kOmniboxTextHeightDMM, model_,
                       &model_->omnibox_text_field_info, text_input_delegate_);
@@ -1280,7 +1319,6 @@ void UiSceneCreator::CreateOmnibox() {
       l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_URL));
   omnibox_text_field->SetName(kOmniboxTextField);
   omnibox_text_field->set_x_anchoring(LEFT);
-  omnibox_text_field->set_x_centering(LEFT);
   omnibox_text_field->SetTranslate(kOmniboxTextMarginDMM, 0, 0);
   omnibox_text_field->AddBinding(base::MakeUnique<Binding<bool>>(
       VR_BIND_LAMBDA([](Model* m) { return m->omnibox_editing_enabled(); },
@@ -1320,6 +1358,41 @@ void UiSceneCreator::CreateOmnibox() {
                 &TextInput::SetCursorColor);
   VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,
                 &TextInput::SetHintColor);
+
+  auto mic_icon = Create<VectorIcon>(kNone, kPhaseForeground, 100);
+  mic_icon->set_hit_testable(false);
+  mic_icon->SetIcon(vector_icons::kMicrophoneIcon);
+  mic_icon->SetSize(kOmniboxTextFieldIconSizeDMM, kOmniboxTextFieldIconSizeDMM);
+  VR_BIND_COLOR(model_, mic_icon.get(), &ColorScheme::omnibox_text,
+                &VectorIcon::SetColor);
+  auto mic_icon_box = Create<Button>(
+      kNone, kPhaseForeground,
+      base::BindRepeating(
+          [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
+          base::Unretained(browser_), base::Unretained(ui_)));
+  mic_icon_box->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+  mic_icon_box->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
+                        kOmniboxTextFieldIconButtonSizeDMM);
+  mic_icon_box->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
+  mic_icon_box->AddBinding(base::MakeUnique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            return !m->incognito &&
+                   m->speech.has_or_can_request_audio_permission;
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA([](UiElement* e, const bool& v) { e->SetVisible(v); },
+                     mic_icon_box.get())));
+  VR_BIND_BUTTON_COLORS(model_, mic_icon_box.get(),
+                        &ColorScheme::omnibox_voice_search_button_colors,
+                        &Button::SetButtonColors);
+  mic_icon_box->AddChild(std::move(mic_icon));
+
+  auto text_field_layout = Create<LinearLayout>(
+      kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
+  text_field_layout->set_hit_testable(false);
+  text_field_layout->AddChild(std::move(omnibox_text_field));
+  text_field_layout->AddChild(std::move(mic_icon_box));
 
   // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback =
@@ -1364,7 +1437,7 @@ void UiSceneCreator::CreateOmnibox() {
   suggestions_outer_layout->AddChild(std::move(suggestions_layout));
   suggestions_outer_layout->AddChild(CreateOmniboxSpacer(model_));
 
-  omnibox_container->AddChild(std::move(omnibox_text_field));
+  omnibox_container->AddChild(std::move(text_field_layout));
 
   omnibox_outer_layout->AddChild(std::move(omnibox_container));
   omnibox_outer_layout->AddChild(std::move(suggestions_outer_layout));
@@ -1376,9 +1449,12 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_root->AddChild(std::move(shadow));
   omnibox_root->AddChild(std::move(button_scaler));
 
-  scaler->AddChild(std::move(omnibox_root));
+  visibility_toggle_for_audio_permission->AddChild(std::move(omnibox_root));
+  scaler->AddChild(std::move(visibility_toggle_for_audio_permission));
 
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(scaler));
+  visibility_control_root->AddChild(std::move(scaler));
+
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(visibility_control_root));
 }
 
 void UiSceneCreator::CreateCloseButton() {
