@@ -1686,9 +1686,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)loadErrorInNativeView:(NSError*)error
             navigationContext:(web::NavigationContextImpl*)context {
-  [self removeWebView];
   web::NavigationItem* item = self.currentNavItem;
   const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  BOOL isPost = [self isCurrentNavigationItemPOST];
 
   if (web::IsWKWebViewSSLCertError(error)) {
     // This could happen only if certificate is absent or could not be parsed.
@@ -1702,11 +1702,20 @@ registerLoadRequestForURL:(const GURL&)requestURL
     error = web::NetErrorFromError(error);
   }
 
-  BOOL isPost = [self isCurrentNavigationItemPOST];
-  [self setNativeController:[_nativeProvider controllerForURL:currentURL
-                                                    withError:error
-                                                       isPost:isPost]];
-  [self loadNativeViewWithSuccess:NO navigationContext:context];
+  ProceduralBlock finishLoadErrorInNativeView = ^{
+    [self setNativeController:[_nativeProvider controllerForURL:currentURL
+                                                      withError:error
+                                                         isPost:isPost]];
+    [self loadNativeViewWithSuccess:NO navigationContext:context];
+  };
+
+  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    [self removeWebView];
+    finishLoadErrorInNativeView();
+  } else {
+    [self loadPlaceholderInWebViewForURL:currentURL
+                       completionHandler:finishLoadErrorInNativeView];
+  }
 }
 
 // Loads the current URL in a native controller if using the legacy navigation
@@ -1751,8 +1760,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)loadPlaceholderInWebViewForURL:(const GURL&)originalURL
                      completionHandler:(ProceduralBlock)completionHandler {
   web::WebClient* webClient = web::GetWebClient();
-  DCHECK(webClient->IsSlimNavigationManagerEnabled() &&
-         webClient->IsAppSpecificURL(originalURL));
+  DCHECK(webClient->IsSlimNavigationManagerEnabled());
 
   GURL placeholderURL = CreatePlaceholderUrlForUrl(originalURL);
   [self ensureWebViewCreated];
@@ -4238,9 +4246,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       IsPlaceholderUrl(webViewURL)) {
     GURL originalURL = ExtractUrlFromPlaceholderUrl(webViewURL);
-    if (!originalURL.is_valid() ||
-        !web::GetWebClient()->IsAppSpecificURL(originalURL)) {
-      // Encoded URL is not a recognized app-specific URL. Abort to be safe.
+    if (!originalURL.is_valid()) {
       [self abortLoad];
       return;
     }
