@@ -30,7 +30,7 @@
         "ParseSingleValue",
         "ParseShorthand",
         "IsLayoutDependent",
-        "CSSValueFromComputedStyle",
+        "CSSValueFromComputedStyleInternal",
         "ColorIncludingFallback"
       ],
     },
@@ -427,7 +427,7 @@
     // (e.g. font-size / ems)
     {
       name: "color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
       field_group: "inherited",
@@ -441,6 +441,7 @@
     },
     {
       name: "direction",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       affected_by_all: false,
       inherited: true,
       field_template: "keyword",
@@ -464,6 +465,7 @@
     },
     {
       name: "font-kerning",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
       name_for_methods: "Kerning",
@@ -583,6 +585,7 @@
     },
     {
       name: "-webkit-font-smoothing",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
       type_name: "FontSmoothingMode",
@@ -598,6 +601,7 @@
     },
     {
       name: "text-orientation",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -616,6 +620,7 @@
     },
     {
       name: "writing-mode",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_template: "keyword",
       include_paths: ["platform/text/WritingMode.h"],
@@ -627,6 +632,7 @@
     },
     {
       name: "-webkit-writing-mode",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "WritingMode",
       custom_apply_functions_value: true,
@@ -634,6 +640,7 @@
     },
     {
       name: "text-rendering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       font: true,
       type_name: "TextRenderingMode",
@@ -673,6 +680,7 @@
     },
     {
       name: "alignment-baseline",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
     },
     {
@@ -702,6 +710,7 @@
     },
     {
       name: "backface-visibility",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["visible", "hidden"],
@@ -724,7 +733,7 @@
     },
     {
       name: "background-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "background",
       field_template: "external",
@@ -783,7 +792,7 @@
     },
     {
       name: "border-bottom-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -817,6 +826,7 @@
     },
     {
       name: "border-bottom-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -829,7 +839,7 @@
     },
     {
       name: "border-bottom-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -882,7 +892,7 @@
     },
     {
       name: "border-left-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -894,6 +904,7 @@
     },
     {
       name: "border-left-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -906,7 +917,7 @@
     },
     {
       name: "border-left-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -920,7 +931,7 @@
     },
     {
       name: "border-right-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -932,6 +943,7 @@
     },
     {
       name: "border-right-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -944,7 +956,7 @@
     },
     {
       name: "border-right-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -958,7 +970,7 @@
     },
     {
       name: "border-top-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -992,6 +1004,7 @@
     },
     {
       name: "border-top-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "surround",
       field_template: "keyword",
       keywords: [
@@ -1004,7 +1017,7 @@
     },
     {
       name: "border-top-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "surround",
       field_template: "external",
@@ -1048,6 +1061,7 @@
     },
     {
       name: "break-after",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       // Storage for this property also covers these legacy properties:
       // page-break-after, -webkit-column-break-after
       field_template: "keyword",
@@ -1060,6 +1074,7 @@
     },
     {
       name: "break-before",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       // Storage for this property also covers these legacy properties:
       // page-break-before, -webkit-column-break-before
       field_template: "keyword",
@@ -1072,6 +1087,7 @@
     },
     {
       name: "break-inside",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       // Storage for this property also covers these legacy properties:
       // page-break-inside, -webkit-column-break-inside
       field_template: "keyword",
@@ -1080,10 +1096,12 @@
     },
     {
       name: "buffered-rendering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
     },
     {
       name: "caption-side",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1092,7 +1110,7 @@
     },
     {
       name: "caret-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
       field_group: "*",
@@ -1105,6 +1123,7 @@
     },
     {
       name: "clear",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: ["none", "left", "right", "both"],
       default_value: "none",
@@ -1136,28 +1155,33 @@
     },
     {
       name: "clip-rule",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       type_name: "WindRule",
     },
     {
       name: "color-interpolation",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
     },
     {
       name: "color-interpolation-filters",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       type_name: "EColorInterpolation",
     },
     {
       name: "color-rendering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
     },
     {
       name: "column-fill",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["balance", "auto"],
@@ -1218,14 +1242,14 @@
     },
     {
       name: "cx",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLength",
     },
     {
       name: "cy",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLength",
@@ -1239,6 +1263,7 @@
     },
     {
       name: "display",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: 'keyword',
       keywords: [
         "inline", "block", "list-item", "inline-block", "table", "inline-table",
@@ -1251,11 +1276,13 @@
     },
     {
       name: "dominant-baseline",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
     },
     {
       name: "empty-cells",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1281,6 +1308,7 @@
     },
     {
       name: "fill-rule",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       type_name: "WindRule",
@@ -1301,7 +1329,7 @@
     },
     {
       name: "flex-basis",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "*",
       field_template: "<length>",
@@ -1310,6 +1338,7 @@
     },
     {
       name: "flex-direction",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["row", "row-reverse", "column", "column-reverse"],
@@ -1335,6 +1364,7 @@
     },
     {
       name: "flex-wrap",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["nowrap", "wrap", "wrap-reverse"],
@@ -1350,7 +1380,7 @@
     },
     {
       name: "flood-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
@@ -1405,7 +1435,7 @@
     },
     {
       name: "grid-column-gap",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "<length>",
       default_value: "Length(kFixed)",
@@ -1433,7 +1463,7 @@
     },
     {
       name: "grid-row-gap",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "<length>",
       default_value: "Length(kFixed)",
@@ -1488,6 +1518,7 @@
     },
     {
       name: "hyphens",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1497,6 +1528,7 @@
     },
     {
       name: "image-rendering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1520,6 +1552,7 @@
     },
     {
       name: "isolation",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["auto", "isolate"],
@@ -1575,7 +1608,7 @@
     },
     {
       name: "lighting-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
@@ -1594,7 +1627,7 @@
     },
     {
       name: "line-height-step",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       runtime_flag: "CSSSnapSize",
       field_group: "*",
@@ -1620,6 +1653,7 @@
     },
     {
       name: "list-style-position",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -1628,6 +1662,7 @@
     },
     {
       name: "list-style-type",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_template: "keyword",
       keywords: [
@@ -1722,6 +1757,7 @@
     },
     {
       name: "mask-type",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
     },
     {
@@ -1766,6 +1802,7 @@
     },
     {
       name: "mix-blend-mode",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       include_paths: ["public/platform/WebBlendMode.h"],
@@ -1780,6 +1817,7 @@
     },
     {
       name: "object-fit",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["fill", "contain", "cover", "none", "scale-down"],
@@ -1811,7 +1849,7 @@
     },
     {
       name: "offset-distance",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "*",
       field_template: "<length>",
@@ -1886,7 +1924,7 @@
     },
     {
       name: "outline-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -1898,7 +1936,7 @@
     },
     {
       name: "outline-offset",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "*",
       field_template: "primitive",
@@ -1921,7 +1959,7 @@
     },
     {
       name: "outline-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -1933,6 +1971,7 @@
     },
     {
       name: "overflow-anchor",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: false,
       runtime_flag: "ScrollAnchoring",
       field_template: "keyword",
@@ -1943,6 +1982,7 @@
     },
     {
       name: "overflow-wrap",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -1951,6 +1991,7 @@
     },
     {
       name: "overflow-x",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
@@ -1961,6 +2002,7 @@
     },
     {
       name: "overflow-y",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
         "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
@@ -2035,6 +2077,7 @@
     },
     {
       name: "pointer-events",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2046,6 +2089,7 @@
     },
     {
       name: "position",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
         "static", "relative", "absolute", "fixed", "sticky"
@@ -2068,6 +2112,7 @@
     },
     {
       name: "resize",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["none", "both", "horizontal", "vertical"],
@@ -2087,27 +2132,28 @@
     },
     {
       name: "r",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLength",
     },
     {
       name: "rx",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLengthOrAuto",
     },
     {
       name: "ry",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLengthOrAuto",
     },
     {
       name: "scroll-behavior",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSOMSmoothScroll",
       field_group: "*",
       field_size: 2, // FIXME: Convert this to a keyword field
@@ -2117,6 +2163,7 @@
     },
     {
       name: "overscroll-behavior-x",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2125,6 +2172,7 @@
     },
     {
       name: "overscroll-behavior-y",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSOverscrollBehavior",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2157,6 +2205,7 @@
     },
     {
       name: "scroll-snap-stop",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_template: "keyword",
       keywords: ["normal", "always"],
@@ -2164,7 +2213,7 @@
     },
     {
       name: "scroll-padding-top",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
@@ -2174,7 +2223,7 @@
     },
     {
       name: "scroll-padding-bottom",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
@@ -2184,7 +2233,7 @@
     },
     {
       name: "scroll-padding-left",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
@@ -2194,7 +2243,7 @@
     },
     {
       name: "scroll-padding-right",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "<length>",
@@ -2256,7 +2305,7 @@
     },
     {
       name: "scroll-snap-margin-top",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
@@ -2266,7 +2315,7 @@
     },
     {
       name: "scroll-snap-margin-bottom",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
@@ -2276,7 +2325,7 @@
     },
     {
       name: "scroll-snap-margin-left",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
@@ -2286,7 +2335,7 @@
     },
     {
       name: "scroll-snap-margin-right",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollSnapPoints",
       field_group: "*",
       field_template: "primitive",
@@ -2365,6 +2414,7 @@
     },
     {
       name: "shape-rendering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
     },
@@ -2375,6 +2425,7 @@
     },
     {
       name: "speak",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2386,7 +2437,7 @@
     },
     {
       name: "stop-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
@@ -2418,7 +2469,7 @@
     },
     {
       name: "stroke-dashoffset",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       inherited: true,
       svg: true,
@@ -2427,6 +2478,7 @@
     },
     {
       name: "stroke-linecap",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       name_for_methods: "CapStyle",
@@ -2434,6 +2486,7 @@
     },
     {
       name: "stroke-linejoin",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       name_for_methods: "JoinStyle",
@@ -2466,6 +2519,7 @@
     },
     {
       name: "table-layout",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
         "auto", "fixed"
@@ -2486,6 +2540,7 @@
     },
     {
       name: "text-align",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: false,
       inherited: true,
       field_template: "keyword",
@@ -2499,6 +2554,7 @@
     },
     {
       name: "text-align-last",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2507,11 +2563,13 @@
     },
     {
       name: "text-anchor",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
     },
     {
       name: "text-combine-upright",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2521,7 +2579,7 @@
     },
     {
       name: "text-decoration-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2568,6 +2626,7 @@
     },
     {
       name: "text-justify",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       runtime_flag: "CSS3Text",
       field_group: "*",
@@ -2612,6 +2671,7 @@
     },
     {
       name: "text-transform",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2621,7 +2681,7 @@
     // FIXME: Implement support for 'under left' and 'under right' values.
     {
       name: "text-underline-position",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -2667,6 +2727,7 @@
     },
     {
       name: "transform-box",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSTransformBox",
       field_template: "keyword",
       keywords: ["fill-box", "view-box"],
@@ -2686,6 +2747,7 @@
     },
     {
       name: "transform-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["flat", "preserve-3d"],
@@ -2736,6 +2798,7 @@
     },
     {
       name: "unicode-bidi",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       affected_by_all: false,
       field_template: "keyword",
       include_paths: ["platform/text/UnicodeBidi.h"],
@@ -2748,6 +2811,7 @@
     },
     {
       name: "vector-effect",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
     },
     {
@@ -2759,6 +2823,7 @@
     },
     {
       name: "visibility",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       interpolable: true,
       inherited: true,
@@ -2768,20 +2833,21 @@
     },
     {
       name: "x",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLength",
     },
     {
       name: "y",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
       converter: "ConvertLength",
     },
     {
       name: "-webkit-appearance",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_size: 6,
       field_template: "primitive",
@@ -2790,6 +2856,7 @@
     },
     {
       name: "-webkit-app-region",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["none", "drag", "no-drag"],
@@ -2799,7 +2866,7 @@
     },
     {
       name: "-webkit-border-horizontal-spacing",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       inherited: true,
       field_group: "inherited",
@@ -2816,7 +2883,7 @@
     },
     {
       name: "-webkit-border-vertical-spacing",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       inherited: true,
       field_group: "inherited",
@@ -2830,6 +2897,7 @@
     // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
     {
       name: "-webkit-box-align",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["stretch", "start", "center", "end", "baseline"],
@@ -2845,6 +2913,7 @@
     },
     {
       name: "-webkit-box-direction",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -2869,6 +2938,7 @@
     },
     {
       name: "-webkit-box-lines",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["single", "multiple"],
@@ -2885,6 +2955,7 @@
     },
     {
       name: "-webkit-box-orient",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["horizontal", "vertical"],
@@ -2892,6 +2963,7 @@
     },
     {
       name: "-webkit-box-pack",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["start", "center", "end", "justify"],
@@ -2933,7 +3005,7 @@
     },
     {
       name: "column-rule-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2945,6 +3017,7 @@
     },
     {
       name: "column-rule-style",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: [
@@ -2956,7 +3029,7 @@
     },
     {
       name: "column-rule-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2968,7 +3041,7 @@
     },
     {
       name: "column-span",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["none", "all"],
@@ -3012,6 +3085,7 @@
     },
     {
       name: "-webkit-line-break",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3021,6 +3095,7 @@
     },
     {
       name: "line-break",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "LineBreak",
     },
@@ -3036,6 +3111,7 @@
     },
     {
       name: "-webkit-margin-after-collapse",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["collapse", "separate", "discard"],
@@ -3044,6 +3120,7 @@
     },
     {
       name: "-webkit-margin-before-collapse",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["collapse", "separate", "discard"],
@@ -3052,11 +3129,13 @@
     },
     {
       name: "-webkit-margin-bottom-collapse",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       name_for_methods: "MarginAfterCollapse",
       type_name: "EMarginCollapse",
     },
     {
       name: "-webkit-margin-top-collapse",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       name_for_methods: "MarginBeforeCollapse",
       type_name: "EMarginCollapse",
     },
@@ -3150,6 +3229,7 @@
     },
     {
       name: "-webkit-print-color-adjust",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3158,6 +3238,7 @@
     },
     {
       name: "-webkit-rtl-ordering",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3169,6 +3250,7 @@
     },
     {
       name: "-webkit-ruby-position",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3178,7 +3260,7 @@
     },
     {
       name: "-webkit-tap-highlight-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
       field_template: "<color>",
@@ -3192,7 +3274,7 @@
     },
     {
       name: "-webkit-text-emphasis-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
       field_template: "external",
@@ -3221,7 +3303,7 @@
     },
     {
       name: "-webkit-text-fill-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       inherited: true,
       field_group: "*",
       field_template: "external",
@@ -3233,6 +3315,7 @@
     },
     {
       name: "-webkit-text-security",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3241,7 +3324,7 @@
     },
     {
       name: "-webkit-text-stroke-color",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyle", "ColorIncludingFallback"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "ColorIncludingFallback"],
       interpolable: true,
       inherited: true,
       field_group: "*",
@@ -3254,7 +3337,7 @@
     },
     {
       name: "-webkit-text-stroke-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "primitive",
@@ -3282,6 +3365,7 @@
     },
     {
       name: "-webkit-user-drag",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "keyword",
       keywords: ["auto", "none", "element"],
@@ -3289,6 +3373,7 @@
     },
     {
       name: "-webkit-user-modify",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3297,6 +3382,7 @@
     },
     {
       name: "user-select",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3305,6 +3391,7 @@
     },
     {
       name: "white-space",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: true,
       inherited: true,
       field_template: "keyword",
@@ -3342,6 +3429,7 @@
     },
     {
       name: "word-break",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -3351,7 +3439,7 @@
     },
     {
       name: "word-spacing",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       inherited: true,
       converter: "ConvertSpacing",
@@ -3360,6 +3448,7 @@
     // property. So using the same handlers.
     {
       name: "word-wrap",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       name_for_methods: "OverflowWrap",
     },

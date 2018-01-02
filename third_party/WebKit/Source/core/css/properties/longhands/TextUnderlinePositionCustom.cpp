@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/TextUnderlinePosition.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -17,6 +18,15 @@ const CSSValue* TextUnderlinePosition::ParseSingleValue(
   // for now
   return CSSPropertyParserHelpers::ConsumeIdent<CSSValueAuto, CSSValueUnder>(
       range);
+}
+
+const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.GetTextUnderlinePosition());
 }
 
 }  // namespace CSSLonghand

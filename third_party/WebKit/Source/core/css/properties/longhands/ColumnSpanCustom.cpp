@@ -17,5 +17,16 @@ const CSSValue* ColumnSpan::ParseSingleValue(
       range);
 }
 
+const CSSValue* ColumnSpan::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(static_cast<unsigned>(style.GetColumnSpan())
+                                        ? CSSValueAll
+                                        : CSSValueNone);
+}
+
 }  // namespace CSSLonghand
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 
 namespace blink {
 namespace CSSLonghand {

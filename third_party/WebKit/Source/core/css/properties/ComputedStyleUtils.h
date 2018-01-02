@@ -18,12 +18,14 @@ class ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);
 
  public:
-  static const CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
-                                                  const StyleColor&);
+  static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
+                                            const StyleColor&);
   static const blink::Color BorderSideColor(const ComputedStyle&,
                                             const StyleColor&,
                                             EBorderStyle,
                                             bool visited_link);
+  static CSSValue* ZoomAdjustedPixelValueForLength(const Length&,
+                                                   const ComputedStyle&);
 };
 
 }  // namespace blink

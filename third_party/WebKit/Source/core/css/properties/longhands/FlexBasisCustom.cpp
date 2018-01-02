@@ -6,6 +6,7 @@
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -19,6 +20,16 @@ const CSSValue* FlexBasis::ParseSingleValue(
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative);
+}
+
+const CSSValue* FlexBasis::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.FlexBasis(),
+                                                             style);
 }
 
 }  // namespace CSSLonghand

@@ -4,6 +4,7 @@
 
 #include "core/css/properties/longhands/BorderBottomWidth.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
@@ -14,6 +15,15 @@ const CSSValue* BorderBottomWidth::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context) const {
   return CSSParsingUtils::ParseBorderWidthSide(range, context, local_context);
+}
+
+const CSSValue* BorderBottomWidth::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
 }
 
 }  // namespace CSSLonghand

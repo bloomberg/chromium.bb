@@ -4,6 +4,7 @@
 
 #include "core/css/properties/longhands/WebkitBorderVerticalSpacing.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
@@ -16,6 +17,15 @@ const CSSValue* WebkitBorderVerticalSpacing::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
                                                  kValueRangeNonNegative);
+}
+
+const CSSValue* WebkitBorderVerticalSpacing::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style);
 }
 
 }  // namespace CSSLonghand

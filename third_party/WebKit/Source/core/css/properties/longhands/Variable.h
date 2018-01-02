@@ -25,6 +25,15 @@ class Variable final : public CSSProperty {
     static const WTF::AtomicString& name = WTF::AtomicString("variable\0");
     return name;
   }
+  const CSSValue* CSSValueFromComputedStyleInternal(
+      const ComputedStyle&,
+      const SVGComputedStyle&,
+      const LayoutObject*,
+      Node*,
+      bool allow_visited_style) const override {
+    NOTREACHED();
+    return nullptr;
+  }
 };
 
 }  // namespace blink
