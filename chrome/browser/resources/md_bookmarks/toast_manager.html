@@ -11,9 +11,6 @@
         color: #fff;
         display: flex;
         flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
       paper-button {
@@ -36,7 +33,7 @@
       }
     </style>
     <cr-toast id="toast" duration="[[duration]]">
-      <div id="content"></div>
+      <div id="content" class="elided-text"></div>
       <paper-button id="button" hidden$="[[!showUndo_]]" on-tap="onUndoTap_">
         $i18n{undo}
       </paper-button>

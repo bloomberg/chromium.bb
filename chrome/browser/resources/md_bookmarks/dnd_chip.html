@@ -45,10 +45,7 @@
         color: white;
         flex: 1;
         font-weight: 500;
-        overflow: hidden;
         text-decoration: none;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
       #icon-wrapper {
@@ -88,7 +85,7 @@
       <div id="icon-wrapper" class="centered">
         <div id="icon"></div>
       </div>
-      <div id="title"></div>
+      <div id="title" class="elided-text"></div>
     </div>
     <div id="count" class="centered" hidden$="[[!isMultiItem_]]"></div>
   </template>
