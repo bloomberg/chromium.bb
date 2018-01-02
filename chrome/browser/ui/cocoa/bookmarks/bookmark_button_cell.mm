@@ -88,6 +88,11 @@ const CGFloat kKernAmount = 0.2;
 @synthesize startingChildIndex = startingChildIndex_;
 @synthesize drawFolderArrow = drawFolderArrow_;
 
+// Overridden from GradientButtonCell.
++ (CGFloat)insetInView:(NSView*)view {
+  return 0;
+}
+
 + (id)buttonCellForNode:(const BookmarkNode*)node
                    text:(NSString*)text
                   image:(NSImage*)image
