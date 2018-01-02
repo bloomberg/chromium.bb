@@ -3424,7 +3424,6 @@ crbug.com/591099 fast/block/child-not-removed-from-parent-lineboxes-crash.html [
 crbug.com/591099 fast/block/containing-block-negative-margins.html [ Failure ]
 crbug.com/591099 fast/block/float-avoids-padding-inline-ancestors.html [ Crash ]
 crbug.com/591099 fast/block/float/003.html [ Failure ]
-crbug.com/591099 fast/block/float/010.html [ Failure ]
 crbug.com/714962 fast/block/float/015.html [ Failure ]
 crbug.com/591099 fast/block/float/018.html [ Failure ]
 crbug.com/714962 fast/block/float/021.html [ Failure ]
