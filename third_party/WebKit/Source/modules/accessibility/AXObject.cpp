@@ -1370,7 +1370,7 @@ void AXObject::TokenVectorFromAttribute(Vector<String>& tokens,
   if (attribute_value.IsEmpty())
     return;
 
-  attribute_value.SimplifyWhiteSpace();
+  attribute_value = attribute_value.SimplifyWhiteSpace();
   attribute_value.Split(' ', tokens);
 }
 
