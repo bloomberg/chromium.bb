@@ -13,7 +13,8 @@ in Chrome:
 
 These are the files and directories that are relevant to VR instrumentation
 testing. Additional information on files in other directories can be found in
-those directories' README.md files.
+those directories' README.md files (if the files as a whole warrant special
+documentation) and the JavaDoc comments in each file.
 
 ### Subdirectories
 
@@ -167,7 +168,7 @@ If a test class is annotated with `@RunWith(ParameterizedRunner.class)`, then it
 has support for test parameterization. While parameterization has many potential
 uses, the current use in VR is to allow a test case to be automatically run in
 multiple different activity types. For specifics, see
-`rules/vr_activity_restriction.md`.
+`rules/README.md`.
 
 If a class has test parameterization enabled, you have three options when adding
 a new test:
