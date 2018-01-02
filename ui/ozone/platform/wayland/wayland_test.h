@@ -37,9 +37,9 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   wl::FakeServer server;
   wl::MockSurface* surface;
 
-  WaylandConnection connection;
   MockPlatformWindowDelegate delegate;
-  WaylandWindow window;
+  std::unique_ptr<WaylandConnection> connection;
+  std::unique_ptr<WaylandWindow> window;
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
 
  private:

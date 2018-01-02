@@ -90,7 +90,7 @@ class WaylandWindowTest : public WaylandTest {
 
 TEST_P(WaylandWindowTest, SetTitle) {
   EXPECT_CALL(*GetXdgSurface(), SetTitle(StrEq("hello")));
-  window.SetTitle(base::ASCIIToUTF16("hello"));
+  window->SetTitle(base::ASCIIToUTF16("hello"));
 }
 
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
@@ -102,16 +102,16 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
 
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
-  window.Maximize();
+  window->Maximize();
   SendConfigureEvent(0, 0, serial, &states);
   Sync();
 
-  window.Restore();
+  window->Restore();
 }
 
 TEST_P(WaylandWindowTest, Minimize) {
   EXPECT_CALL(*GetXdgSurface(), SetMinimized());
-  window.Minimize();
+  window->Minimize();
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
@@ -122,11 +122,11 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
 
   EXPECT_CALL(*GetXdgSurface(), SetFullscreen());
   EXPECT_CALL(*GetXdgSurface(), UnsetFullscreen());
-  window.ToggleFullscreen();
+  window->ToggleFullscreen();
   SendConfigureEvent(0, 0, 1, &states);
   Sync();
 
-  window.Restore();
+  window->Restore();
 }
 
 TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
@@ -138,31 +138,31 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_CALL(*GetXdgSurface(), SetMaximized());
   EXPECT_CALL(*GetXdgSurface(), UnsetMaximized());
 
-  window.Maximize();
+  window->Maximize();
   SetWlArrayWithState(XDG_SURFACE_STATE_MAXIMIZED, &states);
   SendConfigureEvent(0, 0, 2, &states);
   Sync();
 
-  window.ToggleFullscreen();
+  window->ToggleFullscreen();
   SetWlArrayWithState(XDG_SURFACE_STATE_FULLSCREEN, &states);
   SendConfigureEvent(0, 0, 3, &states);
   Sync();
 
-  window.Restore();
+  window->Restore();
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
-  EXPECT_FALSE(window.CanDispatchEvent(&test_mouse_event));
+  EXPECT_FALSE(window->CanDispatchEvent(&test_mouse_event));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
-  window.set_pointer_focus(true);
-  EXPECT_TRUE(window.CanDispatchEvent(&test_mouse_event));
+  window->set_pointer_focus(true);
+  EXPECT_TRUE(window->CanDispatchEvent(&test_mouse_event));
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventUnfocus) {
-  window.set_pointer_focus(false);
-  EXPECT_FALSE(window.CanDispatchEvent(&test_mouse_event));
+  window->set_pointer_focus(false);
+  EXPECT_FALSE(window->CanDispatchEvent(&test_mouse_event));
 }
 
 ACTION_P(CloneEvent, ptr) {
@@ -172,7 +172,7 @@ ACTION_P(CloneEvent, ptr) {
 TEST_P(WaylandWindowTest, DispatchEvent) {
   std::unique_ptr<Event> event;
   EXPECT_CALL(delegate, DispatchEvent(_)).WillOnce(CloneEvent(&event));
-  window.DispatchEvent(&test_mouse_event);
+  window->DispatchEvent(&test_mouse_event);
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
   auto* mouse_event = event->AsMouseEvent();
