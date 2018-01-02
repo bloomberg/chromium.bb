@@ -212,6 +212,63 @@ TEST_F(PreviewsOptimizationGuideTest,
   });
 }
 
+TEST_F(PreviewsOptimizationGuideTest, IsWhitelistedWithMultipleHintMatches) {
+  optimization_guide::proto::Configuration config;
+
+  // Whitelist NoScript for indoor.sports.yahoo.com:
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("indoor.sports.yahoo.com");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization1 =
+      hint1->add_whitelisted_optimizations();
+  optimization1->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
+  // No optimizations for sports.yahoo.com:
+  optimization_guide::proto::Hint* hint2 = config.add_hints();
+  hint2->set_key("sports.yahoo.com");
+  hint2->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  // Whitelist NoScript for base domain yahoo.com:
+  optimization_guide::proto::Hint* hint3 = config.add_hints();
+  hint3->set_key("yahoo.com");
+  hint3->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  optimization_guide::proto::Optimization* optimization3 =
+      hint3->add_whitelisted_optimizations();
+  optimization3->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+
+  // No optimizations for mail.yahoo.com:
+  optimization_guide::proto::Hint* hint4 = config.add_hints();
+  hint4->set_key("mail.yahoo.com");
+  hint4->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+
+  ProcessHints(config);
+  RunUntilIdle();
+
+  std::unique_ptr<net::URLRequest> request1 =
+      CreateRequestWithURL(GURL("https://yahoo.com"));
+  EXPECT_TRUE(guide()->IsWhitelisted(*request1, PreviewsType::NOSCRIPT));
+
+  std::unique_ptr<net::URLRequest> request2 =
+      CreateRequestWithURL(GURL("https://sports.yahoo.com"));
+  // Uses "sports.yahoo.com" match before "yahoo.com" match.
+  EXPECT_FALSE(guide()->IsWhitelisted(*request2, PreviewsType::NOSCRIPT));
+
+  std::unique_ptr<net::URLRequest> request3 =
+      CreateRequestWithURL(GURL("https://mail.yahoo.com"));
+  // Uses "yahoo.com" match before "mail.yahoo.com" match.
+  EXPECT_TRUE(guide()->IsWhitelisted(*request3, PreviewsType::NOSCRIPT));
+
+  std::unique_ptr<net::URLRequest> request4 =
+      CreateRequestWithURL(GURL("https://indoor.sports.yahoo.com"));
+  // Uses "indoor.sports.yahoo.com" match before "sports.yahoo.com" match.
+  EXPECT_TRUE(guide()->IsWhitelisted(*request4, PreviewsType::NOSCRIPT));
+
+  std::unique_ptr<net::URLRequest> request5 =
+      CreateRequestWithURL(GURL("https://outdoor.sports.yahoo.com"));
+  // Uses "sports.yahoo.com" match before "yahoo.com" match.
+  EXPECT_FALSE(guide()->IsWhitelisted(*request5, PreviewsType::NOSCRIPT));
+}
+
 TEST_F(PreviewsOptimizationGuideTest, RemoveObserverCalledAtDestruction) {
   EXPECT_FALSE(optimization_guide_service()->RemoveObserverCalled());
 
