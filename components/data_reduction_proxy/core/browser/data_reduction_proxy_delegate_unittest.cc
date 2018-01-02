@@ -14,7 +14,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
@@ -192,7 +191,7 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
     }
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
-        base::MakeUnique<DataReductionProxyMutableConfigValues>();
+        std::make_unique<DataReductionProxyMutableConfigValues>();
     config_values->UpdateValues(proxies_for_http);
 
     std::unique_ptr<DataReductionProxyConfig> config(

@@ -146,7 +146,7 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
 
   // Creating a second delegate with bypass statistics tracking should result
   // in usage stats being created.
-  io_data->CreateNetworkDelegate(base::MakeUnique<CountingNetworkDelegate>(),
+  io_data->CreateNetworkDelegate(std::make_unique<CountingNetworkDelegate>(),
                                  true);
   EXPECT_NE(nullptr, io_data->bypass_stats());
 

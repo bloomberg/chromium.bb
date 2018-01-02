@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -394,7 +393,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   void AddMockSuccess() {
     socket_data_providers_.push_back(
-        (base::MakeUnique<net::StaticSocketDataProvider>(
+        (std::make_unique<net::StaticSocketDataProvider>(
             success_reads_, arraysize(success_reads_), nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());
@@ -402,7 +401,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   void AddMockPreviousSuccess() {
     socket_data_providers_.push_back(
-        (base::MakeUnique<net::StaticSocketDataProvider>(
+        (std::make_unique<net::StaticSocketDataProvider>(
             previous_success_reads_, arraysize(previous_success_reads_),
             nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
@@ -411,7 +410,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   void AddMockFailure() {
     socket_data_providers_.push_back(
-        (base::MakeUnique<net::StaticSocketDataProvider>(
+        (std::make_unique<net::StaticSocketDataProvider>(
             not_found_reads_, arraysize(not_found_reads_), nullptr, 0)));
     mock_socket_factory_->AddSocketDataProvider(
         socket_data_providers_.back().get());

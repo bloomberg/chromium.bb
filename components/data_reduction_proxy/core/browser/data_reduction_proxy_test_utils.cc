@@ -240,7 +240,7 @@ MockDataReductionProxyService::MockDataReductionProxyService(
     : DataReductionProxyService(settings,
                                 prefs,
                                 request_context,
-                                base::MakeUnique<TestDataStore>(),
+                                std::make_unique<TestDataStore>(),
                                 nullptr,
                                 task_runner,
                                 task_runner,
@@ -448,7 +448,7 @@ DataReductionProxyTestContext::Builder::Build() {
   if (use_config_client_) {
     test_context_flags |= USE_CONFIG_CLIENT;
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        base::MakeUnique<DataReductionProxyMutableConfigValues>();
+        std::make_unique<DataReductionProxyMutableConfigValues>();
     if (!proxy_servers_.empty()) {
       mutable_config->UpdateValues(proxy_servers_);
     }
@@ -629,11 +629,11 @@ std::unique_ptr<DataReductionProxyService>
 DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
     DataReductionProxySettings* settings) {
   if (test_context_flags_ & USE_MOCK_SERVICE) {
-    return base::MakeUnique<MockDataReductionProxyService>(
+    return std::make_unique<MockDataReductionProxyService>(
         settings, simple_pref_service_.get(), request_context_getter_.get(),
         task_runner_);
   }
-  return base::MakeUnique<DataReductionProxyService>(
+  return std::make_unique<DataReductionProxyService>(
       settings, simple_pref_service_.get(), request_context_getter_.get(),
       base::WrapUnique(new TestDataStore()), nullptr, task_runner_,
       task_runner_, task_runner_, base::TimeDelta());
@@ -646,12 +646,12 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
   // |request_context_storage| takes ownership of the network delegate.
   std::unique_ptr<DataReductionProxyNetworkDelegate> network_delegate =
       io_data()->CreateNetworkDelegate(
-          base::MakeUnique<net::NetworkDelegateImpl>(), true);
+          std::make_unique<net::NetworkDelegateImpl>(), true);
 
   request_context_storage->set_network_delegate(std::move(network_delegate));
 
   request_context_storage->set_job_factory(
-      base::MakeUnique<net::URLRequestInterceptingJobFactory>(
+      std::make_unique<net::URLRequestInterceptingJobFactory>(
           std::unique_ptr<net::URLRequestJobFactory>(
               new net::URLRequestJobFactoryImpl()),
           io_data()->CreateInterceptor()));

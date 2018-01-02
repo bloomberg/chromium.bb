@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_protocol.h"
@@ -125,7 +124,7 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DataReductionProxyMutableConfigValues* raw_mutable_config = nullptr;
   if (use_config_client) {
     std::unique_ptr<DataReductionProxyMutableConfigValues> mutable_config =
-        base::MakeUnique<DataReductionProxyMutableConfigValues>();
+        std::make_unique<DataReductionProxyMutableConfigValues>();
     raw_mutable_config = mutable_config.get();
     config_.reset(new DataReductionProxyConfig(
         io_task_runner, net_log, std::move(mutable_config), configurator_.get(),
@@ -251,7 +250,7 @@ void DataReductionProxyIOData::DeleteBrowsingHistory(const base::Time start,
 std::unique_ptr<net::URLRequestInterceptor>
 DataReductionProxyIOData::CreateInterceptor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return base::MakeUnique<DataReductionProxyInterceptor>(
+  return std::make_unique<DataReductionProxyInterceptor>(
       config_.get(), config_client_.get(), bypass_stats_.get(),
       event_creator_.get());
 }
@@ -274,7 +273,7 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 std::unique_ptr<DataReductionProxyDelegate>
 DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return base::MakeUnique<DataReductionProxyDelegate>(
+  return std::make_unique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),
       bypass_stats_.get(), net_log_);
 }

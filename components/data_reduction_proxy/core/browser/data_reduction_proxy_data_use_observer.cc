@@ -4,9 +4,9 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data_use_observer.h"
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
@@ -131,7 +131,7 @@ void DataReductionProxyDataUseObserver::OnPageResourceLoad(
       bytes->IncrementBytes(network_bytes, original_bytes);
     } else {
       data_use->SetUserData(DataUseUserDataBytes::kUserDataKey,
-                            base::MakeUnique<DataUseUserDataBytes>(
+                            std::make_unique<DataUseUserDataBytes>(
                                 network_bytes, original_bytes));
     }
   } else {

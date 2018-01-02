@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -212,7 +211,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   std::unique_ptr<DataReductionProxyConfig> BuildConfig(
       std::unique_ptr<DataReductionProxyParams> params) {
-    return base::MakeUnique<DataReductionProxyConfig>(
+    return std::make_unique<DataReductionProxyConfig>(
         task_runner(), test_context_->net_log(), std::move(params),
         test_context_->configurator(), test_context_->event_creator());
   }
@@ -933,7 +932,7 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   };
 
   std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
-      base::MakeUnique<DataReductionProxyMutableConfigValues>();
+      std::make_unique<DataReductionProxyMutableConfigValues>();
 
   config_values->UpdateValues(proxies_for_http);
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
@@ -963,11 +962,11 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableServerPreviews) {
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
-      base::MakeUnique<TestPreviewsDecider>(true);
+      std::make_unique<TestPreviewsDecider>(true);
   EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
+  previews_decider = std::make_unique<TestPreviewsDecider>(false);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
 }
@@ -989,7 +988,7 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   request->SetLoadFlags(request->load_flags() |
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
-      base::MakeUnique<TestPreviewsDecider>(true);
+      std::make_unique<TestPreviewsDecider>(true);
 
   // Verify true for no flags.
   EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
@@ -997,13 +996,13 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
 
   // Verify PreviewsDecider check.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
+  previews_decider = std::make_unique<TestPreviewsDecider>(false);
   EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
       *request.get(), *previews_decider.get()));
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.Protocol.NotAcceptingTransform",
       1 /* NOT_ACCEPTING_TRANSFORM_BLACKLISTED */, 1);
-  previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
+  previews_decider = std::make_unique<TestPreviewsDecider>(true);
 }
 
 TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherResponse) {

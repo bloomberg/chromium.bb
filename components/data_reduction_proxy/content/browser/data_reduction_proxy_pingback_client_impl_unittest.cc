@@ -111,7 +111,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
                              bool lite_page_received,
                              bool app_background_occurred,
                              bool opt_out_occurred) {
-    timing_ = base::MakeUnique<DataReductionProxyPageLoadTiming>(
+    timing_ = std::make_unique<DataReductionProxyPageLoadTiming>(
         base::Time::FromJsTime(1500) /* navigation_start */,
         base::Optional<base::TimeDelta>(
             base::TimeDelta::FromMilliseconds(1600)) /* response_start */,
