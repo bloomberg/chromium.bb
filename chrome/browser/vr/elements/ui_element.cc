@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/model/camera_model.h"
@@ -390,8 +391,26 @@ std::string UiElement::DebugName() const {
       type() == kTypeNone ? "" : UiElementTypeToString(type()).c_str());
 }
 
+void DumpLines(const std::vector<size_t>& counts,
+               const std::vector<const UiElement*>& ancestors,
+               std::ostringstream* os) {
+  for (size_t i = 0; i < counts.size(); ++i) {
+    size_t current_count = counts[i];
+    if (i + 1 < counts.size()) {
+      current_count++;
+    }
+    if (ancestors[ancestors.size() - i - 1]->children().size() >
+        current_count) {
+      *os << "| ";
+    } else {
+      *os << "  ";
+    }
+  }
+}
+
 void UiElement::DumpHierarchy(std::vector<size_t> counts,
-                              std::ostringstream* os) const {
+                              std::ostringstream* os,
+                              bool include_bindings) const {
   // Put our ancestors in a vector for easy reverse traversal.
   std::vector<const UiElement*> ancestors;
   for (const UiElement* ancestor = parent(); ancestor;
@@ -427,11 +446,35 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
 
   *os << kGreen;
   DumpGeometry(os);
-  *os << kReset << std::endl;
 
   counts.push_back(0u);
+
+  if (include_bindings) {
+    std::ostringstream binding_stream;
+    for (auto& binding : bindings_) {
+      std::string binding_text = binding->ToString();
+      if (binding_text.empty())
+        continue;
+      binding_stream << binding->ToString() << std::endl;
+    }
+
+    auto split_bindings =
+        base::SplitString(binding_stream.str(), "\n", base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    if (!split_bindings.empty()) {
+      ancestors.insert(ancestors.begin(), this);
+    }
+    for (const auto& split : split_bindings) {
+      *os << std::endl << kBlue;
+      DumpLines(counts, ancestors, os);
+      *os << kGreen << split;
+    }
+  }
+
+  *os << kReset << std::endl;
+
   for (auto& child : children_) {
-    child->DumpHierarchy(counts, os);
+    child->DumpHierarchy(counts, os, include_bindings);
     counts.back()++;
   }
 }

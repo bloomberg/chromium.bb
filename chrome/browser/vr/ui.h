@@ -114,7 +114,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
 
   void ReinitializeForTest(const UiInitialState& ui_initial_state);
 
-  void Dump();
+  void Dump(bool include_bindings);
 
   void SetBackgroundImage(std::unique_ptr<SkBitmap> bitmap);
 

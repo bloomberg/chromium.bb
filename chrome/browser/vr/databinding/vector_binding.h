@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_DATABINDING_VECTOR_BINDING_H_
 #define CHROME_BROWSER_VR_DATABINDING_VECTOR_BINDING_H_
 
+#include <sstream>
 #include <vector>
 
 #include "base/bind.h"
@@ -59,6 +60,15 @@ class VectorBinding : public BindingBase {
         updated = true;
     }
     return updated;
+  }
+
+  std::string ToString() override {
+    std::ostringstream os;
+    for (size_t i = 0; i < bindings_.size(); ++i) {
+      auto& binding = bindings_[i];
+      os << i << ": " << binding->ToString() << std::endl;
+    }
+    return os.str();
   }
 
  private:

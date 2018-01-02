@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VR_DATABINDING_BINDING_BASE_H_
 #define CHROME_BROWSER_VR_DATABINDING_BINDING_BASE_H_
 
+#include <string>
+
 namespace vr {
 
 // Bindings are used to tie models to views. You may, for example, want to bind
@@ -19,6 +21,8 @@ class BindingBase {
   // subclass. Please see comments on the overridden functions for details.
   // Returns true if the binding was updated.
   virtual bool Update() = 0;
+
+  virtual std::string ToString() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BindingBase);
