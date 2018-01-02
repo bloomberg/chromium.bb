@@ -4217,7 +4217,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_EXT_TILE
   *saved_wb = *wb;
   // Write tile size magnitudes
-  if (cm->tile_rows * cm->tile_cols > 1) {
+  if (cm->tile_rows * cm->tile_cols > 1 && cm->large_scale_tile) {
     // Note that the last item in the uncompressed header is the data
     // describing tile configuration.
     // Number of bytes in tile column size - 1
