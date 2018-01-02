@@ -2631,12 +2631,15 @@ void CompositedLayerMapping::RegisterScrollingLayers() {
 
   scrolling_coordinator->UpdateLayerPositionConstraint(&owning_layer_);
 
-  // Page scale is applied as a transform on the root layout view layer. Because
-  // the scroll layer is further up in the hierarchy, we need to avoid marking
-  // the root layout view layer as a container.
+  // In non-RLS mode, the fixed container will actually be the special viewport
+  // scrolling layers, higher up in the hierarchy, above the LayoutView "root
+  // layer". So avoid marking the LayoutView's layer a container in that case.
+  // The layout viewport scrolling layer will be correctly marked as such by
+  // PaintLayerCompositor.
   bool is_container =
       owning_layer_.GetLayoutObject().CanContainFixedPositionObjects() &&
-      !owning_layer_.IsRootLayer();
+      (!owning_layer_.IsRootLayer() ||
+       RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   scrolling_coordinator->SetLayerIsContainerForFixedPositionLayers(
       graphics_layer_.get(), is_container);
   // Fixed-pos descendants inherits the space that has all CSS property applied,

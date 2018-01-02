@@ -532,23 +532,24 @@ void PaintLayerCompositor::UpdateIfNeeded(
     }
   }
 
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    bool is_root_scroller_ancestor = IsRootScrollerAncestor();
+  CompositedLayerMapping* clm = RootLayer()->GetCompositedLayerMapping();
+  GraphicsLayer* scroll_layer =
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled() && clm
+          ? clm->ScrollingContentsLayer()
+          : scroll_layer_.get();
 
-    if (scroll_layer_)
-      scroll_layer_->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
+  bool is_root_scroller_ancestor = IsRootScrollerAncestor();
 
-    // Clip a frame's overflow controls layer only if it's not an ancestor of
-    // the root scroller. If it is an ancestor, then it's guaranteed to be
-    // viewport sized and so will be appropriately clipped by the visual
-    // viewport. We don't want to clip here in this case so that URL bar
-    // expansion doesn't need to resize the clip.
+  if (scroll_layer)
+    scroll_layer->SetIsResizedByBrowserControls(is_root_scroller_ancestor);
 
-    if (overflow_controls_host_layer_) {
-      overflow_controls_host_layer_->SetMasksToBounds(
-          !is_root_scroller_ancestor);
-    }
-  }
+  // Clip a frame's overflow controls layer only if it's not an ancestor of
+  // the root scroller. If it is an ancestor, then it's guaranteed to be
+  // viewport sized and so will be appropriately clipped by the visual
+  // viewport. We don't want to clip here in this case so that URL bar
+  // expansion doesn't need to resize the clip.
+  if (overflow_controls_host_layer_)
+    overflow_controls_host_layer_->SetMasksToBounds(!is_root_scroller_ancestor);
 
   // Inform the inspector that the layer tree has changed.
   if (IsMainFrame())

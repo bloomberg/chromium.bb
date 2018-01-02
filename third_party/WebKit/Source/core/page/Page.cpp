@@ -510,6 +510,9 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
           text_autosizer->UpdatePageInfoInAllFrames();
       }
       break;
+    case SettingsDelegate::kViewportScrollbarChange:
+      GetVisualViewport().InitializeScrollbars();
+      break;
     case SettingsDelegate::kDNSPrefetchingChange:
       for (Frame* frame = MainFrame(); frame;
            frame = frame->Tree().TraverseNext()) {

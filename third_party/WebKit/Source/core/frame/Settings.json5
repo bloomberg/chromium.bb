@@ -871,6 +871,7 @@
     {
       name: "hideScrollbars",
       initial: false,
+      invalidate: "ViewportScrollbar",
     },
 
     // Spellchecking is enabled by default for elements that do not specify it explicitly
