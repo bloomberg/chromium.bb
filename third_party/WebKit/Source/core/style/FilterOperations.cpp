@@ -106,10 +106,11 @@ bool FilterOperations::HasFilterThatMovesPixels() const {
   return false;
 }
 
-void FilterOperations::AddClient(SVGResourceClient* client) const {
+void FilterOperations::AddClient(SVGResourceClient* client,
+                                 WebTaskRunner* task_runner) const {
   for (FilterOperation* operation : operations_) {
     if (operation->GetType() == FilterOperation::REFERENCE)
-      ToReferenceFilterOperation(*operation).AddClient(client);
+      ToReferenceFilterOperation(*operation).AddClient(client, task_runner);
   }
 }
 

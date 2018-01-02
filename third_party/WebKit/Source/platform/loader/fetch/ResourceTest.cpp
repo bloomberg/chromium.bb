@@ -170,7 +170,7 @@ TEST(ResourceTest, RevalidationFailed) {
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
   Persistent<MockResourceClient> client = new MockResourceClient;
-  resource->AddClient(client);
+  resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(200);
@@ -217,7 +217,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
   Persistent<MockResourceClient> client = new MockResourceClient;
-  resource->AddClient(client);
+  resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
@@ -251,7 +251,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   resource->SetRevalidatingRequest(ResourceRequest(url));
 
   Persistent<MockResourceClient> client = new MockResourceClient;
-  resource->AddClient(client);
+  resource->AddClient(client, nullptr);
 
   ResourceResponse revalidating_response(url);
   revalidating_response.SetHTTPStatusCode(304);
@@ -304,7 +304,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
             resource->GetResponse().HttpHeaderField("x-custom"));
 
   Persistent<MockResourceClient> client = new MockResourceClient;
-  resource->AddClient(client);
+  resource->AddClient(client, nullptr);
 
   // Perform a revalidation step.
   ResourceResponse revalidating_response(url);
@@ -372,7 +372,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   EXPECT_EQ(original_cache_handler, resource->CacheHandler());
 
   Persistent<MockResourceClient> client = new MockResourceClient;
-  resource->AddClient(client);
+  resource->AddClient(client, nullptr);
 
   // The revalidating request is redirected.
   ResourceResponse redirect_response(url);
@@ -409,7 +409,8 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
 
   // Test the case where a client is added after revalidation is completed.
   Persistent<MockResourceClient> client2 = new MockResourceClient;
-  resource->AddClient(client2);
+  resource->AddClient(client2,
+                      Platform::Current()->CurrentThread()->GetWebTaskRunner());
 
   // Because the client is added asynchronously,
   // |runUntilIdle()| is called to make |client2| to be notified.

@@ -6,8 +6,9 @@
 
 namespace blink {
 
-void ReferenceClipPathOperation::AddClient(SVGResourceClient* client) {
-  element_proxy_->AddClient(client);
+void ReferenceClipPathOperation::AddClient(SVGResourceClient* client,
+                                           WebTaskRunner* task_runner) {
+  element_proxy_->AddClient(client, task_runner);
 }
 
 void ReferenceClipPathOperation::RemoveClient(SVGResourceClient* client) {

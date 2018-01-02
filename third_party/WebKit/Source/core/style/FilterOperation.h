@@ -146,7 +146,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
 
   SVGElementProxy& ElementProxy() const { return *element_proxy_; }
 
-  void AddClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*, WebTaskRunner*);
   void RemoveClient(SVGResourceClient*);
 
   virtual void Trace(blink::Visitor*);

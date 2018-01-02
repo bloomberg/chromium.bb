@@ -72,14 +72,15 @@ SVGElementProxy::SVGElementProxy(const String& url, const AtomicString& id)
 
 SVGElementProxy::~SVGElementProxy() {}
 
-void SVGElementProxy::AddClient(SVGResourceClient* client) {
+void SVGElementProxy::AddClient(SVGResourceClient* client,
+                                WebTaskRunner* task_runner) {
   // An empty id will never be a valid element reference.
   if (id_.IsEmpty())
     return;
   if (!is_local_) {
     if (document_) {
       DCHECK(!client->GetResource());
-      client->SetResource(document_);
+      client->SetResource(document_, task_runner);
     }
     return;
   }
