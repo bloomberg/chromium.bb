@@ -808,7 +808,13 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
                        kUnitTestSuccess);
 }
 
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
+#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
+// Flaky with ASan enabled: crbug.com/798563.
+#define MAYBE_Renewal DISABLED_Renewal
+#else
+#define MAYBE_Renewal Renewal
+#endif
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_Renewal) {
   TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
