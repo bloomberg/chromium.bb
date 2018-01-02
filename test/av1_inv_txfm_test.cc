@@ -33,11 +33,15 @@ namespace {
 
 typedef void (*IdctFunc)(const tran_low_t *in, tran_low_t *out);
 
-class TransTestBase {
+typedef std::tr1::tuple<IdctFunc, int, int> IdctParam;
+class AV1InvTxfm : public ::testing::TestWithParam<IdctParam> {
  public:
-  virtual ~TransTestBase() {}
+  virtual void SetUp() {
+    inv_txfm_ = GET_PARAM(0);
+    txfm_size_ = GET_PARAM(1);
+    max_error_ = GET_PARAM(2);
+  }
 
- protected:
   void RunInvAccuracyCheck() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     const int count_test_block = 5000;
@@ -63,21 +67,10 @@ class TransTestBase {
     }
   }
 
+ private:
   double max_error_;
   int txfm_size_;
   IdctFunc inv_txfm_;
-};
-
-typedef std::tr1::tuple<IdctFunc, int, int> IdctParam;
-class AV1InvTxfm : public TransTestBase,
-                   public ::testing::TestWithParam<IdctParam> {
- public:
-  virtual void SetUp() {
-    inv_txfm_ = GET_PARAM(0);
-    txfm_size_ = GET_PARAM(1);
-    max_error_ = GET_PARAM(2);
-  }
-  virtual void TearDown() {}
 };
 
 TEST_P(AV1InvTxfm, RunInvAccuracyCheck) { RunInvAccuracyCheck(); }
