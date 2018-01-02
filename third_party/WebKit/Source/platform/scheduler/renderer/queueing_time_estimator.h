@@ -10,7 +10,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
 
 #include <array>
 #include <vector>
@@ -126,7 +125,7 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     base::TimeTicks step_start_time;
     base::TimeTicks current_task_start_time;
     // |renderer_backgrounded| is the renderer's current status.
-    bool renderer_backgrounded = kLaunchingProcessIsBackgrounded;
+    bool renderer_backgrounded = false;
     bool processing_task = false;
     Calculator calculator_;
 

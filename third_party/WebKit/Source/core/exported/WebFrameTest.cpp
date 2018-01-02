@@ -162,7 +162,6 @@
 #include "public/web/WebViewClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/common/page/launching_process_state.h"
 #include "v8/include/v8.h"
 
 using blink::URLTestHelpers::ToKURL;
@@ -195,18 +194,6 @@ class WebFrameTest : public ::testing::Test {
     Platform::Current()
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
-  }
-
-  void DisableRendererSchedulerThrottling() {
-    // Make sure that the RendererScheduler is foregrounded to avoid getting
-    // throttled.
-    if (kLaunchingProcessIsBackgrounded) {
-      Platform::Current()
-          ->CurrentThread()
-          ->Scheduler()
-          ->GetRendererSchedulerForTest()
-          ->SetRendererBackgrounded(false);
-    }
   }
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
@@ -509,7 +496,6 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8Function) {
 }
 
 TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
-  DisableRendererSchedulerThrottling();
   RegisterMockedHttpURLLoad("foo.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
@@ -544,7 +530,6 @@ TEST_P(ParameterizedWebFrameTest, RequestExecuteV8FunctionWhileSuspended) {
 
 TEST_P(ParameterizedWebFrameTest,
        RequestExecuteV8FunctionWhileSuspendedWithUserGesture) {
-  DisableRendererSchedulerThrottling();
   RegisterMockedHttpURLLoad("foo.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
