@@ -1373,7 +1373,7 @@ void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
   QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
       ->QueryStorageUsageAndQuota(
           storage_partition, type,
-          QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+          std::make_unique<blink::WebStorageQuotaCallbacks>(callbacks));
 }
 
 //------------------------------------------------------------------------------

@@ -29,29 +29,6 @@ static base::LazyInstance<base::ThreadLocalPointer<QuotaDispatcher>>::Leaky
 
 namespace {
 
-// QuotaDispatcher::Callback implementation for WebStorageQuotaCallbacks.
-// TODO(sashab): Remove this class.
-class WebStorageQuotaDispatcherCallback : public QuotaDispatcher::Callback {
- public:
-  explicit WebStorageQuotaDispatcherCallback(
-      blink::WebStorageQuotaCallbacks callback)
-      : callbacks_(callback) {}
-  ~WebStorageQuotaDispatcherCallback() override {}
-
-  void DidQueryStorageUsageAndQuota(int64_t usage, int64_t quota) override {
-    callbacks_.DidQueryStorageUsageAndQuota(usage, quota);
-  }
-  void DidGrantStorageQuota(int64_t usage, int64_t granted_quota) override {
-    callbacks_.DidGrantStorageQuota(usage, granted_quota);
-  }
-  void DidFail(QuotaStatusCode error) override { callbacks_.DidFail(error); }
-
- private:
-  blink::WebStorageQuotaCallbacks callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebStorageQuotaDispatcherCallback);
-};
-
 int CurrentWorkerId() {
   return WorkerThread::GetCurrentId();
 }
@@ -81,7 +58,7 @@ QuotaDispatcher::QuotaDispatcher(
 }
 
 QuotaDispatcher::~QuotaDispatcher() {
-  base::IDMap<std::unique_ptr<Callback>>::iterator iter(
+  base::IDMap<std::unique_ptr<WebStorageQuotaCallbacks>>::iterator iter(
       &pending_quota_callbacks_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->DidFail(blink::QuotaStatusCode::kErrorAbort);
@@ -109,7 +86,7 @@ void QuotaDispatcher::WillStopCurrentWorkerThread() {
 void QuotaDispatcher::QueryStorageUsageAndQuota(
     const url::Origin& origin,
     StorageType type,
-    std::unique_ptr<Callback> callback) {
+    std::unique_ptr<WebStorageQuotaCallbacks> callback) {
   DCHECK(callback);
   int request_id = pending_quota_callbacks_.Add(std::move(callback));
   quota_host_->QueryStorageUsageAndQuota(
@@ -118,11 +95,12 @@ void QuotaDispatcher::QueryStorageUsageAndQuota(
                      base::Unretained(this), request_id));
 }
 
-void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
-                                          const url::Origin& origin,
-                                          StorageType type,
-                                          int64_t requested_size,
-                                          std::unique_ptr<Callback> callback) {
+void QuotaDispatcher::RequestStorageQuota(
+    int render_frame_id,
+    const url::Origin& origin,
+    StorageType type,
+    int64_t requested_size,
+    std::unique_ptr<WebStorageQuotaCallbacks> callback) {
   DCHECK(callback);
   DCHECK_EQ(CurrentWorkerId(), 0)
       << "Requests may show permission UI and are not allowed from workers.";
@@ -131,13 +109,6 @@ void QuotaDispatcher::RequestStorageQuota(int render_frame_id,
       render_frame_id, origin, type, requested_size,
       base::BindOnce(&QuotaDispatcher::DidGrantStorageQuota,
                      base::Unretained(this), request_id));
-}
-
-// static
-std::unique_ptr<QuotaDispatcher::Callback>
-QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(
-    blink::WebStorageQuotaCallbacks callbacks) {
-  return std::make_unique<WebStorageQuotaDispatcherCallback>(callbacks);
 }
 
 void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
@@ -149,7 +120,8 @@ void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
     return;
   }
 
-  Callback* callback = pending_quota_callbacks_.Lookup(request_id);
+  WebStorageQuotaCallbacks* callback =
+      pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidGrantStorageQuota(current_usage, granted_quota);
   pending_quota_callbacks_.Remove(request_id);
@@ -164,7 +136,8 @@ void QuotaDispatcher::DidQueryStorageUsageAndQuota(int64_t request_id,
     return;
   }
 
-  Callback* callback = pending_quota_callbacks_.Lookup(request_id);
+  WebStorageQuotaCallbacks* callback =
+      pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidQueryStorageUsageAndQuota(current_usage, current_quota);
   pending_quota_callbacks_.Remove(request_id);
@@ -173,7 +146,8 @@ void QuotaDispatcher::DidQueryStorageUsageAndQuota(int64_t request_id,
 void QuotaDispatcher::DidFail(
     int request_id,
     QuotaStatusCode error) {
-  Callback* callback = pending_quota_callbacks_.Lookup(request_id);
+  WebStorageQuotaCallbacks* callback =
+      pending_quota_callbacks_.Lookup(request_id);
   DCHECK(callback);
   callback->DidFail(error);
   pending_quota_callbacks_.Remove(request_id);
