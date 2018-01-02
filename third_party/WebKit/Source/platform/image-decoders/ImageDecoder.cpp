@@ -81,8 +81,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     static const size_t kBytesPerPixels = 4;
     size_t requested_decoded_bytes =
         kBytesPerPixels * desired_size.width() * desired_size.height();
-    DCHECK(requested_decoded_bytes <= max_decoded_bytes);
-    max_decoded_bytes = requested_decoded_bytes;
+    max_decoded_bytes = std::min(requested_decoded_bytes, max_decoded_bytes);
   }
 
   // Access the first kLongestSignatureLength chars to sniff the signature.
