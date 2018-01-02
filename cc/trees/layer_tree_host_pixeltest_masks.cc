@@ -551,8 +551,14 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedNoop) {
   mask_layer->SetBlendMode(SkBlendMode::kDstIn);
   mask_isolation->AddChild(mask_layer);
 
-  RunPixelResourceTest(
-      root, base::FilePath(FILE_PATH_LITERAL("mask_as_blending_noop.png")));
+  if (use_antialiasing_) {
+    RunPixelResourceTest(
+        root,
+        base::FilePath(FILE_PATH_LITERAL("mask_as_blending_noop_aa.png")));
+  } else {
+    RunPixelResourceTest(
+        root, base::FilePath(FILE_PATH_LITERAL("mask_as_blending_noop.png")));
+  }
 }
 
 TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedClippedCircle) {
@@ -664,9 +670,17 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   mask_layer->SetBlendMode(SkBlendMode::kDstIn);
   mask_isolation->AddChild(mask_layer);
 
-  RunPixelResourceTest(
-      root,
-      base::FilePath(FILE_PATH_LITERAL("mask_as_blending_rotated_circle.png")));
+  if (use_antialiasing_ && force_shaders_) {
+    RunPixelResourceTest(
+        root, base::FilePath(FILE_PATH_LITERAL(
+                  "mask_as_blending_rotated_circle_aa_shaders.png")));
+  } else if (use_antialiasing_) {
+    RunPixelResourceTest(root, base::FilePath(FILE_PATH_LITERAL(
+                                   "mask_as_blending_rotated_circle_aa.png")));
+  } else {
+    RunPixelResourceTest(root, base::FilePath(FILE_PATH_LITERAL(
+                                   "mask_as_blending_rotated_circle.png")));
+  }
 }
 
 TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {

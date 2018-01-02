@@ -348,7 +348,7 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPass_Software) {
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            FILE_PATH_LITERAL("blending_render_pass_aa.png"),
                             kUseAntialiasing);
 }
 
@@ -370,9 +370,9 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassWithMaskAA_GL) {
-  RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
-                            kUseMasks | kUseAntialiasing);
+  RunBlendingWithRenderPass(
+      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask_aa.png"),
+      kUseMasks | kUseAntialiasing);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
@@ -396,7 +396,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassColorMatrixAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            FILE_PATH_LITERAL("blending_render_pass_aa.png"),
                             kUseAntialiasing | kUseColorMatrix);
 }
 
@@ -423,9 +423,9 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassWithMaskColorMatrixAA_GL) {
-  RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
-                            kUseMasks | kUseAntialiasing | kUseColorMatrix);
+  RunBlendingWithRenderPass(
+      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask_aa.png"),
+      kUseMasks | kUseAntialiasing | kUseColorMatrix);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
@@ -443,7 +443,7 @@ TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShaders_GL) {
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShadersAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            FILE_PATH_LITERAL("blending_render_pass_aa.png"),
                             kUseAntialiasing | kForceShaders);
 }
 
@@ -463,16 +463,16 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskAA_GL) {
-  RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
-                            kUseMasks | kUseAntialiasing | kForceShaders);
+  RunBlendingWithRenderPass(
+      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask_aa.png"),
+      kUseMasks | kUseAntialiasing | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskAA_GL_TextureRect) {
-  RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
-                            kUseMasks | kUseAntialiasing | kForceShaders);
+  RunBlendingWithRenderPass(
+      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask_aa.png"),
+      kUseMasks | kUseAntialiasing | kForceShaders);
 }
 
 TEST_F(LayerTreeHostBlendingPixelTest,
@@ -485,7 +485,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersColorMatrixAA_GL) {
   RunBlendingWithRenderPass(ZERO_COPY,
-                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            FILE_PATH_LITERAL("blending_render_pass_aa.png"),
                             kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 
@@ -506,7 +506,7 @@ TEST_F(LayerTreeHostBlendingPixelTest,
 TEST_F(LayerTreeHostBlendingPixelTest,
        BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL) {
   RunBlendingWithRenderPass(
-      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+      ZERO_COPY, FILE_PATH_LITERAL("blending_render_pass_mask_aa.png"),
       kUseMasks | kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 

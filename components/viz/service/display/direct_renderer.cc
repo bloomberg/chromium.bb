@@ -659,7 +659,14 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
 
 // static
 gfx::Size DirectRenderer::RenderPassTextureSize(const RenderPass* render_pass) {
-  return render_pass->output_rect.size();
+  // Round the size of the render pass backings to a multiple of 64 pixels. This
+  // reduces memory fragmentation. https://crbug.com/146070. This also allows
+  // backings to be more easily reused during a resize operation.
+  gfx::Size required_size = render_pass->output_rect.size();
+  int multiple = 64;
+  int width = cc::MathUtil::CheckedRoundUp(required_size.width(), multiple);
+  int height = cc::MathUtil::CheckedRoundUp(required_size.height(), multiple);
+  return gfx::Size(width, height);
 }
 
 void DirectRenderer::SetCurrentFrameForTesting(const DrawingFrame& frame) {
