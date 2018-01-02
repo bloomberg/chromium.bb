@@ -66,6 +66,10 @@ typedef enum {
   CGFloat outerStrokeAlphaMult_;  // For pulsing.
 }
 
+// Returns the amount by which the control frame is inset on all sides for
+// drawing.
++ (CGFloat)insetInView:(NSView*)view;
+
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
 
@@ -88,10 +92,6 @@ typedef enum {
 // the background of the button is drawn by someone else.
 - (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
                            inView:(NSView*)controlView;
-
-// Returns the amount by which the control frame is inset on all sides for
-// drawing.
-- (CGFloat)insetInView:(NSView*)controlView;
 
 // Turn on or off pulse sticking.  When turning off sticking, leave our pulse
 // state in the correct ending position for our isMouseInside_ property.  Public
