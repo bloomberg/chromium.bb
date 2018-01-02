@@ -263,7 +263,7 @@ void av1_gen_fwd_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
                              const TXFM_2D_FLIP_CFG *cfg, int bd);
 
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
-                             const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
+                             const TXFM_2D_FLIP_CFG *cfg, TX_SIZE tx_size,
                              int bd);
 
 void av1_get_fwd_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,

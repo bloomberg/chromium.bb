@@ -17,6 +17,8 @@
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 
+#define NO_INV_TRANSPOSE 1
+
 static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
     case TXFM_TYPE_DCT4: return av1_idct4_new;
@@ -141,21 +143,21 @@ static const TXFM_1D_CFG *inv_txfm_col_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   // DCT
   {
-      &inv_txfm_1d_row_cfg_dct_4,  &inv_txfm_1d_row_cfg_dct_8,
-      &inv_txfm_1d_row_cfg_dct_16, &inv_txfm_1d_row_cfg_dct_32,
+      &inv_txfm_1d_row_cfg_dct_4,    &inv_txfm_1d_row_cfg_dct_8,
+      &inv_txfm_1d_row_cfg_dct_16,   &inv_txfm_1d_row_cfg_dct_32,
 #if CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_dct_64,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_row_cfg_dct_4,  &inv_txfm_1d_row_cfg_dct_8,
-      &inv_txfm_1d_row_cfg_dct_8,  &inv_txfm_1d_row_cfg_dct_16,
-      &inv_txfm_1d_row_cfg_dct_16, &inv_txfm_1d_row_cfg_dct_32,
+      &inv_txfm_1d_row_cfg_dct_4,    &inv_txfm_1d_row_cfg_dct_8,
+      &inv_txfm_1d_row_cfg_dct_8x16, &inv_txfm_1d_row_cfg_dct_16,
+      &inv_txfm_1d_row_cfg_dct_16,   &inv_txfm_1d_row_cfg_dct_32,
 #if CONFIG_TX64X64
-      &inv_txfm_1d_row_cfg_dct_32, &inv_txfm_1d_row_cfg_dct_64,
+      &inv_txfm_1d_row_cfg_dct_32,   &inv_txfm_1d_row_cfg_dct_64,
 #endif  // CONFIG_TX64X64
-      &inv_txfm_1d_row_cfg_dct_4,  &inv_txfm_1d_row_cfg_dct_16,
-      &inv_txfm_1d_row_cfg_dct_8,  &inv_txfm_1d_row_cfg_dct_32,
+      &inv_txfm_1d_row_cfg_dct_4,    &inv_txfm_1d_row_cfg_dct_16,
+      &inv_txfm_1d_row_cfg_dct_8x32, &inv_txfm_1d_row_cfg_dct_32,
 #if CONFIG_TX64X64
-      &inv_txfm_1d_row_cfg_dct_16, &inv_txfm_1d_row_cfg_dct_64,
+      &inv_txfm_1d_row_cfg_dct_16,   &inv_txfm_1d_row_cfg_dct_64,
 #endif  // CONFIG_TX64X64
   },
   // ADST
@@ -169,7 +171,7 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_4,
       &inv_txfm_1d_row_cfg_adst_8,
-      &inv_txfm_1d_row_cfg_adst_8,
+      &inv_txfm_1d_row_cfg_adst_8x16,
       &inv_txfm_1d_row_cfg_adst_16,
       &inv_txfm_1d_row_cfg_adst_16,
       &inv_txfm_1d_row_cfg_adst_32,
@@ -179,7 +181,7 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_4,
       &inv_txfm_1d_row_cfg_adst_16,
-      &inv_txfm_1d_row_cfg_adst_8,
+      &inv_txfm_1d_row_cfg_adst_8x32,
       &inv_txfm_1d_row_cfg_adst_32,
 #if CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_16,
@@ -197,7 +199,7 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_4,
       &inv_txfm_1d_row_cfg_adst_8,
-      &inv_txfm_1d_row_cfg_adst_8,
+      &inv_txfm_1d_row_cfg_adst_8x16,
       &inv_txfm_1d_row_cfg_adst_16,
       &inv_txfm_1d_row_cfg_adst_16,
       &inv_txfm_1d_row_cfg_adst_32,
@@ -207,7 +209,7 @@ static const TXFM_1D_CFG *inv_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_4,
       &inv_txfm_1d_row_cfg_adst_16,
-      &inv_txfm_1d_row_cfg_adst_8,
+      &inv_txfm_1d_row_cfg_adst_8x32,
       &inv_txfm_1d_row_cfg_adst_32,
 #if CONFIG_TX64X64
       &inv_txfm_1d_row_cfg_adst_16,
@@ -246,7 +248,7 @@ void av1_get_inv_txfm_cfg(TX_TYPE tx_type, TX_SIZE tx_size,
 }
 
 void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
-                             const TXFM_2D_FLIP_CFG *cfg, int8_t fwd_shift,
+                             const TXFM_2D_FLIP_CFG *cfg, TX_SIZE tx_size,
                              int bd) {
   // Note when assigning txfm_size_col, we use the txfm_size from the
   // row configuration and vice versa. This is intentionally done to
@@ -254,35 +256,12 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   // rectangular, the number of columns will be the same as the
   // txfm_size stored in the row cfg struct. It will make no difference
   // for square transforms.
-  const int txfm_size_col = cfg->row_cfg->txfm_size;
-  const int txfm_size_row = cfg->col_cfg->txfm_size;
-  // Take the shift from the larger dimension in the rectangular case.
-  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
-                                                        : cfg->col_cfg->shift;
-  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
-  for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
-  }
-  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
-  for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_col[i] =
-        cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] + bd + 1;
-  }
-}
-
-static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
-                                    int stride, TXFM_2D_FLIP_CFG *cfg,
-                                    int32_t *txfm_buf, int8_t fwd_shift,
-                                    int bd) {
-  // Note when assigning txfm_size_col, we use the txfm_size from the
-  // row configuration and vice versa. This is intentionally done to
-  // accurately perform rectangular transforms. When the transform is
-  // rectangular, the number of columns will be the same as the
-  // txfm_size stored in the row cfg struct. It will make no difference
-  // for square transforms.
+  // const int fwd_shift = fwd_shift_sum[txsize_sqr_up_map[tx_size]];
+  const int fwd_shift = inv_start_range[tx_size];
   const int txfm_size_col = cfg->row_cfg->txfm_size;
   const int txfm_size_row = cfg->col_cfg->txfm_size;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
+  if (txfm_size_col == txfm_size_row) assert(rect_type == 0);
   int rect_type2_shift = 0;
   if (rect_type == 2 || rect_type == -2) {
     const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
@@ -293,11 +272,57 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
                                                         : cfg->col_cfg->shift;
+  int shift1 = shift[1];
+  while (rect_type2_shift > 0 && shift1 < 0) {
+    shift1++;
+    rect_type2_shift--;
+  }
+  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
+  for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
+    stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1 -
+                         cfg->row_cfg->stage_range[0];
+  }
+  // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
+  for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
+    stage_range_col[i] = cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] +
+                         bd + 1 - cfg->col_cfg->stage_range[0] +
+                         rect_type2_shift;
+  }
+}
+
+static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
+                                    int stride, TXFM_2D_FLIP_CFG *cfg,
+                                    int32_t *txfm_buf, TX_SIZE tx_size,
+                                    int bd) {
+  // Note when assigning txfm_size_col, we use the txfm_size from the
+  // row configuration and vice versa. This is intentionally done to
+  // accurately perform rectangular transforms. When the transform is
+  // rectangular, the number of columns will be the same as the
+  // txfm_size stored in the row cfg struct. It will make no difference
+  // for square transforms.
+  const int txfm_size_col = cfg->row_cfg->txfm_size;
+  const int txfm_size_row = cfg->col_cfg->txfm_size;
+  // Take the shift from the larger dimension in the rectangular case.
+  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
+                                                        : cfg->col_cfg->shift;
+  const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
+  int rect_type2_shift = 0;
+  int shift1 = shift[1];
+  if (rect_type == 2 || rect_type == -2) {
+    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
+    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
+    // for any additional shift.
+    rect_type2_shift = (txfm_size_max == 16 ? 1 : 0);
+    while (rect_type2_shift > 0 && shift1 < 0) {
+      shift1++;
+      rect_type2_shift--;
+    }
+  }
   int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
   int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
   assert(cfg->row_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
   assert(cfg->col_cfg->stage_num <= MAX_TXFM_STAGE_NUM);
-  av1_gen_inv_stage_range(stage_range_col, stage_range_row, cfg, fwd_shift, bd);
+  av1_gen_inv_stage_range(stage_range_col, stage_range_row, cfg, tx_size, bd);
 
   const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
   const int8_t *cos_bit_row = cfg->row_cfg->cos_bit;
@@ -340,7 +365,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
         temp_in[r] = buf[r * txfm_size_col + (txfm_size_col - c - 1)];
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
-    av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
+    av1_round_shift_array(temp_out, txfm_size_row, -shift1);
     if (cfg->ud_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r) {
         output[r * stride + c] =
@@ -364,9 +389,7 @@ static INLINE void inv_txfm2d_add_facade(const int32_t *input, uint16_t *output,
   av1_get_inv_txfm_cfg(tx_type, tx_size, &cfg);
   // Forward shift sum uses larger square size, to be consistent with what
   // av1_gen_inv_stage_range() does for inverse shifts.
-  const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
-  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf,
-                   fwd_shift_sum[tx_size_sqr_up], bd);
+  inv_txfm2d_add_c(input, output, stride, &cfg, txfm_buf, tx_size, bd);
 }
 
 void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
@@ -378,6 +401,9 @@ void av1_inv_txfm2d_add_4x8_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
                               int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[8 * 4 + 8 + 8]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X4, bd);
+#else
   int32_t rinput[8 * 4];
   uint16_t routput[8 * 4];
   TX_SIZE tx_size = TX_8X4;
@@ -391,6 +417,7 @@ void av1_inv_txfm2d_add_8x4_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_8x16_c(const int32_t *input, uint16_t *output,
@@ -402,6 +429,9 @@ void av1_inv_txfm2d_add_8x16_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[16 * 8 + 16 + 16]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X8, bd);
+#else
   int32_t rinput[16 * 8];
   uint16_t routput[16 * 8];
   TX_SIZE tx_size = TX_16X8;
@@ -415,6 +445,7 @@ void av1_inv_txfm2d_add_16x8_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_16x32_c(const int32_t *input, uint16_t *output,
@@ -426,6 +457,9 @@ void av1_inv_txfm2d_add_16x32_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
                                 int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[32 * 16 + 32 + 32]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X16, bd);
+#else
   int32_t rinput[32 * 16];
   uint16_t routput[32 * 16];
   TX_SIZE tx_size = TX_32X16;
@@ -439,6 +473,7 @@ void av1_inv_txfm2d_add_32x16_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_4x4_c(const int32_t *input, uint16_t *output,
@@ -494,6 +529,10 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
   DECLARE_ALIGNED(32, int, txfm_buf[64 * 32 + 64 + 64]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X32,
+                        bd);
+#else
   int32_t rinput[64 * 32];
   uint16_t routput[64 * 32];
   TX_SIZE tx_size = TX_64X32;
@@ -507,6 +546,7 @@ void av1_inv_txfm2d_add_64x32_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
@@ -546,6 +586,10 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
     memset(mod_input + row * 64 + 32, 0, 32 * sizeof(*mod_input));
   }
   DECLARE_ALIGNED(32, int, txfm_buf[16 * 64 + 64 + 64]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(mod_input, output, stride, txfm_buf, tx_type, TX_64X16,
+                        bd);
+#else
   int32_t rinput[16 * 64];
   uint16_t routput[16 * 64];
   TX_SIZE tx_size = TX_64X16;
@@ -559,6 +603,7 @@ void av1_inv_txfm2d_add_64x16_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 #endif  // CONFIG_TX64X64
 
@@ -571,6 +616,9 @@ void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[4 * 16 + 16 + 16]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X4, bd);
+#else
   int32_t rinput[4 * 16];
   uint16_t routput[4 * 16];
   TX_SIZE tx_size = TX_16X4;
@@ -584,6 +632,7 @@ void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }
 
 void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
@@ -595,6 +644,9 @@ void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
 void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   DECLARE_ALIGNED(32, int, txfm_buf[8 * 32 + 32 + 32]);
+#if NO_INV_TRANSPOSE
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X8, bd);
+#else
   int32_t rinput[8 * 32];
   uint16_t routput[8 * 32];
   TX_SIZE tx_size = TX_32X8;
@@ -608,4 +660,5 @@ void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
   transpose_uint16(routput, rw, output, stride, w, h);
   inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
   transpose_uint16(output, stride, routput, rw, rw, rh);
+#endif  // NO_INV_TRANSPOSE
 }

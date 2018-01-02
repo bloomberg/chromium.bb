@@ -158,20 +158,20 @@ vector<AV1InvTxfm2dParam> GetInvTxfm2dParamList() {
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X4, 2, 0.016));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X16, 2, 0.033));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X8, 2, 0.033));
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X32, 2, 0.4));
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X16, 2, 0.4));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X32, 3, 0.4));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X16, 3, 0.4));
 
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X16, 2, 0.1));
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X4, 2, 0.1));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_4X16, 2, 0.2));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X4, 2, 0.2));
     param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_8X32, 2, 0.2));
-    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X8, 2, 0.1));
+    param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X8, 2, 0.2));
 
 #if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 3, 0.3));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 3, 0.31));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 2, 0.16));
-      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 2, 0.16));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_32X64, 4, 0.38));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X32, 4, 0.38));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_16X64, 3, 0.38));
+      param_list.push_back(AV1InvTxfm2dParam(tx_type, TX_64X16, 3, 0.38));
     }
 #endif  // CONFIG_TX64X64
   }
@@ -201,9 +201,8 @@ TEST(AV1InvTxfm2d, CfgTest) {
                              static_cast<TX_SIZE>(tx_size), &cfg);
         int8_t stage_range_col[MAX_TXFM_STAGE_NUM];
         int8_t stage_range_row[MAX_TXFM_STAGE_NUM];
-        const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
         av1_gen_inv_stage_range(stage_range_col, stage_range_row, &cfg,
-                                fwd_shift_sum[tx_size_sqr_up], bd);
+                                (TX_SIZE)tx_size, bd);
         const TXFM_1D_CFG *col_cfg = cfg.col_cfg;
         const TXFM_1D_CFG *row_cfg = cfg.row_cfg;
         libaom_test::txfm_stage_range_check(stage_range_col, col_cfg->stage_num,

@@ -148,24 +148,24 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
     }
 #endif  // CONFIG_TX64X64
 
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 2.9, 0.55));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 3.2, 0.56));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 3.2, 0.58));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 3.2, 0.58));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 6.5, 1));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 6.5, 1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 46, 7));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 50, 7));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 30, 7));
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.7));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X4, 5.5, 0.9));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 14, 2.1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 11, 1.6));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X32, 20, 2.2));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X8, 15, 1.8));
 
 #if CONFIG_TX64X64
     if (tx_type == DCT_DCT) {  // Other types not supported by these tx sizes.
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X64, 136, 7));
       param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X32, 136, 7));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 16, 1.6));
-      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 20, 2.0));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X64, 30, 3.6));
+      param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_64X16, 50, 6.0));
     }
 #endif  // CONFIG_TX64X64
   }
