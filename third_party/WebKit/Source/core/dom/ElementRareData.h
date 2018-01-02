@@ -24,6 +24,7 @@
 
 #include <memory>
 #include "core/animation/ElementAnimations.h"
+#include "core/css/InlineCSSStyleDeclaration.h"
 #include "core/css/cssom/InlineStylePropertyMap.h"
 #include "core/dom/AccessibleNode.h"
 #include "core/dom/Attr.h"

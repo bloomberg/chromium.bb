@@ -31,8 +31,8 @@
 #include "core/css/CSSViewportRule.h"
 
 #include "core/css/CSSPropertyValueSet.h"
-#include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StyleRule.h"
+#include "core/css/StyleRuleCSSStyleDeclaration.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

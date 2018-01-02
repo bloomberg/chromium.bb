@@ -23,37 +23,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PropertySetCSSStyleDeclaration_h
-#define PropertySetCSSStyleDeclaration_h
+#ifndef InlineCSSStyleDeclaration_h
+#define InlineCSSStyleDeclaration_h
 
 #include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/HashMap.h"
 
 namespace blink {
 
-class MutableCSSPropertyValueSet;
-class PropertyRegistry;
+class Element;
 
-class PropertySetCSSStyleDeclaration
+class InlineCSSStyleDeclaration final
     : public AbstractPropertySetCSSStyleDeclaration {
  public:
-  PropertySetCSSStyleDeclaration(MutableCSSPropertyValueSet& property_set)
-      : property_set_(&property_set) {}
+  explicit InlineCSSStyleDeclaration(Element* parent_element)
+      : parent_element_(parent_element) {}
 
   virtual void Trace(blink::Visitor*);
 
- protected:
-  MutableCSSPropertyValueSet& PropertySet() const final {
-    DCHECK(property_set_);
-    return *property_set_;
-  }
+ private:
+  MutableCSSPropertyValueSet& PropertySet() const override;
+  CSSStyleSheet* ParentStyleSheet() const override;
+  Element* ParentElement() const override { return parent_element_; }
 
-  PropertyRegistry* GetPropertyRegistry() const override { return nullptr; }
+  void DidMutate(MutationType) override;
+  PropertyRegistry* GetPropertyRegistry() const final;
 
-  Member<MutableCSSPropertyValueSet> property_set_;  // Cannot be null
+  Member<Element> parent_element_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // InlineCSSStyleDeclaration_h
