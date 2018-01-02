@@ -17,7 +17,6 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_manager_connection.h"
-#include "device/geolocation/geolocation_config.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/ui_base_switches.h"
@@ -41,10 +40,7 @@ bool IsRunningWithMus() {
 
 class ConnectionFilterImpl : public ConnectionFilter {
  public:
-  ConnectionFilterImpl()
-      : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    RegisterMainThreadInterface(
-        base::BindRepeating(&device::GeolocationConfig::Create));
+  ConnectionFilterImpl() {
 #if defined(OS_WIN)
     registry_.AddInterface(base::BindRepeating(&FontCacheDispatcher::Create));
 #endif
@@ -89,13 +85,6 @@ class ConnectionFilterImpl : public ConnectionFilter {
         FROM_HERE, base::BindOnce(binder, std::move(request), source_info));
   }
 
-  template <typename Interface>
-  void RegisterMainThreadInterface(const InterfaceBinder<Interface>& binder) {
-    registry_.AddInterface(base::Bind(&BindOnTaskRunner<Interface>,
-                                      main_thread_task_runner_, binder));
-  }
-
-  const scoped_refptr<base::TaskRunner> main_thread_task_runner_;
   service_manager::BinderRegistryWithArgs<
       const service_manager::BindSourceInfo&>
       registry_;
