@@ -73,9 +73,11 @@ bool HasBeenActivated(const Frame& frame) {
     return true;
   }
 
-  // If feature policy is disabled then do not traverse the tree.
-  if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled())
+  // Check feature policy before traversing the tree.
+  if (!RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() ||
+      !frame.IsFeatureEnabled(FeaturePolicyFeature::kAutoplay)) {
     return false;
+  }
 
   // If there is a parent check if the parent has received a
   // user gesture.
@@ -106,12 +108,6 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
 bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (!document.GetFrame())
     return false;
-
-  // Check feature policy to see if autoplay is enabled.
-  if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled() &&
-      !document.GetFrame()->IsFeatureEnabled(FeaturePolicyFeature::kAutoplay)) {
-    return false;
-  }
 
   return HasBeenActivated(*document.GetFrame());
 }
