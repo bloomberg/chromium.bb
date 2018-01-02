@@ -11,6 +11,10 @@
 # PictureLayerTilingSet::ComputeSkewport crash crbug.com/796594
 -LoginFeedbackTest.Basic
 
+# RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl crash
+# crbug.com/797801
+-HostedAppProcessModelTest.IframeNavigationsInsideHostedApp/1
+
 # Tab Capture is still in development: crbug.com/754864
 -CastStreamingApiTestWithPixelOutput.EndToEnd
 -ChromeScreenshotGrabberBrowserTest.TakeScreenshot
@@ -68,13 +72,7 @@
 -BrowserTest.ShouldShowLocationBar
 -CaptivePortalBrowserTest.*
 -CastStreamingApiTestWithPixelOutput.EndToEnd
--CertificateReportingServiceBrowserTest.Delayed_Reset/0
--CertificateReportingServiceBrowserTest.DisableSafebrowsing/0
--CertificateReportingServiceBrowserTest.DontSendOldReports/0
--CertificateReportingServiceBrowserTest.DropOldReportsFromQueue/0
--CertificateReportingServiceBrowserTest.DropOldReportsFromQueue/1
--CertificateReportingServiceBrowserTest.OptedIn_ShouldQueueFailedReport/0
--CertificateReportingServiceBrowserTest.OptedOut_ThenOptedIn_ThenOptedOut/0
+-CertificateReportingServiceBrowserTest.*
 -ClipboardApiTest.Extension
 -ClipboardApiTest.ExtensionNoPermission
 -CloudPrintPolicyTest.NormalPassedFlag
@@ -86,7 +84,7 @@
 -ContextMenuBrowserTest.OpenLinkInProfile
 -CrossOriginXHR.AllURLs
 -CrossOriginXHR.ContentScript
--DidChangeVisibleSecurityStateTest.DidChangeVisibleSecurityStateObserver
+-DidChangeVisibleSecurityStateTest.*
 -DomainReliabilityBrowserTest.UploadAtShutdown
 -DownloadTest.DownloadCrossDomainReferrerPolicy
 -ExecuteScriptApiTest.ExecuteScriptBadEncoding
@@ -100,8 +98,7 @@
 -ExtensionApiNewTabTest.Tabs
 -ExtensionApiTabTest.TabConnect
 -ExtensionBrowserTest.PromptToReEnableExtensionsOnNavigation
--ExtensionTabsTest.GetAllWindows
--ExtensionTabsTest.GetAllWindowsAllTypes
+-ExtensionTabsTest.*
 -GeolocationBrowserTest.CancelPermissionForFrame
 -GeolocationBrowserTest.IFramesWithCachedPosition
 -GeolocationBrowserTest.IFramesWithFreshPosition
@@ -129,7 +126,8 @@
 -PageLoadMetricsBrowserTest.*
 -PasswordManagerBrowserTestBase.SlowPageFill
 -PaymentRequestModifiersTest.*
--Pepper/ECKEncryptedMediaTest.OutputProtectionTest/0
+-PaymentRequestPaymentAppTest.*
+-Pepper/ECKEncryptedMediaTest.*
 -PlatformAppBrowserTest.Isolation
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls
 -PolicyTest.SSLErrorOverridingAllowed
@@ -143,6 +141,7 @@
 -ReferrerPolicyTest.MiddleClickRedirect
 -ReferrerPolicyTest.MiddleClickTargetBlankRedirect
 -ResourcePrefetchPredictorBrowserTest.SubresourceFcpOrder
+-SSLNetworkTimeBrowserTest.TimeoutExpiresBeforeFetchCompletes/0
 -SSLUICaptivePortalListResourceBundleTest.Enabled_DynamicUpdate/0
 -SSLUITest*
 -SSLUIWorkerFetchTest.*
@@ -163,6 +162,7 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.BackgroundPageIsWokenIfAsleep/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.FetchArbitraryPaths/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.ServiceWorkerSuspensionOnExtensionUnload/0
+-SRC_ExternalClearKey/EncryptedMediaTest.Playback_VideoAudio_WebM/0
 -SubresourceFilterPopupBrowserTest.BlockOpenURLFromTab
 -SuperfishSSLUITest.NoSuperfishRecorded/0
 -SuperfishSSLUITest.SuperfishRecorded/0
