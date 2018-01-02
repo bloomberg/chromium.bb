@@ -333,7 +333,7 @@ def UpdateBinhostConfFile(path, key, value):
     git.AddPath(path)
     git.Commit(cwd, desc)
 
-def GenerateHtmlIndex(files, index, board, version):
+def GenerateHtmlIndex(files, index, board, version, remote_location):
   """Given the list of |files|, generate an index.html at |index|.
 
   Args:
@@ -341,6 +341,7 @@ def GenerateHtmlIndex(files, index, board, version):
     index: The path to the html index.
     board: Name of the board this index is for.
     version: Build version this index is for.
+    remote_location: Remote gs location prebuilts are uploaded to.
   """
   title = 'Package Prebuilt Index: %s / %s' % (board, version)
 
@@ -348,7 +349,8 @@ def GenerateHtmlIndex(files, index, board, version):
       '.|Google Storage Index',
       '..|',
   ]
-  commands.GenerateHtmlIndex(index, files, title=title)
+  commands.GenerateHtmlIndex(index, files, title=title,
+                             url_base=gs.GsUrlToHttp(remote_location))
 
 
 def _GrabAllRemotePackageIndexes(binhost_urls):
@@ -470,7 +472,7 @@ class PrebuiltUploader(object):
         prefix='chromite.upload_prebuilts.index.') as index:
       GenerateHtmlIndex(
           [x[len(remote_location) + 1:] for x in upload_files.values()],
-          index.name, self._target, self._version)
+          index.name, self._target, self._version, remote_location)
       self._Upload(index.name, '%s/index.html' % remote_location.rstrip('/'))
 
       link_name = 'Prebuilts[%s]: %s' % (self._target, self._version)

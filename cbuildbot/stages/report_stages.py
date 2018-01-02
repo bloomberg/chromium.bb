@@ -707,7 +707,8 @@ class ReportStage(generic_stages.BuilderStage,
       # TODO (sbasi) crbug.com/362776: Rework the way we do uploading to
       # multiple buckets. Currently this can only be done in the Archive Stage
       # therefore index.html will only end up in the normal Chrome OS bucket.
-      commands.GenerateHtmlIndex(index, files, title=title)
+      commands.GenerateHtmlIndex(index, files, title=title,
+                                 url_base=gs.GsUrlToHttp(archive.upload_url))
       commands.UploadArchivedFile(
           archive_path, [archive.upload_url], os.path.basename(index),
           debug=self._run.debug, acl=self.acl)
