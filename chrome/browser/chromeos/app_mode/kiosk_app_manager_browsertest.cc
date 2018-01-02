@@ -592,8 +592,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAppDataFromCrx) {
   ExternalCachePutWaiter put_waiter;
   manager()->PutValidatedExternalExtension(
       kAppId, crx_file, "2.0.0",
-      base::Bind(&ExternalCachePutWaiter::OnPutExtension,
-                 base::Unretained(&put_waiter)));
+      base::BindOnce(&ExternalCachePutWaiter::OnPutExtension,
+                     base::Unretained(&put_waiter)));
   put_waiter.Wait();
   ASSERT_TRUE(put_waiter.success());
 
