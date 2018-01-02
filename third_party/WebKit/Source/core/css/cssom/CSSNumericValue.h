@@ -50,6 +50,10 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSMathSum* toSum(const Vector<String>&, ExceptionState&);
 
   // Internal methods.
+  // Arithmetic
+  virtual CSSNumericValue* Negate();
+  virtual CSSNumericValue* Invert();
+
   // Converts between compatible types.
   CSSUnitValue* to(CSSPrimitiveValue::UnitType) const;
   virtual bool IsUnitValue() const = 0;
@@ -67,9 +71,6 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSNumericValue(const CSSNumericValueType& type) : type_(type) {}
 
  private:
-  virtual CSSNumericValue* Negate();
-  virtual CSSNumericValue* Invert();
-
   CSSNumericValueType type_;
   DISALLOW_COPY_AND_ASSIGN(CSSNumericValue);
 };
