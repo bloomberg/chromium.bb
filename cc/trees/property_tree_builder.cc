@@ -151,11 +151,11 @@ static const LayerList& LayerChildren(Layer* layer) {
   return layer->children();
 }
 
-static LayerImpl* ChildAt(LayerImpl* layer, int index) {
+static LayerImpl* LayerChildAt(LayerImpl* layer, int index) {
   return layer->test_properties()->children[index];
 }
 
-static Layer* ChildAt(Layer* layer, int index) {
+static Layer* LayerChildAt(Layer* layer, int index) {
   return layer->child_at(index);
 }
 
@@ -279,11 +279,11 @@ static int GetScrollParentId(const DataForRecursion<LayerType>& data,
   return id;
 }
 
-static Layer* Parent(Layer* layer) {
+static Layer* LayerParent(Layer* layer) {
   return layer->parent();
 }
 
-static LayerImpl* Parent(LayerImpl* layer) {
+static LayerImpl* LayerParent(LayerImpl* layer) {
   return layer->test_properties()->parent;
 }
 
@@ -352,8 +352,8 @@ void PropertyTreeBuilderContext<LayerType>::AddClipNodeIfNeeded(
 
 template <typename LayerType>
 static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
-  return Parent(layer)
-             ? SortingContextId(Parent(layer)) != SortingContextId(layer)
+  return LayerParent(layer)
+             ? SortingContextId(LayerParent(layer)) != SortingContextId(layer)
              : Is3dSorted(layer);
 }
 
@@ -387,7 +387,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     LayerType* layer,
     bool created_render_surface,
     DataForRecursion<LayerType>* data_for_children) const {
-  const bool is_root = !Parent(layer);
+  const bool is_root = !LayerParent(layer);
   const bool is_page_scale_layer = layer == page_scale_layer_;
   const bool is_overscroll_elasticity_layer =
       layer == overscroll_elasticity_layer_;
@@ -430,8 +430,8 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     // we track both a parent TransformNode (which is the parent in the
     // TransformTree) and a 'source' TransformNode (which is the TransformNode
     // for the parent in the Layer tree).
-    source_index = Parent(layer)->transform_tree_index();
-    source_offset = Parent(layer)->offset_to_transform_parent();
+    source_index = LayerParent(layer)->transform_tree_index();
+    source_offset = LayerParent(layer)->offset_to_transform_parent();
   }
 
   if (IsContainerForFixedPositionLayers(layer) || is_root) {
@@ -441,7 +441,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
       DCHECK(Transform(layer).IsIdentity());
       if (!is_root) {
         data_for_children->transform_tree_parent_fixed =
-            Parent(layer)->transform_tree_index();
+            LayerParent(layer)->transform_tree_index();
       }
     } else {
       data_for_children->transform_tree_parent_fixed =
@@ -646,8 +646,9 @@ static inline bool ForceRenderSurface(LayerImpl* layer) {
 
 template <typename LayerType>
 static inline bool LayerIsInExisting3DRenderingContext(LayerType* layer) {
-  return Is3dSorted(layer) && Parent(layer) && Is3dSorted(Parent(layer)) &&
-         (SortingContextId(Parent(layer)) == SortingContextId(layer));
+  return Is3dSorted(layer) && LayerParent(layer) &&
+         Is3dSorted(LayerParent(layer)) &&
+         (SortingContextId(LayerParent(layer)) == SortingContextId(layer));
 }
 
 static inline bool IsRootForIsolatedGroup(Layer* layer) {
@@ -754,7 +755,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
                                bool animation_axis_aligned) {
   const bool preserves_2d_axis_alignment =
       current_transform.Preserves2dAxisAlignment() && animation_axis_aligned;
-  const bool is_root = !Parent(layer);
+  const bool is_root = !LayerParent(layer);
   if (is_root)
     return true;
 
@@ -896,7 +897,7 @@ bool UpdateSubtreeHasCopyRequestRecursive(LayerType* layer) {
   if (HasCopyRequest(layer))
     subtree_has_copy_request = true;
   for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
-    LayerType* current_child = ChildAt(layer, i);
+    LayerType* current_child = LayerChildAt(layer, i);
     subtree_has_copy_request |=
         UpdateSubtreeHasCopyRequestRecursive(current_child);
   }
@@ -909,7 +910,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) const {
-  const bool is_root = !Parent(layer);
+  const bool is_root = !LayerParent(layer);
   const bool has_transparency = EffectiveOpacity(layer) != 1.f;
   const bool has_potential_opacity_animation =
       HasPotentialOpacityAnimation(layer);
@@ -1068,7 +1069,7 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     DataForRecursion<LayerType>* data_for_children) const {
   int parent_id = GetScrollParentId(data_from_ancestor, layer);
 
-  bool is_root = !Parent(layer);
+  bool is_root = !LayerParent(layer);
   bool scrollable = layer->scrollable();
   bool contains_non_fast_scrollable_region =
       !layer->non_fast_scrollable_region().IsEmpty();
@@ -1141,18 +1142,18 @@ template <typename LayerType>
 void SetBackfaceVisibilityTransform(LayerType* layer,
                                     bool created_transform_node) {
   if (layer->use_parent_backface_visibility()) {
-    DCHECK(Parent(layer));
-    DCHECK(!Parent(layer)->use_parent_backface_visibility());
+    DCHECK(LayerParent(layer));
+    DCHECK(!LayerParent(layer)->use_parent_backface_visibility());
     layer->SetShouldCheckBackfaceVisibility(
-        Parent(layer)->should_check_backface_visibility());
+        LayerParent(layer)->should_check_backface_visibility());
   } else {
     // A double-sided layer's backface can been shown when its visible.
     // In addition, we need to check if (1) there might be a local 3D transform
     // on the layer that might turn it to the backface, or (2) it is not drawn
     // into a flattened space.
     layer->SetShouldCheckBackfaceVisibility(
-        !DoubleSided(layer) &&
-        (created_transform_node || !ShouldFlattenTransform(Parent(layer))));
+        !DoubleSided(layer) && (created_transform_node ||
+                                !ShouldFlattenTransform(LayerParent(layer))));
   }
 }
 
@@ -1212,7 +1213,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
       !has_non_axis_aligned_clip;
 
   for (size_t i = 0; i < LayerChildren(layer).size(); ++i) {
-    LayerType* current_child = ChildAt(layer, i);
+    LayerType* current_child = LayerChildAt(layer, i);
     SetLayerPropertyChangedForChild(layer, current_child);
     if (!ScrollParent(current_child)) {
       BuildPropertyTreesInternal(current_child, data_for_children);
@@ -1224,9 +1225,9 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
        it != scroll_children_range.second; ++it) {
     LayerType* scroll_child = it->second;
     DCHECK_EQ(ScrollParent(scroll_child), layer);
-    DCHECK(Parent(scroll_child));
+    DCHECK(LayerParent(scroll_child));
     data_for_children.effect_tree_parent =
-        Parent(scroll_child)->effect_tree_index();
+        LayerParent(scroll_child)->effect_tree_index();
     BuildPropertyTreesInternal(scroll_child, data_for_children);
   }
 
