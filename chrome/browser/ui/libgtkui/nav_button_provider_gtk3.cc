@@ -204,6 +204,18 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     }
     gtk_style_context_set_state(button_context, button_state);
 
+    // Gtk header bars usually have the same height in both maximized and
+    // restored windows.  But chrome's tabstrip background has a smaller height
+    // when maximized.  To prevent buttons from clipping outside of this region,
+    // they are scaled down.  However, this is problematic for themes that do
+    // not expect this case and use bitmaps for frame buttons (like the Breeze
+    // theme).  When the background-size is set to auto, the background bitmap
+    // is not scaled for the (unexpected) smaller button size, and the button's
+    // edges appear cut off.  To fix this, manually set the background to scale
+    // to the button size when it would have clipped.
+    ApplyCssToContext(button_context,
+                      ".titlebutton { background-size: contain; }");
+
     // Gtk doesn't support fractional scale factors, but chrome does.
     // Rendering the button background and border at a fractional
     // scale factor is easy, since we can adjust the cairo context
