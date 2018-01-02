@@ -241,15 +241,10 @@ class LocalDeviceInstrumentationTestRun(
       @trace_event.traced
       def create_flag_changer(dev):
         if self._test_instance.flags:
-          if not self._test_instance.package_info:
-            logging.error("Couldn't set flags: no package info")
-          elif not self._test_instance.package_info.cmdline_file:
-            logging.error("Couldn't set flags: no cmdline_file")
-          else:
-            self._CreateFlagChangerIfNeeded(dev)
-            logging.debug('Attempting to set flags: %r',
-                          self._test_instance.flags)
-            self._flag_changers[str(dev)].AddFlags(self._test_instance.flags)
+          self._CreateFlagChangerIfNeeded(dev)
+          logging.debug('Attempting to set flags: %r',
+                        self._test_instance.flags)
+          self._flag_changers[str(dev)].AddFlags(self._test_instance.flags)
 
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
@@ -328,7 +323,7 @@ class LocalDeviceInstrumentationTestRun(
   def _CreateFlagChangerIfNeeded(self, device):
     if not str(device) in self._flag_changers:
       self._flag_changers[str(device)] = flag_changer.FlagChanger(
-        device, self._test_instance.package_info.cmdline_file)
+        device, "test-cmdline-file")
 
   #override
   def _CreateShards(self, tests):

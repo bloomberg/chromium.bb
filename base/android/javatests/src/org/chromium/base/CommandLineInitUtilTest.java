@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 
 /**
@@ -24,7 +25,7 @@ public class CommandLineInitUtilTest {
     public void setUp() throws Exception {
         CommandLineInitUtil.initCommandLine(
                 InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                "content-shell-command-line");
+                CommandLineFlags.getTestCmdLineFile());
     }
 
     /**

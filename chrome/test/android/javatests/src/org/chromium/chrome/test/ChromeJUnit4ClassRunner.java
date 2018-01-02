@@ -8,8 +8,8 @@ import android.support.test.InstrumentationRegistry;
 
 import org.junit.runners.model.InitializationError;
 
-import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -49,6 +49,7 @@ public class ChromeJUnit4ClassRunner extends BaseJUnit4ClassRunner {
 
     @Override
     protected void initCommandLineForTest() {
-        BaseChromiumApplication.initCommandLine(InstrumentationRegistry.getTargetContext());
+        CommandLineInitUtil.initCommandLine(
+                InstrumentationRegistry.getTargetContext(), CommandLineFlags.getTestCmdLineFile());
     }
 }

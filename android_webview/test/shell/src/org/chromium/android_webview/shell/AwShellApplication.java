@@ -12,7 +12,6 @@ import org.chromium.content.app.ContentApplication;
  */
 public class AwShellApplication extends ContentApplication {
 
-    @Override
     public void initCommandLine() {
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile("/data/local/tmp/android-webview-command-line");
