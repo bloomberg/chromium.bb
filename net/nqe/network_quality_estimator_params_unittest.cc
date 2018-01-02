@@ -195,6 +195,33 @@ TEST(NetworkQualityEstimatorParamsTest, GetDefaultECT) {
   }
 }
 
+// Verify ECT when forced ECT is Slow-2G-On-Cellular.
+TEST(NetworkQualityEstimatorParamsTest, GetForcedECTCellularOnly) {
+  std::map<std::string, std::string> variation_params;
+  // Set force-effective-connection-type to Slow-2G-On-Cellular.
+  variation_params[kForceEffectiveConnectionType] =
+      kEffectiveConnectionTypeSlow2GOnCellular;
+
+  NetworkQualityEstimatorParams params(variation_params);
+
+  for (size_t i = 0; i < NetworkChangeNotifier::ConnectionType::CONNECTION_LAST;
+       ++i) {
+    NetworkChangeNotifier::ConnectionType connection_type =
+        static_cast<NetworkChangeNotifier::ConnectionType>(i);
+    base::Optional<EffectiveConnectionType> ect =
+        params.GetForcedEffectiveConnectionType(connection_type);
+
+    if (net::NetworkChangeNotifier::IsConnectionCellular(connection_type)) {
+      // Test for cellular connection types. Make sure that ECT is Slow-2G.
+      EXPECT_EQ(EFFECTIVE_CONNECTION_TYPE_SLOW_2G, ect);
+    } else {
+      // Test for non-cellular connection types. Make sure that there is no
+      // forced ect.
+      EXPECT_EQ(base::nullopt, ect);
+    }
+  }
+}
+
 }  // namespace
 
 }  // namespace internal
