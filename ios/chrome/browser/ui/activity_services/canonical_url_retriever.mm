@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
-#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever_private.h"
 
 #include "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/ui_metrics/canonical_url_share_metrics_types.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
@@ -25,12 +25,10 @@ const char kCanonicalURLScript[] =
     "  return linkNode ? linkNode.getAttribute(\"href\") : \"\";"
     "})()";
 
-// Logs |result| in the IOS.CanonicalURLResult histogram.
-void LogCanonicalUrlResultHistogram(
-    activity_services::CanonicalURLResult result) {
-  UMA_HISTOGRAM_ENUMERATION(activity_services::kCanonicalURLResultHistogram,
-                            result,
-                            activity_services::CANONICAL_URL_RESULT_COUNT);
+// Logs |result| in the Mobile.CanonicalURLResult histogram.
+void LogCanonicalUrlResultHistogram(ui_metrics::CanonicalURLResult result) {
+  UMA_HISTOGRAM_ENUMERATION(ui_metrics::kCanonicalURLResultHistogram, result,
+                            ui_metrics::CANONICAL_URL_RESULT_COUNT);
 }
 
 // Converts a |value| to a GURL. Returns an empty GURL if |value| is not a valid
@@ -53,12 +51,10 @@ GURL UrlFromValue(const base::Value* value) {
 
   if (!canonical_url_found) {
     // Log result if no canonical URL is found.
-    LogCanonicalUrlResultHistogram(
-        activity_services::FAILED_NO_CANONICAL_URL_DEFINED);
+    LogCanonicalUrlResultHistogram(ui_metrics::FAILED_NO_CANONICAL_URL_DEFINED);
   } else if (!canonical_url.is_valid()) {
     // Log result if an invalid canonical URL is found.
-    LogCanonicalUrlResultHistogram(
-        activity_services::FAILED_CANONICAL_URL_INVALID);
+    LogCanonicalUrlResultHistogram(ui_metrics::FAILED_CANONICAL_URL_INVALID);
   }
 
   return canonical_url.is_valid() ? canonical_url : GURL::EmptyGURL();
@@ -71,8 +67,7 @@ void RetrieveCanonicalUrl(web::WebState* web_state,
   // Do not use the canonical URL if the page is not secured with HTTPS.
   const GURL visible_url = web_state->GetVisibleURL();
   if (!visible_url.SchemeIsCryptographic()) {
-    LogCanonicalUrlResultHistogram(
-        activity_services::FAILED_VISIBLE_URL_NOT_HTTPS);
+    LogCanonicalUrlResultHistogram(ui_metrics::FAILED_VISIBLE_URL_NOT_HTTPS);
     completion(GURL::EmptyGURL());
     return;
   }
@@ -89,11 +84,10 @@ void RetrieveCanonicalUrl(web::WebState* web_state,
           // URL that is different from the visible URL.
           LogCanonicalUrlResultHistogram(
               !canonical_url.SchemeIsCryptographic()
-                  ? activity_services::SUCCESS_CANONICAL_URL_NOT_HTTPS
+                  ? ui_metrics::SUCCESS_CANONICAL_URL_NOT_HTTPS
                   : visible_url == canonical_url
-                        ? activity_services::
-                              SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE
-                        : activity_services::
+                        ? ui_metrics::SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE
+                        : ui_metrics::
                               SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE);
         }
 

@@ -286,7 +286,6 @@ android_library("chrome_java") {
     "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
-    "//chrome:sad_tab_event_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
@@ -301,6 +300,7 @@ android_library("chrome_java") {
     "//components/security_state/core:security_state_enums_java",
     "//components/signin/core/browser:investigated_scenario_java",
     "//components/supervised_user_error_page:enums_srcjar",
+    "//components/ui_metrics:ui_metrics_enums_java",
   ]
 
   android_manifest_for_lint = chrome_public_android_manifest

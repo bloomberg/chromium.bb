@@ -62,14 +62,6 @@ public class ShareMenuActionHandlerTest {
         mockWebContents.renderFrameHost = mockRenderFrameHost;
         Assert.assertFalse(ShareMenuActionHandler.shouldFetchCanonicalUrl(mockTab));
 
-        // Insecure URL:
-        mockTab.url = "http://www.example.com";
-        Assert.assertFalse(ShareMenuActionHandler.shouldFetchCanonicalUrl(mockTab));
-
-        // Valid URL!
-        mockTab.url = "https://www.example.com";
-        Assert.assertTrue(ShareMenuActionHandler.shouldFetchCanonicalUrl(mockTab));
-
         // Disabled if showing error page.
         mockTab.isShowingErrorPage = true;
         Assert.assertFalse(ShareMenuActionHandler.shouldFetchCanonicalUrl(mockTab));

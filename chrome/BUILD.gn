@@ -1731,12 +1731,6 @@ if (is_android) {
     ]
   }
 
-  java_cpp_enum("sad_tab_event_enum_javagen") {
-    sources = [
-      "//components/ui_metrics/sadtab_metrics_types.h",
-    ]
-  }
-
   source_set("chrome_android_core") {
     sources = [
       "app/android/chrome_android_initializer.cc",

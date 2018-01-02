@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_CANONICAL_URL_RETRIEVER_PRIVATE_H_
-#define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_CANONICAL_URL_RETRIEVER_PRIVATE_H_
+#ifndef COMPONENTS_UI_METRICS_CANONICAL_URL_SHARE_METRICS_TYPES_H_
+#define COMPONENTS_UI_METRICS_CANONICAL_URL_SHARE_METRICS_TYPES_H_
 
-namespace activity_services {
+namespace ui_metrics {
 // The histogram key to report the result of the Canonical URL retrieval.
-const char kCanonicalURLResultHistogram[] = "IOS.CanonicalURLResult";
+const char kCanonicalURLResultHistogram[] = "Mobile.CanonicalURLResult";
 
 // Used to report the result of the retrieval of the Canonical URL.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.ui_metrics
 enum CanonicalURLResult {
   // The canonical URL retrieval failed because the visible URL is not HTTPS.
   FAILED_VISIBLE_URL_NOT_HTTPS = 0,
@@ -39,6 +40,6 @@ enum CanonicalURLResult {
   // The count of canonical URL results. This must be the last item in the enum.
   CANONICAL_URL_RESULT_COUNT
 };
-}  // namespace activity_services
+}  // namespace ui_metrics
 
-#endif  // IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_CANONICAL_URL_RETRIEVER_PRIVATE_H_
+#endif  // COMPONENTS_UI_METRICS_CANONICAL_URL_SHARE_METRICS_TYPES_H_
