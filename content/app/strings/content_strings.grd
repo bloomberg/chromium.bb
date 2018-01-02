@@ -794,9 +794,6 @@ below:
       <message name="IDS_MEDIA_OVERFLOW_MENU_EXIT_FULLSCREEN" desc="Media controls overflow menu item label for a button to exit fullscreen.">
         Exit fullscreen
       </message>
-      <message name="IDS_MEDIA_OVERFLOW_MENU_STOP_CAST" desc="Media controls overflow menu item label for a button to stop casting.">
-        Stop casting
-      </message>
       <message name="IDS_MEDIA_OVERFLOW_MENU_MUTE" desc="Media controls overflow menu item label for a mute button.">
         Mute
       </message>
