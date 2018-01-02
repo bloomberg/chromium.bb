@@ -31,13 +31,13 @@ for (const unit of gValidUnits) {
   test(() => {
     const result = new CSSUnitValue(-3.14, unit);
     assert_equals(result.value, -3.14);
-    assert_equals(result.unit, unit);
+    assert_equals(result.unit, unit.toLowerCase());
   }, 'CSSUnitValue can be constructed with ' + unit);
 
   test(() => {
     let result = new CSSUnitValue(-3.14, 'px');
     result.unit = unit
-    assert_equals(result.unit, unit);
+    assert_equals(result.unit, unit.toLowerCase());
   }, 'CSSUnitValue.unit can be updated to ' + unit);
 }
 
