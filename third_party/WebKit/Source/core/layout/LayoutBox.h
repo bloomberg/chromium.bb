@@ -839,19 +839,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual EBreakBetween BreakBefore() const;
   EBreakInside BreakInside() const;
 
-  // Join two adjacent break values specified on break-before and/or break-
-  // after. avoid* values win over auto values, and forced break values win over
-  // avoid* values. |firstValue| is specified on an element earlier in the flow
-  // than |secondValue|. This method is used at class A break points [1], to
-  // join the values of the previous break-after and the next break-before, to
-  // figure out whether we may, must, or should not, break at that point. It is
-  // also used when propagating break-before values from first children and
-  // break-after values on last children to their container.
-  //
-  // [1] https://drafts.csswg.org/css-break/#possible-breaks
-  static EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
-                                                    EBreakBetween second_value);
-
   static bool IsForcedFragmentainerBreakValue(EBreakBetween);
 
   EBreakBetween ClassABreakPointValue(
