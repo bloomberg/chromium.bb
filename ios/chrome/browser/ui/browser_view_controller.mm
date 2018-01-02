@@ -4709,7 +4709,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)tabModel:(TabModel*)model
     didFinishLoadingTab:(Tab*)tab
-                suceess:(BOOL)success {
+                success:(BOOL)success {
   [self tabLoadComplete:tab withSuccess:success];
 }
 
