@@ -256,7 +256,6 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   // rectangular, the number of columns will be the same as the
   // txfm_size stored in the row cfg struct. It will make no difference
   // for square transforms.
-  // const int fwd_shift = fwd_shift_sum[txsize_sqr_up_map[tx_size]];
   const int fwd_shift = inv_start_range[tx_size];
   const int txfm_size_col = cfg->row_cfg->txfm_size;
   const int txfm_size_row = cfg->col_cfg->txfm_size;
@@ -279,14 +278,12 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
-    stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1 -
-                         cfg->row_cfg->stage_range[0];
+    stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
   }
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_col[i] = cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] +
-                         bd + 1 - cfg->col_cfg->stage_range[0] +
-                         rect_type2_shift;
+                         bd + 1 + rect_type2_shift;
   }
 }
 
