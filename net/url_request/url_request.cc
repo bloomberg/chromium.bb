@@ -192,7 +192,8 @@ URLRequest::~URLRequest() {
   // on UserData associated with |this| and poke at it during teardown.
   job_.reset();
 
-  context_->RemoveURLRequest(this);
+  DCHECK_EQ(1u, context_->url_requests()->count(this));
+  context_->url_requests()->erase(this);
 
   int net_error = OK;
   // Log error only on failure, not cancellation, as even successful requests
@@ -579,7 +580,7 @@ URLRequest::URLRequest(const GURL& url,
   // Sanity check out environment.
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
-  context->InsertURLRequest(this);
+  context->url_requests()->insert(this);
   net_log_.BeginEvent(
       NetLogEventType::REQUEST_ALIVE,
       base::Bind(&NetLogURLRequestConstructorCallback, &url, priority_));

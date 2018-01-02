@@ -674,7 +674,7 @@ TEST(DhcpProxyScriptFetcherWin, OnShutdown) {
 
   client.ResetTestState();
   EXPECT_THAT(client.RunTestThatMayFailSync(), IsError(ERR_CONTEXT_SHUT_DOWN));
-  EXPECT_EQ(0u, context.url_requests().size());
+  EXPECT_EQ(0u, context.url_requests()->size());
 }
 
 }  // namespace
