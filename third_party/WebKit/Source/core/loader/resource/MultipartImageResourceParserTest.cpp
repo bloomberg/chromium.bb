@@ -12,8 +12,7 @@
 #include <string.h>
 
 namespace blink {
-
-namespace {
+namespace multipart_image_resource_parser_test {
 
 String ToString(const Vector<char>& data) {
   if (data.IsEmpty())
@@ -415,6 +414,5 @@ TEST(MultipartResponseTest, EatLeadingCRLF) {
   EXPECT_EQ("", ToString(client->data_[3]));
 }
 
-}  // namespace
-
+}  // namespace multipart_image_resource_parser_test
 }  // namespace blink

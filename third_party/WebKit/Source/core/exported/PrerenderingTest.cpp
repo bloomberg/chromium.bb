@@ -60,10 +60,10 @@ WebURL ToWebURL(const char* url) {
   return WebURL(blink::URLTestHelpers::ToKURL(url));
 }
 
-class TestPrerendererClient : public WebPrerendererClient {
+class TestWebPrerendererClient : public WebPrerendererClient {
  public:
-  TestPrerendererClient() {}
-  virtual ~TestPrerendererClient() {}
+  TestWebPrerendererClient() {}
+  virtual ~TestWebPrerendererClient() {}
 
   void SetExtraDataForNextPrerender(WebPrerender::ExtraData* extra_data) {
     DCHECK(!extra_data_);
@@ -220,11 +220,11 @@ class PrerenderingTest : public ::testing::Test {
     return &prerendering_support_;
   }
 
-  TestPrerendererClient* PrerendererClient() { return &prerenderer_client_; }
+  TestWebPrerendererClient* PrerendererClient() { return &prerenderer_client_; }
 
  private:
   TestPrerenderingSupport prerendering_support_;
-  TestPrerendererClient prerenderer_client_;
+  TestWebPrerendererClient prerenderer_client_;
 
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
