@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/external_cache_impl.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/prefs/pref_value_map.h"
@@ -33,22 +34,19 @@ void DeviceLocalAccountExternalPolicyLoader::StartCache(
     const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner) {
   DCHECK(!external_cache_);
   store_->AddObserver(this);
-  external_cache_.reset(new ExternalCache(
-      cache_dir_,
-      g_browser_process->system_request_context(),
-      cache_task_runner,
-      this,
-      true  /* always_check_updates */,
-      false  /* wait_for_cache_initialization */));
+  external_cache_ = std::make_unique<ExternalCacheImpl>(
+      cache_dir_, g_browser_process->system_request_context(),
+      cache_task_runner, this, true /* always_check_updates */,
+      false /* wait_for_cache_initialization */);
 
   if (store_->is_initialized())
     UpdateExtensionListFromStore();
 }
 
 void DeviceLocalAccountExternalPolicyLoader::StopCache(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   if (external_cache_) {
-    external_cache_->Shutdown(callback);
+    external_cache_->Shutdown(std::move(callback));
     external_cache_.reset();
     store_->RemoveObserver(this);
   }
@@ -87,6 +85,18 @@ void DeviceLocalAccountExternalPolicyLoader::OnExtensionListsUpdated(
   // Only call LoadFinished() when there is an owner to consume |prefs_|.
   if (has_owner())
     LoadFinished(std::move(prefs_));
+}
+
+void DeviceLocalAccountExternalPolicyLoader::OnExtensionLoadedInCache(
+    const std::string& id) {}
+
+void DeviceLocalAccountExternalPolicyLoader::OnExtensionDownloadFailed(
+    const std::string& id) {}
+
+std::string
+DeviceLocalAccountExternalPolicyLoader::GetInstalledExtensionVersion(
+    const std::string& id) {
+  return std::string();
 }
 
 ExternalCache*

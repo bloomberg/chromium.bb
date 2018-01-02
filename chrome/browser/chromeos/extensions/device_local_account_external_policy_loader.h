@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_DEVICE_LOCAL_ACCOUNT_EXTERNAL_POLICY_LOADER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
@@ -13,11 +14,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "chrome/browser/chromeos/extensions/external_cache.h"
+#include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace chromeos {
+
+class ExternalCache;
 
 // A specialization of the ExternalLoader that serves external extensions from
 // the enterprise policy force-install list. This class is used for device-local
@@ -27,7 +30,7 @@ namespace chromeos {
 class DeviceLocalAccountExternalPolicyLoader
     : public extensions::ExternalLoader,
       public policy::CloudPolicyStore::Observer,
-      public ExternalCache::Delegate {
+      public ExternalCacheDelegate {
  public:
   // The list of force-installed extensions will be read from |store| and the
   // extensions will be cached in the |cache_dir_|.
@@ -46,7 +49,7 @@ class DeviceLocalAccountExternalPolicyLoader
 
   // Stop the cache. The |callback| will be invoked when the cache has shut down
   // completely and write access to the |cache_dir_| is permitted again.
-  void StopCache(const base::Closure& callback);
+  void StopCache(base::OnceClosure callback);
 
   // extensions::ExternalLoader:
   void StartLoading() override;
@@ -55,8 +58,11 @@ class DeviceLocalAccountExternalPolicyLoader
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
-  // ExternalCache::Delegate:
+  // ExternalCacheDelegate:
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override;
+  void OnExtensionLoadedInCache(const std::string& id) override;
+  void OnExtensionDownloadFailed(const std::string& id) override;
+  std::string GetInstalledExtensionVersion(const std::string& id) override;
 
   ExternalCache* GetExternalCacheForTesting();
 

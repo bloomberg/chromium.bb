@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data_delegate.h"
 #include "chrome/browser/chromeos/extensions/external_cache.h"
+#include "chrome/browser/chromeos/extensions/external_cache_delegate.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -46,7 +47,7 @@ class OwnerSettingsServiceChromeOS;
 
 // KioskAppManager manages cached app data.
 class KioskAppManager : public KioskAppDataDelegate,
-                        public ExternalCache::Delegate {
+                        public ExternalCacheDelegate {
  public:
   enum ConsumerKioskAutoLaunchStatus {
     // Consumer kiosk mode auto-launch feature can be enabled on this machine.
@@ -91,13 +92,6 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Sub directory under DIR_USER_DATA to store cached icon files.
   static const char kIconCacheDir[];
-
-  // Sub directory under DIR_USER_DATA to store cached crx files.
-  static const char kCrxCacheDir[];
-
-  // Sub directory under DIR_USER_DATA to store unpacked crx file for validating
-  // its signature.
-  static const char kCrxUnpackDir[];
 
   // Gets the KioskAppManager instance, which is lazily created on first call..
   static KioskAppManager* Get();
@@ -218,7 +212,7 @@ class KioskAppManager : public KioskAppDataDelegate,
       const std::string& app_id,
       const base::FilePath& crx_path,
       const std::string& version,
-      const ExternalCache::PutExternalExtensionCallback& callback);
+      ExternalCache::PutExternalExtensionCallback callback);
 
   // Whether the current platform is compliant with the given required
   // platform version.
@@ -288,12 +282,11 @@ class KioskAppManager : public KioskAppDataDelegate,
   void OnKioskAppDataChanged(const std::string& app_id) override;
   void OnKioskAppDataLoadFailure(const std::string& app_id) override;
 
-  // ExternalCache::Delegate:
+  // ExternalCacheDelegate:
   void OnExtensionListsUpdated(const base::DictionaryValue* prefs) override;
   void OnExtensionLoadedInCache(const std::string& id) override;
-  void OnExtensionDownloadFailed(
-      const std::string& id,
-      extensions::ExtensionDownloaderDelegate::Error error) override;
+  void OnExtensionDownloadFailed(const std::string& id) override;
+  std::string GetInstalledExtensionVersion(const std::string& id) override;
 
   // Callback for InstallAttributes::LockDevice() during
   // EnableConsumerModeKiosk() call.
@@ -313,9 +306,6 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Reads/writes auto login state from/to local state.
   AutoLoginState GetAutoLoginState() const;
   void SetAutoLoginState(AutoLoginState state);
-
-  void GetCrxCacheDir(base::FilePath* cache_dir);
-  void GetCrxUnpackDir(base::FilePath* unpack_dir);
 
   // Returns the auto launch delay.
   base::TimeDelta GetAutoLaunchDelay() const;

@@ -398,8 +398,8 @@ void KioskExternalUpdater::PutValidatedExtension(const std::string& app_id,
 
   KioskAppManager::Get()->PutValidatedExternalExtension(
       app_id, crx_file, version,
-      base::Bind(&KioskExternalUpdater::OnPutValidatedExtension,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&KioskExternalUpdater::OnPutValidatedExtension,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void KioskExternalUpdater::OnPutValidatedExtension(const std::string& app_id,

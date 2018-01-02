@@ -566,6 +566,9 @@ source_set("chromeos") {
     "extensions/extension_volume_observer.h",
     "extensions/external_cache.cc",
     "extensions/external_cache.h",
+    "extensions/external_cache_delegate.h",
+    "extensions/external_cache_impl.cc",
+    "extensions/external_cache_impl.h",
     "extensions/gfx_utils.cc",
     "extensions/gfx_utils.h",
     "extensions/ime_menu_event_router.cc",
@@ -1665,6 +1668,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "extensions/test_external_cache.cc",
+    "extensions/test_external_cache.h",
     "lock_screen_apps/fake_lock_screen_profile_creator.cc",
     "lock_screen_apps/fake_lock_screen_profile_creator.h",
     "login/enrollment/enterprise_enrollment_helper_mock.cc",
@@ -1777,7 +1782,7 @@ source_set("unit_tests") {
     "extensions/device_local_account_external_policy_loader_unittest.cc",
     "extensions/device_local_account_management_policy_provider_unittest.cc",
     "extensions/extension_tab_util_delegate_chromeos_unittest.cc",
-    "extensions/external_cache_unittest.cc",
+    "extensions/external_cache_impl_unittest.cc",
     "extensions/file_manager/device_event_router_unittest.cc",
     "extensions/file_manager/job_event_router_unittest.cc",
     "extensions/gfx_utils_unittest.cc",
