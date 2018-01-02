@@ -4,8 +4,10 @@
     }
 </style>
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     function moveMouseToCenterOfElement(element)
     {

@@ -1218,7 +1218,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
           request_data.referrer_policy),
       request_data.is_prerendering, resource_context, report_raw_headers,
       !is_sync_load, previews_state, request_data.request_body,
-      request_data.initiated_in_secure_context);
+      request_data.initiated_in_secure_context,
+      base::nullopt);  // suggested_filename
   extra_info->SetBlobHandles(std::move(blob_handles));
 
   // Request takes ownership.
@@ -1514,7 +1515,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       true,            // is_async
       previews_state,  // previews_state
       nullptr,         // body
-      false);          // initiated_in_secure_context
+      false,           // initiated_in_secure_context
+      base::nullopt);  // suggested_filename
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(
@@ -1951,7 +1953,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // subresource requests, so it doesn't matter what value it gets here.
       // If in the future this changes this should be updated to somehow get a
       // meaningful value.
-      false);  // initiated_in_secure_context
+      false,                                   // initiated_in_secure_context
+      info.begin_params->suggested_filename);  // suggested_filename
   extra_info->SetBlobHandles(std::move(blob_handles));
   extra_info->set_navigation_ui_data(std::move(navigation_ui_data));
 

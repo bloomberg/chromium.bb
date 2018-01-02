@@ -81,6 +81,7 @@ const char kLandingReferrerURLWithQuery[] =
 const char kPageBeforeLandingReferrerURL[] =
     "/safe_browsing/download_protection/navigation_observer/"
     "page_before_landing_referrer.html";
+const char kTestExeURL[] = "/temporary/test.exe";
 
 class DownloadItemCreatedObserver : public DownloadManager::Observer {
  public:
@@ -281,10 +282,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  void TriggerDownloadViaHtml5FileApi(bool has_user_gesture) {
-    if (has_user_gesture)
-      SimulateUserGesture();
-
+  void TriggerDownloadViaHtml5FileApi() {
     std::vector<DownloadItem*> items;
     content::DownloadManager* manager =
         content::BrowserContext::GetDownloadManager(browser()->profile());
@@ -293,9 +291,7 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(
         content::ExecuteScript(current_web_contents, "downloadViaFileApi()"));
     manager->GetAllDownloads(&items);
-    if (items.size() == 0U) {
-      DownloadItemCreatedObserver(manager).WaitForDownloadItem(&items);
-    }
+    ASSERT_EQ(0U, items.size());
   }
 
   void VerifyNavigationEvent(const GURL& expected_source_url,
@@ -2098,15 +2094,16 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, IPListDedup) {
   EXPECT_NE(yesterday, ip_map->at(test_server_host).front().timestamp);
 }
 
-// Download via html5 file API with user gesture.
+// Download via html5 file API.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       DownloadViaHTML5FileApiWithUserGesture) {
+                       DownloadViaHTML5FileApi) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
   GURL hosting_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
-  // Trigger download by user gesture.
-  TriggerDownloadViaHtml5FileApi(true /* has_user_gesture */);
+  TriggerDownloadViaHtml5FileApi();
   std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+  GURL filesystem_url(std::string(url::kFileSystemScheme) + ":" +
+                      embedded_test_server()->GetURL(kTestExeURL).spec());
   auto* nav_list = navigation_event_list();
   ASSERT_TRUE(nav_list);
   ASSERT_EQ(1U, nav_list->Size());
@@ -2121,44 +2118,19 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
   VerifyHostToIpMap();
   ReferrerChain referrer_chain;
   IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
-  ASSERT_EQ(1, referrer_chain.size());
+  ASSERT_EQ(2, referrer_chain.size());
 
-  VerifyReferrerChainEntry(hosting_url,                       // url
-                           GURL(),                            // main_frame_url
-                           ReferrerChainEntry::LANDING_PAGE,  // type
-                           test_server_ip,                    // ip_address
-                           GURL(),                            // referrer_url
-                           GURL(),               // referrer_main_frame_url
-                           false,                // is_retargeting
-                           std::vector<GURL>(),  // server redirects
-                           ReferrerChainEntry::BROWSER_INITIATED,
-                           referrer_chain.Get(0));
-}
-
-// Download via html5 file API without user gesture.
-IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       DownloadViaHTML5FileApiWithoutUserGesture) {
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
-  GURL hosting_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
-  // Trigger download without user gesture.
-  TriggerDownloadViaHtml5FileApi(false /* has_user_gesture */);
-  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
-  auto* nav_list = navigation_event_list();
-  ASSERT_TRUE(nav_list);
-  ASSERT_EQ(1U, nav_list->Size());
-  VerifyNavigationEvent(GURL(),       // source_url
-                        GURL(),       // source_main_frame_url
-                        hosting_url,  // original_request_url
-                        hosting_url,  // destination_url
-                        true,         // is_user_initiated,
-                        true,         // has_committed
-                        false,        // has_server_redirect
-                        nav_list->Get(0));
-  VerifyHostToIpMap();
-  ReferrerChain referrer_chain;
-  IdentifyReferrerChainForDownload(GetDownload(), &referrer_chain);
-  ASSERT_EQ(1, referrer_chain.size());
+  VerifyReferrerChainEntry(
+      filesystem_url,                 // url
+      GURL(),                         // main_frame_url
+      ReferrerChainEntry::EVENT_URL,  // type
+      std::string(),                  // ip_address
+      hosting_url,                    // referrer_url
+      GURL(),                         // referrer_main_frame_url
+      false,                          // is_retargeting
+      std::vector<GURL>(),            // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE,
+      referrer_chain.Get(0));
 
   VerifyReferrerChainEntry(hosting_url,  // url
                            GURL(),       // main_frame_url
@@ -2169,7 +2141,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            false,                // is_retargeting
                            std::vector<GURL>(),  // server redirects
                            ReferrerChainEntry::BROWSER_INITIATED,
-                           referrer_chain.Get(0));
+                           referrer_chain.Get(1));
 }
 
 // Verify referrer chain when there are URL fragments.

@@ -386,24 +386,22 @@ void HTMLAnchorElement::HandleClick(Event* event) {
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
     }
-    request.SetRequestContext(WebURLRequest::kRequestContextDownload);
-    request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
-    frame->Client()->DownloadURL(request, FastGetAttribute(downloadAttr));
-  } else {
-    request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
-    FrameLoadRequest frame_request(&GetDocument(), request,
-                                   getAttribute(targetAttr));
-    frame_request.SetTriggeringEvent(event);
-    if (HasRel(kRelationNoReferrer)) {
-      frame_request.SetShouldSendReferrer(kNeverSendReferrer);
-      frame_request.SetShouldSetOpener(kNeverSetOpener);
-    }
-    if (HasRel(kRelationNoOpener))
-      frame_request.SetShouldSetOpener(kNeverSetOpener);
-    // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
-    // Why doesn't this go through NavigationScheduler?
-    frame->Loader().Load(frame_request);
+    request.SetSuggestedFilename(
+        static_cast<String>(FastGetAttribute(downloadAttr)));
   }
+  request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
+  FrameLoadRequest frame_request(&GetDocument(), request,
+                                 getAttribute(targetAttr));
+  frame_request.SetTriggeringEvent(event);
+  if (HasRel(kRelationNoReferrer)) {
+    frame_request.SetShouldSendReferrer(kNeverSendReferrer);
+    frame_request.SetShouldSetOpener(kNeverSetOpener);
+  }
+  if (HasRel(kRelationNoOpener))
+    frame_request.SetShouldSetOpener(kNeverSetOpener);
+  // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
+  // Why doesn't this go through NavigationScheduler?
+  frame->Loader().Load(frame_request);
 }
 
 bool IsEnterKeyKeydownEvent(Event* event) {

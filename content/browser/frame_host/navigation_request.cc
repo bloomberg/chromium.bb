@@ -270,7 +270,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           blink::WebMixedContentContextType::kBlockable, is_form_submission,
           GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */, initiator,
-          GURL() /* client_side_redirect_url */),
+          GURL() /* client_side_redirect_url */,
+          base::nullopt /* suggested_filename */),
       request_params, browser_initiated, false /* from_begin_navigation */,
       &frame_entry, &entry));
   return navigation_request;
@@ -845,6 +846,17 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
+  // The response code indicates that this is an error page, but we don't
+  // know how to display the content.  We follow Firefox here and show our
+  // own error page instead of intercepting the request as a stream or a
+  // download.
+  if (is_download && (response->head.headers.get() &&
+                      (response->head.headers->response_code() / 100 != 2))) {
+    navigation_handle_->set_net_error_code(net::ERR_INVALID_RESPONSE);
+    frame_tree_node_->ResetNavigationRequest(false, true);
+    return;
+  }
+
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(),
@@ -1162,8 +1174,9 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       download_manager->InterceptNavigation(
           std::move(resource_request), navigation_handle_->GetRedirectChain(),
-          response_, std::move(url_loader_client_endpoints_),
-          ssl_info_.cert_status, frame_tree_node_->frame_tree_node_id());
+          begin_params_->suggested_filename, response_,
+          std::move(url_loader_client_endpoints_), ssl_info_.cert_status,
+          frame_tree_node_->frame_tree_node_id());
 
       OnRequestFailed(false, net::ERR_ABORTED, base::nullopt);
       return;

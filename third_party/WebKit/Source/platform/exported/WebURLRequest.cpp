@@ -428,6 +428,13 @@ void WebURLRequest::SetInputPerfMetricReportPolicy(
       static_cast<blink::InputToLoadPerfMetricReportPolicy>(policy));
 }
 
+base::Optional<WebString> WebURLRequest::GetSuggestedFilename() const {
+  if (!resource_request_->GetSuggestedFilename().has_value())
+    return base::Optional<WebString>();
+  return static_cast<WebString>(
+      resource_request_->GetSuggestedFilename().value());
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_requester_info.h"
@@ -72,7 +73,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool is_async,
       PreviewsState previews_state,
       const scoped_refptr<ResourceRequestBody> body,
-      bool initiated_in_secure_context);
+      bool initiated_in_secure_context,
+      const base::Optional<std::string>& suggested_filename);
   ~ResourceRequestInfoImpl() override;
 
   // ResourceRequestInfo implementation:
@@ -202,6 +204,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   void SetBlobHandles(BlobHandles blob_handles);
 
+  const base::Optional<std::string>& suggested_filename() const {
+    return suggested_filename_;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -240,6 +246,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
+  base::Optional<std::string> suggested_filename_;
 
   // Keeps upload body blobs alive for the duration of the request.
   BlobHandles blob_handles_;

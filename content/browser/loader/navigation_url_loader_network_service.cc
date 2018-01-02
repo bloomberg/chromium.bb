@@ -120,14 +120,18 @@ const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
 // TODO(arthursonzogni): IsDownload can't be determined only by the response's
 // headers. The response's body might contain information to guess it.
 // See MimeSniffingResourceHandler.
-bool IsDownload(const ResourceResponse& response, const GURL& url) {
+bool IsDownload(const ResourceResponse& response,
+                const GURL& url,
+                const base::Optional<std::string>& suggested_filename) {
   if (response.head.headers) {
     std::string disposition;
-    if (response.head.headers->GetNormalizedHeader("content-disposition",
-                                                   &disposition) &&
-        !disposition.empty() &&
-        net::HttpContentDisposition(disposition, std::string())
-            .is_attachment()) {
+    if (suggested_filename.has_value()) {
+      return true;
+    } else if (response.head.headers->GetNormalizedHeader("content-disposition",
+                                                          &disposition) &&
+               !disposition.empty() &&
+               net::HttpContentDisposition(disposition, std::string())
+                   .is_attachment()) {
       return true;
     } else if (GetContentClient()->browser()->ShouldForceDownloadResource(
                    url, response.head.mime_type)) {
@@ -666,6 +670,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers)
     : delegate_(delegate),
       allow_download_(request_info->common_params.allow_download),
+      suggested_filename_(request_info->begin_params->suggested_filename),
       url_(request_info->common_params.url),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -832,7 +837,8 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
   // TODO(arthursonzogni): In NavigationMojoResponse, this is false. The info
   // coming from the MimeSniffingResourceHandler must be used.
   DCHECK(response);
-  bool is_download = allow_download_ && IsDownload(*response.get(), url_);
+  bool is_download =
+      allow_download_ && IsDownload(*response.get(), url_, suggested_filename_);
 
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints), nullptr,

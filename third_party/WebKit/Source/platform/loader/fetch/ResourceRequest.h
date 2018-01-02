@@ -37,6 +37,7 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
@@ -345,6 +346,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetRedirectStatus(RedirectStatus status) { redirect_status_ = status; }
   RedirectStatus GetRedirectStatus() const { return redirect_status_; }
 
+  void SetSuggestedFilename(const WTF::Optional<String>& suggested_filename) {
+    suggested_filename_ = suggested_filename;
+  }
+  const WTF::Optional<String>& GetSuggestedFilename() const {
+    return suggested_filename_;
+  }
+
   void SetNavigationStartTime(double);
   double NavigationStartTime() const { return navigation_start_; }
 
@@ -398,6 +406,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_same_document_navigation_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   RedirectStatus redirect_status_;
+  WTF::Optional<String> suggested_filename_;
 
   mutable CacheControlHeader cache_control_header_cache_;
 
@@ -458,6 +467,7 @@ struct CrossThreadResourceRequestData {
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   ResourceRequest::RedirectStatus redirect_status_;
+  base::Optional<String> suggested_filename_;
 };
 
 }  // namespace blink

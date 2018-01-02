@@ -36,6 +36,7 @@
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
 #include "WebSecurityOrigin.h"
+#include "base/optional.h"
 #include "services/network/public/interfaces/cors.mojom-shared.h"
 #include "services/network/public/interfaces/fetch_api.mojom-shared.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
@@ -343,6 +344,10 @@ class WebURLRequest {
   // should be dropped if a different document was loaded in the frame
   // in-between.
   BLINK_PLATFORM_EXPORT void SetIsSameDocumentNavigation(bool);
+
+  // If this request was created from an anchor with a download attribute, this
+  // is the value provided there.
+  BLINK_PLATFORM_EXPORT base::Optional<WebString> GetSuggestedFilename() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

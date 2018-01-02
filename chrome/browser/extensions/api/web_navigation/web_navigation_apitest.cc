@@ -404,20 +404,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_ServerRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ScopedTempDir download_directory;
-  ASSERT_TRUE(download_directory.CreateUniqueTempDir());
-  DownloadPrefs* download_prefs =
-      DownloadPrefs::FromBrowserContext(browser()->profile());
-  download_prefs->SetDownloadPath(download_directory.GetPath());
-
-  DownloadTestObserverNotInProgress download_observer(
-      content::BrowserContext::GetDownloadManager(profile()), 1);
-  download_observer.StartObserving();
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webnavigation/download"))
       << message_;
-  download_observer.WaitForFinished();
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirectSingleProcess) {

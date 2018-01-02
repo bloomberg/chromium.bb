@@ -2665,8 +2665,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
 }
 
-// A request for a non-existent resource should still result in a DownloadItem
-// that's created in an interrupted state.
+// A request for a non-existent resource should result in an aborted navigation,
+// and the old site staying current.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
   GURL download_url =
       embedded_test_server()->GetURL("/download/does-not-exist");
@@ -2674,15 +2674,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
       std::string("/download/download-attribute.html?target=") +
       download_url.spec());
 
-  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
-  WaitForInterrupt(download);
-
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
-            download->GetLastReason());
+  auto observer = std::make_unique<content::TestNavigationObserver>(
+      shell()->web_contents(), 2);
+  NavigateToURL(shell(), document_url);
+  observer->Wait();
+  EXPECT_FALSE(observer->last_navigation_succeeded());
 }
 
 // A request that fails before it gets a response from the server should also
-// result in a DownloadItem that's created in an interrupted state.
+// result in the old page staying current.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
   SetupErrorInjectionDownloads();
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
@@ -2697,24 +2697,24 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
   GURL document_url = embedded_test_server()->GetURL(
       std::string("/download/download-attribute.html?target=") +
       server_url.spec());
-  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
-  WaitForInterrupt(download);
-
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
-            download->GetLastReason());
+  auto observer = std::make_unique<content::TestNavigationObserver>(
+      shell()->web_contents(), 2);
+  NavigateToURL(shell(), document_url);
+  observer->Wait();
+  EXPECT_FALSE(observer->last_navigation_succeeded());
 }
 
 // A request that fails due to it being rejected by policy should result in a
-// DownloadItem that's marked as interrupted.
+// corresponding navigation.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
-  GURL document_url = embedded_test_server()->GetURL(
+  GURL url = embedded_test_server()->GetURL(
       "/download/download-attribute.html?target=about:version");
-  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
-  WaitForInterrupt(download);
-
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
-            download->GetLastReason());
-  EXPECT_FALSE(download->CanResume());
+  auto observer = std::make_unique<content::TestNavigationObserver>(
+      GURL(url::kAboutBlankURL));
+  observer->WatchExistingWebContents();
+  observer->StartWatchingNewWebContents();
+  NavigateToURL(shell(), url);
+  observer->WaitForNavigationFinished();
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
