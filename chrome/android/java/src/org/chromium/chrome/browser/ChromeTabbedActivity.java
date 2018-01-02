@@ -85,6 +85,8 @@ import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MainIntentBehaviorMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -260,6 +262,8 @@ public class ChromeTabbedActivity
     private TabModelSelectorTabModelObserver mTabModelObserver;
 
     private ScreenshotMonitor mScreenshotMonitor;
+
+    private TabModalLifetimeHandler mTabModalHandler;
 
     private boolean mUIInitialized;
 
@@ -1901,6 +1905,8 @@ public class ChromeTabbedActivity
         super.onOmniboxFocusChanged(hasFocus);
 
         mMainIntentMetrics.onOmniboxFocused();
+
+        mTabModalHandler.onOmniboxFocusChanged(hasFocus);
     }
 
     private void recordBackPressedUma(String logMessage, @BackPressedResult int action) {
@@ -1941,6 +1947,8 @@ public class ChromeTabbedActivity
         }
 
         if (getBottomSheet() != null && getBottomSheet().handleBackPress()) return true;
+
+        if (mTabModalHandler.handleBackPress()) return true;
 
         if (currentTab == null) {
             recordBackPressedUma("currentTab is null", BACK_PRESSED_TAB_IS_NULL);
@@ -2158,6 +2166,11 @@ public class ChromeTabbedActivity
             mUndoBarPopupController = null;
         }
 
+        if (mTabModalHandler != null) {
+            mTabModalHandler.destroy();
+            mTabModalHandler = null;
+        }
+
         super.onDestroyInternal();
 
         FeatureUtilities.finalizePendingFeatures();
@@ -2210,6 +2223,13 @@ public class ChromeTabbedActivity
     @VisibleForTesting
     public Layout getOverviewListLayout() {
         return getLayoutManager().getOverviewListLayout();
+    }
+
+    @Override
+    protected ModalDialogManager createModalDialogManager() {
+        ModalDialogManager manager = super.createModalDialogManager();
+        mTabModalHandler = new TabModalLifetimeHandler(this, manager);
+        return manager;
     }
 
     // App Menu related code -----------------------------------------------------------------------
