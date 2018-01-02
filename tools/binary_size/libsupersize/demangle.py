@@ -16,7 +16,12 @@ def _DemangleNames(names, tool_prefix):
                           stdin=subprocess.PIPE, stdout=subprocess.PIPE)
   stdout = proc.communicate('\n'.join(names))[0]
   assert proc.returncode == 0
-  return stdout.splitlines()
+  ret = stdout.splitlines()
+  if logging.getLogger().isEnabledFor(logging.INFO):
+    fail_count = sum(1 for s in ret if s.startswith('_Z'))
+    if fail_count:
+      logging.info('* Failed to demangle %d/%d items', fail_count, len(ret))
+  return ret
 
 
 def DemangleRemainingSymbols(raw_symbols, tool_prefix):
