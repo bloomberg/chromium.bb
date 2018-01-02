@@ -102,6 +102,11 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
     // Mojo callback for SensorProvider::GetSensor().
     void OnSensorCreated(device::mojom::SensorInitParamsPtr params) {
+      // TODO(798409): `OnSensorCreated` can be called twice in some cases, this
+      // is a workaround to avoid hitting unexpected code paths.
+      if (sensor.is_bound())
+        return;
+
       if (!params) {
         HandleSensorError();
         event_pump->DidStartIfPossible();
