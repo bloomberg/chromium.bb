@@ -137,7 +137,8 @@ void ModuleTreeLinker::FetchRoot(const ModuleScriptFetchRequest& request) {
 
   AdvanceState(State::kFetchingSelf);
 
-  // Step 1 is done in InitiateInternalModuleScriptGraphFetching().
+  // Step 1. Let visited set be << url >>.
+  visited_set_.insert(request.Url());
 
   // Step 2. Perform the internal module script graph fetching procedure given
   // ... with the top-level module fetch flag set. ...
@@ -170,20 +171,8 @@ void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
 void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
     const ModuleScriptFetchRequest& request,
     ModuleGraphLevel level) {
-  DCHECK(!visited_set_.Contains(request.Url()));
-
-  // This step originates from the callers of [IMSGF]:
-  //
-  // https://html.spec.whatwg.org/#fetch-a-module-script-tree
-  // https://html.spec.whatwg.org/#fetch-a-module-worker-script-tree
-  // Step 1. Let visited set be << url >>.
-  //
-  // [FD] Step 5.3.2. Append url to visited set.
-  visited_set_.insert(request.Url());
-
   // [IMSGF] Step 1. Assert: visited set contains url.
-  //
-  // This is ensured by the insert() just above.
+  DCHECK(visited_set_.Contains(request.Url()));
 
   ++num_incomplete_fetches_;
 
@@ -304,9 +293,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
       urls.push_back(url);
 
       // [FD] Step 5.3.2. Append url to visited set.
-      //
-      // This step is deferred to InitiateInternalModuleScriptGraphFetching()
-      // below.
+      visited_set_.insert(url);
 
       positions.push_back(module_request.position);
     }
