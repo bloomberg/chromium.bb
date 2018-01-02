@@ -55,12 +55,6 @@
   if (IsIPadIdiom()) {
     _sizeClassRecorder = [[SizeClassRecorder alloc]
         initWithHorizontalSizeClass:self.traitCollection.horizontalSizeClass];
-    // Remove use of this notification.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(pageLoaded:)
-               name:kTabModelTabDidFinishLoadingNotification
-             object:nil];
   }
 }
 
@@ -83,14 +77,6 @@
         horizontalSizeClassDidChange:self.traitCollection.horizontalSizeClass];
     [self updateBreakpad];
   }
-}
-
-#pragma mark - Notification handler
-
-- (void)pageLoaded:(NSNotification*)notification {
-  [_sizeClassRecorder
-      pageLoadedWithHorizontalSizeClass:self.traitCollection
-                                            .horizontalSizeClass];
 }
 
 #pragma mark - Testing methods

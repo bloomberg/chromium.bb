@@ -67,9 +67,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kTabModelTabDidFinishLoadingNotification =
-    @"kTabModelTabDidFinishLoadingNotification";
-
 namespace {
 
 // Updates CRWSessionCertificatePolicyManager's certificate policy cache.

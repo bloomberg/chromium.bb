@@ -822,14 +822,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
   [_parentTabModel notifyTabFinishedLoading:self success:loadSuccess];
 
-  if (_parentTabModel) {
-    // This notification is deprecated, and no further observers of it should
-    // be added.
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabModelTabDidFinishLoadingNotification
-                      object:_parentTabModel];
-  }
-
   if (!self.isPrerenderTab) {
     [[OmniboxGeolocationController sharedInstance]
         finishPageLoadForTab:self

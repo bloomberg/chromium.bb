@@ -171,7 +171,7 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Unspecified) {
 
   recorder_ = [[SizeClassRecorder alloc]
       initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
-  [recorder_
+  [[recorder_ class]
       pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
@@ -187,7 +187,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Compact) {
 
   recorder_ = [[SizeClassRecorder alloc]
       initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
-  [recorder_ pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
+  [[recorder_ class]
+      pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassCompact];
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
   histogram_tester_->ExpectUniqueSample(
@@ -202,7 +203,8 @@ TEST_F(SizeClassRecorderTest, RecordSizeClassOnPageLoaded_Regular) {
 
   recorder_ = [[SizeClassRecorder alloc]
       initWithHorizontalSizeClass:UIUserInterfaceSizeClassUnspecified];
-  [recorder_ pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
+  [[recorder_ class]
+      pageLoadedWithHorizontalSizeClass:UIUserInterfaceSizeClassRegular];
 
   histogram_tester_->ExpectTotalCount(kSizeClassUsedHistogramName, 0);
   histogram_tester_->ExpectUniqueSample(
