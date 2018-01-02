@@ -28,10 +28,10 @@ namespace syncer {
 namespace {
 
 // Prefix for records containing attachment data.
-const char kDataPrefix[] = "data-";
+const char kAttachmentDataPrefix[] = "data-";
 
 // Prefix for records containing attachment metadata.
-const char kMetadataPrefix[] = "metadata-";
+const char kAttachmentMetadataPrefix[] = "metadata-";
 
 const char kDatabaseMetadataKey[] = "database-metadata";
 
@@ -320,14 +320,14 @@ void OnDiskAttachmentStore::ReadMetadata(
     std::unique_ptr<leveldb::Iterator> db_iterator(
         db_->NewIterator(MakeNonCachingReadOptions()));
     DCHECK(db_iterator);
-    for (db_iterator->Seek(kMetadataPrefix); db_iterator->Valid();
+    for (db_iterator->Seek(kAttachmentMetadataPrefix); db_iterator->Valid();
          db_iterator->Next()) {
       leveldb::Slice key = db_iterator->key();
-      if (!key.starts_with(kMetadataPrefix)) {
+      if (!key.starts_with(kAttachmentMetadataPrefix)) {
         break;
       }
       // Make AttachmentId from levelDB key.
-      key.remove_prefix(strlen(kMetadataPrefix));
+      key.remove_prefix(strlen(kAttachmentMetadataPrefix));
       sync_pb::AttachmentIdProto id_proto;
       id_proto.set_unique_id(key.ToString());
       AttachmentId id = AttachmentId::CreateFromProto(id_proto);
@@ -518,13 +518,15 @@ bool OnDiskAttachmentStore::WriteSingleRecordMetadata(
 
 std::string OnDiskAttachmentStore::MakeDataKeyFromAttachmentId(
     const AttachmentId& attachment_id) {
-  std::string key = kDataPrefix + attachment_id.GetProto().unique_id();
+  std::string key =
+      kAttachmentDataPrefix + attachment_id.GetProto().unique_id();
   return key;
 }
 
 std::string OnDiskAttachmentStore::MakeMetadataKeyFromAttachmentId(
     const AttachmentId& attachment_id) {
-  std::string key = kMetadataPrefix + attachment_id.GetProto().unique_id();
+  std::string key =
+      kAttachmentMetadataPrefix + attachment_id.GetProto().unique_id();
   return key;
 }
 
