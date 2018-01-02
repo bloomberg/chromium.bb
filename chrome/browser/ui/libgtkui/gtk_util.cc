@@ -25,6 +25,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/linux_ui/linux_ui.h"
 
 namespace {
 
@@ -51,6 +52,11 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
   for (size_t i = 0; i < args.size(); ++i) {
     free(argv[i]);
   }
+}
+
+float GetDeviceScaleFactor() {
+  views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  return linux_ui ? linux_ui->GetDeviceScaleFactor() : 1;
 }
 
 }  // namespace
@@ -446,6 +452,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
     }
     gtk_style_context_set_state(child_context, child_state);
   }
+  gtk_style_context_set_scale(child_context, std::ceil(GetDeviceScaleFactor()));
   gtk_style_context_set_parent(child_context, context);
   gtk_widget_path_unref(path);
   return child_context;
