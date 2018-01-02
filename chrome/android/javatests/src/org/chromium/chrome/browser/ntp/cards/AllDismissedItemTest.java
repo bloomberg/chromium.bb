@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -69,8 +70,10 @@ public class AllDismissedItemTest {
     }
 
     @Test
-    @MediumTest
-    @Feature({"Cards", "RenderTest"})
+    //@MediumTest
+    //@Feature({"Cards", "RenderTest"})
+    // crbug.com/780555
+    @DisabledTest
     @ChromeHome.Enable
     public void testChromeHomeAppearance() throws IOException {
         renderAtHour(new ViewHolder(mContentView, null), 0, "modern");
