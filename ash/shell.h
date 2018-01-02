@@ -94,6 +94,7 @@ class CastConfigController;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
+class DisplayShutdownObserver;
 class DragDropController;
 class EventClientImpl;
 class EventTransformationHandler;
@@ -143,7 +144,6 @@ class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
 class ShutdownController;
-class ShutdownObserver;
 class SmsObserver;
 class SplitViewController;
 class StickyKeysController;
@@ -588,6 +588,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   void Init(ui::ContextFactory* context_factory,
             ui::ContextFactoryPrivate* context_factory_private);
 
+  // Initializes the display manager and related components.
+  void InitializeDisplayManager();
+
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);
 
@@ -745,7 +748,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<display::DisplayChangeObserver> display_change_observer_;
 
   // Listens for shutdown and updates DisplayConfigurator.
-  std::unique_ptr<ShutdownObserver> shutdown_observer_;
+  std::unique_ptr<DisplayShutdownObserver> display_shutdown_observer_;
 
   // Listens for new sms messages and shows notifications.
   std::unique_ptr<SmsObserver> sms_observer_;
