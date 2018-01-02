@@ -520,6 +520,7 @@ post_process_cmdline() {
       soft_enable rect_tx_ext_intra
       soft_enable filter_intra
       soft_enable ext_skip
+      soft_enable ext_warped_motion
     fi
 
     # Enable low-bitdepth pixel pipeline by default
