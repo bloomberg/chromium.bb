@@ -124,6 +124,13 @@ void InitializeColorSchemes() {
       normal_scheme.omnibox_background;
   normal_scheme.suggestion_button_colors.background_hover = 0xFFE0E0E0;
   normal_scheme.suggestion_button_colors.background_down = 0xFFE0E0E0;
+  normal_scheme.omnibox_voice_search_button_colors.foreground =
+      normal_scheme.omnibox_suggestion_content;
+  normal_scheme.omnibox_voice_search_button_colors.background =
+      normal_scheme.omnibox_background;
+  normal_scheme.omnibox_voice_search_button_colors.background_hover =
+      0xFFFAFAFA;
+  normal_scheme.omnibox_voice_search_button_colors.background_down = 0xFFFAFAFA;
   normal_scheme.cursor = 0xFF5595FE;
 
   g_fullscreen_scheme.Get() = normal_scheme;

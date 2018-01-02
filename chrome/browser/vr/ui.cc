@@ -181,6 +181,10 @@ void Ui::SetSpeechRecognitionEnabled(bool enabled) {
     model_->speech.recognition_result.clear();
   } else {
     model_->pop_mode(kModeVoiceSearch);
+    if (model_->omnibox_editing_enabled() &&
+        !model_->speech.recognition_result.empty()) {
+      model_->pop_mode(kModeEditingOmnibox);
+    }
   }
 }
 

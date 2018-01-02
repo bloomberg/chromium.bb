@@ -331,6 +331,44 @@ TEST_F(UiTest, UiModeOmniboxEditing) {
   VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
 }
 
+TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  EXPECT_EQ(NumVisibleInTree(kOmniboxRoot), 0);
+  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  ui_->SetOmniboxEditingEnabled(true);
+  EXPECT_TRUE(RunFor(MsToDelta(1000)));
+  EXPECT_EQ(model_->ui_modes.size(), 2u);
+  EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  EXPECT_GT(NumVisibleInTree(kOmniboxRoot), 0);
+
+  ui_->SetSpeechRecognitionEnabled(true);
+  EXPECT_EQ(model_->ui_modes.size(), 3u);
+  EXPECT_EQ(model_->ui_modes[2], kModeVoiceSearch);
+  EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
+  EXPECT_EQ(NumVisibleInTree(kOmniboxRoot), 0);
+  VerifyVisibility(kElementsVisibleWithVoiceSearch, true);
+
+  ui_->SetSpeechRecognitionEnabled(false);
+  EXPECT_EQ(model_->ui_modes.size(), 2u);
+  EXPECT_EQ(model_->ui_modes[1], kModeEditingOmnibox);
+  EXPECT_EQ(model_->ui_modes[0], kModeBrowsing);
+  EXPECT_TRUE(RunFor(MsToDelta(1000)));
+  EXPECT_GT(NumVisibleInTree(kOmniboxRoot), 0);
+
+  ui_->SetOmniboxEditingEnabled(false);
+  EXPECT_EQ(model_->ui_modes.size(), 1u);
+  EXPECT_EQ(model_->ui_modes.back(), kModeBrowsing);
+  EXPECT_TRUE(RunFor(MsToDelta(10)));
+  VerifyOnlyElementsVisible("Browsing", kElementsVisibleInBrowsing);
+}
+
 TEST_F(UiTest, WebVrAutopresented) {
   CreateSceneForAutoPresentation();
 
