@@ -12,7 +12,7 @@
     TestRunner.addResult(`            Index: ${treeElement.title}`);
     treeElement.select();
     for (var entry of treeElement._view._entries)
-      TestRunner.addResult(`                Key = ${entry.primaryKey.value}, value = ${entry.value.objectId}`);
+      TestRunner.addResult(`                Key = ${entry.primaryKey.value}, value = ${JSON.stringify(entry.value.preview.properties)}`);
   }
 
   function dumpObjectStores() {
@@ -22,7 +22,7 @@
       objectStoreTreeElement.select();
       TestRunner.addResult(`    Object store: ${objectStoreTreeElement.title}`);
       for (var entry of objectStoreTreeElement._view._entries)
-        TestRunner.addResult(`            Key = ${entry.key.value}, value = ${entry.value.objectId}`);
+        TestRunner.addResult(`            Key = ${entry.key.value}, value = ${JSON.stringify(entry.value.preview.properties)}`);
       for (var treeElement of objectStoreTreeElement.children())
         dumpObjectStore(treeElement);
     }
