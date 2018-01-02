@@ -130,9 +130,7 @@ class GLOzoneOSMesaHeadless : public GLOzoneOSMesa {
 HeadlessSurfaceFactory::HeadlessSurfaceFactory(base::FilePath base_path)
     : base_path_(base_path) {
   CheckBasePath();
-#if !defined(OS_FUCHSIA)
   osmesa_implementation_ = std::make_unique<GLOzoneOSMesaHeadless>(this);
-#endif
 }
 
 HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
@@ -148,11 +146,7 @@ base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
 
 std::vector<gl::GLImplementation>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
-#if defined(OS_FUCHSIA)
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationStubGL};
-#else
   return std::vector<gl::GLImplementation>{gl::kGLImplementationOSMesaGL};
-#endif
 }
 
 GLOzone* HeadlessSurfaceFactory::GetGLOzone(
