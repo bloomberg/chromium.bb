@@ -525,9 +525,10 @@ enum CellType {
 #pragma mark - Distant Sessions helpers
 
 - (void)refreshUserState:(SessionsSyncUserState)newSessionState {
-  if (newSessionState == _sessionState &&
-      _sessionState !=
-          SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
+  if ((newSessionState == _sessionState &&
+       _sessionState !=
+           SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) ||
+      _signinPromoViewMediator.isSigninInProgress) {
     // No need to refresh the sections.
     return;
   }
@@ -1028,6 +1029,10 @@ enum CellType {
   DCHECK([subview isKindOfClass:[SigninPromoView class]]);
   SigninPromoView* signinPromoView = (SigninPromoView*)subview;
   [configurator configureSigninPromoView:signinPromoView];
+}
+
+- (void)signinDidFinish {
+  [self.delegate refreshSessionsViewRecentTabsTableViewController:self];
 }
 
 #pragma mark - SyncPresenter
