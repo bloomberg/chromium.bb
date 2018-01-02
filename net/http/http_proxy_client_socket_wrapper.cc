@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
-#include "net/base/proxy_delegate.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_info.h"
 #include "net/log/net_log_event_type.h"
@@ -49,7 +48,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
     SpdySessionPool* spdy_session_pool,
     QuicStreamFactory* quic_stream_factory,
     bool tunnel,
-    ProxyDelegate* proxy_delegate,
     const NetLogWithSource& net_log)
     : next_state_(STATE_NONE),
       group_name_(group_name),
@@ -67,7 +65,6 @@ HttpProxyClientSocketWrapper::HttpProxyClientSocketWrapper(
       spdy_session_pool_(spdy_session_pool),
       has_restarted_(false),
       tunnel_(tunnel),
-      proxy_delegate_(proxy_delegate),
       using_spdy_(false),
       quic_stream_request_(quic_stream_factory),
       http_auth_controller_(
@@ -188,7 +185,6 @@ int HttpProxyClientSocketWrapper::Connect(const CompletionCallback& callback) {
     connect_callback_ = callback;
   } else {
     connect_timer_.Stop();
-    NotifyProxyDelegateOfCompletion(rv);
   }
 
   return rv;
@@ -360,7 +356,6 @@ void HttpProxyClientSocketWrapper::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING) {
     connect_timer_.Stop();
-    NotifyProxyDelegateOfCompletion(rv);
     // May delete |this|.
     base::ResetAndReturn(&connect_callback_).Run(rv);
   }
@@ -572,8 +567,7 @@ int HttpProxyClientSocketWrapper::DoHttpProxyConnect() {
   // Add a HttpProxy connection on top of the tcp socket.
   transport_socket_.reset(new HttpProxyClientSocket(
       std::move(transport_socket_handle_), user_agent_, endpoint_,
-      GetDestination().host_port_pair(), http_auth_controller_.get(), tunnel_,
-      using_spdy_, negotiated_protocol_, proxy_delegate_,
+      http_auth_controller_.get(), tunnel_, using_spdy_, negotiated_protocol_,
       ssl_params_.get() != nullptr));
   return transport_socket_->Connect(base::Bind(
       &HttpProxyClientSocketWrapper::OnIOComplete, base::Unretained(this)));
@@ -726,14 +720,6 @@ int HttpProxyClientSocketWrapper::DoRestartWithAuthComplete(int result) {
   return result;
 }
 
-void HttpProxyClientSocketWrapper::NotifyProxyDelegateOfCompletion(int result) {
-  if (!proxy_delegate_)
-    return;
-
-  const HostPortPair& proxy_server = GetDestination().host_port_pair();
-  proxy_delegate_->OnTunnelConnectCompleted(endpoint_, proxy_server, result);
-}
-
 void HttpProxyClientSocketWrapper::SetConnectTimer(base::TimeDelta delay) {
   connect_timer_.Stop();
   connect_timer_.Start(FROM_HERE, delay, this,
@@ -756,8 +742,6 @@ void HttpProxyClientSocketWrapper::ConnectTimeout() {
                                  base::TimeTicks::Now() - connect_start_time_);
     }
   }
-
-  NotifyProxyDelegateOfCompletion(ERR_CONNECTION_TIMED_OUT);
 
   CompletionCallback callback = connect_callback_;
   Disconnect();

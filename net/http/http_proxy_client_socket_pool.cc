@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket_wrapper.h"
 #include "net/log/net_log_source_type.h"
@@ -85,8 +84,7 @@ HttpProxySocketParams::HttpProxySocketParams(
     HttpAuthHandlerFactory* http_auth_handler_factory,
     SpdySessionPool* spdy_session_pool,
     QuicStreamFactory* quic_stream_factory,
-    bool tunnel,
-    ProxyDelegate* proxy_delegate)
+    bool tunnel)
     : transport_params_(transport_params),
       ssl_params_(ssl_params),
       quic_version_(quic_version),
@@ -96,8 +94,7 @@ HttpProxySocketParams::HttpProxySocketParams(
       endpoint_(endpoint),
       http_auth_cache_(tunnel ? http_auth_cache : NULL),
       http_auth_handler_factory_(tunnel ? http_auth_handler_factory : NULL),
-      tunnel_(tunnel),
-      proxy_delegate_(proxy_delegate) {
+      tunnel_(tunnel) {
   // If doing a QUIC proxy, |quic_version| must not be QUIC_VERSION_UNSUPPORTED,
   // and |ssl_params| must be valid while |transport_params| is null.
   // Otherwise, |quic_version| must be QUIC_VERSION_UNSUPPORTED, and exactly
@@ -153,7 +150,6 @@ HttpProxyConnectJob::HttpProxyConnectJob(
           params->spdy_session_pool(),
           params->quic_stream_factory(),
           params->tunnel(),
-          params->proxy_delegate(),
           this->net_log())) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() = default;

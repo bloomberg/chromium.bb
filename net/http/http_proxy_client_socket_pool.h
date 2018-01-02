@@ -31,7 +31,6 @@ class HttpAuthHandlerFactory;
 class HttpProxyClientSocketWrapper;
 class NetLog;
 class NetworkQualityProvider;
-class ProxyDelegate;
 class QuicStreamFactory;
 class SSLClientSocketPool;
 class SSLSocketParams;
@@ -57,8 +56,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
       QuicStreamFactory* quic_stream_factory,
-      bool tunnel,
-      ProxyDelegate* proxy_delegate);
+      bool tunnel);
 
   const scoped_refptr<TransportSocketParams>& transport_params() const {
     return transport_params_;
@@ -82,10 +80,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const HostResolver::RequestInfo& destination() const;
   bool tunnel() const { return tunnel_; }
 
-  ProxyDelegate* proxy_delegate() const {
-    return proxy_delegate_;
-  }
-
  private:
   friend class base::RefCounted<HttpProxySocketParams>;
   ~HttpProxySocketParams();
@@ -100,7 +94,6 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   HttpAuthCache* const http_auth_cache_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
   const bool tunnel_;
-  ProxyDelegate* proxy_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxySocketParams);
 };

@@ -65,9 +65,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool is_https_proxy = data_provider.ConsumeBool();
   net::HttpProxyClientSocket socket(
       std::move(socket_handle), "Bond/007", net::HostPortPair("foo", 80),
-      net::HostPortPair("proxy", 42), auth_controller.get(), true /* tunnel */,
-      false /* using_spdy */, net::kProtoUnknown, nullptr /* proxy_delegate */,
-      is_https_proxy);
+      auth_controller.get(), true /* tunnel */, false /* using_spdy */,
+      net::kProtoUnknown, is_https_proxy);
   int result = socket.Connect(callback.callback());
   result = callback.GetResult(result);
 

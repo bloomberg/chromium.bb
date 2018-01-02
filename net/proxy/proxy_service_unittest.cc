@@ -214,16 +214,7 @@ class TestResolveProxyDelegate : public ProxyDelegate {
     return proxy_retry_info_;
   }
 
-  void OnTunnelConnectCompleted(const HostPortPair& endpoint,
-                                const HostPortPair& proxy_server,
-                                int net_error) override {}
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
-  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
-                             HttpRequestHeaders* extra_headers) override {}
-  void OnTunnelHeadersReceived(
-      const HostPortPair& origin,
-      const HostPortPair& proxy_server,
-      const HttpResponseHeaders& response_headers) override {}
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
     return true;
   }
@@ -249,20 +240,11 @@ class TestProxyFallbackProxyDelegate : public ProxyDelegate {
                       const std::string& method,
                       const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override {}
-  void OnTunnelConnectCompleted(const HostPortPair& endpoint,
-                                const HostPortPair& proxy_server,
-                                int net_error) override {}
   void OnFallback(const ProxyServer& bad_proxy, int net_error) override {
     proxy_server_ = bad_proxy;
     proxy_fallback_net_error_ = net_error;
     on_proxy_fallback_called_ = true;
   }
-  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
-                             HttpRequestHeaders* extra_headers) override {}
-  void OnTunnelHeadersReceived(
-      const HostPortPair& origin,
-      const HostPortPair& proxy_server,
-      const HttpResponseHeaders& response_headers) override {}
   bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override {
     return true;
   }
