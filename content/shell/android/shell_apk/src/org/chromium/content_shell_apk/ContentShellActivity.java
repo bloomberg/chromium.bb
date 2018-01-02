@@ -17,7 +17,6 @@ import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.DeviceUtils;
@@ -50,7 +49,7 @@ public class ContentShellActivity extends Activity {
 
         // Initializing the command line must occur before loading the library.
         if (!CommandLine.isInitialized()) {
-            ContentApplication.initCommandLine(this);
+            ((ContentShellApplication) getApplication()).initCommandLine();
             String[] commandLineParams = getCommandLineParamsFromIntent(getIntent());
             if (commandLineParams != null) {
                 CommandLine.getInstance().appendSwitchesAndArguments(commandLineParams);

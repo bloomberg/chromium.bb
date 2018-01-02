@@ -14,7 +14,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chromecast.base.ChromecastConfigAndroid;
-import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.net.NetworkChangeNotifier;
@@ -45,7 +44,7 @@ public class CastBrowserHelper {
 
         // Initializing the command line must occur before loading the library.
         if (!CommandLine.isInitialized()) {
-            ContentApplication.initCommandLine(context);
+            ((CastApplication) context.getApplicationContext()).initCommandLine();
 
             if (context instanceof Activity) {
                 Intent launchingIntent = ((Activity) context).getIntent();

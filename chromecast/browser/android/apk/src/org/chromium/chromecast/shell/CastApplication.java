@@ -39,7 +39,6 @@ public class CastApplication extends ContentApplication {
         ApplicationStatus.initialize(this);
     }
 
-    @Override
     public void initCommandLine() {
         CommandLineInitUtil.initCommandLine(this, COMMAND_LINE_FILE);
     }

@@ -29,7 +29,6 @@ public class ContentShellApplication extends ContentApplication {
         ApplicationStatus.initialize(this);
     }
 
-    @Override
     public void initCommandLine() {
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);

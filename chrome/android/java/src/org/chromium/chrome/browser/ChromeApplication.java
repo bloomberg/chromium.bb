@@ -98,7 +98,6 @@ public class ChromeApplication extends ContentApplication {
         InvalidStartupDialog.show(activity, e.getErrorCode());
     }
 
-    @Override
     public void initCommandLine() {
         CommandLineInitUtil.initCommandLine(this, COMMAND_LINE_FILE);
     }
