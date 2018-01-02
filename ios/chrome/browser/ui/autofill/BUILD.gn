@@ -59,6 +59,7 @@ source_set("autofill_ui") {
     "//base",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/image_util",
     "//ui/base:base",
   ]
   libs = [ "UIKit.framework" ]

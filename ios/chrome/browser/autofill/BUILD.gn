@@ -59,6 +59,7 @@ source_set("autofill") {
     "//ios/chrome/browser/passwords:passwords_generation_utils",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/image_util",
     "//ios/web",
     "//third_party/libaddressinput",
     "//ui/base",
