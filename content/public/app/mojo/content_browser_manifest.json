@@ -62,9 +62,6 @@
           "viz::mojom::SharedBitmapAllocationNotifier",
           "viz::mojom::CompositingModeReporter"
         ],
-        "geolocation_config": [
-          "device::mojom::GeolocationConfig"
-        ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
         ]
@@ -72,9 +69,6 @@
       "requires": {
         "*": [ "app" ],
         "cdm": [ "media:cdm" ],
-        "content_browser": [
-          "geolocation_config"
-        ],
         "content_gpu": [ "browser" ],
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],

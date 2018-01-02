@@ -8,6 +8,7 @@
         "device:fingerprint": [ "device::mojom::Fingerprint" ],
         "device:generic_sensor": [ "device::mojom::SensorProvider" ],
         "device:geolocation": [ "device::mojom::GeolocationContext" ],
+        "device:geolocation_config": [ "device::mojom::GeolocationConfig" ],
         "device:geolocation_control": [ "device::mojom::GeolocationControl" ],
         "device:hid": [ "device::mojom::HidManager" ],
         "device:input_service": [ "device::mojom::InputDeviceManager" ],

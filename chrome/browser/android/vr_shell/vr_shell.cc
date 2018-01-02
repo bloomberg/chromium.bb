@@ -58,6 +58,7 @@
 #include "device/vr/vr_device.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "jni/VrShellImpl_jni.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/window_android.h"
@@ -864,7 +865,7 @@ void VrShell::PollMediaAccessFlag() {
   }
   auto* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface("content_browser", &geolocation_config_);
+  connector->BindInterface(device::mojom::kServiceName, &geolocation_config_);
 
   geolocation_config_->IsHighAccuracyLocationBeingCaptured(
       base::Bind(&VrShell::SetHighAccuracyLocation, base::Unretained(this)));
