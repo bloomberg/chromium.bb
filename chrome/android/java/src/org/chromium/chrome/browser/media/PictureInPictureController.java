@@ -185,10 +185,14 @@ public class PictureInPictureController {
 
         webContents.setHasPersistentVideo(true);
 
+        // We don't want InfoBars displaying while in PiP, they cover too much content.
+        activity.getActivityTab().getInfoBarContainer().setHidden(true);
+
         mOnLeavePipCallbacks.add(new Callback<ChromeActivity>() {
             @Override
             public void onResult(ChromeActivity activity2) {
                 webContents.setHasPersistentVideo(false);
+                activity.getActivityTab().getInfoBarContainer().setHidden(false);
             }
         });
 
