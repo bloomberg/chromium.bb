@@ -78,6 +78,7 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/metrics/size_class_recorder.h"
 #include "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
 #include "ios/chrome/browser/passwords/password_tab_helper.h"
@@ -4711,6 +4712,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
     didFinishLoadingTab:(Tab*)tab
                 success:(BOOL)success {
   [self tabLoadComplete:tab withSuccess:success];
+  if (IsIPadIdiom()) {
+    UIUserInterfaceSizeClass sizeClass =
+        self.view.window.traitCollection.horizontalSizeClass;
+    [SizeClassRecorder pageLoadedWithHorizontalSizeClass:sizeClass];
+  }
 }
 
 - (void)tabModel:(TabModel*)model

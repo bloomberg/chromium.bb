@@ -32,15 +32,6 @@ struct Referrer;
 class WebState;
 }
 
-// When a tab finishes loading a URL, a notification with the following key is
-// sent. This notification is DEPRECATED and no further observers of it should
-// be added.
-// A tab finished loading a URL. The tab in question is in the userInfo under
-// kTabModelTabKey.
-extern NSString* const kTabModelTabDidFinishLoadingNotification;
-
-// ---------------------------------------------------------------------------
-
 namespace TabModelConstants {
 
 // Position the tab automatically. This value is used as index parameter in

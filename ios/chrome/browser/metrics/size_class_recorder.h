@@ -21,7 +21,7 @@
 
 // Call this class method when a page has loaded to record the size class at
 // that time. It will be reported inder Tab.PageLoadInHorizontalSizeClass.
-- (void)pageLoadedWithHorizontalSizeClass:(UIUserInterfaceSizeClass)sizeClass;
++ (void)pageLoadedWithHorizontalSizeClass:(UIUserInterfaceSizeClass)sizeClass;
 
 @end
 

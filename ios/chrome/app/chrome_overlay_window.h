@@ -7,8 +7,7 @@
 
 #import "ios/third_party/material_components_ios/src/components/OverlayWindow/src/MaterialOverlayWindow.h"
 
-// Tracks size classes changes and kTabModelTabDidFinishLoadingNotification
-// then reports to SizeClassRecorder and Breakpad.
+// Tracks size classes changes then reports to SizeClassRecorder and Breakpad.
 @interface ChromeOverlayWindow : MDCOverlayWindow
 @end
 
