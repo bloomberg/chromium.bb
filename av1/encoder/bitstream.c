@@ -4540,6 +4540,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
     uint32_t tg_hdr_size =
         write_obu_header(OBU_TILE_GROUP, 0, data + PRE_OBU_SIZE_BYTES);
+    tg_hdr_size += PRE_OBU_SIZE_BYTES;
     data += tg_hdr_size;
 
     int tile_size_bytes;
