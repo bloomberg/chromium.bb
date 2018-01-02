@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
+#include <memory>
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -24,7 +25,14 @@ namespace web {
 namespace {
 
 // A test fixture for testing the page_script_util methods.
-typedef WebTest PageScriptUtilTest;
+class PageScriptUtilTest : public WebTest {
+ protected:
+  PageScriptUtilTest() : WebTest(std::make_unique<TestWebClient>()) {}
+
+  TestWebClient* GetWebClient() override {
+    return static_cast<TestWebClient*>(WebTest::GetWebClient());
+  }
+};
 
 // Tests that WKWebView early page script is a valid script that injects global
 // __gCrWeb object.

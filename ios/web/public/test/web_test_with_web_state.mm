@@ -36,6 +36,10 @@ namespace web {
 
 WebTestWithWebState::WebTestWithWebState() {}
 
+WebTestWithWebState::WebTestWithWebState(
+    std::unique_ptr<web::WebClient> web_client)
+    : WebTest(std::move(web_client)) {}
+
 WebTestWithWebState::~WebTestWithWebState() {}
 
 void WebTestWithWebState::SetUp() {

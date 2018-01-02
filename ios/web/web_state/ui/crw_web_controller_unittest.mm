@@ -118,6 +118,9 @@ void WaitForZoomRendering(CRWWebController* webController,
 // Test fixture for testing CRWWebController. Stubs out web view.
 class CRWWebControllerTest : public WebTestWithWebController {
  protected:
+  CRWWebControllerTest()
+      : WebTestWithWebController(std::make_unique<TestWebClient>()) {}
+
   void SetUp() override {
     WebTestWithWebController::SetUp();
     mock_web_view_ = CreateMockWebView();
@@ -135,6 +138,11 @@ class CRWWebControllerTest : public WebTestWithWebController {
     EXPECT_OCMOCK_VERIFY(mock_web_view_);
     [web_controller() resetInjectedWebViewContentView];
     WebTestWithWebController::TearDown();
+  }
+
+  TestWebClient* GetWebClient() override {
+    return static_cast<TestWebClient*>(
+        WebTestWithWebController::GetWebClient());
   }
 
   // The value for web view OCMock objects to expect for |-setFrame:|.

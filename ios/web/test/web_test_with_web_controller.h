@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_TEST_WEB_TEST_WITH_WEB_CONTROLLER_H_
 #define IOS_WEB_TEST_WEB_TEST_WITH_WEB_CONTROLLER_H_
 
+#include <memory>
+
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
@@ -14,6 +16,7 @@ namespace web {
 class WebTestWithWebController : public WebTestWithWebState {
  protected:
   WebTestWithWebController();
+  explicit WebTestWithWebController(std::unique_ptr<web::WebClient> web_client);
   ~WebTestWithWebController() override;
   // Returns web controller for testing.
   CRWWebController* web_controller();
