@@ -1,6 +1,5 @@
 Tests Application Panel preview for resources of different types.
 
-
 Initial state:
 Application
   Manifest (selected)
@@ -23,12 +22,8 @@ Frames
     Images
       image.png
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js
-      resources-test.js
-    resources-panel-resource-preview.html
+    inspected-page.html
 log: visible view: unknown
 Revealed json-value.js:
 Application
@@ -52,12 +47,8 @@ Frames
     Images
       image.png
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js (selected)
-      resources-test.js
-    resources-panel-resource-preview.html
+    inspected-page.html
 log: visible view: json
 Revealed image.png:
 Application
@@ -81,14 +72,10 @@ Frames
     Images
       image.png (selected)
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js
-      resources-test.js
-    resources-panel-resource-preview.html
+    inspected-page.html
 log: visible view: image
-Revealed resources-panel-resource-preview.html:
+Revealed resources-panel-resource-preview.js:
 Application
   Manifest
   Service Workers
@@ -110,11 +97,7 @@ Frames
     Images
       image.png
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
-      json-value.js
-      resources-test.js
-    resources-panel-resource-preview.html (selected)
-log: visible view: source
+      json-value.js (selected)
+    inspected-page.html
+log: visible view: json
 
