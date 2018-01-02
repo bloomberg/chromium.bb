@@ -138,6 +138,10 @@ class UnorderedLabelManager : public BaseLabelManager {
   // Previous lookup results involving stored offsets / indexes remain valid.
   void InsertNewOffset(offset_t offset);
 
+  bool ContainsOffset(offset_t offset) const {
+    return labels_map_.find(offset) != labels_map_.end();
+  }
+
  private:
   // Inverse map of |labels_| (excludes |kUnusedIndex|).
   std::unordered_map<offset_t, offset_t> labels_map_;

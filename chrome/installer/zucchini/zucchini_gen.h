@@ -14,17 +14,13 @@
 
 namespace zucchini {
 
-class Disassembler;
 class EquivalenceMap;
 class ImageIndex;
 class OrderedLabelManager;
 class PatchElementWriter;
 class ReferenceDeltaSink;
 class ReferenceSet;
-
-// Creates an ImageIndex and initializes it with references from |disasm|.
-// Returns nullopt on error.
-base::Optional<ImageIndex> MakeImageIndex(Disassembler* disasm);
+class UnorderedLabelManager;
 
 // Projects targets in |old_targets| to a list of new targets using
 // |equivalences|. Targets that cannot be projected have offset assigned as
@@ -35,11 +31,14 @@ std::vector<offset_t> MakeNewTargetsFromEquivalenceMap(
     const std::vector<offset_t>& old_targets,
     const std::vector<Equivalence>& equivalences);
 
-// Extracts all unmarked targets of references in |new_references| whose
-// location is found in an equivalence of |equivalences|, and returns these
-// targets in a new vector. |new_references| must be sorted in ascending order.
-std::vector<offset_t> FindExtraTargets(const ReferenceSet& new_references,
-                                       const EquivalenceMap& equivalences);
+// Extract references in |new_references| that have the following properties:
+// - The location is found in |equivalences| (dst).
+// - The target (key) is absent in |new_label_manager|.
+// The targets of the extracted references are returned in a new vector.
+std::vector<offset_t> FindExtraTargets(
+    const ReferenceSet& new_references,
+    const UnorderedLabelManager& new_label_manager,
+    const EquivalenceMap& equivalence_map);
 
 // Creates an EquivalenceMap from "old" image to "new" image and returns the
 // result. The params |*_image_index|:
@@ -70,10 +69,12 @@ bool GenerateRawDelta(ConstBufferView old_image,
                       const ImageIndex& new_image_index,
                       PatchElementWriter* patch_writer);
 
-// Writes reference delta between references from |old_index| and from
-// |new_index| to |patch_writer|.
-bool GenerateReferencesDelta(const ImageIndex& old_index,
-                             const ImageIndex& new_index,
+// Writes reference delta between references from |old_refs| and from
+// |new_refs| to |patch_writer|. |new_label_manager| contains projected
+// labels from old to new image for references pool associated with |new_refs|
+bool GenerateReferencesDelta(const ReferenceSet& old_refs,
+                             const ReferenceSet& new_refs,
+                             const UnorderedLabelManager& new_label_manager,
                              const EquivalenceMap& equivalence_map,
                              ReferenceDeltaSink* reference_delta_sink);
 
