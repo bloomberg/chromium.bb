@@ -4220,18 +4220,6 @@
       },
       {
         "args": [
-          "--xvfb"
-        ],
-        "isolate_name": "telemetry_perf_unittests_viz",
-        "name": "telemetry_perf_unittests_viz",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 960,
-          "shards": 12
-        }
-      },
-      {
-        "args": [
           "--extra-browser-args=--enable-viz",
           "--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed",
           "--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot",
