@@ -16,30 +16,32 @@ class {{export_attribute}} {{class_name}} {
    public:
     BufferWriter() = default;
 
-    void Allocate(mojo::internal::Buffer* buffer) {
-      buffer_ = buffer;
-      index_ = buffer_->Allocate(sizeof({{class_name}}));
+    void Allocate(mojo::internal::Buffer* serialization_buffer) {
+      serialization_buffer_ = serialization_buffer;
+      index_ = serialization_buffer_->Allocate(sizeof({{class_name}}));
       new (data()) {{class_name}}();
     }
 
-    void AllocateInline(mojo::internal::Buffer* buffer, void* ptr) {
-      const char* start = static_cast<const char*>(buffer->data());
+    void AllocateInline(mojo::internal::Buffer* serialization_buffer,
+                        void* ptr) {
+      const char* start = static_cast<const char*>(
+          serialization_buffer->data());
       const char* slot = static_cast<const char*>(ptr);
       DCHECK_GT(slot, start);
-      buffer_ = buffer;
+      serialization_buffer_ = serialization_buffer;
       index_ = slot - start;
       new (data()) {{class_name}}();
     }
 
-    bool is_null() const { return !buffer_; }
+    bool is_null() const { return !serialization_buffer_; }
     {{class_name}}* data() {
       DCHECK(!is_null());
-      return buffer_->Get<{{class_name}}>(index_);
+      return serialization_buffer_->Get<{{class_name}}>(index_);
     }
     {{class_name}}* operator->() { return data(); }
 
    private:
-    mojo::internal::Buffer* buffer_ = nullptr;
+    mojo::internal::Buffer* serialization_buffer_ = nullptr;
     size_t index_ = 0;
   };
 
