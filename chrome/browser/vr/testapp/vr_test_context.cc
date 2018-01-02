@@ -153,8 +153,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
         ui_->SetIncognito(incognito_);
         break;
       case ui::DomCode::US_D:
-        ui_->Dump();
+        ui_->Dump(false);
         break;
+      case ui::DomCode::US_B:
+        ui_->Dump(true);
       case ui::DomCode::US_V:
         CreateFakeVoiceSearchResult();
         break;

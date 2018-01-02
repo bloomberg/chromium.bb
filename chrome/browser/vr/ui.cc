@@ -304,11 +304,12 @@ bool Ui::SkipsRedrawWhenNotDirty() const {
   return model_->skips_redraw_when_not_dirty;
 }
 
-void Ui::Dump() {
+void Ui::Dump(bool include_bindings) {
   std::ostringstream os;
   os << std::setprecision(3);
   os << std::endl;
-  scene_->root_element().DumpHierarchy(std::vector<size_t>(), &os);
+  scene_->root_element().DumpHierarchy(std::vector<size_t>(), &os,
+                                       include_bindings);
   LOG(ERROR) << os.str();
 }
 

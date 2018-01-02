@@ -423,7 +423,11 @@ class UiElement : public cc::AnimationTarget {
   // situated in its parent's list of children. This is used to determine
   // whether each ancestor is the last child (which affects the lines we draw in
   // the tree).
-  void DumpHierarchy(std::vector<size_t> counts, std::ostringstream* os) const;
+  // TODO(vollick): generalize the configuration of the dump to selectively turn
+  // off or on a variety of features.
+  void DumpHierarchy(std::vector<size_t> counts,
+                     std::ostringstream* os,
+                     bool include_bindings) const;
   virtual void DumpGeometry(std::ostringstream* os) const;
 
  protected:

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VR_DATABINDING_VECTOR_ELEMENT_BINDING_H_
 #define CHROME_BROWSER_VR_DATABINDING_VECTOR_ELEMENT_BINDING_H_
 
+#include <sstream>
 #include <vector>
 
 #include "base/bind.h"
@@ -40,6 +41,14 @@ class VectorElementBinding : public BindingBase {
   void set_view(V* view) { view_ = view; }
 
   std::vector<std::unique_ptr<BindingBase>>& bindings() { return bindings_; }
+
+  std::string ToString() override {
+    std::ostringstream os;
+    for (auto& binding : bindings_) {
+      os << std::endl << "  " << binding->ToString();
+    }
+    return os.str();
+  }
 
  private:
   std::vector<M>* models_ = nullptr;

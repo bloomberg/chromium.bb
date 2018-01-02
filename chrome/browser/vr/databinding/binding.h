@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
 
 namespace vr {
@@ -23,9 +24,18 @@ namespace vr {
 template <typename T>
 class Binding : public BindingBase {
  public:
-  Binding(const base::Callback<T()>& getter,
-          const base::Callback<void(const T&)>& setter)
+  Binding(const base::RepeatingCallback<T()>& getter,
+          const base::RepeatingCallback<void(const T&)>& setter)
       : getter_(getter), setter_(setter) {}
+
+  Binding(const base::RepeatingCallback<T()>& getter,
+          const std::string& getter_text,
+          const base::RepeatingCallback<void(const T&)>& setter,
+          const std::string& setter_text)
+      : getter_(getter),
+        setter_(setter),
+        getter_text_(getter_text),
+        setter_text_(setter_text) {}
   ~Binding() override = default;
 
   // This function will check if the getter is producing a different value than
@@ -40,10 +50,21 @@ class Binding : public BindingBase {
     return true;
   }
 
+  std::string ToString() override {
+    if (getter_text_.empty() && setter_text_.empty())
+      return "";
+
+    return base::StringPrintf("%s => %s", getter_text_.c_str(),
+                              setter_text_.c_str());
+  }
+
  private:
-  base::Callback<T()> getter_;
-  base::Callback<void(const T&)> setter_;
+  base::RepeatingCallback<T()> getter_;
+  base::RepeatingCallback<void(const T&)> setter_;
   base::Optional<T> last_value_;
+
+  std::string getter_text_;
+  std::string setter_text_;
 
   DISALLOW_COPY_AND_ASSIGN(Binding);
 };
@@ -82,17 +103,31 @@ class Binding : public BindingBase {
 // auto binding =
 //     VR_BIND_FUNC(int, MyModel, &m, source, MyView, &v, SetAwesomeness);
 //
-#define VR_BIND(T, M, m, Get, V, v, Set)                                    \
-  base::MakeUnique<Binding<T>>(                                             \
-      base::Bind([](M* model) { return model->Get; }, base::Unretained(m)), \
-      base::Bind([](V* view, const T& value) { view->Set; },                \
-                 base::Unretained(v)))
+#ifndef NDEBUG
+#define VR_BIND(T, M, m, Get, V, v, Set)                              \
+  base::MakeUnique<Binding<T>>(                                       \
+      base::BindRepeating([](M* model) { return model->Get; },        \
+                          base::Unretained(m)),                       \
+      #Get,                                                           \
+      base::BindRepeating([](V* view, const T& value) { view->Set; }, \
+                          base::Unretained(v)),                       \
+      #Set)
+#else
+#define VR_BIND(T, M, m, Get, V, v, Set)                              \
+  base::MakeUnique<Binding<T>>(                                       \
+      base::BindRepeating([](M* model) { return model->Get; },        \
+                          base::Unretained(m)),                       \
+      base::BindRepeating([](V* view, const T& value) { view->Set; }, \
+                          base::Unretained(v)))
+#endif
 
 #define VR_BIND_FUNC(T, M, m, Get, V, v, f) \
   VR_BIND(T, M, m, Get, V, v, f(value))
 
 #define VR_BIND_FIELD(T, M, m, Get, V, v, f) \
   VR_BIND(T, M, m, Get, V, v, f = value)
+
+#define VR_BIND_LAMBDA(...) base::BindRepeating(__VA_ARGS__), #__VA_ARGS__
 
 }  // namespace vr
 
