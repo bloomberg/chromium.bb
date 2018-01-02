@@ -62,6 +62,18 @@ static INLINE int8_t filter_mask(uint8_t limit, uint8_t blimit, uint8_t p3,
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
+static INLINE int8_t filter_mask3_chroma(uint8_t limit, uint8_t blimit,
+                                         uint8_t p2, uint8_t p1, uint8_t p0,
+                                         uint8_t q0, uint8_t q1, uint8_t q2) {
+  int8_t mask = 0;
+  mask |= (abs(p2 - p1) > limit) * -1;
+  mask |= (abs(p1 - p0) > limit) * -1;
+  mask |= (abs(q1 - q0) > limit) * -1;
+  mask |= (abs(q2 - q1) > limit) * -1;
+  mask |= (abs(p0 - q0) * 2 + abs(p1 - q1) / 2 > blimit) * -1;
+  return ~mask;
+}
+
 static INLINE int8_t flat_mask3_chroma(uint8_t thresh, uint8_t p2, uint8_t p1,
                                        uint8_t p0, uint8_t q0, uint8_t q1,
                                        uint8_t q2) {
@@ -271,11 +283,11 @@ void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
   // loop filter designed to work using chars so that we can make maximum use
   // of 8 bit simd instructions.
   for (i = 0; i < count; ++i) {
-    const uint8_t p3 = s[-4 * p], p2 = s[-3 * p], p1 = s[-2 * p], p0 = s[-p];
-    const uint8_t q0 = s[0 * p], q1 = s[1 * p], q2 = s[2 * p], q3 = s[3 * p];
+    const uint8_t p2 = s[-3 * p], p1 = s[-2 * p], p0 = s[-p];
+    const uint8_t q0 = s[0 * p], q1 = s[1 * p], q2 = s[2 * p];
 
     const int8_t mask =
-        filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
+        filter_mask3_chroma(*limit, *blimit, p2, p1, p0, q0, q1, q2);
     const int8_t flat = flat_mask3_chroma(1, p2, p1, p0, q0, q1, q2);
     filter6(mask, *thresh, flat, s - 3 * p, s - 2 * p, s - 1 * p, s, s + 1 * p,
             s + 2 * p);
@@ -331,10 +343,10 @@ void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
 #endif
 
   for (i = 0; i < count; ++i) {
-    const uint8_t p3 = s[-4], p2 = s[-3], p1 = s[-2], p0 = s[-1];
-    const uint8_t q0 = s[0], q1 = s[1], q2 = s[2], q3 = s[3];
+    const uint8_t p2 = s[-3], p1 = s[-2], p0 = s[-1];
+    const uint8_t q0 = s[0], q1 = s[1], q2 = s[2];
     const int8_t mask =
-        filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3);
+        filter_mask3_chroma(*limit, *blimit, p2, p1, p0, q0, q1, q2);
     const int8_t flat = flat_mask3_chroma(1, p2, p1, p0, q0, q1, q2);
     filter6(mask, *thresh, flat, s - 3, s - 2, s - 1, s, s + 1, s + 2);
     s += pitch;
@@ -623,6 +635,22 @@ static INLINE int8_t highbd_filter_mask(uint8_t limit, uint8_t blimit,
 }
 
 #if PARALLEL_DEBLOCKING_5_TAP_CHROMA
+static INLINE int8_t highbd_filter_mask3_chroma(uint8_t limit, uint8_t blimit,
+                                                uint16_t p2, uint16_t p1,
+                                                uint16_t p0, uint16_t q0,
+                                                uint16_t q1, uint16_t q2,
+                                                int bd) {
+  int8_t mask = 0;
+  int16_t limit16 = (uint16_t)limit << (bd - 8);
+  int16_t blimit16 = (uint16_t)blimit << (bd - 8);
+  mask |= (abs(p2 - p1) > limit16) * -1;
+  mask |= (abs(p1 - p0) > limit16) * -1;
+  mask |= (abs(q1 - q0) > limit16) * -1;
+  mask |= (abs(q2 - q1) > limit16) * -1;
+  mask |= (abs(p0 - q0) * 2 + abs(p1 - q1) / 2 > blimit16) * -1;
+  return ~mask;
+}
+
 static INLINE int8_t highbd_flat_mask3_chroma(uint8_t thresh, uint16_t p2,
                                               uint16_t p1, uint16_t p0,
                                               uint16_t q0, uint16_t q1,
@@ -883,11 +911,11 @@ void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p, const uint8_t *blimit,
   // loop filter designed to work using chars so that we can make maximum use
   // of 8 bit simd instructions.
   for (i = 0; i < count; ++i) {
-    const uint16_t p3 = s[-4 * p], p2 = s[-3 * p], p1 = s[-2 * p], p0 = s[-p];
-    const uint16_t q0 = s[0 * p], q1 = s[1 * p], q2 = s[2 * p], q3 = s[3 * p];
+    const uint16_t p2 = s[-3 * p], p1 = s[-2 * p], p0 = s[-p];
+    const uint16_t q0 = s[0 * p], q1 = s[1 * p], q2 = s[2 * p];
 
     const int8_t mask =
-        highbd_filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3, bd);
+        highbd_filter_mask3_chroma(*limit, *blimit, p2, p1, p0, q0, q1, q2, bd);
     const int8_t flat = highbd_flat_mask3_chroma(1, p2, p1, p0, q0, q1, q2, bd);
     highbd_filter6(mask, *thresh, flat, s - 3 * p, s - 2 * p, s - 1 * p, s,
                    s + 1 * p, s + 2 * p, bd);
@@ -920,10 +948,10 @@ void aom_highbd_lpf_vertical_6_c(uint16_t *s, int pitch, const uint8_t *blimit,
 #endif
 
   for (i = 0; i < count; ++i) {
-    const uint16_t p3 = s[-4], p2 = s[-3], p1 = s[-2], p0 = s[-1];
-    const uint16_t q0 = s[0], q1 = s[1], q2 = s[2], q3 = s[3];
+    const uint16_t p2 = s[-3], p1 = s[-2], p0 = s[-1];
+    const uint16_t q0 = s[0], q1 = s[1], q2 = s[2];
     const int8_t mask =
-        highbd_filter_mask(*limit, *blimit, p3, p2, p1, p0, q0, q1, q2, q3, bd);
+        highbd_filter_mask3_chroma(*limit, *blimit, p2, p1, p0, q0, q1, q2, bd);
     const int8_t flat = highbd_flat_mask3_chroma(1, p2, p1, p0, q0, q1, q2, bd);
     highbd_filter6(mask, *thresh, flat, s - 3, s - 2, s - 1, s, s + 1, s + 2,
                    bd);
