@@ -820,13 +820,6 @@ class GetAuthTokenFunctionTest
       return;
     base::ResetAndReturn(&on_access_token_requested_).Run();
   }
-  void OnFetchAccessTokenComplete(const std::string& account_id,
-                                  const std::string& consumer_id,
-                                  const OAuth2TokenService::ScopeSet& scopes,
-                                  GoogleServiceAuthError error,
-                                  base::Time expiration_time) override {}
-  void OnTokenRemoved(const std::string& account_id,
-                      const OAuth2TokenService::ScopeSet& scopes) override {}
 
   std::string extension_id_;
   std::set<std::string> oauth_scopes_;

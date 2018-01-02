@@ -123,7 +123,7 @@ class OAuth2TokenService {
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
-                                        const ScopeSet& scopes) = 0;
+                                        const ScopeSet& scopes) {}
     // Called when access token fetching finished successfully or
     // unsuccessfully. |expiration_time| are only valid with
     // successful completion.
@@ -131,9 +131,9 @@ class OAuth2TokenService {
                                             const std::string& consumer_id,
                                             const ScopeSet& scopes,
                                             GoogleServiceAuthError error,
-                                            base::Time expiration_time) = 0;
+                                            base::Time expiration_time) {}
     virtual void OnTokenRemoved(const std::string& account_id,
-                                const ScopeSet& scopes) = 0;
+                                const ScopeSet& scopes) {}
   };
 
   explicit OAuth2TokenService(
