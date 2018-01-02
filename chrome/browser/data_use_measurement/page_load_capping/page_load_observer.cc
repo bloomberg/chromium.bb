@@ -30,5 +30,10 @@ void PageLoadObserver::OnPageLoadConcluded(DataUse* data_use) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void PageLoadObserver::OnNetworkBytesUpdate(const net::URLRequest& request,
+                                            DataUse* data_use) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
 }  // namespace page_load_capping
 }  // namespace data_use_measurement
