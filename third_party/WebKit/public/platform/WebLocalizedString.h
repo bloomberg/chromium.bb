@@ -103,7 +103,6 @@ struct WebLocalizedString {
     kOverflowMenuCast,
     kOverflowMenuEnterFullscreen,
     kOverflowMenuExitFullscreen,
-    kOverflowMenuStopCast,
     kOverflowMenuMute,
     kOverflowMenuUnmute,
     kOverflowMenuPlay,
