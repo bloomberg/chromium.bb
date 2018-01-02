@@ -436,11 +436,10 @@ LayoutRect NodeRectInAbsoluteCoordinates(Node* node, bool ignore_border) {
 }
 
 LayoutRect FrameRectInAbsoluteCoordinates(LocalFrame* frame) {
-  ScrollableArea* scrollable_area =
-      frame->View()->LayoutViewportScrollableArea();
-  LayoutRect content_rect(scrollable_area->VisibleContentRect());
-  return LayoutRect(frame->View()->ContentsToRootFrame(LayoutPoint()),
-                    content_rect.Size());
+  return RectToAbsoluteCoordinates(
+      frame,
+      LayoutRect(
+          frame->View()->LayoutViewportScrollableArea()->VisibleContentRect()));
 }
 
 // This method calculates the exitPoint from the startingRect and the entryPoint
