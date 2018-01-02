@@ -631,7 +631,7 @@ LayoutManager* View::GetLayoutManager() const {
   return layout_manager_.get();
 }
 
-void View::SetLayoutManager(nullptr_t) {
+void View::SetLayoutManager(std::nullptr_t) {
   SetLayoutManagerImpl(nullptr);
 }
 

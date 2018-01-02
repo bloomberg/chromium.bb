@@ -530,7 +530,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     SetLayoutManagerImpl(std::move(layout_manager));
     return lm;
   }
-  void SetLayoutManager(nullptr_t);
+  void SetLayoutManager(std::nullptr_t);
 
   // Attributes ----------------------------------------------------------------
 
