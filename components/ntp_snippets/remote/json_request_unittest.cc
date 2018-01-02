@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
@@ -64,7 +63,7 @@ class JsonRequestTest : public testing::Test {
             ntp_snippets::kArticleSuggestionsFeature.name,
             {{"send_top_languages", "true"}, {"send_user_class", "true"}},
             {ntp_snippets::kArticleSuggestionsFeature.name}),
-        pref_service_(base::MakeUnique<TestingPrefServiceSimple>()),
+        pref_service_(std::make_unique<TestingPrefServiceSimple>()),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
         clock_(mock_task_runner_->GetMockClock()),
         request_context_getter_(
@@ -76,7 +75,7 @@ class JsonRequestTest : public testing::Test {
   std::unique_ptr<language::UrlLanguageHistogram> MakeLanguageHistogram(
       const std::set<std::string>& codes) {
     std::unique_ptr<language::UrlLanguageHistogram> language_histogram =
-        base::MakeUnique<language::UrlLanguageHistogram>(pref_service_.get());
+        std::make_unique<language::UrlLanguageHistogram>(pref_service_.get());
     // There must be at least 10 visits before the top languages are defined.
     for (int i = 0; i < 10; i++) {
       for (const std::string& code : codes) {

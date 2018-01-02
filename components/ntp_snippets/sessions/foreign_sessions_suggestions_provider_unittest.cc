@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback_forward.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -52,7 +51,7 @@ const char kTitle[] = "title is ignored";
 
 SessionWindow* GetOrCreateWindow(SyncedSession* session, int window_id) {
   if (session->windows.find(window_id) == session->windows.end()) {
-    session->windows[window_id] = base::MakeUnique<SyncedSessionWindow>();
+    session->windows[window_id] = std::make_unique<SyncedSessionWindow>();
   }
 
   return &session->windows[window_id]->wrapped_window;
@@ -66,7 +65,7 @@ void AddTabToSession(SyncedSession* session,
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(url,
                                                                       kTitle);
 
-  std::unique_ptr<SessionTab> tab = base::MakeUnique<SessionTab>();
+  std::unique_ptr<SessionTab> tab = std::make_unique<SessionTab>();
   tab->timestamp = Time::Now() - age;
   tab->navigations.push_back(navigation);
 
@@ -108,7 +107,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
 
     std::unique_ptr<FakeForeignSessionsProvider>
         fake_foreign_sessions_provider =
-            base::MakeUnique<FakeForeignSessionsProvider>();
+            std::make_unique<FakeForeignSessionsProvider>();
     fake_foreign_sessions_provider_ = fake_foreign_sessions_provider.get();
 
     // During the provider's construction the following mock calls occur.
@@ -116,7 +115,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
     EXPECT_CALL(*observer(), OnCategoryStatusChanged(
                                  _, category(), CategoryStatus::AVAILABLE));
 
-    provider_ = base::MakeUnique<ForeignSessionsSuggestionsProvider>(
+    provider_ = std::make_unique<ForeignSessionsSuggestionsProvider>(
         &observer_, std::move(fake_foreign_sessions_provider), &pref_service_);
   }
 
@@ -125,7 +124,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
     if (sessions_map_.find(session_id) == sessions_map_.end()) {
       std::string id_as_string = base::IntToString(session_id);
       std::unique_ptr<SyncedSession> owned_session =
-          base::MakeUnique<SyncedSession>();
+          std::make_unique<SyncedSession>();
       owned_session->session_tag = id_as_string;
       owned_session->session_name = id_as_string;
       sessions_map_[session_id] = std::move(owned_session);

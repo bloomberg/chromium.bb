@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
@@ -37,12 +36,12 @@ const char kHistogramMovedUpCategoryNewIndex[] =
 class ClickBasedCategoryRankerTest : public testing::Test {
  public:
   ClickBasedCategoryRankerTest()
-      : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()),
+      : pref_service_(std::make_unique<TestingPrefServiceSimple>()),
         unused_remote_category_id_(
             static_cast<int>(KnownCategories::LAST_KNOWN_REMOTE_CATEGORY) + 1) {
     ClickBasedCategoryRanker::RegisterProfilePrefs(pref_service_->registry());
 
-    ranker_ = base::MakeUnique<ClickBasedCategoryRanker>(
+    ranker_ = std::make_unique<ClickBasedCategoryRanker>(
         pref_service_.get(), base::DefaultClock::GetInstance());
   }
 
@@ -70,7 +69,7 @@ class ClickBasedCategoryRankerTest : public testing::Test {
 
   void ResetRanker(base::Clock* clock) {
     ranker_ =
-        base::MakeUnique<ClickBasedCategoryRanker>(pref_service_.get(), clock);
+        std::make_unique<ClickBasedCategoryRanker>(pref_service_.get(), clock);
   }
 
   void NotifyOnSuggestionOpened(int times, Category category) {

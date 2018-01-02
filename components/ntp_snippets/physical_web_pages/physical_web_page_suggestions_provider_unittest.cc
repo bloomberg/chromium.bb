@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -67,7 +66,7 @@ void CompareFetchMoreResult(
 class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
  public:
   PhysicalWebPageSuggestionsProviderTest()
-      : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()) {
+      : pref_service_(std::make_unique<TestingPrefServiceSimple>()) {
     PhysicalWebPageSuggestionsProvider::RegisterProfilePrefs(
         pref_service_->registry());
   }
@@ -93,7 +92,7 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
 
   PhysicalWebPageSuggestionsProvider* CreateProvider() {
     DCHECK(!provider_);
-    provider_ = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
+    provider_ = std::make_unique<PhysicalWebPageSuggestionsProvider>(
         &observer_, &physical_web_data_source_, pref_service_.get());
     return provider_.get();
   }

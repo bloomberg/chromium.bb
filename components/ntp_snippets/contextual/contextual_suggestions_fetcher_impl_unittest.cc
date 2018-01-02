@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -113,10 +112,10 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
         mock_task_runner_handle_(mock_task_runner_) {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
-    fake_token_service_ = base::MakeUnique<FakeProfileOAuth2TokenService>(
-        base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
+    fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
+        std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
-    fetcher_ = base::MakeUnique<ContextualSuggestionsFetcherImpl>(
+    fetcher_ = std::make_unique<ContextualSuggestionsFetcherImpl>(
         test_utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), test_utils_.pref_service(),
         base::Bind(&ParseJson));

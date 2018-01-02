@@ -5,7 +5,6 @@
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_metrics.h"
@@ -73,7 +72,7 @@ SubscriptionManagerImpl::SubscriptionManagerImpl(
       pref_service_(pref_service),
       variations_service_(variations_service),
       signin_manager_(signin_manager),
-      signin_observer_(base::MakeUnique<SigninObserver>(
+      signin_observer_(std::make_unique<SigninObserver>(
           signin_manager,
           base::Bind(&SubscriptionManagerImpl::SigninStatusChanged,
                      base::Unretained(this)))),
@@ -134,7 +133,7 @@ void SubscriptionManagerImpl::StartAccessTokenRequest(
 
   OAuth2TokenService::ScopeSet scopes = {kContentSuggestionsApiScope};
   access_token_fetcher_ =
-      base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
           "ntp_snippets", signin_manager_, access_token_service_, scopes,
           base::BindOnce(&SubscriptionManagerImpl::AccessTokenFetchFinished,
                          base::Unretained(this), subscription_token));

@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -230,7 +229,7 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
       net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* delegate,
       net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    return base::MakeUnique<net::FakeURLFetcher>(
+    return std::make_unique<net::FakeURLFetcher>(
         url, delegate, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
         net::URLRequestStatus::FAILED);
   }
@@ -272,7 +271,7 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
         mock_task_runner_handle_(mock_task_runner_),
         test_url_(gurl) {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
-    user_classifier_ = base::MakeUnique<UserClassifier>(
+    user_classifier_ = std::make_unique<UserClassifier>(
         utils_.pref_service(), base::DefaultClock::GetInstance());
     // Increase initial time such that ticks are non-zero.
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
@@ -285,11 +284,11 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
-    fake_token_service_ = base::MakeUnique<FakeProfileOAuth2TokenService>(
-        base::MakeUnique<FakeOAuth2TokenServiceDelegate>(
+    fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
+        std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
 
-    fetcher_ = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
+    fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
         utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::Bind(&ParseJsonDelayed),

@@ -309,7 +309,7 @@ ContentSuggestion RemoteSuggestion::ToContentSuggestion(
     NotificationExtra extra;
     extra.deadline = notification_deadline_;
     suggestion.set_notification_extra(
-        base::MakeUnique<NotificationExtra>(extra));
+        std::make_unique<NotificationExtra>(extra));
   }
   suggestion.set_fetch_date(fetch_date_);
   if (content_type_ == ContentType::VIDEO) {

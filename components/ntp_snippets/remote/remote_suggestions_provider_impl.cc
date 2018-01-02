@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -236,7 +235,7 @@ base::TimeDelta GetTimeoutForLoadingIndicator() {
 template <typename SuggestionPtrContainer>
 std::unique_ptr<std::vector<std::string>> GetSuggestionIDVector(
     const SuggestionPtrContainer& suggestions) {
-  auto result = base::MakeUnique<std::vector<std::string>>();
+  auto result = std::make_unique<std::vector<std::string>>();
   for (const auto& suggestion : suggestions) {
     result->push_back(suggestion->id());
   }
@@ -1315,7 +1314,7 @@ void RemoteSuggestionsProviderImpl::ClearExpiredDismissedSuggestions() {
 }
 
 void RemoteSuggestionsProviderImpl::ClearOrphanedImages() {
-  auto alive_suggestions = base::MakeUnique<std::set<std::string>>();
+  auto alive_suggestions = std::make_unique<std::set<std::string>>();
   for (const auto& entry : category_contents_) {
     const CategoryContent& content = entry.second;
     for (const auto& suggestion_ptr : content.suggestions) {
@@ -1749,7 +1748,7 @@ void RemoteSuggestionsProviderImpl::StoreCategoriesToPrefs() {
   for (const auto& entry : to_store) {
     const Category& category = entry.first;
     const CategoryContent& content = *entry.second;
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetInteger(kCategoryContentId, category.id());
     // TODO(tschumann): Persist other properties of the CategoryInfo.
     dict->SetString(kCategoryContentTitle, content.info.title());

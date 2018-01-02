@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -32,7 +31,7 @@ class RemoteSuggestionsStatusServiceImplTest : public ::testing::Test {
   }
 
   std::unique_ptr<RemoteSuggestionsStatusServiceImpl> MakeService() {
-    return base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
+    return std::make_unique<RemoteSuggestionsStatusServiceImpl>(
         utils_.fake_signin_manager(), utils_.pref_service(), std::string());
   }
 
