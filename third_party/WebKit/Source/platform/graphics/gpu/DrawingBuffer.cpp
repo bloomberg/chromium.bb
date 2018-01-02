@@ -680,7 +680,13 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
       (webgl_version_ > kWebGL1 ||
        extensions_util_->SupportsExtension("GL_EXT_texture_storage")) &&
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
-  sample_count_ = std::min(8, max_sample_count);
+  // Performance regreses by 30% in WebGL apps for AMD Stoney
+  // if sample count is 8x
+  if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+          gpu::MAX_MSAA_SAMPLE_COUNT_4))
+    sample_count_ = std::min(4, max_sample_count);
+  else
+    sample_count_ = std::min(8, max_sample_count);
 
   texture_target_ = GL_TEXTURE_2D;
 #if defined(OS_MACOSX)

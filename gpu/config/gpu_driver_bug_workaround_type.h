@@ -155,6 +155,8 @@
          max_copy_texture_chromium_size_262144)              \
   GPU_OP(MAX_FRAGMENT_UNIFORM_VECTORS_32,                    \
          max_fragment_uniform_vectors_32)                    \
+  GPU_OP(MAX_MSAA_SAMPLE_COUNT_4,                             \
+         max_msaa_sample_count_4)                             \
   GPU_OP(MAX_TEXTURE_SIZE_LIMIT_4096,                        \
          max_texture_size_limit_4096)                        \
   GPU_OP(MAX_VARYING_VECTORS_16,                             \
