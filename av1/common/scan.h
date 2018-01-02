@@ -45,13 +45,6 @@ static INLINE const SCAN_ORDER *get_default_scan(TX_SIZE tx_size,
                   : &av1_intra_scan_orders[tx_size][tx_type];
 }
 
-static INLINE int do_adapt_scan(TX_SIZE tx_size, TX_TYPE tx_type) {
-  (void)tx_size;
-  if (tx_size_2d[tx_size] >= 1024 && tx_type != DCT_DCT) return 0;
-  if (tx_size > TX_32X16) return 0;
-  return tx_type < IDTX;
-}
-
 static INLINE const SCAN_ORDER *get_scan(const AV1_COMMON *cm, TX_SIZE tx_size,
                                          TX_TYPE tx_type,
                                          const MB_MODE_INFO *mbmi) {
