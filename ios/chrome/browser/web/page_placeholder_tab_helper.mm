@@ -4,39 +4,31 @@
 
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
+#import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
 // Placeholder will not be displayed longer than this time.
 const double kPlaceholderMaxDisplayTimeInSeconds = 1.5;
 
+// Placeholder removal will include a fade-out animation of this length.
+const NSTimeInterval kPlaceholderFadeOutAnimationLengthInSeconds = 0.5;
+}  // namespace
+
 DEFINE_WEB_STATE_USER_DATA_KEY(PagePlaceholderTabHelper);
 
-PagePlaceholderTabHelper::PagePlaceholderTabHelper(
-    web::WebState* web_state,
-    id<PagePlaceholderTabHelperDelegate> delegate)
-    : delegate_(delegate), weak_factory_(this) {
-  web_state->AddObserver(this);
+PagePlaceholderTabHelper::PagePlaceholderTabHelper(web::WebState* web_state)
+    : web_state_(web_state), weak_factory_(this) {
+  web_state_->AddObserver(this);
 }
 
 PagePlaceholderTabHelper::~PagePlaceholderTabHelper() {
   RemovePlaceholder();
-}
-
-void PagePlaceholderTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    id<PagePlaceholderTabHelperDelegate> delegate) {
-  DCHECK(web_state);
-  DCHECK(delegate);
-  if (!FromWebState(web_state)) {
-    web_state->SetUserData(
-        UserDataKey(),
-        base::WrapUnique(new PagePlaceholderTabHelper(web_state, delegate)));
-  }
 }
 
 void PagePlaceholderTabHelper::AddPlaceholderForNextNavigation() {
@@ -53,6 +45,7 @@ void PagePlaceholderTabHelper::CancelPlaceholderForNextNavigation() {
 void PagePlaceholderTabHelper::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
   if (add_placeholder_for_next_navigation_) {
     add_placeholder_for_next_navigation_ = false;
     AddPlaceholder();
@@ -61,11 +54,14 @@ void PagePlaceholderTabHelper::DidStartNavigation(
 
 void PagePlaceholderTabHelper::PageLoaded(web::WebState* web_state,
                                           web::PageLoadCompletionStatus) {
+  DCHECK_EQ(web_state_, web_state);
   RemovePlaceholder();
 }
 
 void PagePlaceholderTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveObserver(this);
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
   RemovePlaceholder();
 }
 
@@ -74,7 +70,25 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
     return;
 
   displaying_placeholder_ = true;
-  [delegate_ displayPlaceholderForPagePlaceholderTabHelper:this];
+
+  // Lazily create the placeholder view.
+  if (!placeholder_view_) {
+    placeholder_view_ = [[UIImageView alloc] init];
+    placeholder_view_.contentMode = UIViewContentModeScaleAspectFit;
+    placeholder_view_.autoresizingMask =
+        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  }
+
+  // Update placeholder view's image and display it on top of WebState's view.
+  __weak UIImageView* weak_placeholder_view = placeholder_view_;
+  __weak UIView* weak_web_state_view = web_state_->GetView();
+  // placeholder_view_.image = SnapshotTabHelper::DefautSnapshotImage();
+  SnapshotTabHelper::FromWebState(web_state_)
+      ->RetrieveGreySnapshot(^(UIImage* snapshot) {
+        weak_placeholder_view.image = snapshot;
+        weak_placeholder_view.frame = weak_web_state_view.frame;
+        [weak_web_state_view addSubview:weak_placeholder_view];
+      });
 
   // Remove placeholder if it takes too long to load the page.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -89,5 +103,14 @@ void PagePlaceholderTabHelper::RemovePlaceholder() {
     return;
 
   displaying_placeholder_ = false;
-  [delegate_ removePlaceholderForPagePlaceholderTabHelper:this];
+
+  // Remove placeholder view with a fade-out animation.
+  __weak UIImageView* weak_placeholder_view = placeholder_view_;
+  [UIView animateWithDuration:kPlaceholderFadeOutAnimationLengthInSeconds
+      animations:^{
+        weak_placeholder_view.alpha = 0.0f;
+      }
+      completion:^(BOOL finished) {
+        [weak_placeholder_view removeFromSuperview];
+      }];
 }
