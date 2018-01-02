@@ -89,10 +89,10 @@ varieties:
  2. AV1 codec configuration options. These have the form `CONFIG_FEATURE`.
 
 Both types of options are set at the time CMake is run. The following example
-enables ccache and disables high bit depth:
+enables ccache and disables the AV1 encoder:
 
 ~~~
-    $ cmake path/to/aom -DENABLE_CCACHE=1
+    $ cmake path/to/aom -DENABLE_CCACHE=1 -DCONFIG_AV1_ENCODER=0
     $ make
 ~~~
 
