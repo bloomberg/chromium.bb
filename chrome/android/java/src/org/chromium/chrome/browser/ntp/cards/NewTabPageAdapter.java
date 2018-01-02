@@ -61,7 +61,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final @Nullable SiteSection mSiteSection;
     private final SuggestionsCarousel mSuggestionsCarousel;
     private final SectionList mSections;
-    private final SignInPromo mSigninPromo;
+    private final @Nullable SignInPromo mSigninPromo;
     private final AllDismissedItem mAllDismissed;
     private final Footer mFooter;
     private final SpacingItem mBottomSpacer;
@@ -96,7 +96,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mUiConfig = uiConfig;
         mRoot = new InnerNode();
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
-        mSigninPromo = new SignInPromo(mUiDelegate);
+        mSigninPromo = SignInPromo.maybeCreatePromo(mUiDelegate);
         mAllDismissed = new AllDismissedItem();
 
         if (mAboveTheFoldView == null) {
@@ -128,9 +128,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         }
 
         if (FeatureUtilities.isChromeHomeEnabled()) {
-            mRoot.addChildren(mSigninPromo, mAllDismissed, mSections);
+            if (mSigninPromo != null) mRoot.addChild(mSigninPromo);
+            mRoot.addChildren(mAllDismissed, mSections);
         } else {
-            mRoot.addChildren(mSections, mSigninPromo, mAllDismissed);
+            mRoot.addChild(mSections);
+            if (mSigninPromo != null) mRoot.addChild(mSigninPromo);
+            mRoot.addChild(mAllDismissed);
         }
 
         mFooter = new Footer();
@@ -397,7 +400,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     private boolean hasAllBeenDismissed() {
-        if (mSigninPromo.isVisible()) return false;
+        if (mSigninPromo != null && mSigninPromo.isVisible()) return false;
 
         if (!FeatureUtilities.isChromeHomeEnabled()) return mSections.isEmpty();
 

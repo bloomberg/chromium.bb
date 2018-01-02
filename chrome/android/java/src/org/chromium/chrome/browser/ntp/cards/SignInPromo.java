@@ -53,12 +53,6 @@ public class SignInPromo extends OptionalLeaf {
     static final long SUPPRESSION_PERIOD_MS = TimeUnit.DAYS.toMillis(1);
 
     /**
-     * Whether the promo had been previously dismissed, before creating an instance of the
-     * {@link SignInPromo}.
-     */
-    private final boolean mWasDismissed;
-
-    /**
      * Whether the promo has been dismissed by the user.
      */
     private boolean mDismissed;
@@ -74,33 +68,17 @@ public class SignInPromo extends OptionalLeaf {
      */
     private boolean mCanShowPersonalizedSuggestions;
 
-    /**
-     * Whether signin promo was temporary suppressed.
-     */
-    private boolean mSuppressed;
-
     private final @Nullable SigninObserver mSigninObserver;
     private final @Nullable SigninPromoController mSigninPromoController;
     private final @Nullable ProfileDataCache mProfileDataCache;
 
-    public SignInPromo(SuggestionsUiDelegate uiDelegate) {
-        mWasDismissed = ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed();
-
-        if (mWasDismissed) {
-            setVisibilityInternal(false);
-            mSigninObserver = null;
-            mProfileDataCache = null;
-            mSigninPromoController = null;
-            return;
-        }
-
+    private SignInPromo(SuggestionsUiDelegate uiDelegate) {
         Context context = ContextUtils.getApplicationContext();
         SuggestionsSource suggestionsSource = uiDelegate.getSuggestionsSource();
         SigninManager signinManager = SigninManager.get(context);
 
         mCanSignIn = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
         mCanShowPersonalizedSuggestions = suggestionsSource.areRemoteSuggestionsEnabled();
-        mSuppressed = getSuppressionStatus();
 
         updateVisibility();
 
@@ -122,7 +100,13 @@ public class SignInPromo extends OptionalLeaf {
                 System.currentTimeMillis());
     }
 
-    private boolean getSuppressionStatus() {
+    public static SignInPromo maybeCreatePromo(SuggestionsUiDelegate uiDelegate) {
+        if (ChromePreferenceManager.getInstance().getNewTabPageSigninPromoDismissed()) return null;
+        if (getSuppressionStatus()) return null;
+        return new SignInPromo(uiDelegate);
+    }
+
+    private static boolean getSuppressionStatus() {
         long suppressedFrom = ChromePreferenceManager.getInstance()
                                       .getNewTabPageSigninPromoSuppressionPeriodStart();
         if (suppressedFrom == 0) return false;
@@ -155,14 +139,12 @@ public class SignInPromo extends OptionalLeaf {
      */
     public NewTabPageViewHolder createViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, UiConfig config) {
-        assert !mWasDismissed;
         return new PersonalizedPromoViewHolder(
                 parent, config, contextMenuManager, mProfileDataCache, mSigninPromoController);
     }
 
     @Override
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert !mWasDismissed;
         ((PersonalizedPromoViewHolder) holder).onBindViewHolder();
     }
 
@@ -172,8 +154,7 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     private void updateVisibility() {
-        setVisibilityInternal(
-                !mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions && !mSuppressed);
+        setVisibilityInternal(!mDismissed && mCanSignIn && mCanShowPersonalizedSuggestions);
     }
 
     @Override
@@ -184,7 +165,6 @@ public class SignInPromo extends OptionalLeaf {
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
     @Override
     public void dismiss(Callback<String> itemRemovedCallback) {
-        assert !mWasDismissed;
         mDismissed = true;
         updateVisibility();
 
@@ -207,8 +187,6 @@ public class SignInPromo extends OptionalLeaf {
         private boolean mUnregistered;
 
         private SigninObserver(SigninManager signinManager, SuggestionsSource suggestionsSource) {
-            assert !mWasDismissed;
-
             mSigninManager = signinManager;
             mSigninManager.addSignInAllowedObserver(this);
             mSigninManager.addSignInStateObserver(this);
@@ -221,8 +199,6 @@ public class SignInPromo extends OptionalLeaf {
         }
 
         private void unregister() {
-            assert !mWasDismissed;
-
             if (mUnregistered) return;
             mUnregistered = true;
 
