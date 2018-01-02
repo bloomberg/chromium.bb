@@ -69,12 +69,13 @@ void InputDeviceClientTestApi::SetKeyboardDevices(
 }
 
 void InputDeviceClientTestApi::SetTouchscreenDevices(
-    const std::vector<TouchscreenDevice>& devices) {
+    const std::vector<TouchscreenDevice>& devices,
+    bool are_touchscreen_target_displays_valid) {
   if (DeviceDataManager::instance_) {
     DeviceDataManager::instance_->OnTouchscreenDevicesUpdated(devices);
   } else {
-    GetInputDeviceClient()->OnTouchscreenDeviceConfigurationChanged(devices,
-                                                                    false);
+    GetInputDeviceClient()->OnTouchscreenDeviceConfigurationChanged(
+        devices, are_touchscreen_target_displays_valid);
   }
 }
 

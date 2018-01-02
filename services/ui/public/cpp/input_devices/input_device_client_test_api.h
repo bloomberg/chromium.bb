@@ -37,7 +37,13 @@ class InputDeviceClientTestApi {
   void OnDeviceListsComplete();
 
   void SetKeyboardDevices(const std::vector<InputDevice>& devices);
-  void SetTouchscreenDevices(const std::vector<TouchscreenDevice>& devices);
+
+  // |are_touchscreen_target_displays_valid| is only applicable to
+  // InputDeviceClient. See
+  // InputDeviceClient::OnTouchscreenDeviceConfigurationChanged() for details.
+  void SetTouchscreenDevices(
+      const std::vector<TouchscreenDevice>& devices,
+      bool are_touchscreen_target_displays_valid = false);
 
   InputDeviceClient* GetInputDeviceClient();
 
