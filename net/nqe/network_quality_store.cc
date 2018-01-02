@@ -19,8 +19,8 @@ NetworkQualityStore::NetworkQualityStore() : weak_ptr_factory_(this) {
                 "Size of the network quality cache must be > 0");
   // This limit should not be increased unless the logic for removing the
   // oldest cache entry is rewritten to use a doubly-linked-list LRU queue.
-  static_assert(kMaximumNetworkQualityCacheSize <= 10,
-                "Size of the network quality cache must <= 10");
+  static_assert(kMaximumNetworkQualityCacheSize <= 20,
+                "Size of the network quality cache must <= 20");
 }
 
 NetworkQualityStore::~NetworkQualityStore() {

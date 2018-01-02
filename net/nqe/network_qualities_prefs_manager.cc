@@ -139,6 +139,11 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefSequence(
     // No need to cache the network quality since the default network quality
     // (synthesized using the platform APIs) matches the observed network
     // quality.
+    if (!prefs_->RemoveKey(network_id_string)) {
+      // Return early since the prefs was unchanged.
+      return;
+    }
+    pref_delegate_->SetDictionaryValue(*prefs_);
     return;
   }
 
