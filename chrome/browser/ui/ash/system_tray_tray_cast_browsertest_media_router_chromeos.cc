@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
-#include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "chrome/test/base/in_process_browser_test.h"

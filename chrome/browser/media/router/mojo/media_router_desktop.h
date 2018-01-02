@@ -7,9 +7,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/media/router/mojo/extension_media_route_provider_proxy.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
+#include "chrome/browser/media/router/providers/extension/extension_media_route_provider_proxy.h"
 
 namespace content {
 class RenderFrameHost;

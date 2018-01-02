@@ -7,7 +7,7 @@
 #include "base/timer/mock_timer.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
-#include "chrome/browser/media/router/test_helper.h"
+#include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "services/service_manager/public/cpp/connector.h"

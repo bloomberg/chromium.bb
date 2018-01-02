@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/media/router/discovery/mdns/mock_dns_sd_registry.h"
+#include "chrome/browser/media/router/test/mock_dns_sd_registry.h"
 #include "chrome/common/extensions/api/mdns.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"

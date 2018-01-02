@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/media/router/independent_otr_profile_manager.h"
-#include "chrome/browser/media/router/presentation_navigation_policy.h"
+#include "chrome/browser/media/router/presentation/independent_otr_profile_manager.h"
+#include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
 #include "chrome/browser/ui/media_router/presentation_receiver_window_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"

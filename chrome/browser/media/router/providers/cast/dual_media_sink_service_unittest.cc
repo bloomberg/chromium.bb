@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 
-#include "chrome/browser/media/router/test_helper.h"
+#include "chrome/browser/media/router/test/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"

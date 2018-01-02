@@ -7,7 +7,7 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/media/android/router/media_router_android.h"
 #include "chrome/browser/media/android/router/media_router_android_bridge.h"
-#include "chrome/browser/media/router/test_helper.h"
+#include "chrome/browser/media/router/test/test_helper.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
