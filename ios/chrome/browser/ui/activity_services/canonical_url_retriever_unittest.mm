@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
-#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever_private.h"
 
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "components/ui_metrics/canonical_url_share_metrics_types.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,8 +63,8 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalURLDifferentFromVisible) {
   ASSERT_TRUE(success);
   EXPECT_EQ("https://chromium.test/", url);
   histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE, 1);
+      ui_metrics::kCanonicalURLResultHistogram,
+      ui_metrics::SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE, 1);
 }
 
 // Validates that if the canonical URL is the same as the visible URL, it is
@@ -79,8 +79,8 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalURLSameAsVisible) {
   ASSERT_TRUE(success);
   EXPECT_EQ("https://chromium.test/", url);
   histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE, 1);
+      ui_metrics::kCanonicalURLResultHistogram,
+      ui_metrics::SUCCESS_CANONICAL_URL_SAME_AS_VISIBLE, 1);
 }
 
 // Validates that if there is no canonical URL, an empty GURL is given to the
@@ -95,8 +95,8 @@ TEST_F(CanonicalURLRetrieverTest, TestNoCanonicalURLFound) {
   ASSERT_TRUE(success);
   EXPECT_TRUE(url.is_empty());
   histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::FAILED_NO_CANONICAL_URL_DEFINED, 1);
+      ui_metrics::kCanonicalURLResultHistogram,
+      ui_metrics::FAILED_NO_CANONICAL_URL_DEFINED, 1);
 }
 
 // Validates that if the found canonical URL is invalid, an empty GURL is
@@ -110,9 +110,9 @@ TEST_F(CanonicalURLRetrieverTest, TestInvalidCanonicalFound) {
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(url.is_empty());
-  histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::FAILED_CANONICAL_URL_INVALID, 1);
+  histogram_tester_.ExpectUniqueSample(ui_metrics::kCanonicalURLResultHistogram,
+                                       ui_metrics::FAILED_CANONICAL_URL_INVALID,
+                                       1);
 }
 
 // Validates that if multiple canonical URLs are found, the first one is given
@@ -129,8 +129,8 @@ TEST_F(CanonicalURLRetrieverTest, TestMultipleCanonicalURLsFound) {
   ASSERT_TRUE(success);
   EXPECT_EQ("https://chromium.test/", url);
   histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE, 1);
+      ui_metrics::kCanonicalURLResultHistogram,
+      ui_metrics::SUCCESS_CANONICAL_URL_DIFFERENT_FROM_VISIBLE, 1);
 }
 
 // Validates that if the visible and canonical URLs are http, an empty GURL is
@@ -144,9 +144,9 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalURLHTTP) {
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(url.is_empty());
-  histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::FAILED_VISIBLE_URL_NOT_HTTPS, 1);
+  histogram_tester_.ExpectUniqueSample(ui_metrics::kCanonicalURLResultHistogram,
+                                       ui_metrics::FAILED_VISIBLE_URL_NOT_HTTPS,
+                                       1);
 }
 
 // Validates that if the visible URL is HTTP but the canonical URL is HTTPS, an
@@ -160,9 +160,9 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalURLHTTPSUpgrade) {
 
   ASSERT_TRUE(success);
   EXPECT_TRUE(url.is_empty());
-  histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::FAILED_VISIBLE_URL_NOT_HTTPS, 1);
+  histogram_tester_.ExpectUniqueSample(ui_metrics::kCanonicalURLResultHistogram,
+                                       ui_metrics::FAILED_VISIBLE_URL_NOT_HTTPS,
+                                       1);
 }
 
 // Validates that if the visible URL is HTTPS but the canonical URL is HTTP, it
@@ -177,6 +177,6 @@ TEST_F(CanonicalURLRetrieverTest, TestCanonicalLinkHTTPSDowngrade) {
   ASSERT_TRUE(success);
   EXPECT_EQ("http://chromium.test/", url);
   histogram_tester_.ExpectUniqueSample(
-      activity_services::kCanonicalURLResultHistogram,
-      activity_services::SUCCESS_CANONICAL_URL_NOT_HTTPS, 1);
+      ui_metrics::kCanonicalURLResultHistogram,
+      ui_metrics::SUCCESS_CANONICAL_URL_NOT_HTTPS, 1);
 }

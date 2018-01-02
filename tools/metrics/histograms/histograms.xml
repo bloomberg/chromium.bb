@@ -30979,6 +30979,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="IOS.CanonicalURLResult" enum="CanonicalURLResult">
+  <obsolete>
+    Deprecated 2018-01. As of M65 use Mobile.CanonicalURLResult.
+  </obsolete>
   <owner>gchatz@chromium.org</owner>
   <summary>
     The result of the operation to retrieve the page's canonical URL.
@@ -38164,6 +38167,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result (e.g. success or the type of failure) of a modem interface switch
     operation performed by mist on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.CanonicalURLResult" enum="CanonicalURLResult">
+  <owner>gchatz@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <summary>
+    The result of the operation to retrieve the page's canonical URL.
   </summary>
 </histogram>
 
