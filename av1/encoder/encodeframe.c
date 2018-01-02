@@ -446,8 +446,8 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
   MODE_INFO *mi = &ctx->mic;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   MODE_INFO *mi_addr = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &mi_addr->mbmi;
   const struct segmentation *const seg = &cm->seg;
   const int bw = mi_size_wide[mi->mbmi.sb_type];
   const int bh = mi_size_high[mi->mbmi.sb_type];
@@ -476,15 +476,15 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     if (cpi->oxcf.aq_mode == COMPLEXITY_AQ) {
       const uint8_t *const map =
           seg->update_map ? cpi->segmentation_map : cm->last_frame_seg_map;
-      mi_addr->mbmi.segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
-      reset_tx_size(xd, &mi_addr->mbmi, cm->tx_mode);
+      mbmi->segment_id = get_segment_id(cm, map, bsize, mi_row, mi_col);
+      reset_tx_size(xd, mbmi, cm->tx_mode);
     }
     // Else for cyclic refresh mode update the segment map, set the segment id
     // and then update the quantizer.
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ) {
-      av1_cyclic_refresh_update_segment(cpi, &xd->mi[0]->mbmi, mi_row, mi_col,
-                                        bsize, ctx->rate, ctx->dist, x->skip);
-      reset_tx_size(xd, &mi_addr->mbmi, cm->tx_mode);
+      av1_cyclic_refresh_update_segment(cpi, mbmi, mi_row, mi_col, bsize,
+                                        ctx->rate, ctx->dist, x->skip);
+      reset_tx_size(xd, mbmi, cm->tx_mode);
     }
   }
 
@@ -509,10 +509,9 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
 #if !CONFIG_EXT_DELTA_Q
   if (cpi->oxcf.aq_mode > NO_AQ && cpi->oxcf.aq_mode < DELTA_AQ)
-    av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
+    av1_init_plane_quantizers(cpi, x, mbmi->segment_id);
 #else
-  if (cpi->oxcf.aq_mode)
-    av1_init_plane_quantizers(cpi, x, xd->mi[0]->mbmi.segment_id);
+  if (cpi->oxcf.aq_mode) av1_init_plane_quantizers(cpi, x, mbmi->segment_id);
 #endif
 
   x->skip = ctx->skip;
