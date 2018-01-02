@@ -164,163 +164,6 @@ int ProxyResolvingClientSocket::Connect(
   return net::ERR_IO_PENDING;
 }
 
-void ProxyResolvingClientSocket::ConnectToProxy(int net_error) {
-  pac_request_ = NULL;
-
-  DCHECK_NE(net_error, net::ERR_IO_PENDING);
-  if (net_error == net::OK) {
-    // Removes unsupported proxies from the list. Currently, this removes
-    // just the SCHEME_QUIC proxy, which doesn't yet support tunneling.
-    // TODO(xunjieli): Allow QUIC proxy once it supports tunneling.
-    proxy_info_.RemoveProxiesWithoutScheme(
-        net::ProxyServer::SCHEME_DIRECT | net::ProxyServer::SCHEME_HTTP |
-        net::ProxyServer::SCHEME_HTTPS | net::ProxyServer::SCHEME_SOCKS4 |
-        net::ProxyServer::SCHEME_SOCKS5);
-
-    if (proxy_info_.is_empty()) {
-      // No proxies/direct to choose from. This happens when we don't support
-      // any of the proxies in the returned list.
-      net_error = net::ERR_NO_SUPPORTED_PROXIES;
-    }
-  }
-
-  // TODO(xunjieli): This results in retrying "Direct" twice, because of
-  // ReconsiderProxyAfterError() path. https://crbug.com/793076.
-  // Try falling back to a direct connection if we have not tried that before.
-  if (net_error != net::OK) {
-    if (!tried_direct_connect_fallback_) {
-      tried_direct_connect_fallback_ = true;
-      proxy_info_.UseDirect();
-    } else {
-      CloseTransportSocket();
-      base::ResetAndReturn(&user_connect_callback_).Run(net_error);
-      return;
-    }
-  }
-
-  transport_.reset(new net::ClientSocketHandle);
-  // Now that the proxy is resolved, issue a socket connect.
-  net::HostPortPair host_port_pair = net::HostPortPair::FromURL(url_);
-  net_error = net::InitSocketHandleForRawConnect(
-      host_port_pair, network_session_.get(), proxy_info_, ssl_config_,
-      ssl_config_, net::PRIVACY_MODE_DISABLED, net_log_, transport_.get(),
-      base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
-                          base::Unretained(this)));
-  if (net_error != net::ERR_IO_PENDING) {
-    // Since this method is always called asynchronously. it is OK to call
-    // ConnectToProxyDone synchronously.
-    ConnectToProxyDone(net_error);
-  }
-}
-
-void ProxyResolvingClientSocket::ConnectToProxyDone(int net_error) {
-  if (net_error != net::OK) {
-    // If the connection fails, try another proxy.
-    net_error = ReconsiderProxyAfterError(net_error);
-    // ReconsiderProxyAfterError either returns an error (in which case it is
-    // not reconsidering a proxy) or returns ERR_IO_PENDING if it is considering
-    // another proxy.
-    DCHECK_NE(net_error, net::OK);
-    if (net_error == net::ERR_IO_PENDING) {
-      // Proxy reconsideration pending. Return.
-      return;
-    }
-    CloseTransportSocket();
-  } else {
-    network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
-  }
-  base::ResetAndReturn(&user_connect_callback_).Run(net_error);
-}
-
-// TODO(xunjieli): This following method is out of sync with
-// HttpStreamFactoryImpl::JobController. The logic should be refactored into a
-// common place.
-// This method reconsiders the proxy on certain errors. If it does
-// reconsider a proxy it always returns ERR_IO_PENDING and posts a call to
-// ConnectToProxy with the result of the reconsideration.
-int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
-  DCHECK(!pac_request_);
-  DCHECK_NE(error, net::OK);
-  DCHECK_NE(error, net::ERR_IO_PENDING);
-  // A failure to resolve the hostname or any error related to establishing a
-  // TCP connection could be grounds for trying a new proxy configuration.
-  //
-  // Why do this when a hostname cannot be resolved?  Some URLs only make sense
-  // to proxy servers.  The hostname in those URLs might fail to resolve if we
-  // are still using a non-proxy config.  We need to check if a proxy config
-  // now exists that corresponds to a proxy server that could load the URL.
-  //
-  switch (error) {
-    case net::ERR_PROXY_CONNECTION_FAILED:
-    case net::ERR_NAME_NOT_RESOLVED:
-    case net::ERR_INTERNET_DISCONNECTED:
-    case net::ERR_ADDRESS_UNREACHABLE:
-    case net::ERR_CONNECTION_CLOSED:
-    case net::ERR_CONNECTION_RESET:
-    case net::ERR_CONNECTION_REFUSED:
-    case net::ERR_CONNECTION_ABORTED:
-    case net::ERR_TIMED_OUT:
-    case net::ERR_TUNNEL_CONNECTION_FAILED:
-    case net::ERR_SOCKS_CONNECTION_FAILED:
-      break;
-    case net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
-      // Remap the SOCKS-specific "host unreachable" error to a more
-      // generic error code (this way consumers like the link doctor
-      // know to substitute their error page).
-      //
-      // Note that if the host resolving was done by the SOCSK5 proxy, we can't
-      // differentiate between a proxy-side "host not found" versus a proxy-side
-      // "address unreachable" error, and will report both of these failures as
-      // ERR_ADDRESS_UNREACHABLE.
-      return net::ERR_ADDRESS_UNREACHABLE;
-    case net::ERR_PROXY_AUTH_REQUESTED: {
-      net::ProxyClientSocket* proxy_socket =
-          static_cast<net::ProxyClientSocket*>(transport_->socket());
-
-      if (proxy_socket->GetAuthController()->HaveAuth()) {
-        return proxy_socket->RestartWithAuth(
-            base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
-                                base::Unretained(this)));
-      }
-      return error;
-    }
-    default:
-      return error;
-  }
-
-  if (proxy_info_.is_https() && ssl_config_.send_client_cert) {
-    network_session_->ssl_client_auth_cache()->Remove(
-        proxy_info_.proxy_server().host_port_pair());
-  }
-
-  int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
-      url_, std::string(), error, &proxy_info_,
-      base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
-                          base::Unretained(this)),
-      &pac_request_, NULL, net_log_);
-  if (rv == net::OK || rv == net::ERR_IO_PENDING) {
-    CloseTransportSocket();
-  } else {
-    // If ReconsiderProxyAfterError() failed synchronously, it means
-    // there was nothing left to fall-back to, so fail the transaction
-    // with the last connection error we got.
-    rv = error;
-  }
-
-  // We either have new proxy info or there was an error in falling back.
-  // In both cases we want to post ConnectToProxy (in the error case
-  // we might still want to fall back a direct connection).
-  if (rv != net::ERR_IO_PENDING) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyResolvingClientSocket::ConnectToProxy,
-                                  weak_factory_.GetWeakPtr(), rv));
-    // Since we potentially have another try to go (trying the direct connect)
-    // set the return code code to ERR_IO_PENDING.
-    rv = net::ERR_IO_PENDING;
-  }
-  return rv;
-}
-
 void ProxyResolvingClientSocket::Disconnect() {
   CloseTransportSocket();
   if (pac_request_) {
@@ -417,10 +260,167 @@ void ProxyResolvingClientSocket::ApplySocketTag(const net::SocketTag& tag) {
   NOTIMPLEMENTED();
 }
 
+void ProxyResolvingClientSocket::ConnectToProxy(int net_error) {
+  pac_request_ = NULL;
+
+  DCHECK_NE(net_error, net::ERR_IO_PENDING);
+  if (net_error == net::OK) {
+    // Removes unsupported proxies from the list. Currently, this removes
+    // just the SCHEME_QUIC proxy, which doesn't yet support tunneling.
+    // TODO(xunjieli): Allow QUIC proxy once it supports tunneling.
+    proxy_info_.RemoveProxiesWithoutScheme(
+        net::ProxyServer::SCHEME_DIRECT | net::ProxyServer::SCHEME_HTTP |
+        net::ProxyServer::SCHEME_HTTPS | net::ProxyServer::SCHEME_SOCKS4 |
+        net::ProxyServer::SCHEME_SOCKS5);
+
+    if (proxy_info_.is_empty()) {
+      // No proxies/direct to choose from. This happens when we don't support
+      // any of the proxies in the returned list.
+      net_error = net::ERR_NO_SUPPORTED_PROXIES;
+    }
+  }
+
+  // TODO(xunjieli): This results in retrying "Direct" twice, because of
+  // ReconsiderProxyAfterError() path. https://crbug.com/793076.
+  // Try falling back to a direct connection if we have not tried that before.
+  if (net_error != net::OK) {
+    if (!tried_direct_connect_fallback_) {
+      tried_direct_connect_fallback_ = true;
+      proxy_info_.UseDirect();
+    } else {
+      CloseTransportSocket();
+      base::ResetAndReturn(&user_connect_callback_).Run(net_error);
+      return;
+    }
+  }
+
+  transport_.reset(new net::ClientSocketHandle);
+  // Now that the proxy is resolved, issue a socket connect.
+  net::HostPortPair host_port_pair = net::HostPortPair::FromURL(url_);
+  net_error = net::InitSocketHandleForRawConnect(
+      host_port_pair, network_session_.get(), proxy_info_, ssl_config_,
+      ssl_config_, net::PRIVACY_MODE_DISABLED, net_log_, transport_.get(),
+      base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
+                          base::Unretained(this)));
+  if (net_error != net::ERR_IO_PENDING) {
+    // Since this method is always called asynchronously. it is OK to call
+    // ConnectToProxyDone synchronously.
+    ConnectToProxyDone(net_error);
+  }
+}
+
+void ProxyResolvingClientSocket::ConnectToProxyDone(int net_error) {
+  if (net_error != net::OK) {
+    // If the connection fails, try another proxy.
+    net_error = ReconsiderProxyAfterError(net_error);
+    // ReconsiderProxyAfterError either returns an error (in which case it is
+    // not reconsidering a proxy) or returns ERR_IO_PENDING if it is considering
+    // another proxy.
+    DCHECK_NE(net_error, net::OK);
+    if (net_error == net::ERR_IO_PENDING) {
+      // Proxy reconsideration pending. Return.
+      return;
+    }
+    CloseTransportSocket();
+  } else {
+    network_session_->proxy_service()->ReportSuccess(proxy_info_, NULL);
+  }
+  base::ResetAndReturn(&user_connect_callback_).Run(net_error);
+}
+
 void ProxyResolvingClientSocket::CloseTransportSocket() {
   if (transport_.get() && transport_->socket())
     transport_->socket()->Disconnect();
   transport_.reset();
+}
+
+// TODO(xunjieli): This following method is out of sync with
+// HttpStreamFactoryImpl::JobController. The logic should be refactored into a
+// common place.
+// This method reconsiders the proxy on certain errors. If it does
+// reconsider a proxy it always returns ERR_IO_PENDING and posts a call to
+// ConnectToProxy with the result of the reconsideration.
+int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
+  DCHECK(!pac_request_);
+  DCHECK_NE(error, net::OK);
+  DCHECK_NE(error, net::ERR_IO_PENDING);
+  // A failure to resolve the hostname or any error related to establishing a
+  // TCP connection could be grounds for trying a new proxy configuration.
+  //
+  // Why do this when a hostname cannot be resolved?  Some URLs only make sense
+  // to proxy servers.  The hostname in those URLs might fail to resolve if we
+  // are still using a non-proxy config.  We need to check if a proxy config
+  // now exists that corresponds to a proxy server that could load the URL.
+  //
+  switch (error) {
+    case net::ERR_PROXY_CONNECTION_FAILED:
+    case net::ERR_NAME_NOT_RESOLVED:
+    case net::ERR_INTERNET_DISCONNECTED:
+    case net::ERR_ADDRESS_UNREACHABLE:
+    case net::ERR_CONNECTION_CLOSED:
+    case net::ERR_CONNECTION_RESET:
+    case net::ERR_CONNECTION_REFUSED:
+    case net::ERR_CONNECTION_ABORTED:
+    case net::ERR_TIMED_OUT:
+    case net::ERR_TUNNEL_CONNECTION_FAILED:
+    case net::ERR_SOCKS_CONNECTION_FAILED:
+      break;
+    case net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
+      // Remap the SOCKS-specific "host unreachable" error to a more
+      // generic error code (this way consumers like the link doctor
+      // know to substitute their error page).
+      //
+      // Note that if the host resolving was done by the SOCSK5 proxy, we can't
+      // differentiate between a proxy-side "host not found" versus a proxy-side
+      // "address unreachable" error, and will report both of these failures as
+      // ERR_ADDRESS_UNREACHABLE.
+      return net::ERR_ADDRESS_UNREACHABLE;
+    case net::ERR_PROXY_AUTH_REQUESTED: {
+      net::ProxyClientSocket* proxy_socket =
+          static_cast<net::ProxyClientSocket*>(transport_->socket());
+
+      if (proxy_socket->GetAuthController()->HaveAuth()) {
+        return proxy_socket->RestartWithAuth(
+            base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxyDone,
+                                base::Unretained(this)));
+      }
+      return error;
+    }
+    default:
+      return error;
+  }
+
+  if (proxy_info_.is_https() && ssl_config_.send_client_cert) {
+    network_session_->ssl_client_auth_cache()->Remove(
+        proxy_info_.proxy_server().host_port_pair());
+  }
+
+  int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
+      url_, std::string(), error, &proxy_info_,
+      base::BindRepeating(&ProxyResolvingClientSocket::ConnectToProxy,
+                          base::Unretained(this)),
+      &pac_request_, NULL, net_log_);
+  if (rv == net::OK || rv == net::ERR_IO_PENDING) {
+    CloseTransportSocket();
+  } else {
+    // If ReconsiderProxyAfterError() failed synchronously, it means
+    // there was nothing left to fall-back to, so fail the transaction
+    // with the last connection error we got.
+    rv = error;
+  }
+
+  // We either have new proxy info or there was an error in falling back.
+  // In both cases we want to post ConnectToProxy (in the error case
+  // we might still want to fall back a direct connection).
+  if (rv != net::ERR_IO_PENDING) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&ProxyResolvingClientSocket::ConnectToProxy,
+                                  weak_factory_.GetWeakPtr(), rv));
+    // Since we potentially have another try to go (trying the direct connect)
+    // set the return code code to ERR_IO_PENDING.
+    rv = net::ERR_IO_PENDING;
+  }
+  return rv;
 }
 
 }  // namespace network
