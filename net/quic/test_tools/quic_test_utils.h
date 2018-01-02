@@ -535,11 +535,11 @@ class MockQuicSession : public QuicSession {
 
   // Returns a QuicConsumedData that indicates all of |write_length| (and |fin|
   // if set) has been consumed.
-  static QuicConsumedData ConsumeAllData(QuicStream* stream,
-                                         QuicStreamId id,
-                                         size_t write_length,
-                                         QuicStreamOffset offset,
-                                         StreamSendingState state);
+  static QuicConsumedData ConsumeData(QuicStream* stream,
+                                      QuicStreamId id,
+                                      size_t write_length,
+                                      QuicStreamOffset offset,
+                                      StreamSendingState state);
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;

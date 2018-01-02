@@ -138,13 +138,13 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
   string data(1350, 'a');
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
   // Send [1350, 2700) in ENCRYPTION_INITIAL.
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   EXPECT_EQ(ENCRYPTION_INITIAL, connection_->encryption_level());
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 1350, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   EXPECT_EQ(ENCRYPTION_FORWARD_SECURE, connection_->encryption_level());
@@ -155,13 +155,13 @@ TEST_F(QuicCryptoStreamTest, RetransmitCryptoData) {
   // Lost [1200, 2000).
   stream_.OnStreamFrameLost(1200, 800, false);
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1000, 0, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   // Verify [1200, 2000) are sent in [1200, 1350) and [1350, 2000) because of
   // they are in different encryption levels.
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 150, 1200, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 650, 1350, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.OnCanWrite();
   EXPECT_FALSE(stream_.HasPendingRetransmission());
   // Verify connection's encryption level has restored.
@@ -176,13 +176,13 @@ TEST_F(QuicCryptoStreamTest, NeuterUnencryptedStreamData) {
   EXPECT_EQ(ENCRYPTION_NONE, connection_->encryption_level());
   string data(1350, 'a');
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 0, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
   // Send [1350, 2700) in ENCRYPTION_INITIAL.
   connection_->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   EXPECT_EQ(ENCRYPTION_INITIAL, connection_->encryption_level());
   EXPECT_CALL(session_, WritevData(_, kCryptoStreamId, 1350, 1350, _))
-      .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
   stream_.WriteOrBufferData(data, false, nullptr);
 
   // Lost [0, 1350).

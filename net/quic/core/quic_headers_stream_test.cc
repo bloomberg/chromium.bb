@@ -839,7 +839,7 @@ TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
 TEST_P(QuicHeadersStreamTest, AckSentData) {
   EXPECT_CALL(session_,
               WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   if (!GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
     EXPECT_CALL(*connection_, CloseConnection(QUIC_INTERNAL_ERROR, _, _));
   }
@@ -897,7 +897,7 @@ TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   // In this test, a stream frame can contain multiple headers.
   EXPECT_CALL(session_,
               WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   InSequence s;
   QuicReferenceCountedPointer<MockAckListener> ack_listener1(
       new MockAckListener());
@@ -939,7 +939,7 @@ TEST_P(QuicHeadersStreamTest, HeadersGetAckedMultipleTimes) {
   }
   EXPECT_CALL(session_,
               WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
-      .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
+      .WillRepeatedly(Invoke(MockQuicSession::ConsumeData));
   InSequence s;
   QuicReferenceCountedPointer<MockAckListener> ack_listener1(
       new MockAckListener());

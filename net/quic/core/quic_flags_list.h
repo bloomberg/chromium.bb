@@ -164,3 +164,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_receiving_overlapping_data,
           false)
+
+// If true, QuicStreamSendBuffer keeps track of the slice which next write
+// should get data from if writing new data.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_write_index, false)

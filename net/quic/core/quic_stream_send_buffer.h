@@ -128,6 +128,15 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
   friend class test::QuicStreamSendBufferPeer;
   friend class test::QuicStreamPeer;
 
+  // Another version of WriteStreamData() to be able to start writing from
+  // write_index_ points to instead of searching through the slices to find the
+  // place to write.
+  // TODO(danzh): inline this method into WriteStreamData() after
+  // quic_reloadable_flag_quic_use_write_index is deprecated.
+  bool WriteStreamDataWithIndex(QuicStreamOffset offset,
+                                QuicByteCount data_length,
+                                QuicDataWriter* writer);
+
   QuicDeque<BufferedSlice> buffered_slices_;
 
   // Offset of next inserted byte.
@@ -149,6 +158,14 @@ class QUIC_EXPORT_PRIVATE QuicStreamSendBuffer {
 
   // Data considered as lost and needs to be retransmitted.
   QuicIntervalSet<QuicStreamOffset> pending_retransmissions_;
+
+  // Index of slice which contains data waiting to be written for the first
+  // time. -1 if send buffer is empty or all data has been written.
+  int32_t write_index_;
+
+  // True if quic_reloadable_flag_quic_stream_send_buffer_write_index and
+  // allow_multiple_acks_for_data_ are both true.
+  const bool use_write_index_;
 };
 
 }  // namespace net

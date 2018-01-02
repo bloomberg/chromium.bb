@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/api/quic_test.h"
+#include "net/quic/test_tools/quic_stream_send_buffer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using std::string;
@@ -41,7 +42,11 @@ class QuicStreamSendBufferTest : public QuicTest {
     QuicMemSlice slice1(&allocator_, 1024);
     memset(const_cast<char*>(slice1.data()), 'c', 1024);
     QuicMemSlice slice2(&allocator_, 768);
-    memset(const_cast<char*>(slice2.data()), 'c', 768);
+    memset(const_cast<char*>(slice2.data()), 'd', 768);
+
+    // Index starts from not pointing to any slice.
+    EXPECT_EQ(nullptr,
+              QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_));
 
     // Save all data.
     SetQuicFlag(&FLAGS_quic_send_buffer_max_data_slice_size, 1024);
@@ -50,12 +55,22 @@ class QuicStreamSendBufferTest : public QuicTest {
     EXPECT_TRUE(slice1.empty());
     send_buffer_.SaveMemSlice(std::move(slice2));
     EXPECT_TRUE(slice2.empty());
-    // Write all data.
-    send_buffer_.OnStreamDataConsumed(3840);
-    EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
-    EXPECT_EQ(3840u, send_buffer_.stream_bytes_outstanding());
 
     EXPECT_EQ(4u, send_buffer_.size());
+    // At this point, the whole buffer looks like:
+    // |      a * 1536      |b * 256|         c * 1280        |  d * 768  |
+    // |    slice1     |     slice2       |      slice3       |   slice4  |
+  }
+
+  void WriteAllData() {
+    // Write all data.
+    char buf[4000];
+    QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
+    send_buffer_.WriteStreamData(0, 3840u, &writer);
+
+    send_buffer_.OnStreamDataConsumed(3840u);
+    EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
+    EXPECT_EQ(3840u, send_buffer_.stream_bytes_outstanding());
   }
 
   SimpleBufferAllocator allocator_;
@@ -68,7 +83,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   string copy1(1024, 'a');
   string copy2 = string(512, 'a') + string(256, 'b') + string(256, 'c');
   string copy3(1024, 'c');
-  string copy4(768, 'c');
+  string copy4(768, 'd');
 
   ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
   EXPECT_EQ(copy1, QuicStringPiece(buf, 1024));
@@ -76,7 +91,7 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   EXPECT_EQ(copy2, QuicStringPiece(buf + 1024, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 1024, &writer));
   EXPECT_EQ(copy3, QuicStringPiece(buf + 2048, 1024));
-  ASSERT_TRUE(send_buffer_.WriteStreamData(2048, 768, &writer));
+  ASSERT_TRUE(send_buffer_.WriteStreamData(3072, 768, &writer));
   EXPECT_EQ(copy4, QuicStringPiece(buf + 3072, 768));
 
   // Test data piece across boundries.
@@ -85,15 +100,28 @@ TEST_F(QuicStreamSendBufferTest, CopyDataToBuffer) {
   ASSERT_TRUE(send_buffer_.WriteStreamData(1000, 1024, &writer2));
   EXPECT_EQ(copy5, QuicStringPiece(buf, 1024));
   ASSERT_TRUE(send_buffer_.WriteStreamData(2500, 1024, &writer2));
-  EXPECT_EQ(copy3, QuicStringPiece(buf + 1024, 1024));
+  string copy6 = string(572, 'c') + string(452, 'd');
+  EXPECT_EQ(copy6, QuicStringPiece(buf + 1024, 1024));
 
   // Invalid data copy.
   QuicDataWriter writer3(4000, buf, HOST_BYTE_ORDER);
   EXPECT_FALSE(send_buffer_.WriteStreamData(3000, 1024, &writer3));
-  EXPECT_FALSE(send_buffer_.WriteStreamData(0, 4000, &writer3));
+  if (GetQuicReloadableFlag(quic_use_write_index) &&
+      GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+    EXPECT_DFATAL(send_buffer_.WriteStreamData(0, 4000, &writer3),
+                  "Writer fails to write.");
+  } else {
+    EXPECT_FALSE(send_buffer_.WriteStreamData(0, 4000, &writer3));
+  }
+
+  send_buffer_.OnStreamDataConsumed(3840);
+  EXPECT_EQ(3840u, send_buffer_.stream_bytes_written());
+  EXPECT_EQ(3840u, send_buffer_.stream_bytes_outstanding());
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrame) {
+  WriteAllData();
+
   QuicByteCount newly_acked_length;
   EXPECT_TRUE(send_buffer_.OnStreamDataAcked(1024, 1024, &newly_acked_length));
   EXPECT_EQ(1024u, newly_acked_length);
@@ -114,6 +142,8 @@ TEST_F(QuicStreamSendBufferTest, RemoveStreamFrame) {
 }
 
 TEST_F(QuicStreamSendBufferTest, RemoveStreamFrameAcrossBoundries) {
+  WriteAllData();
+
   QuicByteCount newly_acked_length;
   EXPECT_TRUE(send_buffer_.OnStreamDataAcked(2024, 576, &newly_acked_length));
   EXPECT_EQ(576u, newly_acked_length);
@@ -141,6 +171,7 @@ TEST_F(QuicStreamSendBufferTest, AckStreamDataMultipleTimes) {
   if (!GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
     return;
   }
+  WriteAllData();
   QuicByteCount newly_acked_length;
   EXPECT_TRUE(send_buffer_.OnStreamDataAcked(100, 1500, &newly_acked_length));
   EXPECT_EQ(1500u, newly_acked_length);
@@ -166,6 +197,7 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
   if (!FLAGS_quic_reloadable_flag_quic_allow_multiple_acks_for_data2) {
     return;
   }
+  WriteAllData();
   EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(0, 3840));
   EXPECT_FALSE(send_buffer_.HasPendingRetransmission());
   // Lost data [0, 1200).
@@ -203,6 +235,45 @@ TEST_F(QuicStreamSendBufferTest, PendingRetransmission) {
   EXPECT_FALSE(send_buffer_.IsStreamDataOutstanding(100, 0));
   // Verify partially acked data is outstanding.
   EXPECT_TRUE(send_buffer_.IsStreamDataOutstanding(400, 800));
+}
+
+TEST_F(QuicStreamSendBufferTest, CurrentWriteIndex) {
+  if (!GetQuicReloadableFlag(quic_use_write_index) ||
+      !GetQuicReloadableFlag(quic_allow_multiple_acks_for_data2)) {
+    return;
+  }
+  char buf[4000];
+  QuicDataWriter writer(4000, buf, HOST_BYTE_ORDER);
+  // With data buffered, index points to the 1st slice of data.
+  EXPECT_EQ(0u,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  ASSERT_TRUE(send_buffer_.WriteStreamData(0, 1024, &writer));
+  // Wrote all data on 1st slice, index points to next slice.
+  EXPECT_EQ(1024u,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  ASSERT_TRUE(send_buffer_.WriteStreamData(1024, 512, &writer));
+  // Last write didn't finish a whole slice. Index remains.
+  EXPECT_EQ(1024u,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+  send_buffer_.OnStreamDataConsumed(1024);
+
+  // If data in 1st slice gets ACK'ed, it shouldn't change the indexed slice
+  QuicByteCount newly_acked_length;
+  EXPECT_TRUE(send_buffer_.OnStreamDataAcked(0, 1024, &newly_acked_length));
+  EXPECT_EQ(1024u,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
+
+  ASSERT_TRUE(
+      send_buffer_.WriteStreamData(1024 + 512, 3840 - 1024 - 512, &writer));
+  // After writing all buffered data, index become invalid again.
+  EXPECT_EQ(nullptr,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_));
+  QuicMemSlice slice(&allocator_, 60);
+  memset(const_cast<char*>(slice.data()), 'e', 60);
+  send_buffer_.SaveMemSlice(std::move(slice));
+  // With new data, index points to the new data.
+  EXPECT_EQ(3840u,
+            QuicStreamSendBufferPeer::CurrentWriteSlice(&send_buffer_)->offset);
 }
 
 }  // namespace
