@@ -535,6 +535,11 @@ const CGFloat kMaxCardStaggerPercentage = 0.35;
   [self removeCardAtIndex:index];
 }
 
+// All tabs were closed in the model
+- (void)tabModelClosedAllTabs:(TabModel*)model {
+  [self.observer cardSetDidCloseAllTabs:self];
+}
+
 - (CGFloat)maximumStackLength {
   return [stackModel_ maximumStackLength];
 }

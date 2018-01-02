@@ -42,9 +42,6 @@ typedef enum {
 // attaching to the card sets.
 - (void)setUpDisplayViews;
 
-// Registers listeners for the appropriate notifications.
-- (void)registerForNotifications;
-
 // Used during |-dealloc| and |-didReceiveMemoryWaring| to clear any references
 // to the cards and removes |self| as an observer to any notifications.
 - (void)cleanUpViewsAndNotifications;

@@ -20,6 +20,9 @@ struct LayoutRect;
 // Observer delegate for clients interested in changes to cards in a CardSet.
 @protocol CardSetObserver
 
+// |cardSet| closed all of its tabs.
+- (void)cardSetDidCloseAllTabs:(CardSet*)cardSet;
+
 // |newCard| has been added to |cardSet|.
 - (void)cardSet:(CardSet*)cardSet didAddCard:(StackCard*)newCard;
 
