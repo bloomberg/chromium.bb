@@ -628,6 +628,8 @@ bool QuicStream::WriteStreamData(QuicStreamOffset offset,
                                  QuicByteCount data_length,
                                  QuicDataWriter* writer) {
   DCHECK_LT(0u, data_length);
+  QUIC_DVLOG(2) << ENDPOINT << "Write stream " << id_ << " data from offset "
+                << offset << " length " << data_length;
   return send_buffer_.WriteStreamData(offset, data_length, writer);
 }
 

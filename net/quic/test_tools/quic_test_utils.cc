@@ -383,11 +383,18 @@ const QuicCryptoStream* MockQuicSession::GetCryptoStream() const {
 }
 
 // static
-QuicConsumedData MockQuicSession::ConsumeAllData(QuicStream* /*stream*/,
-                                                 QuicStreamId /*id*/,
-                                                 size_t write_length,
-                                                 QuicStreamOffset /*offset*/,
-                                                 StreamSendingState state) {
+QuicConsumedData MockQuicSession::ConsumeData(QuicStream* stream,
+                                              QuicStreamId /*id*/,
+                                              size_t write_length,
+                                              QuicStreamOffset offset,
+                                              StreamSendingState state) {
+  if (write_length > 0) {
+    auto buf = QuicMakeUnique<char[]>(write_length);
+    QuicDataWriter writer(write_length, buf.get(), HOST_BYTE_ORDER);
+    stream->WriteStreamData(offset, write_length, &writer);
+  } else {
+    DCHECK(state != NO_FIN);
+  }
   return QuicConsumedData(write_length, state != NO_FIN);
 }
 

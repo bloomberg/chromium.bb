@@ -15,6 +15,14 @@ void QuicStreamSendBufferPeer::SetStreamOffset(
   send_buffer->stream_offset_ = stream_offset;
 }
 
+// static
+const BufferedSlice* QuicStreamSendBufferPeer::CurrentWriteSlice(
+    QuicStreamSendBuffer* send_buffer) {
+  if (send_buffer->write_index_ == -1) {
+    return nullptr;
+  }
+  return &send_buffer->buffered_slices_[send_buffer->write_index_];
+}
 }  // namespace test
 
 }  // namespace net
