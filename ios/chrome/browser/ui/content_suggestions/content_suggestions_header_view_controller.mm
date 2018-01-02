@@ -180,10 +180,6 @@ const CGFloat kHintLabelSidePadding = 12;
     self.headerView = [[NewTabPageHeaderView alloc] init];
     [self addFakeOmnibox];
 
-    self.logoVendor.view.isAccessibilityElement = YES;
-    self.logoVendor.view.accessibilityLabel =
-        l10n_util::GetNSString(IDS_IOS_NEW_TAB_LOGO_ACCESSIBILITY_LABEL);
-
     [self.headerView addSubview:self.logoVendor.view];
     [self.headerView addSubview:self.fakeOmnibox];
     self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
