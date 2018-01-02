@@ -594,7 +594,13 @@ TEST_F(URLLoaderTest, Empty) {
   LoadAndCompareFile("empty.html");
 }
 
-TEST_F(URLLoaderTest, BasicSSL) {
+// Fails on Fuchsia bots, crbug.com/798253.
+#if defined(OS_FUCHSIA)
+#define MAYBE_BasicSSL DISABLED_BasicSSL
+#else
+#define MAYBE_BasicSSL BasicSSL
+#endif
+TEST_F(URLLoaderTest, MAYBE_BasicSSL) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
@@ -609,7 +615,13 @@ TEST_F(URLLoaderTest, BasicSSL) {
   ASSERT_TRUE(https_server.GetCertificate()->Equals(ssl_info()->cert.get()));
 }
 
-TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
+// Fails on Fuchsia bots, crbug.com/798253.
+#if defined(OS_FUCHSIA)
+#define MAYBE_SSLSentOnlyWhenRequested DISABLED_SSLSentOnlyWhenRequested
+#else
+#define MAYBE_SSLSentOnlyWhenRequested SSLSentOnlyWhenRequested
+#endif
+TEST_F(URLLoaderTest, MAYBE_SSLSentOnlyWhenRequested) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(
       base::FilePath(FILE_PATH_LITERAL("content/test/data")));
@@ -1316,7 +1328,15 @@ TEST_F(URLLoaderTest, UploadDoubleRawFile) {
 
 // Tests that SSLInfo is not attached to OnComplete messages when there is no
 // certificate error.
-TEST_F(URLLoaderTest, NoSSLInfoWithoutCertificateError) {
+//
+// Fails on Fuchsia bots, crbug.com/798253.
+#if defined(OS_FUCHSIA)
+#define MAYBE_NoSSLInfoWithoutCertificateError \
+  DISABLED_NoSSLInfoWithoutCertificateError
+#else
+#define MAYBE_NoSSLInfoWithoutCertificateError NoSSLInfoWithoutCertificateError
+#endif
+TEST_F(URLLoaderTest, MAYBE_NoSSLInfoWithoutCertificateError) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ASSERT_TRUE(https_server.Start());
   set_send_ssl_for_cert_error();
