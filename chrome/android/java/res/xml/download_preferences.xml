@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <Preference
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="location_change"
         android:title="@string/download_location_title" />
 </PreferenceScreen>

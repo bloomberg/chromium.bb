@@ -1161,6 +1161,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_LOCATION_TITLE" desc="Title for 'Downloads location' preference that changes the default device directory that stores downloaded items.">
         Location
       </message>
+      <message name="IDS_DOWNLOADS_PRIMARY_STORAGE" desc="Option for setting the default download location to be internal storage (ie. on the device itself).">
+        Primary storage
+      </message>
+      <message name="IDS_DOWNLOADS_SECONDARY_STORAGE" desc="Option for setting the default download location to be external storage (ie. an SD card).">
+        Secondary storage
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
