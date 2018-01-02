@@ -18290,6 +18290,9 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="RecordHistogramSnapshotsFromSource"/>
   <int value="10" label="ProvideIndependentMetrics"/>
   <int value="11" label="ScheduleSourcesCheck Failed"/>
+  <int value="12" label="Old DeleteFile Failed"/>
+  <int value="13" label="Over DeleteFile Failed"/>
+  <int value="14" label="Async DeleteFile Failed"/>
 </enum>
 
 <enum name="FileReaderSyncWorkerType">

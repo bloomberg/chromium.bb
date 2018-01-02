@@ -95,6 +95,9 @@ enum Happening : int {
   RECORD_HISTOGRAM_SNAPSHOTS_FROM_SOURCE,
   PROVIDE_INDEPENDENT_METRICS,
   SCHEDULE_SOURCES_FAILED,
+  OLD_DELETE_FILE_FAILED,
+  OVER_DELETE_FILE_FAILED,
+  ASYNC_DELETE_FILE_FAILED,
   MAX_HAPPENINGS
 };
 
@@ -113,8 +116,12 @@ void DeleteFileWhenPossible(const base::FilePath& path) {
   // scope. This is the only cross-platform safe way to delete a file that may
   // be open elsewhere, a distinct possibility given the asynchronous nature
   // of the delete task.
-  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                            base::File::FLAG_DELETE_ON_CLOSE);
+  {
+    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                              base::File::FLAG_DELETE_ON_CLOSE);
+  }
+  if (base::PathExists(path))
+    RecordHappening(ASYNC_DELETE_FILE_FAILED);
 }
 
 // A task runner to use for testing.
@@ -336,6 +343,8 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
         // is not removed, it will continue to be ignored bacuse of the older
         // modification time.
         base::DeleteFile(found_file.path, /*recursive=*/false);
+        if (base::PathExists(found_file.path))
+          RecordHappening(OLD_DELETE_FILE_FAILED);
         ++delete_count;
       }
     }
@@ -360,6 +369,8 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
         now_time - found.info.GetLastModifiedTime() > source->max_age;
     if (too_many || too_big || too_old) {
       base::DeleteFile(found.path, /*recursive=*/false);
+      if (base::PathExists(found.path))
+        RecordHappening(OVER_DELETE_FILE_FAILED);
       ++delete_count;
       --file_count;
       total_size_kib -= found.info.GetSize() >> 10;
