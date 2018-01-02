@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
@@ -39,6 +41,7 @@ const int styleCount = 2;
 
 @synthesize toolbarConfiguration = _toolbarConfiguration;
 @synthesize style = _style;
+@synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithStyle:(ToolbarStyle)style {
   self = [super init];
@@ -51,7 +54,7 @@ const int styleCount = 2;
 
 #pragma mark - Buttons
 
-- (ToolbarButton*)backToolbarButton {
+- (ToolbarButton*)backButton {
   int backButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(BACK);
   ToolbarButton* backButton = [ToolbarButton
@@ -68,10 +71,18 @@ const int styleCount = 2;
                                                                [DISABLED],
                                                YES)];
   backButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
+  [self configureButton:backButton width:kToolbarButtonWidth];
+  if (!IsIPadIdiom()) {
+    backButton.imageEdgeInsets =
+        UIEdgeInsetsMakeDirected(0, 0, 0, kBackButtonImageInset);
+  }
+  [backButton addTarget:self.dispatcher
+                 action:@selector(goBack)
+       forControlEvents:UIControlEventTouchUpInside];
   return backButton;
 }
 
-- (ToolbarButton*)forwardToolbarButton {
+- (ToolbarButton*)forwardButton {
   int forwardButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(FORWARD);
   ToolbarButton* forwardButton = [ToolbarButton
@@ -89,10 +100,18 @@ const int styleCount = 2;
                                                YES)];
   forwardButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_ACCNAME_FORWARD);
+  if (!IsIPadIdiom()) {
+    forwardButton.imageEdgeInsets =
+        UIEdgeInsetsMakeDirected(0, kForwardButtonImageInset, 0, 0);
+  }
+  [self configureButton:forwardButton width:kToolbarButtonWidth];
+  [forwardButton addTarget:self.dispatcher
+                    action:@selector(goForward)
+          forControlEvents:UIControlEventTouchUpInside];
   return forwardButton;
 }
 
-- (ToolbarButton*)tabSwitcherStripToolbarButton {
+- (ToolbarButton*)tabSwitcherStripButton {
   int tabSwitcherButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(OVERVIEW);
   ToolbarButton* tabSwitcherStripButton = [ToolbarButton
@@ -112,10 +131,15 @@ const int styleCount = 2;
   [tabSwitcherStripButton
       setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
            forState:UIControlStateHighlighted];
+  [self configureButton:tabSwitcherStripButton width:kToolbarButtonWidth];
+  [tabSwitcherStripButton addTarget:self.dispatcher
+                             action:@selector(displayTabSwitcher)
+                   forControlEvents:UIControlEventTouchUpInside];
+
   return tabSwitcherStripButton;
 }
 
-- (ToolbarButton*)tabSwitcherGridToolbarButton {
+- (ToolbarButton*)tabSwitcherGridButton {
   ToolbarButton* tabSwitcherGridButton =
       [ToolbarButton toolbarButtonWithImageForNormalState:
                          [UIImage imageNamed:@"tabswitcher_tab_switcher_button"]
@@ -126,7 +150,7 @@ const int styleCount = 2;
   return tabSwitcherGridButton;
 }
 
-- (ToolbarToolsMenuButton*)toolsMenuToolbarButton {
+- (ToolbarToolsMenuButton*)toolsMenuButton {
   ToolbarControllerStyle style = self.style == NORMAL
                                      ? ToolbarControllerStyleLightMode
                                      : ToolbarControllerStyleIncognitoMode;
@@ -135,10 +159,14 @@ const int styleCount = 2;
 
   SetA11yLabelAndUiAutomationName(toolsMenuButton, IDS_IOS_TOOLBAR_SETTINGS,
                                   kToolbarToolsMenuButtonIdentifier);
+  [self configureButton:toolsMenuButton width:kToolsMenuButtonWidth];
+  [toolsMenuButton addTarget:self.dispatcher
+                      action:@selector(showToolsMenu)
+            forControlEvents:UIControlEventTouchUpInside];
   return toolsMenuButton;
 }
 
-- (ToolbarButton*)shareToolbarButton {
+- (ToolbarButton*)shareButton {
   int shareButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(SHARE);
   ToolbarButton* shareButton = [ToolbarButton
@@ -153,10 +181,15 @@ const int styleCount = 2;
                                                                 [DISABLED])];
   SetA11yLabelAndUiAutomationName(shareButton, IDS_IOS_TOOLS_MENU_SHARE,
                                   kToolbarShareButtonIdentifier);
+  [self configureButton:shareButton width:kToolbarButtonWidth];
+  shareButton.titleLabel.text = @"Share";
+  [shareButton addTarget:self.dispatcher
+                  action:@selector(sharePage)
+        forControlEvents:UIControlEventTouchUpInside];
   return shareButton;
 }
 
-- (ToolbarButton*)reloadToolbarButton {
+- (ToolbarButton*)reloadButton {
   int reloadButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(RELOAD);
   ToolbarButton* reloadButton = [ToolbarButton
@@ -174,10 +207,14 @@ const int styleCount = 2;
                                                YES)];
   reloadButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_ACCNAME_RELOAD);
+  [self configureButton:reloadButton width:kToolbarButtonWidth];
+  [reloadButton addTarget:self.dispatcher
+                   action:@selector(reload)
+         forControlEvents:UIControlEventTouchUpInside];
   return reloadButton;
 }
 
-- (ToolbarButton*)stopToolbarButton {
+- (ToolbarButton*)stopButton {
   int stopButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_THREE_STATE(STOP);
   ToolbarButton* stopButton = [ToolbarButton
@@ -191,10 +228,14 @@ const int styleCount = 2;
                                                stopButtonImages[self.style]
                                                                [DISABLED])];
   stopButton.accessibilityLabel = l10n_util::GetNSString(IDS_IOS_ACCNAME_STOP);
+  [self configureButton:stopButton width:kToolbarButtonWidth];
+  [stopButton addTarget:self.dispatcher
+                 action:@selector(stopLoading)
+       forControlEvents:UIControlEventTouchUpInside];
   return stopButton;
 }
 
-- (ToolbarButton*)bookmarkToolbarButton {
+- (ToolbarButton*)bookmarkButton {
   int bookmarkButtonImages[styleCount][TOOLBAR_STATE_COUNT] =
       TOOLBAR_IDR_TWO_STATE(STAR);
   ToolbarButton* bookmarkButton = [ToolbarButton
@@ -210,6 +251,11 @@ const int styleCount = 2;
       setImage:NativeImage(bookmarkButtonImages[self.style][PRESSED])
       forState:UIControlStateSelected];
   bookmarkButton.accessibilityLabel = l10n_util::GetNSString(IDS_TOOLTIP_STAR);
+  [self configureButton:bookmarkButton width:kToolbarButtonWidth];
+  [bookmarkButton addTarget:self.dispatcher
+                     action:@selector(bookmarkPage)
+           forControlEvents:UIControlEventTouchUpInside];
+
   return bookmarkButton;
 }
 
@@ -221,20 +267,29 @@ const int styleCount = 2;
                                     imageForDisabledState:nil];
   voiceSearchButton.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_ACCNAME_VOICE_SEARCH);
+  [self configureButton:voiceSearchButton width:kToolbarButtonWidth];
+  voiceSearchButton.enabled = NO;
   return voiceSearchButton;
 }
 
-- (ToolbarButton*)contractToolbarButton {
+- (ToolbarButton*)contractButton {
   NSString* collapseName = _style ? @"collapse_incognito" : @"collapse";
   NSString* collapsePressedName =
       _style ? @"collapse_pressed_incognito" : @"collapse_pressed";
-  ToolbarButton* contractToolbarButton = [ToolbarButton
+  ToolbarButton* contractButton = [ToolbarButton
       toolbarButtonWithImageForNormalState:[UIImage imageNamed:collapseName]
                   imageForHighlightedState:[UIImage
                                                imageNamed:collapsePressedName]
                      imageForDisabledState:nil];
-  contractToolbarButton.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
-  return contractToolbarButton;
+  contractButton.accessibilityLabel = l10n_util::GetNSString(IDS_CANCEL);
+  contractButton.alpha = 0;
+  contractButton.hidden = YES;
+  [self configureButton:contractButton width:kToolbarButtonWidth];
+  [contractButton addTarget:self.dispatcher
+                     action:@selector(contractToolbar)
+           forControlEvents:UIControlEventTouchUpInside];
+
+  return contractButton;
 }
 
 - (ToolbarButton*)locationBarLeadingButton {
@@ -247,11 +302,28 @@ const int styleCount = 2;
                        imageForDisabledState:
                            [UIImage imageNamed:@"incognito_marker_typing"]];
     locationBarLeadingButton.enabled = NO;
+    [self configureButton:locationBarLeadingButton
+                    width:kLeadingLocationBarButtonWidth];
+    locationBarLeadingButton.imageEdgeInsets =
+        UIEdgeInsetsMakeDirected(0, kLeadingLocationBarButtonImageInset, 0, 0);
   }
+
   return locationBarLeadingButton;
 }
 
 #pragma mark - Helpers
+
+// Sets the |button| width to |width| with a priority of
+// UILayoutPriorityRequired - 1. If the priority is |UILayoutPriorityRequired|,
+// there is a conflict when the buttons are hidden as the stack view is setting
+// their width to 0. Setting the priority to UILayoutPriorityDefaultHigh doesn't
+// work as they would have a lower priority than other elements.
+- (void)configureButton:(UIView*)button width:(CGFloat)width {
+  NSLayoutConstraint* constraint =
+      [button.widthAnchor constraintEqualToConstant:width];
+  constraint.priority = UILayoutPriorityRequired - 1;
+  constraint.active = YES;
+}
 
 - (NSArray<UIImage*>*)voiceSearchImages {
   // The voice search images can be overridden by the branded image provider.

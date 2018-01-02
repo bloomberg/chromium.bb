@@ -110,6 +110,7 @@ source_set("toolbar_components_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/toolbar:resource_macros",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/public/provider/chrome/browser",
