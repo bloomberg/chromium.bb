@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -37,6 +38,7 @@ import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 /**
  * Unit tests for {@link SelectionPopupController}.
@@ -52,6 +54,7 @@ public class SelectionPopupControllerTest {
     private ActionMode mActionMode;
     private PackageManager mPackageManager;
     private SmartSelectionMetricsLogger mLogger;
+    private RenderCoordinates mRenderCoordinates;
 
     private static final String MOUNTAIN_FULL = "585 Franklin Street, Mountain View, CA 94041";
     private static final String MOUNTAIN = "Mountain";
@@ -120,9 +123,12 @@ public class SelectionPopupControllerTest {
         mView = Mockito.mock(View.class);
         mActionMode = Mockito.mock(ActionMode.class);
         mPackageManager = Mockito.mock(PackageManager.class);
+        mRenderCoordinates = Mockito.mock(RenderCoordinates.class);
         mLogger = Mockito.mock(SmartSelectionMetricsLogger.class);
 
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mWebContents.getRenderCoordinates()).thenReturn(mRenderCoordinates);
+        when(mRenderCoordinates.getDeviceScaleFactor()).thenReturn(1.f);
 
         mController = SelectionPopupController.createForTesting(
                 mContext, mWindowAndroid, mWebContents, mView);
@@ -397,6 +403,70 @@ public class SelectionPopupControllerTest {
         mController.getResultCallback().onClassified(resultForNoChange());
         order.verify(mLogger).logSelectionModified(
                 eq("1600 Amphitheatre"), eq(0), isA(SelectionClient.Result.class));
+    }
+
+    @Test
+    @Feature({"TextInput", "HandleObserver"})
+    public void testHandleObserverSelectionHandle() {
+        SelectionInsertionHandleObserver handleObserver =
+                Mockito.mock(SelectionInsertionHandleObserver.class);
+        InOrder order = inOrder(handleObserver);
+        mController.setSelectionInsertionHandleObserver(handleObserver);
+
+        // Selection handles shown.
+        mController.onSelectionEvent(
+                SelectionEventType.SELECTION_HANDLES_SHOWN, 0, 0, 0, 0, 0.f, 0.f);
+        // Selection handles moved, but drag wasn't triggered, so no handleDragStartedOrMoved call.
+        mController.onSelectionEvent(
+                SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver, never()).handleDragStartedOrMoved(anyFloat(), anyFloat());
+
+        // Selection handle drag started.
+        mController.onSelectionEvent(
+                SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver).handleDragStartedOrMoved(0.f, 0.f);
+
+        // Moving.
+        mController.onSelectionEvent(
+                SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0, 5.f, 5.f);
+        order.verify(handleObserver).handleDragStartedOrMoved(5.f, 5.f);
+
+        // Selection handle drag stopped.
+        mController.onSelectionEvent(
+                SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver).handleDragStopped();
+    }
+
+    @Test
+    @Feature({"TextInput", "HandleObserver"})
+    public void testHandleObserverInsertionHandle() {
+        SelectionInsertionHandleObserver handleObserver =
+                Mockito.mock(SelectionInsertionHandleObserver.class);
+        InOrder order = inOrder(handleObserver);
+        mController.setSelectionInsertionHandleObserver(handleObserver);
+
+        // Insertion handle shown.
+        mController.onSelectionEvent(
+                SelectionEventType.INSERTION_HANDLE_SHOWN, 0, 0, 0, 0, 0.f, 0.f);
+        // Insertion handle moved, but drag wasn't triggered, so no handleDragStartedOrMoved call.
+        mController.onSelectionEvent(
+                SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver, never()).handleDragStartedOrMoved(anyFloat(), anyFloat());
+
+        // Insertion handle drag started.
+        mController.onSelectionEvent(
+                SelectionEventType.INSERTION_HANDLE_DRAG_STARTED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver).handleDragStartedOrMoved(0.f, 0.f);
+
+        // Moving.
+        mController.onSelectionEvent(
+                SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0, 5.f, 5.f);
+        order.verify(handleObserver).handleDragStartedOrMoved(5.f, 5.f);
+
+        // Insertion handle drag stopped.
+        mController.onSelectionEvent(
+                SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0, 0.f, 0.f);
+        order.verify(handleObserver).handleDragStopped();
     }
 
     // Result generated by long press "Amphitheatre" in "1600 Amphitheatre Parkway".

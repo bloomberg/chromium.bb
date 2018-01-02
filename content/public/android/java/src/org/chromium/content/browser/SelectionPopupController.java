@@ -151,6 +151,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mScrollInProgress;
 
     /**
+     * The {@link SelectionInsertionHandleObserver} that processes handle events, or {@code null} if
+     * none exists.
+     */
+    private SelectionInsertionHandleObserver mHandleObserver;
+    // Whether a handle dragging is in progress.
+    private boolean mDragStarted;
+
+    /**
      * Create {@link SelectionPopupController} instance.
      * @param context Context for action mode.
      * @param window WindowAndroid instance.
@@ -199,6 +207,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mResultCallback = new SmartSelectionCallback();
 
         mLastSelectedText = "";
+
+        mHandleObserver = ContentClassFactory.get().createHandleObserver(view);
+        mDragStarted = false;
 
         if (initializeNative) nativeInit(webContents);
     }
@@ -1048,13 +1059,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     // All coordinates are in DIP.
+    @VisibleForTesting
     @CalledByNative
-    private void onSelectionEvent(int eventType, int left, int top, int right, int bottom,
+    void onSelectionEvent(int eventType, int left, int top, int right, int bottom,
             float boundMiddlePointX, float boundMiddlePointY) {
         // Ensure the provided selection coordinates form a non-empty rect, as required by
         // the selection action mode.
         if (left == right) ++right;
         if (top == bottom) ++bottom;
+        final float deviceScale = getDeviceScaleFactor();
+        boundMiddlePointX *= deviceScale;
+        boundMiddlePointY *= deviceScale;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
                 break;
@@ -1062,6 +1077,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
                 invalidateContentRect();
+                if (mDragStarted && mHandleObserver != null) {
+                    mHandleObserver.handleDragStartedOrMoved(boundMiddlePointX, boundMiddlePointY);
+                }
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
@@ -1077,10 +1095,18 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STARTED:
                 hideActionMode(true);
+                mDragStarted = true;
+                if (mHandleObserver != null) {
+                    mHandleObserver.handleDragStartedOrMoved(boundMiddlePointX, boundMiddlePointY);
+                }
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
                 mWebContents.showContextMenuAtTouchHandle(left, bottom);
+                if (mHandleObserver != null) {
+                    mHandleObserver.handleDragStopped();
+                }
+                mDragStarted = false;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
@@ -1094,6 +1120,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                     showPastePopup();
                 } else {
                     destroyPastePopup();
+                }
+                if (mDragStarted && mHandleObserver != null) {
+                    mHandleObserver.handleDragStartedOrMoved(boundMiddlePointX, boundMiddlePointY);
                 }
                 break;
 
@@ -1116,6 +1145,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             case SelectionEventType.INSERTION_HANDLE_DRAG_STARTED:
                 mWasPastePopupShowingOnInsertionDragStart = isPastePopupShowing();
                 destroyPastePopup();
+                mDragStarted = true;
+                if (mHandleObserver != null) {
+                    mHandleObserver.handleDragStartedOrMoved(boundMiddlePointX, boundMiddlePointY);
+                }
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
@@ -1124,6 +1157,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                             mSelectionRect.left, mSelectionRect.bottom);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
+                if (mHandleObserver != null) {
+                    mHandleObserver.handleDragStopped();
+                }
+                mDragStarted = false;
                 break;
 
             default:
@@ -1131,7 +1168,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
 
         if (mSelectionClient != null) {
-            final float deviceScale = getDeviceScaleFactor();
             int xAnchorPix = (int) (mSelectionRect.left * deviceScale);
             int yAnchorPix = (int) (mSelectionRect.bottom * deviceScale);
             mSelectionClient.onSelectionEvent(eventType, xAnchorPix, yAnchorPix);
@@ -1172,6 +1208,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     /**
      * Sets the client that implements selection augmenting functionality, or null if none exists.
      */
+    @VisibleForTesting
     void setSelectionClient(@Nullable SelectionClient selectionClient) {
         mSelectionClient = selectionClient;
         if (mSelectionClient != null) {
@@ -1182,6 +1219,15 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mClassificationResult = null;
 
         assert !mHidden;
+    }
+
+    /**
+     * Sets the handle observer, or null if none exists.
+     */
+    @VisibleForTesting
+    void setSelectionInsertionHandleObserver(
+            @Nullable SelectionInsertionHandleObserver handleObserver) {
+        mHandleObserver = handleObserver;
     }
 
     @CalledByNative
