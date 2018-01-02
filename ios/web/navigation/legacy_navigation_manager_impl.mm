@@ -298,7 +298,9 @@ NavigationItemImpl* LegacyNavigationManagerImpl::GetTransientItemImpl() const {
   return [session_controller_ transientItem];
 }
 
-void LegacyNavigationManagerImpl::FinishGoToIndex(int index) {
+void LegacyNavigationManagerImpl::FinishGoToIndex(
+    int index,
+    NavigationInitiationType type) {
   const ScopedNavigationItemImplList& items = [session_controller_ items];
   NavigationItem* to_item = items[index].get();
   NavigationItem* previous_item = [session_controller_ currentItem];
@@ -308,7 +310,7 @@ void LegacyNavigationManagerImpl::FinishGoToIndex(int index) {
                                                        andItem:to_item];
   if (same_document_navigation) {
     [session_controller_ goToItemAtIndex:index discardNonCommittedItems:YES];
-    delegate_->UpdateHtml5HistoryState();
+    delegate_->OnGoToIndexSameDocumentNavigation(type);
   } else {
     [session_controller_ discardNonCommittedItems];
     [session_controller_ setPendingItemIndex:index];

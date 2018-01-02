@@ -152,6 +152,9 @@ class NavigationManagerImpl : public NavigationManager {
   void UpdateCurrentItemForReplaceState(const GURL& url,
                                         NSString* state_object);
 
+  // Same as GoToIndex(int), but allows renderer-initiated navigations.
+  void GoToIndex(int index, NavigationInitiationType initiation_type);
+
   // NavigationManager:
   NavigationItem* GetLastCommittedItem() const final;
   NavigationItem* GetPendingItem() const final;
@@ -211,7 +214,7 @@ class NavigationManagerImpl : public NavigationManager {
   virtual NavigationItemImpl* GetLastCommittedItemImpl() const = 0;
 
   // Subclass specific implementation to update session state.
-  virtual void FinishGoToIndex(int index) = 0;
+  virtual void FinishGoToIndex(int index, NavigationInitiationType type) = 0;
 
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;
