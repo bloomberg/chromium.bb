@@ -219,7 +219,7 @@ component("gl") {
       ]
     }
   }
-  if (is_android || is_linux) {
+  if (is_android || is_linux || is_fuchsia) {
     sources += [
       "gl_implementation_osmesa.cc",
       "gl_implementation_osmesa.h",
