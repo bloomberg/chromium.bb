@@ -392,7 +392,7 @@ const CGFloat kKernAmount = 0.2;
 
 - (NSRect)imageRectForBounds:(NSRect)theRect {
   NSRect imageRect = [super imageRectForBounds:theRect];
-  const CGFloat inset = [self insetInView:[self controlView]];
+  const CGFloat inset = [[self class] insetInView:[self controlView]];
   imageRect.origin.y -= 1;
   imageRect.origin.x =
       cocoa_l10n_util::ShouldDoExperimentalRTLLayout()

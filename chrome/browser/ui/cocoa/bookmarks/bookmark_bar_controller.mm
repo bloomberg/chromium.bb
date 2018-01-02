@@ -1008,7 +1008,9 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
 // Return an appropriate width for the given bookmark button cell.
 - (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
-  return std::min([cell cellSize].width, bookmarks::kDefaultBookmarkWidth);
+  CGFloat width =
+      [cell cellSize].width + [BookmarkButtonCell insetInView:buttonView_] * 2;
+  return std::min(width, bookmarks::kDefaultBookmarkWidth);
 }
 
 - (BookmarkButton*)buttonForNode:(const BookmarkNode*)node {
@@ -1089,7 +1091,7 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
 
   // Folders show a tooltip iff the title is truncated.
   if (node->is_folder() && [buttonTitle length] > 0 &&
-      [[button cell] cellSize].width < buttonWidth) {
+      [self widthForBookmarkButtonCell:[button cell]] < buttonWidth) {
     tooltip = buttonTitle;
   } else if (node->is_url()) {
     tooltip = [BookmarkMenuCocoaController tooltipForNode:node];
@@ -1977,7 +1979,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (CGFloat)widthOfButtonForNode:(const BookmarkNode*)node {
   // TODO(lgrey): Can we get this information without an actual image?
   NSImage* image = [self faviconForNode:node forADarkTheme:NO];
-  CGFloat width = [BookmarkButtonCell cellWidthForNode:node image:image];
+  CGFloat width = [BookmarkButtonCell cellWidthForNode:node image:image] +
+                  [BookmarkButtonCell insetInView:buttonView_] * 2;
   return std::min(width, bookmarks::kDefaultBookmarkWidth);
 }
 
