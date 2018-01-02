@@ -228,8 +228,10 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
               : blink::WebMouseWheelEvent::kPhaseBegan;
       GenerateAndSendWheelEvents(delta_to_scroll, phase);
       has_fling_animation_started_ = true;
-      ScheduleFlingProgress();
     }
+    // As long as the fling curve is active, the fling progress must get
+    // scheduled even when the last delta to scroll was zero.
+    ScheduleFlingProgress();
   } else {  // !is_fling_active
     CancelCurrentFling();
   }

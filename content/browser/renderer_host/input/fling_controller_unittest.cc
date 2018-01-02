@@ -17,16 +17,6 @@ using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebMouseWheelEvent;
 
-namespace {
-void GiveItSomeTime(uint64_t delay_in_ms) {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMillisecondsD(delay_in_ms));
-  run_loop.Run();
-}
-}  // namespace
-
 namespace content {
 
 class FakeFlingController : public FlingController {
@@ -111,10 +101,10 @@ class FlingControllerTest : public testing::Test,
       fling_controller_->ProcessGestureFlingCancel(fling_cancel_with_latency);
   }
 
-  void ProgressFling() {
+  void ProgressFling(base::TimeTicks current_time) {
     DCHECK(scheduled_next_fling_progress_);
     scheduled_next_fling_progress_ = false;
-    fling_controller_->ProgressFling(base::TimeTicks::Now());
+    fling_controller_->ProgressFling(current_time);
   }
 
   bool FlingInProgress() { return fling_controller_->fling_in_progress(); }
@@ -142,53 +132,46 @@ TEST_F(FlingControllerTest, ControllerSendsWheelEndOnFlingWithZeroVelocity) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
-TEST_F(FlingControllerTest, DISABLED_ControllerHandlesGestureFling) {
+TEST_F(FlingControllerTest, ControllerHandlesGestureFling) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   // The first wheel event must have momentum_phase == KPhaseBegan.
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 
   // The rest of the wheel events must have momentum_phase == KPhaseChanged.
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 
-  // Now cancel the fling. The GFC will get suppressed by fling booster.
+  // Now cancel the fling. The GFC will end the fling.
   SimulateFlingCancel(blink::kWebGestureDeviceTouchpad);
-  EXPECT_TRUE(last_fling_cancel_filtered_);
-  EXPECT_TRUE(FlingInProgress());
-
-  // Wait for the boosting timer to expire. The delayed cancelation must work.
-  GiveItSomeTime(500);
-  ProgressFling();
-  EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, last_sent_wheel_.momentum_phase);
   EXPECT_EQ(0.f, last_sent_wheel_.delta_x);
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
-TEST_F(FlingControllerTest, DISABLED_ControllerSendsWheelEndWhenFlingIsOver) {
+TEST_F(FlingControllerTest, ControllerSendsWheelEndWhenFlingIsOver) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(100, 0));
   EXPECT_TRUE(FlingInProgress());
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   while (FlingInProgress()) {
     EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged,
               last_sent_wheel_.momentum_phase);
     EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
-    GiveItSomeTime(17);
-    ProgressFling();
+    progress_time += base::TimeDelta::FromMilliseconds(17);
+    ProgressFling(progress_time);
   }
 
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, last_sent_wheel_.momentum_phase);
@@ -196,13 +179,12 @@ TEST_F(FlingControllerTest, DISABLED_ControllerSendsWheelEndWhenFlingIsOver) {
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
-TEST_F(FlingControllerTest,
-       DISABLED_EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
+TEST_F(FlingControllerTest, EarlyFlingCancelationOnInertialGSUAckNotConsumed) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 
@@ -222,19 +204,21 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
+// TODO(sahel): Enable the test once boosting is enabled for touchpad fling.
+// https://crbug.com/249063
 TEST_F(FlingControllerTest, DISABLED_ControllerBoostsFling) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
   // The first wheel event must have momentum_phase == KPhaseBegan.
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 
   // The rest of the wheel events must have momentum_phase == KPhaseChanged.
-  GiveItSomeTime(17);
-  ProgressFling();
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, last_sent_wheel_.momentum_phase);
   EXPECT_GT(last_sent_wheel_.delta_x, 0.f);
 

@@ -4372,27 +4372,25 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollEventsOverscrollWithFling() {
   EXPECT_EQ(OVERSCROLL_EAST, overscroll_mode());
   EXPECT_EQ(OverscrollSource::TOUCHPAD, overscroll_source());
 
-  // ProgressFling will send a nonblocking wheel end event. The generated GSE
-  // resets the overscroll state.
-  widget_host_->ProgressFling(base::TimeTicks::Now() +
-                              base::TimeDelta::FromMilliseconds(20));
-
-  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  base::TimeTicks progress_time =
+      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
+  // Overscroll mode will get reset at the end of the fling progress.
+  while (overscroll_mode() != OVERSCROLL_NONE) {
+    widget_host_->ProgressFling(progress_time);
+    progress_time += base::TimeDelta::FromMilliseconds(17);
+  }
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       DISABLED_ScrollEventsOverscrollWithFling) {
+       ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollWithoutWheelScrollLatchingTest,
-       DISABLED_ScrollEventsOverscrollWithFling) {
+       ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
-       DISABLED_ScrollEventsOverscrollWithFling) {
+       ScrollEventsOverscrollWithFling) {
   ScrollEventsOverscrollWithFling();
 }
 
@@ -5829,27 +5827,23 @@ void RenderWidgetHostViewAuraOverscrollTest::ScrollDeltasResetOnEnd() {
   // queued in gesture event queue.
   EXPECT_EQ(0U, events.size());
 
-  // The first ProgressFling will send a nonblocking wheel end event. The GSE
-  // generated from the wheel end event resets the overscroll state.
-  widget_host_->ProgressFling(base::TimeTicks::Now() +
-                              base::TimeDelta::FromMilliseconds(20));
-
-  EXPECT_EQ(0.f, overscroll_delta_x());
-  EXPECT_EQ(0.f, overscroll_delta_y());
+  base::TimeTicks progress_time =
+      base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(17);
+  // Overscroll delta will get reset at the end of the fling progress.
+  while (overscroll_delta_y() != 0.f) {
+    widget_host_->ProgressFling(progress_time);
+    progress_time += base::TimeDelta::FromMilliseconds(17);
+  }
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
-TEST_F(RenderWidgetHostViewAuraOverscrollTest,
-       DISABLED_ScrollDeltasResetOnEnd) {
+TEST_F(RenderWidgetHostViewAuraOverscrollTest, ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverscrollWithoutWheelScrollLatchingTest,
-       DISABLED_ScrollDeltasResetOnEnd) {
+       ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
-// TODO(crbug.com/795617): Test timing expectations make it flaky.
 TEST_F(RenderWidgetHostViewAuraOverScrollAsyncWheelEventsEnabledTest,
-       DISABLED_ScrollDeltasResetOnEnd) {
+       ScrollDeltasResetOnEnd) {
   ScrollDeltasResetOnEnd();
 }
 
