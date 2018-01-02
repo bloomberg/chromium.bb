@@ -21,18 +21,6 @@
 #include "./cdef.h"
 
 /* Generated from gen_filter_tables.c. */
-#if CDEF_FULL
-DECLARE_ALIGNED(16, const int, cdef_directions[8][3]) = {
-  { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2, -3 * CDEF_BSTRIDE + 3 },
-  { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2, -1 * CDEF_BSTRIDE + 3 },
-  { 0 * CDEF_BSTRIDE + 1, 0 * CDEF_BSTRIDE + 2, 0 * CDEF_BSTRIDE + 3 },
-  { 0 * CDEF_BSTRIDE + 1, 1 * CDEF_BSTRIDE + 2, 1 * CDEF_BSTRIDE + 3 },
-  { 1 * CDEF_BSTRIDE + 1, 2 * CDEF_BSTRIDE + 2, 3 * CDEF_BSTRIDE + 3 },
-  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 1, 3 * CDEF_BSTRIDE + 1 },
-  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0, 3 * CDEF_BSTRIDE + 0 },
-  { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1, 3 * CDEF_BSTRIDE - 1 }
-};
-#else
 DECLARE_ALIGNED(16, const int, cdef_directions[8][2]) = {
   { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2 },
   { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2 },
@@ -43,7 +31,6 @@ DECLARE_ALIGNED(16, const int, cdef_directions[8][2]) = {
   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE + 0 },
   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1 }
 };
-#endif
 
 /* Detect direction. 0 means 45-degree up-right, 2 is horizontal, and so on.
    The search minimizes the weighted variance along all the lines in a
@@ -123,27 +110,14 @@ int cdef_find_dir_c(const uint16_t *img, int stride, int32_t *var,
   return best_dir;
 }
 
-#if CDEF_FULL
-const int cdef_pri_taps[2][3] = { { 3, 2, 1 }, { 2, 2, 2 } };
-const int cdef_sec_taps[2][2] = { { 3, 1 }, { 3, 1 } };
-#else
 const int cdef_pri_taps[2][2] = { { 4, 2 }, { 3, 3 } };
 const int cdef_sec_taps[2][2] = { { 2, 1 }, { 2, 1 } };
-#endif
 
 /* Smooth in the direction detected. */
-#if CDEF_CAP
 void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
                          const uint16_t *in, int pri_strength, int sec_strength,
                          int dir, int pri_damping, int sec_damping, int bsize,
-                         AOM_UNUSED int max_unused, int coeff_shift)
-#else
-void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
-                         const uint16_t *in, int pri_strength, int sec_strength,
-                         int dir, int pri_damping, int sec_damping, int bsize,
-                         int max, int coeff_shift)
-#endif
-{
+                         AOM_UNUSED int max_unused, int coeff_shift) {
   int i, j, k;
   const int s = CDEF_BSTRIDE;
   const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
@@ -153,34 +127,21 @@ void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
       int16_t sum = 0;
       int16_t y;
       int16_t x = in[i * s + j];
-#if CDEF_CAP
       int max = x;
       int min = x;
-#endif
-#if CDEF_FULL
-      for (k = 0; k < 3; k++)
-#else
-      for (k = 0; k < 2; k++)
-#endif
-      {
+      for (k = 0; k < 2; k++) {
         int16_t p0 = in[i * s + j + cdef_directions[dir][k]];
         int16_t p1 = in[i * s + j - cdef_directions[dir][k]];
         sum += pri_taps[k] * constrain(p0 - x, pri_strength, pri_damping);
         sum += pri_taps[k] * constrain(p1 - x, pri_strength, pri_damping);
-#if CDEF_CAP
         if (p0 != CDEF_VERY_LARGE) max = AOMMAX(p0, max);
         if (p1 != CDEF_VERY_LARGE) max = AOMMAX(p1, max);
         min = AOMMIN(p0, min);
         min = AOMMIN(p1, min);
-#endif
-#if CDEF_FULL
-        if (k == 2) continue;
-#endif
         int16_t s0 = in[i * s + j + cdef_directions[(dir + 2) & 7][k]];
         int16_t s1 = in[i * s + j - cdef_directions[(dir + 2) & 7][k]];
         int16_t s2 = in[i * s + j + cdef_directions[(dir + 6) & 7][k]];
         int16_t s3 = in[i * s + j - cdef_directions[(dir + 6) & 7][k]];
-#if CDEF_CAP
         if (s0 != CDEF_VERY_LARGE) max = AOMMAX(s0, max);
         if (s1 != CDEF_VERY_LARGE) max = AOMMAX(s1, max);
         if (s2 != CDEF_VERY_LARGE) max = AOMMAX(s2, max);
@@ -189,17 +150,12 @@ void cdef_filter_block_c(uint8_t *dst8, uint16_t *dst16, int dstride,
         min = AOMMIN(s1, min);
         min = AOMMIN(s2, min);
         min = AOMMIN(s3, min);
-#endif
         sum += sec_taps[k] * constrain(s0 - x, sec_strength, sec_damping);
         sum += sec_taps[k] * constrain(s1 - x, sec_strength, sec_damping);
         sum += sec_taps[k] * constrain(s2 - x, sec_strength, sec_damping);
         sum += sec_taps[k] * constrain(s3 - x, sec_strength, sec_damping);
       }
-#if CDEF_CAP
       y = clamp((int16_t)x + ((8 + sum - (sum < 0)) >> 4), min, max);
-#else
-      y = clamp((int16_t)x + ((8 + sum - (sum < 0)) >> 4), 0, max);
-#endif
       if (dst8)
         dst8[i * dstride + j] = (uint8_t)y;
       else
