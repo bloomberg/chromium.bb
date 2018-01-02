@@ -50,11 +50,11 @@ struct VTTDisplayParameters {
   VTTDisplayParameters();
 
   FloatPoint position;
-  float size;
+  double size;
   CSSValueID direction;
   CSSValueID text_align;
   CSSValueID writing_mode;
-  float snap_to_lines_position;
+  double snap_to_lines_position;
   int line_align;
 };
 
@@ -134,7 +134,7 @@ class VTTCue final : public TextTrackCue {
 
   void RemoveDisplayTree(RemovalNotification) override;
 
-  float CalculateComputedLine() const;
+  double CalculateComputedLine() const;
 
   enum WritingDirection {
     kHorizontal = 0,
@@ -185,7 +185,7 @@ class VTTCue final : public TextTrackCue {
   bool TextPositionIsAuto() const;
 
   VTTDisplayParameters CalculateDisplayParameters() const;
-  float CalculateComputedPosition() const;
+  double CalculateComputedPosition() const;
   LineAlignment CalculateComputedLineAlignment() const;
   PositionAlignment CalculateComputedPositionAlignment() const;
 
@@ -201,9 +201,9 @@ class VTTCue final : public TextTrackCue {
   CueSetting SettingName(VTTScanner&) const;
 
   String text_;
-  float line_position_;
-  float text_position_;
-  float cue_size_;
+  double line_position_;
+  double text_position_;
+  double cue_size_;
   WritingDirection writing_direction_;
   TextAlignment text_alignment_;
   PositionAlignment position_alignment_;

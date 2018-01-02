@@ -95,9 +95,9 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
   static bool CollectTimeStamp(const String&, double& time_stamp);
 
   // Useful functions for parsing percentage settings.
-  static bool ParseFloatPercentageValue(VTTScanner& value_scanner,
-                                        float& percentage);
-  static bool ParseFloatPercentageValuePair(VTTScanner&, char, FloatPoint&);
+  static bool ParsePercentageValue(VTTScanner& value_scanner,
+                                   double& percentage);
+  static bool ParsePercentageValuePair(VTTScanner&, char, DoublePoint&);
 
   // Create the DocumentFragment representation of the WebVTT cue text.
   static DocumentFragment* CreateDocumentFragmentFromCueText(Document&,

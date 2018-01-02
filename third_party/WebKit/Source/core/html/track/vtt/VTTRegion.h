@@ -33,7 +33,7 @@
 
 #include "platform/Timer.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatPoint.h"
+#include "platform/geometry/DoublePoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -116,8 +116,8 @@ class VTTRegion final : public ScriptWrappable {
   String id_;
   double width_;
   unsigned lines_;
-  FloatPoint region_anchor_;
-  FloatPoint viewport_anchor_;
+  DoublePoint region_anchor_;
+  DoublePoint viewport_anchor_;
   bool scroll_;
 
   // The cue container is the container that is scrolled up to obtain the
