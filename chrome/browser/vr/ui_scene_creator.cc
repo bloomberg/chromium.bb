@@ -313,8 +313,8 @@ void UiSceneCreator::CreateScene() {
   CreateVoiceSearchUiGroup();
   CreateExitWarning();
   CreateWebVrSubtree();
-  CreateController();
   CreateKeyboard();
+  CreateController();
 }
 
 void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
