@@ -268,7 +268,6 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   BufferPool *volatile const pool = cm->buffer_pool;
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
-  int retcode = 0;
   cm->error.error_code = AOM_CODEC_OK;
 
   if (size == 0) {
@@ -446,23 +445,21 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   }
 
   cm->error.setjmp = 0;
-  return retcode;
+  return 0;
 }
 
 int av1_get_raw_frame(AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *const cm = &pbi->common;
-  int ret = -1;
-  if (pbi->ready_for_new_data == 1) return ret;
+  if (pbi->ready_for_new_data == 1) return -1;
 
   pbi->ready_for_new_data = 1;
 
   /* no raw frame to show!!! */
-  if (!cm->show_frame) return ret;
+  if (!cm->show_frame) return -1;
 
   *sd = *cm->frame_to_show;
-  ret = 0;
   aom_clear_system_state();
-  return ret;
+  return 0;
 }
 
 int av1_get_frame_to_show(AV1Decoder *pbi, YV12_BUFFER_CONFIG *frame) {
