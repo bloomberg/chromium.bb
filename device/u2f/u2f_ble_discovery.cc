@@ -116,7 +116,7 @@ void U2fBleDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                     BluetoothDevice* device) {
   if (base::ContainsKey(device->GetUUIDs(), U2fServiceUUID())) {
     VLOG(2) << "U2F BLE device removed: " << device->GetAddress();
-    RemoveDevice(device->GetAddress());
+    RemoveDevice(U2fBleDevice::GetId(device->GetAddress()));
   }
 }
 

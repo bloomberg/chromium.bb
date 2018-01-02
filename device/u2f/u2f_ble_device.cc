@@ -93,10 +93,12 @@ void U2fBleDevice::Transition() {
   switch (state_) {
     case State::INIT:
       StartTimeout();
+      state_ = State::BUSY;
       connection_->Connect();
       break;
     case State::CONNECTED:
       StartTimeout();
+      state_ = State::BUSY;
       connection_->ReadControlPointLength(base::BindOnce(
           &U2fBleDevice::OnReadControlPointLength, base::Unretained(this)));
       break;
