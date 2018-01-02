@@ -254,11 +254,6 @@ class CORE_EXPORT FrameSelection final
 
   void SetUseSecureKeyboardEntry(bool);
 
-  void UpdateSelectionIfNeeded(const Position& base,
-                               const Position& extent,
-                               const Position& start,
-                               const Position& end);
-
   GranularityStrategy* GetGranularityStrategy();
 
   IntRect ComputeRectToScroll(RevealExtentOption);
