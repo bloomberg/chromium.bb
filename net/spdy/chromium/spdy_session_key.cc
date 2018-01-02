@@ -12,8 +12,7 @@
 
 namespace net {
 
-SpdySessionKey::SpdySessionKey() : privacy_mode_(PRIVACY_MODE_DISABLED) {
-}
+SpdySessionKey::SpdySessionKey() = default;
 
 SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
                                const ProxyServer& proxy_server,
@@ -22,15 +21,6 @@ SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,
       privacy_mode_(privacy_mode) {
   DVLOG(1) << "SpdySessionKey(host=" << host_port_pair.ToString()
       << ", proxy=" << proxy_server.ToURI()
-      << ", privacy=" << privacy_mode;
-}
-
-SpdySessionKey::SpdySessionKey(const HostPortProxyPair& host_port_proxy_pair,
-                               PrivacyMode privacy_mode)
-    : host_port_proxy_pair_(host_port_proxy_pair),
-      privacy_mode_(privacy_mode) {
-  DVLOG(1) << "SpdySessionKey(hppp=" << host_port_proxy_pair.first.ToString()
-      << "," << host_port_proxy_pair.second.ToURI()
       << ", privacy=" << privacy_mode;
 }
 
