@@ -41,6 +41,8 @@ class DataReductionProxyDataUseObserver
                           data_use_measurement::DataUse* data_use) override;
   void OnPageDidFinishLoad(data_use_measurement::DataUse* data_use) override;
   void OnPageLoadConcluded(data_use_measurement::DataUse* data_use) override {}
+  void OnNetworkBytesUpdate(const net::URLRequest& request,
+                            data_use_measurement::DataUse* data_use) override {}
 
   const void* GetDataUsePreviewsUserDataKeyForTesting();
 

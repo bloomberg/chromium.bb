@@ -43,6 +43,9 @@ class MockPageLoadObserver
                void(data_use_measurement::DataUse* data_use));
   MOCK_METHOD1(OnPageLoadConcluded,
                void(data_use_measurement::DataUse* data_use));
+  MOCK_METHOD2(OnNetworkBytesUpdate,
+               void(const net::URLRequest& request,
+                    data_use_measurement::DataUse* data_use));
 };
 
 }  // namespace
@@ -482,6 +485,11 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
   EXPECT_EQ(2u, recorders().size());
   DataUse* data_use = &recorders().back().data_use();
 
+  EXPECT_CALL(mock_observer, OnNetworkBytesUpdate(testing::_, data_use))
+      .Times(2);
+  ascriber()->OnNetworkBytesSent(request.get(), 2);
+  ascriber()->OnNetworkBytesReceived(request.get(), 2);
+
   EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
   ascriber()->OnUrlRequestCompleted(*request, false);
 
@@ -533,6 +541,11 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
 
   EXPECT_EQ(2u, recorders().size());
   DataUse* data_use = &recorders().back().data_use();
+
+  EXPECT_CALL(mock_observer, OnNetworkBytesUpdate(testing::_, data_use))
+      .Times(2);
+  ascriber()->OnNetworkBytesSent(request.get(), 2);
+  ascriber()->OnNetworkBytesReceived(request.get(), 2);
 
   EXPECT_CALL(mock_observer, OnPageResourceLoad(testing::_, data_use)).Times(1);
   ascriber()->OnUrlRequestCompleted(*request, false);

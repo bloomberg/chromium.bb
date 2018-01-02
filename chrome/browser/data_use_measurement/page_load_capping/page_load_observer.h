@@ -24,6 +24,8 @@ class PageLoadObserver : public DataUseAscriber::PageLoadObserver {
                           DataUse* data_use) override;
   void OnPageDidFinishLoad(DataUse* data_use) override;
   void OnPageLoadConcluded(DataUse* data_use) override;
+  void OnNetworkBytesUpdate(const net::URLRequest& request,
+                            DataUse* data_use) override;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

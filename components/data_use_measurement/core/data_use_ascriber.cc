@@ -27,22 +27,32 @@ std::unique_ptr<net::NetworkDelegate> DataUseAscriber::CreateNetworkDelegate(
 
 void DataUseAscriber::OnBeforeUrlRequest(net::URLRequest* request) {
   DataUseRecorder* recorder = GetOrCreateDataUseRecorder(request);
-  if (recorder)
-    recorder->OnBeforeUrlRequest(request);
+  if (!recorder)
+    return;
+
+  recorder->OnBeforeUrlRequest(request);
 }
 
 void DataUseAscriber::OnNetworkBytesSent(net::URLRequest* request,
                                          int64_t bytes_sent) {
   DataUseRecorder* recorder = GetDataUseRecorder(*request);
-  if (recorder)
-    recorder->OnNetworkBytesSent(request, bytes_sent);
+  if (!recorder)
+    return;
+
+  recorder->OnNetworkBytesSent(request, bytes_sent);
+  for (auto& observer : observers_)
+    observer.OnNetworkBytesUpdate(*request, &recorder->data_use());
 }
 
 void DataUseAscriber::OnNetworkBytesReceived(net::URLRequest* request,
                                              int64_t bytes_received) {
   DataUseRecorder* recorder = GetDataUseRecorder(*request);
-  if (recorder)
-    recorder->OnNetworkBytesReceived(request, bytes_received);
+  if (!recorder)
+    return;
+
+  recorder->OnNetworkBytesReceived(request, bytes_received);
+  for (auto& observer : observers_)
+    observer.OnNetworkBytesUpdate(*request, &recorder->data_use());
 }
 
 void DataUseAscriber::OnUrlRequestCompleted(const net::URLRequest& request,
@@ -50,8 +60,10 @@ void DataUseAscriber::OnUrlRequestCompleted(const net::URLRequest& request,
 
 void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DataUseRecorder* recorder = GetDataUseRecorder(*request);
-  if (recorder)
-    recorder->OnUrlRequestDestroyed(request);
+  if (!recorder)
+    return;
+
+  recorder->OnUrlRequestDestroyed(request);
 }
 
 }  // namespace data_use_measurement
