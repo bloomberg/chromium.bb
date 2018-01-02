@@ -169,8 +169,7 @@ DownloadTask::State DownloadTaskImpl::GetState() const {
 void DownloadTaskImpl::Start(
     std::unique_ptr<net::URLFetcherResponseWriter> writer) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  DCHECK(!writer_);
-  DCHECK_EQ(state_, State::kNotStarted);
+  DCHECK_NE(state_, State::kInProgress);
   writer_ = std::move(writer);
   state_ = State::kInProgress;
   GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
