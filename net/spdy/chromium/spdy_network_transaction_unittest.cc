@@ -3030,6 +3030,63 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
+TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame priority(
+      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(priority, 3)};
+
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_INTERNAL_ERROR));
+  MockRead reads[] = {CreateMockRead(reply, 1), CreateMockRead(push, 2),
+                      CreateMockRead(body, 4), CreateMockRead(rst, 5),
+                      MockRead(ASYNC, 0, 6)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  // First request to open up connection.
+  HttpNetworkTransaction* trans1 = helper.trans();
+  TestCompletionCallback callback1;
+  int rv = trans1->Start(&request_, callback1.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Read until response body arrives.  PUSH_PROMISE comes earlier.
+  rv = callback1.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+  HttpResponseInfo response = *trans1->GetResponseInfo();
+  EXPECT_TRUE(response.headers);
+  EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+  SpdyString result;
+  ReadResult(trans1, &result);
+  EXPECT_EQ("hello!", result);
+
+  // Create request matching pushed stream.
+  HttpRequestInfo request = CreateGetPushRequest();
+  HttpNetworkTransaction trans2(DEFAULT_PRIORITY, helper.session());
+  TestCompletionCallback callback2;
+  rv = trans2.Start(&request, callback2.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Read RST_STREAM from server closing pushed stream.
+  rv = callback2.WaitForResult();
+  EXPECT_THAT(rv, IsError(ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE));
+
+  // Read EOF.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllReadDataConsumed());
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+}
+
 // Regression test for https://crbug.com/727653.
 TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
   SpdySerializedFrame req(

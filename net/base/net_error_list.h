@@ -729,6 +729,9 @@ NET_ERROR(CONTENT_DECODING_INIT_FAILED, -371)
 // SpdyStream layer.
 NET_ERROR(SPDY_RST_STREAM_NO_ERROR_RECEIVED, -372)
 
+// The pushed stream claimed by the request is no longer available.
+NET_ERROR(SPDY_PUSHED_STREAM_NOT_AVAILABLE, -373)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

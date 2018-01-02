@@ -25,7 +25,7 @@ class Http2PushPromiseIndexPeer;
 
 }  // namespace test
 
-// Value returned by FindSession() and FindStream() if no stream is found.
+// Value returned by ClaimPushedStream() and FindStream() if no stream is found.
 const SpdyStreamId kNoPushedStreamFound = 0;
 
 // This class manages unclaimed pushed streams (push promises) from the receipt
@@ -88,13 +88,14 @@ class NET_EXPORT Http2PushPromiseIndex {
 
   // If there exists a session compatible with |key| that has an unclaimed push
   // stream for |url|, then sets |*session| and |*stream| to one such session
-  // and stream.  Makes no guarantee on which (session, stream_id) pair it
-  // returns if there are multiple matches.  Sets |*session| to nullptr and
-  // |*stream| to kNoPushedStreamFound if no such session exists.
-  void FindSession(const SpdySessionKey& key,
-                   const GURL& url,
-                   base::WeakPtr<SpdySession>* session,
-                   SpdyStreamId* stream_id) const;
+  // and stream, and removes entry from index.  Makes no guarantee on which
+  // (session, stream_id) pair is claimed if there are multiple matches.  Sets
+  // |*session| to nullptr and |*stream| to kNoPushedStreamFound if no such
+  // session exists.
+  void ClaimPushedStream(const SpdySessionKey& key,
+                         const GURL& url,
+                         base::WeakPtr<SpdySession>* session,
+                         SpdyStreamId* stream_id);
 
   // Return the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
