@@ -79,6 +79,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnSpecDoneUpdating() = 0;
 
     virtual void OnCvcPromptShown() = 0;
+
+    virtual void OnProcessingSpinnerShown() = 0;
+
+    virtual void OnProcessingSpinnerHidden() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -104,6 +108,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowDialog() override;
   void CloseDialog() override;
   void ShowErrorMessage() override;
+  void ShowProcessingSpinner() override;
 
   // PaymentRequestSpec::Observer:
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
@@ -164,9 +169,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
           result_delegate,
       content::WebContents* web_contents) override;
 
-  // Shows/Hides a full dialog spinner with the "processing" label that doesn't
-  // offer a way of closing the dialog.
-  void ShowProcessingSpinner();
+  // Hides the full dialog spinner with the "processing" label.
   void HideProcessingSpinner();
 
   Profile* GetProfile();

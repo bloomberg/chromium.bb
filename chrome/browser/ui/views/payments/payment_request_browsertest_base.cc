@@ -230,6 +230,16 @@ void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
     event_waiter_->OnEvent(DialogEvent::CVC_PROMPT_SHOWN);
 }
 
+void PaymentRequestBrowserTestBase::OnProcessingSpinnerShown() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_SHOWN);
+}
+
+void PaymentRequestBrowserTestBase::OnProcessingSpinnerHidden() {
+  if (event_waiter_)
+    event_waiter_->OnEvent(DialogEvent::PROCESSING_SPINNER_HIDDEN);
+}
+
 void PaymentRequestBrowserTestBase::OnInterfaceRequestFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
@@ -605,7 +615,8 @@ void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
     PaymentRequestDialogView* dialog_view) {
   OpenCVCPromptWithCVC(cvc, dialog_view);
 
-  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
                            dialog_view);
 }
@@ -815,6 +826,12 @@ std::ostream& operator<<(
       break;
     case DialogEvent::ABORT_CALLED:
       out << "ABORT_CALLED";
+      break;
+    case DialogEvent::PROCESSING_SPINNER_SHOWN:
+      out << "PROCESSING_SPINNER_SHOWN";
+      break;
+    case DialogEvent::PROCESSING_SPINNER_HIDDEN:
+      out << "PROCESSING_SPINNER_HIDDEN";
       break;
   }
   return out;

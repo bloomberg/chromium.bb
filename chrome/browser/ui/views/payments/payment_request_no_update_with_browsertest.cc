@@ -44,8 +44,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutListeners) {
   RunJavaScriptFunctionToOpenPaymentRequestUI("buyWithoutListeners");
 
   OpenShippingAddressSectionScreen();
-  ResetEventWaiterForSequence(std::list<DialogEvent>{
-      DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW,
@@ -76,8 +78,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest,
   RunJavaScriptFunctionToOpenPaymentRequestUI("buyWithoutCallingUpdateWith");
 
   OpenShippingAddressSectionScreen();
-  ResetEventWaiterForSequence(std::list<DialogEvent>{
-      DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW,
@@ -112,8 +116,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutPromises) {
   ClickOnBackArrow();
 
   OpenShippingAddressSectionScreen();
-  ResetEventWaiterForSequence(std::list<DialogEvent>{
-      DialogEvent::SPEC_DONE_UPDATING, DialogEvent::BACK_NAVIGATION});
+  ResetEventWaiterForSequence({DialogEvent::PROCESSING_SPINNER_SHOWN,
+                               DialogEvent::PROCESSING_SPINNER_HIDDEN,
+                               DialogEvent::SPEC_DONE_UPDATING,
+                               DialogEvent::BACK_NAVIGATION});
   ClickOnChildInListViewAndWait(
       /* child_index=*/1, /*total_num_children=*/2,
       DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW,

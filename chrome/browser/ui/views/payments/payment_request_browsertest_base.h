@@ -85,6 +85,8 @@ class PaymentRequestBrowserTestBase
     CVC_PROMPT_SHOWN,
     NOT_SUPPORTED_ERROR,
     ABORT_CALLED,
+    PROCESSING_SPINNER_SHOWN,
+    PROCESSING_SPINNER_HIDDEN,
   };
 
  protected:
@@ -125,6 +127,8 @@ class PaymentRequestBrowserTestBase
   void OnErrorMessageShown() override;
   void OnSpecDoneUpdating() override;
   void OnCvcPromptShown() override;
+  void OnProcessingSpinnerShown() override;
+  void OnProcessingSpinnerHidden() override;
 
   // content::WebContentsObserver implementation.
   void OnInterfaceRequestFromFrame(

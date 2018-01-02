@@ -53,6 +53,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
   void ShowDialog(PaymentRequest* request) override {}
   void CloseDialog() override {}
   void ShowErrorMessage() override {}
+  void ShowProcessingSpinner() override {}
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
   bool IsIncognito() const override;

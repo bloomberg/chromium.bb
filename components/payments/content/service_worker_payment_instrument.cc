@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_request_converter.h"
+#include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "ui/gfx/image/image_skia.h"
@@ -20,7 +21,8 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
     const GURL& top_level_origin,
     const GURL& frame_origin,
     const PaymentRequestSpec* spec,
-    std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info)
+    std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
+    PaymentRequestDelegate* payment_request_delegate)
     : PaymentInstrument(0, PaymentInstrument::Type::SERVICE_WORKER_APP),
       browser_context_(context),
       top_level_origin_(top_level_origin),
@@ -28,6 +30,7 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
       spec_(spec),
       stored_payment_app_info_(std::move(stored_payment_app_info)),
       delegate_(nullptr),
+      payment_request_delegate_(payment_request_delegate),
       can_make_payment_result_(false),
       weak_ptr_factory_(this) {
   DCHECK(browser_context_);
@@ -147,6 +150,8 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
       CreatePaymentRequestEventData(),
       base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  payment_request_delegate_->ShowProcessingSpinner();
 }
 
 mojom::PaymentRequestEventDataPtr

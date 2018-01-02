@@ -75,7 +75,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                   ->enabled());
   OpenCVCPromptWithCVC(base::ASCIIToUTF16("012"));
 
-  ResetEventWaiter(DialogEvent::DIALOG_CLOSED);
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
   views::View* cvc_sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::CVC_UNMASK_SHEET));
   cvc_sheet->AcceleratorPressed(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));

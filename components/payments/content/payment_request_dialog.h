@@ -25,6 +25,8 @@ class PaymentRequestDialog {
 
   virtual void ShowErrorMessage() = 0;
 
+  virtual void ShowProcessingSpinner() = 0;
+
   // Shows the CVC unmask sheet and starts a FullCardRequest with the info
   // entered by the user.
   virtual void ShowCvcUnmaskPrompt(

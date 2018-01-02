@@ -26,6 +26,9 @@ class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
   // failed.
   virtual void ShowErrorMessage() = 0;
 
+  // Disables user interaction by showing a spinner.
+  virtual void ShowProcessingSpinner() = 0;
+
   // Returns whether the browser window is active.
   virtual bool IsBrowserWindowActive() const = 0;
 };
