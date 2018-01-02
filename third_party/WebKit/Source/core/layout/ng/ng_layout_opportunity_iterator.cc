@@ -187,6 +187,16 @@ NGLayoutOpportunity GetTopSpace(const NGLayoutOpportunity& parent_opportunity,
   return NGLayoutOpportunity();
 }
 
+bool CanCombineExclusions(NGLayoutOpportunityTreeNode* node) {
+  if (node->left && node->left->combined_exclusion)
+    return false;
+  if (node->right && node->right->combined_exclusion)
+    return false;
+  if (node->bottom && node->bottom->combined_exclusion)
+    return false;
+  return true;
+}
+
 // Inserts the exclusion into the Layout Opportunity tree.
 void InsertExclusion(NGLayoutOpportunityTreeNode* node,
                      const NGExclusion* exclusion,
@@ -218,7 +228,8 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
 
   DCHECK(!node->exclusions.IsEmpty());
 
-  if (node->combined_exclusion->MaybeCombineWith(*exclusion)) {
+  if (CanCombineExclusions(node) &&
+      node->combined_exclusion->MaybeCombineWith(*exclusion)) {
     SplitNGLayoutOpportunityTreeNode(node->combined_exclusion->rect, node);
     node->exclusions.push_back(exclusion);
   } else {
