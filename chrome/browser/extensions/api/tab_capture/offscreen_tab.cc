@@ -13,8 +13,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/media/router/presentation_navigation_policy.h"
-#include "chrome/browser/media/router/receiver_presentation_service_delegate_impl.h"  // nogncheck
+#include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
+#include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"

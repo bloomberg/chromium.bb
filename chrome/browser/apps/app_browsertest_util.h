@@ -14,7 +14,7 @@
 #include "extensions/browser/app_window/app_window.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
 #endif
 
 namespace base {

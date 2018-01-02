@@ -22,16 +22,10 @@ static_library("router") {
     "//chrome/common/media_router:router",
   ]
   sources = [
-    "browser_presentation_connection_proxy.cc",
-    "browser_presentation_connection_proxy.h",
     "issue_manager.cc",
     "issue_manager.h",
     "issues_observer.cc",
     "issues_observer.h",
-    "local_presentation_manager.cc",
-    "local_presentation_manager.h",
-    "local_presentation_manager_factory.cc",
-    "local_presentation_manager_factory.h",
     "media_router.h",
     "media_router_base.cc",
     "media_router_base.h",
@@ -45,17 +39,21 @@ static_library("router") {
     "media_routes_observer.h",
     "media_sinks_observer.cc",
     "media_sinks_observer.h",
-    "presentation_media_sinks_observer.cc",
-    "presentation_media_sinks_observer.h",
-    "presentation_navigation_policy.cc",
-    "presentation_navigation_policy.h",
-    "presentation_service_delegate_impl.cc",
-    "presentation_service_delegate_impl.h",
-    "presentation_service_delegate_observers.cc",
-    "presentation_service_delegate_observers.h",
-    "receiver_presentation_service_delegate_impl.cc",
-    "receiver_presentation_service_delegate_impl.h",
-    "render_frame_host_id.h",
+    "presentation/browser_presentation_connection_proxy.cc",
+    "presentation/browser_presentation_connection_proxy.h",
+    "presentation/local_presentation_manager.cc",
+    "presentation/local_presentation_manager.h",
+    "presentation/local_presentation_manager_factory.cc",
+    "presentation/local_presentation_manager_factory.h",
+    "presentation/presentation_media_sinks_observer.cc",
+    "presentation/presentation_media_sinks_observer.h",
+    "presentation/presentation_service_delegate_impl.cc",
+    "presentation/presentation_service_delegate_impl.h",
+    "presentation/presentation_service_delegate_observers.cc",
+    "presentation/presentation_service_delegate_observers.h",
+    "presentation/receiver_presentation_service_delegate_impl.cc",
+    "presentation/receiver_presentation_service_delegate_impl.h",
+    "presentation/render_frame_host_id.h",
     "route_message_observer.cc",
     "route_message_observer.h",
   ]
@@ -71,8 +69,6 @@ static_library("router") {
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",
       "event_page_request_manager_factory.h",
-      "mojo/extension_media_route_provider_proxy.cc",
-      "mojo/extension_media_route_provider_proxy.h",
       "mojo/media_route_controller.cc",
       "mojo/media_route_controller.h",
       "mojo/media_route_provider_util_win.cc",
@@ -83,17 +79,16 @@ static_library("router") {
       "mojo/media_router_mojo_impl.h",
       "mojo/media_router_mojo_metrics.cc",
       "mojo/media_router_mojo_metrics.h",
-      "mojo/wired_display_media_route_provider.cc",
-      "mojo/wired_display_media_route_provider.h",
+      "presentation/independent_otr_profile_manager.cc",
+      "presentation/independent_otr_profile_manager.h",
+      "presentation/presentation_navigation_policy.cc",
+      "presentation/presentation_navigation_policy.h",
       "providers/cast/dual_media_sink_service.cc",
       "providers/cast/dual_media_sink_service.h",
-    ]
-  }
-
-  if (!is_android) {
-    sources += [
-      "independent_otr_profile_manager.cc",
-      "independent_otr_profile_manager.h",
+      "providers/extension/extension_media_route_provider_proxy.cc",
+      "providers/extension/extension_media_route_provider_proxy.h",
+      "providers/wired_display/wired_display_media_route_provider.cc",
+      "providers/wired_display/wired_display_media_route_provider.h",
     ]
   }
 }
@@ -108,12 +103,12 @@ static_library("test_support") {
     ":router",
   ]
   sources = [
-    "mock_media_router.cc",
-    "mock_media_router.h",
-    "mock_screen_availability_listener.cc",
-    "mock_screen_availability_listener.h",
-    "test_helper.cc",
-    "test_helper.h",
+    "test/mock_media_router.cc",
+    "test/mock_media_router.h",
+    "test/mock_screen_availability_listener.cc",
+    "test/mock_screen_availability_listener.h",
+    "test/test_helper.cc",
+    "test/test_helper.h",
   ]
 
   if (enable_extensions) {
@@ -125,12 +120,12 @@ static_library("test_support") {
       "//extensions/common",
     ]
     sources += [
-      "discovery/mdns/mock_dns_sd_registry.cc",
-      "discovery/mdns/mock_dns_sd_registry.h",
-      "mojo/media_router_mojo_test.cc",
-      "mojo/media_router_mojo_test.h",
-      "mojo/mock_mojo_media_router.cc",
-      "mojo/mock_mojo_media_router.h",
+      "test/media_router_mojo_test.cc",
+      "test/media_router_mojo_test.h",
+      "test/mock_dns_sd_registry.cc",
+      "test/mock_dns_sd_registry.h",
+      "test/mock_mojo_media_router.cc",
+      "test/mock_mojo_media_router.h",
     ]
   }
 }

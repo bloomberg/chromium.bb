@@ -4,8 +4,8 @@
 
 #include "base/bind.h"
 #include "base/test/mock_callback.h"
-#include "chrome/browser/media/router/mock_media_router.h"
-#include "chrome/browser/media/router/test_helper.h"
+#include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/browser/media/router/test/test_helper.h"
 #include "content/public/common/presentation_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
