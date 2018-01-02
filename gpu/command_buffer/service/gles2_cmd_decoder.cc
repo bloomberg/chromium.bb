@@ -18112,6 +18112,8 @@ void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
 
   if (texture->IsAttachedToFramebuffer())
     framebuffer_state_.clear_state_dirty = true;
+
+  texture->SetImmutable(true);
 }
 
 void GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM(
