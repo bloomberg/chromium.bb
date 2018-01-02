@@ -2,8 +2,7 @@
 mkearney@chromium.org
 
 # For webview documentation.
-paulmeyer@chromium.org
-fsamuel@chromium.org
+file://components/guest_view/OWNERS
 
 # For devtools documentation.
 paulirish@chromium.org

@@ -5,8 +5,7 @@ per-file *.json=file://extensions/common/api/API_OWNERS
 per-file *.idl=file://extensions/common/api/API_OWNERS
 
 per-file input_method_private.json=shuchen@chromium.org
-per-file webview*.json=paulmeyer@chromium.org
-per-file webview*.json=fsamuel@chromium.org
+per-file webview*.json=file://components/guest_view/OWNERS
 
 # For trivial changes only, like adding a new enum value or attribute.
 # New APIs or changes to existing APIs should be approved by an
