@@ -321,7 +321,7 @@ function mediaControlsOverlayPlayButtonInternal(videoElement) {
   return element;
 }
 
-function doubleTapAtCoordinates(x, y, timeout) {
+function doubleTapAtCoordinates(x, y, timeout, callback) {
   if (timeout == undefined)
     timeout = 100;
 
@@ -336,10 +336,10 @@ function doubleTapAtCoordinates(x, y, timeout) {
         { name: 'pointerUp' }
       ]
     }
-  ]);
+  ], callback);
 }
 
-function singleTapAtCoordinates(xPos, yPos) {
+function singleTapAtCoordinates(xPos, yPos, callback) {
   chrome.gpuBenchmarking.pointerActionSequence([
     {
       source: 'mouse',
@@ -348,7 +348,7 @@ function singleTapAtCoordinates(xPos, yPos) {
         { name: 'pointerUp' }
       ]
     }
-  ]);
+  ], callback);
 }
 
 function enableDoubleTapToJumpForTest(t) {

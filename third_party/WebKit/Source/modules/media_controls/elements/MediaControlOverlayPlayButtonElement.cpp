@@ -35,11 +35,8 @@ bool IsPointInRect(blink::DOMRect& rect, int margin, int x, int y) {
           (y >= (rect.top() - margin)) && (y <= (rect.bottom() + margin)));
 }
 
-// The delay if a touch is outside the internal button.
-constexpr WTF::TimeDelta kOutsideTouchDelay = TimeDelta::FromMilliseconds(300);
-
-// The delay if a touch is inside the internal button.
-constexpr WTF::TimeDelta kInsideTouchDelay = TimeDelta::FromMilliseconds(0);
+// The delay between two taps to be recognized as a double tap gesture.
+constexpr WTF::TimeDelta kDoubleTapDelay = TimeDelta::FromMilliseconds(300);
 
 // The number of seconds to jump when double tapping.
 constexpr int kNumberOfSecondsToJump = 10;
@@ -185,22 +182,13 @@ void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
     left_jump_arrow_->Show();
 }
 
-void MediaControlOverlayPlayButtonElement::HandlePlayPauseEvent(
-    Event* event,
-    WTF::TimeDelta delay) {
-  event->SetDefaultHandled();
-
-  if (tap_timer_.IsActive())
-    return;
-
-  tap_timer_.StartOneShot(delay, FROM_HERE);
-}
-
 void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
   if (event->type() == EventTypeNames::click) {
+    event->SetDefaultHandled();
+
     // Double tap to navigate should only be available on modern controls.
     if (!MediaControlsImpl::IsModern() || !event->IsMouseEvent()) {
-      HandlePlayPauseEvent(event, kInsideTouchDelay);
+      MaybePlayPause();
       return;
     }
 
@@ -209,7 +197,7 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
     // TODO(beccahughes): Move to PointerEvent.
     MouseEvent* mouse_event = ToMouseEvent(event);
     if (!mouse_event->HasPosition()) {
-      HandlePlayPauseEvent(event, kInsideTouchDelay);
+      MaybePlayPause();
       return;
     }
 
@@ -218,12 +206,14 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
     if (IsPointInRect(*internal_button_->getBoundingClientRect(),
                       kInnerButtonTouchPaddingSize, mouse_event->clientX(),
                       mouse_event->clientY())) {
-      HandlePlayPauseEvent(event, kInsideTouchDelay);
+      MaybePlayPause();
     } else if (!tap_timer_.IsActive()) {
       // If there was not a previous touch and this was outside of the button
-      // then we should play/pause but with a small unnoticeable delay to allow
-      // for a secondary tap.
-      HandlePlayPauseEvent(event, kOutsideTouchDelay);
+      // then we should toggle visibility with a small unnoticeable delay in
+      // case their is a second tap.
+      if (tap_timer_.IsActive())
+        return;
+      tap_timer_.StartOneShot(kDoubleTapDelay, FROM_HERE);
     } else {
       // Cancel the play pause event.
       tap_timer_.Stop();
@@ -264,11 +254,7 @@ WebSize MediaControlOverlayPlayButtonElement::GetSizeOrDefault() const {
 }
 
 void MediaControlOverlayPlayButtonElement::TapTimerFired(TimerBase*) {
-  std::unique_ptr<UserGestureIndicator> user_gesture_scope =
-      Frame::NotifyUserActivation(GetDocument().GetFrame(),
-                                  UserGestureToken::kNewGesture);
-
-  MaybePlayPause();
+  GetMediaControls().MaybeToggleControlsFromTap();
 }
 
 void MediaControlOverlayPlayButtonElement::Trace(blink::Visitor* visitor) {
