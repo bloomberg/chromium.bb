@@ -18,8 +18,8 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
+#include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/browser/renderer_host/input/touch_action_filter.h"
-#include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/input_event_stream_validator.h"
@@ -49,7 +49,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
       public GestureEventQueueClient,
       public FlingControllerClient,
       public MouseWheelEventQueueClient,
-      public TouchEventQueueClient,
+      public PassthroughTouchEventQueueClient,
       public TouchpadTapSuppressionControllerClient {
  public:
   LegacyInputRouterImpl(IPC::Sender* sender,
@@ -102,7 +102,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   void SendMouseEventImmediately(
       const MouseEventWithLatencyInfo& mouse_event) override;
 
-  // TouchEventQueueClient
+  // PassthroughTouchEventQueueClient
   void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& touch_event) override;
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
@@ -258,7 +258,7 @@ class CONTENT_EXPORT LegacyInputRouterImpl
   bool wheel_scroll_latching_enabled_;
 
   MouseWheelEventQueue wheel_event_queue_;
-  std::unique_ptr<TouchEventQueue> touch_event_queue_;
+  std::unique_ptr<PassthroughTouchEventQueue> touch_event_queue_;
   GestureEventQueue gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
   InputEventStreamValidator input_stream_validator_;

@@ -5,13 +5,35 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_PASSTHROUGH_TOUCH_EVENT_QUEUE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_PASSTHROUGH_TOUCH_EVENT_QUEUE_H_
 
-#include "content/browser/renderer_host/input/touch_event_queue.h"
-
 #include <set>
+
+#include "base/macros.h"
+#include "base/time/time.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/common/content_export.h"
+#include "content/public/common/input_event_ack_source.h"
+#include "content/public/common/input_event_ack_state.h"
 
 namespace content {
 
 class TouchTimeoutHandler;
+
+// Interface with which PassthroughTouchEventQueue can forward touch events, and
+// dispatch touch event responses.
+class CONTENT_EXPORT PassthroughTouchEventQueueClient {
+ public:
+  virtual ~PassthroughTouchEventQueueClient() {}
+
+  virtual void SendTouchEventImmediately(
+      const TouchEventWithLatencyInfo& event) = 0;
+
+  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
+                               InputEventAckState ack_result) = 0;
+
+  virtual void OnFilteringTouchEvent(
+      const blink::WebTouchEvent& touch_event) = 0;
+};
 
 // A queue that processes a touch-event and forwards it on to the
 // renderer process immediately. This class assumes that queueing will
@@ -21,51 +43,71 @@ class TouchTimeoutHandler;
 // model of the renderer it is possible that an ack for a touchend can
 // be sent before the corresponding ack for the touchstart. This class
 // corrects that state.
-class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
+class CONTENT_EXPORT PassthroughTouchEventQueue {
  public:
-  PassthroughTouchEventQueue(TouchEventQueueClient* client,
+  struct CONTENT_EXPORT Config {
+    Config()
+        : desktop_touch_ack_timeout_delay(
+              base::TimeDelta::FromMilliseconds(200)),
+          mobile_touch_ack_timeout_delay(
+              base::TimeDelta::FromMilliseconds(1000)),
+          touch_ack_timeout_supported(false) {}
+
+    // Touch ack timeout delay for desktop sites. If zero, timeout behavior
+    // is disabled for such sites. Defaults to 200ms.
+    base::TimeDelta desktop_touch_ack_timeout_delay;
+
+    // Touch ack timeout delay for mobile sites. If zero, timeout behavior
+    // is disabled for such sites. Defaults to 1000ms.
+    base::TimeDelta mobile_touch_ack_timeout_delay;
+
+    // Whether the platform supports touch ack timeout behavior.
+    // Defaults to false (disabled).
+    bool touch_ack_timeout_supported;
+  };
+
+  PassthroughTouchEventQueue(PassthroughTouchEventQueueClient* client,
                              const Config& config);
 
-  ~PassthroughTouchEventQueue() override;
+  ~PassthroughTouchEventQueue();
 
-  // TouchEventQueue overrides.
-  void QueueEvent(const TouchEventWithLatencyInfo& event) override;
+  void QueueEvent(const TouchEventWithLatencyInfo& event);
 
-  void PrependTouchScrollNotification() override;
+  void PrependTouchScrollNotification();
 
   void ProcessTouchAck(InputEventAckSource ack_source,
                        InputEventAckState ack_result,
                        const ui::LatencyInfo& latency_info,
-                       const uint32_t unique_touch_event_id) override;
-  void OnGestureScrollEvent(
-      const GestureEventWithLatencyInfo& gesture_event) override;
+                       const uint32_t unique_touch_event_id);
+  void OnGestureScrollEvent(const GestureEventWithLatencyInfo& gesture_event);
 
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
-                         InputEventAckState ack_result) override;
+                         InputEventAckState ack_result);
 
-  void OnHasTouchEventHandlers(bool has_handlers) override;
+  void OnHasTouchEventHandlers(bool has_handlers);
 
-  bool IsPendingAckTouchStart() const override;
+  bool IsPendingAckTouchStart() const;
 
-  void SetAckTimeoutEnabled(bool enabled) override;
+  void SetAckTimeoutEnabled(bool enabled);
 
-  void SetIsMobileOptimizedSite(bool mobile_optimized_site) override;
+  void SetIsMobileOptimizedSite(bool mobile_optimized_site);
 
-  bool IsAckTimeoutEnabled() const override;
+  bool IsAckTimeoutEnabled() const;
 
-  bool Empty() const override;
+  bool Empty() const;
 
  protected:
   void SendTouchCancelEventForTouchEvent(
-      const TouchEventWithLatencyInfo& event_to_cancel) override;
+      const TouchEventWithLatencyInfo& event_to_cancel);
   void UpdateTouchConsumerStates(const blink::WebTouchEvent& event,
-                                 InputEventAckState ack_result) override;
+                                 InputEventAckState ack_result);
   // Empties the queue of touch events. This may result in any number of gesture
   // events being sent to the renderer.
-  void FlushQueue() override;
+  void FlushQueue();
 
  private:
   friend class PassthroughTouchEventQueueTest;
+  friend class TouchTimeoutHandler;
 
   class TouchEventWithLatencyInfoAndAckState
       : public TouchEventWithLatencyInfo {
@@ -107,7 +149,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
   size_t SizeForTesting() const;
 
   // Handles touch event forwarding and ack'ed event dispatch.
-  TouchEventQueueClient* client_;
+  PassthroughTouchEventQueueClient* client_;
 
   // Whether the renderer has at least one touch handler.
   bool has_handlers_;

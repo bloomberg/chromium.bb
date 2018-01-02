@@ -21,8 +21,8 @@ namespace {
 const int kDesktopTouchAckTimeoutDelayMs = 200;
 const int kMobileTouchAckTimeoutDelayMs = 1000;
 
-TouchEventQueue::Config GetTouchEventQueueConfig() {
-  TouchEventQueue::Config config;
+PassthroughTouchEventQueue::Config GetTouchEventQueueConfig() {
+  PassthroughTouchEventQueue::Config config;
 
   config.desktop_touch_ack_timeout_delay =
       base::TimeDelta::FromMilliseconds(kDesktopTouchAckTimeoutDelayMs);

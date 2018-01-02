@@ -53,7 +53,7 @@ operator<(const TouchEventWithLatencyInfoAndAckState& other) const {
 }
 
 PassthroughTouchEventQueue::PassthroughTouchEventQueue(
-    TouchEventQueueClient* client,
+    PassthroughTouchEventQueueClient* client,
     const Config& config)
     : client_(client),
       has_handlers_(true),

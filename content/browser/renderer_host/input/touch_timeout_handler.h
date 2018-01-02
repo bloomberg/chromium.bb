@@ -16,11 +16,11 @@
 
 namespace content {
 
-class TouchEventQueue;
+class PassthroughTouchEventQueue;
 
 class TouchTimeoutHandler {
  public:
-  TouchTimeoutHandler(TouchEventQueue* touch_queue,
+  TouchTimeoutHandler(PassthroughTouchEventQueue* touch_queue,
                       base::TimeDelta desktop_timeout_delay,
                       base::TimeDelta mobile_timeout_delay);
 
@@ -52,7 +52,7 @@ class TouchTimeoutHandler {
   base::TimeDelta GetTimeoutDelay() const;
   bool HasTimeoutEvent() const;
 
-  TouchEventQueue* touch_queue_;
+  PassthroughTouchEventQueue* touch_queue_;
 
   // How long to wait on a touch ack before cancelling the touch sequence.
   const base::TimeDelta desktop_timeout_delay_;
