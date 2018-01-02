@@ -159,6 +159,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
 
     def apply_includes(self, property_):
         yield "core/css/resolver/StyleResolverState.h"
+        yield "core/css/CSSPrimitiveValueMappings.h"
         if property_['converter'] == "CSSPrimitiveValue":
             yield "core/css/CSSPrimitiveValue.h"
             yield "core/css/CSSPrimitiveValueMappings.h"

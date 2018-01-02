@@ -4,8 +4,10 @@
 
 #include "core/css/properties/longhands/ScrollSnapMarginTop.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -16,6 +18,15 @@ const CSSValue* ScrollSnapMarginTop::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumeLength(range, context.Mode(), kValueRangeAll,
                        CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+}
+
+const CSSValue* ScrollSnapMarginTop::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ZoomAdjustedPixelValue(style.ScrollSnapMarginTop(), style);
 }
 
 }  // namespace CSSLonghand

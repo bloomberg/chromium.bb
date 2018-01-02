@@ -30,10 +30,11 @@ const blink::Color ColumnRuleColor::ColorIncludingFallback(
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
 }
 
-const CSSValue* ColumnRuleColor::CSSValueFromComputedStyle(
+const CSSValue* ColumnRuleColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())

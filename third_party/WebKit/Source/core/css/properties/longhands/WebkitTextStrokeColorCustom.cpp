@@ -32,10 +32,11 @@ const blink::Color WebkitTextStrokeColor::ColorIncludingFallback(
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
 }
 
-const CSSValue* WebkitTextStrokeColor::CSSValueFromComputedStyle(
+const CSSValue* WebkitTextStrokeColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style,
                                                       style.TextStrokeColor());

@@ -27,10 +27,11 @@ const blink::Color WebkitTapHighlightColor::ColorIncludingFallback(
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
 }
 
-const CSSValue* WebkitTapHighlightColor::CSSValueFromComputedStyle(
+const CSSValue* WebkitTapHighlightColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(
       style, style.TapHighlightColor());

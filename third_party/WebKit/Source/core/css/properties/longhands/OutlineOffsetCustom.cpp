@@ -4,6 +4,7 @@
 
 #include "core/css/properties/longhands/OutlineOffset.h"
 
+#include "core/css/ZoomAdjustedPixelValue.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
@@ -16,6 +17,15 @@ const CSSValue* OutlineOffset::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeLength(range, context.Mode(),
                                                  kValueRangeAll);
+}
+
+const CSSValue* OutlineOffset::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ZoomAdjustedPixelValue(style.OutlineOffset(), style);
 }
 
 }  // namespace CSSLonghand

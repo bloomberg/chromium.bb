@@ -26,6 +26,7 @@ class CSSParserTokenRange;
 class LayoutObject;
 class Longhand;
 class Shorthand;
+class SVGComputedStyle;
 class StylePropertyShorthand;
 
 enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
@@ -50,13 +51,41 @@ class CSSProperty : public CSSUnresolvedProperty {
   virtual bool IsEnabled() const { return true; }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
-  virtual const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
-                                                    const LayoutObject*,
-                                                    Node*,
-                                                    bool allow_visited_style) const {
-    NOTREACHED();
-    return nullptr;
-  }
+
+  // Properties that do not override this method:
+  // CSSPropertyWebkitFontSizeDelta
+  // CSSPropertyWebkitTextEmphasis
+  // CSSPropertyFontDisplay
+  // CSSPropertySrc
+  // CSSPropertyUnicodeRange
+  // CSSPropertyPage
+  // CSSPropertySize
+  // CSSPropertyWebkitMarginCollapse
+  // CSSPropertyWebkitMask
+  // CSSPropertyWebkitMaskRepeatX
+  // CSSPropertyWebkitMaskRepeatY
+  // CSSPropertyWebkitPerspectiveOriginX
+  // CSSPropertyWebkitPerspectiveOriginY
+  // CSSPropertyWebkitTextStroke
+  // CSSPropertyWebkitTransformOriginX
+  // CSSPropertyWebkitTransformOriginY
+  // CSSPropertyWebkitTransformOriginZ
+  // CSSPropertyMaxZoom
+  // CSSPropertyMinZoom
+  // CSSPropertyOrientation
+  // CSSPropertyUserZoom
+  // CSSPropertyMarker
+  // CSSPropertyAll
+  // CSSPropertyVariable (Variables are retrieved via Get(AtomicString))
+  virtual const CSSValue* CSSValueFromComputedStyleInternal(const ComputedStyle&,
+                                                            const SVGComputedStyle&,
+                                                            const LayoutObject*,
+                                                            Node*,
+                                                            bool allow_visited_style) const { return nullptr; }
+  const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
+                                            const LayoutObject*,
+                                            Node*,
+                                            bool allow_visited_style) const;
   virtual const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection,
       WritingMode) const {

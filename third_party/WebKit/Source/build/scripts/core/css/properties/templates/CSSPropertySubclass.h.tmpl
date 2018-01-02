@@ -74,6 +74,17 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   bool IsAffectedByAll() const override { return false; }
   {% endif %}
   {% if property.direction_aware_options %}
+  const CSSValue* CSSValueFromComputedStyleInternal(
+      const ComputedStyle& ,
+      const SVGComputedStyle&,
+      const LayoutObject*,
+      Node*,
+      bool allow_visited_style) const override {
+    // Directional properties are resolved by resolveDirectionAwareProperty()
+    // before calling CSSValueFromComputedStyleInternal.
+    NOTREACHED();
+    return nullptr;
+  }
     {% if property.direction_aware_options.logical_side == "width" %}
   const CSSProperty& ResolveDirectionAwareProperty(
       TextDirection direction,

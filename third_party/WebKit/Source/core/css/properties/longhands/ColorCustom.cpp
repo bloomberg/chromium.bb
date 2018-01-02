@@ -29,10 +29,11 @@ const blink::Color Color::ColorIncludingFallback(
   return result.GetColor();
 }
 
-const CSSValue* Color::CSSValueFromComputedStyle(
+const CSSValue* Color::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return cssvalue::CSSColorValue::Create(
       allow_visited_style ? style.VisitedDependentColor(*this).Rgb()

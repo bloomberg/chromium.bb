@@ -60,6 +60,7 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/PropertyRegistry.h"
 #include "core/css/ZoomAdjustedPixelValue.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
@@ -89,13 +90,6 @@ inline static CSSValue* ZoomAdjustedPixelValueOrAuto(
   return ZoomAdjustedPixelValue(length.Value(), style);
 }
 
-static CSSValue* ZoomAdjustedPixelValueForLength(const Length& length,
-                                                 const ComputedStyle& style) {
-  if (length.IsFixed())
-    return ZoomAdjustedPixelValue(length.Value(), style);
-  return CSSValue::Create(length, style.EffectiveZoom());
-}
-
 static CSSValue* PixelValueForUnzoomedLength(
     const UnzoomedLength& unzoomed_length,
     const ComputedStyle& style) {
@@ -116,16 +110,16 @@ static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
   }
-  position_list->Append(
-      *ZoomAdjustedPixelValueForLength(layer.PositionX(), style));
+  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      layer.PositionX(), style));
   if (layer.IsBackgroundYOriginSet()) {
     DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
            property.IDEquals(CSSPropertyWebkitMaskPosition));
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
   }
-  position_list->Append(
-      *ZoomAdjustedPixelValueForLength(layer.PositionY(), style));
+  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      layer.PositionY(), style));
   return position_list;
 }
 
@@ -137,13 +131,16 @@ static CSSValue* ValueForFillSize(const FillSize& fill_size,
   if (fill_size.type == EFillSizeType::kCover)
     return CSSIdentifierValue::Create(CSSValueCover);
 
-  if (fill_size.size.Height().IsAuto())
-    return ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style);
+  if (fill_size.size.Height().IsAuto()) {
+    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        fill_size.size.Width(), style);
+  }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ZoomAdjustedPixelValueForLength(fill_size.size.Width(), style));
-  list->Append(
-      *ZoomAdjustedPixelValueForLength(fill_size.size.Height(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      fill_size.size.Width(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      fill_size.size.Height(), style));
   return list;
 }
 
@@ -252,7 +249,8 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
       // Length doesn't provide operator -, so multiply by -1.
       Length negated_opposite = opposite;
       negated_opposite *= -1.f;
-      return ZoomAdjustedPixelValueForLength(negated_opposite, style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          negated_opposite, style);
     }
 
     if (layout_object->IsOutOfFlowPositioned() && layout_object->IsBox()) {
@@ -295,7 +293,7 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
   if (offset.IsAuto())
     return CSSIdentifierValue::Create(CSSValueAuto);
 
-  return ZoomAdjustedPixelValueForLength(offset, style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(offset, style);
 }
 
 static cssvalue::CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
@@ -711,8 +709,10 @@ static CSSValue* ValueForPosition(const LengthPoint& position,
     return CSSIdentifierValue::Create(CSSValueAuto);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ZoomAdjustedPixelValueForLength(position.X(), style));
-  list->Append(*ZoomAdjustedPixelValueForLength(position.Y(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      position.X(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      position.Y(), style));
   return list;
 }
 
@@ -971,7 +971,8 @@ static CSSValue* SpecifiedValueForGridTrackBreadth(
   const Length& track_breadth_length = track_breadth.length();
   if (track_breadth_length.IsAuto())
     return CSSIdentifierValue::Create(CSSValueAuto);
-  return ZoomAdjustedPixelValueForLength(track_breadth_length, style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      track_breadth_length, style);
 }
 
 static CSSValue* SpecifiedValueForGridTrackSize(const GridTrackSize& track_size,
@@ -1467,12 +1468,14 @@ static CSSValueList* ValuesForBorderRadiusCorner(const LengthSize& radius,
     list->Append(*CSSPrimitiveValue::Create(
         radius.Width().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   else
-    list->Append(*ZoomAdjustedPixelValueForLength(radius.Width(), style));
+    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        radius.Width(), style));
   if (radius.Height().GetType() == kPercent)
     list->Append(*CSSPrimitiveValue::Create(
         radius.Height().Percent(), CSSPrimitiveValue::UnitType::kPercentage));
   else
-    list->Append(*ZoomAdjustedPixelValueForLength(radius.Height(), style));
+    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        radius.Height(), style));
   return list;
 }
 
@@ -1824,8 +1827,10 @@ static CSSValue* StrokeDashArrayToCSSValueList(const SVGDashArray& dashes,
     return CSSIdentifierValue::Create(CSSValueNone);
 
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const Length& dash_length : dashes.GetVector())
-    list->Append(*ZoomAdjustedPixelValueForLength(dash_length, style));
+  for (const Length& dash_length : dashes.GetVector()) {
+    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        dash_length, style));
+  }
 
   return list;
 }
@@ -1891,7 +1896,7 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForShadowData(
       shadow.Style() == kNormal ? nullptr
                                 : CSSIdentifierValue::Create(CSSValueInset);
   CSSValue* color =
-      CSSColorValue::Create(shadow.GetColor().Resolve(style.GetColor()).Rgb());
+      ComputedStyleUtils::CurrentColorOrValidColor(style, shadow.GetColor());
   return CSSShadowValue::Create(x, y, blur, spread, shadow_style, color);
 }
 
@@ -2340,8 +2345,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
               ? &style.MaskLayers()
               : &style.BackgroundLayers();
       for (; curr_layer; curr_layer = curr_layer->Next()) {
-        list->Append(
-            *ZoomAdjustedPixelValueForLength(curr_layer->PositionX(), style));
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            curr_layer->PositionX(), style));
       }
       return list;
     }
@@ -2353,8 +2358,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
               ? &style.MaskLayers()
               : &style.BackgroundLayers();
       for (; curr_layer; curr_layer = curr_layer->Next()) {
-        list->Append(
-            *ZoomAdjustedPixelValueForLength(curr_layer->PositionY(), style));
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            curr_layer->PositionY(), style));
       }
       return list;
     }
@@ -2370,84 +2375,38 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           *ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style));
       return list;
     }
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-      return ZoomAdjustedPixelValue(style.HorizontalBorderSpacing(), style);
-    case CSSPropertyWebkitBorderVerticalSpacing:
-      return ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style);
     case CSSPropertyBorderImageSource:
       if (style.BorderImageSource())
         return style.BorderImageSource()->ComputedCSSValue();
       return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyBorderTopStyle:
-      return CSSIdentifierValue::Create(style.BorderTopStyle());
-    case CSSPropertyBorderRightStyle:
-      return CSSIdentifierValue::Create(style.BorderRightStyle());
-    case CSSPropertyBorderBottomStyle:
-      return CSSIdentifierValue::Create(style.BorderBottomStyle());
-    case CSSPropertyBorderLeftStyle:
-      return CSSIdentifierValue::Create(style.BorderLeftStyle());
-    case CSSPropertyBorderTopWidth:
-      return ZoomAdjustedPixelValue(style.BorderTopWidth(), style);
-    case CSSPropertyBorderRightWidth:
-      return ZoomAdjustedPixelValue(style.BorderRightWidth(), style);
-    case CSSPropertyBorderBottomWidth:
-      return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
-    case CSSPropertyBorderLeftWidth:
-      return ZoomAdjustedPixelValue(style.BorderLeftWidth(), style);
     case CSSPropertyBottom:
       return ValueForPositionOffset(style, resolved_property, layout_object);
-    case CSSPropertyWebkitBoxAlign:
-      return CSSIdentifierValue::Create(style.BoxAlign());
     case CSSPropertyWebkitBoxDecorationBreak:
       if (style.BoxDecorationBreak() == EBoxDecorationBreak::kSlice)
         return CSSIdentifierValue::Create(CSSValueSlice);
       return CSSIdentifierValue::Create(CSSValueClone);
-    case CSSPropertyWebkitBoxDirection:
-      return CSSIdentifierValue::Create(style.BoxDirection());
     case CSSPropertyWebkitBoxFlex:
       return CSSPrimitiveValue::Create(style.BoxFlex(),
                                        CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWebkitBoxFlexGroup:
       return CSSPrimitiveValue::Create(style.BoxFlexGroup(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyWebkitBoxLines:
-      return CSSIdentifierValue::Create(style.BoxLines());
     case CSSPropertyWebkitBoxOrdinalGroup:
       return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyWebkitBoxOrient:
-      return CSSIdentifierValue::Create(style.BoxOrient());
-    case CSSPropertyWebkitBoxPack:
-      return CSSIdentifierValue::Create(style.BoxPack());
     case CSSPropertyWebkitBoxReflect:
       return ValueForReflection(style.BoxReflect(), style);
     case CSSPropertyBoxShadow:
       return ValueForShadowList(style.BoxShadow(), style, true);
-    case CSSPropertyCaptionSide:
-      return CSSIdentifierValue::Create(style.CaptionSide());
-    case CSSPropertyClear:
-      return CSSIdentifierValue::Create(style.Clear());
-    case CSSPropertyWebkitPrintColorAdjust:
-      return CSSIdentifierValue::Create(style.PrintColorAdjust());
     case CSSPropertyColumnCount:
       if (style.HasAutoColumnCount())
         return CSSIdentifierValue::Create(CSSValueAuto);
       return CSSPrimitiveValue::Create(style.ColumnCount(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyColumnFill:
-      return CSSIdentifierValue::Create(style.GetColumnFill());
     case CSSPropertyColumnGap:
       if (style.HasNormalColumnGap())
         return CSSIdentifierValue::Create(CSSValueNormal);
       return ZoomAdjustedPixelValue(style.ColumnGap(), style);
-    case CSSPropertyColumnRuleStyle:
-      return CSSIdentifierValue::Create(style.ColumnRuleStyle());
-    case CSSPropertyColumnRuleWidth:
-      return ZoomAdjustedPixelValue(style.ColumnRuleWidth(), style);
-    case CSSPropertyColumnSpan:
-      return CSSIdentifierValue::Create(
-          static_cast<unsigned>(style.GetColumnSpan()) ? CSSValueAll
-                                                       : CSSValueNone);
     case CSSPropertyWebkitColumnBreakAfter:
       return ValueForWebkitColumnBreakBetween(style.BreakAfter());
     case CSSPropertyWebkitColumnBreakBefore:
@@ -2489,12 +2448,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       }
       return value;
     }
-    case CSSPropertyDirection:
-      return CSSIdentifierValue::Create(style.Direction());
-    case CSSPropertyDisplay:
-      return CSSIdentifierValue::Create(style.Display());
-    case CSSPropertyEmptyCells:
-      return CSSIdentifierValue::Create(style.EmptyCells());
     case CSSPropertyPlaceContent: {
       // TODO (jfernandez): The spec states that we should return the specified
       // value.
@@ -2526,10 +2479,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyFlex:
       return ValuesForShorthandProperty(flexShorthand(), style, layout_object,
                                         styled_node, allow_visited_style);
-    case CSSPropertyFlexBasis:
-      return ZoomAdjustedPixelValueForLength(style.FlexBasis(), style);
-    case CSSPropertyFlexDirection:
-      return CSSIdentifierValue::Create(style.FlexDirection());
     case CSSPropertyFlexFlow:
       return ValuesForShorthandProperty(flexFlowShorthand(), style,
                                         layout_object, styled_node,
@@ -2540,8 +2489,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyFlexShrink:
       return CSSPrimitiveValue::Create(style.FlexShrink(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyFlexWrap:
-      return CSSIdentifierValue::Create(style.FlexWrap());
     case CSSPropertyJustifyContent:
       return ValueForContentPositionAndDistributionWithOverflowAlignment(
           style.JustifyContent());
@@ -2679,10 +2626,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSGridTemplateAreasValue::Create(
           style.NamedGridArea(), style.NamedGridAreaRowCount(),
           style.NamedGridAreaColumnCount());
-    case CSSPropertyGridColumnGap:
-      return ZoomAdjustedPixelValueForLength(style.GridColumnGap(), style);
-    case CSSPropertyGridRowGap:
-      return ZoomAdjustedPixelValueForLength(style.GridRowGap(), style);
     case CSSPropertyGridGap:
       return ValuesForShorthandProperty(gridGapShorthand(), style,
                                         layout_object, styled_node,
@@ -2693,26 +2636,21 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         return ZoomAdjustedPixelValue(SizingBox(*layout_object).Height(),
                                       style);
       }
-      return ZoomAdjustedPixelValueForLength(style.Height(), style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.Height(),
+                                                                 style);
     case CSSPropertyWebkitHighlight:
       if (style.Highlight() == g_null_atom)
         return CSSIdentifierValue::Create(CSSValueNone);
       return CSSStringValue::Create(style.Highlight());
-    case CSSPropertyHyphens:
-      return CSSIdentifierValue::Create(style.GetHyphens());
     case CSSPropertyWebkitHyphenateCharacter:
       if (style.HyphenationString().IsNull())
         return CSSIdentifierValue::Create(CSSValueAuto);
       return CSSStringValue::Create(style.HyphenationString());
-    case CSSPropertyImageRendering:
-      return CSSIdentifierValue::Create(style.ImageRendering());
     case CSSPropertyImageOrientation:
       if (style.RespectImageOrientation() == kRespectImageOrientation)
         return CSSIdentifierValue::Create(CSSValueFromImage);
       return CSSPrimitiveValue::Create(0,
                                        CSSPrimitiveValue::UnitType::kDegrees);
-    case CSSPropertyIsolation:
-      return CSSIdentifierValue::Create(style.Isolation());
     case CSSPropertyJustifyItems:
       return ValueForItemPositionWithOverflowAlignment(
           style.JustifyItems().GetPosition() == ItemPosition::kAuto
@@ -2736,31 +2674,29 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
               : CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyLineHeight:
       return ValueForLineHeight(style);
-    case CSSPropertyLineHeightStep:
-      return ZoomAdjustedPixelValue(style.LineHeightStep(), style);
     case CSSPropertyListStyleImage:
       if (style.ListStyleImage())
         return style.ListStyleImage()->ComputedCSSValue();
       return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyListStylePosition:
-      return CSSIdentifierValue::Create(style.ListStylePosition());
-    case CSSPropertyListStyleType:
-      return CSSIdentifierValue::Create(style.ListStyleType());
     case CSSPropertyWebkitLocale:
       if (style.Locale().IsNull())
         return CSSIdentifierValue::Create(CSSValueAuto);
       return CSSStringValue::Create(style.Locale());
     case CSSPropertyMarginTop: {
       const Length& margin_top = style.MarginTop();
-      if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(margin_top, style);
+      if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_top,
+                                                                   style);
+      }
       return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginTop(),
                                     style);
     }
     case CSSPropertyMarginRight: {
       const Length& margin_right = style.MarginRight();
-      if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(margin_right, style);
+      if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
+                                                                   style);
+      }
       float value;
       if (margin_right.IsPercentOrCalc()) {
         // LayoutBox gives a marginRight() that is the distance between the
@@ -2779,31 +2715,36 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyMarginBottom: {
       const Length& margin_bottom = style.MarginBottom();
-      if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(margin_bottom, style);
+      if (margin_bottom.IsFixed() || !layout_object ||
+          !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            margin_bottom, style);
+      }
       return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginBottom(),
                                     style);
     }
     case CSSPropertyMarginLeft: {
       const Length& margin_left = style.MarginLeft();
-      if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(margin_left, style);
+      if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_left,
+                                                                   style);
+      }
       return ZoomAdjustedPixelValue(ToLayoutBox(layout_object)->MarginLeft(),
                                     style);
     }
-    case CSSPropertyWebkitUserModify:
-      return CSSIdentifierValue::Create(style.UserModify());
     case CSSPropertyMaxHeight: {
       const Length& max_height = style.MaxHeight();
       if (max_height.IsMaxSizeNone())
         return CSSIdentifierValue::Create(CSSValueNone);
-      return ZoomAdjustedPixelValueForLength(max_height, style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_height,
+                                                                 style);
     }
     case CSSPropertyMaxWidth: {
       const Length& max_width = style.MaxWidth();
       if (max_width.IsMaxSizeNone())
         return CSSIdentifierValue::Create(CSSValueNone);
-      return ZoomAdjustedPixelValueForLength(max_width, style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(max_width,
+                                                                 style);
     }
     case CSSPropertyMinHeight:
       if (style.MinHeight().IsAuto()) {
@@ -2812,7 +2753,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           return CSSIdentifierValue::Create(CSSValueAuto);
         return ZoomAdjustedPixelValue(0, style);
       }
-      return ZoomAdjustedPixelValueForLength(style.MinHeight(), style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.MinHeight(), style);
     case CSSPropertyMinWidth:
       if (style.MinWidth().IsAuto()) {
         Node* parent = styled_node->parentNode();
@@ -2820,13 +2762,14 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           return CSSIdentifierValue::Create(CSSValueAuto);
         return ZoomAdjustedPixelValue(0, style);
       }
-      return ZoomAdjustedPixelValueForLength(style.MinWidth(), style);
-    case CSSPropertyObjectFit:
-      return CSSIdentifierValue::Create(style.GetObjectFit());
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.MinWidth(), style);
     case CSSPropertyObjectPosition:
       return CSSValuePair::Create(
-          ZoomAdjustedPixelValueForLength(style.ObjectPosition().X(), style),
-          ZoomAdjustedPixelValueForLength(style.ObjectPosition().Y(), style),
+          ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              style.ObjectPosition().X(), style),
+          ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              style.ObjectPosition().Y(), style),
           CSSValuePair::kKeepIdenticalValues);
     case CSSPropertyOpacity:
       return CSSPrimitiveValue::Create(style.Opacity(),
@@ -2834,68 +2777,58 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyOrphans:
       return CSSPrimitiveValue::Create(style.Orphans(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyOutlineOffset:
-      return ZoomAdjustedPixelValue(style.OutlineOffset(), style);
     case CSSPropertyOutlineStyle:
       if (style.OutlineStyleIsAuto())
         return CSSIdentifierValue::Create(CSSValueAuto);
       return CSSIdentifierValue::Create(style.OutlineStyle());
-    case CSSPropertyOutlineWidth:
-      return ZoomAdjustedPixelValue(style.OutlineWidth(), style);
     case CSSPropertyOverflow:
       if (style.OverflowX() == style.OverflowY())
         return CSSIdentifierValue::Create(style.OverflowX());
       return nullptr;
-    case CSSPropertyOverflowAnchor:
-      return CSSIdentifierValue::Create(style.OverflowAnchor());
-    case CSSPropertyOverflowWrap:
-      return CSSIdentifierValue::Create(style.OverflowWrap());
-    case CSSPropertyOverflowX:
-      return CSSIdentifierValue::Create(style.OverflowX());
-    case CSSPropertyOverflowY:
-      return CSSIdentifierValue::Create(style.OverflowY());
     case CSSPropertyPaddingTop: {
       const Length& padding_top = style.PaddingTop();
-      if (padding_top.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(padding_top, style);
+      if (padding_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(padding_top,
+                                                                   style);
+      }
       return ZoomAdjustedPixelValue(
           ToLayoutBox(layout_object)->ComputedCSSPaddingTop(), style);
     }
     case CSSPropertyPaddingRight: {
       const Length& padding_right = style.PaddingRight();
-      if (padding_right.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(padding_right, style);
+      if (padding_right.IsFixed() || !layout_object ||
+          !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            padding_right, style);
+      }
       return ZoomAdjustedPixelValue(
           ToLayoutBox(layout_object)->ComputedCSSPaddingRight(), style);
     }
     case CSSPropertyPaddingBottom: {
       const Length& padding_bottom = style.PaddingBottom();
-      if (padding_bottom.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(padding_bottom, style);
+      if (padding_bottom.IsFixed() || !layout_object ||
+          !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            padding_bottom, style);
+      }
       return ZoomAdjustedPixelValue(
           ToLayoutBox(layout_object)->ComputedCSSPaddingBottom(), style);
     }
     case CSSPropertyPaddingLeft: {
       const Length& padding_left = style.PaddingLeft();
-      if (padding_left.IsFixed() || !layout_object || !layout_object->IsBox())
-        return ZoomAdjustedPixelValueForLength(padding_left, style);
+      if (padding_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(padding_left,
+                                                                   style);
+      }
       return ZoomAdjustedPixelValue(
           ToLayoutBox(layout_object)->ComputedCSSPaddingLeft(), style);
     }
-    case CSSPropertyBreakAfter:
-      return CSSIdentifierValue::Create(style.BreakAfter());
-    case CSSPropertyBreakBefore:
-      return CSSIdentifierValue::Create(style.BreakBefore());
-    case CSSPropertyBreakInside:
-      return CSSIdentifierValue::Create(style.BreakInside());
     case CSSPropertyPageBreakAfter:
       return ValueForPageBreakBetween(style.BreakAfter());
     case CSSPropertyPageBreakBefore:
       return ValueForPageBreakBetween(style.BreakBefore());
     case CSSPropertyPageBreakInside:
       return ValueForPageBreakInside(style.BreakInside());
-    case CSSPropertyPosition:
-      return CSSIdentifierValue::Create(style.GetPosition());
     case CSSPropertyQuotes:
       if (!style.Quotes()) {
         // TODO(ramya.v): We should return the quote values that we're actually
@@ -2915,16 +2848,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyRight:
       return ValueForPositionOffset(style, resolved_property, layout_object);
-    case CSSPropertyWebkitRubyPosition:
-      return CSSIdentifierValue::Create(style.GetRubyPosition());
-    case CSSPropertyScrollBehavior:
-      return CSSIdentifierValue::Create(style.GetScrollBehavior());
-    case CSSPropertyTableLayout:
-      return CSSIdentifierValue::Create(style.TableLayout());
-    case CSSPropertyTextAlign:
-      return CSSIdentifierValue::Create(style.GetTextAlign());
-    case CSSPropertyTextAlignLast:
-      return CSSIdentifierValue::Create(style.TextAlignLast());
     case CSSPropertyTextDecoration:
       return ValuesForShorthandProperty(textDecorationShorthand(), style,
                                         layout_object, styled_node,
@@ -2935,10 +2858,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForTextDecorationSkipInk(style.TextDecorationSkipInk());
     case CSSPropertyTextDecorationStyle:
       return ValueForTextDecorationStyle(style.TextDecorationStyle());
-    case CSSPropertyTextJustify:
-      return CSSIdentifierValue::Create(style.GetTextJustify());
-    case CSSPropertyTextUnderlinePosition:
-      return CSSIdentifierValue::Create(style.GetTextUnderlinePosition());
     case CSSPropertyWebkitTextDecorationsInEffect:
       return RenderTextDecorationFlagsToCSSValue(
           style.TextDecorationsInEffect());
@@ -2988,7 +2907,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       }
     case CSSPropertyTextIndent: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      list->Append(*ZoomAdjustedPixelValueForLength(style.TextIndent(), style));
+      list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.TextIndent(), style));
       if (RuntimeEnabledFeatures::CSS3TextEnabled() &&
           (style.GetTextIndentLine() == TextIndentLine::kEachLine ||
            style.GetTextIndentType() == TextIndentType::kHanging)) {
@@ -3001,25 +2921,14 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyTextShadow:
       return ValueForShadowList(style.TextShadow(), style, false);
-    case CSSPropertyTextRendering:
-      return CSSIdentifierValue::Create(
-          style.GetFontDescription().TextRendering());
     case CSSPropertyTextOverflow:
       if (style.TextOverflow() != ETextOverflow::kClip)
         return CSSIdentifierValue::Create(CSSValueEllipsis);
       return CSSIdentifierValue::Create(CSSValueClip);
-    case CSSPropertyWebkitTextSecurity:
-      return CSSIdentifierValue::Create(style.TextSecurity());
-    case CSSPropertyWebkitTextStrokeWidth:
-      return ZoomAdjustedPixelValue(style.TextStrokeWidth(), style);
-    case CSSPropertyTextTransform:
-      return CSSIdentifierValue::Create(style.TextTransform());
     case CSSPropertyTop:
       return ValueForPositionOffset(style, resolved_property, layout_object);
     case CSSPropertyTouchAction:
       return TouchActionFlagsToCSSValue(style.GetTouchAction());
-    case CSSPropertyUnicodeBidi:
-      return CSSIdentifierValue::Create(style.GetUnicodeBidi());
     case CSSPropertyVerticalAlign:
       switch (style.VerticalAlign()) {
         case EVerticalAlign::kBaseline:
@@ -3041,43 +2950,23 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         case EVerticalAlign::kBaselineMiddle:
           return CSSIdentifierValue::Create(CSSValueWebkitBaselineMiddle);
         case EVerticalAlign::kLength:
-          return ZoomAdjustedPixelValueForLength(style.GetVerticalAlignLength(),
-                                                 style);
+          return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              style.GetVerticalAlignLength(), style);
       }
       NOTREACHED();
       return nullptr;
-    case CSSPropertyVisibility:
-      return CSSIdentifierValue::Create(style.Visibility());
-    case CSSPropertyWhiteSpace:
-      return CSSIdentifierValue::Create(style.WhiteSpace());
     case CSSPropertyWidows:
       return CSSPrimitiveValue::Create(style.Widows(),
                                        CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWidth:
       if (WidthOrHeightShouldReturnUsedValue(layout_object))
         return ZoomAdjustedPixelValue(SizingBox(*layout_object).Width(), style);
-      return ZoomAdjustedPixelValueForLength(style.Width(), style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.Width(),
+                                                                 style);
     case CSSPropertyWillChange:
       return ValueForWillChange(style.WillChangeProperties(),
                                 style.WillChangeContents(),
                                 style.WillChangeScrollPosition());
-    case CSSPropertyWordBreak:
-      return CSSIdentifierValue::Create(style.WordBreak());
-    case CSSPropertyWordSpacing:
-      return ZoomAdjustedPixelValue(style.WordSpacing(), style);
-    case CSSPropertyWordWrap:
-      return CSSIdentifierValue::Create(style.OverflowWrap());
-    case CSSPropertyLineBreak:
-    case CSSPropertyWebkitLineBreak:
-      return CSSIdentifierValue::Create(style.GetLineBreak());
-    case CSSPropertyResize:
-      return CSSIdentifierValue::Create(style.Resize());
-    case CSSPropertyFontKerning:
-      return CSSIdentifierValue::Create(
-          style.GetFontDescription().GetKerning());
-    case CSSPropertyWebkitFontSmoothing:
-      return CSSIdentifierValue::Create(
-          style.GetFontDescription().FontSmoothing());
     case CSSPropertyFontVariantLigatures:
       return ValueForFontVariantLigatures(style);
     case CSSPropertyFontVariantCaps:
@@ -3098,11 +2987,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.BoxSizing() == EBoxSizing::kContentBox)
         return CSSIdentifierValue::Create(CSSValueContentBox);
       return CSSIdentifierValue::Create(CSSValueBorderBox);
-    case CSSPropertyWebkitAppRegion:
-      return CSSIdentifierValue::Create(style.DraggableRegionMode() ==
-                                                EDraggableRegionMode::kDrag
-                                            ? CSSValueDrag
-                                            : CSSValueNoDrag);
     case CSSPropertyAnimationDelay:
       return ValueForAnimationDelay(style.Animations());
     case CSSPropertyAnimationDirection: {
@@ -3225,13 +3109,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
       return list;
     }
-    case CSSPropertyWebkitAppearance:
-      return CSSIdentifierValue::Create(style.Appearance());
-    case CSSPropertyBackfaceVisibility:
-      return CSSIdentifierValue::Create(
-          (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
-              ? CSSValueHidden
-              : CSSValueVisible);
     case CSSPropertyWebkitBorderImage:
       return ValueForNinePieceImage(style.BorderImage(), style);
     case CSSPropertyBorderImageOutset:
@@ -3258,16 +3135,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.MaskBoxImageSource())
         return style.MaskBoxImageSource()->ComputedCSSValue();
       return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyWebkitFontSizeDelta:
-      // Not a real style property -- used by the editing engine -- so has no
-      // computed value.
-      return nullptr;
-    case CSSPropertyWebkitMarginBottomCollapse:
-    case CSSPropertyWebkitMarginAfterCollapse:
-      return CSSIdentifierValue::Create(style.MarginAfterCollapse());
-    case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWebkitMarginBeforeCollapse:
-      return CSSIdentifierValue::Create(style.MarginBeforeCollapse());
     case CSSPropertyPerspective:
       if (!style.HasPerspective())
         return CSSIdentifierValue::Create(CSSValueNone);
@@ -3286,21 +3153,13 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
             MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
             style));
       } else {
-        list->Append(*ZoomAdjustedPixelValueForLength(
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
             style.PerspectiveOriginX(), style));
-        list->Append(*ZoomAdjustedPixelValueForLength(
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
             style.PerspectiveOriginY(), style));
       }
       return list;
     }
-    case CSSPropertyWebkitRtlOrdering:
-      return CSSIdentifierValue::Create(style.RtlOrdering() == EOrder::kVisual
-                                            ? CSSValueVisual
-                                            : CSSValueLogical);
-    case CSSPropertyWebkitUserDrag:
-      return CSSIdentifierValue::Create(style.UserDrag());
-    case CSSPropertyUserSelect:
-      return CSSIdentifierValue::Create(style.UserSelect());
     case CSSPropertyBorderBottomLeftRadius:
       return &ValueForBorderRadiusCorner(style.BorderBottomLeftRadius(), style);
     case CSSPropertyBorderBottomRightRadius:
@@ -3322,12 +3181,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSQuadValue::Create(top, right, bottom, left,
                                   CSSQuadValue::kSerializeAsRect);
     }
-    case CSSPropertySpeak:
-      return CSSIdentifierValue::Create(style.Speak());
     case CSSPropertyTransform:
       return ComputedTransform(layout_object, style);
-    case CSSPropertyTransformBox:
-      return CSSIdentifierValue::Create(style.TransformBox());
     case CSSPropertyTransformOrigin: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       if (layout_object) {
@@ -3345,21 +3200,16 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           list->Append(
               *ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
       } else {
-        list->Append(
-            *ZoomAdjustedPixelValueForLength(style.TransformOriginX(), style));
-        list->Append(
-            *ZoomAdjustedPixelValueForLength(style.TransformOriginY(), style));
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            style.TransformOriginX(), style));
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            style.TransformOriginY(), style));
         if (style.TransformOriginZ() != 0)
           list->Append(
               *ZoomAdjustedPixelValue(style.TransformOriginZ(), style));
       }
       return list;
     }
-    case CSSPropertyTransformStyle:
-      return CSSIdentifierValue::Create(
-          (style.TransformStyle3D() == ETransformStyle3D::kPreserve3d)
-              ? CSSValuePreserve3d
-              : CSSValueFlat);
     case CSSPropertyTransitionDelay:
       return ValueForAnimationDelay(style.Transitions());
     case CSSPropertyTransitionDuration:
@@ -3404,20 +3254,13 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
                                      CSSPrimitiveValue::UnitType::kSeconds));
       return list;
     }
-    case CSSPropertyPointerEvents:
-      return CSSIdentifierValue::Create(style.PointerEvents());
-    case CSSPropertyWritingMode:
-    case CSSPropertyWebkitWritingMode:
-      return CSSIdentifierValue::Create(style.GetWritingMode());
     case CSSPropertyWebkitTextCombine:
       if (style.TextCombine() == ETextCombine::kAll)
         return CSSIdentifierValue::Create(CSSValueHorizontal);
-    case CSSPropertyTextCombineUpright:
       return CSSIdentifierValue::Create(style.TextCombine());
     case CSSPropertyWebkitTextOrientation:
       if (style.GetTextOrientation() == ETextOrientation::kMixed)
         return CSSIdentifierValue::Create(CSSValueVerticalRight);
-    case CSSPropertyTextOrientation:
       return CSSIdentifierValue::Create(style.GetTextOrientation());
     case CSSPropertyContent:
       return ValueForContentData(style);
@@ -3446,8 +3289,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForFilter(style, style.Filter());
     case CSSPropertyBackdropFilter:
       return ValueForFilter(style, style.BackdropFilter());
-    case CSSPropertyMixBlendMode:
-      return CSSIdentifierValue::Create(style.BlendMode());
 
     case CSSPropertyBackgroundBlendMode: {
       CSSValueList* list = CSSValueList::CreateCommaSeparated();
@@ -3551,11 +3392,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValuesForInlineBlockShorthand(scrollSnapMarginInlineShorthand(),
                                            style, layout_object, styled_node,
                                            allow_visited_style);
-    // Individual properties not part of the spec.
-    case CSSPropertyBackgroundRepeatX:
-    case CSSPropertyBackgroundRepeatY:
-      return nullptr;
-
     case CSSPropertyOffset:
       return ValueForOffset(style, layout_object, styled_node,
                             allow_visited_style);
@@ -3571,9 +3407,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         return ValueForBasicShape(style, style_motion_path);
       return CSSIdentifierValue::Create(CSSValueNone);
 
-    case CSSPropertyOffsetDistance:
-      return ZoomAdjustedPixelValueForLength(style.OffsetDistance(), style);
-
     case CSSPropertyOffsetRotate: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       if (style.OffsetRotate().type == kOffsetRotationAuto)
@@ -3582,121 +3415,22 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           style.OffsetRotate().angle, CSSPrimitiveValue::UnitType::kDegrees));
       return list;
     }
-
-    // Unimplemented CSS 3 properties (including CSS3 shorthand properties).
-    case CSSPropertyWebkitTextEmphasis:
-      return nullptr;
-
-    // Directional properties are resolved by resolveDirectionAwareProperty()
-    // before the switch.
-    case CSSPropertyBlockSize:
-    case CSSPropertyInlineSize:
-    case CSSPropertyMaxBlockSize:
-    case CSSPropertyMaxInlineSize:
-    case CSSPropertyMinBlockSize:
-    case CSSPropertyMinInlineSize:
-    case CSSPropertyWebkitBorderEnd:
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderEndStyle:
-    case CSSPropertyWebkitBorderEndWidth:
-    case CSSPropertyWebkitBorderStart:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderStartStyle:
-    case CSSPropertyWebkitBorderStartWidth:
-    case CSSPropertyWebkitBorderAfter:
-    case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyWebkitBorderAfterStyle:
-    case CSSPropertyWebkitBorderAfterWidth:
-    case CSSPropertyWebkitBorderBefore:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderBeforeStyle:
-    case CSSPropertyWebkitBorderBeforeWidth:
-    case CSSPropertyWebkitMarginEnd:
-    case CSSPropertyWebkitMarginStart:
-    case CSSPropertyWebkitMarginAfter:
-    case CSSPropertyWebkitMarginBefore:
-    case CSSPropertyWebkitPaddingEnd:
-    case CSSPropertyWebkitPaddingStart:
-    case CSSPropertyWebkitPaddingAfter:
-    case CSSPropertyWebkitPaddingBefore:
-    case CSSPropertyWebkitLogicalWidth:
-    case CSSPropertyWebkitLogicalHeight:
-    case CSSPropertyWebkitMinLogicalWidth:
-    case CSSPropertyWebkitMinLogicalHeight:
-    case CSSPropertyWebkitMaxLogicalWidth:
-    case CSSPropertyWebkitMaxLogicalHeight:
-      NOTREACHED();
-      return nullptr;
-
-    // Unimplemented @font-face properties.
-    case CSSPropertyFontDisplay:
-    case CSSPropertySrc:
-    case CSSPropertyUnicodeRange:
-      return nullptr;
-
-    // Other unimplemented properties.
-    case CSSPropertyPage:  // for @page
-    case CSSPropertySize:  // for @page
-      return nullptr;
-
-    // Unimplemented -webkit- properties.
-    case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWebkitMask:
-    case CSSPropertyWebkitMaskRepeatX:
-    case CSSPropertyWebkitMaskRepeatY:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitTextStroke:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
-      return nullptr;
-
-    // @viewport rule properties.
-    case CSSPropertyMaxZoom:
-    case CSSPropertyMinZoom:
-    case CSSPropertyOrientation:
-    case CSSPropertyUserZoom:
-      return nullptr;
-
     // SVG properties.
-    case CSSPropertyClipRule:
-      return CSSIdentifierValue::Create(svg_style.ClipRule());
     case CSSPropertyFloodOpacity:
       return CSSPrimitiveValue::Create(svg_style.FloodOpacity(),
                                        CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyStopOpacity:
       return CSSPrimitiveValue::Create(svg_style.StopOpacity(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyColorInterpolation:
-      return CSSIdentifierValue::Create(svg_style.ColorInterpolation());
-    case CSSPropertyColorInterpolationFilters:
-      return CSSIdentifierValue::Create(svg_style.ColorInterpolationFilters());
     case CSSPropertyFillOpacity:
       return CSSPrimitiveValue::Create(svg_style.FillOpacity(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyFillRule:
-      return CSSIdentifierValue::Create(svg_style.FillRule());
-    case CSSPropertyColorRendering:
-      return CSSIdentifierValue::Create(svg_style.ColorRendering());
-    case CSSPropertyShapeRendering:
-      return CSSIdentifierValue::Create(svg_style.ShapeRendering());
-    case CSSPropertyStrokeLinecap:
-      return CSSIdentifierValue::Create(svg_style.CapStyle());
-    case CSSPropertyStrokeLinejoin:
-      return CSSIdentifierValue::Create(svg_style.JoinStyle());
     case CSSPropertyStrokeMiterlimit:
       return CSSPrimitiveValue::Create(svg_style.StrokeMiterLimit(),
                                        CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyStrokeOpacity:
       return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyAlignmentBaseline:
-      return CSSIdentifierValue::Create(svg_style.AlignmentBaseline());
-    case CSSPropertyDominantBaseline:
-      return CSSIdentifierValue::Create(svg_style.DominantBaseline());
-    case CSSPropertyTextAnchor:
-      return CSSIdentifierValue::Create(svg_style.TextAnchor());
     case CSSPropertyMask:
       if (!svg_style.MaskerResource().IsEmpty())
         return CSSURIValue::Create(
@@ -3727,9 +3461,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           svg_style.StrokePaintColor(), style.GetColor());
     case CSSPropertyStrokeDasharray:
       return StrokeDashArrayToCSSValueList(*svg_style.StrokeDashArray(), style);
-    case CSSPropertyStrokeDashoffset:
-      return ZoomAdjustedPixelValueForLength(svg_style.StrokeDashOffset(),
-                                             style);
     case CSSPropertyStrokeWidth:
       return PixelValueForUnzoomedLength(svg_style.StrokeWidth(), style);
     case CSSPropertyBaselineShift: {
@@ -3739,94 +3470,28 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         case BS_SUB:
           return CSSIdentifierValue::Create(CSSValueSub);
         case BS_LENGTH:
-          return ZoomAdjustedPixelValueForLength(svg_style.BaselineShiftValue(),
-                                                 style);
+          return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              svg_style.BaselineShiftValue(), style);
       }
       NOTREACHED();
       return nullptr;
     }
-    case CSSPropertyBufferedRendering:
-      return CSSIdentifierValue::Create(svg_style.BufferedRendering());
     case CSSPropertyPaintOrder:
       return PaintOrderToCSSValueList(svg_style);
-    case CSSPropertyVectorEffect:
-      return CSSIdentifierValue::Create(svg_style.VectorEffect());
-    case CSSPropertyMaskType:
-      return CSSIdentifierValue::Create(svg_style.MaskType());
-    case CSSPropertyMarker:
-      // the above properties are not yet implemented in the engine
-      return nullptr;
     case CSSPropertyD:
       if (const StylePath* style_path = svg_style.D())
         return style_path->ComputedCSSValue();
       return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyCx:
-      return ZoomAdjustedPixelValueForLength(svg_style.Cx(), style);
-    case CSSPropertyCy:
-      return ZoomAdjustedPixelValueForLength(svg_style.Cy(), style);
-    case CSSPropertyX:
-      return ZoomAdjustedPixelValueForLength(svg_style.X(), style);
-    case CSSPropertyY:
-      return ZoomAdjustedPixelValueForLength(svg_style.Y(), style);
-    case CSSPropertyR:
-      return ZoomAdjustedPixelValueForLength(svg_style.R(), style);
-    case CSSPropertyRx:
-      return ZoomAdjustedPixelValueForLength(svg_style.Rx(), style);
-    case CSSPropertyRy:
-      return ZoomAdjustedPixelValueForLength(svg_style.Ry(), style);
     case CSSPropertyScrollSnapType:
       return ValueForScrollSnapType(style.GetScrollSnapType(), style);
     case CSSPropertyScrollSnapAlign:
       return ValueForScrollSnapAlign(style.GetScrollSnapAlign(), style);
-    case CSSPropertyScrollSnapStop:
-      return CSSIdentifierValue::Create(style.ScrollSnapStop());
-    case CSSPropertyScrollPaddingTop:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingTop(), style);
-    case CSSPropertyScrollPaddingRight:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingRight(), style);
-    case CSSPropertyScrollPaddingBottom:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBottom(),
-                                             style);
-    case CSSPropertyScrollPaddingLeft:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingLeft(), style);
-    case CSSPropertyScrollPaddingBlockStart:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBlockStart(),
-                                             style);
-    case CSSPropertyScrollPaddingBlockEnd:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBlockEnd(),
-                                             style);
-    case CSSPropertyScrollPaddingInlineStart:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingInlineStart(),
-                                             style);
-    case CSSPropertyScrollPaddingInlineEnd:
-      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingInlineEnd(),
-                                             style);
-    case CSSPropertyScrollSnapMarginTop:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginTop(), style);
-    case CSSPropertyScrollSnapMarginRight:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginRight(), style);
-    case CSSPropertyScrollSnapMarginBottom:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBottom(), style);
-    case CSSPropertyScrollSnapMarginLeft:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginLeft(), style);
-    case CSSPropertyScrollSnapMarginBlockStart:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBlockStart(), style);
-    case CSSPropertyScrollSnapMarginBlockEnd:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginBlockEnd(), style);
-    case CSSPropertyScrollSnapMarginInlineStart:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginInlineStart(), style);
-    case CSSPropertyScrollSnapMarginInlineEnd:
-      return ZoomAdjustedPixelValue(style.ScrollSnapMarginInlineEnd(), style);
     case CSSPropertyOverscrollBehavior: {
       CSSValueList* list = CSSValueList::CreateSpaceSeparated();
       list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorX()));
       list->Append(*CSSIdentifierValue::Create(style.OverscrollBehaviorY()));
       return list;
     }
-    case CSSPropertyOverscrollBehaviorX:
-      return CSSIdentifierValue::Create(style.OverscrollBehaviorX());
-    case CSSPropertyOverscrollBehaviorY:
-      return CSSIdentifierValue::Create(style.OverscrollBehaviorY());
     case CSSPropertyTranslate: {
       if (!style.Translate())
         return CSSIdentifierValue::Create(CSSValueNone);
@@ -3837,21 +3502,21 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         list->Append(*ZoomAdjustedPixelValue(
             FloatValueForLength(style.Translate()->X(), box.Width().ToFloat()),
             style));
-
-        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0)
+        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
           list->Append(*ZoomAdjustedPixelValue(
               FloatValueForLength(style.Translate()->Y(),
                                   box.Height().ToFloat()),
               style));
-
+        }
       } else {
         // No box to resolve the percentage values
-        list->Append(
-            *ZoomAdjustedPixelValueForLength(style.Translate()->X(), style));
+        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            style.Translate()->X(), style));
 
-        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0)
-          list->Append(
-              *ZoomAdjustedPixelValueForLength(style.Translate()->Y(), style));
+        if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
+          list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              style.Translate()->Y(), style));
+        }
       }
 
       if (style.Translate()->Z() != 0)
@@ -3912,12 +3577,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       DCHECK(list->length());
       return list;
     }
-    case CSSPropertyVariable:
-      // Variables are retrieved via get(AtomicString).
-      NOTREACHED();
-      return nullptr;
-    case CSSPropertyAll:
-      return nullptr;
     default:
       return resolved_property.CSSValueFromComputedStyle(
           style, layout_object, styled_node, allow_visited_style);

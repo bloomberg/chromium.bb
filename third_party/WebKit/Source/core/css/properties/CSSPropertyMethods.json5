@@ -35,9 +35,9 @@
       parameters: "(const ComputedStyle*, LayoutObject*)",
     },
     {
-      name: "CSSValueFromComputedStyle",
+      name: "CSSValueFromComputedStyleInternal",
       return_type: "const CSSValue*",
-      parameters: "(const ComputedStyle&, const LayoutObject*, Node*, bool)",
+      parameters: "(const ComputedStyle&, const SVGComputedStyle&, const LayoutObject*, Node*, bool allow_visited_style)",
     },
     {
       name: "ColorIncludingFallback",

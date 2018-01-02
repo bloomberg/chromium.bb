@@ -7,10 +7,11 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/StyleColor.h"
+#include "core/css/ZoomAdjustedPixelValue.h"
 
 namespace blink {
 
-const CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
+CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const ComputedStyle& style,
     const StyleColor& color) {
   // This function does NOT look at visited information, so that computed style
@@ -33,6 +34,15 @@ const blink::Color ComputedStyleUtils::BorderSideColor(
                         border_style == EBorderStyle::kGroove))
     return blink::Color(238, 238, 238);
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
+}
+
+// TODO(rjwright): make this const
+CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+    const Length& length,
+    const ComputedStyle& style) {
+  if (length.IsFixed())
+    return ZoomAdjustedPixelValue(length.Value(), style);
+  return CSSValue::Create(length, style.EffectiveZoom());
 }
 
 }  // namespace blink

@@ -35,10 +35,11 @@ const blink::Color CaretColor::ColorIncludingFallback(
   return visited_link ? style.VisitedLinkColor() : style.GetColor();
 }
 
-const CSSValue* CaretColor::CSSValueFromComputedStyle(
+const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   blink::Color color;
   if (allow_visited_style)

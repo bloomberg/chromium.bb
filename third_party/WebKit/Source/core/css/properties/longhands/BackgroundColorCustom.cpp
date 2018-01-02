@@ -45,10 +45,11 @@ const blink::Color BackgroundColor::ColorIncludingFallback(
   return result;
 }
 
-const CSSValue* BackgroundColor::CSSValueFromComputedStyle(
+const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())

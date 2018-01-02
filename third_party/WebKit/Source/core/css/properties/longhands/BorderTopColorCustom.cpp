@@ -34,10 +34,11 @@ const blink::Color BorderTopColor::ColorIncludingFallback(
                                              visited_link);
 }
 
-const CSSValue* BorderTopColor::CSSValueFromComputedStyle(
+const CSSValue* BorderTopColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
     bool allow_visited_style) const {
   return allow_visited_style
              ? cssvalue::CSSColorValue::Create(

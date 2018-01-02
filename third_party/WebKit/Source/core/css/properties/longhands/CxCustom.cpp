@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/Cx.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,6 +16,16 @@ const CSSValue* Cx::ParseSingleValue(CSSParserTokenRange& range,
   return CSSPropertyParserHelpers::ConsumeLengthOrPercent(
       range, kSVGAttributeMode, kValueRangeAll,
       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
+}
+
+const CSSValue* Cx::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Cx(),
+                                                             style);
 }
 
 }  // namespace CSSLonghand
