@@ -4,7 +4,6 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
@@ -171,7 +170,7 @@ void ContextualSuggestionsFetcherImpl::StartTokenRequest() {
   }
 
   OAuth2TokenService::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
       "ntp_snippets", signin_manager_, token_service_, scopes,
       base::BindOnce(
           &ContextualSuggestionsFetcherImpl::AccessTokenFetchFinished,

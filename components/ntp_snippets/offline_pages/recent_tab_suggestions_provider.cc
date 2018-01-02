@@ -5,10 +5,10 @@
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -257,7 +257,7 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertUIItem(
   suggestion.set_title(base::UTF8ToUTF16(ui_item.title));
   suggestion.set_publish_date(ui_item.creation_time);
   suggestion.set_publisher_name(base::UTF8ToUTF16(ui_item.page_url.host()));
-  auto extra = base::MakeUnique<RecentTabSuggestionExtra>();
+  auto extra = std::make_unique<RecentTabSuggestionExtra>();
   int tab_id;
   bool success = base::StringToInt(ui_item.id.id, &tab_id);
   DCHECK(success);

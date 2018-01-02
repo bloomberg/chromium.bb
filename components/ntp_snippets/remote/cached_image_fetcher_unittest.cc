@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/image_fetcher/core/image_decoder.h"
@@ -63,15 +62,15 @@ class CachedImageFetcherTest : public testing::Test {
 
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
     database_ =
-        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
+        std::make_unique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
     request_context_getter_ = scoped_refptr<net::TestURLRequestContextGetter>(
         new net::TestURLRequestContextGetter(
             scoped_task_environment_.GetMainThreadTaskRunner()));
 
-    auto decoder = base::MakeUnique<FakeImageDecoder>();
+    auto decoder = std::make_unique<FakeImageDecoder>();
     fake_image_decoder_ = decoder.get();
-    cached_image_fetcher_ = base::MakeUnique<ntp_snippets::CachedImageFetcher>(
-        base::MakeUnique<image_fetcher::ImageFetcherImpl>(
+    cached_image_fetcher_ = std::make_unique<ntp_snippets::CachedImageFetcher>(
+        std::make_unique<image_fetcher::ImageFetcherImpl>(
             std::move(decoder), request_context_getter_.get()),
         &pref_service_, database_.get());
     RunUntilIdle();

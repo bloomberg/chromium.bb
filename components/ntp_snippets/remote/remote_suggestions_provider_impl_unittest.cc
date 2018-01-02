@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -335,12 +334,12 @@ base::Time GetDummyNow() {
 class RemoteSuggestionsProviderImplTest : public ::testing::Test {
  public:
   RemoteSuggestionsProviderImplTest()
-      : category_ranker_(base::MakeUnique<ConstantCategoryRanker>()),
+      : category_ranker_(std::make_unique<ConstantCategoryRanker>()),
         user_classifier_(/*pref_service=*/nullptr,
                          base::DefaultClock::GetInstance()),
         mock_suggestions_fetcher_(nullptr),
         image_fetcher_(nullptr),
-        scheduler_(base::MakeUnique<NiceMock<MockScheduler>>()),
+        scheduler_(std::make_unique<NiceMock<MockScheduler>>()),
         database_(nullptr),
         timer_mock_task_runner_(
             (new TestMockTimeTaskRunner(GetDummyNow(),
@@ -380,21 +379,21 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
       bool use_mock_remote_suggestions_status_service) {
     utils_.ResetSigninManager();
     auto mock_suggestions_fetcher =
-        base::MakeUnique<StrictMock<MockRemoteSuggestionsFetcher>>();
+        std::make_unique<StrictMock<MockRemoteSuggestionsFetcher>>();
     mock_suggestions_fetcher_ = mock_suggestions_fetcher.get();
 
     std::unique_ptr<StrictMock<MockPrefetchedPagesTracker>>
         mock_prefetched_pages_tracker;
     if (use_mock_prefetched_pages_tracker) {
       mock_prefetched_pages_tracker =
-          base::MakeUnique<StrictMock<MockPrefetchedPagesTracker>>();
+          std::make_unique<StrictMock<MockPrefetchedPagesTracker>>();
     }
     mock_prefetched_pages_tracker_ = mock_prefetched_pages_tracker.get();
 
     std::unique_ptr<FakeBreakingNewsListener> fake_breaking_news_listener;
     if (use_fake_breaking_news_listener) {
       fake_breaking_news_listener =
-          base::MakeUnique<FakeBreakingNewsListener>();
+          std::make_unique<FakeBreakingNewsListener>();
     }
     fake_breaking_news_listener_ = fake_breaking_news_listener.get();
 
@@ -402,37 +401,37 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         remote_suggestions_status_service;
     if (use_mock_remote_suggestions_status_service) {
       auto mock_remote_suggestions_status_service =
-          base::MakeUnique<StrictMock<MockRemoteSuggestionsStatusService>>();
+          std::make_unique<StrictMock<MockRemoteSuggestionsStatusService>>();
       EXPECT_CALL(*mock_remote_suggestions_status_service, Init(_))
           .WillOnce(SaveArg<0>(&status_change_callback_));
       remote_suggestions_status_service =
           std::move(mock_remote_suggestions_status_service);
     } else {
       remote_suggestions_status_service =
-          base::MakeUnique<RemoteSuggestionsStatusServiceImpl>(
+          std::make_unique<RemoteSuggestionsStatusServiceImpl>(
               utils_.fake_signin_manager(), utils_.pref_service(),
               std::string());
     }
     remote_suggestions_status_service_ =
         remote_suggestions_status_service.get();
 
-    auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
+    auto image_fetcher = std::make_unique<NiceMock<MockImageFetcher>>();
 
     image_fetcher_ = image_fetcher.get();
     EXPECT_CALL(*image_fetcher, SetImageFetcherDelegate(_));
     ON_CALL(*image_fetcher, GetImageDecoder())
         .WillByDefault(Return(&image_decoder_));
     EXPECT_FALSE(observer_);
-    observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
+    observer_ = std::make_unique<FakeContentSuggestionsProviderObserver>();
     auto database =
-        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
+        std::make_unique<RemoteSuggestionsDatabase>(database_dir_.GetPath());
     database_ = database.get();
 
     auto fetch_timeout_timer =
-        base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
+        std::make_unique<base::OneShotTimer>(tick_clock_.get());
     fetch_timeout_timer->SetTaskRunner(timer_mock_task_runner_);
 
-    return base::MakeUnique<RemoteSuggestionsProviderImpl>(
+    return std::make_unique<RemoteSuggestionsProviderImpl>(
         observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
         scheduler_.get(), std::move(mock_suggestions_fetcher),
         std::move(image_fetcher), std::move(database),
@@ -444,7 +443,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   std::unique_ptr<RemoteSuggestionsProviderImpl>
   MakeSuggestionsProviderWithoutInitializationWithStrictScheduler() {
-    scheduler_ = base::MakeUnique<StrictMock<MockScheduler>>();
+    scheduler_ = std::make_unique<StrictMock<MockScheduler>>();
     return MakeSuggestionsProviderWithoutInitialization(
         /*use_mock_prefetched_pages_tracker=*/false,
         /*use_fake_breaking_news_listener=*/false,
@@ -912,7 +911,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ExperimentalCategoryInfo) {
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
-  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  auto mock_ranker = std::make_unique<MockCategoryRanker>();
   MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
   SetCategoryRanker(std::move(mock_ranker));
   std::vector<FetchedCategory> fetched_categories;
@@ -953,7 +952,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, AddRemoteCategoriesToCategoryRanker) {
 TEST_F(RemoteSuggestionsProviderImplTest,
        AddRemoteCategoriesToCategoryRankerRelativeToArticles) {
   SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(true);
-  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  auto mock_ranker = std::make_unique<MockCategoryRanker>();
   MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
   SetCategoryRanker(std::move(mock_ranker));
   std::vector<FetchedCategory> fetched_categories;
@@ -1009,7 +1008,7 @@ TEST_F(
     RemoteSuggestionsProviderImplTest,
     AddRemoteCategoriesToCategoryRankerRelativeToArticlesWithArticlesAbsent) {
   SetOrderNewRemoteCategoriesBasedOnArticlesCategoryParam(true);
-  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  auto mock_ranker = std::make_unique<MockCategoryRanker>();
   MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
   SetCategoryRanker(std::move(mock_ranker));
   std::vector<FetchedCategory> fetched_categories;
@@ -1116,7 +1115,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, PersistRemoteCategoryOrder) {
 
   // We manually recreate the provider to simulate Chrome restart and enforce a
   // mock ranker.
-  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  auto mock_ranker = std::make_unique<MockCategoryRanker>();
   MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
   SetCategoryRanker(std::move(mock_ranker));
   // Ensure that the order is not fetched.

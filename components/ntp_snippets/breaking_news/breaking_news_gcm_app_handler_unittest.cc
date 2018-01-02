@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -240,9 +239,9 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
     // Our app handler obtains InstanceID through InstanceIDDriver. We mock
     // InstanceIDDriver and return MockInstanceID through it.
     mock_instance_id_driver_ =
-        base::MakeUnique<StrictMock<MockInstanceIDDriver>>();
-    mock_instance_id_ = base::MakeUnique<StrictMock<MockInstanceID>>();
-    mock_gcm_driver_ = base::MakeUnique<StrictMock<MockGCMDriver>>();
+        std::make_unique<StrictMock<MockInstanceIDDriver>>();
+    mock_instance_id_ = std::make_unique<StrictMock<MockInstanceID>>();
+    mock_gcm_driver_ = std::make_unique<StrictMock<MockGCMDriver>>();
     BreakingNewsGCMAppHandler::RegisterProfilePrefs(
         utils_.pref_service()->registry());
 
@@ -261,18 +260,18 @@ class BreakingNewsGCMAppHandlerTest : public testing::Test {
     // TODO(vitaliii): Initialize MockSubscriptionManager in the constructor, so
     // that one could set up expectations before creating the handler.
     auto wrapped_mock_subscription_manager =
-        base::MakeUnique<NiceMock<MockSubscriptionManager>>();
+        std::make_unique<NiceMock<MockSubscriptionManager>>();
     mock_subscription_manager_ = wrapped_mock_subscription_manager.get();
 
     auto token_validation_timer =
-        base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
+        std::make_unique<base::OneShotTimer>(tick_clock_.get());
     token_validation_timer->SetTaskRunner(timer_mock_task_runner);
 
     auto forced_subscription_timer =
-        base::MakeUnique<base::OneShotTimer>(tick_clock_.get());
+        std::make_unique<base::OneShotTimer>(tick_clock_.get());
     forced_subscription_timer->SetTaskRunner(timer_mock_task_runner);
 
-    return base::MakeUnique<BreakingNewsGCMAppHandler>(
+    return std::make_unique<BreakingNewsGCMAppHandler>(
         mock_gcm_driver_.get(), mock_instance_id_driver_.get(), pref_service(),
         std::move(wrapped_mock_subscription_manager), base::Bind(&ParseJson),
         clock_.get(), std::move(token_validation_timer),

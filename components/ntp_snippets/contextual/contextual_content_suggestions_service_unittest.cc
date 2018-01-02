@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
@@ -123,11 +122,11 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
   ContextualContentSuggestionsServiceTest() {
     RequestThrottler::RegisterProfilePrefs(pref_service_.registry());
     std::unique_ptr<FakeContextualSuggestionsFetcher> fetcher =
-        base::MakeUnique<FakeContextualSuggestionsFetcher>();
+        std::make_unique<FakeContextualSuggestionsFetcher>();
     fetcher_ = fetcher.get();
-    source_ = base::MakeUnique<ContextualContentSuggestionsService>(
+    source_ = std::make_unique<ContextualContentSuggestionsService>(
         std::move(fetcher),
-        base::MakeUnique<FakeCachedImageFetcher>(&pref_service_),
+        std::make_unique<FakeCachedImageFetcher>(&pref_service_),
         std::unique_ptr<RemoteSuggestionsDatabase>());
   }
 

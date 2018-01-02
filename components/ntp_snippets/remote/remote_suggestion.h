@@ -128,7 +128,7 @@ class RemoteSuggestion {
  private:
   RemoteSuggestion(const std::vector<std::string>& ids, int remote_category_id);
 
-  // base::MakeUnique doesn't work if the ctor is private.
+  // std::make_unique doesn't work if the ctor is private.
   static std::unique_ptr<RemoteSuggestion> MakeUnique(
       const std::vector<std::string>& ids,
       int remote_category_id);

@@ -63,7 +63,7 @@ class ContextualSuggestion {
  private:
   ContextualSuggestion(const std::string& id);
 
-  // base::MakeUnique doesn't work if the ctor is private.
+  // std::make_unique doesn't work if the ctor is private.
   static std::unique_ptr<ContextualSuggestion> MakeUnique(
       const std::string& id);
 

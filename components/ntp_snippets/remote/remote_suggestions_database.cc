@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/leveldb_proto/proto_database_impl.h"
@@ -122,7 +121,7 @@ void RemoteSuggestionsDatabase::SaveSnippets(
 }
 
 void RemoteSuggestionsDatabase::DeleteSnippet(const std::string& snippet_id) {
-  DeleteSnippets(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
+  DeleteSnippets(std::make_unique<std::vector<std::string>>(1, snippet_id));
 }
 
 void RemoteSuggestionsDatabase::DeleteSnippets(
@@ -158,20 +157,20 @@ void RemoteSuggestionsDatabase::SaveImage(const std::string& snippet_id,
   entries_to_save->emplace_back(snippet_id, std::move(image_proto));
 
   image_database_->UpdateEntries(
-      std::move(entries_to_save), base::MakeUnique<std::vector<std::string>>(),
+      std::move(entries_to_save), std::make_unique<std::vector<std::string>>(),
       base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteSuggestionsDatabase::DeleteImage(const std::string& snippet_id) {
-  DeleteImages(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
+  DeleteImages(std::make_unique<std::vector<std::string>>(1, snippet_id));
 }
 
 void RemoteSuggestionsDatabase::DeleteImages(
     std::unique_ptr<std::vector<std::string>> snippet_ids) {
   DCHECK(IsInitialized());
   image_database_->UpdateEntries(
-      base::MakeUnique<ImageKeyEntryVector>(), std::move(snippet_ids),
+      std::make_unique<ImageKeyEntryVector>(), std::move(snippet_ids),
       base::Bind(&RemoteSuggestionsDatabase::OnImageDatabaseSaved,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -343,7 +342,7 @@ void RemoteSuggestionsDatabase::DeleteUnreferencedImages(
     OnDatabaseError();
     return;
   }
-  auto keys_to_remove = base::MakeUnique<std::vector<std::string>>();
+  auto keys_to_remove = std::make_unique<std::vector<std::string>>();
   for (const std::string& key : *image_keys) {
     if (references->count(key) == 0) {
       keys_to_remove->emplace_back(key);

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -506,7 +505,7 @@ void ClickBasedCategoryRanker::StoreOrderToPrefs(
     const std::vector<RankedCategory>& ordered_categories) {
   base::ListValue list;
   for (const RankedCategory& category : ordered_categories) {
-    auto dictionary = base::MakeUnique<base::DictionaryValue>();
+    auto dictionary = std::make_unique<base::DictionaryValue>();
     dictionary->SetInteger(kCategoryIdKey, category.category.id());
     dictionary->SetInteger(kClicksKey, category.clicks);
     dictionary->SetString(

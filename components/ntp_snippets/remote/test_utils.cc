@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
@@ -48,7 +47,7 @@ syncer::ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
 }
 
 RemoteSuggestionsTestUtils::RemoteSuggestionsTestUtils()
-    : pref_service_(base::MakeUnique<TestingPrefServiceSyncable>()) {
+    : pref_service_(std::make_unique<TestingPrefServiceSyncable>()) {
   AccountTrackerService::RegisterPrefs(pref_service_->registry());
 
 #if defined(OS_CHROMEOS)
@@ -59,11 +58,11 @@ RemoteSuggestionsTestUtils::RemoteSuggestionsTestUtils()
   SigninManager::RegisterPrefs(pref_service_->registry());
 #endif  // OS_CHROMEOS
 
-  token_service_ = base::MakeUnique<FakeProfileOAuth2TokenService>();
-  signin_client_ = base::MakeUnique<TestSigninClient>(pref_service_.get());
-  account_tracker_ = base::MakeUnique<AccountTrackerService>();
+  token_service_ = std::make_unique<FakeProfileOAuth2TokenService>();
+  signin_client_ = std::make_unique<TestSigninClient>(pref_service_.get());
+  account_tracker_ = std::make_unique<AccountTrackerService>();
   account_tracker_->Initialize(signin_client_.get());
-  fake_sync_service_ = base::MakeUnique<FakeSyncService>();
+  fake_sync_service_ = std::make_unique<FakeSyncService>();
 
   ResetSigninManager();
 }
@@ -72,10 +71,10 @@ RemoteSuggestionsTestUtils::~RemoteSuggestionsTestUtils() = default;
 
 void RemoteSuggestionsTestUtils::ResetSigninManager() {
 #if defined(OS_CHROMEOS)
-  fake_signin_manager_ = base::MakeUnique<FakeSigninManagerBase>(
+  fake_signin_manager_ = std::make_unique<FakeSigninManagerBase>(
       signin_client_.get(), account_tracker_.get());
 #else
-  fake_signin_manager_ = base::MakeUnique<FakeSigninManager>(
+  fake_signin_manager_ = std::make_unique<FakeSigninManager>(
       signin_client_.get(), token_service_.get(), account_tracker_.get(),
       /*cookie_manager_service=*/nullptr);
 #endif

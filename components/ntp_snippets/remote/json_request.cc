@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -109,7 +108,7 @@ std::string ISO639FromPosixLocale(const std::string& locale) {
 
 void AppendLanguageInfoToList(base::ListValue* list,
                               const UrlLanguageHistogram::LanguageInfo& info) {
-  auto lang = base::MakeUnique<base::DictionaryValue>();
+  auto lang = std::make_unique<base::DictionaryValue>();
   lang->SetString("language", info.language_code);
   lang->SetDouble("frequency", info.frequency);
   list->Append(std::move(lang));
@@ -223,7 +222,7 @@ std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
   DCHECK(!url_.is_empty());
   DCHECK(url_request_context_getter_);
   DCHECK(clock_);
-  auto request = base::MakeUnique<JsonRequest>(params_.exclusive_category,
+  auto request = std::make_unique<JsonRequest>(params_.exclusive_category,
                                                clock_, parse_json_callback_);
   std::string body = BuildBody();
   std::string headers = BuildHeaders();
@@ -302,7 +301,7 @@ std::string JsonRequest::Builder::BuildHeaders() const {
 }
 
 std::string JsonRequest::Builder::BuildBody() const {
-  auto request = base::MakeUnique<base::DictionaryValue>();
+  auto request = std::make_unique<base::DictionaryValue>();
   std::string user_locale = PosixLocaleFromBCP47Language(params_.language_code);
   if (!user_locale.empty()) {
     request->SetString("uiLanguage", user_locale);
@@ -312,7 +311,7 @@ std::string JsonRequest::Builder::BuildBody() const {
                                      ? "USER_ACTION"
                                      : "BACKGROUND_PREFETCH");
 
-  auto excluded = base::MakeUnique<base::ListValue>();
+  auto excluded = std::make_unique<base::ListValue>();
   for (const auto& id : params_.excluded_ids) {
     excluded->AppendString(id);
   }
@@ -326,7 +325,7 @@ std::string JsonRequest::Builder::BuildBody() const {
   language::UrlLanguageHistogram::LanguageInfo other_top_language;
   PrepareLanguages(&ui_language, &other_top_language);
   if (ui_language.frequency != 0 || other_top_language.frequency != 0) {
-    auto language_list = base::MakeUnique<base::ListValue>();
+    auto language_list = std::make_unique<base::ListValue>();
     if (ui_language.frequency > 0) {
       AppendLanguageInfoToList(language_list.get(), ui_language);
     }

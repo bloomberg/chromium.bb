@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -54,7 +53,7 @@ class BookmarkSuggestionsProviderTest : public ::testing::Test {
                     CategoryStatus::AVAILABLE))
         .RetiresOnSaturation();
     provider_ =
-        base::MakeUnique<BookmarkSuggestionsProvider>(&observer_, model_.get());
+        std::make_unique<BookmarkSuggestionsProvider>(&observer_, model_.get());
     scoped_task_environment_.RunUntilIdle();
   }
 

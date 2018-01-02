@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -43,7 +42,7 @@ class UserClassifierTest : public testing::Test {
     test_clock_.SetNow(now);
 
     user_classifier_ =
-        base::MakeUnique<UserClassifier>(&test_prefs_, &test_clock_);
+        std::make_unique<UserClassifier>(&test_prefs_, &test_clock_);
     return user_classifier_.get();
   }
 
