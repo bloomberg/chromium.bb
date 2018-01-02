@@ -3576,8 +3576,5 @@ crbug.com/795250 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gestur
 # Does not work on Mac
 crbug.com/793771 [ Mac ] virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Skip ]
 
-# Slight Skia rendering change - drawing zero length line with round caps as circle
-crbug.com/796913 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ NeedsManualRebaseline ]
-
 crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
 crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
