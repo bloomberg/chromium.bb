@@ -234,7 +234,7 @@ TEST(NetworkQualityStoreTest, TestLRUCacheMaximumSize) {
   base::SimpleTestTickClock tick_clock;
 
   // Add more networks than the maximum size of the cache.
-  const size_t network_count = 11;
+  const size_t network_count = 21;
 
   nqe::internal::CachedNetworkQuality read_network_quality(
       tick_clock.NowTicks(),
