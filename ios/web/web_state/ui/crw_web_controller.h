@@ -15,6 +15,8 @@
 
 namespace web {
 
+enum class NavigationInitiationType;
+
 // Page load phases.
 enum LoadPhase {
   // In the LOAD_REQUESTED phase, the system predicts a page change is going to
@@ -186,15 +188,6 @@ class WebStateImpl;
 // complete it will be handled internally.
 - (void)restoreStateFromHistory;
 
-// Updates the HTML5 history state of the page using the current NavigationItem.
-// For same-document navigations and navigations affected by
-// window.history.[push/replace]State(), the URL and serialized state object
-// will be updated to the current NavigationItem's values.  A popState event
-// will be triggered for all same-document navigations.  Additionally, a
-// hashchange event will be triggered for same-document navigations where the
-// only difference between the current and previous URL is the fragment.
-- (void)updateHTML5HistoryState;
-
 // Notifies the CRWWebController that it has been shown.
 - (void)wasShown;
 
@@ -225,6 +218,13 @@ class WebStateImpl;
 
 // Returns the native controller (if any) current mananging the content.
 - (id<CRWNativeContent>)nativeController;
+
+// Called when NavigationManager has completed go to index same-document
+// navigation. Updates HTML5 history state, current document URL and sends
+// approprivate navigation and loading WebStateObserver callbacks.
+- (void)didFinishGoToIndexSameDocumentNavigationWithType:
+    (web::NavigationInitiationType)type;
+
 @end
 
 #pragma mark Testing

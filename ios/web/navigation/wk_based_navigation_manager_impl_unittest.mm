@@ -70,7 +70,8 @@ class MockNavigationManagerDelegate : public NavigationManagerDelegate {
 
   MOCK_METHOD0(ClearTransientContent, void());
   MOCK_METHOD0(RecordPageStateInNavigationItem, void());
-  MOCK_METHOD0(UpdateHtml5HistoryState, void());
+  MOCK_METHOD1(OnGoToIndexSameDocumentNavigation,
+               void(NavigationInitiationType type));
   MOCK_METHOD0(WillChangeUserAgentType, void());
   MOCK_METHOD0(LoadCurrentItem, void());
   MOCK_METHOD0(LoadIfNecessary, void());

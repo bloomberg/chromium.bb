@@ -276,7 +276,8 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // NavigationManagerDelegate:
   void ClearTransientContent() override;
   void RecordPageStateInNavigationItem() override;
-  void UpdateHtml5HistoryState() override;
+  void OnGoToIndexSameDocumentNavigation(
+      NavigationInitiationType type) override;
   void WillChangeUserAgentType() override;
   void LoadCurrentItem() override;
   void LoadIfNecessary() override;

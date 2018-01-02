@@ -113,7 +113,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // Returns the pending navigation item in the main frame.
   NavigationItemImpl* GetPendingItemImpl() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
-  void FinishGoToIndex(int index) override;
+  void FinishGoToIndex(int index,
+                       NavigationInitiationType initiation_type) override;
 
   // Returns the absolute index of WKBackForwardList's |currentItem|. Returns -1
   // if |currentItem| is nil.

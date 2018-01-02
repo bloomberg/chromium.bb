@@ -590,7 +590,7 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Navigates forwards or backwards by |delta| pages. No-op if delta is out of
 // bounds. Reloads if delta is 0.
 // TODO(crbug.com/661316): Move this method to NavigationManager.
-- (void)goDelta:(int)delta;
+- (void)rendererInitiatedGoDelta:(int)delta;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
 // Acts on a single message from the JS object, parsed from JSON into a
@@ -624,6 +624,14 @@ registerLoadRequestForURL:(const GURL&)URL
 // Maps WKNavigationType to ui::PageTransition.
 - (ui::PageTransition)pageTransitionFromNavigationType:
     (WKNavigationType)navigationType;
+// Updates the HTML5 history state of the page using the current NavigationItem.
+// For same-document navigations and navigations affected by
+// window.history.[push/replace]State(), the URL and serialized state object
+// will be updated to the current NavigationItem's values.  A popState event
+// will be triggered for all same-document navigations.  Additionally, a
+// hashchange event will be triggered for same-document navigations where the
+// only difference between the current and previous URL is the fragment.
+- (void)updateHTML5HistoryState;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
@@ -1972,7 +1980,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
 }
 
-- (void)goDelta:(int)delta {
+- (void)rendererInitiatedGoDelta:(int)delta {
   if (_isBeingDestroyed)
     return;
 
@@ -1983,7 +1991,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   if (self.navigationManagerImpl->CanGoToOffset(delta)) {
     int index = self.navigationManagerImpl->GetIndexForOffset(delta);
-    self.navigationManagerImpl->GoToIndex(index);
+    self.navigationManagerImpl->GoToIndex(
+        index, web::NavigationInitiationType::RENDERER_INITIATED);
   }
 }
 
@@ -2478,7 +2487,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                context:(NSDictionary*)context {
   if (![context[kIsMainFrame] boolValue])
     return NO;
-  [self goDelta:-1];
+  [self rendererInitiatedGoDelta:-1];
   return YES;
 }
 
@@ -2486,7 +2495,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
                                   context:(NSDictionary*)context {
   if (![context[kIsMainFrame] boolValue])
     return NO;
-  [self goDelta:1];
+  [self rendererInitiatedGoDelta:1];
   return YES;
 }
 
@@ -2496,7 +2505,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return NO;
   double delta = 0;
   if (message->GetDouble("value", &delta)) {
-    [self goDelta:static_cast<int>(delta)];
+    [self rendererInitiatedGoDelta:static_cast<int>(delta)];
     return YES;
   }
   return NO;
@@ -4532,6 +4541,22 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self forgetNullWKNavigation:navigation];
     [self didFinishNavigation:navigation];
   }
+}
+
+- (void)didFinishGoToIndexSameDocumentNavigationWithType:
+    (web::NavigationInitiationType)type {
+  GURL URL = _webStateImpl->GetLastCommittedURL();
+  std::unique_ptr<web::NavigationContextImpl> context =
+      web::NavigationContextImpl::CreateNavigationContext(
+          _webStateImpl, URL, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          type == web::NavigationInitiationType::RENDERER_INITIATED);
+  context->SetIsSameDocument(true);
+  _webStateImpl->SetIsLoading(true);
+  _webStateImpl->OnNavigationStarted(context.get());
+  [self updateHTML5HistoryState];
+  [self setDocumentURL:URL];
+  _webStateImpl->OnNavigationFinished(context.get());
+  [self didFinishWithURL:URL loadSuccess:YES];
 }
 
 - (void)webView:(WKWebView*)webView

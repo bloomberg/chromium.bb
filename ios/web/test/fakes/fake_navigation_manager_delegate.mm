@@ -14,7 +14,8 @@ namespace web {
 
 void FakeNavigationManagerDelegate::ClearTransientContent() {}
 void FakeNavigationManagerDelegate::RecordPageStateInNavigationItem() {}
-void FakeNavigationManagerDelegate::UpdateHtml5HistoryState() {}
+void FakeNavigationManagerDelegate::OnGoToIndexSameDocumentNavigation(
+    NavigationInitiationType type) {}
 void FakeNavigationManagerDelegate::WillChangeUserAgentType() {}
 void FakeNavigationManagerDelegate::LoadCurrentItem() {}
 void FakeNavigationManagerDelegate::LoadIfNecessary() {}

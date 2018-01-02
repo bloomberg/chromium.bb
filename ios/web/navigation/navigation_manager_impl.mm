@@ -175,7 +175,9 @@ void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
   }
 }
 
-void NavigationManagerImpl::GoToIndex(int index) {
+void NavigationManagerImpl::GoToIndex(
+    int index,
+    NavigationInitiationType initiation_type) {
   if (index < 0 || index >= GetItemCount()) {
     NOTREACHED();
     return;
@@ -200,7 +202,11 @@ void NavigationManagerImpl::GoToIndex(int index) {
     delegate_->WillChangeUserAgentType();
   }
 
-  FinishGoToIndex(index);
+  FinishGoToIndex(index, initiation_type);
+}
+
+void NavigationManagerImpl::GoToIndex(int index) {
+  GoToIndex(index, NavigationInitiationType::USER_INITIATED);
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {

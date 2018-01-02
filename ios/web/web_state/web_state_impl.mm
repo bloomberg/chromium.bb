@@ -768,8 +768,9 @@ void WebStateImpl::RecordPageStateInNavigationItem() {
   [web_controller_ recordStateInHistory];
 }
 
-void WebStateImpl::UpdateHtml5HistoryState() {
-  [web_controller_ updateHTML5HistoryState];
+void WebStateImpl::OnGoToIndexSameDocumentNavigation(
+    NavigationInitiationType type) {
+  [web_controller_ didFinishGoToIndexSameDocumentNavigationWithType:type];
 }
 
 void WebStateImpl::WillChangeUserAgentType() {

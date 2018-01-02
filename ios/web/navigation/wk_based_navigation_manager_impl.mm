@@ -454,7 +454,9 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
   return transient_item_.get();
 }
 
-void WKBasedNavigationManagerImpl::FinishGoToIndex(int index) {
+void WKBasedNavigationManagerImpl::FinishGoToIndex(
+    int index,
+    NavigationInitiationType type) {
   DiscardNonCommittedItems();
   NavigationItem* item = GetItemAtIndex(index);
   item->SetTransitionType(ui::PageTransitionFromInt(
