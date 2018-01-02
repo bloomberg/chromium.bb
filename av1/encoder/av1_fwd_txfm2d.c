@@ -647,21 +647,21 @@ static const TXFM_1D_CFG *fwd_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES_ALL] = {
   },
   // IDENTITY
   {
-      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_8,
-      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4,     &fwd_txfm_1d_row_cfg_identity_8,
+      &fwd_txfm_1d_row_cfg_identity_16,    &fwd_txfm_1d_row_cfg_identity_32,
 #if CONFIG_TX64X64
       &fwd_txfm_1d_row_cfg_identity_64,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_8,
-      &fwd_txfm_1d_row_cfg_identity_8,  &fwd_txfm_1d_row_cfg_identity_16,
-      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4x8,   &fwd_txfm_1d_row_cfg_identity_8x4,
+      &fwd_txfm_1d_row_cfg_identity_8x16,  &fwd_txfm_1d_row_cfg_identity_16x8,
+      &fwd_txfm_1d_row_cfg_identity_16x32, &fwd_txfm_1d_row_cfg_identity_32x16,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_row_cfg_identity_32, &fwd_txfm_1d_row_cfg_identity_64,
+      &fwd_txfm_1d_row_cfg_identity_32x64, &fwd_txfm_1d_row_cfg_identity_64x32,
 #endif  // CONFIG_TX64X64
-      &fwd_txfm_1d_row_cfg_identity_4,  &fwd_txfm_1d_row_cfg_identity_16,
-      &fwd_txfm_1d_row_cfg_identity_8,  &fwd_txfm_1d_row_cfg_identity_32,
+      &fwd_txfm_1d_row_cfg_identity_4x16,  &fwd_txfm_1d_row_cfg_identity_16x4,
+      &fwd_txfm_1d_row_cfg_identity_8x32,  &fwd_txfm_1d_row_cfg_identity_32x8,
 #if CONFIG_TX64X64
-      &fwd_txfm_1d_row_cfg_identity_16, &fwd_txfm_1d_row_cfg_identity_64,
+      &fwd_txfm_1d_row_cfg_identity_16x64, &fwd_txfm_1d_row_cfg_identity_64x16,
 #endif  // CONFIG_TX64X64
   },
 };
