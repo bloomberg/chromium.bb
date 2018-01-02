@@ -818,7 +818,6 @@ const aom_prob default_nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS] = {
       128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 } },
 #endif
 };
-#endif  // CONFIG_LV_MAP_MULTI
 
 static const aom_prob
     default_eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS] = {
@@ -845,6 +844,7 @@ static const aom_prob
           128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 } }
 #endif
     };
+#endif  // CONFIG_LV_MAP_MULTI
 
 static const aom_prob
     default_eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS] = {
