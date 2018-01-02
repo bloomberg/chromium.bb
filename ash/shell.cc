@@ -25,6 +25,7 @@
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_error_observer_chromeos.h"
+#include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/projecting_observer_chromeos.h"
@@ -32,7 +33,6 @@
 #include "ash/display/screen_ash.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/screen_position_controller.h"
-#include "ash/display/shutdown_observer_chromeos.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
@@ -141,7 +141,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -786,21 +785,16 @@ Shell::~Shell() {
   screen_position_controller_.reset();
 
   display_color_manager_.reset();
+  projecting_observer_.reset();
+
   if (display_change_observer_)
     display_configurator_->RemoveObserver(display_change_observer_.get());
   if (display_error_observer_)
     display_configurator_->RemoveObserver(display_error_observer_.get());
-  if (projecting_observer_) {
-    display_configurator_->RemoveObserver(projecting_observer_.get());
-    RemoveShellObserver(projecting_observer_.get());
-  }
   display_change_observer_.reset();
-  shutdown_observer_.reset();
+  display_shutdown_observer_.reset();
 
   PowerStatus::Shutdown();
-
-  // Ensure that DBusThreadManager outlives this Shell.
-  DCHECK(chromeos::DBusThreadManager::IsInitialized());
 
   // Needs to happen right before |instance_| is reset.
   shell_port_.reset();
@@ -881,65 +875,19 @@ void Shell::Init(ui::ContextFactory* context_factory,
         base::WrapUnique(native_cursor_manager_));
   }
 
+  // TODO(stevenjb): ChromeShellDelegate::PreInit currently handles
+  // DisplayPreference initialization, required for InitializeDisplayManager.
+  // Before we can move that code into ash/display where it belongs, we need to
+  // wait for |lcoal_state_| to be set in OnLocalStatePrefServiceInitialized
+  // before initializing DisplayPreferences (and therefore DisplayManager).
+  // http://crbug.com/678949.
   shell_delegate_->PreInit();
-  bool display_initialized = display_manager_->InitFromCommandLine();
-  if (!display_initialized && config != Config::CLASSIC) {
-    // Run display configuration off device in mus mode.
-    display_manager_->set_configure_displays(true);
-    display_configurator_->set_configure_display(true);
-  }
-  display_configuration_controller_ =
-      std::make_unique<DisplayConfigurationController>(
-          display_manager_.get(), window_tree_host_manager_.get());
-  display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
-                              false);
 
-  // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
-  chromeos::DBusThreadManager* dbus_thread_manager =
-      chromeos::DBusThreadManager::Get();
-  projecting_observer_.reset(
-      new ProjectingObserver(dbus_thread_manager->GetPowerManagerClient()));
-  display_configurator_->AddObserver(projecting_observer_.get());
-  AddShellObserver(projecting_observer_.get());
-
-  if (!display_initialized) {
-    if (config != Config::CLASSIC && !chromeos::IsRunningAsSystemCompositor()) {
-      display::mojom::DevDisplayControllerPtr controller;
-      shell_delegate_->GetShellConnector()->BindInterface(
-          ui::mojom::kServiceName, &controller);
-      display_manager_->SetDevDisplayController(std::move(controller));
-    }
-
-    if (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor()) {
-      display_change_observer_ =
-          std::make_unique<display::DisplayChangeObserver>(
-              display_configurator_.get(), display_manager_.get());
-
-      shutdown_observer_ =
-          std::make_unique<ShutdownObserver>(display_configurator_.get());
-
-      // Register |display_change_observer_| first so that the rest of
-      // observer gets invoked after the root windows are configured.
-      display_configurator_->AddObserver(display_change_observer_.get());
-      display_error_observer_.reset(new DisplayErrorObserver());
-      display_configurator_->AddObserver(display_error_observer_.get());
-      display_configurator_->set_state_controller(
-          display_change_observer_.get());
-      display_configurator_->set_mirroring_controller(display_manager_.get());
-      display_configurator_->ForceInitialConfigure();
-      display_initialized = true;
-    }
-  }
-
-  display_color_manager_ =
-      std::make_unique<DisplayColorManager>(display_configurator_.get());
-
-  if (!display_initialized)
-    display_manager_->InitDefaultDisplay();
+  InitializeDisplayManager();
 
   if (config == Config::CLASSIC) {
-    display_manager_->RefreshFontParams();
-
+    // This will initialize aura::Env which requires |display_manager_| to
+    // be initialized first.
     aura::Env::GetInstance()->set_context_factory(context_factory);
     aura::Env::GetInstance()->set_context_factory_private(
         context_factory_private);
@@ -1159,6 +1107,63 @@ void Shell::Init(ui::ContextFactory* context_factory,
     observer.OnShellInitialized();
 
   user_metrics_recorder_->OnShellInitialized();
+}
+
+void Shell::InitializeDisplayManager() {
+  const Config config = shell_port_->GetAshConfig();
+  bool display_initialized = display_manager_->InitFromCommandLine();
+
+  if (!display_initialized && config != Config::CLASSIC) {
+    // Run display configuration off device in mus mode.
+    display_manager_->set_configure_displays(true);
+    display_configurator_->set_configure_display(true);
+  }
+  display_configuration_controller_ =
+      std::make_unique<DisplayConfigurationController>(
+          display_manager_.get(), window_tree_host_manager_.get());
+  display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
+                              false);
+
+  projecting_observer_ =
+      std::make_unique<ProjectingObserver>(display_configurator_.get());
+
+  if (!display_initialized) {
+    if (config != Config::CLASSIC && !chromeos::IsRunningAsSystemCompositor()) {
+      display::mojom::DevDisplayControllerPtr controller;
+      shell_delegate_->GetShellConnector()->BindInterface(
+          ui::mojom::kServiceName, &controller);
+      display_manager_->SetDevDisplayController(std::move(controller));
+    }
+
+    if (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor()) {
+      display_change_observer_ =
+          std::make_unique<display::DisplayChangeObserver>(
+              display_configurator_.get(), display_manager_.get());
+
+      display_shutdown_observer_ = std::make_unique<DisplayShutdownObserver>(
+          display_configurator_.get());
+
+      // Register |display_change_observer_| first so that the rest of
+      // observer gets invoked after the root windows are configured.
+      display_configurator_->AddObserver(display_change_observer_.get());
+      display_error_observer_.reset(new DisplayErrorObserver());
+      display_configurator_->AddObserver(display_error_observer_.get());
+      display_configurator_->set_state_controller(
+          display_change_observer_.get());
+      display_configurator_->set_mirroring_controller(display_manager_.get());
+      display_configurator_->ForceInitialConfigure();
+      display_initialized = true;
+    }
+  }
+
+  display_color_manager_ =
+      std::make_unique<DisplayColorManager>(display_configurator_.get());
+
+  if (!display_initialized)
+    display_manager_->InitDefaultDisplay();
+
+  if (config == Config::CLASSIC)
+    display_manager_->RefreshFontParams();
 }
 
 void Shell::InitRootWindow(aura::Window* root_window) {
