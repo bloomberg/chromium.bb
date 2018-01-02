@@ -28,14 +28,31 @@
       #website-title {
         -webkit-margin-start: 20px;
         flex: 1;
-        overflow: hidden;
         text-decoration: none;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+      }
+
+      :host(:focus) #website-title,
+      :host([is-selected-item_]) #website-title {
+        flex: 0 auto;
+      }
+
+      #website-url {
+        -webkit-margin-start: 20px;
+        /* Transparent version of --secondary-text-color */
+        color: rgba(0, 0, 0, 0.54);
+        display: none;
+        flex: 1;
+        min-width: 100px;
+      }
+
+      :host(:focus) #website-url,
+      :host([is-selected-item_]) #website-url {
+        display: block;
       }
 
       #icon {
         color: var(--secondary-text-color);
+        flex: none;
       }
 
       button.more-vert-button {
@@ -43,8 +60,11 @@
       }
     </style>
     <div id="icon"></div>
-    <div id="website-title">
+    <div id="website-title" class="elided-text" title="[[item_.title]]">
       [[item_.title]]
+    </div>
+    <div id="website-url" class="elided-text" title="[[item_.url]]">
+      [[item_.url]]
     </div>
     <button id="menuButton"
         is="paper-icon-button-light"
