@@ -441,7 +441,7 @@ void U2fBleConnection::DeviceChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (adapter != adapter_ || device->GetAddress() != address_)
     return;
-  if (!device->IsGattConnected()) {
+  if (connection_ && !device->IsGattConnected()) {
     DLOG(ERROR) << "GATT Disconnected: " << device->GetAddress();
     OnConnectionError();
   }

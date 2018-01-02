@@ -51,7 +51,7 @@ class U2fBleDevice : public U2fDevice {
   base::WeakPtr<U2fDevice> GetWeakPtr() override;
 
  private:
-  // INIT --> CONNECTED --> READY <--> BUSY.
+  // INIT --> BUSY --> CONNECTED --> BUSY <--> READY.
   // DEVICE_ERROR persists.
   enum class State { INIT, CONNECTED, READY, BUSY, DEVICE_ERROR };
 
