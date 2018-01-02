@@ -303,6 +303,7 @@ using ios::material::TimingFunction;
       _browserState->IsOffTheRecord() ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:incognitoStyle];
+  factory.dispatcher = self.dispatcher;
   _buttonUpdater = [[ToolbarButtonUpdater alloc] init];
   _buttonUpdater.factory = factory;
 

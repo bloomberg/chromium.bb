@@ -589,22 +589,10 @@
 #pragma mark - Components Setup
 
 - (void)setUpToolbarButtons {
-  NSMutableArray* buttonConstraints = [[NSMutableArray alloc] init];
-
   // Back button.
-  self.backButton = [self.buttonFactory backToolbarButton];
+  self.backButton = [self.buttonFactory backButton];
   self.backButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                    ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.backButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  if (!IsIPadIdiom()) {
-    self.backButton.imageEdgeInsets =
-        UIEdgeInsetsMakeDirected(0, 0, 0, kBackButtonImageInset);
-  }
-  [self.backButton addTarget:self.dispatcher
-                      action:@selector(goBack)
-            forControlEvents:UIControlEventTouchUpInside];
   UILongPressGestureRecognizer* backHistoryLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
@@ -613,20 +601,10 @@
   [self addStandardActionsForButton:self.backButton];
 
   // Forward button.
-  self.forwardButton = [self.buttonFactory forwardToolbarButton];
+  self.forwardButton = [self.buttonFactory forwardButton];
   self.forwardButton.visibilityMask =
       ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled |
       ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.forwardButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  if (!IsIPadIdiom()) {
-    self.forwardButton.imageEdgeInsets =
-        UIEdgeInsetsMakeDirected(0, kForwardButtonImageInset, 0, 0);
-  }
-  [self.forwardButton addTarget:self.dispatcher
-                         action:@selector(goForward)
-               forControlEvents:UIControlEventTouchUpInside];
   UILongPressGestureRecognizer* forwardHistoryLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
@@ -634,114 +612,65 @@
   [self.forwardButton addGestureRecognizer:forwardHistoryLongPress];
   [self addStandardActionsForButton:self.forwardButton];
 
-  // Tab switcher Strip button.
-  self.tabSwitchStripButton =
-      [self.buttonFactory tabSwitcherStripToolbarButton];
+  // TabSwitcher button.
+  self.tabSwitchStripButton = [self.buttonFactory tabSwitcherStripButton];
   self.tabSwitchStripButton.visibilityMask =
       ToolbarComponentVisibilityIPhoneOnly;
-  [buttonConstraints
-      addObject:[self.tabSwitchStripButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.tabSwitchStripButton addTarget:self.dispatcher
-                                action:@selector(displayTabSwitcher)
-                      forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.tabSwitchStripButton];
 
   // Tools menu button.
-  self.toolsMenuButton = [self.buttonFactory toolsMenuToolbarButton];
+  self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
+
   self.toolsMenuButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                         ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.toolsMenuButton.widthAnchor
-                    constraintEqualToConstant:kToolsMenuButtonWidth]];
-  [self.toolsMenuButton addTarget:self.dispatcher
-                           action:@selector(showToolsMenu)
-                 forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.toolsMenuButton];
 
   // Share button.
-  self.shareButton = [self.buttonFactory shareToolbarButton];
+  self.shareButton = [self.buttonFactory shareButton];
   self.shareButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.shareButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  self.shareButton.titleLabel.text = @"Share";
-  [self.shareButton addTarget:self.dispatcher
-                       action:@selector(sharePage)
-             forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.shareButton];
 
   // Reload button.
-  self.reloadButton = [self.buttonFactory reloadToolbarButton];
+  self.reloadButton = [self.buttonFactory reloadButton];
   self.reloadButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.reloadButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.reloadButton addTarget:self.dispatcher
-                        action:@selector(reload)
-              forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.reloadButton];
 
   // Stop button.
-  self.stopButton = [self.buttonFactory stopToolbarButton];
+  self.stopButton = [self.buttonFactory stopButton];
   self.stopButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.stopButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.stopButton addTarget:self.dispatcher
-                      action:@selector(stopLoading)
-            forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.stopButton];
 
   // Voice Search button.
   self.voiceSearchButton = [self.buttonFactory voiceSearchButton];
   self.voiceSearchButton.visibilityMask =
       ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.voiceSearchButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
   self.voiceSearchButton.enabled = NO;
   [self addStandardActionsForButton:self.voiceSearchButton];
 
   // Bookmark button.
-  self.bookmarkButton = [self.buttonFactory bookmarkToolbarButton];
+  self.bookmarkButton = [self.buttonFactory bookmarkButton];
   self.bookmarkButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [buttonConstraints
-      addObject:[self.bookmarkButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.bookmarkButton addTarget:self.dispatcher
-                          action:@selector(bookmarkPage)
-                forControlEvents:UIControlEventTouchUpInside];
   [self addStandardActionsForButton:self.bookmarkButton];
 
   // Contract button.
-  self.contractButton = [self.buttonFactory contractToolbarButton];
+  self.contractButton = [self.buttonFactory contractButton];
   self.contractButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                        ToolbarComponentVisibilityRegularWidth;
   self.contractButton.alpha = 0;
   self.contractButton.hidden = YES;
-  [buttonConstraints
-      addObject:[self.contractButton.widthAnchor
-                    constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.contractButton addTarget:self.dispatcher
-                          action:@selector(contractToolbar)
-                forControlEvents:UIControlEventTouchUpInside];
+
+  // LocationBar LeadingButton
+  self.locationBarLeadingButton = [self.buttonFactory locationBarLeadingButton];
+  self.locationBarLeadingButton.visibilityMask =
+      ToolbarComponentVisibilityCompactWidth |
+      ToolbarComponentVisibilityRegularWidth;
+  self.locationBarLeadingButton.alpha = 0;
+  self.locationBarLeadingButton.hidden = YES;
 
   // Add buttons to button updater.
   self.buttonUpdater.backButton = self.backButton;
   self.buttonUpdater.forwardButton = self.forwardButton;
   self.buttonUpdater.voiceSearchButton = self.voiceSearchButton;
-
-  for (NSLayoutConstraint* constraint in buttonConstraints) {
-    // The buttons are added to a UIStackView. If the priority is
-    // |UILayoutPriorityRequired|, there is a conflict when the buttons are
-    // hidden as the stack view is setting their width to 0. Setting the
-    // priority to UILayoutPriorityDefaultHigh doesn't work as they would have a
-    // lower priority than the location bar which would expand.
-    constraint.priority = UILayoutPriorityRequired - 1;
-  }
-
-  [NSLayoutConstraint activateConstraints:buttonConstraints];
 }
 
 - (void)setUpLocationBarContainer {
@@ -765,23 +694,6 @@
       setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];
   self.locationBarContainer = locationBarContainer;
-
-  // LocationBar LeadingButton
-  self.locationBarLeadingButton = [self.buttonFactory locationBarLeadingButton];
-  self.locationBarLeadingButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
-  self.locationBarLeadingButton.alpha = 0;
-  self.locationBarLeadingButton.hidden = YES;
-  NSLayoutConstraint* width = [self.locationBarLeadingButton.widthAnchor
-      constraintEqualToConstant:kLeadingLocationBarButtonWidth];
-  // The button is added to a UIStackView. If the priority is
-  // |UILayoutPriorityRequired|, there is a conflict when the button is hidden
-  // as the stack view is setting the width to 0.
-  width.priority = UILayoutPriorityRequired - 1;
-  width.active = YES;
-  self.locationBarLeadingButton.imageEdgeInsets =
-      UIEdgeInsetsMakeDirected(0, kLeadingLocationBarButtonImageInset, 0, 0);
 }
 
 - (void)setUpProgressBar {

@@ -146,6 +146,7 @@
   ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
   ToolbarButtonFactory* factory =
       [[ToolbarButtonFactory alloc] initWithStyle:style];
+  factory.dispatcher = self.dispatcher;
 
   self.buttonUpdater = [[ToolbarButtonUpdater alloc] init];
   self.buttonUpdater.factory = factory;

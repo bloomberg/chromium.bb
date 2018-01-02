@@ -9,12 +9,15 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
 
+@protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class ToolbarButton;
 @class ToolbarToolsMenuButton;
 @class ToolbarConfiguration;
 
 // ToolbarButton Factory protocol to create ToolbarButton objects with certain
 // style and configuration, depending of the implementation.
+// A dispatcher is used to send the commands associated with the buttons.
 @interface ToolbarButtonFactory : NSObject
 
 - (instancetype)initWithStyle:(ToolbarStyle)style NS_DESIGNATED_INITIALIZER;
@@ -25,29 +28,31 @@
 // of the buttons title.
 @property(nonatomic, strong, readonly)
     ToolbarConfiguration* toolbarConfiguration;
+// Dispatcher used to initialize targets for the buttons.
+@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
 // Back ToolbarButton.
-- (ToolbarButton*)backToolbarButton;
+- (ToolbarButton*)backButton;
 // Forward ToolbarButton.
-- (ToolbarButton*)forwardToolbarButton;
+- (ToolbarButton*)forwardButton;
 // Tab Switcher Strip ToolbarButton.
-- (ToolbarButton*)tabSwitcherStripToolbarButton;
+- (ToolbarButton*)tabSwitcherStripButton;
 // Tab Switcher Grid ToolbarButton.
-- (ToolbarButton*)tabSwitcherGridToolbarButton;
+- (ToolbarButton*)tabSwitcherGridButton;
 // Tools Menu ToolbarButton.
-- (ToolbarToolsMenuButton*)toolsMenuToolbarButton;
+- (ToolbarToolsMenuButton*)toolsMenuButton;
 // Share ToolbarButton.
-- (ToolbarButton*)shareToolbarButton;
+- (ToolbarButton*)shareButton;
 // Reload ToolbarButton.
-- (ToolbarButton*)reloadToolbarButton;
+- (ToolbarButton*)reloadButton;
 // Stop ToolbarButton.
-- (ToolbarButton*)stopToolbarButton;
+- (ToolbarButton*)stopButton;
 // Bookmark ToolbarButton.
-- (ToolbarButton*)bookmarkToolbarButton;
+- (ToolbarButton*)bookmarkButton;
 // VoiceSearch ToolbarButton.
 - (ToolbarButton*)voiceSearchButton;
 // ContractToolbar ToolbarButton.
-- (ToolbarButton*)contractToolbarButton;
+- (ToolbarButton*)contractButton;
 // LocationBar LeadingButton. Currently used for the incognito icon when the
 // Toolbar is expanded on incognito mode. It can return nil.
 - (ToolbarButton*)locationBarLeadingButton;
