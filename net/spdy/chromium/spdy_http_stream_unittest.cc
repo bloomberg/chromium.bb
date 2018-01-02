@@ -197,8 +197,8 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   // Make sure getting load timing information the stream early does not crash.
   LoadTimingInfo load_timing_info;
   EXPECT_FALSE(http_stream->GetLoadTimingInfo(&load_timing_info));
@@ -254,8 +254,8 @@ TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
 
   ASSERT_THAT(http_stream->InitializeStream(request.get(), DEFAULT_PRIORITY,
                                             net_log, CompletionCallback()),
@@ -316,8 +316,8 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   HttpResponseInfo response1;
   HttpRequestHeaders headers1;
   NetLogWithSource net_log;
-  auto http_stream1 =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream1 = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
 
   HttpRequestInfo request2;
   request2.method = "GET";
@@ -325,8 +325,8 @@ TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   TestCompletionCallback callback2;
   HttpResponseInfo response2;
   HttpRequestHeaders headers2;
-  auto http_stream2 =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream2 = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
 
   // First write.
   ASSERT_THAT(http_stream1->InitializeStream(&request1, DEFAULT_PRIORITY,
@@ -423,7 +423,8 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPost) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -478,7 +479,8 @@ TEST_F(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -532,7 +534,8 @@ TEST_F(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -600,8 +603,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPost) {
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   ASSERT_THAT(http_stream->InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                             CompletionCallback()),
               IsOk());
@@ -695,8 +698,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithEmptyFinalDataFrame) {
   upload_stream.AppendData(kUploadData, kUploadDataSize, false);
 
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   ASSERT_THAT(http_stream->InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                             CompletionCallback()),
               IsOk());
@@ -779,8 +782,8 @@ TEST_F(SpdyHttpStreamTest, ChunkedPostWithEmptyPayload) {
   upload_stream.AppendData("", 0, true);
 
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   ASSERT_THAT(http_stream->InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                             CompletionCallback()),
               IsOk());
@@ -839,8 +842,8 @@ TEST_F(SpdyHttpStreamTest, SpdyURLTest) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   ASSERT_THAT(http_stream->InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                             CompletionCallback()),
               IsOk());
@@ -892,8 +895,8 @@ TEST_F(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
               IsOk());
 
   NetLogWithSource net_log;
-  auto http_stream =
-      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+  auto http_stream = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
   ASSERT_THAT(http_stream->InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                             CompletionCallback()),
               IsOk());
@@ -997,7 +1000,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -1050,7 +1054,8 @@ TEST_F(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
   HttpResponseInfo response;
   HttpRequestHeaders headers;
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -1092,7 +1097,8 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   upload_stream.AppendData("", 0, true);
 
   NetLogWithSource net_log;
-  SpdyHttpStream http_stream(session_, true, net_log.source());
+  SpdyHttpStream http_stream(session_, kNoPushedStreamFound, true,
+                             net_log.source());
   ASSERT_THAT(http_stream.InitializeStream(&request, DEFAULT_PRIORITY, net_log,
                                            CompletionCallback()),
               IsOk());
@@ -1113,6 +1119,80 @@ TEST_F(SpdyHttpStreamTest, RequestCallbackCancelsStream) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(HasSpdySession(http_session_->spdy_session_pool(), key_));
+}
+
+// A SpdyHttpStream should use a matching pushed stream, even if it is
+// constructed with |pushed_stream_id == kNoPushedStreamFound|.
+TEST_F(SpdyHttpStreamTest, UsePushedStreamEvenWithKNoPushedStreamFound) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame priority(
+      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(priority, 2)};
+  SpdySerializedFrame push(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, "https://www.example.org/foo.dat"));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  MockRead reads[] = {CreateMockRead(push, 1), CreateMockRead(resp, 3),
+                      MockRead(ASYNC, 0, 4)};
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+
+  // Create and initialize first stream.
+  NetLogWithSource net_log;
+  auto stream1 = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound, true, net_log.source());
+
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = url_;
+  int rv = stream1->InitializeStream(&request1, DEFAULT_PRIORITY, net_log,
+                                     CompletionCallback());
+  EXPECT_THAT(rv, IsOk());
+
+  // Send request.
+  HttpResponseInfo response1;
+  TestCompletionCallback callback1;
+  rv = stream1->SendRequest(HttpRequestHeaders(), &response1,
+                            callback1.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback1.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Create and initialize second stream.
+  // This request must bind to the pushed stream, even though SpdyHttpStream
+  // constructor is called with kNoPushedStreamFound.
+  auto stream2 = std::make_unique<SpdyHttpStream>(
+      session_, kNoPushedStreamFound /* pushed_stream_id */, true,
+      net_log.source());
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.example.org/foo.dat");
+  rv = stream2->InitializeStream(&request2, DEFAULT_PRIORITY, net_log,
+                                 CompletionCallback());
+  EXPECT_THAT(rv, IsOk());
+
+  // Send request.  This should not send out any frames on the wire, because the
+  // request is served by a pushed stream.
+  HttpResponseInfo response2;
+  TestCompletionCallback callback2;
+  rv = stream2->SendRequest(HttpRequestHeaders(), &response2,
+                            callback2.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback2.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Read response headers for the second request.
+  rv = stream2->ReadResponseHeaders(callback2.callback());
+  EXPECT_THAT(rv, IsOk());
+
+  // Read response headers for the first request.
+  rv = stream1->ReadResponseHeaders(callback1.callback());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+  rv = callback1.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  // Read EOF.
+  base::RunLoop().RunUntilIdle();
 }
 
 // TODO(willchan): Write a longer test for SpdyStream that exercises all

@@ -364,7 +364,8 @@ void SpdySessionPool::OnNewSpdySessionReady(
           direct || request->url().SchemeIs(url::kHttpsScheme);
       request->OnStreamReadyOnPooledConnection(
           used_ssl_config, used_proxy_info,
-          std::make_unique<SpdyHttpStream>(spdy_session, use_relative_url,
+          std::make_unique<SpdyHttpStream>(spdy_session, kNoPushedStreamFound,
+                                           use_relative_url,
                                            source_dependency));
     }
   }

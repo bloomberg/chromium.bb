@@ -201,6 +201,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       was_alpn_negotiated_(false),
       negotiated_protocol_(kProtoUnknown),
       num_streams_(0),
+      pushed_stream_id_(kNoPushedStreamFound),
       spdy_session_direct_(
           !(proxy_info.is_https() && origin_url_.SchemeIs(url::kHttpScheme))),
       spdy_session_key_(using_quic_
@@ -931,10 +932,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   // connection this request can pool to.  If so, then go straight to using
   // that.
   if (CanUseExistingSpdySession()) {
-    // TODO(bnc): Use outparam.  https://crbug.com/776415.
-    SpdyStreamId unused;
-    session_->spdy_session_pool()->push_promise_index()->FindSession(
-        spdy_session_key_, origin_url_, &existing_spdy_session_, &unused);
+    session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
+        spdy_session_key_, origin_url_, &existing_spdy_session_,
+        &pushed_stream_id_);
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
           session_->spdy_session_pool()->FindAvailableSession(
@@ -1172,8 +1172,8 @@ int HttpStreamFactoryImpl::Job::SetSpdyHttpStreamOrBidirectionalStreamImpl(
 
   bool use_relative_url =
       direct || request_info_.url.SchemeIs(url::kHttpsScheme);
-  stream_ = std::make_unique<SpdyHttpStream>(session, use_relative_url,
-                                             net_log_.source());
+  stream_ = std::make_unique<SpdyHttpStream>(
+      session, pushed_stream_id_, use_relative_url, net_log_.source());
   return OK;
 }
 
@@ -1215,10 +1215,9 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // It is possible that a pushed stream has been opened by a server since last
   // time Job checked above.
   if (!existing_spdy_session_) {
-    // TODO(bnc): Use outparam.  https://crbug.com/776415.
-    SpdyStreamId unused;
-    session_->spdy_session_pool()->push_promise_index()->FindSession(
-        spdy_session_key_, origin_url_, &existing_spdy_session_, &unused);
+    session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
+        spdy_session_key_, origin_url_, &existing_spdy_session_,
+        &pushed_stream_id_);
     // It is also possible that an HTTP/2 connection has been established since
     // last time Job checked above.
     if (!existing_spdy_session_) {

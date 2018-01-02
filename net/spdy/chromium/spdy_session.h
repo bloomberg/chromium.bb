@@ -284,12 +284,22 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // reset).  Returns an error (not ERR_IO_PENDING) otherwise, and
   // resets |spdy_stream|.
   //
+  // If |pushed_stream_id != kNoPushedStreamFound|, then the pushed stream with
+  // pushed_stream_id is used.  An error is returned if that stream is not
+  // available.
+  //
+  // If |pushed_stream_id == kNoPushedStreamFound|, then any matching pushed
+  // stream that has not been claimed by another request can be used.  This can
+  // happen, for example, with http scheme pushed streams, or if the pushed
+  // stream was received from the server in the meanwhile.
+  //
   // If a stream was found and the stream is still open, the priority
   // of that stream is updated to match |priority|.
-  int GetPushStream(const GURL& url,
-                    RequestPriority priority,
-                    SpdyStream** spdy_stream,
-                    const NetLogWithSource& stream_net_log);
+  int GetPushedStream(const GURL& url,
+                      SpdyStreamId pushed_stream_id,
+                      RequestPriority priority,
+                      SpdyStream** spdy_stream,
+                      const NetLogWithSource& stream_net_log);
 
   // Called when the pushed stream should be cancelled. If the pushed stream is
   // not claimed and active, sends RST to the server to cancel the stream.
@@ -694,11 +704,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // and process any pending stream requests before deleting it.  Note
   // that |stream| may hold the last reference to the session.
   void DeleteStream(std::unique_ptr<SpdyStream> stream, int status);
-
-  // Check if we have a pending pushed-stream for this url
-  // Returns the stream if found (and returns it from the pending
-  // list). Returns NULL otherwise.
-  SpdyStream* GetActivePushStream(const GURL& url);
 
   void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();

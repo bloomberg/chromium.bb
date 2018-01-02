@@ -36,6 +36,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   static const size_t kRequestBodyBufferSize;
   // |spdy_session| must not be NULL.
   SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
+                 SpdyStreamId pushed_stream_id,
                  bool direct,
                  NetLogSource source_dependency);
   ~SpdyHttpStream() override;
@@ -133,6 +134,12 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   bool ShouldWaitForMoreBufferedData() const;
 
   const base::WeakPtr<SpdySession> spdy_session_;
+
+  // The ID of the pushed stream if one is claimed by this request.
+  // In this case, the request fails if it cannot use that pushed stream.
+  // Otherwise set to kNoPushedStreamFound.
+  const SpdyStreamId pushed_stream_id_;
+
   bool is_reused_;
   SpdyStreamRequest stream_request_;
   const NetLogSource source_dependency_;

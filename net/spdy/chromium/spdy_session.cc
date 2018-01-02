@@ -817,20 +817,45 @@ SpdySession::~SpdySession() {
   net_log_.EndEvent(NetLogEventType::HTTP2_SESSION);
 }
 
-int SpdySession::GetPushStream(const GURL& url,
-                               RequestPriority priority,
-                               SpdyStream** stream,
-                               const NetLogWithSource& stream_net_log) {
+int SpdySession::GetPushedStream(const GURL& url,
+                                 SpdyStreamId pushed_stream_id,
+                                 RequestPriority priority,
+                                 SpdyStream** stream,
+                                 const NetLogWithSource& stream_net_log) {
   CHECK(!in_io_loop_);
 
+  *stream = nullptr;
+
   if (availability_state_ == STATE_DRAINING) {
-    *stream = nullptr;
     return ERR_CONNECTION_CLOSED;
   }
 
-  *stream = GetActivePushStream(url);
-  if (!*stream)
-    return OK;
+  if (pushed_stream_id == kNoPushedStreamFound) {
+    // Even if no pushed stream has been claimed earlier, there could still be
+    // one corresponding the request, if the scheme is http (those pushes are
+    // not considered by Http2PushPromiseIndex::ClaimPushedStream()), or if the
+    // pushed stream was opened in the meanwhile.
+    pushed_stream_id = pool_->push_promise_index()->FindStream(url, this);
+    if (pushed_stream_id == kNoPushedStreamFound)
+      return OK;
+
+    LogPushStreamClaimed(url, pushed_stream_id);
+    const bool success =
+        pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
+            url, pushed_stream_id, this);
+    DCHECK(success);
+  }
+
+  DCHECK_GT(pushed_stream_id, kNoPushedStreamFound);
+
+  ActiveStreamMap::iterator active_it = active_streams_.find(pushed_stream_id);
+  if (active_it == active_streams_.end()) {
+    // A previously claimed pushed stream might not be available, for example,
+    // if the server has reset it in the meanwhile.
+    return ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE;
+  }
+
+  *stream = active_it->second;
 
   DCHECK_LT(streams_pushed_and_claimed_count_, streams_pushed_count_);
   streams_pushed_and_claimed_count_++;
@@ -2372,28 +2397,6 @@ void SpdySession::DeleteStream(std::unique_ptr<SpdyStream> stream, int status) {
   if (availability_state_ == STATE_AVAILABLE) {
     ProcessPendingStreamRequests();
   }
-}
-
-SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
-  const SpdyStreamId stream_id =
-      pool_->push_promise_index()->FindStream(url, this);
-  if (stream_id == kNoPushedStreamFound)
-    return nullptr;
-
-  const bool result =
-      pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
-          url, stream_id, this);
-  DCHECK(result);
-
-  ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
-  if (active_it == active_streams_.end()) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  LogPushStreamClaimed(url, stream_id);
-
-  return active_it->second;
 }
 
 void SpdySession::RecordPingRTTHistogram(base::TimeDelta duration) {

@@ -344,8 +344,8 @@ TEST_F(SpdyStreamTest, PushedStream) {
   data.RunUntilPaused();
 
   SpdyStream* push_stream;
-  EXPECT_THAT(session->GetPushStream(GURL(kPushUrl), IDLE, &push_stream,
-                                     NetLogWithSource()),
+  EXPECT_THAT(session->GetPushedStream(GURL(kPushUrl), kNoPushedStreamFound,
+                                       IDLE, &push_stream, NetLogWithSource()),
               IsOk());
   ASSERT_TRUE(push_stream);
   EXPECT_EQ(kPushUrl, push_stream->GetUrlFromHeaders().spec());
@@ -657,8 +657,8 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
   data.RunUntilPaused();
 
   SpdyStream* push_stream;
-  EXPECT_THAT(session->GetPushStream(GURL(kPushUrl), IDLE, &push_stream,
-                                     NetLogWithSource()),
+  EXPECT_THAT(session->GetPushedStream(GURL(kPushUrl), kNoPushedStreamFound,
+                                       IDLE, &push_stream, NetLogWithSource()),
               IsOk());
   EXPECT_FALSE(push_stream);
 
