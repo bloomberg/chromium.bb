@@ -114,7 +114,7 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
       frame_sink_id, surface_handle, force_software_compositing,
       renderer_settings, std::move(request), std::move(client),
       std::move(display_private_request), std::move(display_client));
-  display_hit_test_query_[frame_sink_id] = base::MakeUnique<HitTestQuery>();
+  display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(

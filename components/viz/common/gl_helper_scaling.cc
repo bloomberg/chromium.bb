@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
@@ -729,7 +729,7 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
 
   std::unique_ptr<ScalerImpl> ret;
   for (unsigned int i = 0; i < scaler_stages.size(); i++) {
-    ret = base::MakeUnique<ScalerImpl>(gl_, this, scaler_stages[i],
+    ret = std::make_unique<ScalerImpl>(gl_, this, scaler_stages[i],
                                        std::move(ret));
   }
   ret->SetChainProperties(scale_from, scale_to, swizzle);
@@ -744,7 +744,7 @@ GLHelperScaling::CreateGrayscalePlanerizer(bool flipped_source,
       SHADER_PLANAR, gfx::Vector2d(4, 1), gfx::Vector2d(1, 1),
       true,          flipped_source,      flip_output,
       swizzle};
-  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  auto result = std::make_unique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetColorWeights(0, kRGBtoGrayscaleColorWeights);
   result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
@@ -763,7 +763,7 @@ GLHelperScaling::CreateI420Planerizer(int plane,
       flipped_source,
       flip_output,
       swizzle};
-  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  auto result = std::make_unique<ScalerImpl>(gl_, this, stage, nullptr);
   switch (plane) {
     case 0:
       result->SetColorWeights(0, kRGBtoYColorWeights);
@@ -792,7 +792,7 @@ GLHelperScaling::CreateI420MrtPass1Planerizer(bool flipped_source,
                              flipped_source,
                              flip_output,
                              swizzle};
-  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  auto result = std::make_unique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetColorWeights(0, kRGBtoYColorWeights);
   result->SetColorWeights(1, kRGBtoUColorWeights);
   result->SetColorWeights(2, kRGBtoVColorWeights);
@@ -809,7 +809,7 @@ GLHelperScaling::CreateI420MrtPass2Planerizer(bool swizzle) {
                              false,
                              false,
                              swizzle};
-  auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
+  auto result = std::make_unique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;
 }

@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/memory.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/trace_event.h"
@@ -106,7 +105,7 @@ std::unique_ptr<base::SharedMemory> AllocateSharedMemory(size_t buf_size) {
     return nullptr;
   }
 
-  return base::MakeUnique<base::SharedMemory>(shared_buf, false);
+  return std::make_unique<base::SharedMemory>(shared_buf, false);
 }
 
 }  // namespace
@@ -138,7 +137,7 @@ std::unique_ptr<SharedBitmap> ClientSharedBitmapManager::AllocateSharedBitmap(
   // remains available.
   memory->Close();
 
-  return base::MakeUnique<ClientSharedBitmap>(
+  return std::make_unique<ClientSharedBitmap>(
       shared_bitmap_allocation_notifier_, std::move(memory), id,
       sequence_number);
 }
@@ -154,7 +153,7 @@ std::unique_ptr<SharedBitmap>
 ClientSharedBitmapManager::GetBitmapForSharedMemory(base::SharedMemory* mem) {
   SharedBitmapId id = SharedBitmap::GenerateId();
   uint32_t sequence_number = NotifyAllocatedSharedBitmap(mem, id);
-  return base::MakeUnique<ClientSharedBitmap>(
+  return std::make_unique<ClientSharedBitmap>(
       shared_bitmap_allocation_notifier_, mem, id, sequence_number);
 }
 

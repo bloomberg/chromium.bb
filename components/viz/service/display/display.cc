@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -206,28 +205,28 @@ void Display::SetOutputIsSecure(bool secure) {
 }
 
 void Display::InitializeRenderer() {
-  resource_provider_ = base::MakeUnique<cc::DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<cc::DisplayResourceProvider>(
       output_surface_->context_provider(), bitmap_manager_,
       gpu_memory_buffer_manager_, settings_.resource_settings);
 
   if (output_surface_->context_provider()) {
     if (!settings_.use_skia_renderer) {
-      renderer_ = base::MakeUnique<GLRenderer>(
+      renderer_ = std::make_unique<GLRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get(),
           current_task_runner_);
     } else {
-      renderer_ = base::MakeUnique<SkiaRenderer>(
+      renderer_ = std::make_unique<SkiaRenderer>(
           &settings_, output_surface_.get(), resource_provider_.get());
     }
   } else if (output_surface_->vulkan_context_provider()) {
 #if BUILDFLAG(ENABLE_VULKAN)
-    renderer_ = base::MakeUnique<SkiaRenderer>(
+    renderer_ = std::make_unique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
 #else
     NOTREACHED();
 #endif
   } else {
-    auto renderer = base::MakeUnique<SoftwareRenderer>(
+    auto renderer = std::make_unique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
     software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);

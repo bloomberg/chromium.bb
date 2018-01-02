@@ -553,7 +553,7 @@ void GLRenderer::BeginDrawingFrame() {
     }
 
     current_sync_query_ = available_sync_queries_.empty()
-                              ? base::MakeUnique<SyncQuery>(gl_)
+                              ? std::make_unique<SyncQuery>(gl_)
                               : cc::PopFront(&available_sync_queries_);
 
     read_lock_fence = current_sync_query_->Begin();
@@ -1385,7 +1385,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     params->source_needs_flip = params->flip_texture;
   } else {
     params->bypass_quad_resource_lock =
-        base::MakeUnique<cc::DisplayResourceProvider::ScopedSamplerGL>(
+        std::make_unique<cc::DisplayResourceProvider::ScopedSamplerGL>(
             resource_provider_, params->bypass_quad_texture->id(), GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               params->bypass_quad_resource_lock->target());
@@ -2971,8 +2971,8 @@ void GLRenderer::InitializeSharedObjects() {
   gl_->GenFramebuffers(1, &offscreen_framebuffer_id_);
 
   shared_geometry_ =
-      base::MakeUnique<StaticGeometryBinding>(gl_, QuadVertexRect());
-  clipped_geometry_ = base::MakeUnique<DynamicGeometryBinding>(gl_);
+      std::make_unique<StaticGeometryBinding>(gl_, QuadVertexRect());
+  clipped_geometry_ = std::make_unique<DynamicGeometryBinding>(gl_);
 }
 
 void GLRenderer::PrepareGeometry(BoundGeometry binding) {
@@ -3160,7 +3160,7 @@ void GLRenderer::ScheduleCALayers() {
     unsigned texture_id = 0;
     if (contents_resource_id) {
       pending_overlay_resources_.push_back(
-          base::MakeUnique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, contents_resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
@@ -3217,7 +3217,7 @@ void GLRenderer::ScheduleDCLayers() {
     for (const auto& contents_resource_id : dc_layer_overlay.resources) {
       if (contents_resource_id) {
         pending_overlay_resources_.push_back(
-            base::MakeUnique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+            std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
                 resource_provider_, contents_resource_id));
         texture_ids[i] = pending_overlay_resources_.back()->texture_id();
         ids_to_send = i + 1;
@@ -3274,7 +3274,7 @@ void GLRenderer::ScheduleOverlays() {
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
-          base::MakeUnique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+          std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
               resource_provider_, overlay_candidate.resource_id));
       texture_id = pending_overlay_resources_.back()->texture_id();
     }
@@ -3450,7 +3450,7 @@ void GLRenderer::ScheduleRenderPassDrawQuad(
     return;
 
   pending_overlay_resources_.push_back(
-      base::MakeUnique<cc::DisplayResourceProvider::ScopedReadLockGL>(
+      std::make_unique<cc::DisplayResourceProvider::ScopedReadLockGL>(
           resource_provider_, resource->id()));
   unsigned texture_id = pending_overlay_resources_.back()->texture_id();
 

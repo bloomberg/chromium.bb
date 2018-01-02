@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
@@ -1215,7 +1214,7 @@ GLHelper::CopyTextureToImpl::CreateReadbackPipelineYUV(bool flip_vertically,
   if (supported == GLHelperReadbackSupport::SWIZZLE)
     swizzle = kSwizzleBGRA;
 
-  return base::MakeUnique<ReadbackYUVImpl>(
+  return std::make_unique<ReadbackYUVImpl>(
       gl_, this, helper_->scaler_impl_.get(), flip_vertically, swizzle,
       use_mrt && (max_draw_buffers_ >= 2));
 }

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/null_task_runner.h"
 #include "cc/base/math_util.h"
@@ -117,12 +116,12 @@ class DisplayTest : public testing::Test {
       provider->BindToCurrentThread();
       output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
     } else {
-      auto device = base::MakeUnique<TestSoftwareOutputDevice>();
+      auto device = std::make_unique<TestSoftwareOutputDevice>();
       software_output_device_ = device.get();
       output_surface = cc::FakeOutputSurface::CreateSoftware(std::move(device));
     }
     output_surface_ = output_surface.get();
-    auto scheduler = base::MakeUnique<TestDisplayScheduler>(
+    auto scheduler = std::make_unique<TestDisplayScheduler>(
         begin_frame_source_.get(), task_runner_.get());
     scheduler_ = scheduler.get();
     display_ = CreateDisplay(settings, kArbitraryFrameSinkId,
@@ -136,7 +135,7 @@ class DisplayTest : public testing::Test {
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<OutputSurface> output_surface) {
-    auto display = base::MakeUnique<Display>(
+    auto display = std::make_unique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
         settings, frame_sink_id, std::move(output_surface),
         std::move(scheduler), task_runner_);
@@ -546,7 +545,7 @@ TEST_F(DisplayTest, Finish) {
   settings.partial_swap_enabled = true;
   settings.finish_rendering_on_resize = true;
 
-  auto context = base::MakeUnique<MockedContext>();
+  auto context = std::make_unique<MockedContext>();
   MockedContext* context_ptr = context.get();
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM()).Times(0);
 
@@ -651,14 +650,14 @@ TEST_F(DisplayTest, CompositorFrameDamagesCorrectDisplay) {
   auto support2 = std::make_unique<CompositorFrameSinkSupport>(
       nullptr, &manager_, kAnotherFrameSinkId, true /* is_root */,
       true /* needs_sync_points */);
-  auto begin_frame_source2 = base::MakeUnique<StubBeginFrameSource>();
-  auto scheduler_for_display2 = base::MakeUnique<TestDisplayScheduler>(
+  auto begin_frame_source2 = std::make_unique<StubBeginFrameSource>();
+  auto scheduler_for_display2 = std::make_unique<TestDisplayScheduler>(
       begin_frame_source2.get(), task_runner_.get());
   TestDisplayScheduler* scheduler2 = scheduler_for_display2.get();
   auto display2 = CreateDisplay(
       settings, kAnotherFrameSinkId, std::move(scheduler_for_display2),
       cc::FakeOutputSurface::CreateSoftware(
-          base::MakeUnique<TestSoftwareOutputDevice>()));
+          std::make_unique<TestSoftwareOutputDevice>()));
   manager_.RegisterBeginFrameSource(begin_frame_source2.get(),
                                     kAnotherFrameSinkId);
   StubDisplayClient client2;

@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -454,7 +454,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             output_surface_->context_provider(), shared_bitmap_manager_.get());
-    renderer_ = base::MakeUnique<FakeRendererGL>(
+    renderer_ = std::make_unique<FakeRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
@@ -705,7 +705,7 @@ class ForbidSynchronousCallContext : public cc::TestWebGraphicsContext3D {
   }
 };
 TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
-  auto context = base::MakeUnique<ForbidSynchronousCallContext>();
+  auto context = std::make_unique<ForbidSynchronousCallContext>();
   auto provider = cc::TestContextProvider::Create(std::move(context));
   provider->BindToCurrentThread();
 
@@ -741,7 +741,7 @@ class LoseContextOnFirstGetContext : public cc::TestWebGraphicsContext3D {
 };
 
 TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
-  auto context = base::MakeUnique<LoseContextOnFirstGetContext>();
+  auto context = std::make_unique<LoseContextOnFirstGetContext>();
   auto provider = cc::TestContextProvider::Create(std::move(context));
   provider->BindToCurrentThread();
 
@@ -1099,7 +1099,7 @@ class ScissorTestOnClearCheckingGLES2Interface : public cc::TestGLES2Interface {
 };
 
 TEST_F(GLRendererTest, ScissorTestWhenClearing) {
-  auto gl_owned = base::MakeUnique<ScissorTestOnClearCheckingGLES2Interface>();
+  auto gl_owned = std::make_unique<ScissorTestOnClearCheckingGLES2Interface>();
 
   auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
@@ -1174,7 +1174,7 @@ class DiscardCheckingGLES2Interface : public cc::TestGLES2Interface {
 };
 
 TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
-  auto gl_owned = base::MakeUnique<DiscardCheckingGLES2Interface>();
+  auto gl_owned = std::make_unique<DiscardCheckingGLES2Interface>();
   auto* gl = gl_owned.get();
 
   auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
@@ -1374,7 +1374,7 @@ class ResourceTrackingGLES2Interface : public cc::TestGLES2Interface {
 };
 
 TEST_F(GLRendererTest, NoResourceLeak) {
-  auto gl_owned = base::MakeUnique<ResourceTrackingGLES2Interface>();
+  auto gl_owned = std::make_unique<ResourceTrackingGLES2Interface>();
   auto* gl = gl_owned.get();
 
   auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
@@ -1426,7 +1426,7 @@ class DrawElementsGLES2Interface : public cc::TestGLES2Interface {
 class GLRendererSkipTest : public GLRendererTest {
  protected:
   GLRendererSkipTest() {
-    auto gl_owned = base::MakeUnique<StrictMock<DrawElementsGLES2Interface>>();
+    auto gl_owned = std::make_unique<StrictMock<DrawElementsGLES2Interface>>();
     gl_ = gl_owned.get();
 
     auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
@@ -1440,7 +1440,7 @@ class GLRendererSkipTest : public GLRendererTest {
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             output_surface_->context_provider(), shared_bitmap_manager_.get());
     settings_.partial_swap_enabled = true;
-    renderer_ = base::MakeUnique<FakeRendererGL>(
+    renderer_ = std::make_unique<FakeRendererGL>(
         &settings_, output_surface_.get(), resource_provider_.get());
     renderer_->Initialize();
     renderer_->SetVisible(true);
@@ -1873,12 +1873,12 @@ class MockOutputSurface : public OutputSurface {
 class MockOutputSurfaceTest : public GLRendererTest {
  protected:
   void SetUp() override {
-    auto context = base::MakeUnique<StrictMock<OutputSurfaceMockContext>>();
+    auto context = std::make_unique<StrictMock<OutputSurfaceMockContext>>();
     context_ = context.get();
     auto provider = cc::TestContextProvider::Create(std::move(context));
     provider->BindToCurrentThread();
     output_surface_ =
-        base::MakeUnique<StrictMock<MockOutputSurface>>(std::move(provider));
+        std::make_unique<StrictMock<MockOutputSurface>>(std::move(provider));
 
     cc::FakeOutputSurfaceClient output_surface_client_;
     output_surface_->BindToClient(&output_surface_client_);
@@ -2138,8 +2138,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
   class SingleOverlayValidator : public OverlayCandidateValidator {
    public:
     void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-      strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
-      strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
+      strategies->push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
+      strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(this));
     }
 
     bool AllowCALayerOverlays() override { return false; }
@@ -2157,7 +2157,7 @@ class SingleOverlayOnTopProcessor : public OverlayProcessor {
 
   void Initialize() override {
     strategies_.push_back(
-        base::MakeUnique<OverlayStrategySingleOnTop>(&validator_));
+        std::make_unique<OverlayStrategySingleOnTop>(&validator_));
   }
 
   SingleOverlayValidator validator_;
@@ -2399,7 +2399,7 @@ class GLRendererPartialSwapTest : public GLRendererTest {
  protected:
   void RunTest(bool partial_swap, bool set_draw_rectangle) {
     auto gl_owned =
-        base::MakeUnique<PartialSwapMockGLES2Interface>(set_draw_rectangle);
+        std::make_unique<PartialSwapMockGLES2Interface>(set_draw_rectangle);
     auto* gl = gl_owned.get();
 
     auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
@@ -2512,7 +2512,7 @@ class DCLayerValidator : public OverlayCandidateValidator {
 TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
-  auto gl_owned = base::MakeUnique<PartialSwapMockGLES2Interface>(true);
+  auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>(true);
   auto* gl = gl_owned.get();
 
   auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
@@ -2636,7 +2636,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   };
 
   void SetUp() override {
-    auto context_support = base::MakeUnique<MockContextSupport>();
+    auto context_support = std::make_unique<MockContextSupport>();
     context_support_ptr_ = context_support.get();
     auto context_provider = cc::TestContextProvider::Create(
         cc::TestWebGraphicsContext3D::Create(), std::move(context_support));
@@ -2648,7 +2648,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
             output_surface_->context_provider(), nullptr);
-    renderer_ = base::MakeUnique<GLRenderer>(&settings_, output_surface_.get(),
+    renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
                                              resource_provider_.get(), nullptr);
     renderer_->Initialize();
   }
@@ -2719,7 +2719,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
 class GLRendererSwapWithBoundsTest : public GLRendererTest {
  protected:
   void RunTest(const std::vector<gfx::Rect>& content_bounds) {
-    auto gl_owned = base::MakeUnique<SwapWithBoundsMockGLES2Interface>();
+    auto gl_owned = std::make_unique<SwapWithBoundsMockGLES2Interface>();
 
     auto provider = cc::TestContextProvider::Create(std::move(gl_owned));
     provider->BindToCurrentThread();

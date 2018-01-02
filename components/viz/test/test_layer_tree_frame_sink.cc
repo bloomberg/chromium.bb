@@ -5,9 +5,10 @@
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -71,7 +72,7 @@ bool TestLayerTreeFrameSink::BindToClient(
   if (!LayerTreeFrameSink::BindToClient(client))
     return false;
 
-  frame_sink_manager_ = base::MakeUnique<FrameSinkManagerImpl>();
+  frame_sink_manager_ = std::make_unique<FrameSinkManagerImpl>();
 
   std::unique_ptr<OutputSurface> display_output_surface =
       test_client_->CreateDisplayOutputSurface(context_provider());
@@ -79,22 +80,22 @@ bool TestLayerTreeFrameSink::BindToClient(
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
     if (disable_display_vsync_) {
-      begin_frame_source_ = base::MakeUnique<BackToBackBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(
+      begin_frame_source_ = std::make_unique<BackToBackBeginFrameSource>(
+          std::make_unique<DelayBasedTimeSource>(
               compositor_task_runner_.get()));
     } else {
-      begin_frame_source_ = base::MakeUnique<DelayBasedBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(compositor_task_runner_.get()),
+      begin_frame_source_ = std::make_unique<DelayBasedBeginFrameSource>(
+          std::make_unique<DelayBasedTimeSource>(compositor_task_runner_.get()),
           BeginFrameSource::kNotRestartableId);
       begin_frame_source_->SetAuthoritativeVSyncInterval(
           base::TimeDelta::FromMilliseconds(1000.f / refresh_rate_));
     }
-    scheduler = base::MakeUnique<DisplayScheduler>(
+    scheduler = std::make_unique<DisplayScheduler>(
         begin_frame_source_.get(), compositor_task_runner_.get(),
         display_output_surface->capabilities().max_frames_pending);
   }
 
-  display_ = base::MakeUnique<Display>(
+  display_ = std::make_unique<Display>(
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
       frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
       compositor_task_runner_);

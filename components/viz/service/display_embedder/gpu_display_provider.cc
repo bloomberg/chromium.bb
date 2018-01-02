@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
@@ -70,7 +69,7 @@ GpuDisplayProvider::GpuDisplayProvider(
       gpu_service_(std::move(gpu_service)),
       gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
       gpu_memory_buffer_manager_(
-          base::MakeUnique<InProcessGpuMemoryBufferManager>(
+          std::make_unique<InProcessGpuMemoryBufferManager>(
               gpu_channel_manager)),
       image_factory_(GetImageFactory(gpu_channel_manager)),
       compositing_mode_reporter_(compositing_mode_reporter),
@@ -87,8 +86,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     const RendererSettings& renderer_settings,
     std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
   auto synthetic_begin_frame_source =
-      base::MakeUnique<DelayBasedBeginFrameSource>(
-          base::MakeUnique<DelayBasedTimeSource>(task_runner_.get()),
+      std::make_unique<DelayBasedBeginFrameSource>(
+          std::make_unique<DelayBasedTimeSource>(task_runner_.get()),
           restart_id_);
 
   // TODO(crbug.com/730660): Fallback to software if gpu doesn't work with
@@ -126,19 +125,19 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
     if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-      output_surface = base::MakeUnique<GLOutputSurfaceOzone>(
+      output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
           synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get(),
           GL_TEXTURE_2D, GL_RGB);
 #elif defined(OS_MACOSX)
-      output_surface = base::MakeUnique<GLOutputSurfaceMac>(
+      output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
           synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get());
 #else
       NOTREACHED();
 #endif
     } else {
-      output_surface = base::MakeUnique<GLOutputSurface>(
+      output_surface = std::make_unique<GLOutputSurface>(
           std::move(context_provider), synthetic_begin_frame_source.get());
     }
   }
@@ -146,14 +145,14 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   int max_frames_pending = output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  auto scheduler = base::MakeUnique<DisplayScheduler>(
+  auto scheduler = std::make_unique<DisplayScheduler>(
       synthetic_begin_frame_source.get(), task_runner_.get(),
       max_frames_pending);
 
   // The ownership of the BeginFrameSource is transfered to the caller.
   *out_begin_frame_source = std::move(synthetic_begin_frame_source);
 
-  return base::MakeUnique<Display>(
+  return std::make_unique<Display>(
       ServerSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
       renderer_settings, frame_sink_id, std::move(output_surface),
       std::move(scheduler), task_runner_);

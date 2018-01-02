@@ -150,8 +150,8 @@ class HostFrameSinkManagerLocalTest : public HostFrameSinkManagerTestBase {
   // testing::Test:
   void SetUp() override {
     manager_impl_ =
-        base::MakeUnique<testing::NiceMock<MockFrameSinkManagerImpl>>();
-    host_manager_ = base::MakeUnique<HostFrameSinkManager>();
+        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>();
+    host_manager_ = std::make_unique<HostFrameSinkManager>();
 
     manager_impl_->SetLocalClient(host_manager_.get());
     host_manager_->SetLocalManager(manager_impl_.get());
@@ -174,7 +174,7 @@ class HostFrameSinkManagerRemoteTest : public HostFrameSinkManagerTestBase {
     DCHECK(!manager_impl_);
 
     manager_impl_ =
-        base::MakeUnique<testing::NiceMock<MockFrameSinkManagerImpl>>();
+        std::make_unique<testing::NiceMock<MockFrameSinkManagerImpl>>();
 
     mojom::FrameSinkManagerPtr frame_sink_manager;
     mojom::FrameSinkManagerRequest frame_sink_manager_request =
@@ -193,7 +193,7 @@ class HostFrameSinkManagerRemoteTest : public HostFrameSinkManagerTestBase {
 
   // testing::Test:
   void SetUp() override {
-    host_manager_ = base::MakeUnique<HostFrameSinkManager>();
+    host_manager_ = std::make_unique<HostFrameSinkManager>();
     ConnectToGpu();
   }
 

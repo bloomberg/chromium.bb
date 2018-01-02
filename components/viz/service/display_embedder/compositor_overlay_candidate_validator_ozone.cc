@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
@@ -24,7 +23,7 @@ namespace {
 template <typename S>
 std::unique_ptr<OverlayProcessor::Strategy> MakeOverlayStrategy(
     CompositorOverlayCandidateValidatorOzone* capability_checker) {
-  return base::MakeUnique<S>(capability_checker);
+  return std::make_unique<S>(capability_checker);
 }
 
 }  // namespace

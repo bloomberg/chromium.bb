@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "cc/base/lap_timer.h"
 #include "cc/resources/display_resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -34,7 +33,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
   SurfaceAggregatorPerfTest() {
     context_provider_ = cc::TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
+    shared_bitmap_manager_ = std::make_unique<cc::TestSharedBitmapManager>();
 
     resource_provider_ =
         cc::FakeResourceProvider::CreateDisplayResourceProvider(
@@ -54,7 +53,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           nullptr, &manager_, FrameSinkId(1, i + 1), kIsChildRoot,
           kNeedsSyncPoints);
     }
-    aggregator_ = base::MakeUnique<SurfaceAggregator>(
+    aggregator_ = std::make_unique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), optimize_damage);
     for (int i = 0; i < num_surfaces; i++) {
       LocalSurfaceId local_surface_id(i + 1, kArbitraryToken);

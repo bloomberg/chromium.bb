@@ -106,13 +106,13 @@ TEST_F(FrameSinkManagerTest, PrimaryBeginFrameSource) {
 
   auto root1 = CreateCompositorFrameSinkSupport(FrameSinkId(1, 1));
   std::unique_ptr<FakeExternalBeginFrameSource> external_source1 =
-      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
+      std::make_unique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source1.get(),
                                     root1->frame_sink_id());
 
   auto root2 = CreateCompositorFrameSinkSupport(FrameSinkId(2, 2));
   std::unique_ptr<FakeExternalBeginFrameSource> external_source2 =
-      base::MakeUnique<FakeExternalBeginFrameSource>(60.f, false);
+      std::make_unique<FakeExternalBeginFrameSource>(60.f, false);
   manager_.RegisterBeginFrameSource(external_source2.get(),
                                     root2->frame_sink_id());
 

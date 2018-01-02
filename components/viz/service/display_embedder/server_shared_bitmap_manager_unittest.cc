@@ -4,7 +4,6 @@
 
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +13,7 @@ namespace {
 class ServerSharedBitmapManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    manager_ = base::MakeUnique<ServerSharedBitmapManager>();
+    manager_ = std::make_unique<ServerSharedBitmapManager>();
   }
 
   void TearDown() override { manager_.reset(); }
