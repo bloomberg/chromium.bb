@@ -215,13 +215,9 @@ class NET_EXPORT URLRequestContext
 
   // Gets the URLRequest objects that hold a reference to this
   // URLRequestContext.
-  const std::set<const URLRequest*>& url_requests() const {
-    return url_requests_;
+  std::set<const URLRequest*>* url_requests() const {
+    return url_requests_.get();
   }
-
-  void InsertURLRequest(const URLRequest* request) const;
-
-  void RemoveURLRequest(const URLRequest* request) const;
 
   // CHECKs that no URLRequests using this context remain. Subclasses should
   // additionally call AssertNoURLRequests() within their own destructor,
@@ -328,7 +324,7 @@ class NET_EXPORT URLRequestContext
   // be added to CopyFrom.
   // ---------------------------------------------------------------------------
 
-  mutable std::set<const URLRequest*> url_requests_;
+  std::unique_ptr<std::set<const URLRequest*>> url_requests_;
 
   // Enables Brotli Content-Encoding support.
   bool enable_brotli_;
@@ -340,10 +336,6 @@ class NET_EXPORT URLRequestContext
   // Used in MemoryDumpProvier to annotate memory usage. The name does not need
   // to be unique.
   std::string name_;
-
-  // The largest number of outstanding URLRequests that have been created by
-  // |this| and are not yet destroyed. This doesn't need to be in CopyFrom.
-  mutable size_t largest_outstanding_requests_count_seen_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -48172,7 +48172,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.URLRequestContext.OutstandingRequests" units="count">
-  <owner>xunjieli@chromium.org</owner>
+  <obsolete>
+    Deprecated 1/1/2018. No longer tracked.
+  </obsolete>
   <summary>
     Indicates the number of URLRequests that are handed out by a
     URLRequestContext and are not yet destroyed.
@@ -48181,7 +48183,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.URLRequestContext.OutstandingRequests.Type"
     enum="URLRequestAnnotationType">
-  <owner>xunjieli@chromium.org</owner>
+  <obsolete>
+    Deprecated 1/1/2018. No longer tracked.
+  </obsolete>
   <summary>
     Records the annotation type of the URLRequest that is handed out by a
     URLRequestContext when Net.URLRequestContext.OutstandingRequests is
