@@ -9,7 +9,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -47,14 +46,11 @@ class SadTabTabHelperTest : public PlatformTest {
  protected:
   SadTabTabHelperTest()
       : application_(OCMClassMock([UIApplication class])),
-        sad_tab_delegate_([[SadTabTabHelperTestDelegate alloc] init]),
-        page_placeholder_delegate_([OCMockObject
-            mockForProtocol:@protocol(PagePlaceholderTabHelperDelegate)]) {
+        sad_tab_delegate_([[SadTabTabHelperTestDelegate alloc] init]) {
     browser_state_ = TestChromeBrowserState::Builder().Build();
 
     SadTabTabHelper::CreateForWebState(&web_state_, sad_tab_delegate_);
-    PagePlaceholderTabHelper::CreateForWebState(&web_state_,
-                                                page_placeholder_delegate_);
+    PagePlaceholderTabHelper::CreateForWebState(&web_state_);
     OCMStub([application_ sharedApplication]).andReturn(application_);
 
     // Setup navigation manager.
@@ -73,7 +69,6 @@ class SadTabTabHelperTest : public PlatformTest {
   web::TestNavigationManager* navigation_manager_;
   id application_;
   SadTabTabHelperTestDelegate* sad_tab_delegate_;
-  id page_placeholder_delegate_;
 };
 
 // Tests that SadTab is not presented for not shown web states and navigation
@@ -195,8 +190,7 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
   // |repeat_failure_interval| is required.
   web::TestWebState web_state;
   SadTabTabHelper::CreateForWebState(&web_state, 0.0f, sad_tab_delegate_);
-  PagePlaceholderTabHelper::CreateForWebState(&web_state,
-                                              page_placeholder_delegate_);
+  PagePlaceholderTabHelper::CreateForWebState(&web_state);
   web_state.WasShown();
 
   // Helper should get notified of render process failure.

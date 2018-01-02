@@ -903,14 +903,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return YES;
 }
 
-#pragma mark - PlaceholderOverlay
-
-- (void)getPlaceholderOverlayImageWithCompletionHandler:
-    (void (^)(UIImage*))completionHandler {
-  SnapshotTabHelper::FromWebState(self.webState)
-      ->RetrieveGreySnapshot(completionHandler);
-}
-
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods
 
 - (void)webStateDidSuppressDialog:(web::WebState*)webState {
@@ -984,43 +976,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   }
   if (self.webState)
     self.webState->WasHidden();
-}
-
-#pragma mark - PagePlaceholderTabHelperDelegate
-
-- (void)displayPlaceholderForPagePlaceholderTabHelper:
-    (PagePlaceholderTabHelper*)tabHelper {
-  // Lazily create page placeholder view.
-  if (!_pagePlaceholder) {
-    _pagePlaceholder = [[UIImageView alloc] init];
-    _pagePlaceholder.autoresizingMask =
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _pagePlaceholder.contentMode = UIViewContentModeScaleAspectFill;
-  }
-
-  // Update page placeholder image.
-  _pagePlaceholder.image = SnapshotTabHelper::GetDefaultSnapshotImage();
-  [self getPlaceholderOverlayImageWithCompletionHandler:^(UIImage* image) {
-    _pagePlaceholder.image = image;
-  }];
-
-  // Display the placeholder on top of WebState's view.
-  UIView* webStateView = self.webState->GetView();
-  _pagePlaceholder.frame = webStateView.bounds;
-  [webStateView addSubview:_pagePlaceholder];
-}
-
-// Removes page placeholder view with fade-out animation.
-- (void)removePlaceholderForPagePlaceholderTabHelper:
-    (PagePlaceholderTabHelper*)tabHelper {
-  __weak UIView* weakPagePlaceholder = _pagePlaceholder;
-  [UIView animateWithDuration:0.5
-      animations:^{
-        weakPagePlaceholder.alpha = 0.0f;
-      }
-      completion:^(BOOL finished) {
-        [weakPagePlaceholder removeFromSuperview];
-      }];
 }
 
 #pragma mark - SnapshotGeneratorDelegate
