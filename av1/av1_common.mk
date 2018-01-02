@@ -24,6 +24,7 @@ AV1_COMMON_SRCS-yes += common/frame_buffers.h
 AV1_COMMON_SRCS-yes += common/alloccommon.h
 AV1_COMMON_SRCS-yes += common/blockd.h
 AV1_COMMON_SRCS-yes += common/common.h
+ifeq ($(CONFIG_DAALA_TX),yes)
 AV1_COMMON_SRCS-yes += common/daala_tx.c
 AV1_COMMON_SRCS-yes += common/daala_tx.h
 AV1_COMMON_SRCS-yes += common/daala_tx_kernels.h
@@ -31,6 +32,7 @@ AV1_COMMON_SRCS-yes += common/daala_inv_txfm.c
 AV1_COMMON_SRCS-yes += common/daala_inv_txfm.h
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/daala_tx_kernels.h
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/daala_inv_txfm_avx2.c
+endif
 AV1_COMMON_SRCS-yes += common/entropy.h
 AV1_COMMON_SRCS-yes += common/entropymode.h
 AV1_COMMON_SRCS-yes += common/entropymv.h

@@ -548,14 +548,19 @@ post_process_cmdline() {
     enabled striped_loop_restoration && enable_feature loop_restoration
     enabled loopfiltering_across_tiles_ext && enable_feature loopfiltering_across_tiles
 
-    soft_enable daala_tx_dst32
-
     if enabled daala_tx; then
+      soft_enable daala_tx_dst32
       enable_feature daala_tx4
       enable_feature daala_tx8
       enable_feature daala_tx16
       enable_feature daala_tx32
       enable_feature daala_tx64
+    else
+      disable_feature daala_tx4
+      disable_feature daala_tx8
+      disable_feature daala_tx16
+      disable_feature daala_tx32
+      disable_feature daala_tx64
     fi
     if enabled daala_tx64 && ! enabled tx64x64; then
       log_echo "daala_tx64 requires tx64x64, so disabling daala_tx64"

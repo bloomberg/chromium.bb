@@ -31,8 +31,10 @@ AV1_CX_SRCS-yes += encoder/context_tree.c
 AV1_CX_SRCS-yes += encoder/context_tree.h
 AV1_CX_SRCS-yes += encoder/cost.h
 AV1_CX_SRCS-yes += encoder/cost.c
+ifeq ($(CONFIG_DAALA_TX),yes)
 AV1_CX_SRCS-yes += encoder/daala_fwd_txfm.c
 AV1_CX_SRCS-yes += encoder/daala_fwd_txfm.h
+endif
 AV1_CX_SRCS-yes += encoder/dct.c
 AV1_CX_SRCS-yes += encoder/hybrid_fwd_txfm.c
 AV1_CX_SRCS-yes += encoder/hybrid_fwd_txfm.h
