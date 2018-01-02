@@ -160,6 +160,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   };
   ControlsState State() const;
 
+  void MaybeToggleControlsFromTap();
+
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
   // and calling the appropriate callback on MediaControlsImpl. The object is
@@ -201,6 +203,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void InitializeControls();
 
   void MakeOpaque();
+  void MakeOpaqueFromPointerEvent();
   void MakeTransparent();
   bool IsVisible() const;
 
@@ -319,6 +322,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   IntSize size_;
 
   bool keep_showing_until_timer_fires_ : 1;
+
+  bool pointer_event_did_show_controls_ = false;
 
   Member<MediaDownloadInProductHelpManager> download_iph_manager_;
 };
