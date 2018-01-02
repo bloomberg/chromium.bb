@@ -3570,7 +3570,7 @@ crbug.com/779087 external/wpt/feature-policy/autoplay-default-feature-policy.htt
 crbug.com/779087 external/wpt/feature-policy/autoplay-disabled-by-feature-policy.https.sub.html [ Skip ]
 
 # Sheriff failures 2017-12-15
-crbug.com/795250 [ Win7 ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
+crbug.com/795250 [ Win7 Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
 crbug.com/795250 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
 
 # Does not work on Mac
