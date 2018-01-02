@@ -81,6 +81,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrU
 template <>
 struct NativeValueTraits<TestInterface2OrUint8Array> : public NativeValueTraitsBase<TestInterface2OrUint8Array> {
   CORE_EXPORT static TestInterface2OrUint8Array NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterface2OrUint8Array NullValue() { return TestInterface2OrUint8Array(); }
 };
 
 template <>

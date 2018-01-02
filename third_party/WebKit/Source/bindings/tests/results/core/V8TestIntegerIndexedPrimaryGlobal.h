@@ -79,6 +79,7 @@ class V8TestIntegerIndexedPrimaryGlobal {
 template <>
 struct NativeValueTraits<TestIntegerIndexedPrimaryGlobal> : public NativeValueTraitsBase<TestIntegerIndexedPrimaryGlobal> {
   CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* NullValue() { return nullptr; }
 };
 
 template <>

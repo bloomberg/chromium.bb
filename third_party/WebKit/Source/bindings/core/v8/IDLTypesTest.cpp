@@ -6,6 +6,7 @@
 
 #include <type_traits>
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8InternalDictionary.h"
 #include "bindings/core/v8/dictionary_sequence_or_dictionary.h"
 #include "core/dom/Element.h"
@@ -139,6 +140,20 @@ static_assert(
         IDLRecord<IDLString, DictionarySequenceOrDictionary>::ImplType,
         HeapVector<std::pair<String, DictionarySequenceOrDictionary>>>::value,
     "IDLRecord<IDLString, union type> produces a HeapVector with no Member<>");
+
+static_assert(std::is_base_of<IDLBase, IDLNullable<IDLDouble>>::value,
+              "IDLNullable should have IDLBase as a base class");
+static_assert(std::is_same<IDLNullable<IDLDouble>::ResultType,
+                           WTF::Optional<double>>::value,
+              "double? corresponds to Optional<double>");
+static_assert(std::is_same<IDLNullable<Element>::ResultType, Element*>::value,
+              "Element? doesn't require an Optional<> wrapper");
+static_assert(std::is_same<IDLNullable<IDLString>::ResultType, String>::value,
+              "DOMString? doesn't require an Optional<> wrapper");
+static_assert(
+    std::is_same<IDLNullable<DictionarySequenceOrDictionary>::ResultType,
+                 DictionarySequenceOrDictionary>::value,
+    "(union type)? doesn't require an Optional<> wrapper");
 
 }  // namespace
 

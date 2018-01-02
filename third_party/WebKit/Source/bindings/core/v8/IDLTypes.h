@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/TypeTraits.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -101,6 +102,40 @@ struct IDLRecord final : public IDLBase {
           std::is_class<typename V8TypeOf<ValueCppType>::Type>::value,
       HeapVector<std::pair<String, MaybeMemberValueCppType>>,
       Vector<std::pair<String, ValueCppType>>>::type;
+};
+
+// Nullable (T?).
+// https://heycam.github.io/webidl/#idl-nullable-type
+// Types without a built-in notion of nullability are mapped to Optional<T>.
+template <typename InnerType, typename = void>
+struct IDLNullable final : public IDLBase {
+ private:
+  using InnerTraits = NativeValueTraits<InnerType>;
+  using InnerResultType =
+      decltype(InnerTraits::NativeValue(std::declval<v8::Isolate*>(),
+                                        v8::Local<v8::Value>(),
+                                        std::declval<ExceptionState&>()));
+
+ public:
+  using ResultType = WTF::Optional<std::decay_t<InnerResultType>>;
+  using ImplType = ResultType;
+  static inline ResultType NullValue() { return WTF::nullopt; }
+};
+template <typename InnerType>
+struct IDLNullable<InnerType,
+                   decltype(void(NativeValueTraits<InnerType>::NullValue()))>
+    final : public IDLBase {
+ private:
+  using InnerTraits = NativeValueTraits<InnerType>;
+  using InnerResultType =
+      decltype(InnerTraits::NativeValue(std::declval<v8::Isolate*>(),
+                                        v8::Local<v8::Value>(),
+                                        std::declval<ExceptionState&>()));
+
+ public:
+  using ResultType = InnerResultType;
+  using ImplType = typename InnerTraits::ImplType;
+  static inline ResultType NullValue() { return InnerTraits::NullValue(); }
 };
 
 }  // namespace blink

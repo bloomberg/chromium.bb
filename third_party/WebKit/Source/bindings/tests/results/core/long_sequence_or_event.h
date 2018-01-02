@@ -77,6 +77,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, LongSequenceOrEve
 template <>
 struct NativeValueTraits<LongSequenceOrEvent> : public NativeValueTraitsBase<LongSequenceOrEvent> {
   CORE_EXPORT static LongSequenceOrEvent NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static LongSequenceOrEvent NullValue() { return LongSequenceOrEvent(); }
 };
 
 template <>

@@ -84,6 +84,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, UnsignedLongLongO
 template <>
 struct NativeValueTraits<UnsignedLongLongOrBooleanOrTestCallbackInterface> : public NativeValueTraitsBase<UnsignedLongLongOrBooleanOrTestCallbackInterface> {
   CORE_EXPORT static UnsignedLongLongOrBooleanOrTestCallbackInterface NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static UnsignedLongLongOrBooleanOrTestCallbackInterface NullValue() { return UnsignedLongLongOrBooleanOrTestCallbackInterface(); }
 };
 
 template <>

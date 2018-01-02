@@ -77,6 +77,7 @@ inline void V8SetReturnValue(const CallbackInfo& callbackInfo, XMLHttpRequestOrS
 template <>
 struct NativeValueTraits<XMLHttpRequestOrString> : public NativeValueTraitsBase<XMLHttpRequestOrString> {
   CORE_EXPORT static XMLHttpRequestOrString NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static XMLHttpRequestOrString NullValue() { return XMLHttpRequestOrString(); }
 };
 
 template <>

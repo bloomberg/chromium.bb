@@ -177,6 +177,8 @@ struct CORE_EXPORT NativeValueTraits<IDLByteString>
                             ExceptionState& exception_state) {
     return ToByteString(isolate, value, exception_state);
   }
+
+  static String NullValue() { return String(); }
 };
 
 template <>
@@ -198,6 +200,8 @@ struct CORE_EXPORT NativeValueTraits<IDLString>
       return String();
     return string;
   }
+
+  static String NullValue() { return String(); }
 };
 
 template <>
@@ -208,6 +212,8 @@ struct CORE_EXPORT NativeValueTraits<IDLUSVString>
                             ExceptionState& exception_state) {
     return ToUSVString(isolate, value, exception_state);
   }
+
+  static String NullValue() { return String(); }
 };
 
 // Floats and doubles
@@ -548,6 +554,22 @@ struct NativeValueTraits<
         << "NativeValueTraits<CallbackFunctionBase>::NativeValue "
         << "is not yet implemented.";
     return nullptr;
+  }
+};
+
+// Nullable
+template <typename InnerType>
+struct NativeValueTraits<IDLNullable<InnerType>>
+    : public NativeValueTraitsBase<IDLNullable<InnerType>> {
+  // https://heycam.github.io/webidl/#es-nullable-type
+  static typename IDLNullable<InnerType>::ResultType NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> v8_value,
+      ExceptionState& exception_state) {
+    if (v8_value->IsNullOrUndefined())
+      return IDLNullable<InnerType>::NullValue();
+    return NativeValueTraits<InnerType>::NativeValue(isolate, v8_value,
+                                                     exception_state);
   }
 };
 

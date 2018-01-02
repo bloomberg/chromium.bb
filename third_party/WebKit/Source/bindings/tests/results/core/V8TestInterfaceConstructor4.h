@@ -55,6 +55,7 @@ class V8TestInterfaceConstructor4 {
 template <>
 struct NativeValueTraits<TestInterfaceConstructor4> : public NativeValueTraitsBase<TestInterfaceConstructor4> {
   CORE_EXPORT static TestInterfaceConstructor4* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceConstructor4* NullValue() { return nullptr; }
 };
 
 template <>

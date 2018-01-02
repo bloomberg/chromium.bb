@@ -176,6 +176,27 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     extended_attributes = extended_attributes or {}
     idl_type = idl_type.preprocessed_type
 
+    # Nullable types
+    def needs_optional_wrapper():
+        if not idl_type.is_nullable or not used_in_cpp_sequence:
+            return False
+        # NativeValueTraits<T>::NullValue should exist in order to provide the
+        # implicit null value, if needed.
+        return not idl_type.inner_type.cpp_type_has_null_value
+
+    if needs_optional_wrapper():
+        inner_type = idl_type.inner_type
+        if inner_type.is_dictionary or inner_type.is_sequence or inner_type.is_record_type:
+            # TODO(jbroman, bashi): Implement this if needed.
+            # This is non-trivial to support because HeapVector refuses to hold
+            # Optional<>, and IDLDictionaryBase (and subclasses) have no
+            # integrated null state that can be distinguished from a present but
+            # empty dictionary. It's unclear whether this will ever come up in
+            # real spec WebIDL.
+            raise NotImplementedError('Sequences of nullable dictionary, sequence or record types are not yet supported.')
+        return 'Optional<%s>' % inner_type.cpp_type_args(
+            extended_attributes, raw_type, used_as_rvalue_type, used_as_variadic_argument, used_in_cpp_sequence)
+
     # Array or sequence types
     if used_as_variadic_argument:
         native_array_element_type = idl_type
@@ -362,6 +383,8 @@ IdlArrayOrSequenceType.is_traceable = property(
     lambda self: self.element_type.is_traceable)
 IdlRecordType.is_traceable = property(
     lambda self: self.value_type.is_traceable)
+IdlNullableType.is_traceable = property(
+    lambda self: self.inner_type.is_traceable)
 
 
 ################################################################################
@@ -579,17 +602,23 @@ def v8_conversion_is_trivial(idl_type):
 IdlType.v8_conversion_is_trivial = property(v8_conversion_is_trivial)
 
 
-def native_value_traits_type_name(idl_type):
+def native_value_traits_type_name(idl_type, in_sequence_or_record=False):
     idl_type = idl_type.preprocessed_type
 
     if idl_type.is_nullable:
-        idl_type = idl_type.inner_type
-
-    if idl_type.native_array_element_type:
-        name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type)
+        inner_type = native_value_traits_type_name(idl_type.inner_type)
+        # IDLNullable is only required for sequences and such.
+        # The IDL compiler already has special cases for nullable operation
+        # parameters, dictionary fields, etc.
+        if in_sequence_or_record:
+            name = 'IDLNullable<%s>' % native_value_traits_type_name(idl_type.inner_type)
+        else:
+            name = inner_type
+    elif idl_type.native_array_element_type:
+        name = 'IDLSequence<%s>' % native_value_traits_type_name(idl_type.native_array_element_type, True)
     elif idl_type.is_record_type:
         name = 'IDLRecord<%s, %s>' % (native_value_traits_type_name(idl_type.key_type),
-                                      native_value_traits_type_name(idl_type.value_type))
+                                      native_value_traits_type_name(idl_type.value_type, True))
     elif idl_type.is_basic_type or idl_type.name == 'Promise':
         name = 'IDL%s' % idl_type.name
     elif idl_type.implemented_as is not None:

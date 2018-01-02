@@ -23,6 +23,10 @@ class ExceptionState;
 // of the specialization is also |ImplType|. The NativeValueTraitsBase
 // specialization is used for IDLBase-based types, which are supposed to have
 // their own |ImplType| typedefs.
+//
+// If present, |NullValue()| will be used when converting from the nullable type
+// T?, and should be used if the impl type has an existing "null" state. If not
+// present, WTF::Optional will be used to wrap the type.
 template <typename T, typename SFINAEHelper = void>
 struct NativeValueTraitsBase {
   using ImplType = T;
@@ -58,13 +62,17 @@ struct NativeValueTraitsBase<
 // should be converted to. Introducing new specializations of this kind is
 // discouraged.
 template <typename T, typename SFINAEHelper = void>
-struct NativeValueTraits : public NativeValueTraitsBase<T> {
-  // This declaration serves only as a blueprint for specializations: the
-  // return type can change, but all specializations are expected to provide a
-  // nativeValue() method that takes the 3 arguments below.
-  static inline typename NativeValueTraitsBase<T>::ImplType
-  NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
-};
+struct NativeValueTraits;
+
+// This declaration serves only as a blueprint for specializations: the
+// return type can change, but all specializations are expected to provide a
+// NativeValue() method that takes the 3 arguments below.
+//
+// template <>
+// struct NativeValueTraits<T>: public NativeValueTraitsBase<T> {
+//   static inline typename NativeValueTraitsBase<T>::ImplType
+//   NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+// };
 
 }  // namespace blink
 

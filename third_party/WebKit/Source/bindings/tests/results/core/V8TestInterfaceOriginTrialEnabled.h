@@ -66,6 +66,7 @@ class V8TestInterfaceOriginTrialEnabled {
 template <>
 struct NativeValueTraits<TestInterfaceOriginTrialEnabled> : public NativeValueTraitsBase<TestInterfaceOriginTrialEnabled> {
   CORE_EXPORT static TestInterfaceOriginTrialEnabled* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceOriginTrialEnabled* NullValue() { return nullptr; }
 };
 
 template <>

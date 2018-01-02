@@ -75,6 +75,7 @@ class V8TestInterfaceNode {
 template <>
 struct NativeValueTraits<TestInterfaceNode> : public NativeValueTraitsBase<TestInterfaceNode> {
   CORE_EXPORT static TestInterfaceNode* NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+  CORE_EXPORT static TestInterfaceNode* NullValue() { return nullptr; }
 };
 
 template <>

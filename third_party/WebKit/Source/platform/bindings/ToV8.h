@@ -16,6 +16,7 @@
 #include "platform/bindings/V8Binding.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Optional.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -160,6 +161,12 @@ inline v8::Local<v8::Value> ToV8(const ToV8UndefinedGenerator& value,
   return v8::Undefined(isolate);
 }
 
+// Forward declaration to allow interleaving with sequences.
+template <typename InnerType>
+inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate*);
+
 // Array
 
 // Declare the function here but define it later so it can call the ToV8()
@@ -252,6 +259,17 @@ inline v8::Local<v8::Value> ToV8SequenceInternal(
       return v8::Local<v8::Value>();
   }
   return array;
+}
+
+// Nullable
+
+template <typename InnerType>
+inline v8::Local<v8::Value> ToV8(const base::Optional<InnerType>& value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  if (!value)
+    return v8::Null(isolate);
+  return ToV8(*value, creation_context, isolate);
 }
 
 // In all cases allow script state instead of creation context + isolate.

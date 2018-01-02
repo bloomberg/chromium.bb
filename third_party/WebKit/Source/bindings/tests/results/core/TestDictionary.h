@@ -14,6 +14,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/double_or_double_or_null_sequence.h"
 #include "bindings/core/v8/double_or_double_sequence.h"
 #include "bindings/core/v8/double_or_string.h"
 #include "bindings/core/v8/float_or_boolean.h"
@@ -99,6 +100,26 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   inline void setDoubleOrNullMember(double);
   inline void setDoubleOrNullMemberToNull();
 
+  bool hasDoubleOrNullOrDoubleOrNullSequenceMember() const { return !double_or_null_or_double_or_null_sequence_member_.IsNull(); }
+  const DoubleOrDoubleOrNullSequence& doubleOrNullOrDoubleOrNullSequenceMember() const {
+    return double_or_null_or_double_or_null_sequence_member_;
+  }
+  void setDoubleOrNullOrDoubleOrNullSequenceMember(const DoubleOrDoubleOrNullSequence&);
+
+  bool hasDoubleOrNullRecordMember() const { return has_double_or_null_record_member_; }
+  const Vector<std::pair<String, Optional<double>>>& doubleOrNullRecordMember() const {
+    DCHECK(has_double_or_null_record_member_);
+    return double_or_null_record_member_;
+  }
+  void setDoubleOrNullRecordMember(const Vector<std::pair<String, Optional<double>>>&);
+
+  bool hasDoubleOrNullSequenceMember() const { return has_double_or_null_sequence_member_; }
+  const Vector<Optional<double>>& doubleOrNullSequenceMember() const {
+    DCHECK(has_double_or_null_sequence_member_);
+    return double_or_null_sequence_member_;
+  }
+  void setDoubleOrNullSequenceMember(const Vector<Optional<double>>&);
+
   bool hasDoubleOrStringMember() const { return !double_or_string_member_.IsNull(); }
   const DoubleOrString& doubleOrStringMember() const {
     return double_or_string_member_;
@@ -118,6 +139,20 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setElementOrNullMember(Element*);
   inline void setElementOrNullMemberToNull();
+
+  bool hasElementOrNullRecordMember() const { return has_element_or_null_record_member_; }
+  const HeapVector<std::pair<String, Member<Element>>>& elementOrNullRecordMember() const {
+    DCHECK(has_element_or_null_record_member_);
+    return element_or_null_record_member_;
+  }
+  void setElementOrNullRecordMember(const HeapVector<std::pair<String, Member<Element>>>&);
+
+  bool hasElementOrNullSequenceMember() const { return has_element_or_null_sequence_member_; }
+  const HeapVector<Member<Element>>& elementOrNullSequenceMember() const {
+    DCHECK(has_element_or_null_sequence_member_);
+    return element_or_null_sequence_member_;
+  }
+  void setElementOrNullSequenceMember(const HeapVector<Member<Element>>&);
 
   bool hasEnumMember() const { return !enum_member_.IsNull(); }
   const String& enumMember() const {
@@ -240,6 +275,20 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   inline void setStringOrNullMember(const String&);
   inline void setStringOrNullMemberToNull();
 
+  bool hasStringOrNullRecordMember() const { return has_string_or_null_record_member_; }
+  const Vector<std::pair<String, String>>& stringOrNullRecordMember() const {
+    DCHECK(has_string_or_null_record_member_);
+    return string_or_null_record_member_;
+  }
+  void setStringOrNullRecordMember(const Vector<std::pair<String, String>>&);
+
+  bool hasStringOrNullSequenceMember() const { return has_string_or_null_sequence_member_; }
+  const Vector<String>& stringOrNullSequenceMember() const {
+    DCHECK(has_string_or_null_sequence_member_);
+    return string_or_null_sequence_member_;
+  }
+  void setStringOrNullSequenceMember(const Vector<String>&);
+
   bool hasStringSequenceMember() const { return has_string_sequence_member_; }
   const Vector<String>& stringSequenceMember() const {
     DCHECK(has_string_sequence_member_);
@@ -332,6 +381,20 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setUnionMemberWithSequenceDefault(const DoubleOrDoubleSequence&);
 
+  bool hasUnionOrNullRecordMember() const { return has_union_or_null_record_member_; }
+  const HeapVector<std::pair<String, DoubleOrString>>& unionOrNullRecordMember() const {
+    DCHECK(has_union_or_null_record_member_);
+    return union_or_null_record_member_;
+  }
+  void setUnionOrNullRecordMember(const HeapVector<std::pair<String, DoubleOrString>>&);
+
+  bool hasUnionOrNullSequenceMember() const { return has_union_or_null_sequence_member_; }
+  const HeapVector<DoubleOrString>& unionOrNullSequenceMember() const {
+    DCHECK(has_union_or_null_sequence_member_);
+    return union_or_null_sequence_member_;
+  }
+  void setUnionOrNullSequenceMember(const HeapVector<DoubleOrString>&);
+
   bool hasUnionWithTypedefs() const { return !union_with_typedefs_.IsNull(); }
   const FloatOrBoolean& unionWithTypedefs() const {
     return union_with_typedefs_;
@@ -354,7 +417,11 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_boolean_member_ = false;
   bool has_create_member_ = false;
   bool has_double_or_null_member_ = false;
+  bool has_double_or_null_record_member_ = false;
+  bool has_double_or_null_sequence_member_ = false;
   bool has_double_or_string_sequence_member_ = false;
+  bool has_element_or_null_record_member_ = false;
+  bool has_element_or_null_sequence_member_ = false;
   bool has_enum_sequence_member_ = false;
   bool has_garbage_collected_record_member_ = false;
   bool has_internal_dictionary_sequence_member_ = false;
@@ -366,12 +433,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_restricted_double_member_ = false;
   bool has_runtime_member_ = false;
   bool has_runtime_second_member_ = false;
+  bool has_string_or_null_record_member_ = false;
+  bool has_string_or_null_sequence_member_ = false;
   bool has_string_sequence_member_ = false;
   bool has_test_interface_garbage_collected_sequence_member_ = false;
   bool has_test_interface_sequence_member_ = false;
   bool has_test_object_sequence_member_ = false;
   bool has_treat_null_as_string_sequence_member_ = false;
   bool has_union_in_record_member_ = false;
+  bool has_union_or_null_record_member_ = false;
+  bool has_union_or_null_sequence_member_ = false;
   bool has_unrestricted_double_member_ = false;
 
   Vector<std::pair<String, ScriptValue>> any_in_record_member_;
@@ -382,9 +453,14 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool create_member_;
   Dictionary dictionary_member_;
   double double_or_null_member_;
+  DoubleOrDoubleOrNullSequence double_or_null_or_double_or_null_sequence_member_;
+  Vector<std::pair<String, Optional<double>>> double_or_null_record_member_;
+  Vector<Optional<double>> double_or_null_sequence_member_;
   DoubleOrString double_or_string_member_;
   HeapVector<DoubleOrString> double_or_string_sequence_member_;
   Member<Element> element_or_null_member_;
+  HeapVector<std::pair<String, Member<Element>>> element_or_null_record_member_;
+  HeapVector<Member<Element>> element_or_null_sequence_member_;
   String enum_member_;
   Vector<String> enum_sequence_member_;
   Member<EventTarget> event_target_member_;
@@ -403,6 +479,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool runtime_second_member_;
   String string_member_;
   String string_or_null_member_;
+  Vector<std::pair<String, String>> string_or_null_record_member_;
+  Vector<String> string_or_null_sequence_member_;
   Vector<String> string_sequence_member_;
   TestEnumOrTestEnumSequence test_enum_or_test_enum_sequence_member_;
   TestInterface2OrUint8Array test_interface_2_or_uint8_array_member_;
@@ -417,6 +495,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<DOMUint8Array> uint8_array_member_;
   HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_;
   DoubleOrDoubleSequence union_member_with_sequence_default_;
+  HeapVector<std::pair<String, DoubleOrString>> union_or_null_record_member_;
+  HeapVector<DoubleOrString> union_or_null_sequence_member_;
   FloatOrBoolean union_with_typedefs_;
   double unrestricted_double_member_;
 
