@@ -88,6 +88,7 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/allocator/Partitions.h"
 #include "platform/wtf/text/CString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -2901,8 +2902,13 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
     return;
 
   const bool had_resource_info = ResourceInfo();
-  if (new_style.HasFilterInducingProperty())
-    new_style.Filter().AddClient(&EnsureResourceInfo());
+  if (new_style.HasFilterInducingProperty()) {
+    new_style.Filter().AddClient(&EnsureResourceInfo(),
+                                 GetLayoutObject()
+                                     .GetDocument()
+                                     .GetTaskRunner(TaskType::kUnspecedLoading)
+                                     .get());
+  }
   if (had_resource_info && old_style)
     old_style->Filter().RemoveClient(ResourceInfo());
   if (PaintLayerResourceInfo* resource_info = ResourceInfo())
@@ -2919,7 +2925,11 @@ void PaintLayer::UpdateClipPath(const ComputedStyle* old_style,
   const bool had_resource_info = ResourceInfo();
   if (IsReferenceClipPath(new_clip_operation)) {
     ToReferenceClipPathOperation(new_clip_operation)
-        ->AddClient(&EnsureResourceInfo());
+        ->AddClient(&EnsureResourceInfo(),
+                    GetLayoutObject()
+                        .GetDocument()
+                        .GetTaskRunner(TaskType::kUnspecedLoading)
+                        .get());
   }
   if (had_resource_info && IsReferenceClipPath(old_clip_operation)) {
     ToReferenceClipPathOperation(old_clip_operation)

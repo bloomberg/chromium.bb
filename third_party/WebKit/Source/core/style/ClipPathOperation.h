@@ -70,7 +70,7 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
     return base::AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
   }
 
-  void AddClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*, WebTaskRunner*);
   void RemoveClient(SVGResourceClient*);
 
   SVGElement* FindElement(TreeScope&) const;

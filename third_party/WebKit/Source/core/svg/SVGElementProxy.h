@@ -78,7 +78,7 @@ class SVGElementProxy : public GarbageCollectedFinalized<SVGElementProxy> {
   }
   virtual ~SVGElementProxy();
 
-  void AddClient(SVGResourceClient*);
+  void AddClient(SVGResourceClient*, WebTaskRunner*);
   void RemoveClient(SVGResourceClient*);
 
   // Resolve a potentially external document reference.

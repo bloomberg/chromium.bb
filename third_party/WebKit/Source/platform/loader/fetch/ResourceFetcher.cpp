@@ -666,7 +666,7 @@ Resource* ResourceFetcher::RequestResource(
          params.Options().synchronous_policy == kRequestAsynchronously);
   Resource* resource = RequestResource(params, factory, substitute_data);
   if (client)
-    client->SetResource(resource);
+    client->SetResource(resource, Context().GetLoadingTaskRunner().get());
   return resource;
 }
 

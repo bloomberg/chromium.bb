@@ -62,8 +62,9 @@ ReferenceFilterOperation::ReferenceFilterOperation(
     SVGElementProxy& element_proxy)
     : FilterOperation(REFERENCE), url_(url), element_proxy_(&element_proxy) {}
 
-void ReferenceFilterOperation::AddClient(SVGResourceClient* client) {
-  element_proxy_->AddClient(client);
+void ReferenceFilterOperation::AddClient(SVGResourceClient* client,
+                                         WebTaskRunner* task_runner) {
+  element_proxy_->AddClient(client, task_runner);
 }
 
 void ReferenceFilterOperation::RemoveClient(SVGResourceClient* client) {

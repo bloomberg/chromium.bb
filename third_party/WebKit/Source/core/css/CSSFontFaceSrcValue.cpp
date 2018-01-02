@@ -109,8 +109,11 @@ FontResource* CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     // FIXME: CSSFontFaceSrcValue::Fetch is invoked when @font-face rule
     // is processed by StyleResolver / StyleEngine.
     RestoreCachedResourceIfNeeded(context);
-    if (client)
-      client->SetResource(fetched_.Get());
+    if (client) {
+      client->SetResource(
+          fetched_.Get(),
+          context->GetTaskRunner(TaskType::kUnspecedLoading).get());
+    }
   }
   return fetched_.Get();
 }
