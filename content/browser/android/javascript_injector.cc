@@ -25,6 +25,7 @@ JavascriptInjector::JavascriptInjector(
     : java_ref_(env, obj) {
   java_bridge_dispatcher_host_ =
       new GinJavaBridgeDispatcherHost(web_contents, retained_objects);
+  web_contents->SetUserData(UserDataKey(), base::WrapUnique(this));
 }
 
 JavascriptInjector::~JavascriptInjector() {
