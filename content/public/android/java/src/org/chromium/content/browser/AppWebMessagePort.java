@@ -175,6 +175,8 @@ public class AppWebMessagePort implements MessagePort {
             mMessageCallback = messageCallback;
             if (handler != null) {
                 mHandler = new MessageHandler(handler.getLooper());
+            } else {
+                mHandler = null;
             }
         }
         nativeStartReceivingMessages(mNativeAppWebMessagePort);
