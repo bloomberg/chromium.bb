@@ -1213,12 +1213,11 @@ void SimpleEntryImpl::DoomEntryInternal(const CompletionCallback& callback) {
     state_ = STATE_IO_PENDING;
     return;
   }
-  PostTaskAndReplyWithResult(
-      worker_pool_.get(),
-      FROM_HERE,
-      base::Bind(&SimpleSynchronousEntry::DoomEntry, path_, entry_hash_),
-      base::Bind(
-          &SimpleEntryImpl::DoomOperationComplete, this, callback, state_));
+  PostTaskAndReplyWithResult(worker_pool_.get(), FROM_HERE,
+                             base::Bind(&SimpleSynchronousEntry::DoomEntry,
+                                        path_, cache_type_, entry_hash_),
+                             base::Bind(&SimpleEntryImpl::DoomOperationComplete,
+                                        this, callback, state_));
   state_ = STATE_IO_PENDING;
 }
 
