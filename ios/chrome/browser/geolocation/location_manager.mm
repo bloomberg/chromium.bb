@@ -77,10 +77,6 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
   return self;
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 - (CLAuthorizationStatus)authorizationStatus {
   return [CLLocationManager authorizationStatus];
 }

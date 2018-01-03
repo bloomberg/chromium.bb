@@ -568,10 +568,6 @@ using ios::material::TimingFunction;
   return self;
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 - (UIViewController*)viewController {
   return self;
 }

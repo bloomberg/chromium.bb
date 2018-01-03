@@ -73,10 +73,6 @@ AutofillEditCell* AutofillEditCellForTextField(UITextField* textField) {
               object:nil];
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 #pragma mark - SettingsRootCollectionViewController
 
 - (BOOL)shouldShowEditButton {

@@ -159,10 +159,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 - (void)stopBrowserStateServiceObservers {
   _tokenServiceObserver.reset();
   _syncObserver.reset();

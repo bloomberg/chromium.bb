@@ -244,10 +244,6 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
       toSectionWithIdentifier:SectionIdentifierDelete];
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 #pragma mark - Items
 
 - (CollectionViewItem*)siteCopyButtonItem {

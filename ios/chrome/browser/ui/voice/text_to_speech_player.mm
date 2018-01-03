@@ -45,7 +45,6 @@
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self cancelPlayback];
 }
 

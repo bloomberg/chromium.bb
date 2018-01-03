@@ -75,10 +75,6 @@ const CGFloat kPadding = 10;
   [_memoryWarningTimer invalidate];
 }
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 #pragma mark UIView methods
 
 - (CGSize)sizeThatFits:(CGSize)size {

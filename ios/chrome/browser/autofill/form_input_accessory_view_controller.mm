@@ -268,7 +268,6 @@ NSArray* FindDescendantToolbarItemsForActionName(
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webStateObserverBridge.reset();
