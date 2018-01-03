@@ -2041,6 +2041,9 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
 
     AtomicString event_type;
     switch (input_event.GetType()) {
+      case WebInputEvent::kMouseEnter:
+        event_type = EventTypeNames::mouseover;
+        break;
       case WebInputEvent::kMouseMove:
         event_type = EventTypeNames::mousemove;
         break;
