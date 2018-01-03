@@ -55,7 +55,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client,
-                    bool touchpad_and_wheel_scroll_latching_enabled);
+                    bool touchpad_and_wheel_scroll_latching_enabled,
+                    bool async_wheel_events_enabled);
   ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
@@ -233,6 +234,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   bool smooth_scroll_enabled_;
   const bool touchpad_and_wheel_scroll_latching_enabled_;
+  const bool async_wheel_events_enabled_;
 
   // The merged result of the last touch event with previous touch events.
   // This value will get returned for subsequent TouchMove events to allow
@@ -253,6 +255,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
   bool has_ongoing_compositor_scroll_fling_pinch_;
+  bool is_first_gesture_scroll_update_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
 
