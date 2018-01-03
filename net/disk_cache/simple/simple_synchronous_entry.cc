@@ -292,8 +292,12 @@ void SimpleSynchronousEntry::CreateEntry(
 
 // static
 int SimpleSynchronousEntry::DoomEntry(const FilePath& path,
+                                      net::CacheType cache_type,
                                       uint64_t entry_hash) {
+  base::TimeTicks start = base::TimeTicks::Now();
   const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
+  SIMPLE_CACHE_UMA(TIMES, "DiskDoomLatency", cache_type,
+                   base::TimeTicks::Now() - start);
   return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
@@ -1461,7 +1465,7 @@ int SimpleSynchronousEntry::GetEOFRecordData(base::File* file,
 
 void SimpleSynchronousEntry::Doom() const {
   DCHECK_EQ(0u, entry_file_key_.doom_generation);
-  DeleteFilesForEntryHash(path_, entry_file_key_.entry_hash);
+  DoomEntry(path_, cache_type_, entry_file_key_.entry_hash);
 }
 
 // static

@@ -179,7 +179,9 @@ class SimpleSynchronousEntry {
   // Deletes an entry from the file system without affecting the state of the
   // corresponding instance, if any (allowing operations to continue to be
   // executed through that instance). Returns a net error code.
-  static int DoomEntry(const base::FilePath& path, uint64_t entry_hash);
+  static int DoomEntry(const base::FilePath& path,
+                       net::CacheType cache_type,
+                       uint64_t entry_hash);
 
   // Like |DoomEntry()| above, except that it truncates the entry files rather
   // than deleting them. Used when dooming entries after the backend has
