@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/extension_icon_image.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -28,7 +29,8 @@ class ImageButton;
 class ZoomBubbleView : public LocationBarBubbleDelegateView,
                        public views::ButtonListener,
                        public ImmersiveModeController::Observer,
-                       public extensions::IconImage::Observer {
+                       public extensions::IconImage::Observer,
+                       public content::WebContentsObserver {
  public:
   // Shows the bubble and automatically closes it after a short time period if
   // |reason| is AUTOMATIC.
@@ -99,6 +101,10 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   // extensions::IconImage::Observer:
   void OnExtensionIconImageChanged(extensions::IconImage* /* image */) override;
 
+  // content::WebContentsObserver:
+  void WasHidden() override;
+  void WebContentsDestroyed() override;
+
   // Sets information about the extension that initiated the zoom change.
   // Calling this method asserts that the extension |extension| did initiate
   // the zoom change.
@@ -141,9 +147,6 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
   views::Button* zoom_out_button_;
   views::Button* zoom_in_button_;
   views::Button* reset_button_;
-
-  // The WebContents for the page whose zoom has changed.
-  content::WebContents* web_contents_;
 
   // Whether the currently displayed bubble will automatically close.
   bool auto_close_;

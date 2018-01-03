@@ -153,7 +153,7 @@ void ZoomBubbleView::ShowBubble(content::WebContents* web_contents,
   // initiated by an extension, then the bubble can be reused and only the label
   // text needs to be updated.
   if (zoom_bubble_ && zoom_bubble_->GetAnchorView() == anchor_view && !client) {
-    DCHECK_EQ(web_contents, zoom_bubble_->web_contents_);
+    DCHECK_EQ(web_contents, zoom_bubble_->web_contents());
     zoom_bubble_->Refresh();
     return;
   }
@@ -224,13 +224,13 @@ ZoomBubbleView::ZoomBubbleView(
     DisplayReason reason,
     ImmersiveModeController* immersive_mode_controller)
     : LocationBarBubbleDelegateView(anchor_view, anchor_point, web_contents),
+      WebContentsObserver(web_contents),
       auto_close_duration_(kBubbleCloseDelayDefault),
       image_button_(nullptr),
       label_(nullptr),
       zoom_out_button_(nullptr),
       zoom_in_button_(nullptr),
       reset_button_(nullptr),
-      web_contents_(web_contents),
       auto_close_(reason == AUTOMATIC),
       ignore_close_bubble_(false),
       immersive_mode_controller_(immersive_mode_controller) {
@@ -313,7 +313,7 @@ void ZoomBubbleView::Init() {
   }
 
   // Add zoom label with the new zoom percent.
-  label_ = new ZoomValue(web_contents_);
+  label_ = new ZoomValue(web_contents());
   UpdateZoomPercent();
   label_->SetProperty(views::kMarginsKey,
                       new gfx::Insets(label_vertical_margin));
@@ -358,9 +358,8 @@ void ZoomBubbleView::WindowClosing() {
   bool this_bubble = zoom_bubble_ == this;
   if (this_bubble)
     zoom_bubble_ = nullptr;
+
   UpdateZoomIconVisibility();
-  if (this_bubble)
-    web_contents_ = nullptr;
 }
 
 void ZoomBubbleView::CloseBubble() {
@@ -368,7 +367,7 @@ void ZoomBubbleView::CloseBubble() {
     return;
 
   // Widget's Close() is async, but we don't want to use zoom_bubble_ after
-  // this. Additionally web_contents_ may have been destroyed.
+  // this. Additionally web_contents() may have been destroyed.
   zoom_bubble_ = nullptr;
   LocationBarBubbleDelegateView::CloseBubble();
 }
@@ -385,17 +384,17 @@ void ZoomBubbleView::ButtonPressed(views::Button* sender,
 
   if (sender == image_button_) {
     DCHECK(extension_info_.icon_image) << "Invalid button press.";
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     chrome::AddSelectedTabWithURL(
         browser, GURL(base::StringPrintf("chrome://extensions?id=%s",
                                          extension_info_.id.c_str())),
         ui::PAGE_TRANSITION_FROM_API);
   } else if (sender == zoom_out_button_) {
-    zoom::PageZoom::Zoom(web_contents_, content::PAGE_ZOOM_OUT);
+    zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_OUT);
   } else if (sender == zoom_in_button_) {
-    zoom::PageZoom::Zoom(web_contents_, content::PAGE_ZOOM_IN);
+    zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_IN);
   } else if (sender == reset_button_) {
-    zoom::PageZoom::Zoom(web_contents_, content::PAGE_ZOOM_RESET);
+    zoom::PageZoom::Zoom(web_contents(), content::PAGE_ZOOM_RESET);
   } else {
     NOTREACHED();
   }
@@ -414,6 +413,14 @@ void ZoomBubbleView::OnExtensionIconImageChanged(
   image_button_->SetImage(views::Button::STATE_NORMAL,
                           &extension_info_.icon_image->image_skia());
   image_button_->SchedulePaint();
+}
+
+void ZoomBubbleView::WasHidden() {
+  CloseBubble();
+}
+
+void ZoomBubbleView::WebContentsDestroyed() {
+  CloseBubble();
 }
 
 void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
@@ -435,13 +442,9 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
   bool has_default_sized_icon =
       !icons.Get(gfx::kFaviconSize, ExtensionIconSet::MATCH_EXACTLY).empty();
   if (has_default_sized_icon) {
-    extension_info_.icon_image.reset(
-        new extensions::IconImage(web_contents_->GetBrowserContext(),
-                                  extension,
-                                  icons,
-                                  icon_size,
-                                  default_extension_icon_image,
-                                  this));
+    extension_info_.icon_image.reset(new extensions::IconImage(
+        web_contents()->GetBrowserContext(), extension, icons, icon_size,
+        default_extension_icon_image, this));
     return;
   }
 
@@ -452,22 +455,22 @@ void ZoomBubbleView::SetExtensionInfo(const extensions::Extension* extension) {
 
   icon_size = browser_action->default_icon.map().begin()->first;
   extension_info_.icon_image.reset(
-      new extensions::IconImage(web_contents_->GetBrowserContext(),
-                                extension,
-                                browser_action->default_icon,
-                                icon_size,
-                                default_extension_icon_image,
-                                this));
+      new extensions::IconImage(web_contents()->GetBrowserContext(), extension,
+                                browser_action->default_icon, icon_size,
+                                default_extension_icon_image, this));
 }
 
 void ZoomBubbleView::UpdateZoomPercent() {
   label_->SetText(base::FormatPercent(
-      zoom::ZoomController::FromWebContents(web_contents_)->GetZoomPercent()));
+      zoom::ZoomController::FromWebContents(web_contents())->GetZoomPercent()));
   label_->NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
 }
 
 void ZoomBubbleView::UpdateZoomIconVisibility() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  // Note that we can't rely on web_contents() here, as it may have been
+  // destroyed by the time we get this call.
+  Browser* browser = chrome::FindBrowserWithWindow(
+      platform_util::GetTopLevel(parent_window()));
   if (browser && browser->window() && browser->window()->GetLocationBar())
     browser->window()->GetLocationBar()->UpdateZoomViewVisibility();
 }
