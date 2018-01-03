@@ -36,7 +36,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     : ssl_config_(ssl_config),
       pac_request_(NULL),
       url_(url),
-      tried_direct_connect_fallback_(false),
       net_log_(net::NetLogWithSource::Make(
           request_context_getter->GetURLRequestContext()->net_log(),
           net::NetLogSourceType::SOCKET)),
@@ -140,8 +139,6 @@ int ProxyResolvingClientSocket::SetSendBufferSize(int32_t size) {
 int ProxyResolvingClientSocket::Connect(
     const net::CompletionCallback& callback) {
   DCHECK(user_connect_callback_.is_null());
-
-  tried_direct_connect_fallback_ = false;
 
   // First try to resolve the proxy.
   // TODO(xunjieli): Having a null ProxyDelegate is bad. Figure out how to
@@ -280,18 +277,10 @@ void ProxyResolvingClientSocket::ConnectToProxy(int net_error) {
     }
   }
 
-  // TODO(xunjieli): This results in retrying "Direct" twice, because of
-  // ReconsiderProxyAfterError() path. https://crbug.com/793076.
-  // Try falling back to a direct connection if we have not tried that before.
   if (net_error != net::OK) {
-    if (!tried_direct_connect_fallback_) {
-      tried_direct_connect_fallback_ = true;
-      proxy_info_.UseDirect();
-    } else {
-      CloseTransportSocket();
-      base::ResetAndReturn(&user_connect_callback_).Run(net_error);
-      return;
-    }
+    CloseTransportSocket();
+    base::ResetAndReturn(&user_connect_callback_).Run(net_error);
+    return;
   }
 
   transport_.reset(new net::ClientSocketHandle);

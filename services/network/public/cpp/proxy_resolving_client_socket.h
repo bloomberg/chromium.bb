@@ -110,7 +110,6 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   net::ProxyService::PacRequest* pac_request_;
   net::ProxyInfo proxy_info_;
   const GURL url_;
-  bool tried_direct_connect_fallback_;
   net::NetLogWithSource net_log_;
 
   // The callback passed to Connect().
