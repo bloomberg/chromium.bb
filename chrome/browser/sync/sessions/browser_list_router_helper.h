@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_BROWSER_LIST_ROUTER_HELPER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_BROWSER_LIST_ROUTER_HELPER_H_
 
+#include <set>
+
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -31,6 +33,10 @@ class BrowserListRouterHelper : public BrowserListObserver,
                      content::WebContents* web_contents,
                      int index,
                      bool foreground) override;
+  void TabReplacedAt(TabStripModel* tab_strip_model,
+                     content::WebContents* old_contents,
+                     content::WebContents* new_contents,
+                     int index) override;
 
   // |router_| owns |this|.
   SyncSessionsWebContentsRouter* router_;

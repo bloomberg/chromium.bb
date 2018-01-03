@@ -53,8 +53,19 @@ void BrowserListRouterHelper::TabInsertedAt(TabStripModel* model,
                                             int index,
                                             bool foreground) {
   if (web_contents && Profile::FromBrowserContext(
-                          web_contents->GetBrowserContext()) == profile_)
+                          web_contents->GetBrowserContext()) == profile_) {
     router_->NotifyTabModified(web_contents, false);
+  }
+}
+
+void BrowserListRouterHelper::TabReplacedAt(TabStripModel* tab_strip_model,
+                                            content::WebContents* old_contents,
+                                            content::WebContents* new_contents,
+                                            int index) {
+  if (new_contents && Profile::FromBrowserContext(
+                          new_contents->GetBrowserContext()) == profile_) {
+    router_->NotifyTabModified(new_contents, false);
+  }
 }
 
 }  // namespace sync_sessions
