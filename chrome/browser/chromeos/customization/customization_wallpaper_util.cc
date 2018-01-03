@@ -1,0 +1,186 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
+
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/location.h"
+#include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/users/avatar/user_image_loader.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_manager/user_image/user_image.h"
+#include "content/public/browser/browser_thread.h"
+#include "url/gurl.h"
+
+namespace chromeos {
+
+namespace {
+
+// Returns true if both file paths exist.
+bool CheckCustomizedWallpaperFilesExist(
+    const base::FilePath& resized_small_path,
+    const base::FilePath& resized_large_path) {
+  return base::PathExists(resized_small_path) &&
+         base::PathExists(resized_large_path);
+}
+
+// Resizes and saves the customized default wallpapers.
+bool ResizeAndSaveCustomizedDefaultWallpaper(
+    std::unique_ptr<gfx::ImageSkia> image,
+    const base::FilePath& resized_small_path,
+    const base::FilePath& resized_large_path) {
+  bool success = true;
+
+  success &= ash::WallpaperController::ResizeAndSaveWallpaper(
+      *image, resized_small_path, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      ash::WallpaperController::kSmallWallpaperMaxWidth,
+      ash::WallpaperController::kSmallWallpaperMaxHeight,
+      nullptr /*output_skia=*/);
+
+  success &= ash::WallpaperController::ResizeAndSaveWallpaper(
+      *image, resized_large_path, wallpaper::WALLPAPER_LAYOUT_STRETCH,
+      ash::WallpaperController::kLargeWallpaperMaxWidth,
+      ash::WallpaperController::kLargeWallpaperMaxHeight,
+      nullptr /*output_skia=*/);
+
+  return success;
+}
+
+// Checks the result of |ResizeAndSaveCustomizedDefaultWallpaper| and sends
+// the paths to apply the wallpapers.
+void OnCustomizedDefaultWallpaperResizedAndSaved(
+    const GURL& wallpaper_url,
+    const base::FilePath& resized_small_path,
+    const base::FilePath& resized_large_path,
+    bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success) {
+    LOG(WARNING) << "Failed to save resized customized default wallpaper";
+    return;
+  }
+
+  g_browser_process->local_state()->SetString(
+      prefs::kCustomizationDefaultWallpaperURL, wallpaper_url.spec());
+  WallpaperManager::Get()->SetCustomizedDefaultWallpaperPaths(
+      resized_small_path, resized_large_path);
+  VLOG(1) << "Customized default wallpaper applied.";
+}
+
+// Initiates resizing and saving the customized default wallpapers if decoding
+// is successful.
+void OnCustomizedDefaultWallpaperDecoded(
+    const GURL& wallpaper_url,
+    const base::FilePath& resized_small_path,
+    const base::FilePath& resized_large_path,
+    std::unique_ptr<user_manager::UserImage> wallpaper) {
+  // Empty image indicates decode failure.
+  if (wallpaper->image().isNull()) {
+    LOG(WARNING) << "Failed to decode customized wallpaper.";
+    return;
+  }
+
+  wallpaper->image().EnsureRepsForSupportedScales();
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::Bind(&ResizeAndSaveCustomizedDefaultWallpaper,
+                 base::Passed(wallpaper->image().DeepCopy()),
+                 resized_small_path, resized_large_path),
+      base::Bind(&OnCustomizedDefaultWallpaperResizedAndSaved, wallpaper_url,
+                 resized_small_path, resized_large_path));
+}
+
+// If |both_sizes_exist| is false or the url doesn't match the current value,
+// initiates image decoding, otherwise directly sends the paths.
+void SetCustomizedDefaultWallpaperAfterCheck(
+    const GURL& wallpaper_url,
+    const base::FilePath& file_path,
+    const base::FilePath& resized_small_path,
+    const base::FilePath& resized_large_path,
+    bool both_sizes_exist) {
+  const std::string current_url = g_browser_process->local_state()->GetString(
+      prefs::kCustomizationDefaultWallpaperURL);
+  if (both_sizes_exist && current_url == wallpaper_url.spec()) {
+    WallpaperManager::Get()->SetCustomizedDefaultWallpaperPaths(
+        resized_small_path, resized_small_path);
+  } else {
+    // Either resized images do not exist or cached version is incorrect.
+    // Need to start decoding again.
+    scoped_refptr<base::SequencedTaskRunner> task_runner =
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+    user_image_loader::StartWithFilePath(
+        task_runner, file_path, ImageDecoder::ROBUST_JPEG_CODEC,
+        0,  // Do not crop.
+        base::Bind(&OnCustomizedDefaultWallpaperDecoded, wallpaper_url,
+                   resized_small_path, resized_large_path));
+  }
+}
+
+}  // namespace
+
+namespace customization_wallpaper_util {
+
+void StartSettingCustomizedDefaultWallpaper(
+    const GURL& wallpaper_url,
+    const base::FilePath& file_path,
+    const base::FilePath& resized_directory) {
+  // Should fail if this ever happens in tests.
+  DCHECK(wallpaper_url.is_valid());
+  if (!wallpaper_url.is_valid()) {
+    if (!wallpaper_url.is_empty()) {
+      LOG(WARNING) << "Invalid Customized Wallpaper URL '"
+                   << wallpaper_url.spec() << "'";
+    }
+    return;
+  }
+
+  std::string downloaded_file_name = file_path.BaseName().value();
+  const base::FilePath resized_small_path = resized_directory.Append(
+      downloaded_file_name + ash::WallpaperController::kSmallWallpaperSuffix);
+  const base::FilePath resized_large_path = resized_directory.Append(
+      downloaded_file_name + ash::WallpaperController::kLargeWallpaperSuffix);
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  base::PostTaskAndReplyWithResult(
+      task_runner.get(), FROM_HERE,
+      base::Bind(&CheckCustomizedWallpaperFilesExist, resized_small_path,
+                 resized_large_path),
+      base::Bind(&SetCustomizedDefaultWallpaperAfterCheck, wallpaper_url,
+                 file_path, resized_small_path, resized_large_path));
+}
+
+base::FilePath GetCustomizedDefaultWallpaperPath(const std::string& suffix) {
+  const base::FilePath default_downloaded_file_name =
+      ServicesCustomizationDocument::GetCustomizedWallpaperDownloadedFileName();
+  const base::FilePath default_cache_dir =
+      ServicesCustomizationDocument::GetCustomizedWallpaperCacheDir();
+  if (default_downloaded_file_name.empty() || default_cache_dir.empty())
+    return base::FilePath();
+  return default_cache_dir.Append(
+      default_downloaded_file_name.BaseName().value() + suffix);
+}
+
+bool ShouldUseCustomizedDefaultWallpaper() {
+  PrefService* pref_service = g_browser_process->local_state();
+  return !pref_service->FindPreference(prefs::kCustomizationDefaultWallpaperURL)
+              ->IsDefaultValue();
+}
+
+}  // namespace customization_wallpaper_util
+}  // namespace chromeos
