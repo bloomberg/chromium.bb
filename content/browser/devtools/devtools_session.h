@@ -32,14 +32,12 @@ class DevToolsSession : public protocol::FrontendChannel,
   int session_id() const { return session_id_; }
   DevToolsAgentHostClient* client() const { return client_; }
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
-  void SetRenderFrameHost(RenderFrameHostImpl* frame_host);
   void SetRenderer(RenderProcessHost* process_host,
                    RenderFrameHostImpl* frame_host);
   void SetFallThroughForNotFound(bool value);
   void AttachToAgent(const mojom::DevToolsAgentAssociatedPtr& agent);
   void ReattachToAgent(const mojom::DevToolsAgentAssociatedPtr& agent);
 
-  static bool ShouldSendOnIO(const std::string& method);
   struct Message {
     std::string method;
     std::string message;
@@ -57,7 +55,6 @@ class DevToolsSession : public protocol::FrontendChannel,
                                       const std::string& message);
   void InspectElement(const gfx::Point& point);
   bool ReceiveMessageChunk(const DevToolsMessageChunk& chunk);
-  void SendMessageToClient(const std::string& message);
 
   template <typename Handler>
   static std::vector<Handler*> HandlersForAgentHost(

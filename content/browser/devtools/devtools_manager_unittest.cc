@@ -167,36 +167,6 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedContents) {
   contents()->SetDelegate(nullptr);
 }
 
-TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
-  // This test triggers incorrect notifications with PlzNavigate.
-  if (IsBrowserSideNavigationEnabled())
-    return;
-  // Navigate to URL.  First URL should use first RenderViewHost.
-  const GURL url("http://www.google.com");
-  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
-  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-
-  TestDevToolsClientHost client_host;
-  client_host.InspectAgentHost(
-      DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
-
-  // Navigate to new site which should get a new RenderViewHost.
-  const GURL url2("http://www.yahoo.com");
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url2, web_contents());
-  navigation->ReadyToCommit();
-  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(client_host.agent_host(),
-            DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
-
-  // Interrupt pending navigation and navigate back to the original site.
-  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(), url);
-  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(client_host.agent_host(),
-            DevToolsAgentHost::GetOrCreateFor(web_contents()).get());
-  client_host.Close();
-}
-
 class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
  public:
   TestExternalAgentDelegate() {

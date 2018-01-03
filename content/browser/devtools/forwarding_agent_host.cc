@@ -23,7 +23,7 @@ class ForwardingAgentHost::SessionProxy : public DevToolsExternalAgentProxy {
 
  private:
   void DispatchOnClientHost(const std::string& message) override {
-    session_->SendMessageToClient(message);
+    session_->client()->DispatchProtocolMessage(agent_host_, message);
   }
 
   void ConnectionClosed() override {
