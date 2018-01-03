@@ -52,6 +52,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Notifications::ToastNotification*,
     winui::Notifications::ToastDismissedEventArgs*>
     ToastDismissedHandler;
+typedef winfoundtn::ITypedEventHandler<
+    winui::Notifications::ToastNotification*,
+    winui::Notifications::ToastFailedEventArgs*>
+    ToastFailedHandler;
 
 // Templated wrapper for winfoundtn::GetActivationFactory().
 template <unsigned int size, typename T>
@@ -272,6 +276,15 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
+    auto failed_handler = mswr::Callback<ToastFailedHandler>(
+        this, &NotificationPlatformBridgeWinImpl::OnFailed);
+    EventRegistrationToken failed_token;
+    hr = toast->add_Failed(failed_handler.Get(), &failed_token);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Unable to add toast failed event handler";
+      return;
+    }
+
     hr = notifier_->Show(toast.Get());
     if (FAILED(hr))
       LOG(ERROR) << "Unable to display the notification";
@@ -427,6 +440,14 @@ class NotificationPlatformBridgeWinImpl
       user_cancelled = true;
     }
     HandleEvent(notification, NotificationCommon::CLOSE, user_cancelled);
+    return S_OK;
+  }
+
+  HRESULT OnFailed(
+      winui::Notifications::IToastNotification* notification,
+      winui::Notifications::IToastFailedEventArgs* /* arguments */) {
+    // TODO(chengx): Investigate what the correct behavior should be here and
+    // implement it.
     return S_OK;
   }
 
