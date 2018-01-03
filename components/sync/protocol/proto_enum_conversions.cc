@@ -319,8 +319,9 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::UserConsent::ConsentStatus status) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::UserConsent, ConsentStatus,
-                     REVOKED, GIVEN);
+                     UNSPECIFIED, GIVEN);
   switch (status) {
+    ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, UNSPECIFIED);
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, REVOKED);
     ENUM_CASE(sync_pb::UserEventSpecifics::UserConsent, GIVEN);
   }

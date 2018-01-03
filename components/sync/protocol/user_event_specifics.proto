@@ -99,8 +99,9 @@ message UserEventSpecifics {
     optional string locale = 4;
     // Was the consent for |feature| given or revoked?
     enum ConsentStatus {
-      REVOKED = 0;
-      GIVEN = 1;
+      UNSPECIFIED = 0;
+      REVOKED = 1;
+      GIVEN = 2;
     }
     optional ConsentStatus status = 5;
   }

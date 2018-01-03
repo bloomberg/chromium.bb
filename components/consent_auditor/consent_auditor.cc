@@ -36,7 +36,7 @@ UserEventSpecifics::UserConsent::ConsentStatus ToProtoEnum(
       return UserEventSpecifics::UserConsent::GIVEN;
   }
   NOTREACHED();
-  return UserEventSpecifics::UserConsent::GIVEN;
+  return UserEventSpecifics::UserConsent::UNSPECIFIED;
 }
 
 }  // namespace
