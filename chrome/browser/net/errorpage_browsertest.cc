@@ -1520,7 +1520,14 @@ class ErrorPageOfflineTest : public ErrorPageTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ErrorPageOfflineTest::InstallMockInterceptors));
+    url_loader_interceptor_ =
+        std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+            [](content::URLLoaderInterceptor::RequestParams* params) {
+              return false;
+            }));
   }
+
+  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
@@ -1604,6 +1611,7 @@ class ErrorPageOfflineTest : public ErrorPageTest {
 
   // Mock policy provider for both user and device policies.
   policy::MockConfigurationPolicyProvider policy_provider_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 class ErrorPageOfflineTestWithAllowDinosaurTrue : public ErrorPageOfflineTest {
