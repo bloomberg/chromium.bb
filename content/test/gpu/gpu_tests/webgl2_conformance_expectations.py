@@ -225,11 +225,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel', 'd3d11'], bug=614418)
 
-    # These tests seem to crash flakily. It's best to leave them as skip
-    # until we can run them without GPU hangs and crashes.
-    self.Skip('deqp/functional/gles3/textureshadow/2d_array_*.html',
-        ['win', 'intel', 'd3d11'], bug=666392)
-
     # It's unfortunate that these suppressions need to be so broad, but it
     # looks like the D3D11 device can be lost spontaneously on this
     # configuration while running basically any test.
