@@ -17333,6 +17333,7 @@ Called by update_net_error_codes.py.-->
   <int value="2318" label="CSSSelectorWebkitTextfieldDecorationContainer"/>
   <int value="2319" label="CSSSelectorWebkitUnknownPseudo"/>
   <int value="2320" label="FilterAsContainingBlockMayChangeOutput"/>
+  <int value="2321" label="DispatchMouseUpDownEventOnDisabledFormControl"/>
 </enum>
 
 <enum name="FeedbackSource">

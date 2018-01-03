@@ -380,6 +380,15 @@ bool EventPath::DisabledFormControlExistsInPath() const {
   return false;
 }
 
+bool EventPath::HasEventListenersInPath(const AtomicString& event_type) const {
+  for (const auto& context : node_event_contexts_) {
+    const Node* target_node = context.GetNode();
+    if (target_node && target_node->HasEventListeners(event_type))
+      return true;
+  }
+  return false;
+}
+
 NodeEventContext& EventPath::TopNodeEventContext() {
   DCHECK(!IsEmpty());
   return Last();

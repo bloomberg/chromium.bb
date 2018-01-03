@@ -27,6 +27,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/input/InputDeviceCapabilities.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
@@ -447,8 +448,19 @@ DispatchEventResult MouseEvent::DispatchEvent(EventDispatcher& dispatcher) {
     return dispatcher.Dispatch();
 
   if (!send_to_disabled_form_controls &&
-      IsDisabledFormControl(&dispatcher.GetNode()))
+      IsDisabledFormControl(&dispatcher.GetNode())) {
+    if (GetEventPath().HasEventListenersInPath(type())) {
+      UseCounter::Count(dispatcher.GetNode().GetDocument(),
+                        WebFeature::kDispatchMouseEventOnDisabledFormControl);
+      if (type() == EventTypeNames::mousedown ||
+          type() == EventTypeNames::mouseup) {
+        UseCounter::Count(
+            dispatcher.GetNode().GetDocument(),
+            WebFeature::kDispatchMouseUpDownEventOnDisabledFormControl);
+      }
+    }
     return DispatchEventResult::kCanceledBeforeDispatch;
+  }
 
   if (type().IsEmpty())
     return DispatchEventResult::kNotCanceled;  // Shouldn't happen.
