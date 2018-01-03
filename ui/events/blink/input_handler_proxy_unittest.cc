@@ -358,10 +358,12 @@ class TestInputHandlerProxy : public InputHandlerProxy {
  public:
   TestInputHandlerProxy(cc::InputHandler* input_handler,
                         InputHandlerProxyClient* client,
-                        bool touchpad_and_wheel_scroll_latching_enabled)
+                        bool touchpad_and_wheel_scroll_latching_enabled,
+                        bool async_wheel_events_enabled)
       : InputHandlerProxy(input_handler,
                           client,
-                          touchpad_and_wheel_scroll_latching_enabled) {}
+                          touchpad_and_wheel_scroll_latching_enabled,
+                          async_wheel_events_enabled) {}
   void RecordMainThreadScrollingReasonsForTest(blink::WebGestureDevice device,
                                                uint32_t reasons) {
     RecordMainThreadScrollingReasons(device, reasons);
@@ -380,17 +382,20 @@ class InputHandlerProxyTest
     : public testing::Test,
       public testing::WithParamInterface<InputHandlerProxyTestType> {
  public:
-  InputHandlerProxyTest(bool touchpad_and_wheel_scroll_latching_enabled = true)
+  InputHandlerProxyTest(bool touchpad_and_wheel_scroll_latching_enabled = true,
+                        bool async_wheel_events_enabled = true)
       : synchronous_root_scroll_(GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER),
         install_synchronous_handler_(
             GetParam() == ROOT_SCROLL_SYNCHRONOUS_HANDLER ||
             GetParam() == CHILD_SCROLL_SYNCHRONOUS_HANDLER),
         expected_disposition_(InputHandlerProxy::DID_HANDLE),
         touchpad_and_wheel_scroll_latching_enabled_(
-            touchpad_and_wheel_scroll_latching_enabled) {
+            touchpad_and_wheel_scroll_latching_enabled),
+        async_wheel_events_enabled_(async_wheel_events_enabled) {
     input_handler_.reset(
         new TestInputHandlerProxy(&mock_input_handler_, &mock_client_,
-                                  touchpad_and_wheel_scroll_latching_enabled_));
+                                  touchpad_and_wheel_scroll_latching_enabled_,
+                                  async_wheel_events_enabled_));
     scroll_result_did_scroll_.did_scroll = true;
     scroll_result_did_not_scroll_.did_scroll = false;
 
@@ -508,13 +513,14 @@ class InputHandlerProxyTest
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   cc::InputHandlerScrollResult scroll_result_did_not_scroll_;
   bool touchpad_and_wheel_scroll_latching_enabled_;
+  bool async_wheel_events_enabled_;
 };
 
 class InputHandlerProxyWithoutWheelScrollLatchingTest
     : public InputHandlerProxyTest {
  public:
   InputHandlerProxyWithoutWheelScrollLatchingTest()
-      : InputHandlerProxyTest(false) {}
+      : InputHandlerProxyTest(false, false) {}
 };
 
 class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
@@ -527,10 +533,12 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
 
   void SetUp() override {
     bool wheel_scroll_latching_enabled = GetParam();
+    async_wheel_events_enabled_ = wheel_scroll_latching_enabled;
     event_disposition_recorder_.clear();
     latency_info_recorder_.clear();
     input_handler_proxy_ = std::make_unique<TestInputHandlerProxy>(
-        &mock_input_handler_, &mock_client_, wheel_scroll_latching_enabled);
+        &mock_input_handler_, &mock_client_, wheel_scroll_latching_enabled,
+        async_wheel_events_enabled_);
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
@@ -610,6 +618,7 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client_;
   std::vector<InputHandlerProxy::EventDisposition> event_disposition_recorder_;
   std::vector<ui::LatencyInfo> latency_info_recorder_;
+  bool async_wheel_events_enabled_;
 
   base::MessageLoop loop_;
   base::WeakPtrFactory<InputHandlerProxyEventQueueTest> weak_ptr_factory_;
@@ -2602,7 +2611,8 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFlingTouchscreen) {
       mock_client;
   input_handler_.reset(
       new TestInputHandlerProxy(&mock_input_handler_, &mock_client,
-                                touchpad_and_wheel_scroll_latching_enabled_));
+                                touchpad_and_wheel_scroll_latching_enabled_,
+                                async_wheel_events_enabled_));
   if (install_synchronous_handler_) {
     EXPECT_CALL(mock_input_handler_, RequestUpdateForSynchronousInputHandler())
         .Times(1);
@@ -2644,7 +2654,7 @@ TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false, false);
 
   // When adding a SynchronousInputHandler, immediately request an
   // UpdateRootLayerStateForSynchronousInputHandler() call.
@@ -2670,7 +2680,7 @@ TEST(SynchronousInputHandlerProxyTest, UpdateRootLayerState) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false, false);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 
@@ -2695,7 +2705,7 @@ TEST(SynchronousInputHandlerProxyTest, SetOffset) {
   testing::StrictMock<MockInputHandlerProxyClient> mock_client;
   testing::StrictMock<MockSynchronousInputHandler>
       mock_synchronous_input_handler;
-  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false);
+  ui::InputHandlerProxy proxy(&mock_input_handler, &mock_client, false, false);
 
   proxy.SetOnlySynchronouslyAnimateRootFlings(&mock_synchronous_input_handler);
 
@@ -3324,8 +3334,6 @@ TEST_P(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
       .WillRepeatedly(testing::Return(kImplThreadScrollState));
-  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
-      .Times(::testing::AtLeast(1));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
@@ -3339,16 +3347,36 @@ TEST_P(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollUpdate,
                                      blink::kWebGestureDeviceTouchpad, -20);
 
-  // GSB will be dispatched immediately, GSU will be queued.
-  EXPECT_EQ(1ul, event_queue().size());
-  EXPECT_EQ(1ul, event_disposition_recorder_.size());
+  // Both GSB and the first GSU will be dispatched immediately since the first
+  // GSU has blocking wheel event source.
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(2ul, event_disposition_recorder_.size());
+
+  // When async_wheel_events_enabled_ the rest of the GSU events will get queued
+  // since they have non-blocking wheel event source.
+  if (async_wheel_events_enabled_) {
+    EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
+        .Times(::testing::AtLeast(1));
+    HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollUpdate,
+                                       blink::kWebGestureDeviceTouchpad, -20);
+    EXPECT_EQ(1ul, event_queue().size());
+    EXPECT_EQ(2ul, event_disposition_recorder_.size());
+  }
 
   // Touchpad GSE will flush the queue.
   HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollEnd,
                                      blink::kWebGestureDeviceTouchpad);
 
   EXPECT_EQ(0ul, event_queue().size());
-  EXPECT_EQ(3ul, event_disposition_recorder_.size());
+  if (async_wheel_events_enabled_) {
+    // GSB, GSU(with blocking wheel source), GSU(with non-blocking wheel
+    // source), and GSE are the sent events.
+    EXPECT_EQ(4ul, event_disposition_recorder_.size());
+  } else {
+    // GSB, GSU(with blocking wheel source), and GSE are the sent events.
+    EXPECT_EQ(3ul, event_disposition_recorder_.size());
+  }
+
   EXPECT_FALSE(
       input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
 }

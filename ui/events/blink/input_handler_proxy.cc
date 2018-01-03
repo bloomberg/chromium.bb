@@ -135,7 +135,8 @@ namespace ui {
 InputHandlerProxy::InputHandlerProxy(
     cc::InputHandler* input_handler,
     InputHandlerProxyClient* client,
-    bool touchpad_and_wheel_scroll_latching_enabled)
+    bool touchpad_and_wheel_scroll_latching_enabled,
+    bool async_wheel_events_enabled)
     : client_(client),
       input_handler_(input_handler),
       synchronous_input_handler_(nullptr),
@@ -153,10 +154,13 @@ InputHandlerProxy::InputHandlerProxy(
       smooth_scroll_enabled_(false),
       touchpad_and_wheel_scroll_latching_enabled_(
           touchpad_and_wheel_scroll_latching_enabled),
+      async_wheel_events_enabled_(touchpad_and_wheel_scroll_latching_enabled &&
+                                  async_wheel_events_enabled),
       touch_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
+      is_first_gesture_scroll_update_(false),
       tick_clock_(std::make_unique<base::DefaultTickClock>()) {
   DCHECK(client);
   input_handler_->BindToClient(this,
@@ -215,8 +219,17 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     bool is_scroll_end_from_wheel =
         gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
         gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
+    bool scroll_update_has_blocking_wheel_source =
+        gesture_event.source_device == blink::kWebGestureDeviceTouchpad &&
+        gesture_event.GetType() ==
+            blink::WebGestureEvent::kGestureScrollUpdate &&
+        (!async_wheel_events_enabled_ || is_first_gesture_scroll_update_);
+    if (gesture_event.GetType() ==
+        blink::WebGestureEvent::kGestureScrollUpdate) {
+      is_first_gesture_scroll_update_ = false;
+    }
     if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
-        synchronous_input_handler_) {
+        scroll_update_has_blocking_wheel_source || synchronous_input_handler_) {
       // 1. Gesture events was already delayed by blocking events in rAF aligned
       // queue. We want to avoid additional one frame delay by flushing the
       // VSync queue immediately.
@@ -285,6 +298,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   switch (event_with_callback->event().GetType()) {
     case blink::WebGestureEvent::kGestureScrollBegin:
+      is_first_gesture_scroll_update_ = true;
     case blink::WebGestureEvent::kGestureFlingStart:
     case blink::WebGestureEvent::kGesturePinchBegin:
     case blink::WebGestureEvent::kGestureScrollUpdate:
