@@ -6,6 +6,7 @@
 
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -122,6 +123,32 @@ TEST(WebVectorTest, CreateFromStdVector) {
   ASSERT_EQ(input.size(), assigned.size());
   for (size_t i = 0; i < assigned.size(); ++i)
     EXPECT_EQ(input[i], assigned[i]);
+}
+
+TEST(WebVectorTest, Reserve) {
+  WebVector<int> vector;
+  vector.reserve(10);
+
+  EXPECT_EQ(10U, vector.capacity());
+}
+
+TEST(WebVectorTest, EmplaceBackArgumentForwarding) {
+  WebVector<WebString> vector;
+  vector.reserve(1);
+  WebUChar buffer[] = {'H', 'e', 'l', 'l', 'o', ' ', 'b', 'l', 'i', 'n', 'k'};
+  vector.emplace_back(buffer, WTF_ARRAY_LENGTH(buffer));
+  ASSERT_EQ(1U, vector.size());
+  EXPECT_EQ(WebString(buffer, WTF_ARRAY_LENGTH(buffer)), vector[0]);
+}
+
+TEST(WebVectorTest, EmplaceBackElementPlacement) {
+  WebVector<int> vector;
+  vector.reserve(10);
+  for (int i = 0; i < 10; ++i)
+    vector.emplace_back(i);
+  ASSERT_EQ(10U, vector.size());
+  for (int i = 0; i < 10; ++i)
+    EXPECT_EQ(i, vector[i]);
 }
 
 }  // namespace blink

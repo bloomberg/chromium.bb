@@ -42,23 +42,30 @@ namespace blink {
 //
 // Sample usage:
 //
-//   void Foo(WebVector<int>& result)
-//   {
-//       WebVector<int> data(10);
-//       for (size_t i = 0; i < data.size(); ++i)
-//           data[i] = ...
-//       result.swap(data);
+//   void Foo(WebVector<int>& result) {
+//     WebVector<int> data(10);
+//     for (size_t i = 0; i < data.size(); ++i)
+//         data[i] = ...
+//     result.Swap(data);
+//   }
+//
+// In-place element construction:
+//
+//   WebVector<WebString> Foo() {
+//     WebVector<WebString> data;
+//     data.reserve(10);
+//     WebUChar* buffer = ....;
+//     data.emplace_back(buffer, buffer_size);
+//     return data;
 //   }
 //
 // It is also possible to assign from any container that implements begin()
 // and end().
 //
-//   void Foo(const std::vector<WTF::String>& input)
-//   {
-//       WebVector<WebString> strings = input;
-//       ...
+//   void Foo(const std::vector<WTF::String>& input) {
+//     WebVector<WebString> strings = input;
+//     ...
 //   }
-//
 template <typename T>
 class WebVector {
  public:
@@ -68,6 +75,7 @@ class WebVector {
 
   ~WebVector() = default;
 
+  // Create a vector with |size| default-constructed elements.
   explicit WebVector(size_t size = 0) : data_(size) {}
 
   template <typename U>
@@ -123,6 +131,9 @@ class WebVector {
   // TODO(slangley): Remove all uses of IsEmpty.
   bool IsEmpty() const { return empty(); }
 
+  size_t capacity() const { return data_.capacity(); }
+  void reserve(size_t new_capacity) { data_.reserve(new_capacity); }
+
   T& operator[](size_t i) {
     DCHECK_LT(i, data_.size());
     return data_[i];
@@ -140,6 +151,12 @@ class WebVector {
   iterator end() { return data_.end(); }
   const_iterator begin() const { return data_.begin(); }
   const_iterator end() const { return data_.end(); }
+
+  template <typename... Args>
+  void emplace_back(Args&&... args) {
+    DCHECK_LT(data_.size(), data_.capacity());
+    data_.emplace_back(std::forward<Args>(args)...);
+  }
 
   void Swap(WebVector<T>& other) { data_.swap(other.data_); }
 
