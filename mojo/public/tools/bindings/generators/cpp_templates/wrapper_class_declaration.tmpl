@@ -77,6 +77,17 @@ class {{export_attribute}} {{struct.name}} {
         {{struct.name}}::DataView>(input);
   }
 
+  // The returned Message is serialized only if the message is moved
+  // cross-process or cross-language. Otherwise if the message is Deserialized
+  // as the same UserType |input| will just be moved to |output| in
+  // DeserializeFromMessage.
+  template <typename UserType>
+  static mojo::Message WrapAsMessage(UserType input) {
+    return mojo::Message(std::make_unique<
+        internal::{{struct.name}}_UnserializedMessageContext<
+            UserType, {{struct.name}}::DataView>>(0, 0, std::move(input)));
+  }
+
   template <typename UserType>
   static bool Deserialize(const void* data,
                           size_t data_num_bytes,
@@ -95,6 +106,14 @@ class {{export_attribute}} {{struct.name}} {
   template <typename UserType>
   static bool DeserializeFromMessage(mojo::Message input,
                                      UserType* output) {
+    auto context = input.TakeUnserializedContext<
+        internal::{{struct.name}}_UnserializedMessageContext<
+            UserType, {{struct.name}}::DataView>>();
+    if (context) {
+      *output = std::move(context->TakeData());
+      return true;
+    }
+    input.SerializeIfNecessary();
     return mojo::internal::StructDeserializeImpl<{{struct.name}}::DataView>(
         input.payload(), input.payload_num_bytes(),
         std::move(*input.mutable_handles()), output, Validate);
