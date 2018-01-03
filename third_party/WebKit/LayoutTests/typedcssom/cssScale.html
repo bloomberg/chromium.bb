@@ -50,12 +50,6 @@ var testParams = [
   }
 ];
 
-for (let params of testParams) {
-  test(() => {
-    assert_equals(params.input.toString(), params.cssText);
-  }, "toString is correct for " + params.cssText);
-}
-
 test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(); });
   assert_throws(new TypeError(), () => { new CSSScale(1); });

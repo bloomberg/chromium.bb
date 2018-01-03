@@ -111,20 +111,6 @@ test(() => {
   });
 }, "Invalid arguments to constructor should throw");
 
-for (let params of testParams) {
-  test(() => {
-    assert_equals(params.input.toString(), params.cssText);
-  }, "toString value is correct for " + params.cssText);
-}
-
-test(() => {
-  let rotation = new CSSRotation(1, 2, 3, CSS.deg(10));
-  assert_equals(rotation.toString(), 'rotate3d(1, 2, 3, 10deg)');
-  rotation.is2D = true;
-  assert_true(rotation.is2D);
-  assert_equals(rotation.toString(), 'rotate(10deg)');
-}, "x, y, and z components are not included in toString when is2D is true");
-
 test(() => {
   // Obtained by doing the following in a console:
   // $0.style.transform = 'rotate3d(1, 2, 3, 10rad)';
