@@ -809,7 +809,15 @@ GpuDataManagerImplPrivate::GetDriverBugWorkarounds() const {
 
 void GpuDataManagerImplPrivate::AddLogMessage(
     int level, const std::string& header, const std::string& message) {
+  // Some clients emit many log messages. This has been observed to consume GBs
+  // of memory in the wild
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=798012. Use a limit
+  // of 1000 messages to prevent excess memory usage.
+  const int kLogMessageLimit = 1000;
+
   log_messages_.push_back(LogMessage(level, header, message));
+  if (log_messages_.size() > kLogMessageLimit)
+    log_messages_.erase(log_messages_.begin());
 }
 
 void GpuDataManagerImplPrivate::ProcessCrashed(
