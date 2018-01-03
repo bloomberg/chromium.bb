@@ -22,6 +22,7 @@
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/gl_renderer_draw_cache.h"
 #include "components/viz/service/display/program_binding.h"
+#include "components/viz/service/display/scoped_gpu_memory_buffer_texture.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -34,8 +35,6 @@ class SingleThreadTaskRunner;
 namespace cc {
 class GLRendererShaderTest;
 class OutputSurface;
-class Resource;
-class ResourcePool;
 class StreamVideoDrawQuad;
 }  // namespace cc
 
@@ -154,6 +153,20 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererShaderTest;
   friend class GLRendererTest;
 
+  using OverlayResourceLock =
+      std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockGL>;
+  using OverlayResourceLockList = std::vector<OverlayResourceLock>;
+
+  // If a RenderPass is used as an overlay, we render the RenderPass with any
+  // effects into a texture for overlay use. We must keep the texture alive past
+  // the execution of SwapBuffers, and such textures are more expensive to make
+  // so we want to reuse them.
+  struct OverlayTexture {
+    RenderPassId render_pass_id;
+    ScopedGpuMemoryBufferTexture texture;
+    int frames_waiting_for_reuse = 0;
+  };
+
   // If any of the following functions returns false, then it means that drawing
   // is not possible.
   bool InitializeRPDQParameters(DrawRenderPassDrawQuadParams* params);
@@ -263,18 +276,26 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleOverlays();
 
   // Copies the contents of the render pass draw quad, including filter effects,
-  // to an overlay resource, returned in |resource|. The resource is allocated
-  // from |overlay_resource_pool_|.
-  // The resulting cc::Resource may be larger than the original quad. The new
-  // size and position is placed in |new_bounds|.
+  // to a GL texture, returned in |overlay_texture|. The resulting texture may
+  // be larger than the RenderPassDrawQuad's output, in order to reuse existing
+  // textures. The new size and position is placed in |new_bounds|.
   void CopyRenderPassDrawQuadToOverlayResource(
       const CALayerOverlay* ca_layer_overlay,
-      cc::Resource** resource,
+      std::unique_ptr<OverlayTexture>* overlay_texture,
       gfx::RectF* new_bounds);
+  std::unique_ptr<OverlayTexture> FindOrCreateOverlayTexture(
+      const RenderPassId& render_pass_id,
+      int width,
+      int height,
+      const gfx::ColorSpace& color_space);
+  void ReduceAvailableOverlayTextures(
+      const std::vector<std::unique_ptr<OverlayTexture>>& most_recent);
 
   // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null
-  // |rpdq| parameter.
-  void ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay);
+  // |rpdq| parameter. Returns ownership of a GL texture that contains the
+  // output of the RenderPassDrawQuad.
+  std::unique_ptr<OverlayTexture> ScheduleRenderPassDrawQuad(
+      const CALayerOverlay* ca_layer_overlay);
 
   // Setup/flush all pending overdraw feedback to framebuffer.
   void SetupOverdrawFeedback();
@@ -292,16 +313,25 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   base::flat_map<RenderPassId, ScopedRenderPassTexture> render_pass_textures_;
 
-  using OverlayResourceLock =
-      std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockGL>;
-  using OverlayResourceLockList = std::vector<OverlayResourceLock>;
+  // OverlayTextures that are free to be used in the next frame.
+  std::vector<std::unique_ptr<OverlayTexture>> available_overlay_textures_;
+  // OverlayTextures that have been set up for use but are waiting for
+  // SwapBuffers.
+  std::vector<std::unique_ptr<OverlayTexture>> awaiting_swap_overlay_textures_;
+  // OverlayTextures that have been swapped for display on the gpu. Each vector
+  // represents a single frame, and may be empty if none were used in that
+  // frame. Ordered from oldest to most recent frame.
+  std::vector<std::vector<std::unique_ptr<OverlayTexture>>>
+      displayed_overlay_textures_;
+  // OverlayTextures that we have replaced on the gpu but are awaiting
+  // confirmation that we can reuse them.
+  std::vector<std::unique_ptr<OverlayTexture>>
+      awaiting_release_overlay_textures_;
 
   // Resources that have been sent to the GPU process, but not yet swapped.
   OverlayResourceLockList pending_overlay_resources_;
-
   // Resources that should be shortly swapped by the GPU process.
   base::circular_deque<OverlayResourceLockList> swapping_overlay_resources_;
-
   // Resources that the GPU process has finished swapping. The key is the
   // texture id of the resource.
   std::map<unsigned, OverlayResourceLock> swapped_and_acked_overlay_resources_;
@@ -377,10 +407,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // This may be null if the compositor is run on a thread without a
   // MessageLoop.
   scoped_refptr<base::SingleThreadTaskRunner> current_task_runner_;
-  // Some overlays require that content is copied from a render pass into an
-  // overlay resource. This means the GLRenderer needs its own cc::ResourcePool.
-  // This references the |current_task_runner_| and |resource_provider_|.
-  std::unique_ptr<cc::ResourcePool> overlay_resource_pool_;
   base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);

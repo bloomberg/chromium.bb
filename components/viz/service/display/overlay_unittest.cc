@@ -2680,31 +2680,44 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   SwapBuffersWithoutComplete();
   Mock::VerifyAndClearExpectations(&scheduler_);
 
+  SwapBuffersComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame2);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  SwapBuffersComplete();
   SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
+  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
+
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame3);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffersComplete();
   SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
+
+  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
 
   // No overlays, release the resource.
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
@@ -2715,14 +2728,18 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffersComplete();
   SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
+
+  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
 
   // Use the same buffer twice.
   renderer_->set_expect_overlays(true);
@@ -2731,19 +2748,36 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   SwapBuffersWithoutComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
+
+  SwapBuffersComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
+
+  SwapBuffersComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
 
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
   renderer_->set_expect_overlays(false);
@@ -2751,20 +2785,18 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->set_expect_overlays(false);
-  renderer_->SetCurrentFrame(frame_no_overlays);
-  renderer_->BeginDrawingFrame();
-  renderer_->FinishDrawingFrame();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   SwapBuffersComplete();
-  SwapBuffersWithoutComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
