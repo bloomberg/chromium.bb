@@ -20,10 +20,7 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
   let dummy1 = {
     title: 'title 1',
     tabUrl: 'http://urlone.com',
-    isApp: false,
-    isInternal: false,
     isMedia: false,
-    isPinned: false,
     isDiscarded: false,
     isAutoDiscardable: false,
     discardCount: 0,
@@ -33,10 +30,7 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
   let dummy2 = {
     title: 'title 2',
     tabUrl: 'http://urltwo.com',
-    isApp: true,
-    isInternal: true,
     isMedia: true,
-    isPinned: true,
     isDiscarded: true,
     isAutoDiscardable: true,
     discardCount: 1,
@@ -44,9 +38,8 @@ TEST_F('DiscardsTest', 'CompareTabDiscardsInfo', function() {
     lastActiveSeconds: 1
   };
 
-  ['title', 'tabUrl', 'isApp', 'isInternal', 'isMedia', 'isPinned',
-      'isDiscarded', 'isAutoDiscardable', 'discardCount', 'utilityRank',
-      'lastActiveSeconds'].forEach((sortKey) => {
+  ['title', 'tabUrl', 'isMedia', 'isDiscarded', 'isAutoDiscardable',
+      'discardCount', 'utilityRank', 'lastActiveSeconds'].forEach((sortKey) => {
     assertTrue(
         discards.compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);
     assertTrue(
