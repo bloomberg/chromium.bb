@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/containers/span.h"
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/serialization/Transferables.h"
@@ -147,8 +148,8 @@ class CORE_EXPORT SerializedScriptValue
 
   String ToWireString() const;
 
-  StringView GetWireData() const {
-    return StringView(data_buffer_.get(), data_buffer_size_);
+  base::span<const uint8_t> GetWireData() const {
+    return {data_buffer_.get(), data_buffer_size_};
   }
 
   // Deserializes the value (in the current context). Returns a null value in

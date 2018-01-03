@@ -185,7 +185,7 @@ class MODULES_EXPORT IDBValueWrapper {
   Vector<char> wire_data_buffer_;
 
   // Points into SerializedScriptValue's data buffer, or into wire_data_buffer_.
-  StringView wire_data_;
+  base::span<const uint8_t> wire_data_;
 
   size_t original_data_length_ = 0;
 

@@ -95,13 +95,7 @@ WebNotificationData CreateWebNotificationData(
     if (exception_state.HadException())
       return WebNotificationData();
 
-    StringView ssv_wire_data = serialized_script_value->GetWireData();
-    DCHECK(ssv_wire_data.Is8Bit());
-    Vector<char> serialized_data;
-    serialized_data.ReserveInitialCapacity(ssv_wire_data.length());
-    serialized_data.Append(ssv_wire_data.Characters8(), ssv_wire_data.length());
-
-    web_data.data = serialized_data;
+    web_data.data = WebVector<char>(serialized_script_value->GetWireData());
   }
 
   Vector<WebNotificationAction> actions;

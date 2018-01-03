@@ -26,13 +26,12 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
           scope.GetIsolate(), v8OriginalTrue,
           SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
 
-  StringView wire_data = sourceSerializedScriptValue->GetWireData();
-  DCHECK(wire_data.Is8Bit());
+  base::span<const uint8_t> wire_data =
+      sourceSerializedScriptValue->GetWireData();
 
   scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(
-          reinterpret_cast<const char*>(wire_data.Characters8()),
-          wire_data.length());
+          reinterpret_cast<const char*>(wire_data.data()), wire_data.length());
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(scope.GetIsolate());
   EXPECT_TRUE(deserialized->IsTrue());

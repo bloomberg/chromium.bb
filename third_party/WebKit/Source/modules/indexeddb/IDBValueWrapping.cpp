@@ -123,7 +123,6 @@ void IDBValueWrapper::DoneCloning() {
 #endif  // DCHECK_IS_ON()
 
   wire_data_ = serialized_value_->GetWireData();
-  DCHECK(wire_data_.Is8Bit());
   for (const auto& kvp : serialized_value_->BlobDataHandles())
     blob_handles_.push_back(std::move(kvp.value));
 }
@@ -147,7 +146,7 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
   //                         Blob::Create to avoid a buffer copy.
   std::unique_ptr<BlobData> wrapper_blob_data = BlobData::Create();
   wrapper_blob_data->SetContentType(String(kWrapMimeType));
-  wrapper_blob_data->AppendBytes(wire_data_.Characters8(), wire_data_size);
+  wrapper_blob_data->AppendBytes(wire_data_.data(), wire_data_size);
   scoped_refptr<BlobDataHandle> wrapper_handle =
       BlobDataHandle::Create(std::move(wrapper_blob_data), wire_data_size);
   blob_info_.emplace_back(wrapper_handle->Uuid(), wrapper_handle->GetType(),
@@ -162,9 +161,10 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
   IDBValueWrapper::WriteVarInt(serialized_value_->BlobDataHandles().size(),
                                wire_data_buffer_);
 
-  wire_data_ = StringView(wire_data_buffer_.data(), wire_data_buffer_.size());
+  wire_data_ = base::make_span(
+      reinterpret_cast<const uint8_t*>(wire_data_buffer_.data()),
+      wire_data_buffer_.size());
   DCHECK(!wire_data_buffer_.IsEmpty());
-  DCHECK(wire_data_.Is8Bit());
   return true;
 }
 
@@ -177,16 +177,15 @@ scoped_refptr<SharedBuffer> IDBValueWrapper::TakeWireBytes() {
 
   if (wire_data_buffer_.IsEmpty()) {
     // The wire bytes are coming directly from the SSV's GetWireData() call.
-    DCHECK_EQ(wire_data_.Characters8(),
-              serialized_value_->GetWireData().Characters8());
+    DCHECK_EQ(wire_data_.data(), serialized_value_->GetWireData().data());
     DCHECK_EQ(wire_data_.length(), serialized_value_->GetWireData().length());
-    return SharedBuffer::Create(wire_data_.Characters8(),
+    return SharedBuffer::Create(wire_data_.data(),
                                 static_cast<size_t>(wire_data_.length()));
   }
 
   // The wire bytes are coming from wire_data_buffer_, so we can avoid a copy.
   DCHECK_EQ(wire_data_buffer_.data(),
-            reinterpret_cast<const char*>(wire_data_.Characters8()));
+            reinterpret_cast<const char*>(wire_data_.data()));
   DCHECK_EQ(wire_data_buffer_.size(), wire_data_.length());
   return SharedBuffer::AdoptVector(wire_data_buffer_);
 }

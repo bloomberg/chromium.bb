@@ -2860,12 +2860,11 @@ bool Internals::fakeMouseMovePending() const {
 
 DOMArrayBuffer* Internals::serializeObject(
     scoped_refptr<SerializedScriptValue> value) const {
-  StringView view = value->GetWireData();
-  DCHECK(view.Is8Bit());
+  base::span<const uint8_t> span = value->GetWireData();
   DOMArrayBuffer* buffer =
-      DOMArrayBuffer::CreateUninitializedOrNull(view.length(), sizeof(LChar));
+      DOMArrayBuffer::CreateUninitializedOrNull(span.length(), sizeof(uint8_t));
   if (buffer)
-    memcpy(buffer->Data(), view.Characters8(), view.length());
+    memcpy(buffer->Data(), span.data(), span.length());
   return buffer;
 }
 
