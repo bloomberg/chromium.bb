@@ -335,6 +335,12 @@ If a telemetry test is failing and there is no clear culprit to revert
 immediately, disable the story on the failing platforms.
 
 You can do this with [Expectations](https://cs.chromium.org/chromium/src/tools/perf/expectations.config).
+
+Disabling CLs can be TBR-ed to anyone in
+[tools/perf/OWNERS](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/OWNERS).
+As long as the disabling CL touches only tools/perf/expectations.config, you can
+use TBR and NOTRY=true to submit the CL immediately.
+
 An expectation is a line in the expectations file in the following format:
 ```
 reason [ conditions ] benchmark/story [ Skip ]
@@ -384,10 +390,6 @@ of this format:
 ```
 crbug.com/123456 [ CONDITIONS ] memory_benchmark/* [ Skip ]
 ```
-
-Disabling CLs can be TBR-ed to anyone in [tools/perf/OWNERS](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/OWNERS),
-As long as a disabling CL touches only tools/perf/expectations.config, you can
-use TBR and NOTRY=true to submit the CL immediately.
 
 ### Disabling Other Tests
 
