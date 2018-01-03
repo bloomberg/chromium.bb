@@ -87,10 +87,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   model_ = ui_->model_for_test();
 
-  ToolbarState state(GURL("https://dangerous.com/dir/file.html"),
-                     security_state::SecurityLevel::HTTP_SHOW_WARNING,
-                     &toolbar::kHttpIcon, base::string16(), true, false);
-  ui_->SetToolbarState(state);
+  CycleOrigin();
   ui_->SetHistoryButtonsEnabled(true, true);
   ui_->SetLoading(true);
   ui_->SetLoadProgress(0.4);
@@ -179,6 +176,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       }
       case ui::DomCode::US_E:
         model_->exiting_vr = !model_->exiting_vr;
+        break;
+      case ui::DomCode::US_O:
+        CycleOrigin();
         break;
       default:
         break;
@@ -469,6 +469,30 @@ void VrTestContext::StartAutocomplete(const base::string16& string) {
 
 void VrTestContext::StopAutocomplete() {
   ui_->SetOmniboxSuggestions(base::MakeUnique<OmniboxSuggestions>());
+}
+
+void VrTestContext::CycleOrigin() {
+  const std::vector<ToolbarState> states = {
+      {GURL("http://www.domain.com/path/segment/directory/file.html"),
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       base::string16(), true, false},
+      {GURL("http://www.domain.com/"),
+       security_state::SecurityLevel::HTTP_SHOW_WARNING, &toolbar::kHttpIcon,
+       base::string16(), true, false},
+      {GURL("https://www.domain.com/path/segment/directory/file.html"),
+       security_state::SecurityLevel::SECURE, &toolbar::kHttpsValidIcon,
+       base::UTF8ToUTF16("Secure"), true, false},
+      {GURL("https://www.domain.com/path/segment/directory/file.html"),
+       security_state::SecurityLevel::DANGEROUS, &toolbar::kHttpsValidIcon,
+       base::UTF8ToUTF16("Dangerous"), true, false},
+      {GURL("https://www.domain.com/path/segment/directory/file.html"),
+       security_state::SecurityLevel::HTTP_SHOW_WARNING,
+       &toolbar::kOfflinePinIcon, base::UTF8ToUTF16("Offline"), true, true},
+  };
+
+  static int state = 0;
+  ui_->SetToolbarState(states[state]);
+  state = (state + 1) % states.size();
 }
 
 }  // namespace vr
