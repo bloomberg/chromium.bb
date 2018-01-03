@@ -246,10 +246,12 @@ TEST_P(TaskSchedulerSingleThreadTaskRunnerManagerCommonTest,
   waitable_event_background.Wait();
   waitable_event_normal.Wait();
 
-  if (Lock::HandlesMultipleThreadPriorities())
+  if (Lock::HandlesMultipleThreadPriorities() &&
+      PlatformThread::CanIncreaseCurrentThreadPriority()) {
     EXPECT_EQ(ThreadPriority::BACKGROUND, thread_priority_background);
-  else
+  } else {
     EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_background);
+  }
   EXPECT_EQ(ThreadPriority::NORMAL, thread_priority_normal);
 }
 
