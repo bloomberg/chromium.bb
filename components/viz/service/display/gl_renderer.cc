@@ -3348,9 +3348,9 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   // memory fragmentation. https://crbug.com/146070. This also allows IOSurfaces
   // to be more easily reused during a resize operation.
   uint32_t iosurface_multiple = 64;
-  uint32_t iosurface_width = cc::MathUtil::CheckedRoundUp(
+  uint32_t iosurface_width = cc::MathUtil::UncheckedRoundUp(
       static_cast<uint32_t>(updated_dst_rect.width()), iosurface_multiple);
-  uint32_t iosurface_height = cc::MathUtil::CheckedRoundUp(
+  uint32_t iosurface_height = cc::MathUtil::UncheckedRoundUp(
       static_cast<uint32_t>(updated_dst_rect.height()), iosurface_multiple);
 
   *resource = overlay_resource_pool_->AcquireResource(
