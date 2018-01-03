@@ -104,6 +104,25 @@ class NonTriviallyDestructible {
   ~NonTriviallyDestructible() {}
 };
 
+class DeletedDefaultConstructor {
+ public:
+  DeletedDefaultConstructor() = delete;
+  DeletedDefaultConstructor(int foo) : foo_(foo) {}
+
+  int foo() const { return foo_; }
+
+ private:
+  int foo_;
+};
+
+class DeleteNewOperators {
+ public:
+  void* operator new(size_t) = delete;
+  void* operator new(size_t, void*) = delete;
+  void* operator new[](size_t) = delete;
+  void* operator new[](size_t, void*) = delete;
+};
+
 }  // anonymous namespace
 
 static_assert(std::is_trivially_destructible<Optional<int>>::value,
@@ -1533,6 +1552,23 @@ TEST(OptionalTest, AssignFromRValue) {
   a = std::move(obj);
   EXPECT_TRUE(a.has_value());
   EXPECT_EQ(1, a->move_ctors_count());
+}
+
+TEST(OptionalTest, DontCallDefaultCtor) {
+  Optional<DeletedDefaultConstructor> a;
+  EXPECT_FALSE(a.has_value());
+
+  a = base::make_optional<DeletedDefaultConstructor>(42);
+  EXPECT_TRUE(a.has_value());
+  EXPECT_EQ(42, a->foo());
+}
+
+TEST(OptionalTest, DontCallNewMemberFunction) {
+  Optional<DeleteNewOperators> a;
+  EXPECT_FALSE(a.has_value());
+
+  a = DeleteNewOperators();
+  EXPECT_TRUE(a.has_value());
 }
 
 }  // namespace base
