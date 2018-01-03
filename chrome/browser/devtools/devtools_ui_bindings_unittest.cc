@@ -47,6 +47,8 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "serve_file//#hash"},
       {"chrome-devtools://devtools/?ws=1%26evil%3dtrue",
        "chrome-devtools://devtools/?ws=1%26evil%3dtrue"},
+      {"chrome-devtools://devtools/?ws=encoded-ok'",
+       "chrome-devtools://devtools/?ws=encoded-ok%27"},
       {"chrome-devtools://devtools/?remoteBase="
        "https://chrome-devtools-frontend.appspot.com/some/path/"
        "@123719741873/more/path.html",
@@ -89,6 +91,12 @@ TEST_F(DevToolsUIBindingsTest, SanitizeFrontendURL) {
        "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
        "%2F%4012345%2Fdevtools.html%3Fws%3Danyvalue%26experiments%3Dtrue"
        "&debugFrontend=true"},
+      {"chrome-devtools://devtools/?remoteFrontendUrl="
+       "https://chrome-devtools-frontend.appspot.com/serve_rev/"
+       "@12345/inspector.html%23%27",
+       "chrome-devtools://devtools/?remoteFrontendUrl="
+       "https%3A%2F%2Fchrome-devtools-frontend.appspot.com%2Fserve_rev"
+       "%2F%4012345%2Finspector.html"},
   };
 
   for (const auto& pair : tests) {
