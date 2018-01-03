@@ -474,6 +474,7 @@ test("browser_tests") {
       "../browser/chrome_find_request_manager_browsertest.cc",
       "../browser/chrome_main_browsertest.cc",
       "../browser/chrome_navigation_browsertest.cc",
+      "../browser/chrome_network_service_restart_browsertest.cc",
       "../browser/chrome_origin_trials_browsertest.cc",
       "../browser/chrome_plugin_browsertest.cc",
       "../browser/chrome_security_exploit_browsertest.cc",
@@ -587,6 +588,7 @@ test("browser_tests") {
       "../browser/net/errorpage_browsertest.cc",
       "../browser/net/ftp_browsertest.cc",
       "../browser/net/load_timing_browsertest.cc",
+      "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/net/network_context_configuration_browsertest.cc",
       "../browser/net/nqe/ui_network_quality_estimator_service_browsertest.cc",
       "../browser/net/nqe/ui_network_quality_estimator_service_test_util.cc",
@@ -682,8 +684,6 @@ test("browser_tests") {
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.
-      "../browser/chrome_network_service_restart_browsertest.cc",
-      "../browser/net/network_connection_tracker_browsertest.cc",
       "../browser/speech/extension_api/tts_extension_apitest.cc",
       "../browser/speech/speech_recognition_browsertest.cc",
       "../browser/spellchecker/spellcheck_mac_view_browsertest.mm",
@@ -1604,6 +1604,7 @@ test("browser_tests") {
         "../browser/extensions/api/networking_private/networking_private_apitest.cc",
         "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
+        "../browser/mash_service_registry_browsertest.cc",
         "../browser/signin/chromeos_mirror_account_consistency_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_browsertest.cc",
@@ -3068,6 +3069,7 @@ test("unit_tests") {
     ]
     sources += [
       "../browser/component_updater/cros_component_installer_unittest.cc",
+      "../browser/mash_service_registry_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.cc",

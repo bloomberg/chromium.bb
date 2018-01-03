@@ -11,6 +11,9 @@
 
 namespace mash_service_registry {
 
+// Process group used for the ash service and the ui service. Visible for test.
+constexpr char kAshAndUiProcessGroup[] = "ash_and_ui";
+
 // Starts one of Mash's embedded services.
 void RegisterOutOfProcessServices(
     content::ContentBrowserClient::OutOfProcessServiceMap* services);

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "services/service_manager/embedder/service_manager_embedder_export.h"
@@ -50,6 +51,12 @@ struct SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceInfo {
   // If the service uses its own thread, this determines the priority of the
   // thread.
   base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
+
+  // If set, serves as a hint to the embedding environment that instances of
+  // this service should share a process with similar instances of any other
+  // services that are registered with the same group name. Choice of group
+  // names is arbitrary.
+  base::Optional<std::string> process_group;
 };
 
 }  // namespace service_manager

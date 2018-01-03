@@ -4,6 +4,7 @@
 
 #include "content/browser/service_manager/service_manager_context.h"
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
@@ -101,12 +103,16 @@ namespace {
 base::LazyInstance<std::unique_ptr<service_manager::Connector>>::Leaky
     g_io_thread_connector = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<std::map<std::string, base::WeakPtr<UtilityProcessHost>>>::
+    Leaky g_active_process_groups;
+
 void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
 // Launch a process for a service once its sandbox type is known.
 void StartServiceInUtilityProcess(
     const std::string& service_name,
     const base::string16& process_name,
+    base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request,
     service_manager::mojom::ConnectResult query_result,
     const std::string& sandbox_string) {
@@ -114,16 +120,30 @@ void StartServiceInUtilityProcess(
   service_manager::SandboxType sandbox_type =
       service_manager::UtilitySandboxTypeFromString(sandbox_string);
 
-  UtilityProcessHostImpl* process_host =
-      new UtilityProcessHostImpl(nullptr, nullptr);
+  // Look for an existing process group.
+  base::WeakPtr<UtilityProcessHost>* weak_host = nullptr;
+  if (process_group)
+    weak_host = &g_active_process_groups.Get()[*process_group];
+
+  UtilityProcessHost* process_host = nullptr;
+  if (weak_host && *weak_host) {
+    // Start service in an existing process.
+    process_host = weak_host->get();
+  } else {
+    // Start a new process for this service.
+    UtilityProcessHostImpl* impl = new UtilityProcessHostImpl(nullptr, nullptr);
 #if defined(OS_WIN)
-  if (sandbox_type == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
-    process_host->AddFilter(new DWriteFontProxyMessageFilter());
+    if (sandbox_type == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR)
+      impl->AddFilter(new DWriteFontProxyMessageFilter());
 #endif
-  process_host->SetName(process_name);
-  process_host->SetServiceIdentity(service_manager::Identity(service_name));
-  process_host->SetSandboxType(sandbox_type);
-  process_host->Start();
+    impl->SetName(process_name);
+    impl->SetServiceIdentity(service_manager::Identity(service_name));
+    impl->SetSandboxType(sandbox_type);
+    impl->Start();
+    if (weak_host)
+      *weak_host = impl->AsWeakPtr();
+    process_host = impl;
+  }
 
   service_manager::mojom::ServiceFactoryPtr service_factory;
   BindInterface(process_host, mojo::MakeRequest(&service_factory));
@@ -134,12 +154,13 @@ void StartServiceInUtilityProcess(
 void QueryAndStartServiceInUtilityProcess(
     const std::string& service_name,
     const base::string16& process_name,
+    base::Optional<std::string> process_group,
     service_manager::mojom::ServiceRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ServiceManagerContext::GetConnectorForIOThread()->QueryService(
       service_manager::Identity(service_name),
       base::BindOnce(&StartServiceInUtilityProcess, service_name, process_name,
-                     std::move(request)));
+                     std::move(process_group), std::move(request)));
 }
 
 // Request service_manager::mojom::ServiceFactory from GPU process host. Must be
@@ -556,8 +577,10 @@ ServiceManagerContext::ServiceManagerContext() {
 
   for (const auto& service : out_of_process_services) {
     packaged_services_connection_->AddServiceRequestHandler(
-        service.first, base::Bind(&QueryAndStartServiceInUtilityProcess,
-                                  service.first, service.second));
+        service.first,
+        base::BindRepeating(&QueryAndStartServiceInUtilityProcess,
+                            service.first, service.second.process_name,
+                            service.second.process_group));
   }
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
@@ -601,6 +624,13 @@ ServiceManagerContext::~ServiceManagerContext() {
 service_manager::Connector* ServiceManagerContext::GetConnectorForIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return g_io_thread_connector.Get().get();
+}
+
+// static
+std::map<std::string, base::WeakPtr<UtilityProcessHost>>*
+ServiceManagerContext::GetProcessGroupsForTesting() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return &g_active_process_groups.Get();
 }
 
 }  // namespace content

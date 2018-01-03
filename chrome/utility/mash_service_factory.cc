@@ -34,8 +34,24 @@ void RegisterMashService(
 
 // NOTE: For --mus the UI service is created at the //chrome/browser layer,
 // not in //content. See ServiceManagerContext.
-std::unique_ptr<service_manager::Service> CreateUiService() {
-  return std::make_unique<ui::Service>();
+std::unique_ptr<service_manager::Service> CreateUiService(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  ui::Service::InProcessConfig config;
+  config.resource_runner = task_runner;
+  // TODO(jamescook): Fix cursor loading.
+  config.should_host_viz = true;
+  return std::make_unique<ui::Service>(&config);
+}
+
+void RegisterUiService(
+    content::ContentUtilityClient::StaticServiceMap* services) {
+  service_manager::EmbeddedServiceInfo service_info;
+  service_info.use_own_thread = true;
+  service_info.message_loop_type = base::MessageLoop::TYPE_UI;
+  service_info.thread_priority = base::ThreadPriority::DISPLAY;
+  service_info.factory = base::BindRepeating(
+      &CreateUiService, base::ThreadTaskRunnerHandle::Get());
+  services->emplace(ui::mojom::kServiceName, service_info);
 }
 
 std::unique_ptr<service_manager::Service> CreateAshService() {
@@ -64,7 +80,7 @@ std::unique_ptr<service_manager::Service> CreateFontService() {
 
 void RegisterOutOfProcessMashServices(
     content::ContentUtilityClient::StaticServiceMap* services) {
-  RegisterMashService(services, ui::mojom::kServiceName, &CreateUiService);
+  RegisterUiService(services);
   RegisterMashService(services, mash::quick_launch::mojom::kServiceName,
                       &CreateQuickLaunch);
   RegisterMashService(services, ash::mojom::kServiceName, &CreateAshService);
