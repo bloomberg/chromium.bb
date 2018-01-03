@@ -16,7 +16,6 @@ namespace content {
 
 namespace {
 
-const size_t kTenSeconds = 10 * 1000 * 1000;
 constexpr base::TimeDelta kMaxRafDelay =
     base::TimeDelta::FromMilliseconds(5 * 1000);
 
@@ -100,23 +99,9 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   void Dispatch(MainThreadEventQueue* queue) override {
     // Report the coalesced count only for continuous events; otherwise
     // the zero value would be dominated by non-continuous events.
-    base::TimeTicks now = base::TimeTicks::Now();
     if (IsContinuousEvent()) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.MainThreadEventQueue.Continuous.QueueingTime",
-          (now - creationTimestamp()).InMicroseconds(), 1, kTenSeconds, 50);
-
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.MainThreadEventQueue.Continuous.FreshnessTime",
-          (now - lastCoalescedTimestamp()).InMicroseconds(), 1, kTenSeconds,
-          50);
-
       UMA_HISTOGRAM_COUNTS_1000("Event.MainThreadEventQueue.CoalescedCount",
                                 coalescedCount());
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.MainThreadEventQueue.NonContinuous.QueueingTime",
-          (now - creationTimestamp()).InMicroseconds(), 1, kTenSeconds, 50);
     }
 
     HandledEventCallback callback =
