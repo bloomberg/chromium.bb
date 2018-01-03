@@ -77,6 +77,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void PaintOverlay();
   void LayoutOverlay();
   bool HandleInputEvent(const WebInputEvent&);
+  void DispatchBufferedTouchEvents();
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);

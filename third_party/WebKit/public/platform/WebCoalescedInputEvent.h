@@ -7,6 +7,7 @@
 
 #include "WebCommon.h"
 #include "WebInputEvent.h"
+#include "WebPointerEvent.h"
 
 #include <memory>
 #include <vector>
@@ -20,6 +21,8 @@ class BLINK_PLATFORM_EXPORT WebCoalescedInputEvent {
   explicit WebCoalescedInputEvent(const WebInputEvent&);
   WebCoalescedInputEvent(const WebInputEvent&,
                          const std::vector<const WebInputEvent*>&);
+  WebCoalescedInputEvent(const WebPointerEvent&,
+                         const std::vector<WebPointerEvent>&);
   // Copy constructor to deep copy the event.
   WebCoalescedInputEvent(const WebCoalescedInputEvent&);
 

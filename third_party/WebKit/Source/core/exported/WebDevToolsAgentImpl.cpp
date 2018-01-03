@@ -534,6 +534,11 @@ void WebDevToolsAgentImpl::LayoutOverlay() {
     it.value->LayoutOverlay();
 }
 
+void WebDevToolsAgentImpl::DispatchBufferedTouchEvents() {
+  for (auto& it : overlay_agents_)
+    it.value->DispatchBufferedTouchEvents();
+}
+
 bool WebDevToolsAgentImpl::HandleInputEvent(const WebInputEvent& event) {
   for (auto& it : overlay_agents_) {
     if (it.value->HandleInputEvent(event))

@@ -122,11 +122,9 @@ Node* HoveredNodeForEvent(LocalFrame* frame,
 }
 
 Node* HoveredNodeForEvent(LocalFrame* frame,
-                          const WebTouchEvent& event,
+                          const WebPointerEvent& event,
                           bool ignore_pointer_events_none) {
-  if (!event.touches_length)
-    return nullptr;
-  WebTouchPoint transformed_point = event.TouchPointInRootFrame(0);
+  WebPointerEvent transformed_point = event.WebPointerEventInRootFrame();
   return HoveredNodeForPoint(
       frame, RoundedIntPoint(transformed_point.PositionInWidget()),
       ignore_pointer_events_none);
@@ -533,6 +531,12 @@ void InspectorOverlayAgent::UpdateAllLifecyclePhases() {
   OverlayMainFrame()->View()->UpdateAllLifecyclePhases();
 }
 
+void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
+  if (IsEmpty())
+    return;
+  OverlayMainFrame()->GetEventHandler().DispatchBufferedTouchEvents();
+}
+
 bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
   bool handled = false;
 
@@ -582,15 +586,15 @@ bool InspectorOverlayAgent::HandleInputEvent(const WebInputEvent& input_event) {
     }
   }
 
-  if (WebInputEvent::IsTouchEventType(input_event.GetType())) {
-    WebTouchEvent transformed_event =
-        TransformWebTouchEvent(frame_impl_->GetFrameView(),
-                               static_cast<const WebTouchEvent&>(input_event));
-    handled = HandleTouchEvent(transformed_event);
+  if (WebInputEvent::IsPointerEventType(input_event.GetType())) {
+    WebPointerEvent transformed_event = TransformWebPointerEvent(
+        frame_impl_->GetFrameView(),
+        static_cast<const WebPointerEvent&>(input_event));
+    handled = HandlePointerEvent(transformed_event);
     if (handled)
       return true;
-    OverlayMainFrame()->GetEventHandler().HandleTouchEvent(
-        transformed_event, Vector<WebTouchEvent>());
+    OverlayMainFrame()->GetEventHandler().HandlePointerEvent(
+        transformed_event, Vector<WebPointerEvent>());
   }
   if (WebInputEvent::IsKeyboardEventType(input_event.GetType())) {
     OverlayMainFrame()->GetEventHandler().KeyEvent(
@@ -1129,7 +1133,7 @@ bool InspectorOverlayAgent::HandleGestureEvent(const WebGestureEvent& event) {
   return false;
 }
 
-bool InspectorOverlayAgent::HandleTouchEvent(const WebTouchEvent& event) {
+bool InspectorOverlayAgent::HandlePointerEvent(const WebPointerEvent& event) {
   if (!ShouldSearchForNode())
     return false;
   Node* node = HoveredNodeForEvent(frame_impl_->GetFrame(), event, false);

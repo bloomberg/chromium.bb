@@ -116,6 +116,19 @@ unsigned ToWebInputEventModifierFrom(WebMouseEvent::Button button) {
   return web_mouse_button_to_platform_modifier[static_cast<int>(button)];
 }
 
+WebPointerEvent TransformWebPointerEvent(float frame_scale,
+                                         FloatPoint frame_translate,
+                                         const WebPointerEvent& event) {
+  // frameScale is default initialized in debug builds to be 0.
+  DCHECK_EQ(0, event.FrameScale());
+  DCHECK_EQ(0, event.FrameTranslate().x);
+  DCHECK_EQ(0, event.FrameTranslate().y);
+  WebPointerEvent result = event;
+  result.SetFrameScale(frame_scale);
+  result.SetFrameTranslate(frame_translate);
+  return result;
+}
+
 }  // namespace
 
 WebMouseEvent TransformWebMouseEvent(LocalFrameView* frame_view,
@@ -150,23 +163,10 @@ WebGestureEvent TransformWebGestureEvent(LocalFrameView* frame_view,
   return result;
 }
 
-WebTouchEvent TransformWebTouchEvent(float frame_scale,
-                                     FloatPoint frame_translate,
-                                     const WebTouchEvent& event) {
-  // frameScale is default initialized in debug builds to be 0.
-  DCHECK_EQ(0, event.FrameScale());
-  DCHECK_EQ(0, event.FrameTranslate().x);
-  DCHECK_EQ(0, event.FrameTranslate().y);
-  WebTouchEvent result = event;
-  result.SetFrameScale(frame_scale);
-  result.SetFrameTranslate(frame_translate);
-  return result;
-}
-
-WebTouchEvent TransformWebTouchEvent(LocalFrameView* frame_view,
-                                     const WebTouchEvent& event) {
-  return TransformWebTouchEvent(FrameScale(frame_view),
-                                FrameTranslation(frame_view), event);
+WebPointerEvent TransformWebPointerEvent(LocalFrameView* frame_view,
+                                         const WebPointerEvent& event) {
+  return TransformWebPointerEvent(FrameScale(frame_view),
+                                  FrameTranslation(frame_view), event);
 }
 
 WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
@@ -347,18 +347,37 @@ Vector<WebMouseEvent> TransformWebMouseEventVector(
   return result;
 }
 
-Vector<WebTouchEvent> TransformWebTouchEventVector(
+Vector<WebPointerEvent> TransformWebPointerEventVector(
     LocalFrameView* frame_view,
     const std::vector<const WebInputEvent*>& coalesced_events) {
   float scale = FrameScale(frame_view);
   FloatPoint translation = FrameTranslation(frame_view);
-  Vector<WebTouchEvent> result;
+  Vector<WebPointerEvent> result;
   for (const auto& event : coalesced_events) {
-    DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
-    result.push_back(TransformWebTouchEvent(
-        scale, translation, static_cast<const WebTouchEvent&>(*event)));
+    DCHECK(WebInputEvent::IsPointerEventType(event->GetType()));
+    result.push_back(TransformWebPointerEvent(
+        scale, translation, static_cast<const WebPointerEvent&>(*event)));
   }
   return result;
+}
+
+WebCoalescedInputEvent GetCoalescedWebPointerEventForTouch(
+    const WebPointerEvent& pointer_event,
+    std::vector<const WebInputEvent*> coalesced_events) {
+  std::vector<WebPointerEvent> related_pointer_events;
+  for (const auto& event : coalesced_events) {
+    DCHECK(WebInputEvent::IsTouchEventType(event->GetType()));
+    const WebTouchEvent& touch_event =
+        static_cast<const WebTouchEvent&>(*event);
+    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+      if (touch_event.touches[i].id == pointer_event.id &&
+          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
+        related_pointer_events.push_back(
+            WebPointerEvent(touch_event, touch_event.touches[i]));
+      }
+    }
+  }
+  return WebCoalescedInputEvent(pointer_event, related_pointer_events);
 }
 
 }  // namespace blink

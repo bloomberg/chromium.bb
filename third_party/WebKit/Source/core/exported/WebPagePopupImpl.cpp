@@ -502,10 +502,24 @@ bool WebPagePopupImpl::IsViewportPointInWindow(int x, int y) {
       .Contains(IntPoint(point_in_window.x, point_in_window.y));
 }
 
+WebInputEventResult WebPagePopupImpl::DispatchBufferedTouchEvents() {
+  if (closing_)
+    return WebInputEventResult::kNotHandled;
+  return page_->DeprecatedLocalMainFrame()
+      ->GetEventHandler()
+      .DispatchBufferedTouchEvents();
+}
+
 WebInputEventResult WebPagePopupImpl::HandleInputEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  return HandleInputEventIncludingTouch(coalesced_event);
+}
+
+WebInputEventResult WebPagePopupImpl::HandleInputEventInternal(
     const WebCoalescedInputEvent& event) {
   if (closing_)
     return WebInputEventResult::kNotHandled;
+  DCHECK(!WebInputEvent::IsTouchEventType(event.Event().GetType()));
   return PageWidgetDelegate::HandleInputEvent(
       *this, event, page_->DeprecatedLocalMainFrame());
 }

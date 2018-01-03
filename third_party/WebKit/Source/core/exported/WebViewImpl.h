@@ -129,6 +129,7 @@ class CORE_EXPORT WebViewImpl final
       WebCompositeAndReadbackAsyncCallback*) override;
   void ThemeChanged() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
+  WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
 
   void ApplyViewportDeltas(const WebFloatSize& visual_viewport_delta,
@@ -472,6 +473,8 @@ class CORE_EXPORT WebViewImpl final
   void RequestDecode(const PaintImage&, base::OnceCallback<void(bool)>);
 
  private:
+  WebInputEventResult HandleInputEventInternal(
+      const WebCoalescedInputEvent&) override;
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
 

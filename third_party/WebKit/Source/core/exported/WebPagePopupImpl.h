@@ -75,6 +75,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   // PageWidgetEventHandler functions.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
 
+  WebInputEventResult DispatchBufferedTouchEvents() override;
+
  private:
   // WebWidget functions
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
@@ -85,6 +87,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void Resize(const WebSize&) override;
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
+  WebInputEventResult HandleInputEventInternal(
+      const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
   bool IsPagePopup() const override { return true; }
   bool IsAcceleratedCompositingActive() const override {

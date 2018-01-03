@@ -25,13 +25,24 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
  public:
   WebPointerEvent()
       : WebInputEvent(sizeof(WebPointerEvent)), WebPointerProperties(0) {}
+  WebPointerEvent(WebInputEvent::Type type_param,
+                  WebPointerProperties web_pointer_properties_param,
+                  float width_param,
+                  float height_param)
+      : WebInputEvent(sizeof(WebPointerEvent)),
+        WebPointerProperties(web_pointer_properties_param),
+        width(width_param),
+        height(height_param) {
+    SetType(type_param);
+  }
   BLINK_PLATFORM_EXPORT WebPointerEvent(const WebTouchEvent&,
                                         const WebTouchPoint&);
   BLINK_PLATFORM_EXPORT WebPointerEvent(WebInputEvent::Type,
                                         const WebMouseEvent&);
-  // Creates a PointerCausedUaAction pointer event.
-  BLINK_PLATFORM_EXPORT WebPointerEvent(WebPointerProperties::PointerType,
-                                        double time_stamp_seconds);
+
+  BLINK_PLATFORM_EXPORT static WebPointerEvent CreatePointerCausesUaActionEvent(
+      WebPointerProperties::PointerType,
+      double time_stamp_seconds);
 
   // ------------ Touch Point Specific ------------
 

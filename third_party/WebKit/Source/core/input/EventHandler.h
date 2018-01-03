@@ -75,7 +75,6 @@ class TextEvent;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
-class WebTouchEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
@@ -150,6 +149,8 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandlePointerEvent(
       const WebPointerEvent&,
       const Vector<WebPointerEvent>& coalesced_events);
+
+  WebInputEventResult DispatchBufferedTouchEvents();
 
   WebInputEventResult HandleMousePressEvent(const WebMouseEvent&);
   WebInputEventResult HandleMouseReleaseEvent(const WebMouseEvent&);
@@ -231,10 +232,6 @@ class CORE_EXPORT EventHandler final
   void DragSourceEndedAt(const WebMouseEvent&, DragOperation);
 
   void CapsLockStateMayHaveChanged();  // Only called by FrameSelection
-
-  WebInputEventResult HandleTouchEvent(
-      const WebTouchEvent&,
-      const Vector<WebTouchEvent>& coalesced_events);
 
   bool UseHandCursor(Node*, bool is_over_link);
 

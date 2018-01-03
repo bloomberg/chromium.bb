@@ -126,7 +126,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   web_view->Resize(WebSize(page_width, page_height));
   web_view->UpdateAllLifecyclePhases();
 
-  web_view->SetPageScaleFactor(2);
+  web_view->SetPageScaleFactor(3);
 
   LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
 
@@ -134,10 +134,10 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::kTimeStampForTesting);
-    web_mouse_event.SetPositionInWidget(10, 10);
-    web_mouse_event.SetPositionInScreen(10, 10);
-    web_mouse_event.movement_x = 10;
-    web_mouse_event.movement_y = 10;
+    web_mouse_event.SetPositionInWidget(15, 15);
+    web_mouse_event.SetPositionInScreen(15, 15);
+    web_mouse_event.movement_x = 15;
+    web_mouse_event.movement_y = 15;
 
     WebMouseEvent transformed_event =
         TransformWebMouseEvent(view, web_mouse_event);
@@ -145,8 +145,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
         FlooredIntPoint(transformed_event.PositionInRootFrame());
     EXPECT_EQ(5, position.X());
     EXPECT_EQ(5, position.Y());
-    EXPECT_EQ(10, transformed_event.PositionInScreen().x);
-    EXPECT_EQ(10, transformed_event.PositionInScreen().y);
+    EXPECT_EQ(15, transformed_event.PositionInScreen().x);
+    EXPECT_EQ(15, transformed_event.PositionInScreen().y);
 
     IntPoint movement =
         FlooredIntPoint(transformed_event.MovementInRootFrame());
@@ -159,12 +159,12 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.x = 10;
-    web_gesture_event.y = 12;
+    web_gesture_event.x = 15;
+    web_gesture_event.y = 18;
     web_gesture_event.global_x = 20;
     web_gesture_event.global_y = 22;
-    web_gesture_event.data.scroll_update.delta_x = 30;
-    web_gesture_event.data.scroll_update.delta_y = 32;
+    web_gesture_event.data.scroll_update.delta_x = 45;
+    web_gesture_event.data.scroll_update.delta_y = 48;
     web_gesture_event.data.scroll_update.velocity_x = 40;
     web_gesture_event.data.scroll_update.velocity_y = 42;
     web_gesture_event.data.scroll_update.inertial_phase =
@@ -193,8 +193,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.x = 10;
-    web_gesture_event.y = 12;
+    web_gesture_event.x = 15;
+    web_gesture_event.y = 18;
     web_gesture_event.global_x = 20;
     web_gesture_event.global_y = 22;
 
@@ -215,8 +215,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.tap.width = 10;
-    web_gesture_event.data.tap.height = 10;
+    web_gesture_event.data.tap.width = 15;
+    web_gesture_event.data.tap.height = 15;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
@@ -230,14 +230,14 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.tap.width = 10;
-    web_gesture_event.data.tap.height = 10;
+    web_gesture_event.data.tap.width = 30;
+    web_gesture_event.data.tap.height = 30;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(5, area.Width());
-    EXPECT_EQ(5, area.Height());
+    EXPECT_EQ(10, area.Width());
+    EXPECT_EQ(10, area.Height());
   }
 
   {
@@ -245,14 +245,14 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.tap_down.width = 10;
-    web_gesture_event.data.tap_down.height = 10;
+    web_gesture_event.data.tap_down.width = 9;
+    web_gesture_event.data.tap_down.height = 9;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(5, area.Width());
-    EXPECT_EQ(5, area.Height());
+    EXPECT_EQ(3, area.Width());
+    EXPECT_EQ(3, area.Height());
   }
 
   {
@@ -260,14 +260,14 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.show_press.width = 10;
-    web_gesture_event.data.show_press.height = 10;
+    web_gesture_event.data.show_press.width = 18;
+    web_gesture_event.data.show_press.height = 18;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
     IntSize area = FlooredIntSize(scaled_gesture_event.TapAreaInRootFrame());
-    EXPECT_EQ(5, area.Width());
-    EXPECT_EQ(5, area.Height());
+    EXPECT_EQ(6, area.Width());
+    EXPECT_EQ(6, area.Height());
   }
 
   {
@@ -275,8 +275,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.long_press.width = 10;
-    web_gesture_event.data.long_press.height = 10;
+    web_gesture_event.data.long_press.width = 15;
+    web_gesture_event.data.long_press.height = 15;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
@@ -290,8 +290,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                       WebInputEvent::kNoModifiers,
                                       WebInputEvent::kTimeStampForTesting);
     web_gesture_event.source_device = kWebGestureDeviceTouchscreen;
-    web_gesture_event.data.two_finger_tap.first_finger_width = 10;
-    web_gesture_event.data.two_finger_tap.first_finger_height = 10;
+    web_gesture_event.data.two_finger_tap.first_finger_width = 15;
+    web_gesture_event.data.two_finger_tap.first_finger_height = 15;
 
     WebGestureEvent scaled_gesture_event =
         TransformWebGestureEvent(view, web_gesture_event);
@@ -301,39 +301,33 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   }
 
   {
-    WebTouchEvent web_touch_event(WebInputEvent::kTouchMove,
-                                  WebInputEvent::kNoModifiers,
-                                  WebInputEvent::kTimeStampForTesting);
-    web_touch_event.touches_length = 1;
-    web_touch_event.touches[0].state = WebTouchPoint::kStateMoved;
-    web_touch_event.touches[0].SetPositionInScreen(10.6f, 10.4f);
-    web_touch_event.touches[0].SetPositionInWidget(10.6f, 10.4f);
-    web_touch_event.touches[0].radius_x = 10.6f;
-    web_touch_event.touches[0].radius_y = 10.4f;
-    web_touch_event.touches[0].movement_x = 20;
-    web_touch_event.touches[0].movement_y = 20;
+    WebPointerEvent web_pointer_event(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(10.8f, 10.5f),
+                             WebFloatPoint(10.8f, 10.5f), 30, 30),
+        6.6f, 9.9f);
+    EXPECT_FLOAT_EQ(10.8f, web_pointer_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(10.5f, web_pointer_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(10.8f, web_pointer_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(10.5f, web_pointer_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(6.6f, web_pointer_event.width);
+    EXPECT_FLOAT_EQ(9.9f, web_pointer_event.height);
+    EXPECT_EQ(30, web_pointer_event.movement_x);
+    EXPECT_EQ(30, web_pointer_event.movement_y);
 
-    EXPECT_FLOAT_EQ(10.6f, web_touch_event.touches[0].PositionInScreen().x);
-    EXPECT_FLOAT_EQ(10.4f, web_touch_event.touches[0].PositionInScreen().y);
-    EXPECT_FLOAT_EQ(10.6f, web_touch_event.touches[0].PositionInWidget().x);
-    EXPECT_FLOAT_EQ(10.4f, web_touch_event.touches[0].PositionInWidget().y);
-    EXPECT_FLOAT_EQ(10.6f, web_touch_event.touches[0].radius_x);
-    EXPECT_FLOAT_EQ(10.4f, web_touch_event.touches[0].radius_y);
-    EXPECT_EQ(20, web_touch_event.touches[0].movement_x);
-    EXPECT_EQ(20, web_touch_event.touches[0].movement_y);
-
-    WebTouchEvent transformed_event =
-        TransformWebTouchEvent(view, web_touch_event);
-    WebTouchPoint transformed_point =
-        transformed_event.TouchPointInRootFrame(0);
-    EXPECT_FLOAT_EQ(10.6f, transformed_point.PositionInScreen().x);
-    EXPECT_FLOAT_EQ(10.4f, transformed_point.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(5.3f, transformed_point.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(5.2f, transformed_point.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(5.3f, transformed_point.radius_x);
-    EXPECT_FLOAT_EQ(5.2f, transformed_point.radius_y);
-    EXPECT_EQ(10, transformed_point.movement_x);
-    EXPECT_EQ(10, transformed_point.movement_y);
+    WebPointerEvent transformed_event =
+        TransformWebPointerEvent(view, web_pointer_event)
+            .WebPointerEventInRootFrame();
+    EXPECT_FLOAT_EQ(10.8f, transformed_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(10.5f, transformed_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(3.6f, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(3.5f, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(2.2f, transformed_event.width);
+    EXPECT_FLOAT_EQ(3.3f, transformed_event.height);
+    EXPECT_EQ(10, transformed_event.movement_x);
+    EXPECT_EQ(10, transformed_event.movement_y);
   }
 }
 
@@ -541,69 +535,64 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   }
 
   {
-    WebTouchEvent web_touch_event(WebInputEvent::kTouchMove,
-                                  WebInputEvent::kNoModifiers,
-                                  WebInputEvent::kTimeStampForTesting);
-    web_touch_event.touches_length = 1;
-    web_touch_event.touches[0].state = WebTouchPoint::kStateMoved;
-    web_touch_event.touches[0].SetPositionInScreen(90, 90);
-    web_touch_event.touches[0].SetPositionInWidget(90, 90);
-    web_touch_event.touches[0].radius_x = 30;
-    web_touch_event.touches[0].radius_y = 30;
+    WebPointerEvent web_pointer_event(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(90, 90), WebFloatPoint(90, 90)),
+        30, 30);
 
-    WebTouchEvent transformed_event =
-        TransformWebTouchEvent(view, web_touch_event);
+    WebPointerEvent transformed_event =
+        TransformWebPointerEvent(view, web_pointer_event)
+            .WebPointerEventInRootFrame();
 
-    WebTouchPoint transformed_point =
-        transformed_event.TouchPointInRootFrame(0);
-    EXPECT_FLOAT_EQ(90, transformed_point.PositionInScreen().x);
-    EXPECT_FLOAT_EQ(90, transformed_point.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(30, transformed_point.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_point.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(10, transformed_point.radius_x);
-    EXPECT_FLOAT_EQ(10, transformed_point.radius_y);
+    EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(10, transformed_event.width);
+    EXPECT_FLOAT_EQ(10, transformed_event.height);
   }
 
   {
-    WebTouchEvent web_touch_event1(WebInputEvent::kTouchMove,
-                                   WebInputEvent::kNoModifiers,
-                                   WebInputEvent::kTimeStampForTesting);
-    web_touch_event1.touches_length = 1;
-    web_touch_event1.touches[0].state = WebTouchPoint::kStateMoved;
-    web_touch_event1.touches[0].SetPositionInScreen(90, 90);
-    web_touch_event1.touches[0].SetPositionInWidget(90, 90);
-    web_touch_event1.touches[0].radius_x = 30;
-    web_touch_event1.touches[0].radius_y = 30;
+    WebPointerEvent web_pointer_event1(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(90, 90), WebFloatPoint(90, 90)),
+        30, 30);
 
-    WebTouchEvent web_touch_event2 = web_touch_event1;
-    web_touch_event2.touches[0].SetPositionInScreen(120, 90);
-    web_touch_event2.touches[0].SetPositionInWidget(120, 90);
-    web_touch_event2.touches[0].radius_x = 60;
+    WebPointerEvent web_pointer_event2(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(120, 90), WebFloatPoint(120, 90)),
+        60, 30);
 
     std::vector<const WebInputEvent*> events;
-    events.push_back(&web_touch_event1);
-    events.push_back(&web_touch_event2);
+    events.push_back(&web_pointer_event1);
+    events.push_back(&web_pointer_event2);
 
-    Vector<WebTouchEvent> coalescedevents =
-        TransformWebTouchEventVector(view, events);
+    Vector<WebPointerEvent> coalescedevents =
+        TransformWebPointerEventVector(view, events);
     EXPECT_EQ(events.size(), coalescedevents.size());
 
-    WebTouchPoint transformed_point =
-        coalescedevents[0].TouchPointInRootFrame(0);
-    EXPECT_FLOAT_EQ(90, transformed_point.PositionInScreen().x);
-    EXPECT_FLOAT_EQ(90, transformed_point.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(30, transformed_point.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_point.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(10, transformed_point.radius_x);
-    EXPECT_FLOAT_EQ(10, transformed_point.radius_y);
+    WebPointerEvent transformed_event =
+        coalescedevents[0].WebPointerEventInRootFrame();
+    EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(10, transformed_event.width);
+    EXPECT_FLOAT_EQ(10, transformed_event.height);
 
-    transformed_point = coalescedevents[1].TouchPointInRootFrame(0);
-    EXPECT_FLOAT_EQ(120, transformed_point.PositionInScreen().x);
-    EXPECT_FLOAT_EQ(90, transformed_point.PositionInScreen().y);
-    EXPECT_FLOAT_EQ(40, transformed_point.PositionInWidget().x);
-    EXPECT_FLOAT_EQ(30, transformed_point.PositionInWidget().y);
-    EXPECT_FLOAT_EQ(20, transformed_point.radius_x);
-    EXPECT_FLOAT_EQ(10, transformed_point.radius_y);
+    transformed_event = coalescedevents[1].WebPointerEventInRootFrame();
+    EXPECT_FLOAT_EQ(120, transformed_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(90, transformed_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(40, transformed_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(30, transformed_event.PositionInWidget().y);
+    EXPECT_FLOAT_EQ(20, transformed_event.width);
+    EXPECT_FLOAT_EQ(10, transformed_event.height);
   }
 }
 
@@ -721,29 +710,28 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   }
 
   {
-    WebTouchEvent web_touch_event(WebInputEvent::kTouchMove,
-                                  WebInputEvent::kNoModifiers,
-                                  WebInputEvent::kTimeStampForTesting);
-    web_touch_event.touches_length = 1;
-    web_touch_event.touches[0].state = WebTouchPoint::kStateMoved;
-    web_touch_event.touches[0].SetPositionInScreen(10.6f, 10.4f);
-    web_touch_event.touches[0].SetPositionInWidget(10.6f, 10.4f);
+    WebPointerEvent web_pointer_event(
+        WebInputEvent::kPointerDown,
+        WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(10.6f, 10.4f),
+                             WebFloatPoint(10.6f, 10.4f)),
+        10, 10);
 
-    EXPECT_FLOAT_EQ(10.6f, web_touch_event.touches[0].PositionInScreen().x);
-    EXPECT_FLOAT_EQ(10.4f, web_touch_event.touches[0].PositionInScreen().y);
-    EXPECT_FLOAT_EQ(10.6f, web_touch_event.touches[0].PositionInWidget().x);
-    EXPECT_FLOAT_EQ(10.4f, web_touch_event.touches[0].PositionInWidget().y);
+    EXPECT_FLOAT_EQ(10.6f, web_pointer_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(10.4f, web_pointer_event.PositionInScreen().y);
+    EXPECT_FLOAT_EQ(10.6f, web_pointer_event.PositionInWidget().x);
+    EXPECT_FLOAT_EQ(10.4f, web_pointer_event.PositionInWidget().y);
 
-    WebTouchEvent transformed_touch_event =
-        TransformWebTouchEvent(view, web_touch_event);
-    WebTouchPoint transformed_point =
-        transformed_touch_event.TouchPointInRootFrame(0);
-    EXPECT_FLOAT_EQ(10.6f, transformed_point.PositionInScreen().x);
-    EXPECT_FLOAT_EQ(10.4f, transformed_point.PositionInScreen().y);
+    WebPointerEvent transformed_event =
+        TransformWebPointerEvent(view, web_pointer_event)
+            .WebPointerEventInRootFrame();
+    EXPECT_FLOAT_EQ(10.6f, transformed_event.PositionInScreen().x);
+    EXPECT_FLOAT_EQ(10.4f, transformed_event.PositionInScreen().y);
     EXPECT_FLOAT_EQ(5.3f + visual_offset.X(),
-                    transformed_point.PositionInWidget().x);
+                    transformed_event.PositionInWidget().x);
     EXPECT_FLOAT_EQ(5.2f + visual_offset.Y(),
-                    transformed_point.PositionInWidget().y);
+                    transformed_event.PositionInWidget().y);
   }
 }
 

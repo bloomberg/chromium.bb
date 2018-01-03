@@ -119,22 +119,6 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
          IsHTMLInputElement(ToShadowRoot(target_node)->host());
 }
 
-Vector<WebPointerEvent> GetCoalescedWebPointerEventsWithNoTransformation(
-    const Vector<WebTouchEvent>& coalesced_events,
-    int id) {
-  Vector<WebPointerEvent> related_pointer_events;
-  for (const auto& touch_event : coalesced_events) {
-    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].id == id &&
-          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        related_pointer_events.push_back(
-            WebPointerEvent(touch_event, touch_event.touches[i]));
-      }
-    }
-  }
-  return related_pointer_events;
-}
-
 }  // namespace
 
 using namespace HTMLNames;
@@ -562,6 +546,10 @@ EventHandler::OptionalCursor EventHandler::SelectAutoCursor(
     return i_beam;
 
   return PointerCursor();
+}
+
+WebInputEventResult EventHandler::DispatchBufferedTouchEvents() {
+  return pointer_event_manager_->FlushEvents();
 }
 
 WebInputEventResult EventHandler::HandlePointerEvent(
@@ -2070,39 +2058,6 @@ void EventHandler::UpdateLastScrollbarUnderMouse(Scrollbar* scrollbar,
 
     last_scrollbar_under_mouse_ = set_last ? scrollbar : nullptr;
   }
-}
-
-WebInputEventResult EventHandler::HandleTouchEvent(
-    const WebTouchEvent& event,
-    const Vector<WebTouchEvent>& coalesced_events) {
-  TRACE_EVENT0("blink", "EventHandler::handleTouchEvent");
-  if (event.GetType() == WebInputEvent::kTouchScrollStarted) {
-    // As long as the type is not mouse it is fine. Any type but mouse causes
-    // all the active scroll capable pointers to get canceled.
-    return pointer_event_manager_->HandlePointerEvent(
-        WebPointerEvent(WebPointerProperties::PointerType::kUnknown,
-                        event.TimeStampSeconds()),
-        Vector<WebPointerEvent>());
-  }
-
-  for (unsigned touch_point_index = 0; touch_point_index < event.touches_length;
-       ++touch_point_index) {
-    const WebTouchPoint& touch_point = event.touches[touch_point_index];
-    if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
-      const WebPointerEvent& web_pointer_event =
-          WebPointerEvent(event, event.touches[touch_point_index]);
-      const Vector<WebPointerEvent>& web_coalesced_pointer_events =
-          GetCoalescedWebPointerEventsWithNoTransformation(
-              coalesced_events, event.touches[touch_point_index].id);
-      pointer_event_manager_->HandlePointerEvent(web_pointer_event,
-                                                 web_coalesced_pointer_events);
-    }
-  }
-
-  // Calling this function |FlushEvents| will be moved to MainThreadEventQueue
-  // class. It will be called before rAF and also whenever we run in low latency
-  // mode as mentioned in crbug.com/728250.
-  return pointer_event_manager_->FlushEvents();
 }
 
 WebInputEventResult EventHandler::PassMousePressEventToSubframe(

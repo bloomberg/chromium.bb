@@ -52,6 +52,25 @@ class PointerEventManagerTest : public SimTest {
   EventHandler& EventHandler() {
     return GetDocument().GetFrame()->GetEventHandler();
   }
+  WebPointerEvent CreateTestPointerEvent(
+      WebInputEvent::Type type,
+      WebPointerProperties::PointerType pointer_type) {
+    WebPointerEvent event(
+        type,
+        WebPointerProperties(1, pointer_type,
+                             WebPointerProperties::Button::kLeft,
+                             WebFloatPoint(100, 100), WebFloatPoint(100, 100)),
+        1, 1);
+    event.SetFrameScale(1);
+    return event;
+  }
+  WebMouseEvent CreateTestMouseEvent(WebInputEvent::Type type,
+                                     const WebFloatPoint& coordinates) {
+    WebMouseEvent event(type, coordinates, coordinates,
+                        WebPointerProperties::Button::kLeft, 0, 0, 0);
+    event.SetFrameScale(1);
+    return event;
+  }
 };
 
 TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
@@ -67,54 +86,42 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   GetDocument().body()->addEventListener(EventTypeNames::pointercancel,
                                          callback);
 
-  WebTouchEvent event;
-  event.SetFrameScale(1);
-  WebTouchPoint point(
-      WebPointerProperties(1, WebPointerProperties::PointerType::kTouch,
-                           WebPointerProperties::Button::kLeft,
-                           WebFloatPoint(100, 100), WebFloatPoint(100, 100)));
-  point.state = WebTouchPoint::State::kStatePressed;
-  event.touches[event.touches_length++] = point;
-  event.SetType(WebInputEvent::kTouchStart);
-  EventHandler().HandleTouchEvent(event, Vector<WebTouchEvent>());
+  EventHandler().HandlePointerEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerDown,
+                             WebPointerProperties::PointerType::kTouch),
+      Vector<WebPointerEvent>());
 
-  point.pointer_type = WebPointerProperties::PointerType::kPen;
-  event.touches[0] = point;
-  event.SetType(WebInputEvent::kTouchStart);
-  EventHandler().HandleTouchEvent(event, Vector<WebTouchEvent>());
+  EventHandler().HandlePointerEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerDown,
+                             WebPointerProperties::PointerType::kPen),
+      Vector<WebPointerEvent>());
 
-  WebMouseEvent mouse_down_event(
-      WebInputEvent::kMouseDown, WebFloatPoint(100, 100),
-      WebFloatPoint(100, 100), WebPointerProperties::Button::kLeft, 0, 0, 0);
-  mouse_down_event.SetFrameScale(1);
-  EventHandler().HandleMousePressEvent(mouse_down_event);
+  EventHandler().HandleMousePressEvent(
+      CreateTestMouseEvent(WebInputEvent::kMouseDown, WebFloatPoint(100, 100)));
 
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 0);
   ASSERT_EQ(callback->penEventCount(), 0);
 
-  point.pointer_type = WebPointerProperties::PointerType::kPen;
-  event.touches[0] = point;
-  event.SetType(WebInputEvent::kTouchScrollStarted);
-  EventHandler().HandleTouchEvent(event, Vector<WebTouchEvent>());
+  EventHandler().HandlePointerEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
+                             WebPointerProperties::PointerType::kPen),
+      Vector<WebPointerEvent>());
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
 
-  point.pointer_type = WebPointerProperties::PointerType::kTouch;
-  event.touches[0] = point;
-  event.SetType(WebInputEvent::kTouchScrollStarted);
-  EventHandler().HandleTouchEvent(event, Vector<WebTouchEvent>());
+  EventHandler().HandlePointerEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
+                             WebPointerProperties::PointerType::kTouch),
+      Vector<WebPointerEvent>());
   ASSERT_EQ(callback->mouseEventCount(), 0);
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
 
-  WebMouseEvent mouse_move_event(
-      WebInputEvent::kMouseMove, WebFloatPoint(200, 200),
-      WebFloatPoint(200, 200), WebPointerProperties::Button::kLeft, 0, 0, 0);
-  mouse_move_event.SetFrameScale(1);
-  EventHandler().HandleMouseMoveEvent(mouse_move_event,
-                                      Vector<WebMouseEvent>());
+  EventHandler().HandleMouseMoveEvent(
+      CreateTestMouseEvent(WebInputEvent::kMouseMove, WebFloatPoint(200, 200)),
+      Vector<WebMouseEvent>());
 
   ASSERT_EQ(callback->mouseEventCount(), 1);
   ASSERT_EQ(callback->touchEventCount(), 1);
