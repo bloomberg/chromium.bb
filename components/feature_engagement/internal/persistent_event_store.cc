@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/feature_engagement/internal/stats.h"
 
 namespace feature_engagement {
@@ -50,20 +49,20 @@ bool PersistentEventStore::IsReady() const {
 
 void PersistentEventStore::WriteEvent(const Event& event) {
   DCHECK(IsReady());
-  std::unique_ptr<KeyEventList> entries = base::MakeUnique<KeyEventList>();
+  std::unique_ptr<KeyEventList> entries = std::make_unique<KeyEventList>();
   entries->push_back(KeyEventPair(event.name(), event));
 
   db_->UpdateEntries(std::move(entries),
-                     base::MakeUnique<std::vector<std::string>>(),
+                     std::make_unique<std::vector<std::string>>(),
                      base::Bind(&NoopUpdateCallback));
 }
 
 void PersistentEventStore::DeleteEvent(const std::string& event_name) {
   DCHECK(IsReady());
-  auto deletes = base::MakeUnique<std::vector<std::string>>();
+  auto deletes = std::make_unique<std::vector<std::string>>();
   deletes->push_back(event_name);
 
-  db_->UpdateEntries(base::MakeUnique<KeyEventList>(), std::move(deletes),
+  db_->UpdateEntries(std::make_unique<KeyEventList>(), std::move(deletes),
                      base::Bind(&NoopUpdateCallback));
 }
 
@@ -72,7 +71,7 @@ void PersistentEventStore::OnInitComplete(const OnLoadedCallback& callback,
   stats::RecordDbInitEvent(success, stats::StoreType::EVENTS_STORE);
 
   if (!success) {
-    callback.Run(false, base::MakeUnique<std::vector<Event>>());
+    callback.Run(false, std::make_unique<std::vector<Event>>());
     return;
   }
 

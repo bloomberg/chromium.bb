@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "components/feature_engagement/internal/proto/availability.pb.h"
 #include "components/feature_engagement/internal/stats.h"
 #include "components/feature_engagement/public/feature_list.h"
@@ -48,7 +47,7 @@ void OnDBLoadComplete(
   stats::RecordAvailabilityDbLoadEvent(success);
   if (!success) {
     std::move(on_loaded_callback)
-        .Run(false, base::MakeUnique<std::map<std::string, uint32_t>>());
+        .Run(false, std::make_unique<std::map<std::string, uint32_t>>());
     return;
   }
 
@@ -61,8 +60,8 @@ void OnDBLoadComplete(
 
   // Find all availabilities from DB and find out what should be deleted.
   auto feature_availabilities =
-      base::MakeUnique<std::map<std::string, uint32_t>>();
-  auto deletes = base::MakeUnique<std::vector<std::string>>();
+      std::make_unique<std::map<std::string, uint32_t>>();
+  auto deletes = std::make_unique<std::vector<std::string>>();
   for (auto& availability : *availabilities) {
     // Check if in |feature_filter|.
     if (feature_mapping.find(availability.feature_name()) ==
@@ -86,7 +85,7 @@ void OnDBLoadComplete(
   }
 
   // Find features from |feature_filter| that are enabled, but not in DB yet.
-  auto additions = base::MakeUnique<KeyAvailabilityList>();
+  auto additions = std::make_unique<KeyAvailabilityList>();
   for (const base::Feature* feature : feature_filter) {
     // Check if already in DB.
     if (feature_availabilities->find(feature->name) !=
@@ -129,7 +128,7 @@ void OnDBInitComplete(
 
   if (!success) {
     std::move(on_loaded_callback)
-        .Run(false, base::MakeUnique<std::map<std::string, uint32_t>>());
+        .Run(false, std::make_unique<std::map<std::string, uint32_t>>());
     return;
   }
 

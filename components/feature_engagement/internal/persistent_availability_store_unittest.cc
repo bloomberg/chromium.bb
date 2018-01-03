@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/feature_engagement/internal/proto/availability.pb.h"
@@ -56,7 +55,7 @@ class PersistentAvailabilityStoreTest : public testing::Test {
 
   // Creates a DB and stores off a pointer to it as a member.
   std::unique_ptr<leveldb_proto::test::FakeDB<Availability>> CreateDB() {
-    auto db = base::MakeUnique<leveldb_proto::test::FakeDB<Availability>>(
+    auto db = std::make_unique<leveldb_proto::test::FakeDB<Availability>>(
         &db_availabilities_);
     db_ = db.get();
     return db;

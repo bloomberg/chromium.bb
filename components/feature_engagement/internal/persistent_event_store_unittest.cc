@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "components/feature_engagement/internal/proto/event.pb.h"
@@ -52,7 +51,7 @@ class PersistentEventStoreTest : public ::testing::Test {
     DCHECK(!db_);
     DCHECK(!store_);
 
-    auto db = base::MakeUnique<leveldb_proto::test::FakeDB<Event>>(&db_events_);
+    auto db = std::make_unique<leveldb_proto::test::FakeDB<Event>>(&db_events_);
     db_ = db.get();
     store_.reset(new PersistentEventStore(storage_dir_, std::move(db)));
   }

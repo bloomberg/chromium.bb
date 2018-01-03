@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +39,7 @@ class InMemoryEventStoreTest : public ::testing::Test {
 
 TEST_F(InMemoryEventStoreTest, LoadShouldProvideEventsAsCallback) {
   std::unique_ptr<std::vector<Event>> events =
-      base::MakeUnique<std::vector<Event>>();
+      std::make_unique<std::vector<Event>>();
   Event foo;
   Event bar;
   events->push_back(foo);
