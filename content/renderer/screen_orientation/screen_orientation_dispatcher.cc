@@ -26,42 +26,39 @@ void ScreenOrientationDispatcher::OnDestruct() {
 void ScreenOrientationDispatcher::OnLockOrientationResult(
     int request_id,
     ScreenOrientationLockResult result) {
-  blink::WebLockOrientationCallback* callback =
-      pending_callbacks_.Lookup(request_id);
-  if (!callback)
+  if (!pending_callback_ || request_id != request_id_)
     return;
 
   switch (result) {
     case ScreenOrientationLockResult::SCREEN_ORIENTATION_LOCK_RESULT_SUCCESS:
-      callback->OnSuccess();
+      pending_callback_->OnSuccess();
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_NOT_AVAILABLE:
-      callback->OnError(blink::kWebLockOrientationErrorNotAvailable);
+      pending_callback_->OnError(blink::kWebLockOrientationErrorNotAvailable);
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_FULLSCREEN_REQUIRED:
-      callback->OnError(blink::kWebLockOrientationErrorFullscreenRequired);
+      pending_callback_->OnError(
+          blink::kWebLockOrientationErrorFullscreenRequired);
       break;
     case ScreenOrientationLockResult::
         SCREEN_ORIENTATION_LOCK_RESULT_ERROR_CANCELED:
-      callback->OnError(blink::kWebLockOrientationErrorCanceled);
+      pending_callback_->OnError(blink::kWebLockOrientationErrorCanceled);
       break;
     default:
       NOTREACHED();
       break;
   }
 
-  pending_callbacks_.Remove(request_id);
+  pending_callback_.reset();
 }
 
 void ScreenOrientationDispatcher::CancelPendingLocks() {
-  for (CallbackMap::Iterator<blink::WebLockOrientationCallback>
-       iterator(&pending_callbacks_); !iterator.IsAtEnd(); iterator.Advance()) {
-    iterator.GetCurrentValue()->OnError(
-        blink::kWebLockOrientationErrorCanceled);
-    pending_callbacks_.Remove(iterator.GetCurrentKey());
-  }
+  if (!pending_callback_)
+    return;
+  pending_callback_->OnError(blink::kWebLockOrientationErrorCanceled);
+  pending_callback_.reset();
 }
 
 void ScreenOrientationDispatcher::LockOrientation(
@@ -69,12 +66,12 @@ void ScreenOrientationDispatcher::LockOrientation(
     std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   CancelPendingLocks();
 
-  int request_id = pending_callbacks_.Add(std::move(callback));
+  pending_callback_ = std::move(callback);
   EnsureScreenOrientationService();
   screen_orientation_->LockOrientation(
       orientation,
       base::BindOnce(&ScreenOrientationDispatcher::OnLockOrientationResult,
-                     base::Unretained(this), request_id));
+                     base::Unretained(this), ++request_id_));
 }
 
 void ScreenOrientationDispatcher::UnlockOrientation() {
@@ -83,19 +80,15 @@ void ScreenOrientationDispatcher::UnlockOrientation() {
   screen_orientation_->UnlockOrientation();
 }
 
+int ScreenOrientationDispatcher::GetRequestIdForTests() {
+  return pending_callback_ ? request_id_ : -1;
+}
+
 void ScreenOrientationDispatcher::EnsureScreenOrientationService() {
   if (!screen_orientation_) {
     render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
         &screen_orientation_);
   }
-}
-
-int ScreenOrientationDispatcher::GetRequestIdForTests() {
-  if (pending_callbacks_.IsEmpty())
-    return -1;
-  CallbackMap::Iterator<blink::WebLockOrientationCallback> iterator(
-      &pending_callbacks_);
-  return iterator.GetCurrentKey();
 }
 
 }  // namespace content
