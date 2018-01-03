@@ -131,7 +131,7 @@ class SyncedSessionTracker {
   // |tab_id| for the session specified with |session_tag|.
   // Note: Ownership of the SessionTab remains within the SyncedSessionTracker.
   // TODO(zea): Replace SessionTab with a Sync specific wrapper.
-  // crbug.com/662597
+  // https://crbug.com/662597
   sessions::SessionTab* GetTab(const std::string& session_tag,
                                SessionID::id_type tab_id);
 
