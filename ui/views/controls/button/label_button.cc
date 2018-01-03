@@ -55,7 +55,7 @@ LabelButton::LabelButton(ButtonListener* listener,
       style_(STYLE_TEXTBUTTON),
       border_is_themed_border_(true),
       image_label_spacing_(LayoutProvider::Get()->GetDistanceMetric(
-          DISTANCE_RELATED_CONTROL_HORIZONTAL)),
+          DISTANCE_BUTTON_IMAGE_LABEL_PADDING)),
       horizontal_alignment_(gfx::ALIGN_LEFT) {
   SetAnimationDuration(kHoverAnimationDurationMs);
   SetTextInternal(text);
