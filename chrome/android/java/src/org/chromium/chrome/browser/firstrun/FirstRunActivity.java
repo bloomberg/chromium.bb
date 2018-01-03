@@ -228,8 +228,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                     return;
                 }
 
-                mPagerAdapter =
-                        new FirstRunPagerAdapter(getFragmentManager(), mPages, mFreProperties);
+                mPagerAdapter = new FirstRunPagerAdapter(getFragmentManager(), mPages);
                 stopProgressionIfNotAcceptedTermsOfService();
                 mPager.setAdapter(mPagerAdapter);
 
@@ -337,6 +336,11 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     // FirstRunPageDelegate:
+    @Override
+    public Bundle getProperties() {
+        return mFreProperties;
+    }
+
     @Override
     public void advanceToNextPage() {
         jumpToPage(mPager.getCurrentItem() + 1);

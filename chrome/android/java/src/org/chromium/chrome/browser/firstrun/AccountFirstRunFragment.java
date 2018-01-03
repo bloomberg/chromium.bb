@@ -40,8 +40,10 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        boolean isChildAccount = getProperties().getBoolean(IS_CHILD_ACCOUNT);
-        String forceAccountTo = getProperties().getString(FORCE_SIGNIN_ACCOUNT_TO);
+        Bundle freProperties = getPageDelegate().getProperties();
+        boolean isChildAccount = freProperties.getBoolean(IS_CHILD_ACCOUNT);
+        String forceAccountTo = freProperties.getString(FORCE_SIGNIN_ACCOUNT_TO);
+
         AccountSigninView.Listener listener = new AccountSigninView.Listener() {
             @Override
             public void onAccountSelectionCanceled() {
@@ -89,15 +91,16 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
 
     @Override
     public boolean interceptBackPressed() {
-        boolean forceSignin = getProperties().getString(FORCE_SIGNIN_ACCOUNT_TO) != null;
+        Bundle freProperties = getPageDelegate().getProperties();
+        boolean forceSignin = freProperties.getString(FORCE_SIGNIN_ACCOUNT_TO) != null;
         if (!mView.isInConfirmationScreen()
-                || (forceSignin && !getProperties().getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE))) {
+                || (forceSignin && !freProperties.getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE))) {
             return false;
         }
 
-        if (forceSignin && getProperties().getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE)) {
+        if (forceSignin && freProperties.getBoolean(PRESELECT_BUT_ALLOW_TO_CHANGE)) {
             // Don't force signin if Activity is recreated.
-            getProperties().remove(FORCE_SIGNIN_ACCOUNT_TO);
+            freProperties.remove(FORCE_SIGNIN_ACCOUNT_TO);
         }
 
         mView.cancelConfirmationScreen();

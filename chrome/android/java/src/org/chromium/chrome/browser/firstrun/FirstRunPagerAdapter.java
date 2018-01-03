@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
 
 import java.util.List;
@@ -17,18 +16,15 @@ import java.util.concurrent.Callable;
  */
 class FirstRunPagerAdapter extends FragmentStatePagerAdapter {
     private final List<Callable<FirstRunPage>> mPages;
-    private final Bundle mFreProperties;
 
     private boolean mStopAtTheFirstPage;
 
-    public FirstRunPagerAdapter(FragmentManager fragmentManager,
-            List<Callable<FirstRunPage>> pages, Bundle freProperties) {
+    public FirstRunPagerAdapter(
+            FragmentManager fragmentManager, List<Callable<FirstRunPage>> pages) {
         super(fragmentManager);
         assert pages != null;
         assert pages.size() > 0;
-        assert freProperties != null;
         mPages = pages;
-        mFreProperties = freProperties;
     }
 
     /**
@@ -51,12 +47,6 @@ class FirstRunPagerAdapter extends FragmentStatePagerAdapter {
         } catch (Exception e) {
             // We can always return null and it will be properly handled at the caller level.
         }
-        if (result == null) return null;
-
-        Bundle props = new Bundle();
-        props.putAll(mFreProperties);
-        result.setArguments(props);
-
         return result;
     }
 
