@@ -1146,8 +1146,8 @@ std::unique_ptr<DragImage> DragController::DragImageForSelection(
   frame.View()->PaintContents(builder.Context(), paint_flags,
                               EnclosingIntRect(painting_rect));
   return DataTransfer::CreateDragImageForFrame(
-      frame, opacity, kDoNotRespectImageOrientation, painting_rect, builder,
-      PropertyTreeState::Root());
+      frame, opacity, kDoNotRespectImageOrientation, painting_rect.Size(),
+      painting_rect.Location(), builder, PropertyTreeState::Root());
 }
 
 bool DragController::StartDrag(LocalFrame* src,

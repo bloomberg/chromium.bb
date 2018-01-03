@@ -136,13 +136,19 @@ class CORE_EXPORT DataTransfer final : public ScriptWrappable,
   static FloatRect ClipByVisualViewport(const FloatRect& rect_in_document,
                                         const LocalFrame&);
 
-  // Returns the rect with device scale factor and page scale factor applied.
-  static FloatRect DeviceSpaceRect(const FloatRect css_rect, const LocalFrame&);
+  // Returns the size with device scale factor and page scale factor applied.
+  static FloatSize DeviceSpaceSize(const FloatSize& css_size,
+                                   const LocalFrame&);
+
+  // |css_size| is the size of the image in CSS pixels.
+  // |paint_offset| is the offset from the origin of the dragged
+  // object of the PaintRecordBuilder.
   static std::unique_ptr<DragImage> CreateDragImageForFrame(
       const LocalFrame&,
       float,
       RespectImageOrientationEnum,
-      const FloatRect&,
+      const FloatSize& css_size,
+      const FloatPoint& paint_offset,
       PaintRecordBuilder&,
       const PropertyTreeState&);
   static std::unique_ptr<DragImage> NodeImage(const LocalFrame&, Node&);

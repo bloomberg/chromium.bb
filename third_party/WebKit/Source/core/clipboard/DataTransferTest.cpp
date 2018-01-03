@@ -235,4 +235,32 @@ TEST_P(DataTransferTest, NodeImageWithPageScaleFactor) {
       EXPECT_EQ(expected_bitmap.getColor(x, y), bitmap.getColor(x, y));
 }
 
+TEST_P(DataTransferTest, NodeImageWithScrolling) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #inner {
+      position: absolute;
+      top: 800px;
+      left: 0;
+      height: 100px;
+      width: 200px;
+      background: lightblue;
+      isolation: isolate;
+    }
+    </style>
+    <div id="inner" draggable="true" ondragstart="drag(event)"></div>
+  )HTML");
+
+  const int scroll_amount = 800;
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount), kProgrammaticScroll);
+
+  Element& inner = *GetDocument().getElementById("inner");
+  const auto image = DataTransfer::NodeImage(GetFrame(), inner);
+  const int inner_width = 200;
+  const int inner_height = 100;
+  EXPECT_EQ(IntSize(inner_width, inner_height), image->Size());
+}
+
 }  // namespace blink
