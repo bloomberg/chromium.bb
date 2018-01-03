@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/template_url.h"
@@ -18,7 +17,7 @@
 
 std::unique_ptr<TemplateURLData> GenerateDummyTemplateURLData(
     const std::string& keyword) {
-  auto data = base::MakeUnique<TemplateURLData>();
+  auto data = std::make_unique<TemplateURLData>();
   data->SetShortName(base::UTF8ToUTF16(keyword + "name"));
   data->SetKeyword(base::UTF8ToUTF16(keyword));
   data->SetURL(std::string("http://") + keyword + "foo/{searchTerms}");

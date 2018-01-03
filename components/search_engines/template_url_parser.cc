@@ -13,7 +13,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -328,7 +327,7 @@ std::unique_ptr<TemplateURL> TemplateURLParsingContext::GetTemplateURL(
 
   // Bail if the search URL is empty or if either TemplateURLRef is invalid.
   std::unique_ptr<TemplateURL> template_url =
-      base::MakeUnique<TemplateURL>(data_);
+      std::make_unique<TemplateURL>(data_);
   if (template_url->url().empty() ||
       !template_url->url_ref().IsValid(search_terms_data) ||
       (!template_url->suggestions_url().empty() &&

@@ -79,22 +79,22 @@ void DefaultSearchPolicyHandlerTest::
   encodings->AppendString("UTF-8");
   policy->Set(key::kDefaultSearchProviderEnabled, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(true), nullptr);
+              std::make_unique<base::Value>(true), nullptr);
   policy->Set(key::kDefaultSearchProviderSearchURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kSearchURL), nullptr);
+              std::make_unique<base::Value>(kSearchURL), nullptr);
   policy->Set(key::kDefaultSearchProviderName, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kName), nullptr);
+              std::make_unique<base::Value>(kName), nullptr);
   policy->Set(key::kDefaultSearchProviderKeyword, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kKeyword), nullptr);
+              std::make_unique<base::Value>(kKeyword), nullptr);
   policy->Set(key::kDefaultSearchProviderSuggestURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kSuggestURL), nullptr);
+              std::make_unique<base::Value>(kSuggestURL), nullptr);
   policy->Set(key::kDefaultSearchProviderIconURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kIconURL), nullptr);
+              std::make_unique<base::Value>(kIconURL), nullptr);
   policy->Set(key::kDefaultSearchProviderEncodings, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
               base::WrapUnique(encodings), nullptr);
@@ -103,13 +103,13 @@ void DefaultSearchPolicyHandlerTest::
               default_alternate_urls_.CreateDeepCopy(), nullptr);
   policy->Set(key::kDefaultSearchProviderImageURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kImageURL), nullptr);
+              std::make_unique<base::Value>(kImageURL), nullptr);
   policy->Set(key::kDefaultSearchProviderImageURLPostParams,
               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kImageParams), nullptr);
+              std::make_unique<base::Value>(kImageParams), nullptr);
   policy->Set(key::kDefaultSearchProviderNewTabURL, POLICY_LEVEL_MANDATORY,
               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              base::MakeUnique<base::Value>(kNewTabURL), nullptr);
+              std::make_unique<base::Value>(kNewTabURL), nullptr);
 }
 
 // Checks that if the default search policy is missing, that no elements of the
@@ -174,7 +174,7 @@ TEST_F(DefaultSearchPolicyHandlerTest, InvalidType) {
     // invalid.
     policy.Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD,
-               base::MakeUnique<base::Value>(base::Value::Type::BINARY),
+               std::make_unique<base::Value>(base::Value::Type::BINARY),
                nullptr);
     UpdateProviderPolicy(policy);
 

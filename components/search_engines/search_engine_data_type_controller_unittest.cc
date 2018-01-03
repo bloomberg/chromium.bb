@@ -64,7 +64,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test,
     search_engine_dtc_.SetGenericChangeProcessorFactoryForTest(
         base::WrapUnique<syncer::GenericChangeProcessorFactory>(
             new syncer::FakeGenericChangeProcessorFactory(
-                base::MakeUnique<syncer::FakeGenericChangeProcessor>(
+                std::make_unique<syncer::FakeGenericChangeProcessor>(
                     syncer::SEARCH_ENGINES, this))));
     EXPECT_CALL(model_load_callback_, Run(_, _));
   }

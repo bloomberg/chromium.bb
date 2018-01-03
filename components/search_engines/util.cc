@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -219,12 +218,12 @@ void MergeEnginesFromPrepopulateData(
 
     // Replace the entry in |template_urls| with the updated one.
     auto j = FindTemplateURL(template_urls, edited_engine.first);
-    *j = base::MakeUnique<TemplateURL>(data);
+    *j = std::make_unique<TemplateURL>(data);
   }
 
   // Add items.
   for (const auto& added_engine : actions.added_engines)
-    template_urls->push_back(base::MakeUnique<TemplateURL>(added_engine));
+    template_urls->push_back(std::make_unique<TemplateURL>(added_engine));
 }
 
 ActionsFromPrepopulateData CreateActionsFromCurrentPrepopulateData(
@@ -315,7 +314,7 @@ void GetSearchProvidersUsingKeywordResult(
     // search engine sync, since in that case that code will never be reached.
     if (DeDupeEncodings(&keyword.input_encodings) && service)
       service->UpdateKeyword(keyword);
-    template_urls->push_back(base::MakeUnique<TemplateURL>(keyword));
+    template_urls->push_back(std::make_unique<TemplateURL>(keyword));
   }
 
   *new_resource_keyword_version = keyword_result.builtin_keyword_version;
