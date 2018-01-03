@@ -11,17 +11,6 @@
 
 const gTestUrl = '../resources/1x1-green.png';
 
-function loadImageResource(test, imageValue) {
-  // Set a CSSURLImageValue on an element so it can be loaded.
-  let target = createDivWithStyle(test, '');
-  target.attributeStyleMap.set('background-image', imageValue);
-
-  // add a new Image element to know if the image resource has been loaded
-  let image = new Image();
-  image.src = imageValue.url;
-  return image;
-}
-
 async_test(t => {
   const result = CSSStyleValue.parse('background-image', 'url('+gTestUrl+')');
   let image = loadImageResource(t, result);

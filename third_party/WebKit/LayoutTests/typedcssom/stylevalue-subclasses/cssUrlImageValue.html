@@ -9,17 +9,6 @@
 <script>
 'use strict';
 
-function loadImageResource(test, imageValue) {
-  // Set a CSSURLImageValue on an element so it can be loaded.
-  let target = createDivWithStyle(test);
-  target.attributeStyleMap.set('background-image', imageValue);
-
-  // add a new Image element to know if the image resource has been loaded
-  let image = new Image();
-  image.src = imageValue.url;
-  return image;
-}
-
 const gTestUrl = '../resources/1x1-green.png';
 const gBase64TestUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=';
 const gBadTestUrl = document.location.href;
