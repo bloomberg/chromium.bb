@@ -47,7 +47,7 @@ message Configuration {
   // Note, this list may contain multiple hints that apply to a page. For
   // example, if there are hints for (HOST_SUFFIX,cnn.com) and
   // (HOST_SUFFIX,sports.cnn.com), these may both apply to sports.cnn.com/foo.
-  // It is expected for the client to match a page to the hint with the
-  // finest granularity.
+  //
+  // It is expected for the client to use the first match in this list.
   repeated Hint hints = 1;
 }
