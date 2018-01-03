@@ -27,8 +27,6 @@ LockWindow::LockWindow(Config config) {
   Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 
-  // TODO(agawronska): Add tests for UI visibility when virtual keyboard is
-  // present.
   // Disable virtual keyboard overscroll because it interferes with scrolling
   // login/lock content. See crbug.com/363635.
   keyboard::SetKeyboardOverscrollOverride(

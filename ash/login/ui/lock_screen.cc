@@ -27,15 +27,6 @@
 namespace ash {
 namespace {
 
-views::View* BuildContentsView(mojom::TrayActionState initial_note_action_state,
-                               LoginDataDispatcher* data_dispatcher) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kShowLoginDevOverlay)) {
-    return new LockDebugView(initial_note_action_state, data_dispatcher);
-  }
-  return new LockContentsView(initial_note_action_state, data_dispatcher);
-}
-
 ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
   return RootWindowController::ForWindow(window)
       ->wallpaper_widget_controller()
@@ -48,6 +39,15 @@ ui::Layer* GetWallpaperLayerForWindow(aura::Window* window) {
 LockScreen* instance_ = nullptr;
 
 }  // namespace
+
+LockScreen::TestApi::TestApi(LockScreen* lock_screen)
+    : lock_screen_(lock_screen) {}
+
+LockScreen::TestApi::~TestApi() = default;
+
+LockContentsView* LockScreen::TestApi::contents_view() const {
+  return lock_screen_->contents_view_;
+}
 
 LockScreen::LockScreen(ScreenType type)
     : type_(type), tray_action_observer_(this), session_observer_(this) {
@@ -67,16 +67,27 @@ void LockScreen::Show(ScreenType type) {
   CHECK(!instance_);
   instance_ = new LockScreen(type);
 
-  auto data_dispatcher = std::make_unique<LoginDataDispatcher>();
-  auto* contents = BuildContentsView(
-      ash::Shell::Get()->tray_action()->GetLockScreenNoteState(),
-      data_dispatcher.get());
+  instance_->window_ = new LockWindow(Shell::GetAshConfig());
+  instance_->window_->SetBounds(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 
-  auto* window = instance_->window_ = new LockWindow(Shell::GetAshConfig());
-  window->SetBounds(display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
-  window->SetContentsView(contents);
-  window->set_data_dispatcher(std::move(data_dispatcher));
-  window->Show();
+  auto data_dispatcher = std::make_unique<LoginDataDispatcher>();
+  auto initial_note_action_state =
+      ash::Shell::Get()->tray_action()->GetLockScreenNoteState();
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kShowLoginDevOverlay)) {
+    auto* debug_view =
+        new LockDebugView(initial_note_action_state, data_dispatcher.get());
+    instance_->contents_view_ = debug_view->lock();
+    instance_->window_->SetContentsView(debug_view);
+  } else {
+    instance_->contents_view_ =
+        new LockContentsView(initial_note_action_state, data_dispatcher.get());
+    instance_->window_->SetContentsView(instance_->contents_view_);
+  }
+
+  instance_->window_->set_data_dispatcher(std::move(data_dispatcher));
+  instance_->window_->Show();
 }
 
 // static

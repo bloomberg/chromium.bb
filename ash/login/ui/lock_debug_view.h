@@ -38,6 +38,8 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  LockContentsView* lock() { return lock_; }
+
  private:
   class DebugDataDispatcherTransformer;
 

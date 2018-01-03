@@ -54,18 +54,6 @@ namespace {
 // URL which corresponds to the login WebUI.
 const char kLoginURL[] = "chrome://oobe/lock";
 
-// Disables virtual keyboard overscroll. Login UI will scroll user pods
-// into view on JS side when virtual keyboard is shown.
-void DisableKeyboardOverscroll() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_DISABLED);
-}
-
-void ResetKeyboardOverscrollOverride() {
-  keyboard::SetKeyboardOverscrollOverride(
-      keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -150,8 +138,6 @@ WebUIScreenLocker::~WebUIScreenLocker() {
 
   ClearLockScreenAppFocusCyclerDelegate();
 
-  ResetKeyboardOverscrollOverride();
-
   RequestPreload();
 }
 
@@ -182,8 +168,6 @@ void WebUIScreenLocker::LockScreen() {
                                 login_display_.get());
 
   SetLockScreenAppFocusCyclerDelegate();
-
-  DisableKeyboardOverscroll();
 }
 
 void WebUIScreenLocker::SetPasswordInputEnabled(bool enabled) {
