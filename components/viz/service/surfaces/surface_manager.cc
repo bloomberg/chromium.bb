@@ -56,7 +56,7 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type,
     reference_factory_ = new StubSurfaceReferenceFactory();
     temporary_reference_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(10), this,
-        &SurfaceManager::MarkOldTemporaryReference);
+        &SurfaceManager::MarkOldTemporaryReferences);
     // TODO(kylechar): After collecting UMA stats on the number of old temporary
     // references, we may want to turn the timer off when there are no temporary
     // references to avoid waking the thread unnecessarily.
@@ -67,9 +67,24 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type,
 }
 
 SurfaceManager::~SurfaceManager() {
+  // Garbage collect surfaces here to avoid calling back into
+  // SurfaceDependencyTracker as members of SurfaceManager are being
+  // destroyed.
+  temporary_references_.clear();
+  temporary_reference_ranges_.clear();
+  // Create a copy of the children set as RemoveSurfaceReferenceImpl below will
+  // mutate that set.
+  base::flat_set<SurfaceId> children(
+      GetSurfacesReferencedByParent(root_surface_id_));
+  for (const auto& child : children)
+    RemoveSurfaceReferenceImpl(root_surface_id_, child);
+
+  GarbageCollectSurfaces();
+
   // All SurfaceClients and their surfaces are supposed to be
   // destroyed before SurfaceManager.
-  DCHECK_EQ(surfaces_to_destroy_.size(), surface_map_.size());
+  DCHECK(surface_map_.empty());
+  DCHECK(surfaces_to_destroy_.empty());
 }
 
 #if DCHECK_IS_ON()
@@ -126,7 +141,10 @@ Surface* SurfaceManager::CreateSurface(
 
   DCHECK(IsMarkedForDestruction(surface_info.id()));
   surfaces_to_destroy_.erase(surface_info.id());
+  SurfaceDiscarded(surface);
   surface->Reset(surface_client);
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceCreated(surface_info.id());
   return surface;
 }
 
@@ -517,7 +535,7 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
   return fallback_surface;
 }
 
-void SurfaceManager::MarkOldTemporaryReference() {
+void SurfaceManager::MarkOldTemporaryReferences() {
   if (temporary_references_.empty()) {
     UMA_HISTOGRAM_EXACT_LINEAR(kUmaNumOldTemporaryReferences, 0, kUmaStatMax);
     return;
