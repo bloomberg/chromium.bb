@@ -26,8 +26,6 @@ namespace bluetooth_errors {
 const char kErrorInvalidUuid[] = "Invalid UUID '*'";
 }
 
-namespace errors = bluetooth_errors;
-
 namespace {
 
 bool ParseUuid(BluetoothManifestPermission* permission,
@@ -36,7 +34,7 @@ bool ParseUuid(BluetoothManifestPermission* permission,
   device::BluetoothUUID bt_uuid(uuid);
   if (!bt_uuid.IsValid()) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kErrorInvalidUuid, uuid);
+        bluetooth_errors::kErrorInvalidUuid, uuid);
     return false;
   }
   permission->AddPermission(uuid);
