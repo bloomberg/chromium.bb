@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -72,7 +72,7 @@ PageInfo MakePageInfo(sql::Statement* statement) {
 std::unique_ptr<std::vector<PageInfo>> GetAllTemporaryPageInfos(
     const std::map<std::string, LifetimePolicy>& temp_namespace_policy_map,
     sql::Connection* db) {
-  auto result = base::MakeUnique<std::vector<PageInfo>>();
+  auto result = std::make_unique<std::vector<PageInfo>>();
 
   const char kSql[] = "SELECT " PAGE_INFO_PROJECTION
                       " FROM offlinepages_v1"
@@ -100,7 +100,7 @@ std::unique_ptr<std::vector<PageInfo>> GetPageInfosToClear(
     const ArchiveManager::StorageStats& stats,
     sql::Connection* db) {
   std::map<std::string, int> namespace_page_count;
-  auto page_infos_to_delete = base::MakeUnique<std::vector<PageInfo>>();
+  auto page_infos_to_delete = std::make_unique<std::vector<PageInfo>>();
   std::vector<PageInfo> pages_remaining;
   int64_t remaining_size = 0;
 

@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -49,7 +48,7 @@ std::unique_ptr<std::vector<std::string>> AvailableOperationsSync(
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::RECEIVED_GCM));
 
-  auto operations = base::MakeUnique<std::vector<std::string>>();
+  auto operations = std::make_unique<std::vector<std::string>>();
   while (statement.Step()) {
     operations->push_back(statement.ColumnString(0));  // operation_name
   }

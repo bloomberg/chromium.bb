@@ -4,7 +4,8 @@
 
 #include "components/offline_pages/core/model/clear_digest_task.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
@@ -62,7 +63,7 @@ TEST_F(ClearDigestTaskTest, ClearDigest) {
   page.digest = kTestDigest;
   store_test_util()->InsertItem(page);
 
-  auto task = base::MakeUnique<ClearDigestTask>(store(), page.offline_id);
+  auto task = std::make_unique<ClearDigestTask>(store(), page.offline_id);
   runner()->RunTask(std::move(task));
 
   // Check the digest of the page is cleared.

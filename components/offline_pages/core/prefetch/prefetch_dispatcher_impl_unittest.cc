@@ -143,7 +143,7 @@ void PrefetchDispatcherTest::SetUp() {
   taco_->SetPrefetchNetworkRequestFactory(
       base::WrapUnique(network_request_factory_));
   taco_->SetPrefetchConfiguration(
-      base::MakeUnique<TestPrefetchConfiguration>());
+      std::make_unique<TestPrefetchConfiguration>());
   taco_->CreatePrefetchService();
 
   ASSERT_TRUE(test_urls_.empty());
@@ -163,7 +163,7 @@ void PrefetchDispatcherTest::TearDown() {
 }
 
 void PrefetchDispatcherTest::BeginBackgroundTask() {
-  dispatcher_->BeginBackgroundTask(base::MakeUnique<TestPrefetchBackgroundTask>(
+  dispatcher_->BeginBackgroundTask(std::make_unique<TestPrefetchBackgroundTask>(
       taco_->prefetch_service(),
       base::BindRepeating(&PrefetchDispatcherTest::SetReschedule,
                           base::Unretained(this))));

@@ -216,18 +216,18 @@ DownloadUIAdapterTest::DownloadUIAdapterTest()
 DownloadUIAdapterTest::~DownloadUIAdapterTest() {}
 
 void DownloadUIAdapterTest::SetUp() {
-  model = base::MakeUnique<MockOfflinePageModel>(task_runner_.get());
+  model = std::make_unique<MockOfflinePageModel>(task_runner_.get());
   std::unique_ptr<DownloadUIAdapterDelegate> delegate =
-      base::MakeUnique<DownloadUIAdapterDelegate>();
+      std::make_unique<DownloadUIAdapterDelegate>();
   adapter_delegate = delegate.get();
-  request_coordinator_taco_ = base::MakeUnique<RequestCoordinatorStubTaco>();
+  request_coordinator_taco_ = std::make_unique<RequestCoordinatorStubTaco>();
 
-  std::unique_ptr<OfflinerStub> offliner = base::MakeUnique<OfflinerStub>();
+  std::unique_ptr<OfflinerStub> offliner = std::make_unique<OfflinerStub>();
   offliner_stub = offliner.get();
   request_coordinator_taco_->SetOffliner(std::move(offliner));
 
   request_coordinator_taco_->CreateRequestCoordinator();
-  adapter = base::MakeUnique<DownloadUIAdapter>(
+  adapter = std::make_unique<DownloadUIAdapter>(
       nullptr, model.get(), request_coordinator_taco_->request_coordinator(),
       std::move(delegate));
 

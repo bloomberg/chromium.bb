@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/prefetch/generate_page_bundle_reconcile_task.h"
 
+#include <memory>
 #include <string>
 
 #include "base/time/time.h"
@@ -22,7 +23,7 @@ namespace {
 class FakePrefetchNetworkRequestFactory : public PrefetchNetworkRequestFactory {
  public:
   FakePrefetchNetworkRequestFactory() {
-    requested_urls_ = base::MakeUnique<std::set<std::string>>();
+    requested_urls_ = std::make_unique<std::set<std::string>>();
   }
   ~FakePrefetchNetworkRequestFactory() override = default;
 
@@ -33,7 +34,7 @@ class FakePrefetchNetworkRequestFactory : public PrefetchNetworkRequestFactory {
       const std::string& gcm_registration_id,
       const PrefetchRequestFinishedCallback& callback) override {}
   std::unique_ptr<std::set<std::string>> GetAllUrlsRequested() const override {
-    return base::MakeUnique<std::set<std::string>>(*requested_urls_);
+    return std::make_unique<std::set<std::string>>(*requested_urls_);
   }
   void MakeGetOperationRequest(
       const std::string& operation_name,
@@ -72,7 +73,7 @@ class GeneratePageBundleReconcileTaskTest : public TaskTestBase {
 };
 
 GeneratePageBundleReconcileTaskTest::GeneratePageBundleReconcileTaskTest()
-    : request_factory_(base::MakeUnique<FakePrefetchNetworkRequestFactory>()) {}
+    : request_factory_(std::make_unique<FakePrefetchNetworkRequestFactory>()) {}
 
 PrefetchItem GeneratePageBundleReconcileTaskTest::InsertItem(
     PrefetchItemState state,

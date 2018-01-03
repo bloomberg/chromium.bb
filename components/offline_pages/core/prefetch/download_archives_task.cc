@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
@@ -53,7 +52,7 @@ std::unique_ptr<int> CountDownloadsInProgress(sql::Connection* db) {
   statement.BindInt(0, static_cast<int>(PrefetchItemState::DOWNLOADING));
   if (!statement.Step())
     return nullptr;
-  return base::MakeUnique<int>(statement.ColumnInt(0));
+  return std::make_unique<int>(statement.ColumnInt(0));
 }
 
 bool MarkItemAsDownloading(sql::Connection* db,
@@ -118,7 +117,7 @@ std::unique_ptr<ItemsToDownload> SelectAndMarkItemsForDownloadSync(
   // Below implementation is a greedy algorithm that selects the next item we
   // can download without quota violation and maximum concurrent downloads
   // violation, as ordered by the |FindItemsReadyForDownload| function.
-  auto items_to_download = base::MakeUnique<ItemsToDownload>();
+  auto items_to_download = std::make_unique<ItemsToDownload>();
   for (auto& ready_item : ready_items) {
     // Concurrent downloads check.
     if (*concurrent_downloads >= max_concurrent_downloads)

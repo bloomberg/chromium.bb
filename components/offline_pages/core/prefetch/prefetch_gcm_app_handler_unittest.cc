@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -41,14 +40,14 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
         task_runner_handle_(task_runner_) {}
 
   void SetUp() override {
-    auto dispatcher = base::MakeUnique<TestPrefetchDispatcher>();
+    auto dispatcher = std::make_unique<TestPrefetchDispatcher>();
     test_dispatcher_ = dispatcher.get();
 
-    auto token_factory = base::MakeUnique<TestTokenFactory>();
+    auto token_factory = std::make_unique<TestTokenFactory>();
     token_factory_ = token_factory.get();
 
     auto gcm_app_handler =
-        base::MakeUnique<PrefetchGCMAppHandler>(std::move(token_factory));
+        std::make_unique<PrefetchGCMAppHandler>(std::move(token_factory));
     handler_ = gcm_app_handler.get();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);

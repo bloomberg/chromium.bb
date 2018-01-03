@@ -4,13 +4,13 @@
 
 #include "components/offline_pages/core/prefetch/sent_get_operation_cleanup_task.h"
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -35,7 +35,7 @@ std::unique_ptr<std::vector<std::string>> GetAllOperationsSync(
   std::unique_ptr<std::vector<std::string>> operation_names;
   while (statement.Step()) {
     if (!operation_names)
-      operation_names = base::MakeUnique<std::vector<std::string>>();
+      operation_names = std::make_unique<std::vector<std::string>>();
     operation_names->push_back(statement.ColumnString(0));
   }
   return operation_names;

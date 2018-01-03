@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -344,7 +343,7 @@ OfflinePageModelImplTest::BuildStore() {
 std::unique_ptr<OfflinePageModelImpl> OfflinePageModelImplTest::BuildModel(
     std::unique_ptr<OfflinePageMetadataStore> store) {
   std::unique_ptr<ArchiveManager> archive_manager = nullptr;
-  archive_manager = base::MakeUnique<ArchiveManager>(
+  archive_manager = std::make_unique<ArchiveManager>(
       temporary_dir_path(), persistent_dir_path(),
       base::ThreadTaskRunnerHandle::Get());
   return std::unique_ptr<OfflinePageModelImpl>(
@@ -525,7 +524,7 @@ void OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult(
     return;
   }
 
-  *storage = base::MakeUnique<OfflinePageItem>(*result);
+  *storage = std::make_unique<OfflinePageItem>(*result);
 }
 
 void OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult(

@@ -4,9 +4,9 @@
 
 #include "components/offline_pages/core/prefetch/metrics_finalization_task.h"
 
+#include <memory>
 #include <set>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
@@ -32,7 +32,7 @@ class MetricsFinalizationTaskTest : public TaskTestBase {
 void MetricsFinalizationTaskTest::SetUp() {
   TaskTestBase::SetUp();
   metrics_finalization_task_ =
-      base::MakeUnique<MetricsFinalizationTask>(store());
+      std::make_unique<MetricsFinalizationTask>(store());
 }
 
 void MetricsFinalizationTaskTest::TearDown() {

@@ -5,7 +5,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
@@ -58,7 +57,7 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
     return;
   uint64_t request_id = GetNextRequestId();
   generate_page_bundle_requests_[request_id] =
-      base::MakeUnique<GeneratePageBundleRequest>(
+      std::make_unique<GeneratePageBundleRequest>(
           user_agent_, gcm_registration_id, kMaxBundleSizeBytes, url_strings,
           channel_, request_context_.get(),
           base::Bind(
@@ -68,7 +67,7 @@ void PrefetchNetworkRequestFactoryImpl::MakeGeneratePageBundleRequest(
 
 std::unique_ptr<std::set<std::string>>
 PrefetchNetworkRequestFactoryImpl::GetAllUrlsRequested() const {
-  auto result = base::MakeUnique<std::set<std::string>>();
+  auto result = std::make_unique<std::set<std::string>>();
   for (const auto& request_pair : generate_page_bundle_requests_) {
     for (const auto& url : request_pair.second->requested_urls())
       result->insert(url);
@@ -82,7 +81,7 @@ void PrefetchNetworkRequestFactoryImpl::MakeGetOperationRequest(
   if (!AddConcurrentRequest())
     return;
   get_operation_requests_[operation_name] =
-      base::MakeUnique<GetOperationRequest>(
+      std::make_unique<GetOperationRequest>(
           operation_name, channel_, request_context_.get(),
           base::Bind(
               &PrefetchNetworkRequestFactoryImpl::GetOperationRequestDone,
@@ -131,7 +130,7 @@ bool PrefetchNetworkRequestFactoryImpl::AddConcurrentRequest() {
 
 std::unique_ptr<std::set<std::string>>
 PrefetchNetworkRequestFactoryImpl::GetAllOperationNamesRequested() const {
-  auto result = base::MakeUnique<std::set<std::string>>();
+  auto result = std::make_unique<std::set<std::string>>();
   for (const auto& request_pair : get_operation_requests_)
     result->insert(request_pair.first);
   return result;

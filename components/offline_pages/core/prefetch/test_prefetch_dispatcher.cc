@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_background_task.h"
 
@@ -30,7 +29,7 @@ void TestPrefetchDispatcher::RemoveAllUnprocessedPrefetchURLs(
 void TestPrefetchDispatcher::RemovePrefetchURLsByClientId(
     const ClientId& client_id) {
   remove_by_client_id_count++;
-  last_removed_client_id = base::MakeUnique<ClientId>(client_id);
+  last_removed_client_id = std::make_unique<ClientId>(client_id);
 }
 
 void TestPrefetchDispatcher::BeginBackgroundTask(

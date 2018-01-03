@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/background/network_quality_provider_stub.h"
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_queue.h"
@@ -17,13 +16,13 @@
 namespace offline_pages {
 
 RequestCoordinatorStubTaco::RequestCoordinatorStubTaco() {
-  policy_ = base::MakeUnique<OfflinerPolicy>();
-  queue_ = base::MakeUnique<RequestQueue>(
-      base::MakeUnique<RequestQueueInMemoryStore>());
-  offliner_ = base::MakeUnique<OfflinerStub>();
-  scheduler_ = base::MakeUnique<SchedulerStub>();
-  network_quality_provider_ = base::MakeUnique<NetworkQualityProviderStub>();
-  ukm_reporter_ = base::MakeUnique<OfflinePagesUkmReporterStub>();
+  policy_ = std::make_unique<OfflinerPolicy>();
+  queue_ = std::make_unique<RequestQueue>(
+      std::make_unique<RequestQueueInMemoryStore>());
+  offliner_ = std::make_unique<OfflinerStub>();
+  scheduler_ = std::make_unique<SchedulerStub>();
+  network_quality_provider_ = std::make_unique<NetworkQualityProviderStub>();
+  ukm_reporter_ = std::make_unique<OfflinePagesUkmReporterStub>();
 }
 
 RequestCoordinatorStubTaco::~RequestCoordinatorStubTaco() {
@@ -39,7 +38,7 @@ void RequestCoordinatorStubTaco::SetRequestQueueStore(
     std::unique_ptr<RequestQueueStore> store) {
   CHECK(!request_coordinator_ && !queue_overridden_);
   store_overridden_ = true;
-  queue_ = base::MakeUnique<RequestQueue>(std::move(store));
+  queue_ = std::make_unique<RequestQueue>(std::move(store));
 }
 
 void RequestCoordinatorStubTaco::SetRequestQueue(
@@ -74,7 +73,7 @@ void RequestCoordinatorStubTaco::SetOfflinePagesUkmReporter(
 }
 
 void RequestCoordinatorStubTaco::CreateRequestCoordinator() {
-  request_coordinator_ = base::MakeUnique<RequestCoordinator>(
+  request_coordinator_ = std::make_unique<RequestCoordinator>(
       std::move(policy_), std::move(offliner_), std::move(queue_),
       std::move(scheduler_), network_quality_provider_.get(),
       std::move(ukm_reporter_));

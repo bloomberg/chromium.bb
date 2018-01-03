@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
@@ -181,7 +182,7 @@ void OfflinePageModelTaskifiedTest::SetUp() {
   BuildModel();
   PumpLoop();
   CheckTaskQueueIdle();
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void OfflinePageModelTaskifiedTest::TearDown() {
@@ -207,14 +208,14 @@ void OfflinePageModelTaskifiedTest::BuildStore() {
 
 void OfflinePageModelTaskifiedTest::BuildModel() {
   ASSERT_TRUE(store_test_util_.store());
-  auto archive_manager = base::MakeUnique<ArchiveManager>(
+  auto archive_manager = std::make_unique<ArchiveManager>(
       temporary_dir_path(), persistent_dir_path(),
       base::ThreadTaskRunnerHandle::Get());
-  model_ = base::MakeUnique<OfflinePageModelTaskified>(
+  model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
       base::ThreadTaskRunnerHandle::Get(), task_runner_->GetMockClock());
   model_->AddObserver(this);
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
   EXPECT_EQ(0UL, model_->pending_archivers_.size());
 }
@@ -295,7 +296,7 @@ void OfflinePageModelTaskifiedTest::InsertPageIntoStore(
 std::unique_ptr<OfflinePageTestArchiver>
 OfflinePageModelTaskifiedTest::BuildArchiver(const GURL& url,
                                              ArchiverResult result) {
-  return base::MakeUnique<OfflinePageTestArchiver>(
+  return std::make_unique<OfflinePageTestArchiver>(
       this, url, result, kTestTitle, kTestFileSize, kTestDigest,
       base::ThreadTaskRunnerHandle::Get());
 }

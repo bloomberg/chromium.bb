@@ -104,9 +104,9 @@ DeletePageTaskTest::~DeletePageTaskTest() {}
 void DeletePageTaskTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   store_test_util_.BuildStoreInMemory();
-  policy_controller_ = base::MakeUnique<ClientPolicyController>();
+  policy_controller_ = std::make_unique<ClientPolicyController>();
   generator()->SetArchiveDirectory(temp_dir());
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void DeletePageTaskTest::TearDown() {

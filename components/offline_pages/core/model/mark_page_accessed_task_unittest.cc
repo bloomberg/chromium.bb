@@ -4,9 +4,9 @@
 
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -61,7 +61,7 @@ MarkPageAccessedTaskTest::~MarkPageAccessedTaskTest() {}
 
 void MarkPageAccessedTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void MarkPageAccessedTaskTest::TearDown() {
@@ -74,7 +74,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
   store_test_util()->InsertItem(page);
 
   base::Time current_time = base::Time::Now();
-  auto task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
+  auto task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
   runner()->RunTask(std::move(task));
 
@@ -96,7 +96,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
   store_test_util()->InsertItem(page);
 
   base::Time current_time = base::Time::Now();
-  auto task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
+  auto task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
   runner()->RunTask(std::move(task));
 
@@ -112,7 +112,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId.name_space)),
       1);
 
-  task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
+  task = std::make_unique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                 base::Time::Now());
   runner()->RunTask(std::move(task));
 

@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/temporary_pages_consistency_check_task.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -76,8 +78,8 @@ TemporaryPagesConsistencyCheckTaskTest::
 void TemporaryPagesConsistencyCheckTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
-  policy_controller_ = base::MakeUnique<ClientPolicyController>();
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  policy_controller_ = std::make_unique<ClientPolicyController>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void TemporaryPagesConsistencyCheckTaskTest::TearDown() {
@@ -136,7 +138,7 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
+  auto task = std::make_unique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
@@ -175,7 +177,7 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest,
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
+  auto task = std::make_unique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 
@@ -216,7 +218,7 @@ TEST_F(TemporaryPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(temporary_dir()));
 
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
+  auto task = std::make_unique<TemporaryPagesConsistencyCheckTask>(
       store(), policy_controller(), temporary_dir());
   runner()->RunTask(std::move(task));
 

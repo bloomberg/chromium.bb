@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/prefetch/task_test_base.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -67,7 +66,7 @@ void TaskTestBase::RunUntilIdle() {
 
 void TaskTestBase::ExpectTaskCompletes(Task* task) {
   completion_callbacks_.push_back(
-      base::MakeUnique<base::MockCallback<Task::TaskCompletionCallback>>());
+      std::make_unique<base::MockCallback<Task::TaskCompletionCallback>>());
   EXPECT_CALL(*completion_callbacks_.back(), Run(_));
 
   task->SetTaskCompletionCallbackForTesting(

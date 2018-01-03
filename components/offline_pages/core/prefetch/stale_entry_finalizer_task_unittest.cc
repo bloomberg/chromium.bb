@@ -4,10 +4,10 @@
 
 #include "components/offline_pages/core/prefetch/stale_entry_finalizer_task.h"
 
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -56,7 +56,7 @@ class StaleEntryFinalizerTaskTest : public TaskTestBase {
 void StaleEntryFinalizerTaskTest::SetUp() {
   TaskTestBase::SetUp();
   stale_finalizer_task_ =
-      base::MakeUnique<StaleEntryFinalizerTask>(dispatcher(), store());
+      std::make_unique<StaleEntryFinalizerTask>(dispatcher(), store());
   fake_now_ = base::Time() + base::TimeDelta::FromDays(100);
   stale_finalizer_task_->SetNowGetterForTesting(base::BindRepeating(
       [](base::Time t) -> base::Time { return t; }, fake_now_));

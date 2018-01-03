@@ -128,7 +128,7 @@ std::unique_ptr<PrefetchItem> GetPrefetchItemSync(int64_t offline_id,
   if (!statement.Step())
     return nullptr;
 
-  auto item = base::MakeUnique<PrefetchItem>();
+  auto item = std::make_unique<PrefetchItem>();
   PopulatePrefetchItem(statement, item.get());
   return item;
 }
