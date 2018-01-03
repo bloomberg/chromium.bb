@@ -1,0 +1,10 @@
+# Copyright (c) 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+java_group("mojom_java") {
+  # This is a temporary empty target. It is needed to enable prerequisite
+  # downstream changes to be landed without breaking the Android build. It will
+  # be replaced with an actual mojom target once the downstream changes are in
+  # place.
+}
