@@ -480,13 +480,10 @@ void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int16_t *mode_context);
 
 #if CONFIG_EXT_WARPED_MOTION
-int sortSamples(int *pts_mv, MV *mv, int *pts, int *pts_inref, int len);
-int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
-                int *pts, int *pts_inref, int *pts_mv);
-#else
+int selectSamples(MV *mv, int *pts, int *pts_inref, int len, BLOCK_SIZE bsize);
+#endif  // CONFIG_EXT_WARPED_MOTION
 int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
                 int *pts, int *pts_inref);
-#endif  // CONFIG_EXT_WARPED_MOTION
 
 #if CONFIG_INTRABC
 #define INTRABC_DELAY_PIXELS 256  //  Delay of 256 pixels

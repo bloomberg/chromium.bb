@@ -158,8 +158,7 @@ unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
 unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts0,
-                                  int *pts_inref0, int *pts_mv0,
-                                  int total_samples);
+                                  int *pts_inref0, int total_samples);
 #else
 unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,

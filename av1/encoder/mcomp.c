@@ -944,7 +944,7 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
 #if CONFIG_EXT_WARPED_MOTION
 unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
-                                  int *pts0, int *pts_inref0, int *pts_mv0,
+                                  int *pts0, int *pts_inref0,
                                   int total_samples) {
 #else
 unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
@@ -999,7 +999,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
         memcpy(pts_inref, pts_inref0, total_samples * 2 * sizeof(*pts_inref0));
         if (total_samples > 1)
           mbmi->num_proj_ref[0] =
-              sortSamples(pts_mv0, &this_mv, pts, pts_inref, total_samples);
+              selectSamples(&this_mv, pts, pts_inref, total_samples, bsize);
 #endif  // CONFIG_EXT_WARPED_MOTION
 
         if (!find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize, *tr,

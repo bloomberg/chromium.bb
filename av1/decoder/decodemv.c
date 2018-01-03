@@ -1814,9 +1814,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-#if CONFIG_EXT_WARPED_MOTION
-  int pts_mv[SAMPLES_ARRAY_SIZE];
-#endif  // CONFIG_EXT_WARPED_MOTION
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
   assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
@@ -2111,12 +2108,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       !mbmi->skip_mode &&
 #endif  // CONFIG_EXT_SKIP
       !has_second_ref(mbmi))
-#if CONFIG_EXT_WARPED_MOTION
-    mbmi->num_proj_ref[0] =
-        findSamples(cm, xd, mi_row, mi_col, pts, pts_inref, pts_mv);
-#else
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
-#endif  // CONFIG_EXT_WARPED_MOTION
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
   if (mbmi->ref_frame[1] != INTRA_FRAME)
@@ -2223,8 +2215,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
 #if CONFIG_EXT_WARPED_MOTION
     if (mbmi->num_proj_ref[0] > 1)
-      mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
-                                          pts_inref, mbmi->num_proj_ref[0]);
+      mbmi->num_proj_ref[0] = selectSamples(&mbmi->mv[0].as_mv, pts, pts_inref,
+                                            mbmi->num_proj_ref[0], bsize);
 #endif  // CONFIG_EXT_WARPED_MOTION
 
     if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,

@@ -27,19 +27,8 @@
 #define MAX_PARAMDIM 9
 #define LEAST_SQUARES_SAMPLES_MAX_BITS 3
 #define LEAST_SQUARES_SAMPLES_MAX (1 << LEAST_SQUARES_SAMPLES_MAX_BITS)
-
-#define WARPED_MOTION_DEBUG 0
-
-#if CONFIG_EXT_WARPED_MOTION
-// Search 1 row on the top and 1 column on the left, 1 upper-left block,
-// 1 upper-right block. In worst case, the samples are (MAX_MIB_SIZE * 2 + 2).
-// Here force number of samples within SAMPLES_MAX.
-#define SAMPLES_MAX (LEAST_SQUARES_SAMPLES_MAX * 2)
-#define SAMPLES_ARRAY_SIZE (SAMPLES_MAX * 2)
-#else
 #define SAMPLES_ARRAY_SIZE (LEAST_SQUARES_SAMPLES_MAX * 2)
-#endif  // CONFIG_EXT_WARPED_MOTION
-
+#define WARPED_MOTION_DEBUG 0
 #define DEFAULT_WMTYPE AFFINE
 
 extern const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8];
