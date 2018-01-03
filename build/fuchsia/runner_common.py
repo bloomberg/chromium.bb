@@ -287,13 +287,11 @@ def WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
     autorun_file.write('export CHROME_HEADLESS=1\n')
 
   if wait_for_network:
-    # Quietly block until `ping google.com` succeeds.
-    autorun_file.write("""echo "Waiting for network connectivity..."
-                       until ping -c 1 google.com >/dev/null 2>/dev/null
-                       do
-                       :
-                       done
-                       """)
+    # Quietly block until `ping -c 0 google.com` succeeds. With -c 0 ping
+    # resolves the domain name, but doesn't send any pings.
+    autorun_file.write("echo Waiting for network connectivity...\n" +
+                       "until ping -c 0 google.com >/dev/null 2>&1\n" +
+                       "do sleep 1; done\n")
 
   if summary_output:
     # Unfortunately, devmgr races with this autorun script. This delays long
