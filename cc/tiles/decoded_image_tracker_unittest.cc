@@ -21,8 +21,10 @@ class TestImageController : public ImageController {
   void UnlockImageDecode(ImageDecodeRequestId id) override {
     auto it = std::find_if(
         locked_ids_.begin(), locked_ids_.end(),
-        [id](const std::pair<const ImageDecodeRequestId, ImageDecodeCacheKey>&
-                 item) { return item.first == id; });
+        [id](const std::pair<const ImageDecodeRequestId,
+                             SoftwareImageDecodeCache::CacheKey>& item) {
+          return item.first == id;
+        });
     ASSERT_FALSE(it == locked_ids_.end());
     locked_ids_.erase(it);
   }
@@ -31,27 +33,32 @@ class TestImageController : public ImageController {
       const DrawImage& image,
       const ImageDecodedCallback& callback) override {
     auto id = next_id_++;
-    locked_ids_.insert(std::make_pair(
-        id, ImageDecodeCacheKey::FromDrawImage(image, kRGBA_8888_SkColorType)));
+    locked_ids_.insert(
+        std::make_pair(id, SoftwareImageDecodeCache::CacheKey::FromDrawImage(
+                               image, kRGBA_8888_SkColorType)));
     callback.Run(id, ImageDecodeResult::SUCCESS);
     return id;
   }
 
   bool IsDrawImageLocked(const DrawImage& image) {
-    ImageDecodeCacheKey key =
-        ImageDecodeCacheKey::FromDrawImage(image, kRGBA_8888_SkColorType);
-    return std::find_if(locked_ids_.begin(), locked_ids_.end(),
-                        [&key](const std::pair<const ImageDecodeRequestId,
-                                               ImageDecodeCacheKey>& item) {
-                          return item.second == key;
-                        }) != locked_ids_.end();
+    SoftwareImageDecodeCache::CacheKey key =
+        SoftwareImageDecodeCache::CacheKey::FromDrawImage(
+            image, kRGBA_8888_SkColorType);
+    return std::find_if(
+               locked_ids_.begin(), locked_ids_.end(),
+               [&key](
+                   const std::pair<const ImageDecodeRequestId,
+                                   SoftwareImageDecodeCache::CacheKey>& item) {
+                 return item.second == key;
+               }) != locked_ids_.end();
   }
 
   size_t num_locked_images() { return locked_ids_.size(); }
 
  private:
   ImageDecodeRequestId next_id_ = 1;
-  std::unordered_map<ImageDecodeRequestId, ImageDecodeCacheKey> locked_ids_;
+  std::unordered_map<ImageDecodeRequestId, SoftwareImageDecodeCache::CacheKey>
+      locked_ids_;
 };
 
 class DecodedImageTrackerTest : public testing::Test {
