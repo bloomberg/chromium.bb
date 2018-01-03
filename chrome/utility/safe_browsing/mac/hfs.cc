@@ -501,8 +501,8 @@ bool HFSBTreeIterator::Init(ReadStream* stream) {
   }
   ConvertBigEndian(&header_);
 
-  if (header_.nodeSize == 0) {
-    DLOG(ERROR) << "Invalid header: zero node size";
+  if (header_.nodeSize < sizeof(BTNodeDescriptor)) {
+    DLOG(ERROR) << "Invalid header: node size smaller than BTNodeDescriptor";
     return false;
   }
 
