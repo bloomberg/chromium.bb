@@ -27,7 +27,7 @@ class CORE_EXPORT CSSMathValue : public CSSNumericValue {
     return false;
   }
 
-  const CSSValue* ToCSSValue(SecureContextMode) const final;
+  const CSSValue* ToCSSValue() const final;
 
  protected:
   CSSMathValue(const CSSNumericValueType& type) : CSSNumericValue(type) {}

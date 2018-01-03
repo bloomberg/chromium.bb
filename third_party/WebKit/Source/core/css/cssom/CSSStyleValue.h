@@ -66,13 +66,11 @@ class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   virtual StyleValueType GetType() const = 0;
   virtual bool ContainsPercent() const { return false; }
 
-  virtual const CSSValue* ToCSSValue(SecureContextMode) const = 0;
-  virtual const CSSValue* ToCSSValueWithProperty(
-      CSSPropertyID,
-      SecureContextMode secure_context_mode) const {
-    return ToCSSValue(secure_context_mode);
+  virtual const CSSValue* ToCSSValue() const = 0;
+  virtual const CSSValue* ToCSSValueWithProperty(CSSPropertyID) const {
+    return ToCSSValue();
   }
-  virtual String toString(const ExecutionContext*) const;
+  virtual String toString() const;
 
  protected:
   static String StyleValueTypeToString(StyleValueType);

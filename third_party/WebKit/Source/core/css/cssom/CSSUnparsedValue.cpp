@@ -76,17 +76,12 @@ CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(const CSSVariableData& value) {
   return CSSUnparsedValue::Create(ParserTokenRangeToTokens(value.TokenRange()));
 }
 
-const CSSValue* CSSUnparsedValue::ToCSSValue(
-    SecureContextMode secure_context_mode) const {
+const CSSValue* CSSUnparsedValue::ToCSSValue() const {
   CSSTokenizer tokenizer(ToString());
   const auto tokens = tokenizer.TokenizeToEOF();
-  // TODO(alancutter): This should be using a real parser context instead of
-  // StrictCSSParserContext.
-  return CSSVariableReferenceValue::Create(
-      CSSVariableData::Create(CSSParserTokenRange(tokens),
-                              false /* isAnimationTainted */,
-                              true /* needsVariableResolution */),
-      *StrictCSSParserContext(secure_context_mode));
+  return CSSVariableReferenceValue::Create(CSSVariableData::Create(
+      CSSParserTokenRange(tokens), false /* isAnimationTainted */,
+      false /* needsVariableResolution */));
 }
 
 String CSSUnparsedValue::ToString() const {

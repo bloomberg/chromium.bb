@@ -128,10 +128,9 @@ void CSSPositionValue::setY(CSSNumericValue* y,
   y_ = y;
 }
 
-const CSSValue* CSSPositionValue::ToCSSValue(
-    SecureContextMode secure_context_mode) const {
-  const CSSValue* x = x_->ToCSSValue(secure_context_mode);
-  const CSSValue* y = y_->ToCSSValue(secure_context_mode);
+const CSSValue* CSSPositionValue::ToCSSValue() const {
+  const CSSValue* x = x_->ToCSSValue();
+  const CSSValue* y = y_->ToCSSValue();
   if (!x || !y)
     return nullptr;
   return CSSValuePair::Create(x, y, CSSValuePair::kKeepIdenticalValues);

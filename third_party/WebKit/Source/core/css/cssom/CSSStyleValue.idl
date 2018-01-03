@@ -9,7 +9,7 @@
 [
   Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
 ] interface CSSStyleValue {
-  [CallWith=ExecutionContext] stringifier;
+  stringifier;
   // Putting Exposed=Window in the next line makes |parse| not exposed to PaintWorklet.
   [RaisesException, Exposed=Window, CallWith=ExecutionContext] static CSSStyleValue? parse(DOMString property, DOMString cssText);
   [RaisesException, Exposed=Window, CallWith=ExecutionContext] static sequence<CSSStyleValue>? parseAll(DOMString property, DOMString cssText);

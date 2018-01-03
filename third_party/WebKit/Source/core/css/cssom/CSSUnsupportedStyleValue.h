@@ -15,22 +15,24 @@ namespace blink {
 // for a given CSS Value.
 class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
  public:
-  static CSSUnsupportedStyleValue* Create(const String& css_text) {
-    return new CSSUnsupportedStyleValue(css_text);
+  static CSSUnsupportedStyleValue* Create(const CSSValue& css_value) {
+    return new CSSUnsupportedStyleValue(css_value);
   }
 
   StyleValueType GetType() const override {
     return StyleValueType::kUnknownType;
   }
-  const CSSValue* ToCSSValue(SecureContextMode) const override;
-  const CSSValue* ToCSSValueWithProperty(CSSPropertyID,
-                                         SecureContextMode) const override;
-  String toString(const ExecutionContext*) const override { return css_text_; }
+  const CSSValue* ToCSSValue() const override;
+
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(css_value_);
+    CSSStyleValue::Trace(visitor);
+  }
 
  private:
-  CSSUnsupportedStyleValue(const String& css_text) : css_text_(css_text) {}
+  CSSUnsupportedStyleValue(const CSSValue& css_value) : css_value_(css_value) {}
 
-  String css_text_;
+  Member<const CSSValue> css_value_;
   DISALLOW_COPY_AND_ASSIGN(CSSUnsupportedStyleValue);
 };
 
