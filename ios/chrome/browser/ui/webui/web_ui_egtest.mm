@@ -104,7 +104,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Verify that the resulting page is chrome://terms.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
   const std::string kTermsText = "Google Chrome Terms of Service";
   [ChromeEarlGrey waitForWebViewContainingText:kTermsText];
 }
@@ -119,7 +119,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Verify that the resulting page is chrome://version.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:"The Chromium Authors"];
 
   // Tap the back button in the toolbar and verify that the resulting page is
@@ -127,7 +127,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:"List of Chrome URLs"];
 }
 
@@ -144,14 +144,14 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // corresponds to the first URL chrome://version that was loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the toolbar and verify that the resulting page's
   // URL corresponds the second URL chrome://flags that was loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that all URLs on chrome://chrome-urls page load without error.
@@ -170,7 +170,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     const std::string chrome_url_path =
         url::SchemeHostPort(kChromeUIScheme, kChromeHostURLs[i], 0).Serialize();
     [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(chrome_url_path)]
-        assertWithMatcher:grey_sufficientlyVisible()];
+        assertWithMatcher:grey_notNil()];
   }
 }
 
@@ -182,7 +182,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Verify that the resulting page is an error page.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(kChromeInvalidURL)]
-      assertWithMatcher:grey_sufficientlyVisible()];
+      assertWithMatcher:grey_notNil()];
   NSString* kError =
       l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
   id<GREYMatcher> messageMatcher = [GREYMatchers matcherForText:kError];
