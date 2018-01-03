@@ -184,6 +184,10 @@ public abstract class ChromeSwitches {
     /** Switch for enabling the Chrome Home Survey. */
     public static final String CHROME_HOME_FORCE_ENABLE_SURVEY = "force-enable-chrome-home-survey";
 
+    /** Switch to enable incognito tabs to be seen in Android Recents. */
+    public static final String ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS =
+            "enable-incognito-snapshots-in-android-recents";
+
     /**
      * Don't crash on undispatched VIEW intents sent to .Main.
      * See ChromeTabbedActivity.maybeDispatchExplicitMainViewIntent() for more info.
