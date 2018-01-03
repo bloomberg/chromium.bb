@@ -3768,6 +3768,8 @@ domain Network
       MonotonicTime timestamp
       # Total number of bytes received for this request.
       number encodedDataLength
+      # Set when response was blocked due to being cross-site document response.
+      optional boolean blockedCrossSiteDocument
 
   # Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
   # mocked.

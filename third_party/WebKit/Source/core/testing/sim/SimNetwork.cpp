@@ -79,7 +79,7 @@ void SimNetwork::DidFinishLoading(WebURLLoaderClient* client,
   if (!current_request_) {
     client->DidFinishLoading(finish_time, total_encoded_data_length,
                              total_encoded_body_length,
-                             total_decoded_body_length);
+                             total_decoded_body_length, false);
     return;
   }
   current_request_ = nullptr;

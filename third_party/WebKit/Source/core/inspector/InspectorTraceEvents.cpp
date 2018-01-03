@@ -138,7 +138,8 @@ void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
                                             DocumentLoader* loader,
                                             double finish_time,
                                             int64_t encoded_data_length,
-                                            int64_t decoded_body_length) {
+                                            int64_t decoded_body_length,
+                                            bool blocked_cross_site_document) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
                        TRACE_EVENT_SCOPE_THREAD, "data",

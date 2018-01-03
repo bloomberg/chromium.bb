@@ -112,7 +112,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void DispatchDidFinishLoading(unsigned long identifier,
                                 double finish_time,
                                 int64_t encoded_data_length,
-                                int64_t decoded_body_length) override;
+                                int64_t decoded_body_length,
+                                bool blocked_cross_site_document) override;
   void DispatchDidFail(unsigned long identifier,
                        const ResourceError&,
                        int64_t encoded_data_length,

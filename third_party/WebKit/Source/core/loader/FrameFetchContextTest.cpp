@@ -1178,7 +1178,7 @@ TEST_F(FrameFetchContextTest, DispatchDidDownloadDataWhenDetached) {
 TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
   dummy_page_holder = nullptr;
 
-  fetch_context->DispatchDidFinishLoading(4, 0.3, 8, 10);
+  fetch_context->DispatchDidFinishLoading(4, 0.3, 8, 10, false);
   // Should not crash.
 }
 

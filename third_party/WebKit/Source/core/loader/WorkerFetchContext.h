@@ -88,14 +88,15 @@ class WorkerFetchContext final : public BaseFetchContext {
                               const char* data,
                               int dataLength) override;
   void DispatchDidReceiveEncodedData(unsigned long identifier,
-                                     int encodedDataLength) override;
+                                     int encoded_data_length) override;
   void DispatchDidFinishLoading(unsigned long identifier,
-                                double finishTime,
-                                int64_t encodedDataLength,
-                                int64_t decodedBodyLength) override;
+                                double finish_time,
+                                int64_t encoded_data_length,
+                                int64_t decoded_body_length,
+                                bool blocked_cross_site_document) override;
   void DispatchDidFail(unsigned long identifier,
                        const ResourceError&,
-                       int64_t encodedDataLength,
+                       int64_t encoded_data_length,
                        bool isInternalRequest) override;
   void AddResourceTiming(const ResourceTimingInfo&) override;
   void PopulateResourceRequest(Resource::Type,
