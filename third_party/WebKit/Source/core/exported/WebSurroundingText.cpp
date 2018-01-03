@@ -38,27 +38,28 @@
 
 namespace blink {
 
-WebSurroundingText::WebSurroundingText()
-    : start_offset_in_text_content_(0), end_offset_in_text_content_(0) {}
+namespace {
 
-void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
-                                                        size_t max_length) {
+EphemeralRange ComputeRangeFromFrameSelection(WebLocalFrame* frame) {
   LocalFrame* web_frame = ToWebLocalFrameImpl(frame)->GetFrame();
 
   // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   web_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  const EphemeralRange range = web_frame->Selection()
-                                   .ComputeVisibleSelectionInDOMTree()
-                                   .ToNormalizedEphemeralRange();
-  if (range.IsNull())
-    return;
-  InitializeFromRange(range, max_length);
+  return web_frame->Selection()
+      .ComputeVisibleSelectionInDOMTree()
+      .ToNormalizedEphemeralRange();
 }
 
-void WebSurroundingText::InitializeFromRange(const EphemeralRange& range,
-                                             size_t max_length) {
+}  // namespace
+
+WebSurroundingText::WebSurroundingText(WebLocalFrame* frame, size_t max_length)
+    : WebSurroundingText(ComputeRangeFromFrameSelection(frame), max_length) {}
+
+WebSurroundingText::WebSurroundingText(const EphemeralRange& range,
+                                       size_t max_length)
+    : start_offset_in_text_content_(0), end_offset_in_text_content_(0) {
   const Position start_position = range.StartPosition();
   const Position end_position = range.EndPosition();
   const unsigned half_max_length = max_length / 2;
@@ -137,7 +138,7 @@ size_t WebSurroundingText::EndOffsetInTextContent() const {
   return end_offset_in_text_content_;
 }
 
-bool WebSurroundingText::IsNull() const {
+bool WebSurroundingText::IsEmpty() const {
   return text_content_.IsEmpty();
 }
 

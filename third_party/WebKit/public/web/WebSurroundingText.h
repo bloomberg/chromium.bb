@@ -38,22 +38,16 @@ class WebLocalFrame;
 // API. It allows caller to know the text surrounding a point or a range.
 class WebSurroundingText {
  public:
-  BLINK_EXPORT WebSurroundingText();
-
-  // TODO(xiaochengh): Rename to IsEmpty() to be more intuitive.
-  BLINK_EXPORT bool IsNull() const;
-
   // Initializes the object with the current selection in a given frame.
-  // The maximum length of the contents retrieved is defined by maxLength.
+  // The maximum length of the contents retrieved is defined by max_length.
   // It does not include the text inside the range.
-  // TODO(xiaochengh): Merge this funciton into the constructor.
-  BLINK_EXPORT void InitializeFromCurrentSelection(WebLocalFrame*,
-                                                   size_t max_length);
+  BLINK_EXPORT WebSurroundingText(WebLocalFrame*, size_t max_length);
 
 #if INSIDE_BLINK
-  BLINK_EXPORT void InitializeFromRange(const EphemeralRange&,
-                                        size_t max_length);
+  BLINK_EXPORT WebSurroundingText(const EphemeralRange&, size_t max_length);
 #endif
+
+  BLINK_EXPORT bool IsEmpty() const;
 
   // Surrounding text content retrieved.
   BLINK_EXPORT WebString TextContent() const;

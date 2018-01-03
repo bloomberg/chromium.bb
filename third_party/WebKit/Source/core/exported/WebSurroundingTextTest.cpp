@@ -51,8 +51,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1);
+    WebSurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("f", surrounding_text.TextContent());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInTextContent());
@@ -61,8 +60,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 5);
+    WebSurroundingText surrounding_text(selection, 5);
 
     // maxlength/2 is used on the left and right.
     EXPECT_EQ("foo",
@@ -73,8 +71,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 42);
+    WebSurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -84,8 +81,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(7);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 42);
+    WebSurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -95,8 +91,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(6);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 2);
+    WebSurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ("ar", surrounding_text.TextContent());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
@@ -105,8 +100,7 @@ TEST_F(WebSurroundingTextTest, BasicCaretSelection) {
 
   {
     EphemeralRange selection = Select(6);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 42);
+    WebSurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("foo bar",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -120,8 +114,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 5);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1);
+    WebSurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("Lorem ", surrounding_text.TextContent());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInTextContent());
@@ -130,8 +123,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 5);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 5);
+    WebSurroundingText surrounding_text(selection, 5);
 
     EXPECT_EQ("Lorem ip",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -141,8 +133,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 5);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 42);
+    WebSurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -152,8 +143,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
 
   {
     EphemeralRange selection = Select(6, 11);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 2);
+    WebSurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ(" ipsum ", surrounding_text.TextContent());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
@@ -162,8 +152,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
 
   {
     EphemeralRange selection = Select(6, 11);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 42);
+    WebSurroundingText surrounding_text(selection, 42);
 
     EXPECT_EQ("Lorem ipsum dolor sit amet",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -174,8 +163,7 @@ TEST_F(WebSurroundingTextTest, BasicRangeSelection) {
   {
     // Last word.
     EphemeralRange selection = Select(22, 26);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 8);
+    WebSurroundingText surrounding_text(selection, 8);
 
     EXPECT_EQ("sit amet", surrounding_text.TextContent());
     EXPECT_EQ(4u, surrounding_text.StartOffsetInTextContent());
@@ -190,8 +178,7 @@ TEST_F(WebSurroundingTextTest, TreeCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1);
+    WebSurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("f", surrounding_text.TextContent());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInTextContent());
@@ -200,8 +187,7 @@ TEST_F(WebSurroundingTextTest, TreeCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 5);
+    WebSurroundingText surrounding_text(selection, 5);
 
     EXPECT_EQ("foo",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -211,8 +197,7 @@ TEST_F(WebSurroundingTextTest, TreeCaretSelection) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1337);
+    WebSurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -222,8 +207,7 @@ TEST_F(WebSurroundingTextTest, TreeCaretSelection) {
 
   {
     EphemeralRange selection = Select(6);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 2);
+    WebSurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ("ar", surrounding_text.TextContent());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
@@ -232,8 +216,7 @@ TEST_F(WebSurroundingTextTest, TreeCaretSelection) {
 
   {
     EphemeralRange selection = Select(6);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1337);
+    WebSurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -249,8 +232,7 @@ TEST_F(WebSurroundingTextTest, TreeRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 1);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1);
+    WebSurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("fo",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -260,8 +242,7 @@ TEST_F(WebSurroundingTextTest, TreeRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 3);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 12);
+    WebSurroundingText surrounding_text(selection, 12);
 
     EXPECT_EQ("e of foo bar",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -271,8 +252,7 @@ TEST_F(WebSurroundingTextTest, TreeRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 3);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1337);
+    WebSurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -282,8 +262,7 @@ TEST_F(WebSurroundingTextTest, TreeRangeSelection) {
 
   {
     EphemeralRange selection = Select(4, 7);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 12);
+    WebSurroundingText surrounding_text(selection, 12);
 
     EXPECT_EQ("foo bar the se",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -293,8 +272,7 @@ TEST_F(WebSurroundingTextTest, TreeRangeSelection) {
 
   {
     EphemeralRange selection = Select(0, 7);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1337);
+    WebSurroundingText surrounding_text(selection, 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -315,8 +293,7 @@ TEST_F(WebSurroundingTextTest, TextAreaSelection) {
   text_ctrl->SetSelectionRange(4, 7);
   EphemeralRange selection = text_ctrl->Selection().ComputeRange();
 
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 20);
+  WebSurroundingText surrounding_text(selection, 20);
 
   EXPECT_EQ("abc def ghi",
             String(surrounding_text.TextContent()).SimplifyWhiteSpace());
@@ -343,8 +320,7 @@ TEST_F(WebSurroundingTextTest, EmptyInputElementWithChild) {
   const Position end = Position(inner_editor, 0);
 
   // Surrounding text should not crash. See http://crbug.com/758438.
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(EphemeralRange(start, end), 8);
+  WebSurroundingText surrounding_text(EphemeralRange(start, end), 8);
   EXPECT_TRUE(surrounding_text.TextContent().IsEmpty());
 }
 
@@ -356,8 +332,7 @@ TEST_F(WebSurroundingTextTest, ButtonsAndParagraph) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 100);
+    WebSurroundingText surrounding_text(selection, 100);
 
     EXPECT_EQ("12345\n6789 12345\n\n6789", surrounding_text.TextContent());
     EXPECT_EQ(6u, surrounding_text.StartOffsetInTextContent());
@@ -366,8 +341,7 @@ TEST_F(WebSurroundingTextTest, ButtonsAndParagraph) {
 
   {
     EphemeralRange selection = Select(5);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 6);
+    WebSurroundingText surrounding_text(selection, 6);
 
     EXPECT_EQ("89 123", surrounding_text.TextContent());
     EXPECT_EQ(3u, surrounding_text.StartOffsetInTextContent());
@@ -376,16 +350,14 @@ TEST_F(WebSurroundingTextTest, ButtonsAndParagraph) {
 
   {
     EphemeralRange selection = Select(0);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 0);
+    WebSurroundingText surrounding_text(selection, 0);
 
     EXPECT_TRUE(surrounding_text.TextContent().IsEmpty());
   }
 
   {
     EphemeralRange selection = Select(5);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 1);
+    WebSurroundingText surrounding_text(selection, 1);
 
     EXPECT_EQ("1", surrounding_text.TextContent());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInTextContent());
@@ -394,8 +366,7 @@ TEST_F(WebSurroundingTextTest, ButtonsAndParagraph) {
 
   {
     EphemeralRange selection = Select(6);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 2);
+    WebSurroundingText surrounding_text(selection, 2);
 
     EXPECT_EQ("12", surrounding_text.TextContent());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
@@ -411,8 +382,7 @@ TEST_F(WebSurroundingTextTest, SelectElementAndText) {
       "<select>.</select>"));
 
   EphemeralRange selection = Select(0);
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 100);
+  WebSurroundingText surrounding_text(selection, 100);
 
   EXPECT_STREQ(
       "\xEF\xBF\xBC\n57th Street and Lake Shore Drive\nChicago IL 60637",
@@ -428,8 +398,7 @@ TEST_F(WebSurroundingTextTest, FieldsetElementAndText) {
              "6789<textarea>abc</textarea>0123<fieldset>.</fieldset>"));
 
   EphemeralRange selection = Select(0);
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 100);
+  WebSurroundingText surrounding_text(selection, 100);
 
   EXPECT_EQ("\n6789\n12345\n\n6789", surrounding_text.TextContent());
   EXPECT_EQ(6u, surrounding_text.StartOffsetInTextContent());
@@ -444,8 +413,7 @@ TEST_F(WebSurroundingTextTest, ButtonScriptAndComment) {
              "example<button>.</button>"));
 
   EphemeralRange selection = Select(0);
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 100);
+  WebSurroundingText surrounding_text(selection, 100);
 
   EXPECT_EQ("\nThis is a test example", surrounding_text.TextContent());
   EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
@@ -459,8 +427,7 @@ TEST_F(WebSurroundingTextTest, ButtonAndLongDiv) {
              "<button>.</button>"));
 
   EphemeralRange selection = Select(15);
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 12);
+  WebSurroundingText surrounding_text(selection, 12);
 
   EXPECT_EQ("901234567890", surrounding_text.TextContent());
   EXPECT_EQ(6u, surrounding_text.StartOffsetInTextContent());
@@ -475,16 +442,14 @@ TEST_F(WebSurroundingTextTest, EmptyWebSurroundingTextInOptionsAndButton) {
 
   {
     EphemeralRange selection = Select(1);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 100);
+    WebSurroundingText surrounding_text(selection, 100);
 
     EXPECT_TRUE(surrounding_text.TextContent().IsEmpty());
   }
 
   {
     EphemeralRange selection = Select(3);
-    WebSurroundingText surrounding_text;
-    surrounding_text.InitializeFromRange(selection, 100);
+    WebSurroundingText surrounding_text(selection, 100);
 
     EXPECT_TRUE(surrounding_text.TextContent().IsEmpty());
   }
@@ -494,8 +459,7 @@ TEST_F(WebSurroundingTextTest, SingleDotParagraph) {
   SetHTML(String("<p id='selection'>.</p>"));
 
   EphemeralRange selection = Select(0);
-  WebSurroundingText surrounding_text;
-  surrounding_text.InitializeFromRange(selection, 2);
+  WebSurroundingText surrounding_text(selection, 2);
 
   EXPECT_EQ("\n.", surrounding_text.TextContent());
   EXPECT_EQ(1u, surrounding_text.StartOffsetInTextContent());
