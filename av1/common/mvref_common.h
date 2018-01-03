@@ -270,8 +270,8 @@ static INLINE uint8_t av1_get_pred_diff_ctx(const int_mv pred_mv,
 static INLINE int av1_nmv_ctx(const uint8_t ref_mv_count,
                               const CANDIDATE_MV *ref_mv_stack, int ref,
                               int ref_mv_idx) {
-  if (ref_mv_stack[ref_mv_idx].weight >= REF_CAT_LEVEL &&
-      ref_mv_idx < ref_mv_count)
+  if (ref_mv_idx < ref_mv_count &&
+      ref_mv_stack[ref_mv_idx].weight >= REF_CAT_LEVEL)
     return ref_mv_stack[ref_mv_idx].pred_diff[ref];
 
   return 0;
