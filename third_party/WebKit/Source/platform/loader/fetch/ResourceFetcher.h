@@ -132,7 +132,8 @@ class PLATFORM_EXPORT ResourceFetcher
   void HandleLoaderFinish(Resource*,
                           double finish_time,
                           LoaderFinishType,
-                          uint32_t inflight_keepalive_bytes);
+                          uint32_t inflight_keepalive_bytes,
+                          bool blocked_cross_site_document);
   void HandleLoaderError(Resource*,
                          const ResourceError&,
                          uint32_t inflight_keepalive_bytes);

@@ -151,6 +151,7 @@ IPC_STRUCT_TRAITS_BEGIN(network::URLLoaderCompletionStatus)
   IPC_STRUCT_TRAITS_MEMBER(decoded_body_length)
   IPC_STRUCT_TRAITS_MEMBER(cors_error_status)
   IPC_STRUCT_TRAITS_MEMBER(ssl_info)
+  IPC_STRUCT_TRAITS_MEMBER(blocked_cross_site_document)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_NETWORK_PARAM_IPC_TRAITS_H_

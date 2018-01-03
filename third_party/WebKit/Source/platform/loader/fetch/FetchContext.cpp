@@ -93,7 +93,8 @@ void FetchContext::DispatchDidDownloadData(unsigned long, int, int) {}
 void FetchContext::DispatchDidFinishLoading(unsigned long,
                                             double,
                                             int64_t,
-                                            int64_t) {}
+                                            int64_t,
+                                            bool) {}
 
 void FetchContext::DispatchDidFail(unsigned long,
                                    const ResourceError&,

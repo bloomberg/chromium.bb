@@ -463,6 +463,8 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
   loader_status.encoded_data_length = request()->GetTotalReceivedBytes();
   loader_status.encoded_body_length = request()->GetRawBodyBytes();
   loader_status.decoded_body_length = total_written_bytes_;
+  loader_status.blocked_cross_site_document =
+      GetRequestInfo()->blocked_cross_site_document();
 
   url_loader_client_->OnComplete(loader_status);
   controller->Resume();

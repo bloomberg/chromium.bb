@@ -117,7 +117,8 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidFinishLoading(double finish_time,
                         int64_t encoded_data_length,
                         int64_t encoded_body_length,
-                        int64_t decoded_body_length) override;
+                        int64_t decoded_body_length,
+                        bool blocked_cross_site_document) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,

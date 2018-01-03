@@ -450,15 +450,18 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
         BuildObjectForTiming(*response.GetResourceLoadTiming()));
 
   if (response.GetResourceLoadInfo()) {
-    if (!response.GetResourceLoadInfo()->response_headers_text.IsEmpty())
+    if (!response.GetResourceLoadInfo()->response_headers_text.IsEmpty()) {
       response_object->setHeadersText(
           response.GetResourceLoadInfo()->response_headers_text);
-    if (response.GetResourceLoadInfo()->request_headers.size())
+    }
+    if (response.GetResourceLoadInfo()->request_headers.size()) {
       response_object->setRequestHeaders(BuildObjectForHeaders(
           response.GetResourceLoadInfo()->request_headers));
-    if (!response.GetResourceLoadInfo()->request_headers_text.IsEmpty())
+    }
+    if (!response.GetResourceLoadInfo()->request_headers_text.IsEmpty()) {
       response_object->setRequestHeadersText(
           response.GetResourceLoadInfo()->request_headers_text);
+    }
   }
 
   String remote_ip_address = response.RemoteIPAddress();
@@ -850,7 +853,8 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
                                              DocumentLoader*,
                                              double monotonic_finish_time,
                                              int64_t encoded_data_length,
-                                             int64_t decoded_body_length) {
+                                             int64_t decoded_body_length,
+                                             bool blocked_cross_site_document) {
   String request_id = IdentifiersFactory::RequestId(identifier);
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
@@ -873,8 +877,10 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
   resources_data_->MaybeDecodeDataToContent(request_id);
   if (!monotonic_finish_time)
     monotonic_finish_time = CurrentTimeTicksInSeconds();
+
   GetFrontend()->loadingFinished(request_id, monotonic_finish_time,
-                                 encoded_data_length);
+                                 encoded_data_length,
+                                 blocked_cross_site_document);
 }
 
 void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
@@ -885,7 +891,7 @@ void InspectorNetworkAgent::DidReceiveCORSRedirectResponse(
   // Update the response and finish loading
   DidReceiveResourceResponse(identifier, loader, response, resource);
   DidFinishLoading(identifier, loader, 0,
-                   WebURLLoaderClient::kUnknownEncodedDataLength, 0);
+                   WebURLLoaderClient::kUnknownEncodedDataLength, 0, false);
 }
 
 void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,

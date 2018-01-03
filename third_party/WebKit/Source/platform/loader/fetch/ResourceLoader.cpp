@@ -629,14 +629,16 @@ void ResourceLoader::DidFinishLoadingFirstPartInMultipart() {
       resource_->Identifier(),
       network_instrumentation::RequestOutcome::kSuccess);
 
-  fetcher_->HandleLoaderFinish(
-      resource_.Get(), 0, ResourceFetcher::kDidFinishFirstPartInMultipart, 0);
+  fetcher_->HandleLoaderFinish(resource_.Get(), 0,
+                               ResourceFetcher::kDidFinishFirstPartInMultipart,
+                               0, false);
 }
 
 void ResourceLoader::DidFinishLoading(double finish_time,
                                       int64_t encoded_data_length,
                                       int64_t encoded_body_length,
-                                      int64_t decoded_body_length) {
+                                      int64_t decoded_body_length,
+                                      bool blocked_cross_site_document) {
   resource_->SetEncodedDataLength(encoded_data_length);
   resource_->SetEncodedBodyLength(encoded_body_length);
   resource_->SetDecodedBodyLength(decoded_body_length);
@@ -650,9 +652,9 @@ void ResourceLoader::DidFinishLoading(double finish_time,
       resource_->Identifier(),
       network_instrumentation::RequestOutcome::kSuccess);
 
-  fetcher_->HandleLoaderFinish(resource_.Get(), finish_time,
-                               ResourceFetcher::kDidFinishLoading,
-                               inflight_keepalive_bytes_);
+  fetcher_->HandleLoaderFinish(
+      resource_.Get(), finish_time, ResourceFetcher::kDidFinishLoading,
+      inflight_keepalive_bytes_, blocked_cross_site_document);
 }
 
 void ResourceLoader::DidFail(const WebURLError& error,
@@ -729,7 +731,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
     resource_->SetResourceBuffer(data_out);
   }
   DidFinishLoading(CurrentTimeTicksInSeconds(), encoded_data_length,
-                   encoded_body_length, decoded_body_length);
+                   encoded_body_length, decoded_body_length, false);
 }
 
 void ResourceLoader::Dispose() {

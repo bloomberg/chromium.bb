@@ -55,6 +55,9 @@ struct URLLoaderCompletionStatus {
 
   // Optional SSL certificate info.
   base::Optional<net::SSLInfo> ssl_info;
+
+  // Set when response was blocked due to being cross-site document load.
+  bool blocked_cross_site_document = false;
 };
 
 }  // namespace network

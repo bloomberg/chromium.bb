@@ -93,7 +93,8 @@ class CORE_EXPORT InspectorTraceEvents
                         DocumentLoader*,
                         double monotonic_finish_time,
                         int64_t encoded_data_length,
-                        int64_t decoded_body_length);
+                        int64_t decoded_body_length,
+                        bool blocked_cross_site_document);
   void DidFailLoading(unsigned long identifier,
                       DocumentLoader*,
                       const ResourceError&);
