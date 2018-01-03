@@ -77,9 +77,11 @@ def _FindReturnValueSpace(name, paren_idx):
     space_idx = paren_idx - 6
   while True:
     space_idx = _FindLastCharOutsideOfBrackets(name, ' ', space_idx)
-    # Special case: "operator new", and "operator<< <template>".
+    # Special cases: "operator new", "operator< <templ>", "operator<< <tmpl>".
+    # No space is added for operator>><tmpl>.
     if -1 == space_idx or (
         -1 == name.find('operator', space_idx - 8, space_idx) and
+        -1 == name.find('operator<', space_idx - 9, space_idx) and
         -1 == name.find('operator<<', space_idx - 10, space_idx)):
       break
     space_idx -= 8
@@ -93,13 +95,10 @@ def _StripTemplateArgs(name):
     if last_right_idx == -1:
       return name
     left_idx = _FindLastCharOutsideOfBrackets(name, '<', last_right_idx + 1)
-    if left_idx == -1:
-      return name
-    # Special case: std::operator<< <
-    if left_idx > 0 and name[left_idx - 1] == ' ':
-      left_idx -= 1
-    name = name[:left_idx] + name[last_right_idx + 1:]
-    last_right_idx = left_idx
+    if left_idx != -1:
+      # Leave in empty <>s to denote that it's a template.
+      name = name[:left_idx + 1] + name[last_right_idx:]
+      last_right_idx = left_idx
 
 
 def _NormalizeTopLevelGccLambda(name, left_paren_idx):
