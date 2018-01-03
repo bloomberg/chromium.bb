@@ -88,15 +88,14 @@ const DOMMatrix* CSSSkew::AsMatrix(ExceptionState&) const {
 }
 
 const CSSFunctionValue* CSSSkew::ToCSSValue() const {
-  // TDOO(meade): Handle calc angles here.
-  CSSUnitValue* ax = ToCSSUnitValue(ax_);
-  CSSUnitValue* ay = ToCSSUnitValue(ay_);
+  const CSSValue* ax = ax_->ToCSSValue();
+  const CSSValue* ay = ay_->ToCSSValue();
+  if (!ax || !ay)
+    return nullptr;
 
   CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueSkew);
-  result->Append(
-      *CSSPrimitiveValue::Create(ax->value(), ax->GetInternalUnit()));
-  result->Append(
-      *CSSPrimitiveValue::Create(ay->value(), ay->GetInternalUnit()));
+  result->Append(*ax);
+  result->Append(*ay);
   return result;
 }
 

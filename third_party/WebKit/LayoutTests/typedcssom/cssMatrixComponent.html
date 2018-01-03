@@ -65,10 +65,6 @@ for (let params of testParams) {
   test(() => {
     assert_equals(matrixComponent.is2D, params.is2D);
   }, "is2D value is correct for " + params.cssText);
-
-  test(() => {
-    assert_equals(matrixComponent.toString(), params.cssText);
-  }, "toString is correct for " + params.cssText);
 }
 
 test(() => {

@@ -7,12 +7,6 @@
 let EPSILON = 1e-6;
 
 test(() => {
-  let perspective = new CSSPerspective(new CSSUnitValue(10, 'px'));
-
-  assert_equals(perspective.toString(), 'perspective(10px)');
-}, "toString should return perspective(<CSSNumericValue.cssString()>)");
-
-test(() => {
   let transformValue = new CSSTransformValue([new CSSPerspective(CSS.em(10))]);
   assert_throws(new TypeError(), () => {
     transformValue.toMatrix();

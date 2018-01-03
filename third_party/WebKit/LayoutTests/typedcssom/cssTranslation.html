@@ -47,12 +47,6 @@ var testParams = [
   },
 ];
 
-for (let params of testParams) {
-  test(() => {
-    assert_equals(params.input.toString(), params.cssText);
-  }, "toString value is correct for " + params.cssText);
-}
-
 test(() => {
   assert_throws(new TypeError(), () => {
     new CSSTranslation(CSS.px(0), CSS.px(0), CSS.percent(10));
