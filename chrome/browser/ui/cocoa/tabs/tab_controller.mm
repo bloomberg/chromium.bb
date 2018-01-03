@@ -22,12 +22,15 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/grit/theme_resources.h"
+#include "components/grit/components_scaled_resources.h"
 #import "extensions/common/extension.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/menu_controller.h"
-#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 
@@ -67,8 +70,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
-  BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
-
   BOOL active_;
   BOOL selected_;
   std::unique_ptr<ui::SimpleMenuModel> contextMenuModel_;
@@ -94,6 +95,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 @synthesize action = action_;
 @synthesize currentAttentionTypes = currentAttentionTypes_;
 @synthesize loadingState = loadingState_;
+@synthesize showIcon = showIcon_;
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 @synthesize url = url_;
@@ -169,7 +171,6 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
                                          : NSViewMaxXMargin | NSViewMinYMargin];
     [self updateIconViewFrameWithAnimation:NO];
     [tabView addSubview:iconView_];
-    isIconShowing_ = YES;
 
     // Set up the title.
     const CGFloat titleXOrigin =
@@ -326,17 +327,10 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   CGFloat leadingPadding =
       [self pinned] ? kPinnedTabLeadingPadding : kTabLeadingPadding;
 
-  NSRect iconViewFrame;
+  NSRect iconViewFrame = [iconView_ frame];
   iconViewFrame.origin.x = isRTL ? NSWidth([[self tabView] frame]) -
                                        leadingPadding - gfx::kFaviconSize
                                  : leadingPadding;
-
-  // As long as the iconView gets repeatedly created and destroyed we have to
-  // initialize the other struct values. Once the iconView gets created a single
-  // time per tab we can rely on the values that get set in -init (and remove
-  // these lines).
-  iconViewFrame.origin.y = kTabElementYOrigin;
-  iconViewFrame.size = NSMakeSize(gfx::kFaviconSize, gfx::kFaviconSize);
 
   // The iconView animation looks funky in RTL so don't allow it.
   if (shouldAnimate && !isRTL) {
@@ -346,20 +340,6 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
     [[iconView_ animator] setFrame:iconViewFrame];
   } else {
     [iconView_ setFrame:iconViewFrame];
-  }
-}
-
-- (SpriteView*)iconView {
-  return iconView_;
-}
-
-- (void)setIconView:(SpriteView*)iconView {
-  [iconView_ removeFromSuperview];
-  iconView_.reset([iconView retain]);
-
-  if (iconView_) {
-    [[self view] addSubview:iconView_];
-    [self updateAttentionIndicator];
   }
 }
 
@@ -423,6 +403,10 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   [[self tabView] setToolTipText:toolTip];
 }
 
+- (NSView*)iconView {
+  return iconView_;
+}
+
 // Return a rough approximation of the number of icons we could fit in the
 // tab. We never actually do this, but it's a helpful guide for determining
 // how much space we have available.
@@ -441,16 +425,16 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 
 - (BOOL)shouldShowIcon {
   return chrome::ShouldTabShowFavicon(
-      [self iconCapacity], [self pinned], [self active], iconView_ != nil,
-      !alertIndicatorButton_ ? TabAlertState::NONE :
-          [alertIndicatorButton_ showingAlertState]);
+      [self iconCapacity], [self pinned], [self active], [self showIcon],
+      !alertIndicatorButton_ ? TabAlertState::NONE
+                             : [alertIndicatorButton_ showingAlertState]);
 }
 
 - (BOOL)shouldShowAlertIndicator {
   return chrome::ShouldTabShowAlertIndicator(
-      [self iconCapacity], [self pinned], [self active], iconView_ != nil,
-      !alertIndicatorButton_ ? TabAlertState::NONE :
-          [alertIndicatorButton_ showingAlertState]);
+      [self iconCapacity], [self pinned], [self active], [self showIcon],
+      !alertIndicatorButton_ ? TabAlertState::NONE
+                             : [alertIndicatorButton_ showingAlertState]);
 }
 
 - (BOOL)shouldShowCloseButton {
@@ -458,29 +442,65 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
       [self iconCapacity], [self pinned], [self active]);
 }
 
-- (void)setIconImage:(NSImage*)image {
-  [self setIconImage:image withToastAnimation:NO];
-}
+- (void)setIconImage:(NSImage*)image
+     forLoadingState:(TabLoadingState)newLoadingState
+            showIcon:(BOOL)showIcon {
+  // Update the favicon's visbility state. Note that TabStripController calls
+  // -updateVisibility immediately after calling this method, so we don't need
+  // to act on a change in this state.
+  showIcon_ = showIcon;
 
-- (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate {
-  if (image == nil) {
-    [self setIconView:nil];
-  } else {
-    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
-    if (iconView_.get() == nil) {
-      base::scoped_nsobject<SpriteView> iconView([[SpriteView alloc] init]);
-      [iconView setAutoresizingMask:isRTL
-                                        ? NSViewMinXMargin | NSViewMinYMargin
-                                        : NSViewMaxXMargin | NSViewMinYMargin];
-      [self setIconView:iconView];
+  // Always draw the favicon when the state is already kTabDone because the site
+  // may have sent an updated favicon.
+  if (newLoadingState == loadingState_ && newLoadingState != kTabDone) {
+    return;
+  }
+  loadingState_ = newLoadingState;
+
+  // The Material Design spinner handles sad tab icon display, etc. directly
+  // based on the loading state. Handle it here until the new spinner code
+  // lands.
+  if (newLoadingState == kTabCrashed) {
+    static NSImage* sadFaviconImage =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetNativeImageNamed(IDR_CRASH_SAD_FAVICON)
+            .CopyNSImage();
+
+    image = sadFaviconImage;
+  } else if (newLoadingState == kTabWaiting) {
+    static NSImage* throbberWaitingImage =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetNativeImageNamed(IDR_THROBBER_WAITING)
+            .CopyNSImage();
+    static NSImage* throbberWaitingIncognitoImage =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetNativeImageNamed(IDR_THROBBER_WAITING_INCOGNITO)
+            .CopyNSImage();
+
+    if ([[iconView_ window] hasDarkTheme]) {
+      image = throbberWaitingIncognitoImage;
+    } else {
+      image = throbberWaitingImage;
     }
+  } else if (newLoadingState == kTabLoading) {
+    static NSImage* throbberLoadingImage =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetNativeImageNamed(IDR_THROBBER)
+            .CopyNSImage();
+    static NSImage* throbberLoadingIncognitoImage =
+        ui::ResourceBundle::GetSharedInstance()
+            .GetNativeImageNamed(IDR_THROBBER_INCOGNITO)
+            .CopyNSImage();
 
-    [iconView_ setImage:image withToastAnimation:animate];
-
-    [self updateIconViewFrameWithAnimation:NO];
+    if ([[iconView_ window] hasDarkTheme]) {
+      image = throbberLoadingIncognitoImage;
+    } else {
+      image = throbberLoadingImage;
+    }
   }
 
-  [self updateAttentionIndicator];
+  [iconView_ setImage:image
+      withToastAnimation:(newLoadingState == kTabCrashed)];
 }
 
 - (void)updateAttentionIndicator {
@@ -490,7 +510,7 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
   if ([self active])
     actualAttentionTypes &= ~AttentionType::kBlockedWebContents;
 
-  if (actualAttentionTypes != 0 && iconView_ && isIconShowing_) {
+  if (actualAttentionTypes != 0 && ![iconView_ isHidden]) {
     // The attention indicator consists of two parts:
     // . a wedge cut out of the bottom right (or left in rtl) of the favicon.
     // . a circle in the bottom right (or left in rtl) of the favicon.
@@ -551,13 +571,9 @@ static const CGFloat kPinnedTabWidth = kDefaultTabHeight * 2;
 }
 
 - (void)updateVisibility {
-  // iconView_ may have been replaced or it may be nil, so [iconView_ isHidden]
-  // won't work.  Instead, the state of the icon is tracked separately in
-  // isIconShowing_.
   BOOL newShowIcon = [self shouldShowIcon];
 
   [iconView_ setHidden:!newShowIcon];
-  isIconShowing_ = newShowIcon;
 
   // If the tab is a pinned-tab, hide the title.
   TabView* tabView = [self tabView];

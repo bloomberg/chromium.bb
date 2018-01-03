@@ -150,7 +150,9 @@ class TabControllerTest : public CocoaTest {
           // TabController state.
           [controller setPinned:(isPinnedTab ? YES : NO)];
           [controller setActive:(isActiveTab ? YES : NO)];
-          [controller setIconImage:favicon];
+          [controller setIconImage:favicon
+                   forLoadingState:kTabDone
+                          showIcon:YES];
           [controller setAlertState:alertState];
           [controller updateVisibility];
 
@@ -383,11 +385,15 @@ TEST_F(TabControllerTest, Loading) {
   [[window contentView] addSubview:[controller view]];
 
   EXPECT_EQ(kTabDone, [controller loadingState]);
-  [controller setLoadingState:kTabWaiting];
+  [controller setIconImage:nil forLoadingState:kTabWaiting showIcon:YES];
   EXPECT_EQ(kTabWaiting, [controller loadingState]);
-  [controller setLoadingState:kTabLoading];
+  [controller setIconImage:nil forLoadingState:kTabLoading showIcon:YES];
   EXPECT_EQ(kTabLoading, [controller loadingState]);
-  [controller setLoadingState:kTabDone];
+  // Create favicon.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> favicon(
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+  [controller setIconImage:favicon forLoadingState:kTabDone showIcon:YES];
   EXPECT_EQ(kTabDone, [controller loadingState]);
 
   [[controller view] removeFromSuperview];
@@ -474,9 +480,10 @@ TEST_F(TabControllerTest, ShouldShowIcon) {
 
   // Setting the icon when tab is at min width should not show icon (bug 18359).
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  base::scoped_nsobject<NSImage> image(
+  base::scoped_nsobject<NSImage> favicon(
       rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
-  [controller setIconImage:image];
+  [controller setIconImage:favicon forLoadingState:kTabDone showIcon:YES];
+  [controller updateVisibility];
   NSView* newIcon = [controller iconView];
   EXPECT_TRUE([newIcon isHidden]);
 
@@ -561,6 +568,13 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   tabFrame.size.width = [TabController maxTabWidth];
   [[controller view] setFrame:tabFrame];
 
+  // Set up the favicon in the tabview.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  base::scoped_nsobject<NSImage> favicon(
+      rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+  [controller setIconImage:favicon forLoadingState:kTabDone showIcon:YES];
+  [controller updateVisibility];
+
   const NSRect originalTabFrame = [[controller view] frame];
   const NSRect originalIconFrame = [[controller iconView] frame];
   const NSRect originalCloseFrame = [[controller closeButton] frame];
@@ -577,7 +591,7 @@ TEST_F(TabControllerTest, TitleViewLayout) {
   [[controller view] setFrame:tabFrame];
 
   // The icon view and close button should be hidden and the title view should
-  // be resize to take up their space.
+  // resize to take up their space.
   EXPECT_TRUE([[controller iconView] isHidden]);
   EXPECT_TRUE([[controller closeButton] isHidden]);
   EXPECT_GT(NSWidth([[controller view] frame]),
