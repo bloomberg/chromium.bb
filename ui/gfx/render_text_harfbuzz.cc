@@ -1225,7 +1225,8 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
             run.GetGraphemeSpanForCharRange(this, intersection);
         int start_x = std::ceil(selected_span.start() - line_start_x);
         int end_x = std::ceil(selected_span.end() - line_start_x);
-        gfx::Rect rect(start_x, 0, end_x - start_x, line.size.height());
+        gfx::Rect rect(start_x, 0, end_x - start_x,
+                       std::ceil(line.size.height()));
         rects.push_back(rect + GetLineOffset(line_index));
       }
     }
