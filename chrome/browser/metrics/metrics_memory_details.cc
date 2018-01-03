@@ -21,10 +21,6 @@
 #include "ppapi/features/features.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 MemoryGrowthTracker::MemoryGrowthTracker() {
 }
 
@@ -105,11 +101,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
           UMA_HISTOGRAM_COUNTS_10000("Memory.Browser.OpenFDsSoftLimit",
                                      open_fds_soft_limit);
         }
-#if defined(OS_MACOSX)
-        UMA_HISTOGRAM_MEMORY_LARGE_MB(
-            "Memory.Experimental.Browser.PrivateMemoryFootprint.MacOS",
-            browser.processes[index].private_memory_footprint / 1024 / 1024);
-#endif
         continue;
       case content::PROCESS_TYPE_RENDERER: {
         UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll.Committed",
@@ -129,12 +120,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
                                          num_open_fds);
             }
             extension_count++;
-#if defined(OS_MACOSX)
-            UMA_HISTOGRAM_MEMORY_LARGE_MB(
-                "Memory.Experimental.Extension.PrivateMemoryFootprint.MacOS",
-                browser.processes[index].private_memory_footprint / 1024 /
-                    1024);
-#endif
             continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
             if (num_open_fds != -1)
@@ -146,12 +131,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
             continue;
           case ProcessMemoryInformation::RENDERER_NORMAL:
           default:
-#if defined(OS_MACOSX)
-            UMA_HISTOGRAM_MEMORY_LARGE_MB(
-                "Memory.Experimental.Renderer.PrivateMemoryFootprint.MacOS",
-                browser.processes[index].private_memory_footprint / 1024 /
-                    1024);
-#endif
             // TODO(erikkay): Should we bother splitting out the other subtypes?
             UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Committed",
                                           committed / 1024);
@@ -181,17 +160,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         other_count++;
         continue;
       case content::PROCESS_TYPE_GPU:
-#if defined(OS_MACOSX)
-        // Physical footprint was introduced in macOS 10.12.
-        if (base::mac::IsAtLeastOS10_12()) {
-          UMA_HISTOGRAM_MEMORY_LARGE_MB(
-              "Memory.Experimental.Gpu.PhysicalFootprint.MacOS",
-              browser.processes[index].phys_footprint / 1024 / 1024);
-        }
-        UMA_HISTOGRAM_MEMORY_LARGE_MB(
-            "Memory.Experimental.Gpu.PrivateMemoryFootprint.MacOS",
-            browser.processes[index].private_memory_footprint / 1024 / 1024);
-#endif
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.Gpu.OpenFDs", num_open_fds);
           UMA_HISTOGRAM_COUNTS_10000("Memory.Gpu.OpenFDsSoftLimit",
