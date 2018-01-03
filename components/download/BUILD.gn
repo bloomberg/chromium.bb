@@ -5,15 +5,12 @@
 group("unit_tests") {
   testonly = true
 
-  deps = [
-    "//components/download/internal:unit_tests",
-  ]
-
   if (!is_ios) {
-    deps += [
+    deps = [
       "//components/download/content/internal:unit_tests",
       "//components/download/content/public:unit_tests",
       "//components/download/downloader/in_progress:unit_tests",
+      "//components/download/internal:unit_tests",
     ]
   }
 

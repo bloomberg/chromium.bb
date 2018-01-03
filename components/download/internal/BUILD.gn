@@ -16,6 +16,8 @@ static_library("internal") {
   ]
 
   sources = [
+    "blob_task_proxy.cc",
+    "blob_task_proxy.h",
     "client_set.cc",
     "client_set.h",
     "config.cc",
@@ -39,6 +41,8 @@ static_library("internal") {
     "file_monitor.h",
     "file_monitor_impl.cc",
     "file_monitor_impl.h",
+    "in_memory_download.cc",
+    "in_memory_download.h",
     "log_sink.h",
     "log_source.h",
     "logger_impl.cc",
@@ -75,6 +79,7 @@ static_library("internal") {
     "//components/download/public",
     "//components/leveldb_proto",
     "//net",
+    "//storage/browser",
   ]
 
   if (is_android) {
@@ -122,6 +127,7 @@ source_set("unit_tests") {
     "download_store_unittest.cc",
     "entry_utils_unittest.cc",
     "file_monitor_unittest.cc",
+    "in_memory_download_unittest.cc",
     "model_impl_unittest.cc",
     "navigation_monitor_impl_unittests.cc",
     "proto_conversions_unittest.cc",
@@ -138,6 +144,7 @@ source_set("unit_tests") {
     "//components/download/public/test:test_support",
     "//components/leveldb_proto:test_support",
     "//net:test_support",
+    "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
   ]
