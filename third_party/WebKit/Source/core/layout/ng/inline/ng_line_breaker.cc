@@ -40,6 +40,7 @@ NGLineBreaker::NGLineBreaker(
       base_direction_(node_.BaseDirection()),
       in_line_height_quirks_mode_(node.InLineHeightQuirksMode()) {
   if (break_token) {
+    current_style_ = break_token->Style();
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
     previous_line_had_forced_break_ = break_token->IsForcedBreak();
@@ -100,7 +101,11 @@ void NGLineBreaker::PrepareNextLine(const NGLayoutOpportunity& opportunity,
   line_info->SetStartOffset(offset_);
   line_info->SetLineStyle(node_, constraint_space_, IsFirstFormattedLine(),
                           previous_line_had_forced_break_);
-  SetCurrentStyle(line_info->LineStyle());
+  // Set the initial style of this line from the break token. Example:
+  //   <p>...<span>....</span></p>
+  // When the line wraps in <span>, the 2nd line needs to start with the style
+  // of the <span>.
+  SetCurrentStyle(current_style_ ? *current_style_ : line_info->LineStyle());
   ComputeBaseDirection();
   line_info->SetBaseDirection(base_direction_);
 
@@ -815,6 +820,8 @@ void NGLineBreaker::TruncateOverflowingText(NGLineInfo* line_info) {
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
+  current_style_ = &style;
+
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
@@ -885,8 +892,8 @@ scoped_refptr<NGInlineBreakToken> NGLineBreaker::CreateBreakToken(
   const Vector<NGInlineItem>& items = node_.Items();
   if (item_index_ >= items.size())
     return NGInlineBreakToken::Create(node_);
-  return NGInlineBreakToken::Create(node_, item_index_, offset_,
-                                    line_.is_after_forced_break,
+  return NGInlineBreakToken::Create(node_, current_style_.get(), item_index_,
+                                    offset_, line_.is_after_forced_break,
                                     std::move(state_stack));
 }
 

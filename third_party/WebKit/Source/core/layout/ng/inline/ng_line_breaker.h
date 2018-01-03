@@ -150,6 +150,7 @@ class CORE_EXPORT NGLineBreaker {
   Vector<NGPositionedFloat>* positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;
   NGExclusionSpace* exclusion_space_;
+  scoped_refptr<const ComputedStyle> current_style_;
 
   unsigned item_index_ = 0;
   unsigned offset_ = 0;

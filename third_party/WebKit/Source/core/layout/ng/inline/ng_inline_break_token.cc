@@ -10,11 +10,13 @@ namespace blink {
 
 NGInlineBreakToken::NGInlineBreakToken(
     NGInlineNode node,
+    const ComputedStyle* style,
     unsigned item_index,
     unsigned text_offset,
     bool is_forced_break,
     std::unique_ptr<const NGInlineLayoutStateStack> state_stack)
     : NGBreakToken(kInlineBreakToken, kUnfinished, node),
+      style_(style),
       item_index_(item_index),
       text_offset_(text_offset),
       is_forced_break_(is_forced_break),
