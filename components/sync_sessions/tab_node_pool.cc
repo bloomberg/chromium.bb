@@ -124,7 +124,7 @@ void TabNodePool::CleanupTabNodes(std::set<int>* deleted_node_ids) {
   // If number of free nodes exceed kFreeNodesHighWatermark,
   // delete sync nodes till number reaches kFreeNodesLowWatermark.
   // Note: This logic is to mitigate temporary disassociation issues with old
-  // clients: http://crbug.com/259918. Newer versions do not need this.
+  // clients: https://crbug.com/259918. Newer versions do not need this.
   if (free_nodes_pool_.size() > kFreeNodesHighWatermark) {
     for (std::set<int>::iterator free_it = free_nodes_pool_.begin();
          free_it != free_nodes_pool_.end();) {
