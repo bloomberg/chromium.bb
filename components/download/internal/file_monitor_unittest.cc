@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +32,7 @@ class FileMonitorTest : public testing::Test {
     EXPECT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     download_dir_ = scoped_temp_dir_.GetPath();
     base::TimeDelta keep_alive_time = base::TimeDelta::FromHours(12);
-    monitor_ = base::MakeUnique<FileMonitorImpl>(download_dir_, task_runner_,
+    monitor_ = std::make_unique<FileMonitorImpl>(download_dir_, task_runner_,
                                                  keep_alive_time);
   }
   ~FileMonitorTest() override = default;

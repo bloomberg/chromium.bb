@@ -4,7 +4,6 @@
 
 #include "components/download/internal/scheduler/device_status_listener.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
 #include "build/build_config.h"
 #include "components/download/internal/scheduler/network_status_listener.h"
@@ -220,9 +219,9 @@ void DeviceStatusListener::NotifyNetworkChange() {
 
 void DeviceStatusListener::BuildNetworkStatusListener() {
 #if defined(OS_ANDROID)
-  network_listener_ = base::MakeUnique<NetworkStatusListenerAndroid>();
+  network_listener_ = std::make_unique<NetworkStatusListenerAndroid>();
 #else
-  network_listener_ = base::MakeUnique<NetworkStatusListenerImpl>();
+  network_listener_ = std::make_unique<NetworkStatusListenerImpl>();
 #endif
 }
 

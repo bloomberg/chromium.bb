@@ -5,9 +5,9 @@
 #include "components/download/internal/model_impl.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/stats.h"
@@ -42,7 +42,7 @@ void ModelImpl::Add(const Entry& entry) {
   DCHECK(store_->IsInitialized());
   DCHECK(entries_.find(entry.guid) == entries_.end());
 
-  entries_.emplace(entry.guid, base::MakeUnique<Entry>(entry));
+  entries_.emplace(entry.guid, std::make_unique<Entry>(entry));
 
   store_->Update(entry, base::BindOnce(&ModelImpl::OnAddFinished,
                                        weak_ptr_factory_.GetWeakPtr(),
@@ -102,7 +102,7 @@ void ModelImpl::OnInitializedFinished(
   std::map<Entry::State, uint32_t> entries_count;
   for (const auto& entry : *entries) {
     entries_count[entry.state]++;
-    entries_.emplace(entry.guid, base::MakeUnique<Entry>(entry));
+    entries_.emplace(entry.guid, std::make_unique<Entry>(entry));
   }
 
   stats::LogEntries(entries_count);

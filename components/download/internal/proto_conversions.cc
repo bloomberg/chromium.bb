@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "components/download/internal/proto_conversions.h"
 #include "net/http/http_request_headers.h"
@@ -312,7 +312,7 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
 
 std::unique_ptr<std::vector<Entry>> ProtoConversions::EntryVectorFromProto(
     std::unique_ptr<std::vector<protodb::Entry>> protos) {
-  auto entries = base::MakeUnique<std::vector<Entry>>();
+  auto entries = std::make_unique<std::vector<Entry>>();
   for (auto& proto : *protos) {
     entries->push_back(EntryFromProto(proto));
   }
@@ -323,7 +323,7 @@ std::unique_ptr<std::vector<Entry>> ProtoConversions::EntryVectorFromProto(
 std::unique_ptr<std::vector<protodb::Entry>>
 ProtoConversions::EntryVectorToProto(
     std::unique_ptr<std::vector<Entry>> entries) {
-  auto protos = base::MakeUnique<std::vector<protodb::Entry>>();
+  auto protos = std::make_unique<std::vector<protodb::Entry>>();
   for (auto& entry : *entries) {
     protos->push_back(EntryToProto(entry));
   }

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/content/public/all_download_item_notifier.h"
@@ -67,7 +66,7 @@ class DownloadDriverImplTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(mock_client_, IsTrackingDownload(_))
         .WillRepeatedly(Return(true));
-    driver_ = base::MakeUnique<DownloadDriverImpl>(&mock_manager_);
+    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_);
   }
 
   // TODO(xingliu): implements test download manager for embedders to test.

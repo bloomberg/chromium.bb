@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/test/empty_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,10 +13,10 @@
 namespace download {
 
 TEST(DownloadServiceClientSetTest, TestGetClient) {
-  auto client = base::MakeUnique<test::EmptyClient>();
+  auto client = std::make_unique<test::EmptyClient>();
   Client* raw_client = client.get();
 
-  auto client_map = base::MakeUnique<DownloadClientMap>();
+  auto client_map = std::make_unique<DownloadClientMap>();
   client_map->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
   ClientSet clients(std::move(client_map));
 
@@ -26,9 +25,9 @@ TEST(DownloadServiceClientSetTest, TestGetClient) {
 }
 
 TEST(DownloadServiceClientSetTest, TestGetRegisteredClients) {
-  auto client = base::MakeUnique<test::EmptyClient>();
+  auto client = std::make_unique<test::EmptyClient>();
 
-  auto client_map = base::MakeUnique<DownloadClientMap>();
+  auto client_map = std::make_unique<DownloadClientMap>();
   client_map->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
   ClientSet clients(std::move(client_map));
 

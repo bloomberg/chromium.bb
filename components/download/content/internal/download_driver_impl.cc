@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -121,7 +120,7 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
   }
 
   notifier_ =
-      base::MakeUnique<AllDownloadItemNotifier>(download_manager_, this);
+      std::make_unique<AllDownloadItemNotifier>(download_manager_, this);
 }
 
 void DownloadDriverImpl::HardRecover() {
