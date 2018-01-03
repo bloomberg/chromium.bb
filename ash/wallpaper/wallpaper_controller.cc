@@ -701,44 +701,23 @@ void WallpaperController::SetDefaultWallpaperImpl(
   }
 }
 
-void WallpaperController::SetCustomizedDefaultWallpaperImpl(
+void WallpaperController::SetCustomizedDefaultWallpaperPaths(
     const base::FilePath& customized_default_wallpaper_file_small,
-    std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
-    const base::FilePath& customized_default_wallpaper_file_large,
-    std::unique_ptr<gfx::ImageSkia> large_wallpaper_image) {
+    const base::FilePath& customized_default_wallpaper_file_large) {
   customized_default_wallpaper_small_ = customized_default_wallpaper_file_small;
   customized_default_wallpaper_large_ = customized_default_wallpaper_file_large;
 
-  // |show_wallpaper| is true if the previous default wallpaper is visible now,
-  // so we need to update wallpaper on the screen. Layout is ignored here, so
-  // wallpaper::WALLPAPER_LAYOUT_CENTER is used as a placeholder only.
-  const bool show_wallpaper =
-      default_wallpaper_image_.get() &&
-      WallpaperIsAlreadyLoaded(default_wallpaper_image_->image(),
-                               false /*compare_layouts=*/,
-                               wallpaper::WALLPAPER_LAYOUT_CENTER);
-
-  default_wallpaper_image_.reset();
-  if (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL) {
-    if (small_wallpaper_image) {
-      default_wallpaper_image_.reset(
-          new user_manager::UserImage(*small_wallpaper_image));
-      default_wallpaper_image_->set_file_path(
-          customized_default_wallpaper_file_small);
-    }
-  } else {
-    if (large_wallpaper_image) {
-      default_wallpaper_image_.reset(
-          new user_manager::UserImage(*large_wallpaper_image));
-      default_wallpaper_image_->set_file_path(
-          customized_default_wallpaper_file_large);
-    }
-  }
+  // If the current wallpaper is the default one, then the new customized
+  // default wallpaper should be shown immediately to update the screen. It
+  // shouldn't replace wallpapers of other types.
+  bool show_wallpaper = true;
+  if (current_wallpaper_ && GetWallpaperType() != wallpaper::DEFAULT)
+    show_wallpaper = false;
 
   // Customized default wallpapers are subject to the same restrictions as other
   // default wallpapers, e.g. they should not be set during guest sessions.
   // TODO(crbug.com/776464): Find a way to directly set wallpaper from here, or
-  // combine this with |SetDefaultWallpaperImpl| since there's duplicate code.
+  // combine this method with |SetDefaultWallpaperImpl|.
   SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                           show_wallpaper);
 }

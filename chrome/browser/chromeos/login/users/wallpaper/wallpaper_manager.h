@@ -59,41 +59,6 @@ extern const char kWallpaperSequenceTokenName[];
 class WallpaperManager : public wm::ActivationChangeObserver,
                          public aura::WindowObserver {
  public:
-  class CustomizedWallpaperRescaledFiles {
-   public:
-    CustomizedWallpaperRescaledFiles(const base::FilePath& path_downloaded,
-                                     const base::FilePath& path_rescaled_small,
-                                     const base::FilePath& path_rescaled_large);
-    bool AllSizesExist() const;
-
-    // Closure will hold unretained pointer to this object. So caller must
-    // make sure that the closure will be destoyed before this object.
-    // Closure must be called on BlockingPool.
-    base::Closure CreateCheckerClosure();
-
-    const base::FilePath& path_downloaded() const;
-    const base::FilePath& path_rescaled_small() const;
-    const base::FilePath& path_rescaled_large() const;
-
-    bool downloaded_exists() const;
-    bool rescaled_small_exists() const;
-    bool rescaled_large_exists() const;
-
-   private:
-    // Must be called on BlockingPool.
-    void CheckCustomizedWallpaperFilesExist();
-
-    const base::FilePath path_downloaded_;
-    const base::FilePath path_rescaled_small_;
-    const base::FilePath path_rescaled_large_;
-
-    bool downloaded_exists_;
-    bool rescaled_small_exists_;
-    bool rescaled_large_exists_;
-
-    DISALLOW_COPY_AND_ASSIGN(CustomizedWallpaperRescaledFiles);
-  };
-
   class TestApi {
    public:
     explicit TestApi(WallpaperManager* wallpaper_manager);
@@ -137,17 +102,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // WallpaperManager to remove any observers it has registered.
   static void Shutdown();
 
-  // Sets a customized default wallpaper to be used wherever a default wallpaper
-  // is needed. Note: it doesn't change the default wallpaper for guest and
-  // child accounts.
-  // |wallpaper_url|: The url corresponding to this wallpaper.
-  // |file_path|: The path of the wallpaper file.
-  // |resized_directory|: The directory where resized versions are stored. Must
-  //                      be writable.
-  void SetCustomizedDefaultWallpaper(const GURL& wallpaper_url,
-                                     const base::FilePath& file_path,
-                                     const base::FilePath& resized_directory);
-
   // Shows |account_id|'s wallpaper, which is determined in the following order:
   // 1) Use device policy wallpaper if it exists AND we are at the login screen.
   // 2) Use user policy wallpaper if it exists.
@@ -171,6 +125,12 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(wallpaper::WallpaperInfo* info);
+
+  // TODO(crbug.com/776464): Convert it to mojo call.
+  // A wrapper of |WallpaperController::SetCustomizedDefaultWallpaperPaths|.
+  void SetCustomizedDefaultWallpaperPaths(
+      const base::FilePath& default_small_wallpaper_file,
+      const base::FilePath& default_large_wallpaper_file);
 
   // Adds |this| as an observer to various settings.
   void AddObservers();
@@ -219,14 +179,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   WallpaperManager();
 
-  // Resize and save customized default wallpaper.
-  static void ResizeCustomizedDefaultWallpaper(
-      std::unique_ptr<gfx::ImageSkia> image,
-      const CustomizedWallpaperRescaledFiles* rescaled_files,
-      bool* success,
-      gfx::ImageSkia* small_wallpaper_image,
-      gfx::ImageSkia* large_wallpaper_image);
-
   // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
@@ -266,27 +218,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // Notify all registered observers.
   void NotifyAnimationFinished();
 
-  // This is called after we check that supplied default wallpaper files exist.
-  void SetCustomizedDefaultWallpaperAfterCheck(
-      const GURL& wallpaper_url,
-      const base::FilePath& file_path,
-      std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files);
-
-  // Starts rescaling of customized wallpaper.
-  void OnCustomizedDefaultWallpaperDecoded(
-      const GURL& wallpaper_url,
-      std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-      std::unique_ptr<user_manager::UserImage> user_image);
-
-  // Check the result of ResizeCustomizedDefaultWallpaper and finally
-  // apply Customized Default Wallpaper.
-  void OnCustomizedDefaultWallpaperResized(
-      const GURL& wallpaper_url,
-      std::unique_ptr<CustomizedWallpaperRescaledFiles> rescaled_files,
-      std::unique_ptr<bool> success,
-      std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
-      std::unique_ptr<gfx::ImageSkia> large_wallpaper_image);
-
   // Record the Wallpaper App that the user is using right now on Chrome OS.
   void RecordWallpaperAppType();
 
@@ -298,13 +229,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   void SetPolicyControlledWallpaper(
       const AccountId& account_id,
       std::unique_ptr<user_manager::UserImage> user_image);
-
-  // A wrapper of |WallpaperController::SetCustomizedDefaultWallpaperImpl|.
-  void SetCustomizedDefaultWallpaperImpl(
-      const base::FilePath& customized_default_wallpaper_file_small,
-      std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
-      const base::FilePath& customized_default_wallpaper_file_large,
-      std::unique_ptr<gfx::ImageSkia> large_wallpaper_image);
 
   // Returns the cached logged-in user wallpaper info, or a dummy value under
   // mash.

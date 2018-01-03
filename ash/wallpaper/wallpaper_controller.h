@@ -251,14 +251,15 @@ class ASH_EXPORT WallpaperController
                                const user_manager::UserType& user_type,
                                bool show_wallpaper);
 
-  // Implementation of |SetCustomizedDefaultWallpaper|. Sets
-  // |default_wallpaper_image_| either to |small_wallpaper_image| or
-  // |large_wallpaper_image| depending on |GetAppropriateResolution|.
-  void SetCustomizedDefaultWallpaperImpl(
+  // TODO(crbug.com/776464): Convert this to a mojo call to replace
+  // |SetCustomizedDefaultWallpaper|. If possible, send the paths together with
+  // |SetClientAndPaths|.
+  // Sets the paths of customized default wallpaper to be used wherever a
+  // default wallpaper is needed. Note: it doesn't change the default wallpaper
+  // for guest and child accounts.
+  void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_wallpaper_file_small,
-      std::unique_ptr<gfx::ImageSkia> small_wallpaper_image,
-      const base::FilePath& customized_default_wallpaper_file_large,
-      std::unique_ptr<gfx::ImageSkia> large_wallpaper_image);
+      const base::FilePath& customized_default_wallpaper_file_large);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created
