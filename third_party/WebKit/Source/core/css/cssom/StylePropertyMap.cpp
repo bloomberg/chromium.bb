@@ -119,8 +119,7 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
                            ExceptionState& exception_state) {
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
-  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
-    // TODO(meade): Handle custom properties here.
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
   }
@@ -138,7 +137,10 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
     return;
   }
 
-  SetProperty(property_id, *result);
+  if (property_id == CSSPropertyVariable)
+    SetCustomProperty(AtomicString(property_name), *result);
+  else
+    SetProperty(property_id, *result);
 }
 
 void StylePropertyMap::append(const ExecutionContext* execution_context,
@@ -150,9 +152,14 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
 
   const CSSPropertyID property_id = cssPropertyID(property_name);
 
-  if (property_id == CSSPropertyInvalid || property_id == CSSPropertyVariable) {
-    // TODO(meade): Handle custom properties here.
+  if (property_id == CSSPropertyInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
+    return;
+  }
+
+  if (property_id == CSSPropertyVariable) {
+    exception_state.ThrowTypeError(
+        "Appending to custom properties is not supported");
     return;
   }
 

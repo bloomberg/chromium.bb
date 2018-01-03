@@ -6,6 +6,7 @@
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
+#include "core/css/CSSVariableReferenceValue.h"
 
 namespace blink {
 
@@ -23,6 +24,17 @@ const CSSValue* InlineStylePropertyMap::GetCustomProperty(
 void InlineStylePropertyMap::SetProperty(CSSPropertyID property_id,
                                          const CSSValue& value) {
   owner_element_->SetInlineStyleProperty(property_id, value);
+}
+
+void InlineStylePropertyMap::SetCustomProperty(
+    const AtomicString& property_name,
+    const CSSValue& value) {
+  DCHECK(value.IsVariableReferenceValue());
+  CSSVariableData* variable_data =
+      ToCSSVariableReferenceValue(value).VariableDataValue();
+  owner_element_->SetInlineStyleProperty(
+      CSSPropertyVariable,
+      *CSSCustomPropertyDeclaration::Create(property_name, variable_data));
 }
 
 void InlineStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {
