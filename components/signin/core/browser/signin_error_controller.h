@@ -18,6 +18,16 @@
 // invoke AuthStatusChanged() when their authentication state may have changed.
 class SigninErrorController : public KeyedService {
  public:
+  enum class AccountMode {
+    // Signin error controller monitors all the accounts. When multiple accounts
+    // are in error state, only one of the errors is reported.
+    ANY_ACCOUNT,
+
+    // Only errors on the primary account are reported. Other accounts are
+    // ignored.
+    PRIMARY_ACCOUNT
+  };
+
   class AuthStatusProvider {
    public:
     AuthStatusProvider();
@@ -39,7 +49,7 @@ class SigninErrorController : public KeyedService {
     virtual void OnErrorChanged() = 0;
   };
 
-  SigninErrorController();
+  explicit SigninErrorController(AccountMode mode);
   ~SigninErrorController() override;
 
   // Adds a provider which the SigninErrorController object will start querying
@@ -56,6 +66,9 @@ class SigninErrorController : public KeyedService {
   // True if there exists an error worth elevating to the user.
   bool HasError() const;
 
+  // Sets the primary account id. Only used in the PRIMARY_ACCOUNT account mode.
+  void SetPrimaryAccountID(const std::string& account_id);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -63,7 +76,11 @@ class SigninErrorController : public KeyedService {
   const GoogleServiceAuthError& auth_error() const { return auth_error_; }
 
  private:
+  const AccountMode account_mode_;
   std::set<const AuthStatusProvider*> provider_set_;
+
+  // The primary account ID. Only used in the PRIMARY_ACCOUNT account mode.
+  std::string primary_account_id_;
 
   // The account that generated the last auth error.
   std::string error_account_id_;

@@ -38,7 +38,7 @@ void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
 }
 
 void SyncUsernameTestBase::FakeSignout() {
-  signin_manager_.clear_authenticated_user();
+  signin_manager_.ClearAuthenticatedAccountId();
   prefs_.SetString(prefs::kGoogleServicesAccountId, std::string());
 }
 

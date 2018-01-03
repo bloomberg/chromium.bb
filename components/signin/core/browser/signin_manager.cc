@@ -31,8 +31,11 @@ using namespace signin_internals_util;
 SigninManager::SigninManager(SigninClient* client,
                              ProfileOAuth2TokenService* token_service,
                              AccountTrackerService* account_tracker_service,
-                             GaiaCookieManagerService* cookie_manager_service)
-    : SigninManagerBase(client, account_tracker_service),
+                             GaiaCookieManagerService* cookie_manager_service,
+                             SigninErrorController* signin_error_controller)
+    : SigninManagerBase(client,
+                        account_tracker_service,
+                        signin_error_controller),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       client_(client),
@@ -218,7 +221,7 @@ void SigninManager::DoSignOut(
   const base::Time signin_time =
       base::Time::FromInternalValue(
           client_->GetPrefs()->GetInt64(prefs::kSignedInTime));
-  clear_authenticated_user();
+  ClearAuthenticatedAccountId();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);

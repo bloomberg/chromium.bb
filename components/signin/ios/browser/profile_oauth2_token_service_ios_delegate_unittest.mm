@@ -11,6 +11,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/signin/ios/browser/fake_profile_oauth2_token_service_ios_provider.h"
@@ -35,6 +36,8 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   ProfileOAuth2TokenServiceIOSDelegateTest()
       : factory_(NULL),
         client_(&prefs_),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::ANY_ACCOUNT),
         token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0),

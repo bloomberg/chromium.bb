@@ -42,6 +42,7 @@ class AccountTrackerService;
 class PrefRegistrySimple;
 class PrefService;
 class SigninClient;
+class SigninErrorController;
 
 namespace password_manager {
 class PasswordStoreSigninNotifierImpl;
@@ -103,7 +104,8 @@ class SigninManagerBase : public KeyedService {
   };
 
   SigninManagerBase(SigninClient* client,
-                    AccountTrackerService* account_tracker_service);
+                    AccountTrackerService* account_tracker_service,
+                    SigninErrorController* signin_error_controller);
   ~SigninManagerBase() override;
 
   // Registers per-profile prefs.
@@ -187,12 +189,15 @@ class SigninManagerBase : public KeyedService {
   // method is a no-op.
   // It is forbidden to call this method if the user is already authenticated
   // with a different account (this method will DCHECK in that case).
+  // |account_id| must not be empty. To log the user out, use
+  // ClearAuthenticatedAccountId() instead.
   void SetAuthenticatedAccountId(const std::string& account_id);
 
-  // Used by subclass to clear the authenticated user instead of using
-  // SetAuthenticatedAccountId, which enforces special preconditions due
-  // to the fact that it is part of the public API and called by clients.
-  void clear_authenticated_user() { authenticated_account_id_.clear(); }
+  // Clears the authenticated user's account id.
+  // This method is not public because SigninManagerBase does not allow signing
+  // out by default. Subclasses implementing a sign-out functionality need to
+  // call this.
+  void ClearAuthenticatedAccountId();
 
   // List of observers to notify on signin events.
   // Makes sure list is empty on destruction.
@@ -209,6 +214,7 @@ class SigninManagerBase : public KeyedService {
 
   SigninClient* client_;
   AccountTrackerService* account_tracker_service_;
+  SigninErrorController* signin_error_controller_;
   bool initialized_;
 
   // Account id after successful authentication.

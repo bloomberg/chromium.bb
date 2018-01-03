@@ -19,14 +19,14 @@ SigninErrorController::AuthStatusProvider::AuthStatusProvider() {
 SigninErrorController::AuthStatusProvider::~AuthStatusProvider() {
 }
 
-SigninErrorController::SigninErrorController()
-    : auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
-}
+SigninErrorController::SigninErrorController(AccountMode mode)
+    : account_mode_(mode),
+      auth_error_(GoogleServiceAuthError::AuthErrorNone()) {}
 
 SigninErrorController::~SigninErrorController() {
   DCHECK(provider_set_.empty())
-      << "All AuthStatusProviders should be unregistered before"
-      << " SigninErrorController::Shutdown() is called";
+      << "All AuthStatusProviders should be unregistered before "
+      << "SigninErrorController is destroyed";
 }
 
 void SigninErrorController::AddProvider(const AuthStatusProvider* provider) {
@@ -55,6 +55,14 @@ void SigninErrorController::AuthStatusChanged() {
   // error we find.
   for (AuthStatusProviderSet::const_iterator it = provider_set_.begin();
        it != provider_set_.end(); ++it) {
+    std::string account_id = (*it)->GetAccountId();
+
+    // In PRIMARY_ACCOUNT mode, ignore all secondary accounts.
+    if (account_mode_ == AccountMode::PRIMARY_ACCOUNT &&
+        (account_id != primary_account_id_)) {
+      continue;
+    }
+
     GoogleServiceAuthError error = (*it)->GetAuthStatus();
 
     // Ignore the states we don't want to elevate to the user.
@@ -62,8 +70,6 @@ void SigninErrorController::AuthStatusChanged() {
         error.IsTransientError()) {
       continue;
     }
-
-    std::string account_id = (*it)->GetAccountId();
 
     // Prioritize this error if it matches the previous |auth_error_|.
     if (error.state() == prev_state && account_id == prev_account_id) {
@@ -99,6 +105,12 @@ void SigninErrorController::AuthStatusChanged() {
 bool SigninErrorController::HasError() const {
   return auth_error_.state() != GoogleServiceAuthError::NONE &&
       auth_error_.state() != GoogleServiceAuthError::CONNECTION_FAILED;
+}
+
+void SigninErrorController::SetPrimaryAccountID(const std::string& account_id) {
+  primary_account_id_ = account_id;
+  if (account_mode_ == AccountMode::PRIMARY_ACCOUNT)
+    AuthStatusChanged();  // Recompute the error state.
 }
 
 void SigninErrorController::AddObserver(Observer* observer) {

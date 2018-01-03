@@ -120,10 +120,13 @@ class DiceResponseHandlerTest : public testing::Test,
         signin_client_(&pref_service_),
         token_service_(std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter_.get())),
+        signin_error_controller_(
+            SigninErrorController::AccountMode::PRIMARY_ACCOUNT),
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
-                        nullptr),
+                        nullptr,
+                        &signin_error_controller_),
         cookie_service_(&token_service_,
                         GaiaConstants::kChromeSource,
                         &signin_client_),
@@ -213,8 +216,8 @@ class DiceResponseHandlerTest : public testing::Test,
   DiceTestSigninClient signin_client_;
   ProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
-  FakeSigninManager signin_manager_;
   SigninErrorController signin_error_controller_;
+  FakeSigninManager signin_manager_;
   FakeGaiaCookieManagerService cookie_service_;
   AboutSigninInternals about_signin_internals_;
   std::unique_ptr<AccountReconcilor> account_reconcilor_;

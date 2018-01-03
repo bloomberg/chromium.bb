@@ -16,89 +16,88 @@
 static const char kTestAccountId[] = "testuser@test.com";
 static const char kOtherTestAccountId[] = "otheruser@test.com";
 
-class SigninErrorControllerTest : public testing::Test {
- public:
-  void SetUp() override {
-    error_controller_.reset(new SigninErrorController());
-  }
-
-  std::unique_ptr<SigninErrorController> error_controller_;
-};
-
-TEST_F(SigninErrorControllerTest, NoErrorAuthStatusProviders) {
+TEST(SigninErrorControllerTest, NoErrorAuthStatusProviders) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   std::unique_ptr<FakeAuthStatusProvider> provider;
 
   // No providers.
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 
   // Add a provider.
-  provider.reset(new FakeAuthStatusProvider(error_controller_.get()));
-  ASSERT_FALSE(error_controller_->HasError());
+  provider.reset(new FakeAuthStatusProvider(&error_controller));
+  ASSERT_FALSE(error_controller.HasError());
 
   // Remove the provider.
   provider.reset();
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 }
 
-TEST_F(SigninErrorControllerTest, ErrorAuthStatusProvider) {
+TEST(SigninErrorControllerTest, ErrorAuthStatusProvider) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   std::unique_ptr<FakeAuthStatusProvider> provider;
   std::unique_ptr<FakeAuthStatusProvider> error_provider;
 
-  provider.reset(new FakeAuthStatusProvider(error_controller_.get()));
-  ASSERT_FALSE(error_controller_->HasError());
+  provider.reset(new FakeAuthStatusProvider(&error_controller));
+  ASSERT_FALSE(error_controller.HasError());
 
-  error_provider.reset(new FakeAuthStatusProvider(error_controller_.get()));
+  error_provider.reset(new FakeAuthStatusProvider(&error_controller));
   error_provider->SetAuthError(
       kTestAccountId,
       GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ASSERT_TRUE(error_controller_->HasError());
+  ASSERT_TRUE(error_controller.HasError());
 
   error_provider.reset();
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 
   provider.reset();
   // All providers should be removed now.
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 }
 
-TEST_F(SigninErrorControllerTest, AuthStatusProviderErrorTransition) {
+TEST(SigninErrorControllerTest, AuthStatusProviderErrorTransition) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   std::unique_ptr<FakeAuthStatusProvider> provider0(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
   std::unique_ptr<FakeAuthStatusProvider> provider1(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
 
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
   provider0->SetAuthError(
       kTestAccountId,
       GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ASSERT_TRUE(error_controller_->HasError());
+  ASSERT_TRUE(error_controller.HasError());
   provider1->SetAuthError(
       kTestAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
-  ASSERT_TRUE(error_controller_->HasError());
+  ASSERT_TRUE(error_controller.HasError());
 
   // Now resolve the auth errors - the menu item should go away.
   provider0->SetAuthError(kTestAccountId,
                          GoogleServiceAuthError::AuthErrorNone());
-  ASSERT_TRUE(error_controller_->HasError());
+  ASSERT_TRUE(error_controller.HasError());
   provider1->SetAuthError(kTestAccountId,
                           GoogleServiceAuthError::AuthErrorNone());
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 
   provider0.reset();
   provider1.reset();
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 }
 
-TEST_F(SigninErrorControllerTest, AuthStatusProviderAccountTransition) {
+TEST(SigninErrorControllerTest, AuthStatusProviderAccountTransitionAnyAccount) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   std::unique_ptr<FakeAuthStatusProvider> provider0(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
   std::unique_ptr<FakeAuthStatusProvider> provider1(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
 
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 
   provider0->SetAuthError(
       kTestAccountId,
@@ -107,9 +106,8 @@ TEST_F(SigninErrorControllerTest, AuthStatusProviderAccountTransition) {
   provider1->SetAuthError(
       kOtherTestAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  ASSERT_TRUE(error_controller_->HasError());
-  ASSERT_STREQ(kTestAccountId,
-               error_controller_->error_account_id().c_str());
+  ASSERT_TRUE(error_controller.HasError());
+  ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
 
   // Swap providers reporting errors.
   provider1->set_error_without_status_change(
@@ -117,26 +115,70 @@ TEST_F(SigninErrorControllerTest, AuthStatusProviderAccountTransition) {
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   provider0->set_error_without_status_change(
       GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  error_controller_->AuthStatusChanged();
-  ASSERT_TRUE(error_controller_->HasError());
+  error_controller.AuthStatusChanged();
+  ASSERT_TRUE(error_controller.HasError());
   ASSERT_STREQ(kOtherTestAccountId,
-               error_controller_->error_account_id().c_str());
+               error_controller.error_account_id().c_str());
 
   // Now resolve the auth errors - the menu item should go away.
   provider0->set_error_without_status_change(
       GoogleServiceAuthError::AuthErrorNone());
   provider1->set_error_without_status_change(
       GoogleServiceAuthError::AuthErrorNone());
-  error_controller_->AuthStatusChanged();
-  ASSERT_FALSE(error_controller_->HasError());
+  error_controller.AuthStatusChanged();
+  ASSERT_FALSE(error_controller.HasError());
 
   provider0.reset();
   provider1.reset();
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
+}
+
+TEST(SigninErrorControllerTest,
+     AuthStatusProviderAccountTransitionPrimaryAccount) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::PRIMARY_ACCOUNT);
+  std::unique_ptr<FakeAuthStatusProvider> provider0(
+      new FakeAuthStatusProvider(&error_controller));
+  std::unique_ptr<FakeAuthStatusProvider> provider1(
+      new FakeAuthStatusProvider(&error_controller));
+
+  ASSERT_FALSE(error_controller.HasError());
+
+  provider0->SetAuthError(
+      kTestAccountId,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  provider1->SetAuthError(kOtherTestAccountId,
+                          GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+  ASSERT_FALSE(error_controller.HasError());  // No primary account.
+  error_controller.SetPrimaryAccountID(kOtherTestAccountId);
+  ASSERT_FALSE(error_controller.HasError());  // Error on secondary.
+  error_controller.SetPrimaryAccountID(kTestAccountId);
+  ASSERT_TRUE(error_controller.HasError());
+  ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
+
+  // Change the primary account.
+  provider1->SetAuthError(
+      kOtherTestAccountId,
+      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  ASSERT_TRUE(error_controller.HasError());
+  ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
+  error_controller.SetPrimaryAccountID(kOtherTestAccountId);
+  ASSERT_TRUE(error_controller.HasError());
+  ASSERT_STREQ(kOtherTestAccountId,
+               error_controller.error_account_id().c_str());
+
+  // Signout.
+  error_controller.SetPrimaryAccountID("");
+  ASSERT_FALSE(error_controller.HasError());
+
+  provider0.reset();
+  provider1.reset();
 }
 
 // Verify that SigninErrorController handles errors properly.
-TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
+TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   typedef struct {
     GoogleServiceAuthError::State error_state;
     bool is_error;
@@ -164,32 +206,31 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
   for (size_t i = 0; i < arraysize(table); ++i) {
     if (GoogleServiceAuthError::IsDeprecated(table[i].error_state))
       continue;
-    FakeAuthStatusProvider provider(error_controller_.get());
+    FakeAuthStatusProvider provider(&error_controller);
     provider.SetAuthError(kTestAccountId,
                           GoogleServiceAuthError(table[i].error_state));
 
-    EXPECT_EQ(error_controller_->HasError(), table[i].is_error);
+    EXPECT_EQ(error_controller.HasError(), table[i].is_error);
 
     if (table[i].is_error) {
-      EXPECT_EQ(table[i].error_state,
-                error_controller_->auth_error().state());
-      EXPECT_STREQ(kTestAccountId,
-                   error_controller_->error_account_id().c_str());
+      EXPECT_EQ(table[i].error_state, error_controller.auth_error().state());
+      EXPECT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
     } else {
       EXPECT_EQ(GoogleServiceAuthError::NONE,
-                error_controller_->auth_error().state());
-      EXPECT_STREQ("",
-                   error_controller_->error_account_id().c_str());
+                error_controller.auth_error().state());
+      EXPECT_STREQ("", error_controller.error_account_id().c_str());
     }
   }
 }
 
 // Verify that existing error is not replaced by new error.
-TEST_F(SigninErrorControllerTest, AuthStatusChange) {
+TEST(SigninErrorControllerTest, AuthStatusChange) {
+  SigninErrorController error_controller(
+      SigninErrorController::AccountMode::ANY_ACCOUNT);
   std::unique_ptr<FakeAuthStatusProvider> fake_provider0(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
   std::unique_ptr<FakeAuthStatusProvider> fake_provider1(
-      new FakeAuthStatusProvider(error_controller_.get()));
+      new FakeAuthStatusProvider(&error_controller));
 
   // If there are multiple providers in the provider set...
   //
@@ -222,18 +263,18 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
       GoogleServiceAuthError(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-            error_controller_->auth_error().state());
+            error_controller.auth_error().state());
   ASSERT_STREQ(kOtherTestAccountId,
-               error_controller_->error_account_id().c_str());
+               error_controller.error_account_id().c_str());
 
   // Change the 1st provider's error.
   provider1->SetAuthError(
       kOtherTestAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
   ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
-            error_controller_->auth_error().state());
+            error_controller.auth_error().state());
   ASSERT_STREQ(kOtherTestAccountId,
-               error_controller_->error_account_id().c_str());
+               error_controller.error_account_id().c_str());
 
   // Set the 0th provider's error -- nothing should change.
   provider0->SetAuthError(
@@ -241,9 +282,9 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
       GoogleServiceAuthError(
           GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
   ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
-            error_controller_->auth_error().state());
+            error_controller.auth_error().state());
   ASSERT_STREQ(kOtherTestAccountId,
-               error_controller_->error_account_id().c_str());
+               error_controller.error_account_id().c_str());
 
   // Clear the 1st provider's error, so the 0th provider's error is used.
   provider1->SetAuthError(
@@ -251,11 +292,10 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
       GoogleServiceAuthError(
           GoogleServiceAuthError::NONE));
   ASSERT_EQ(GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE,
-            error_controller_->auth_error().state());
-  ASSERT_STREQ(kTestAccountId,
-               error_controller_->error_account_id().c_str());
+            error_controller.auth_error().state());
+  ASSERT_STREQ(kTestAccountId, error_controller.error_account_id().c_str());
 
   fake_provider0.reset();
   fake_provider1.reset();
-  ASSERT_FALSE(error_controller_->HasError());
+  ASSERT_FALSE(error_controller.HasError());
 }
