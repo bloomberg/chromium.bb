@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 
+#import <QuartzCore/QuartzCore.h>
 #include <stdint.h>
 
 #include "base/ios/ios_util.h"
@@ -693,20 +694,19 @@ NS_INLINE void AnimateInViews(NSArray* views,
       // Set the label's background color to be clear so that the highlight is
       // is not covered by the label.
       visibleCell.title.backgroundColor = [UIColor clearColor];
-      [UIView animateWithDuration:ios::material::kDuration5
-          delay:0.0
-          options:UIViewAnimationOptionAllowUserInteraction |
-                  UIViewAnimationOptionRepeat |
-                  UIViewAnimationOptionAutoreverse |
-                  UIViewAnimationOptionCurveEaseInOut
-          animations:^{
-            [UIView setAnimationRepeatCount:2];
-            visibleCell.contentView.backgroundColor =
-                [[MDCPalette cr_bluePalette] tint100];
-          }
-          completion:^(BOOL finished) {
-            visibleCell.contentView.backgroundColor = [UIColor whiteColor];
-          }];
+
+      CABasicAnimation* highlightAnimation =
+          [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
+      highlightAnimation.duration = ios::material::kDuration5;
+      highlightAnimation.repeatCount = 2;
+      highlightAnimation.autoreverses = YES;
+      highlightAnimation.toValue =
+          static_cast<id>([[MDCPalette cr_bluePalette] tint100].CGColor);
+      highlightAnimation.timingFunction = [CAMediaTimingFunction
+          functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+      [visibleCell.contentView.layer addAnimation:highlightAnimation
+                                           forKey:nil];
+
       self.highlightNewIncognitoTabCell = NO;
       break;
     }
