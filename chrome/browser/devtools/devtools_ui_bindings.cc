@@ -432,7 +432,7 @@ GURL SanitizeFrontendURL(const GURL& url,
             base::StringPrintf("%s=%s", it.GetKey().c_str(), value.c_str()));
       }
     }
-    if (url.has_ref())
+    if (url.has_ref() && url.ref_piece().find('\'') == base::StringPiece::npos)
       fragment = '#' + url.ref();
   }
   std::string query =
