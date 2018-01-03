@@ -2221,7 +2221,7 @@ void Document::UpdateStyle() {
 
   NthIndexCache nth_index_cache(*this);
 
-  // TODO(rune@opera.com): Cannot access the EnsureStyleResolver() before
+  // TODO(futhark@chromium.org): Cannot access the EnsureStyleResolver() before
   // calling StyleForViewport() below because apparently the StyleResolver's
   // constructor has side effects. We should fix it. See
   // printing/setPrinting.html, printing/width-overflow.html though they only

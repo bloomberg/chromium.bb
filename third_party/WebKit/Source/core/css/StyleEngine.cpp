@@ -181,8 +181,8 @@ CSSStyleSheet& StyleEngine::EnsureInspectorStyleSheet() {
       StyleSheetContents::Create(CSSParserContext::Create(*document_));
   inspector_style_sheet_ = CSSStyleSheet::Create(contents, *document_);
   MarkDocumentDirty();
-  // TODO(rune@opera.com): Making the active stylesheets up-to-date here is
-  // required by some inspector tests, at least. I theory this should not be
+  // TODO(futhark@chromium.org): Making the active stylesheets up-to-date here
+  // is required by some inspector tests, at least. I theory this should not be
   // necessary. Need to investigate to figure out if/why.
   UpdateActiveStyle();
   return *inspector_style_sheet_;
@@ -283,7 +283,7 @@ void StyleEngine::WatchedSelectorsChanged() {
   DCHECK(IsMaster());
   DCHECK(global_rule_set_);
   global_rule_set_->InitWatchedSelectorsRuleSet(GetDocument());
-  // TODO(rune@opera.com): Should be able to use RuleSetInvalidation here.
+  // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange, StyleChangeReasonForTracing::Create(
                                StyleChangeReason::kDeclarativeContent));
@@ -1050,8 +1050,8 @@ void StyleEngine::SetPreferredStylesheetSetNameIfNotSet(const String& name) {
   if (!preferred_stylesheet_set_name_.IsEmpty())
     return;
   preferred_stylesheet_set_name_ = name;
-  // TODO(rune@opera.com): Setting the selected set here is wrong if the set
-  // has been previously set by through Document.selectedStylesheetSet. Our
+  // TODO(futhark@chromium.org): Setting the selected set here is wrong if the
+  // set has been previously set by through Document.selectedStylesheetSet. Our
   // current implementation ignores the effect of Document.selectedStylesheetSet
   // and either only collects persistent style, or additionally preferred
   // style when present.
@@ -1061,9 +1061,9 @@ void StyleEngine::SetPreferredStylesheetSetNameIfNotSet(const String& name) {
 
 void StyleEngine::SetSelectedStylesheetSetName(const String& name) {
   selected_stylesheet_set_name_ = name;
-  // TODO(rune@opera.com): Setting Document.selectedStylesheetSet currently
-  // has no other effect than the ability to read back the set value using
-  // the same api. If it did have an effect, we should have marked the
+  // TODO(futhark@chromium.org): Setting Document.selectedStylesheetSet
+  // currently has no other effect than the ability to read back the set value
+  // using the same api. If it did have an effect, we should have marked the
   // document scope dirty and triggered an update of the active stylesheets
   // from here.
 }

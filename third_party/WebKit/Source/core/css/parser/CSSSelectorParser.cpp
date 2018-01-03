@@ -142,7 +142,7 @@ unsigned ExtractCompoundFlags(const CSSParserSelector& simple_selector,
     return kHasContentPseudoElement;
   if (simple_selector.GetPseudoType() == CSSSelector::kPseudoShadow)
     return 0;
-  // TODO(rune@opera.com): crbug.com/578131
+  // TODO(futhark@chromium.org): crbug.com/578131
   // The UASheetMode check is a work-around to allow this selector in
   // mediaControls(New).css:
   // input[type="range" i]::-webkit-media-slider-container > div {
@@ -298,7 +298,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
 
   while (std::unique_ptr<CSSParserSelector> simple_selector =
              ConsumeSimpleSelector(range)) {
-    // TODO(rune@opera.com): crbug.com/578131
+    // TODO(futhark@chromium.org): crbug.com/578131
     // The UASheetMode check is a work-around to allow this selector in
     // mediaControls(New).css:
     // video::-webkit-media-text-track-region-container.scrolling
@@ -330,7 +330,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
     return CSSParserSelector::Create(
         QualifiedName(namespace_prefix, element_name, namespace_uri));
   }
-  // TODO(rune@opera.com): Prepending a type selector to the compound is
+  // TODO(futhark@chromium.org): Prepending a type selector to the compound is
   // unnecessary if this compound is an argument to a pseudo selector like
   // :not(), since a type selector will be prepended at the top level of the
   // selector if necessary. We need to propagate that context information here
