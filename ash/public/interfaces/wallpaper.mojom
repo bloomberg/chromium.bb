@@ -63,7 +63,8 @@ struct WallpaperUserInfo {
 
 // Used by Chrome to set the wallpaper displayed by ash.
 interface WallpaperController {
-  // Sets the client interface and the paths of wallpaper directories. The paths
+  // Do the initialization: Sets the client interface, the paths of wallpaper
+  // directories and the device wallpaper policy enforcement flag. The paths
   // must be sent over IPC because chrome owns the concept of user data
   // directory.
   // |client|: The client interface.
@@ -72,10 +73,13 @@ interface WallpaperController {
   //                             reside.
   // |chromeos_custom_wallpapers_path|: Directory where custom wallpapers
   //                                    reside.
-  SetClientAndPaths(WallpaperControllerClient client,
-                    mojo.common.mojom.FilePath user_data_path,
-                    mojo.common.mojom.FilePath chromeos_wallpapers_path,
-                    mojo.common.mojom.FilePath chromeos_custom_wallpapers_path);
+  // |is_device_wallpaper_policy_enforced|: Whether the device wallpaper policy
+  //                                        is enforced on the device.
+  Init(WallpaperControllerClient client,
+       mojo.common.mojom.FilePath user_data_path,
+       mojo.common.mojom.FilePath chromeos_wallpapers_path,
+       mojo.common.mojom.FilePath chromeos_custom_wallpapers_path,
+       bool is_device_wallpaper_policy_enforced);
 
   // Sets wallpaper from policy or from a local file. Saves the custom wallpaper
   // to file, posts task to generate thumbnail and updates local state.

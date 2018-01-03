@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -155,6 +156,8 @@ class ChromeArcUtilTest : public testing::Test {
         std::make_unique<FakeUserManagerWithLocalState>());
     // Used by FakeChromeUserManager.
     chromeos::WallpaperManager::Initialize();
+    chromeos::DeviceSettingsService::Initialize();
+    chromeos::CrosSettings::Initialize();
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClient>();
     wallpaper_controller_client_->InitForTesting(

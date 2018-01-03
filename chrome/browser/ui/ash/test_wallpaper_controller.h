@@ -32,11 +32,11 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   ash::mojom::WallpaperControllerPtr CreateInterfacePtr();
 
   // ash::mojom::WallpaperController:
-  void SetClientAndPaths(
-      ash::mojom::WallpaperControllerClientPtr client,
-      const base::FilePath& user_data_path,
-      const base::FilePath& chromeos_wallpapers_path,
-      const base::FilePath& chromeos_custom_wallpapers_path) override;
+  void Init(ash::mojom::WallpaperControllerClientPtr client,
+            const base::FilePath& user_data_path,
+            const base::FilePath& chromeos_wallpapers_path,
+            const base::FilePath& chromeos_custom_wallpapers_path,
+            bool is_device_wallpaper_policy_enforced) override;
   void SetCustomWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,

@@ -377,11 +377,11 @@ class ASH_EXPORT WallpaperController
   AccountId GetCurrentUserAccountId();
 
   // mojom::WallpaperController overrides:
-  void SetClientAndPaths(
-      mojom::WallpaperControllerClientPtr client,
-      const base::FilePath& user_data_path,
-      const base::FilePath& chromeos_wallpapers_path,
-      const base::FilePath& chromeos_custom_wallpapers_path) override;
+  void Init(mojom::WallpaperControllerClientPtr client,
+            const base::FilePath& user_data_path,
+            const base::FilePath& chromeos_wallpapers_path,
+            const base::FilePath& chromeos_custom_wallpapers_path,
+            bool is_device_wallpaper_policy_enforced) override;
   void SetCustomWallpaper(mojom::WallpaperUserInfoPtr user_info,
                           const std::string& wallpaper_files_id,
                           const std::string& file_name,

@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,6 +16,12 @@ class WallpaperControllerClientTest : public testing::Test {
  public:
   WallpaperControllerClientTest() = default;
   ~WallpaperControllerClientTest() override = default;
+
+  void SetUp() override {
+    testing::Test::SetUp();
+    chromeos::DeviceSettingsService::Initialize();
+    chromeos::CrosSettings::Initialize();
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
