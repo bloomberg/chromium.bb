@@ -59,6 +59,7 @@ class Size;
 namespace gpu {
 
 struct ContextCreationAttribs;
+class MailboxManager;
 class ServiceDiscardableManager;
 class SyncPointClientState;
 class SyncPointOrderData;
@@ -67,7 +68,6 @@ struct SwapBuffersCompleteParams;
 
 namespace gles2 {
 class FramebufferCompletenessCache;
-class MailboxManager;
 class Outputter;
 class ProgramCache;
 class ShaderTranslatorCache;
@@ -218,7 +218,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   class Service {
    public:
     Service(const GpuPreferences& gpu_preferences,
-            gles2::MailboxManager* mailbox_manager,
+            MailboxManager* mailbox_manager,
             scoped_refptr<gl::GLShareGroup> share_group,
             const GpuFeatureInfo& gpu_feature_info);
 
@@ -241,7 +241,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     const GpuPreferences& gpu_preferences();
     const GpuFeatureInfo& gpu_feature_info() { return gpu_feature_info_; }
     scoped_refptr<gl::GLShareGroup> share_group();
-    gles2::MailboxManager* mailbox_manager() { return mailbox_manager_; }
+    MailboxManager* mailbox_manager() { return mailbox_manager_; }
     gles2::Outputter* outputter();
     gles2::ProgramCache* program_cache();
     gles2::ImageManager* image_manager() { return &image_manager_; }
@@ -259,8 +259,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
    protected:
     const GpuPreferences gpu_preferences_;
     const GpuFeatureInfo gpu_feature_info_;
-    std::unique_ptr<gles2::MailboxManager> owned_mailbox_manager_;
-    gles2::MailboxManager* mailbox_manager_ = nullptr;
+    std::unique_ptr<MailboxManager> owned_mailbox_manager_;
+    MailboxManager* mailbox_manager_ = nullptr;
     std::unique_ptr<gles2::Outputter> outputter_;
     scoped_refptr<gl::GLShareGroup> share_group_;
     std::unique_ptr<gles2::ProgramCache> program_cache_;

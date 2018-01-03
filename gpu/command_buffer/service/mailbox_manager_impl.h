@@ -18,8 +18,6 @@
 namespace gpu {
 namespace gles2 {
 
-class TextureBase;
-
 // Manages resources scoped beyond the context or context group level.
 class GPU_EXPORT MailboxManagerImpl : public MailboxManager {
  public:

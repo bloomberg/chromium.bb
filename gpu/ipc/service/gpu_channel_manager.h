@@ -48,11 +48,11 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class MailboxManager;
 class Scheduler;
 class SyncPointManager;
 
 namespace gles2 {
-class MailboxManager;
 class Outputter;
 class ProgramCache;
 }  // namespace gles2
@@ -137,7 +137,7 @@ class GPU_EXPORT GpuChannelManager {
 
   bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
 
-  gles2::MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
+  MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
@@ -174,7 +174,7 @@ class GPU_EXPORT GpuChannelManager {
 
   scoped_refptr<gl::GLShareGroup> share_group_;
 
-  std::unique_ptr<gles2::MailboxManager> mailbox_manager_;
+  std::unique_ptr<MailboxManager> mailbox_manager_;
   std::unique_ptr<gles2::Outputter> outputter_;
   GpuMemoryManager gpu_memory_manager_;
   Scheduler* scheduler_;

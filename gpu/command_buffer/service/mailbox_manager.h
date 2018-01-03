@@ -13,11 +13,7 @@
 
 namespace gpu {
 
-struct GpuPreferences;
 struct SyncToken;
-
-namespace gles2 {
-
 class TextureBase;
 
 // Manages resources scoped beyond the context or context group level.
@@ -40,12 +36,8 @@ class GPU_EXPORT MailboxManager {
 
   // Destroy any mailbox that reference the given texture.
   virtual void TextureDeleted(TextureBase* texture) = 0;
-
-  static std::unique_ptr<MailboxManager> Create(
-      const GpuPreferences& gpu_preferences);
 };
 
-}  // namespage gles2
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_

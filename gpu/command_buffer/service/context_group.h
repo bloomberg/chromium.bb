@@ -28,6 +28,7 @@ namespace gpu {
 
 class ImageFactory;
 struct GpuPreferences;
+class MailboxManager;
 class TransferBufferManager;
 class ServiceDiscardableManager;
 class ServiceTransferCache;
@@ -38,7 +39,6 @@ class ProgramCache;
 class BufferManager;
 class GLES2Decoder;
 class ImageManager;
-class MailboxManager;
 class RenderbufferManager;
 class PathManager;
 class ProgramManager;

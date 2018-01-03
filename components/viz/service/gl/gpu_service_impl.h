@@ -84,7 +84,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_memory_buffer_factory_.get();
   }
 
-  gpu::gles2::MailboxManager* mailbox_manager() {
+  gpu::MailboxManager* mailbox_manager() {
     return gpu_channel_manager_->mailbox_manager();
   }
 
