@@ -595,18 +595,32 @@ void MemoryDumpManager::SetupNextMemoryDump(
   // If we are in background tracing, we should invoke only the whitelisted
   // providers. Ignore other providers and continue.
   if (pmd_async_state->req_args.level_of_detail ==
-          MemoryDumpLevelOfDetail::BACKGROUND &&
-      !mdpinfo->whitelisted_for_background_mode) {
-    pmd_async_state->pending_dump_providers.pop_back();
-    return SetupNextMemoryDump(std::move(pmd_async_state));
+      MemoryDumpLevelOfDetail::BACKGROUND) {
+    // TODO(ssid): This is a temporary hack to fix crashes
+    // https://crbug.com/797784. We could still cause stack overflow in a
+    // detailed mode dump or when there are lot of providers whitelisted.
+    while (!mdpinfo->whitelisted_for_background_mode) {
+      pmd_async_state->pending_dump_providers.pop_back();
+      if (pmd_async_state->pending_dump_providers.empty())
+        return FinishAsyncProcessDump(std::move(pmd_async_state));
+      mdpinfo = pmd_async_state->pending_dump_providers.back().get();
+    }
   }
 
   // If we are in summary mode, we only need to invoke the providers
   // whitelisted for summary mode.
-  if (pmd_async_state->req_args.dump_type == MemoryDumpType::SUMMARY_ONLY &&
-      !mdpinfo->whitelisted_for_summary_mode) {
-    pmd_async_state->pending_dump_providers.pop_back();
-    return SetupNextMemoryDump(std::move(pmd_async_state));
+  if (pmd_async_state->req_args.dump_type == MemoryDumpType::SUMMARY_ONLY) {
+    // TODO(ssid): This is a temporary hack to fix crashes
+    // https://crbug.com/797784. We could still cause stack overflow in a
+    // detailed mode dump or when there are lot of providers whitelisted. It is
+    // assumed here that a provider whitelisted for summary mode is also
+    // whitelisted for background mode and skip the check.
+    while (!mdpinfo->whitelisted_for_summary_mode) {
+      pmd_async_state->pending_dump_providers.pop_back();
+      if (pmd_async_state->pending_dump_providers.empty())
+        return FinishAsyncProcessDump(std::move(pmd_async_state));
+      mdpinfo = pmd_async_state->pending_dump_providers.back().get();
+    }
   }
 
   // If the dump provider did not specify a task runner affinity, dump on
