@@ -123,14 +123,14 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
 
+// ----------------------------------------------------------------------------
+
+namespace content {
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using storage::ShareableFileReference;
-
-// ----------------------------------------------------------------------------
-
-namespace content {
 
 namespace {
 

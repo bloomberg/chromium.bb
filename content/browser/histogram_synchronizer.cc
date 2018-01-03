@@ -21,6 +21,8 @@
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/content_constants.h"
 
+namespace content {
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -35,8 +37,6 @@ namespace {
 static const int kNeverUsableSequenceNumber = -2;
 
 }  // anonymous namespace
-
-namespace content {
 
 // The "RequestContext" structure describes an individual request received from
 // the UI. All methods are accessible on UI thread.
