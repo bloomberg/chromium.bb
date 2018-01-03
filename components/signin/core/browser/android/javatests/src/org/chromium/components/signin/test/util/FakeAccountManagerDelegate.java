@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -110,7 +110,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     /** Use {@link FakeProfileDataSource}. */
     public static final int ENABLE_PROFILE_DATA_SOURCE = 1;
 
-    private final Set<AccountHolder> mAccounts = new HashSet<>();
+    private final Set<AccountHolder> mAccounts = new LinkedHashSet<>();
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
     private boolean mRegisterObserversCalled;
     private FakeProfileDataSource mFakeProfileDataSource;
