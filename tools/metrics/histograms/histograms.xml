@@ -104032,6 +104032,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="MuteButton" label="Mute button"/>
   <suffix name="MuteOverflowButton" label="Mute overflow button"/>
   <suffix name="OverflowButton" label="Overflow button"/>
+  <suffix name="PictureInPictureButton" label="Picture in picture button"/>
+  <suffix name="PictureInPictureOverflowButton"
+      label="Picture in picture overflow button"/>
   <suffix name="PlayOverlayButton" label="Play overlay button"/>
   <suffix name="PlayPauseButton" label="Play/pause button"/>
   <suffix name="PlayPauseOverflowButton" label="Play/pause overflow button"/>

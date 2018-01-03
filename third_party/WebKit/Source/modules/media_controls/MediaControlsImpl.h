@@ -54,6 +54,7 @@ class MediaControlOverlayEnclosureElement;
 class MediaControlOverlayPlayButtonElement;
 class MediaControlPanelElement;
 class MediaControlPanelEnclosureElement;
+class MediaControlPictureInPictureButtonElement;
 class MediaControlPlayButtonElement;
 class MediaControlRemainingTimeDisplayElement;
 class MediaControlTextTrackListElement;
@@ -293,6 +294,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   Member<MediaControlOverflowMenuListElement> overflow_list_;
   Member<MediaControlButtonPanelElement> media_button_panel_;
   Member<MediaControlLoadingPanelElement> loading_panel_;
+  Member<MediaControlPictureInPictureButtonElement> picture_in_picture_button_;
 
   Member<MediaControlCastButtonElement> cast_button_;
   Member<MediaControlFullscreenButtonElement> fullscreen_button_;

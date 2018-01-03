@@ -70,6 +70,7 @@
 #include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPanelElement.h"
 #include "modules/media_controls/elements/MediaControlPanelEnclosureElement.h"
+#include "modules/media_controls/elements/MediaControlPictureInPictureButtonElement.h"
 #include "modules/media_controls/elements/MediaControlPlayButtonElement.h"
 #include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
@@ -302,6 +303,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       overflow_list_(nullptr),
       media_button_panel_(nullptr),
       loading_panel_(nullptr),
+      picture_in_picture_button_(nullptr),
       cast_button_(nullptr),
       fullscreen_button_(nullptr),
       download_button_(nullptr),
@@ -407,6 +409,8 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //     |  |    (-webkit-media-controls-mute-button)
 //     |  +-MediaControlVolumeSliderElement
 //     |  |    (-webkit-media-controls-volume-slider)
+//     |  +-MediaControlPictureInPictureButtonElement
+//     |  |   (-webkit-media-controls-picture-in-picture-button)
 //     |  +-MediaControlFullscreenButtonElement
 //     |  |    (-webkit-media-controls-fullscreen-button)
 //     |  +-MediaControlDownloadButtonElement
@@ -492,6 +496,13 @@ void MediaControlsImpl::InitializeControls() {
   if (PreferHiddenVolumeControls(GetDocument()))
     volume_slider_->SetIsWanted(false);
 
+  // TODO(apacible): Enable for modern controls when SVG is added.
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
+      MediaElement().IsHTMLVideoElement()) {
+    picture_in_picture_button_ =
+        new MediaControlPictureInPictureButtonElement(*this);
+    button_panel->AppendChild(picture_in_picture_button_);
+  }
   fullscreen_button_ = new MediaControlFullscreenButtonElement(*this);
   button_panel->AppendChild(fullscreen_button_);
 
@@ -524,6 +535,11 @@ void MediaControlsImpl::InitializeControls() {
   // overflow menu.
   overflow_list_->AppendChild(play_button_->CreateOverflowElement(
       new MediaControlPlayButtonElement(*this)));
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern()) {
+    overflow_list_->AppendChild(
+        picture_in_picture_button_->CreateOverflowElement(
+            new MediaControlPictureInPictureButtonElement(*this)));
+  }
   overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
       new MediaControlFullscreenButtonElement(*this)));
   overflow_list_->AppendChild(download_button_->CreateOverflowElement(
@@ -924,6 +940,9 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       std::make_pair(fullscreen_button_.Get(), true),
       std::make_pair(current_time_display_.Get(), true),
       std::make_pair(duration_display_.Get(), true),
+      picture_in_picture_button_.Get()
+          ? std::make_pair(picture_in_picture_button_.Get(), false)
+          : std::make_pair(nullptr, false),
       std::make_pair(cast_button_.Get(), false),
       std::make_pair(download_button_.Get(), false),
       std::make_pair(toggle_closed_captions_button_.Get(), false),
@@ -969,6 +988,8 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   bool overflow_wanted = false;
   for (std::pair<MediaControlElementBase*, bool> pair : row_elements) {
     MediaControlElementBase* element = pair.first;
+    if (!element)
+      continue;
 
     // If the element is wanted then it should take up space, otherwise skip it.
     element->SetOverflowElementIsWanted(false);
@@ -1370,6 +1391,8 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
       mute_button_.Get(),
       volume_slider_.Get(),
       toggle_closed_captions_button_.Get(),
+      picture_in_picture_button_.Get() ? picture_in_picture_button_.Get()
+                                       : nullptr,
       cast_button_.Get(),
       current_time_display_.Get(),
       duration_display_.Get(),
@@ -1492,6 +1515,8 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
       mute_button_.Get(),
       volume_slider_.Get(),
       toggle_closed_captions_button_.Get(),
+      picture_in_picture_button_.Get() ? picture_in_picture_button_.Get()
+                                       : nullptr,
       cast_button_.Get(),
       current_time_display_.Get(),
       duration_display_.Get(),
@@ -1637,6 +1662,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(timeline_);
   visitor->Trace(mute_button_);
   visitor->Trace(volume_slider_);
+  visitor->Trace(picture_in_picture_button_);
   visitor->Trace(toggle_closed_captions_button_);
   visitor->Trace(fullscreen_button_);
   visitor->Trace(download_button_);

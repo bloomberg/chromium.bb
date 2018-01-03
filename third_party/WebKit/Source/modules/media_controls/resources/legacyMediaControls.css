@@ -267,7 +267,7 @@ video::-internal-media-controls-overlay-cast-button.on {
       url(default_100_percent/legacy/mediaplayer_overlay_cast_on.png) 1x);
 }
 
-audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-button {
+video::-internal-media-controls-picture-in-picture-button, audio::-webkit-media-controls-play-button, video::-webkit-media-controls-play-button {
     -webkit-appearance: -internal-media-control;
     background-image: -webkit-image-set(
       url(default_100_percent/legacy/mediaplayer_pause.png) 1x);
@@ -289,6 +289,11 @@ audio::-webkit-media-controls-play-button.pause,
 video::-webkit-media-controls-play-button.pause {
   background-image: -webkit-image-set(
       url(default_100_percent/legacy/mediaplayer_play.png) 1x);
+}
+
+video::-internal-media-controls-picture-in-picture-button {
+  background-image: -webkit-image-set(
+      url(default_100_percent/legacy/mediaplayer_pictureinpicture.png) 1x);
 }
 
 audio::-webkit-media-controls-timeline-container, video::-webkit-media-controls-timeline-container {
