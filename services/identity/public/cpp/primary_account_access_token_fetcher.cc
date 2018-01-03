@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace identity {
 
@@ -58,7 +59,7 @@ void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
   if (token_service_->RefreshTokenIsAvailable(
           signin_manager_->GetAuthenticatedAccountId())) {
     // Already have refresh token: Get the access token directly.
-    StartAccessTokenRequest();
+    ScheduleStartAccessTokenRequest();
     return;
   }
 
@@ -66,6 +67,15 @@ void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
   // token to be loaded, then get the access token.
   waiting_for_refresh_token_ = true;
   token_service_->AddObserver(this);
+}
+
+void PrimaryAccountAccessTokenFetcher::ScheduleStartAccessTokenRequest() {
+  // Fire off the request asynchronously to mimic the asynchronous flow that
+  // will occur when this request is going through the Identity Service.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest,
+                     base::Unretained(this)));
 }
 
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
@@ -111,7 +121,7 @@ void PrimaryAccountAccessTokenFetcher::OnRefreshTokenAvailable(
 
   waiting_for_refresh_token_ = false;
   token_service_->RemoveObserver(this);
-  StartAccessTokenRequest();
+  ScheduleStartAccessTokenRequest();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
@@ -125,7 +135,7 @@ void PrimaryAccountAccessTokenFetcher::OnRefreshTokensLoaded() {
   // provide us with an appropriate error code.
   waiting_for_refresh_token_ = false;
   token_service_->RemoveObserver(this);
-  StartAccessTokenRequest();
+  ScheduleStartAccessTokenRequest();
 }
 
 void PrimaryAccountAccessTokenFetcher::OnGetTokenSuccess(
@@ -163,7 +173,7 @@ void PrimaryAccountAccessTokenFetcher::OnGetTokenFailure(
       token_service_->RefreshTokenIsAvailable(
           signin_manager_->GetAuthenticatedAccountId())) {
     access_token_retried_ = true;
-    StartAccessTokenRequest();
+    ScheduleStartAccessTokenRequest();
     return;
   }
 
