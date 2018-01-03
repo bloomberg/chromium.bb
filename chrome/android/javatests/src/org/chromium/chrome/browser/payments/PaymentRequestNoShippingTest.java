@@ -242,7 +242,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
 
         // Select December of next year for expiration and [Add address] in the billing address
         // dropdown.
-        int addBillingAddress = 1;
+        int addBillingAddress = 2;
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
                 new int[] {DECEMBER, NEXT_YEAR, addBillingAddress},
                 mPaymentRequestTestRule.getReadyToEdit());

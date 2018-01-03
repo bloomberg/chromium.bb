@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DECEMBER;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_YEAR;
 
 import android.content.DialogInterface;
@@ -43,7 +44,7 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
      * The index at which the option to add a billing address is located in the billing address
      * selection dropdown.
      */
-    private static final int ADD_BILLING_ADDRESS = 2;
+    private static final int ADD_BILLING_ADDRESS = 3;
 
     /** The index of the billing address dropdown in the card editor. */
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
@@ -103,11 +104,11 @@ public class PaymentRequestBillingAddressWithoutPhoneTest implements MainActivit
                         .equals("Jon NoPhone, 340 Main St, Los Angeles, CA 90291"));
 
         // Even though the current billing address is valid, the one with a phone number should be
-        // suggested first if the user wants to change it.
-        Assert.assertTrue(
-                mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 0)
-                        .equals("Rob Phone, 340 Main St, Los Angeles, CA 90291"));
+        // suggested first (right after the select hint) if the user wants to change it.
+        Assert.assertTrue(mPaymentRequestTestRule
+                                  .getSpinnerTextAtPositionInCardEditor(
+                                          BILLING_ADDRESS_DROPDOWN_INDEX, FIRST_BILLING_ADDRESS)
+                                  .equals("Rob Phone, 340 Main St, Los Angeles, CA 90291"));
     }
 
     @Test

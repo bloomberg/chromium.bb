@@ -43,7 +43,7 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
      * The index at which the option to add a billing address is located in the billing address
      * selection dropdown.
      */
-    private static final int ADD_BILLING_ADDRESS = 7;
+    private static final int ADD_BILLING_ADDRESS = 8;
 
     /** The index of the billing address dropdown in the card editor. */
     private static final int BILLING_ADDRESS_DROPDOWN_INDEX = 2;
@@ -147,9 +147,9 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
 
-        // There should only be 8 suggestions, the 7 saved addresses and the option to add a new
-        // address.
-        Assert.assertEquals(8,
+        // There should only be 9 suggestions, the 7 saved addresses, the select hint and the
+        // option to add a new address.
+        Assert.assertEquals(9,
                 mPaymentRequestTestRule.getSpinnerItemCountInCardEditor(
                         BILLING_ADDRESS_DROPDOWN_INDEX));
     }
@@ -178,10 +178,9 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         // Cancel the creation of a new billing address.
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToEdit());
-
-        // There should still only be 8 suggestions, the 7 saved addresses and the option to add a
-        // new address.
-        Assert.assertEquals(8,
+        // There should still only be 9 suggestions, the 7 saved addresses, the select hint and
+        // the option to add a new address.
+        Assert.assertEquals(9,
                 mPaymentRequestTestRule.getSpinnerItemCountInCardEditor(
                         BILLING_ADDRESS_DROPDOWN_INDEX));
     }
@@ -276,8 +275,9 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
 
-        // There should be 8 suggestions, the 7 saved addresses and the option to add a new address.
-        Assert.assertEquals(8,
+        // There should be 9 suggestions, the 7 saved addresses, the select hint and the option to
+        // add a new address.
+        Assert.assertEquals(9,
                 mPaymentRequestTestRule.getSpinnerItemCountInCardEditor(
                         BILLING_ADDRESS_DROPDOWN_INDEX));
 
@@ -285,18 +285,22 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         Assert.assertTrue(
                 mPaymentRequestTestRule
                         .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 0)
-                        .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
+                        .equals("Select"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
                         .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 1)
-                        .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+                        .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
                         .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 2)
+                        .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+        Assert.assertTrue(
+                mPaymentRequestTestRule
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 3)
                         .equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 7)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 8)
                         .equals("Add address"));
     }
 
@@ -327,34 +331,38 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
-        // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
-        // option to add a new address.
-        Assert.assertEquals(9,
+        // There should be 10 suggestions, the 7 initial addresses, the newly added address, the
+        // select hint and the option to add a new address.
+        Assert.assertEquals(10,
                 mPaymentRequestTestRule.getSpinnerItemCountInCardEditor(
                         BILLING_ADDRESS_DROPDOWN_INDEX));
 
-        // The fist suggestion should be the newly added address.
         Assert.assertTrue(
                 mPaymentRequestTestRule
                         .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 0)
+                        .equals("Select"));
+        // The fist address suggestion should be the newly added address.
+        Assert.assertTrue(
+                mPaymentRequestTestRule
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 1)
                         .equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
 
         // The rest of the billing address suggestions should be ordered by frecency.
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 1)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 2)
                         .equals("Rob Doe, 340 Main St, Los Angeles, CA 90291"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 2)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 3)
                         .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 3)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 4)
                         .equals("Tom Doe, 340 Main St, Los Angeles, CA 90291"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 8)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 9)
                         .equals("Add address"));
     }
 
@@ -387,17 +395,18 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
 
-        // There should be 9 suggestions, the 7 initial addresses, the newly added address and the
-        // option to add a new address.
-        Assert.assertEquals(9,
+        // There should be 10 suggestions, the 7 initial addresses, the newly added address, the
+        // select hint and the option to add a new address.
+        Assert.assertEquals(10,
                 mPaymentRequestTestRule.getSpinnerItemCountInCardEditor(
                         BILLING_ADDRESS_DROPDOWN_INDEX));
 
-        // The new address should be suggested first.
-        Assert.assertTrue(
-                mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 0)
-                        .equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
+        // The new address must be put at the top of the dropdown list, right after the
+        // select hint.
+        Assert.assertTrue(mPaymentRequestTestRule
+                                  .getSpinnerTextAtPositionInCardEditor(
+                                          BILLING_ADDRESS_DROPDOWN_INDEX, FIRST_BILLING_ADDRESS)
+                                  .equals("Seb Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     @Test
@@ -421,21 +430,21 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         // The incomplete addresses in the dropdown contain edit required messages.
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 4)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 5)
                         .endsWith("Name required"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 5)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
                         .endsWith("More information required"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 7)
                         .endsWith("Enter a valid address"));
 
-        // Selects the fourth billing addresss that misses recipient name brings up the address
-        // editor.
+        // Selects the fourth billing address (the 5th option on the dropdown list) that misses
+        // recipient name brings up the address editor.
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, 4}, mPaymentRequestTestRule.getReadyToEdit());
+                new int[] {DECEMBER, NEXT_YEAR, 5}, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.setTextInEditorAndWait(
                 new String[] {"Lisa Doh", "Google", "340 Main St", "Los Angeles", "CA", "90291",
                         "650-253-0000"},
@@ -443,15 +452,17 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_done_button, mPaymentRequestTestRule.getReadyToEdit());
 
-        // The newly completed address must be selected and put at the top of the dropdown.
+        // The newly completed address must be selected and put at the top of the dropdown list,
+        // right after the select hint.
         Assert.assertTrue(
                 mPaymentRequestTestRule
                         .getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
                         .equals("Lisa Doh, 340 Main St, Los Angeles, CA 90291"));
-        Assert.assertTrue(
-                mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 0)
-                        .equals("Lisa Doh, 340 Main St, Los Angeles, CA 90291"));
+
+        Assert.assertTrue(mPaymentRequestTestRule
+                                  .getSpinnerTextAtPositionInCardEditor(
+                                          BILLING_ADDRESS_DROPDOWN_INDEX, FIRST_BILLING_ADDRESS)
+                                  .equals("Lisa Doh, 340 Main St, Los Angeles, CA 90291"));
     }
 
     @Test
@@ -475,21 +486,21 @@ public class PaymentRequestBillingAddressTest implements MainActivityStartCallba
         // The incomplete addresses in the dropdown contain edit required messages.
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 4)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 5)
                         .endsWith("Name required"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 5)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
                         .endsWith("More information required"));
         Assert.assertTrue(
                 mPaymentRequestTestRule
-                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 6)
+                        .getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 7)
                         .endsWith("Enter a valid address"));
 
-        // Selects the fifth billing addresss that misses recipient name brings up the address
-        // editor.
+        // Selects the forth billing address (the 5th option on the dropdown list) that misses
+        // recipient name brings up the address editor.
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {DECEMBER, NEXT_YEAR, 4}, mPaymentRequestTestRule.getReadyToEdit());
+                new int[] {DECEMBER, NEXT_YEAR, 5}, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.payments_edit_cancel_button, mPaymentRequestTestRule.getReadyToEdit());
 

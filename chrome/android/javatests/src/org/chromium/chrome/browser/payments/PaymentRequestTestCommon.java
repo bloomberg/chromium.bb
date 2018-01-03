@@ -78,8 +78,9 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     /** The expiration year dropdown index for the next year. */
     static final int NEXT_YEAR = 1;
 
-    /** The billing address dropdown index for the first billing address. */
-    static final int FIRST_BILLING_ADDRESS = 0;
+    /** The billing address dropdown index for the first billing address. Index 0 is for the
+     * "Select" hint.*/
+    static final int FIRST_BILLING_ADDRESS = 1;
 
     final PaymentsCallbackHelper<PaymentRequestUI> mReadyForInput;
     final PaymentsCallbackHelper<PaymentRequestUI> mReadyToPay;
