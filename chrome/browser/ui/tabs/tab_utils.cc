@@ -452,6 +452,13 @@ void SetSitesMuted(const TabStripModel& tab_strip,
 
 bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
   content::WebContents* web_contents = tab_strip.GetWebContentsAt(index);
+
+  // TODO(steimel): Why was this not a problem for AreAllTabsMuted? Is this
+  // going to be a problem for SetSitesMuted?
+  // Prevent crashes with null WebContents (https://crbug.com/797647).
+  if (!web_contents)
+    return false;
+
   GURL url = web_contents->GetLastCommittedURL();
 
   // chrome:// URLs don't have content settings but can be muted, so just check
