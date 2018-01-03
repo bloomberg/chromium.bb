@@ -747,10 +747,10 @@ void PaintLayerPainter::RepeatFixedPositionObjectInPages(
   }
 }
 
-static void ForAllFragments(
-    GraphicsContext& context,
-    const PaintLayerFragments& fragments,
-    const std::function<void(const PaintLayerFragment&)> function) {
+template <typename Function>
+static void ForAllFragments(GraphicsContext& context,
+                            const PaintLayerFragments& fragments,
+                            const Function& function) {
   for (size_t i = 0; i < fragments.size(); ++i) {
     Optional<ScopedDisplayItemFragment> scoped_display_item_fragment;
     if (i)
