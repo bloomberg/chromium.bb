@@ -21,13 +21,11 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting() {
   scoped_refptr<SerializedScriptValue> null_ssv =
       SerializedScriptValue::NullValue();
 
-  StringView ssv_wire_bytes = null_ssv->GetWireData();
-  DCHECK(ssv_wire_bytes.Is8Bit());
+  base::span<const uint8_t> ssv_wire_bytes = null_ssv->GetWireData();
 
   scoped_refptr<SharedBuffer> idb_value_buffer = SharedBuffer::Create();
-  idb_value_buffer->Append(
-      reinterpret_cast<const char*>(ssv_wire_bytes.Characters8()),
-      ssv_wire_bytes.length());
+  idb_value_buffer->Append(reinterpret_cast<const char*>(ssv_wire_bytes.data()),
+                           ssv_wire_bytes.length());
   return IDBValue::Create(std::move(idb_value_buffer),
                           Vector<scoped_refptr<BlobDataHandle>>(),
                           Vector<WebBlobInfo>(), IDBKey::CreateNumber(42.0),

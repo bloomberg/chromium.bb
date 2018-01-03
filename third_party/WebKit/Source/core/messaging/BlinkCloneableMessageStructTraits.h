@@ -18,10 +18,7 @@ struct StructTraits<blink::mojom::blink::CloneableMessage::DataView,
                     blink::BlinkCloneableMessage> {
   static base::span<const uint8_t> encoded_message(
       blink::BlinkCloneableMessage& input) {
-    StringView wire_data = input.message->GetWireData();
-    return base::make_span(
-        reinterpret_cast<const uint8_t*>(wire_data.Characters8()),
-        wire_data.length());
+    return input.message->GetWireData();
   }
 
   static Vector<blink::mojom::blink::SerializedBlobPtr> blobs(
