@@ -2477,8 +2477,6 @@ crbug.com/701047 [ Mac10.12 ] editing/style/block-style-002.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/style/block-style-003.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/style/block-styles-007.html [ Failure ]
 
-crbug.com/735245 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout Failure ]
-
 # [css-grid]
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
