@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -37,9 +36,9 @@ void SearchHostToURLsMapTest::SetUp() {
   host_ = "www.unittest.com";
   TemplateURLData data;
   data.SetURL("http://" + host_ + "/path1");
-  template_urls_.push_back(base::MakeUnique<TemplateURL>(data));
+  template_urls_.push_back(std::make_unique<TemplateURL>(data));
   data.SetURL("http://" + host_ + "/path2");
-  template_urls_.push_back(base::MakeUnique<TemplateURL>(data));
+  template_urls_.push_back(std::make_unique<TemplateURL>(data));
 
   provider_map_.reset(new SearchHostToURLsMap);
   provider_map_->Init(template_urls_, SearchTermsData());

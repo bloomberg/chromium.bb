@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/google/core/browser/google_switches.h"
@@ -123,8 +122,8 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // override the built-in ones.
 TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     base::MakeUnique<base::Value>(1));
-  auto overrides = base::MakeUnique<base::ListValue>();
+                     std::make_unique<base::Value>(1));
+  auto overrides = std::make_unique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
@@ -159,10 +158,10 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
-  auto alternate_urls = base::MakeUnique<base::ListValue>();
+  auto alternate_urls = std::make_unique<base::ListValue>();
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", std::move(alternate_urls));
-  overrides = base::MakeUnique<base::ListValue>();
+  overrides = std::make_unique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());
   prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 
@@ -183,7 +182,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
-  overrides = base::MakeUnique<base::ListValue>();
+  overrides = std::make_unique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());
   entry->SetInteger("id", 1002);
   entry->SetString("name", "bar");
@@ -205,8 +204,8 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
 TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     base::MakeUnique<base::Value>(1));
-  auto overrides = base::MakeUnique<base::ListValue>();
+                     std::make_unique<base::Value>(1));
+  auto overrides = std::make_unique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");

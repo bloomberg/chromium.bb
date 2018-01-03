@@ -1176,7 +1176,7 @@ TemplateURL::TemplateURL(const TemplateURLData& data,
   // Omnibox keywords may not be set as default.
   DCHECK(!wants_to_be_default_engine || type != OMNIBOX_API_EXTENSION) << type;
   DCHECK_EQ(kInvalidTemplateURLID, data.id);
-  extension_info_ = base::MakeUnique<AssociatedExtensionInfo>(
+  extension_info_ = std::make_unique<AssociatedExtensionInfo>(
       extension_id, install_time, wants_to_be_default_engine);
 }
 

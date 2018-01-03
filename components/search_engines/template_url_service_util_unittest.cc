@@ -4,7 +4,8 @@
 
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/search_engines/search_terms_data.h"
@@ -33,7 +34,7 @@ std::unique_ptr<TemplateURL> CreatePrepopulateTemplateURL(
     int prepopulate_id,
     const std::string& keyword,
     TemplateURLID id) {
-  return base::MakeUnique<TemplateURL>(
+  return std::make_unique<TemplateURL>(
       *CreatePrepopulateTemplateURLData(prepopulate_id, keyword, id));
 }
 
