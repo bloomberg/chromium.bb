@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_NET_COOKIE_NOTIFICATION_BRIDGE_H_
 #define IOS_WEB_NET_COOKIE_NOTIFICATION_BRIDGE_H_
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 
 @class NSNotification;
@@ -22,7 +21,7 @@ class CookieNotificationBridge {
 
  private:
   static void OnNotificationReceived(NSNotification* notification);
-  base::scoped_nsprotocol<id> observer_;
+  id observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieNotificationBridge);
 };

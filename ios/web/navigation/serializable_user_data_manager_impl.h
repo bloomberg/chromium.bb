@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_NAVIGATION_SERIALIZABLE_USER_DATA_MANAGER_IMPL_H_
 #define IOS_WEB_NAVIGATION_SERIALIZABLE_USER_DATA_MANAGER_IMPL_H_
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 
@@ -42,7 +41,7 @@ class SerializableUserDataImpl : public SerializableUserData {
 
   // The dictionary passed on initialization.  After calling Decode(), this will
   // contain the data that is decoded from the NSCoder.
-  base::scoped_nsobject<NSDictionary<NSString*, id<NSCoding>>> data_;
+  NSDictionary<NSString*, id<NSCoding>>* data_;
 
   DISALLOW_COPY_AND_ASSIGN(SerializableUserDataImpl);
 };
@@ -61,7 +60,7 @@ class SerializableUserDataManagerImpl : public SerializableUserDataManager {
 
  private:
   // The dictionary that stores serializable user data.
-  base::scoped_nsobject<NSMutableDictionary<NSString*, id<NSCoding>>> data_;
+  NSMutableDictionary<NSString*, id<NSCoding>>* data_;
 
   DISALLOW_COPY_AND_ASSIGN(SerializableUserDataManagerImpl);
 };

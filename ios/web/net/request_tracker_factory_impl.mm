@@ -19,8 +19,7 @@ namespace web {
 RequestTrackerFactoryImpl::RequestTrackerFactoryImpl(
     const std::string& application_scheme) {
   if (!application_scheme.empty()) {
-    application_scheme_.reset(
-        [base::SysUTF8ToNSString(application_scheme) copy]);
+    application_scheme_ = [base::SysUTF8ToNSString(application_scheme) copy];
     DCHECK(application_scheme_);
   }
 }

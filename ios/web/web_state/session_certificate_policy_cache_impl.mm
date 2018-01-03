@@ -81,11 +81,11 @@ void SessionCertificatePolicyCacheImpl::UpdateCertificatePolicyCache(
 }
 
 void SessionCertificatePolicyCacheImpl::SetAllowedCerts(NSSet* allowed_certs) {
-  allowed_certs_.reset([allowed_certs mutableCopy]);
+  allowed_certs_ = [allowed_certs mutableCopy];
 }
 
 NSSet* SessionCertificatePolicyCacheImpl::GetAllowedCerts() const {
-  return allowed_certs_.get();
+  return allowed_certs_;
 }
 
 }  // namespace web

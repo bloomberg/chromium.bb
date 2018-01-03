@@ -7,7 +7,6 @@
 
 #include <Foundation/Foundation.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
@@ -32,14 +31,14 @@ class WebViewEarlyPageScriptProvider : public base::SupportsUserData::Data {
       web::BrowserState* _Nonnull browser_state);
 
   // Getter and Setter for the JavaScript source code.
-  NSString* _Nonnull GetScript() { return script_.get(); }
+  NSString* _Nonnull GetScript() { return script_; }
   void SetScript(NSString* _Nonnull script);
 
  private:
   WebViewEarlyPageScriptProvider();
 
   // The JavaScript source code.
-  base::scoped_nsobject<NSString> script_;
+  NSString* _Nonnull script_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewEarlyPageScriptProvider);
 };

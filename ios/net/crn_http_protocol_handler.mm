@@ -747,7 +747,7 @@ void HttpProtocolHandlerCore::StopNetRequest() {
     auto metrics = std::make_unique<net::MetricsDelegate::Metrics>();
 
     metrics->response_end_time = base::Time::Now();
-    metrics->task.reset(task_);
+    metrics->task = task_;
     metrics->response_info = net_request_->response_info();
     net_request_->GetLoadTimingInfo(&metrics->load_timing_info);
 

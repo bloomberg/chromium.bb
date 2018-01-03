@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"

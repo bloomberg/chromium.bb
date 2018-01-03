@@ -193,7 +193,7 @@ UserAgentType NavigationItemImpl::GetUserAgentType() const {
 }
 
 bool NavigationItemImpl::HasPostData() const {
-  return post_data_.get() != nil;
+  return post_data_ != nil;
 }
 
 NSDictionary* NavigationItemImpl::GetHttpRequestHeaders() const {
@@ -208,16 +208,16 @@ void NavigationItemImpl::AddHttpRequestHeaders(
   if (http_request_headers_)
     [http_request_headers_ addEntriesFromDictionary:additional_headers];
   else
-    http_request_headers_.reset([additional_headers mutableCopy]);
+    http_request_headers_ = [additional_headers mutableCopy];
 }
 
 void NavigationItemImpl::SetSerializedStateObject(
     NSString* serialized_state_object) {
-  serialized_state_object_.reset(serialized_state_object);
+  serialized_state_object_ = serialized_state_object;
 }
 
 NSString* NavigationItemImpl::GetSerializedStateObject() const {
-  return serialized_state_object_.get();
+  return serialized_state_object_;
 }
 
 void NavigationItemImpl::SetIsCreatedFromPushState(bool push_state) {
@@ -263,22 +263,22 @@ bool NavigationItemImpl::ShouldSkipRepostFormConfirmation() const {
 }
 
 void NavigationItemImpl::SetPostData(NSData* post_data) {
-  post_data_.reset(post_data);
+  post_data_ = post_data;
 }
 
 NSData* NavigationItemImpl::GetPostData() const {
-  return post_data_.get();
+  return post_data_;
 }
 
 void NavigationItemImpl::RemoveHttpRequestHeaderForKey(NSString* key) {
   DCHECK(key);
   [http_request_headers_ removeObjectForKey:key];
   if (![http_request_headers_ count])
-    http_request_headers_.reset();
+    http_request_headers_ = nil;
 }
 
 void NavigationItemImpl::ResetHttpRequestHeaders() {
-  http_request_headers_.reset();
+  http_request_headers_ = nil;
 }
 
 void NavigationItemImpl::ResetForCommit() {

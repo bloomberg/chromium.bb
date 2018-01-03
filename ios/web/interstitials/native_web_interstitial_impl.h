@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 
 namespace web {
 
@@ -40,7 +39,7 @@ class NativeWebInterstitialImpl : public WebInterstitialImpl {
   // The native interstitial delegate.
   std::unique_ptr<NativeWebInterstitialDelegate> delegate_;
   // The transient content view containing interstitial content.
-  base::scoped_nsobject<CRWContentView> content_view_;
+  CRWContentView* content_view_;
 };
 
 }  // namespace web

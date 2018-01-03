@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
@@ -136,14 +135,14 @@ class NavigationItemImpl : public web::NavigationItem {
   SSLStatus ssl_;
   base::Time timestamp_;
   UserAgentType user_agent_type_;
-  base::scoped_nsobject<NSMutableDictionary> http_request_headers_;
+  NSMutableDictionary* http_request_headers_;
 
-  base::scoped_nsobject<NSString> serialized_state_object_;
+  NSString* serialized_state_object_;
   bool is_created_from_push_state_;
   bool has_state_been_replaced_;
   bool is_created_from_hash_change_;
   bool should_skip_repost_form_confirmation_;
-  base::scoped_nsobject<NSData> post_data_;
+  NSData* post_data_;
 
   // The navigation initiation type of the item.  This decides whether the URL
   // should be displayed before the navigation commits.  It is cleared in

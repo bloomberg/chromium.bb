@@ -7,7 +7,6 @@
 
 #include <string>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/net/request_tracker.h"
 
 namespace web {
@@ -23,7 +22,7 @@ class RequestTrackerFactoryImpl
   bool GetRequestTracker(NSURLRequest* request,
                          base::WeakPtr<net::RequestTracker>* tracker) override;
 
-  base::scoped_nsobject<NSString> application_scheme_;
+  NSString* application_scheme_;
 };
 
 }  // namespace web

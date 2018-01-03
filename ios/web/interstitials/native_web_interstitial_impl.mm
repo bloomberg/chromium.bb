@@ -43,13 +43,13 @@ NativeWebInterstitialImpl::~NativeWebInterstitialImpl() {
 }
 
 CRWContentView* NativeWebInterstitialImpl::GetContentView() const {
-  return content_view_.get();
+  return content_view_;
 }
 
 void NativeWebInterstitialImpl::PrepareForDisplay() {
   if (!content_view_) {
-    content_view_.reset([[CRWGenericContentView alloc]
-        initWithView:delegate_->GetContentView()]);
+    content_view_ = [[CRWGenericContentView alloc]
+        initWithView:delegate_->GetContentView()];
   }
 }
 

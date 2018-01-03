@@ -29,11 +29,11 @@ NavigationContextImpl::CreateNavigationContext(
 
 #ifndef NDEBUG
 NSString* NavigationContextImpl::GetDescription() const {
-  return [NSString
-      stringWithFormat:@"web::WebState: %ld, url: %s, "
+  return [NSString stringWithFormat:
+                       @"web::WebState: %ld, url: %s, "
                         "is_same_document: %@, error: %@",
                        reinterpret_cast<long>(web_state_), url_.spec().c_str(),
-                       is_same_document_ ? @"true" : @"false", error_.get()];
+                       is_same_document_ ? @"true" : @"false", error_];
 }
 #endif  // NDEBUG
 
@@ -78,7 +78,7 @@ void NavigationContextImpl::SetIsPost(bool is_post) {
 }
 
 void NavigationContextImpl::SetError(NSError* error) {
-  error_.reset(error);
+  error_ = error;
 }
 
 void NavigationContextImpl::SetResponseHeaders(

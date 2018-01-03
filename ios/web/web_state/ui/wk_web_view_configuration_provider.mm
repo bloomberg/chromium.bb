@@ -70,7 +70,7 @@ WKWebViewConfiguration*
 WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   DCHECK([NSThread isMainThread]);
   if (!configuration_) {
-    configuration_.reset([[WKWebViewConfiguration alloc] init]);
+    configuration_ = [[WKWebViewConfiguration alloc] init];
     if (browser_state_->IsOffTheRecord()) {
       [configuration_
           setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
@@ -95,16 +95,16 @@ WKWebViewConfigurationProvider::GetScriptMessageRouter() {
   if (!router_) {
     WKUserContentController* userContentController =
         [GetWebViewConfiguration() userContentController];
-    router_.reset([[CRWWKScriptMessageRouter alloc]
-        initWithUserContentController:userContentController]);
+    router_ = [[CRWWKScriptMessageRouter alloc]
+        initWithUserContentController:userContentController];
   }
   return router_;
 }
 
 void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
-  configuration_.reset();
-  router_.reset();
+  configuration_ = nil;
+  router_ = nil;
 }
 
 }  // namespace web

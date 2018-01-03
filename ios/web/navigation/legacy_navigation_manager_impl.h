@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/navigation_item_list.h"
@@ -96,7 +95,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
 
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.
-  base::scoped_nsobject<CRWSessionController> session_controller_;
+  CRWSessionController* session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyNavigationManagerImpl);
 };

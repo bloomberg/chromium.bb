@@ -25,7 +25,7 @@ CookieNotificationBridge::CookieNotificationBridge() {
               usingBlock:^(NSNotification* notification) {
                 OnNotificationReceived(notification);
               }];
-  observer_.reset(observer);
+  observer_ = observer;
 }
 
 CookieNotificationBridge::~CookieNotificationBridge() {

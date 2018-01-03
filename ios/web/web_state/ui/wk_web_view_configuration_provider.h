@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_WEB_STATE_UI_WK_WEB_VIEW_CONFIGURATION_PROVIDER_H_
 #define IOS_WEB_WEB_STATE_UI_WK_WEB_VIEW_CONFIGURATION_PROVIDER_H_
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 
@@ -50,8 +49,8 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
 
-  base::scoped_nsobject<WKWebViewConfiguration> configuration_;
-  base::scoped_nsobject<CRWWKScriptMessageRouter> router_;
+  WKWebViewConfiguration* configuration_;
+  CRWWKScriptMessageRouter* router_;
   BrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WKWebViewConfigurationProvider);
