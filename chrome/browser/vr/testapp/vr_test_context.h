@@ -61,6 +61,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void CreateFakeTextInputOrCommit(bool commit);
   void CycleWebVrModes();
   void ToggleSplashScreen();
+  void CycleOrigin();
   gfx::Transform ProjectionMatrix() const;
   gfx::Transform ViewProjectionMatrix() const;
   ControllerModel UpdateController();
