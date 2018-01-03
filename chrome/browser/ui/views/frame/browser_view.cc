@@ -82,7 +82,6 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
-#include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -796,7 +795,6 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   UpdateTitleBar();
 
   TranslateBubbleView::CloseCurrentBubble();
-  ZoomBubbleView::CloseCurrentBubble();
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
