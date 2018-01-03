@@ -360,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocusFindInPage) {
 
 // Background window does not steal focus.
 // Flaky, http://crbug.com/62538.
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_BackgroundBrowserDontStealFocus \
   DISABLED_BackgroundBrowserDontStealFocus
 #else
