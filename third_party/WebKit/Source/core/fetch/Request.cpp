@@ -186,22 +186,23 @@ Request* Request::CreateRequestWithRequestOrString(
                                        "' is not a valid URL.");
         return nullptr;
       }
-      if (parsed_referrer.ProtocolIsAbout() &&
-          parsed_referrer.Host().IsEmpty() &&
-          parsed_referrer.GetPath() == "client") {
-        // "If |parsedReferrer|'s non-relative flag is set, scheme is
-        // "about", and path contains a single string "client", set
-        // request's referrer to "client" and terminate these
-        // substeps."
+      if ((parsed_referrer.ProtocolIsAbout() &&
+           parsed_referrer.Host().IsEmpty() &&
+           parsed_referrer.GetPath() == "client") ||
+          !origin->IsSameSchemeHostPortAndSuborigin(
+              SecurityOrigin::Create(parsed_referrer).get())) {
+        // If |parsedReferrer|'s host is empty
+        // it's cannot-be-a-base-URL flag must be set
+
+        // "If one of the following conditions is true, then set
+        // request’s referrer to "client":
+        //
+        //     |parsedReferrer|’s cannot-be-a-base-URL flag is set,
+        //     scheme is "about", and path contains a single string "client".
+        //
+        //     parsedReferrer’s origin is not same origin with origin"
+        //
         request->SetReferrerString(FetchRequestData::ClientReferrerString());
-      } else if (!origin->IsSameSchemeHostPortAndSuborigin(
-                     SecurityOrigin::Create(parsed_referrer).get())) {
-        // "If |parsedReferrer|'s origin is not same origin with
-        // |origin|, throw a TypeError."
-        exception_state.ThrowTypeError(
-            "The origin of '" + init.GetReferrer().referrer +
-            "' should be same as '" + origin->ToString() + "'");
-        return nullptr;
       } else {
         // "Set |request|'s referrer to |parsedReferrer|."
         request->SetReferrerString(AtomicString(parsed_referrer.GetString()));

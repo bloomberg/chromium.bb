@@ -486,8 +486,9 @@ test(function() {
 
 test(function() {
     var referrer = OTHER_ORIGIN + '/path?query';
-    assert_throws({name: 'TypeError'},
-        () => new Request(URL, {referrer: referrer}));
+
+    assert_equals(new Request(URL, {referrer: referrer}).referrer, 'about:client',
+                      'constructed with cross-origin referrer');
   }, 'Request with a url with another origin');
 
 test(function() {
