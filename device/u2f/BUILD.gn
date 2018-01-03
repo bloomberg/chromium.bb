@@ -136,6 +136,7 @@ source_set("test_support") {
       "//base",
       "//mojo/public/cpp/bindings",
       "//services/device/public/interfaces",
+      "//testing/gmock",
     ]
   }
 }
