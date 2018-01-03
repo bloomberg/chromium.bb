@@ -21,6 +21,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "sandbox/mac/seatbelt_exec.h"
+#include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
@@ -65,9 +66,17 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   bool no_sandbox = command_line_->HasSwitch(switches::kNoSandbox) ||
                     service_manager::IsUnsandboxedSandboxType(sandbox_type);
 
-  bool v2_process = sandbox_type == service_manager::SANDBOX_TYPE_PPAPI ||
-                    sandbox_type == service_manager::SANDBOX_TYPE_RENDERER ||
-                    sandbox_type == service_manager::SANDBOX_TYPE_UTILITY;
+  bool v2_process = false;
+  switch (sandbox_type) {
+    case service_manager::SANDBOX_TYPE_CDM:
+    case service_manager::SANDBOX_TYPE_PPAPI:
+    case service_manager::SANDBOX_TYPE_RENDERER:
+    case service_manager::SANDBOX_TYPE_UTILITY:
+      v2_process = true;
+      break;
+    default:
+      break;
+  }
 
   bool use_v2 =
       v2_process && base::FeatureList::IsEnabled(features::kMacV2Sandbox);
@@ -77,12 +86,21 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     std::string profile =
         std::string(service_manager::kSeatbeltPolicyString_common_v2);
 
-    if (sandbox_type == service_manager::SANDBOX_TYPE_PPAPI) {
-      profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
-    } else if (sandbox_type == service_manager::SANDBOX_TYPE_RENDERER) {
-      profile += service_manager::kSeatbeltPolicyString_renderer_v2;
-    } else if (sandbox_type == service_manager::SANDBOX_TYPE_UTILITY) {
-      profile += service_manager::kSeatbeltPolicyString_utility;
+    switch (sandbox_type) {
+      case service_manager::SANDBOX_TYPE_CDM:
+        profile += service_manager::kSeatbeltPolicyString_cdm;
+        break;
+      case service_manager::SANDBOX_TYPE_PPAPI:
+        profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
+        break;
+      case service_manager::SANDBOX_TYPE_RENDERER:
+        profile += service_manager::kSeatbeltPolicyString_renderer_v2;
+        break;
+      case service_manager::SANDBOX_TYPE_UTILITY:
+        profile += service_manager::kSeatbeltPolicyString_utility;
+        break;
+      default:
+        NOTREACHED();
     }
 
     // Disable os logging to com.apple.diagnosticd which is a performance
@@ -98,6 +116,8 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     } else if (sandbox_type == service_manager::SANDBOX_TYPE_UTILITY) {
       SetupUtilitySandboxParameters(seatbelt_exec_client_.get(),
                                     *command_line_.get());
+    } else if (sandbox_type == service_manager::SANDBOX_TYPE_CDM) {
+      SetupCDMSandboxParameters(seatbelt_exec_client_.get());
     }
 
     int pipe = seatbelt_exec_client_->SendProfileAndGetFD();

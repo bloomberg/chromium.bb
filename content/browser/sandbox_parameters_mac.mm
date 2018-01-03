@@ -91,6 +91,18 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
       service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
 }
 
+void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
+  SetupCommonSandboxParameters(client);
+
+  base::FilePath bundle_path = service_manager::SandboxMac::GetCanonicalPath(
+      base::mac::FrameworkBundlePath().DirName());
+  CHECK(!bundle_path.empty());
+
+  CHECK(client->SetParameter(
+      service_manager::SandboxMac::kSandboxBundleVersionPath,
+      bundle_path.value()));
+}
+
 void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
                                    const base::CommandLine& command_line) {
   SetupCommonSandboxParameters(client);
