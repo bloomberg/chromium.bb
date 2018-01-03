@@ -256,6 +256,8 @@ bool LengthPropertyFunctions::GetLength(CSSPropertyID property,
       result = Length(style.VerticalBorderSpacing(), kFixed);
       return true;
     case CSSPropertyColumnGap:
+      if (style.HasNormalColumnGap())
+        return false;
       result = Length(style.ColumnGap(), kFixed);
       return true;
     case CSSPropertyColumnRuleWidth:
