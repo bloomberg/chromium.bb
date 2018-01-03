@@ -747,7 +747,6 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDraw) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -779,7 +778,6 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeDecodedImageForDraw) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_TRUE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -812,7 +810,6 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -855,14 +852,12 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawLargerScale) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage larger_decoded_draw_image =
       cache->GetDecodedImageForDraw(larger_draw_image);
   EXPECT_TRUE(larger_decoded_draw_image.image());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(larger_decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   EXPECT_FALSE(decoded_draw_image.image() == larger_decoded_draw_image.image());
@@ -909,14 +904,12 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawHigherQuality) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage larger_decoded_draw_image =
       cache->GetDecodedImageForDraw(higher_quality_draw_image);
   EXPECT_TRUE(larger_decoded_draw_image.image());
   EXPECT_TRUE(larger_decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(larger_decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   EXPECT_FALSE(decoded_draw_image.image() == larger_decoded_draw_image.image());
@@ -955,7 +948,6 @@ TEST_P(GpuImageDecodeCacheTest, GetDecodedImageForDrawNegative) {
   EXPECT_EQ(decoded_draw_image.image()->width(), 50);
   EXPECT_EQ(decoded_draw_image.image()->height(), 50);
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -991,7 +983,6 @@ TEST_P(GpuImageDecodeCacheTest, GetLargeScaledDecodedImageForDraw) {
   EXPECT_EQ(24000, decoded_draw_image.image()->height());
   EXPECT_EQ(decoded_draw_image.filter_quality(), kMedium_SkFilterQuality);
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
   EXPECT_TRUE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1024,7 +1015,6 @@ TEST_P(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->SetWorkingSetLimitForTesting(96 * 1024 * 1024);
@@ -1061,7 +1051,6 @@ TEST_P(GpuImageDecodeCacheTest,
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage another_decoded_draw_image =
@@ -1092,7 +1081,6 @@ TEST_P(GpuImageDecodeCacheTest,
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_TRUE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
@@ -1102,7 +1090,6 @@ TEST_P(GpuImageDecodeCacheTest,
       cache->GetDecodedImageForDraw(draw_image);
   EXPECT_TRUE(second_decoded_draw_image.image());
   EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
-  EXPECT_TRUE(second_decoded_draw_image.is_at_raster_decode());
   EXPECT_TRUE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, second_decoded_draw_image);

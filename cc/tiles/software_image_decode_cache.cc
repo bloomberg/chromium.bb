@@ -625,7 +625,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   auto decoded_draw_image =
       DecodedDrawImage(cache_entry->image(), cache_entry->src_rect_offset(),
                        GetScaleAdjustment(key), GetDecodedFilterQuality(key));
-  decoded_draw_image.set_at_raster_decode(!cache_entry->is_budgeted);
   return decoded_draw_image;
 }
 

@@ -36,17 +36,11 @@ class CC_PAINT_EXPORT DecodedDrawImage {
            std::abs(scale_adjustment_.height() - 1.f) < FLT_EPSILON;
   }
 
-  void set_at_raster_decode(bool at_raster_decode) {
-    at_raster_decode_ = at_raster_decode;
-  }
-  bool is_at_raster_decode() const { return at_raster_decode_; }
-
  private:
   sk_sp<const SkImage> image_;
   SkSize src_rect_offset_;
   SkSize scale_adjustment_;
   SkFilterQuality filter_quality_;
-  bool at_raster_decode_;
 };
 
 }  // namespace cc
