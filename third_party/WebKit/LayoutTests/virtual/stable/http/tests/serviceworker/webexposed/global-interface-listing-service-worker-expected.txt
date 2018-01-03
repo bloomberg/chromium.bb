@@ -692,8 +692,16 @@ interface PerformanceResourceTiming : PerformanceEntry
     getter responseEnd
     getter responseStart
     getter secureConnectionStart
+    getter serverTiming
     getter transferSize
     getter workerStart
+    method constructor
+    method toJSON
+interface PerformanceServerTiming
+    attribute @@toStringTag
+    getter description
+    getter duration
+    getter name
     method constructor
     method toJSON
 interface PermissionStatus : EventTarget
