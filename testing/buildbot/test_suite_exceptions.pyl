@@ -2451,7 +2451,6 @@
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
-      'Fuchsia x64',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux Chromium OS ASan LSan Tests (1)',
@@ -2496,7 +2495,6 @@
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
-      'Fuchsia x64',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux Chromium OS ASan LSan Tests (1)',
@@ -2542,7 +2540,6 @@
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
-      'Fuchsia x64',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux Chromium OS ASan LSan Tests (1)',
@@ -3039,7 +3036,6 @@
       # chromium.linux
       'Cast Audio Linux',
       'Cast Linux',
-      'Fuchsia x64',
       'Linux Tests (dbg)(1)(32)',
       # On chromium.mac, unclear why these aren't run.
       'Mac10.10 Tests',
@@ -3596,10 +3592,6 @@
     },
   },
   'ui_base_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64',
-    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
