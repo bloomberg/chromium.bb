@@ -516,6 +516,18 @@ be describing additional metrics about the same event.
     Metrics related to a scroll action caused by the generated ScrollUpdate
     gesture event.
   </summary>
+  <metric name="IsMainThread">
+    <summary>
+      Whether the event is handled on the main thread or not.
+    </summary>
+  </metric>
+  <metric name="TimeToHandled">
+    <summary>
+      The time in microseconds between initial creation of a touch event and the
+      generated ScrollUpdate gesture event is handled on main/impl thread. If no
+      swap was induced by the ScrollUpdate gesture event, no recording is made.
+    </summary>
+  </metric>
   <metric name="TimeToScrollUpdateSwapBegin">
     <summary>
       The time in microseconds between the initial creation of a touch event and
@@ -532,6 +544,19 @@ be describing additional metrics about the same event.
     Metrics related to first scroll action caused by the generated ScrollUpdate
     gesture event.
   </summary>
+  <metric name="IsMainThread">
+    <summary>
+      Whether the event is handled on the main thread or not.
+    </summary>
+  </metric>
+  <metric name="TimeToHandled">
+    <summary>
+      The time in microseconds between initial creation of a touch event and the
+      first generated ScrollUpdate gesture event in a given scroll gesture event
+      sequence is handled on main/impl thread. If no swap was induced by the
+      ScrollUpdate gesture event, no recording is made.
+    </summary>
+  </metric>
   <metric name="TimeToScrollUpdateSwapBegin">
     <summary>
       The time in microseconds between initial creation of a touch event and the
@@ -550,6 +575,19 @@ be describing additional metrics about the same event.
     Metrics related to a scroll action caused by the generated ScrollUpdate
     gesture event.
   </summary>
+  <metric name="IsMainThread">
+    <summary>
+      Whether the event is handled on the main thread or not.
+    </summary>
+  </metric>
+  <metric name="TimeToHandled">
+    <summary>
+      The time in microseconds between initial creation of a wheel event and the
+      generated ScrollUpdate gesture event is handled on main/impl thread. If no
+      swap was induced by the ScrollUpdate gesture event, no recording is made.
+      The first GSU of every scrolling sequence is excluded from this metric.
+    </summary>
+  </metric>
   <metric name="TimeToScrollUpdateSwapBegin">
     <summary>
       The time in microseconds between the initial creation of a wheel event and
@@ -566,6 +604,19 @@ be describing additional metrics about the same event.
     Metrics related to first scroll action caused by the generated ScrollUpdate
     gesture event.
   </summary>
+  <metric name="IsMainThread">
+    <summary>
+      Whether the event is handled on the main thread or not.
+    </summary>
+  </metric>
+  <metric name="TimeToHandled">
+    <summary>
+      The time in microseconds between initial creation of a wheel event and the
+      first generated ScrollUpdate gesture event in a given scroll gesture event
+      sequence is handled on main/impl thread. If no swap was induced by the
+      ScrollBegin gesture event, no recording is made.
+    </summary>
+  </metric>
   <metric name="TimeToScrollUpdateSwapBegin">
     <summary>
       The time in microseconds between the initial creation of a wheel event and
