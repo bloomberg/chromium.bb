@@ -318,9 +318,18 @@ void SQLTransaction::executeSql(ScriptState* script_state,
                                 SQLStatementErrorCallback* callback_error,
                                 ExceptionState& exception_state) {
   Vector<SQLValue> sql_values;
-  if (!arguments.IsNull())
-    sql_values = ToImplArray<Vector<SQLValue>>(
-        arguments.Get(), script_state->GetIsolate(), exception_state);
+  if (!arguments.IsNull()) {
+    sql_values.ReserveInitialCapacity(arguments.Get().size());
+    for (const ScriptValue& value : arguments.Get()) {
+      sql_values.UncheckedAppend(NativeValueTraits<SQLValue>::NativeValue(
+          script_state->GetIsolate(), value.V8Value(), exception_state));
+      // Historically, no exceptions were thrown if the conversion failed.
+      if (exception_state.HadException()) {
+        sql_values.clear();
+        break;
+      }
+    }
+  }
   ExecuteSQL(sql_statement, sql_values, callback, callback_error,
              exception_state);
 }

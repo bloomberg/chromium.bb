@@ -395,29 +395,6 @@ NodeFilter* ToNodeFilter(v8::Local<v8::Value>,
 XPathNSResolver* ToXPathNSResolver(ScriptState*, v8::Local<v8::Value>);
 
 template <typename VectorType>
-VectorType ToImplArray(const Vector<ScriptValue>& value,
-                       v8::Isolate* isolate,
-                       ExceptionState& exception_state) {
-  using ValueType = typename VectorType::ValueType;
-  using TraitsType = NativeValueTraits<ValueType>;
-
-  if (value.size() > VectorType::MaxCapacity()) {
-    exception_state.ThrowRangeError("Array length exceeds supported limit.");
-    return VectorType();
-  }
-
-  VectorType result;
-  result.ReserveInitialCapacity(value.size());
-  for (unsigned i = 0; i < value.size(); ++i) {
-    result.UncheckedAppend(
-        TraitsType::NativeValue(isolate, value[i].V8Value(), exception_state));
-    if (exception_state.HadException())
-      return VectorType();
-  }
-  return result;
-}
-
-template <typename VectorType>
 VectorType ToImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info,
                            int start_index,
                            ExceptionState& exception_state) {

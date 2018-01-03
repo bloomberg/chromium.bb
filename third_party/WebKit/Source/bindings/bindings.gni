@@ -204,7 +204,6 @@ bindings_unittest_files =
           "core/v8/V8BindingForTesting.cpp",
           "core/v8/V8BindingForTesting.h",
           "core/v8/WindowProxyTest.cpp",
-          "core/v8/V8BindingTest.cpp",
           "core/v8/V8ObjectBuilderTest.cpp",
           "core/v8/V8ScriptRunnerTest.cpp",
           "core/v8/serialization/SerializedScriptValueTest.cpp",
