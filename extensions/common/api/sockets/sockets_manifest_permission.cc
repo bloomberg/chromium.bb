@@ -24,7 +24,6 @@ namespace sockets_errors {
 const char kErrorInvalidHostPattern[] = "Invalid host:port pattern '*'";
 }
 
-namespace errors = sockets_errors;
 using api::extensions_manifest_types::Sockets;
 using api::extensions_manifest_types::SocketHostPatterns;
 using content::SocketPermissionRequest;
@@ -40,7 +39,7 @@ static bool ParseHostPattern(
   if (!SocketPermissionEntry::ParseHostPattern(
           operation_type, host_pattern, &entry)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
-        errors::kErrorInvalidHostPattern, host_pattern);
+        sockets_errors::kErrorInvalidHostPattern, host_pattern);
     return false;
   }
   permission->AddPermission(entry);

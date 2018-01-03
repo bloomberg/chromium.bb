@@ -41,7 +41,6 @@ const char kErrorWildcardHostsNotAllowed[] =
 }  // namespace externally_connectable_errors
 
 namespace keys = extensions::manifest_keys;
-namespace errors = externally_connectable_errors;
 using api::extensions_manifest_types::ExternallyConnectable;
 
 namespace {
@@ -120,7 +119,7 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       URLPattern pattern(URLPattern::SCHEME_ALL);
       if (pattern.Parse(*it) != URLPattern::PARSE_SUCCESS) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorInvalidMatchPattern, *it);
+            externally_connectable_errors::kErrorInvalidMatchPattern, *it);
         return std::unique_ptr<ExternallyConnectableInfo>();
       }
 
@@ -132,11 +131,11 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // Wildcard hosts are not allowed.
       if (pattern.host().empty()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(
-            InstallWarning(ErrorUtils::FormatErrorMessage(
-                               errors::kErrorWildcardHostsNotAllowed, *it),
-                           keys::kExternallyConnectable,
-                           *it));
+        install_warnings->push_back(InstallWarning(
+            ErrorUtils::FormatErrorMessage(
+                externally_connectable_errors::kErrorWildcardHostsNotAllowed,
+                *it),
+            keys::kExternallyConnectable, *it));
         continue;
       }
 
@@ -147,7 +146,7 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
         // CanonicalizeHost returns empty string on error. The URL parsing
         // combined with host().empty() should have caught this above.
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kErrorInvalidMatchPattern, *it);
+            externally_connectable_errors::kErrorInvalidMatchPattern, *it);
         return std::unique_ptr<ExternallyConnectableInfo>();
       }
 
@@ -165,13 +164,11 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // are not allowed. However just "appspot.com" is ok.
       if (!has_registry && pattern.match_subdomains()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(
-            InstallWarning(ErrorUtils::FormatErrorMessage(
-                               errors::kErrorTopLevelDomainsNotAllowed,
-                               pattern.host().c_str(),
-                               *it),
-                           keys::kExternallyConnectable,
-                           *it));
+        install_warnings->push_back(InstallWarning(
+            ErrorUtils::FormatErrorMessage(
+                externally_connectable_errors::kErrorTopLevelDomainsNotAllowed,
+                pattern.host().c_str(), *it),
+            keys::kExternallyConnectable, *it));
         continue;
       }
 
@@ -192,16 +189,17 @@ std::unique_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       } else if (crx_file::id_util::IdIsValid(*it)) {
         ids.push_back(*it);
       } else {
-        *error =
-            ErrorUtils::FormatErrorMessageUTF16(errors::kErrorInvalidId, *it);
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            externally_connectable_errors::kErrorInvalidId, *it);
         return std::unique_ptr<ExternallyConnectableInfo>();
       }
     }
   }
 
   if (!externally_connectable->matches && !externally_connectable->ids) {
-    install_warnings->push_back(InstallWarning(errors::kErrorNothingSpecified,
-                                               keys::kExternallyConnectable));
+    install_warnings->push_back(
+        InstallWarning(externally_connectable_errors::kErrorNothingSpecified,
+                       keys::kExternallyConnectable));
   }
 
   bool accepts_tls_channel_id =
