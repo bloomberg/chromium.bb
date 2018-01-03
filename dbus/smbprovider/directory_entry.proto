@@ -96,10 +96,11 @@ message OpenFileOptions {
 
 // Used for passing inputs into SmbProvider.CloseFile().
 message CloseFileOptions {
+  // ID of the mount returned from Mount().
+  optional int32 mount_id = 1;
   // ID of the file returned from OpenFile().
-  optional int32 file_id = 1;
+  optional int32 file_id = 2;
 }
-
 // Used for passing inputs into SmbProvider.ReadFile().
 message ReadFileOptions {
   // ID of the mount returned from Mount().
