@@ -1121,7 +1121,6 @@
       'args': [
         '--mus',
       ],
-      'override_isolate_target': 'ash_unittests',
       'test': 'ash_unittests',
     },
     'mus_browser_tests': {
@@ -1139,11 +1138,16 @@
       'args': [
         '--mus',
       ],
-      'override_isolate_target': 'content_browsertests',
       'swarming': {
         'shards': 2,
       },
       'test': 'content_browsertests',
+    },
+    'mus_unit_tests': {
+      'args': [
+        '--mus',
+      ],
+      'test': 'unit_tests',
     },
   },
 
@@ -2224,7 +2228,7 @@
     'viz_fyi_gtests',
   ],
 
-  'mojo_chromiumos_gtests': [
+  'mojo_chromiumos_fyi_gtests': [
     'aura_non_clang_gtests',
     'mash_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
