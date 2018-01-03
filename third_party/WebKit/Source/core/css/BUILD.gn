@@ -361,6 +361,8 @@ blink_core_sources("css") {
     "cssom/CSSUnsupportedStyleValue.h",
     "cssom/ComputedStylePropertyMap.cpp",
     "cssom/ComputedStylePropertyMap.h",
+    "cssom/DeclaredStylePropertyMap.cpp",
+    "cssom/DeclaredStylePropertyMap.h",
     "cssom/ElementComputedStyleMap.h",
     "cssom/FilteredComputedStylePropertyMap.cpp",
     "cssom/FilteredComputedStylePropertyMap.h",
