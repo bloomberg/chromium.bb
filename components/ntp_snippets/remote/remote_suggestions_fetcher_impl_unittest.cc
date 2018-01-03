@@ -259,7 +259,9 @@ void ParseJsonDelayed(const std::string& json,
 
 }  // namespace
 
-class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
+class RemoteSuggestionsFetcherImplTestBase
+    : public testing::Test,
+      public OAuth2TokenService::DiagnosticsObserver {
  public:
   explicit RemoteSuggestionsFetcherImplTestBase(const GURL& gurl)
       : default_variation_params_(
@@ -267,8 +269,8 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
         params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
                         {ntp_snippets::kArticleSuggestionsFeature.name}),
-        mock_task_runner_(new base::TestMockTimeTaskRunner()),
-        mock_task_runner_handle_(mock_task_runner_),
+        mock_task_runner_(new base::TestMockTimeTaskRunner(
+            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         test_url_(gurl) {
     UserClassifier::RegisterProfilePrefs(utils_.pref_service()->registry());
     user_classifier_ = std::make_unique<UserClassifier>(
@@ -278,15 +280,24 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     ResetFetcher();
   }
 
+  ~RemoteSuggestionsFetcherImplTestBase() override {
+    if (fake_token_service_)
+      fake_token_service_->RemoveDiagnosticsObserver(this);
+  }
+
   void ResetFetcher() { ResetFetcherWithAPIKey(kAPIKey); }
 
   void ResetFetcherWithAPIKey(const std::string& api_key) {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
+    if (fake_token_service_)
+      fake_token_service_->RemoveDiagnosticsObserver(this);
     fake_token_service_ = std::make_unique<FakeProfileOAuth2TokenService>(
         std::make_unique<FakeOAuth2TokenServiceDelegate>(
             request_context_getter.get()));
+
+    fake_token_service_->AddDiagnosticsObserver(this);
 
     fetcher_ = std::make_unique<RemoteSuggestionsFetcherImpl>(
         utils_.fake_signin_manager(), fake_token_service_.get(),
@@ -369,11 +380,23 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
     fake_url_fetcher_factory_->SetFakeResponse(test_url_, response_data,
                                                response_code, status);
   }
+  void set_on_access_token_request_callback(base::OnceClosure callback) {
+    on_access_token_request_callback_ = std::move(callback);
+  }
 
  protected:
   std::map<std::string, std::string> default_variation_params_;
 
  private:
+  // OAuth2TokenService::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override {
+    if (on_access_token_request_callback_)
+      std::move(on_access_token_request_callback_).Run();
+  }
+
   // TODO(tzik): Remove |clock_| after updating GetMockTickClock to own the
   // instance. http://crbug.com/789079
   std::unique_ptr<base::Clock> clock_;
@@ -381,7 +404,6 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   test::RemoteSuggestionsTestUtils utils_;
   variations::testing::VariationParamsManager params_manager_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  base::ThreadTaskRunnerHandle mock_task_runner_handle_;
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
   // Initialized lazily in SetFakeResponse().
   std::unique_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
@@ -391,6 +413,7 @@ class RemoteSuggestionsFetcherImplTestBase : public testing::Test {
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
   base::HistogramTester histogram_tester_;
+  base::OnceClosure on_access_token_request_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImplTestBase);
 };
@@ -466,6 +489,9 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldFetchSuccessfully) {
 }
 
 TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
   SignIn();
   IssueRefreshToken();
 
@@ -496,6 +522,8 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
 
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
+
+  run_loop.Run();
 
   IssueOAuth2Token();
   // Wait for the fake response.
@@ -512,6 +540,9 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldFetchSuccessfully) {
 }
 
 TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
   SignIn();
   IssueRefreshToken();
 
@@ -543,7 +574,19 @@ TEST_F(RemoteSuggestionsSignedInFetcherTest, ShouldRetryWhenOAuthCancelled) {
   fetcher().FetchSnippets(test_params(),
                           ToSnippetsAvailableCallback(&mock_callback()));
 
+  // Wait for the first access token request to be made.
+  run_loop.Run();
+
+  // Before cancelling the outstanding access token request, prepare to wait for
+  // the second access token request to be made in response to the cancellation.
+  base::RunLoop run_loop2;
+  set_on_access_token_request_callback(run_loop2.QuitClosure());
+
   CancelOAuth2TokenRequests();
+
+  // Wait for the second access token request to be made.
+  run_loop2.Run();
+
   IssueOAuth2Token();
   // Wait for the fake response.
   FastForwardUntilNoTasksRemain();
