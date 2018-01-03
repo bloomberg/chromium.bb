@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "platform/WebTaskRunner.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8Binding.h"
@@ -59,7 +58,7 @@ static void MicrotasksCompletedCallback(v8::Isolate* isolate) {
 }
 
 V8PerIsolateData::V8PerIsolateData(
-    WebTaskRunner* task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     V8ContextSnapshotMode v8_context_snapshot_mode)
     : v8_context_snapshot_mode_(v8_context_snapshot_mode),
       isolate_holder_(
@@ -119,8 +118,9 @@ v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
   return g_main_thread_per_isolate_data->GetIsolate();
 }
 
-v8::Isolate* V8PerIsolateData::Initialize(WebTaskRunner* task_runner,
-                                          V8ContextSnapshotMode context_mode) {
+v8::Isolate* V8PerIsolateData::Initialize(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    V8ContextSnapshotMode context_mode) {
   V8PerIsolateData* data = nullptr;
   if (context_mode == V8ContextSnapshotMode::kTakeSnapshot) {
     data = new V8PerIsolateData();

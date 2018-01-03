@@ -47,7 +47,8 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
 
   // Returns the base::Bind-compatible task runner for posting tasks to this
   // thread. Can be called from any thread.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetSingleThreadTaskRunner() const override;
 
   // Returns the base::Bind-compatible task runner for posting idle tasks to
   // this thread. Can be called from any thread.

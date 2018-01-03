@@ -67,6 +67,12 @@ void WebThreadBase::RemoveTaskObserver(TaskObserver* observer) {
   task_observer_map_.erase(iter);
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadBase::GetSingleThreadTaskRunner() const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void WebThreadBase::AddTaskTimeObserver(TaskTimeObserver* task_time_observer) {
   AddTaskTimeObserverInternal(task_time_observer);
 }
@@ -100,7 +106,7 @@ void WebThreadBase::PostIdleTask(const base::Location& location,
 }
 
 bool WebThreadBase::IsCurrentThread() const {
-  return GetTaskRunner()->BelongsToCurrentThread();
+  return GetSingleThreadTaskRunner()->BelongsToCurrentThread();
 }
 
 namespace {

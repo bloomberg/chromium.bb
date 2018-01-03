@@ -21,7 +21,7 @@ class SnapshotThread : public blink::WebThread {
  public:
   bool IsCurrentThread() const override { return true; }
   blink::WebScheduler* Scheduler() const override { return nullptr; }
-  blink::WebTaskRunner* GetWebTaskRunner() override { return nullptr; }
+  blink::WebTaskRunner* GetWebTaskRunner() const override { return nullptr; }
 };
 
 class SnapshotPlatform final : public blink::Platform {

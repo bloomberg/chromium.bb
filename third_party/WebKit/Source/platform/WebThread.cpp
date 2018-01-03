@@ -28,7 +28,7 @@ static_assert(sizeof(blink::PlatformThreadId) >= sizeof(pid_t),
 #endif
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebThread::GetSingleThreadTaskRunner() {
+WebThread::GetSingleThreadTaskRunner() const {
   return GetWebTaskRunner();
 }
 

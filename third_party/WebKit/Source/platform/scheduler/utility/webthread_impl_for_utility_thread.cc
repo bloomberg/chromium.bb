@@ -25,7 +25,7 @@ blink::PlatformThreadId WebThreadImplForUtilityThread::ThreadId() const {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadImplForUtilityThread::GetTaskRunner() const {
+WebThreadImplForUtilityThread::GetSingleThreadTaskRunner() const {
   return task_runner_;
 }
 

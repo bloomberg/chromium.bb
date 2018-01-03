@@ -107,8 +107,8 @@ blink::WebScheduler* WebThreadImplForWorkerScheduler::Scheduler() const {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadImplForWorkerScheduler::GetTaskRunner() const {
-  return task_queue_;
+WebThreadImplForWorkerScheduler::GetSingleThreadTaskRunner() const {
+  return web_task_runner_.Get();
 }
 
 SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
@@ -116,7 +116,8 @@ SingleThreadIdleTaskRunner* WebThreadImplForWorkerScheduler::GetIdleTaskRunner()
   return idle_task_runner_.get();
 }
 
-blink::WebTaskRunner* WebThreadImplForWorkerScheduler::GetWebTaskRunner() {
+blink::WebTaskRunner* WebThreadImplForWorkerScheduler::GetWebTaskRunner()
+    const {
   return web_task_runner_.Get();
 }
 
