@@ -56,6 +56,7 @@ js_library("i18n_behavior") {
 js_library("load_time_data") {
   deps = [
     ":assert",
+    ":parse_html_subset",
     "//third_party/jstemplate:jstemplate",
   ]
 }
