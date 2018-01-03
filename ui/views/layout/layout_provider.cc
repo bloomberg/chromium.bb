@@ -87,6 +87,7 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return 13;
     case DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL:
       return 6;
+    case DistanceMetric::DISTANCE_BUTTON_IMAGE_LABEL_PADDING:
     case DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL:
       return 8;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:

@@ -34,6 +34,8 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
 int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
+    case views::DISTANCE_BUTTON_IMAGE_LABEL_PADDING:
+      return kHarmonyLayoutUnit * 3 / 4;
     case DISTANCE_CONTENT_LIST_VERTICAL_SINGLE:
       return kHarmonyLayoutUnit / 4;
     case DISTANCE_CONTENT_LIST_VERTICAL_MULTI:
