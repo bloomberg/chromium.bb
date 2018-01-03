@@ -1333,6 +1333,26 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Account check failed"/>
 </enum>
 
+<enum name="ArcBootContinueCodeInstallationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Host side code is not ready"/>
+  <int value="2" label="Can not install host code"/>
+</enum>
+
+<enum name="ArcCodeRelocationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error bootlockboxd not ready"/>
+  <int value="2" label="Error unable to relocate"/>
+  <int value="3" label="Error unable to sign"/>
+</enum>
+
+<enum name="ArcCodeVerificationResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Error bootlockboxd not ready"/>
+  <int value="2" label="The first boot after OTA or OOBE boot"/>
+  <int value="3" label="Invalid code"/>
+</enum>
+
 <enum name="ArcContainerLifetimeEvent">
   <int value="0" label="Starting"/>
   <int value="1" label="Failed to start"/>
