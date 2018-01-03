@@ -45,13 +45,12 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 #define FILTER_INTRA_SCALE_BITS 4
 #endif  // CONFIG_FILTER_INTRA
 
-#define CONFIG_INTRA_EDGE_UPSAMPLE CONFIG_INTRA_EDGE
 #define CONFIG_USE_ANGLE_DELTA_SUB8X8 0
 
 #if CONFIG_EXT_INTRA
 static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
                                           BLOCK_SIZE bsize) {
-#if CONFIG_INTRA_EDGE_UPSAMPLE
+#if CONFIG_INTRA_EDGE
   (void)bsize;
   return mode >= V_PRED && mode <= D63_PRED;
 #else
