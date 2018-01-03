@@ -35,6 +35,7 @@ CONTENT_EXPORT extern const char kDisableAccelerated2dCanvas[];
 CONTENT_EXPORT extern const char kDisableAcceleratedJpegDecoding[];
 CONTENT_EXPORT extern const char kDisableAcceleratedMjpegDecode[];
 CONTENT_EXPORT extern const char kDisableAcceleratedVideoDecode[];
+CONTENT_EXPORT extern const char kDisableAcceleratedVideoEncode[];
 CONTENT_EXPORT extern const char kDisableAudioSupportForDesktopShare[];
 extern const char kDisableBackingStoreLimit[];
 CONTENT_EXPORT extern const char
@@ -272,7 +273,6 @@ CONTENT_EXPORT extern const char kEnableOSKOverscroll[];
 
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kDisablePanelFitting[];
-CONTENT_EXPORT extern const char kDisableVaapiAcceleratedVideoEncode[];
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
