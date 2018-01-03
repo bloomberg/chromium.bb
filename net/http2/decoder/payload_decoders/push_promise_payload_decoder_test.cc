@@ -108,7 +108,7 @@ TEST_P(PushPromisePayloadDecoderTest, VariousHpackPayloadSizes) {
                                   RandStreamId());
     set_frame_header(frame_header);
     FrameParts expected(frame_header, hpack_payload, total_pad_length_);
-    expected.opt_push_promise = push_promise;
+    expected.SetOptPushPromise(push_promise);
     EXPECT_TRUE(
         DecodePayloadAndValidateSeveralWays(frame_builder_.buffer(), expected));
   }

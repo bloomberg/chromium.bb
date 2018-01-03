@@ -196,7 +196,7 @@ class Http2FrameDecoderTest : public RandomDecoderTest {
   template <size_t N>
   AssertionResult DecodePayloadExpectingFrameSizeError(const char (&buf)[N],
                                                        FrameParts expected) {
-    expected.has_frame_size_error = true;
+    expected.SetHasFrameSizeError(true);
     VERIFY_AND_RETURN_SUCCESS(DecodePayloadExpectingError(buf, expected));
   }
 
@@ -260,7 +260,7 @@ TEST_F(Http2FrameDecoderTest, Priority) {
   };
   Http2FrameHeader header(5, Http2FrameType::PRIORITY, 0, 2);
   FrameParts expected(header);
-  expected.opt_priority = Http2PriorityFields(1, 17, true);
+  expected.SetOptPriority(Http2PriorityFields(1, 17, true));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -274,7 +274,7 @@ TEST_F(Http2FrameDecoderTest, RstStream) {
   };
   Http2FrameHeader header(4, Http2FrameType::RST_STREAM, 0, 1);
   FrameParts expected(header);
-  expected.opt_rst_stream_error_code = Http2ErrorCode::PROTOCOL_ERROR;
+  expected.SetOptRstStreamErrorCode(Http2ErrorCode::PROTOCOL_ERROR);
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -312,7 +312,7 @@ TEST_F(Http2FrameDecoderTest, PushPromiseMinimal) {
   Http2FrameHeader header(4, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::END_HEADERS, 2);
   FrameParts expected(header, "");
-  expected.opt_push_promise = Http2PushPromiseFields{1};
+  expected.SetOptPushPromise(Http2PushPromiseFields{1});
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -327,7 +327,8 @@ TEST_F(Http2FrameDecoderTest, Ping) {
   };
   Http2FrameHeader header(8, Http2FrameType::PING, 0, 0);
   FrameParts expected(header);
-  expected.opt_ping = Http2PingFields{{'s', 'o', 'm', 'e', 'd', 'a', 't', 'a'}};
+  expected.SetOptPing(
+      Http2PingFields{{'s', 'o', 'm', 'e', 'd', 'a', 't', 'a'}});
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -342,7 +343,8 @@ TEST_F(Http2FrameDecoderTest, PingAck) {
   };
   Http2FrameHeader header(8, Http2FrameType::PING, Http2FrameFlag::ACK, 0);
   FrameParts expected(header);
-  expected.opt_ping = Http2PingFields{{'s', 'o', 'm', 'e', 'd', 'a', 't', 'a'}};
+  expected.SetOptPing(
+      Http2PingFields{{'s', 'o', 'm', 'e', 'd', 'a', 't', 'a'}});
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -357,8 +359,8 @@ TEST_F(Http2FrameDecoderTest, GoAwayMinimal) {
   };
   Http2FrameHeader header(8, Http2FrameType::GOAWAY, 0, 1);
   FrameParts expected(header);
-  expected.opt_goaway =
-      Http2GoAwayFields(255, Http2ErrorCode::COMPRESSION_ERROR);
+  expected.SetOptGoaway(
+      Http2GoAwayFields(255, Http2ErrorCode::COMPRESSION_ERROR));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -372,7 +374,7 @@ TEST_F(Http2FrameDecoderTest, WindowUpdate) {
   };
   Http2FrameHeader header(4, Http2FrameType::WINDOW_UPDATE, 0, 1);
   FrameParts expected(header);
-  expected.opt_window_update_increment = 1024;
+  expected.SetOptWindowUpdateIncrement(1024);
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -398,8 +400,8 @@ TEST_F(Http2FrameDecoderTest, AltSvcMinimal) {
   };
   Http2FrameHeader header(2, Http2FrameType::ALTSVC, 0, 0);
   FrameParts expected(header);
-  expected.opt_altsvc_origin_length = 0;
-  expected.opt_altsvc_value_length = 0;
+  expected.SetOptAltsvcOriginLength(0);
+  expected.SetOptAltsvcValueLength(0);
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -458,7 +460,7 @@ TEST_F(Http2FrameDecoderTest, HeadersPriority) {
   Http2FrameHeader header(5, Http2FrameType::HEADERS, Http2FrameFlag::PRIORITY,
                           2);
   FrameParts expected(header);
-  expected.opt_priority = Http2PriorityFields(1, 256, false);
+  expected.SetOptPriority(Http2PriorityFields(1, 256, false));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -475,9 +477,9 @@ TEST_F(Http2FrameDecoderTest, Settings) {
   };
   Http2FrameHeader header(12, Http2FrameType::SETTINGS, 0, 0);
   FrameParts expected(header);
-  expected.settings.push_back(Http2SettingFields(
+  expected.AppendSetting(Http2SettingFields(
       Http2SettingsParameter::INITIAL_WINDOW_SIZE, 168496141));
-  expected.settings.push_back(
+  expected.AppendSetting(
       Http2SettingFields(Http2SettingsParameter::ENABLE_PUSH, 3));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
@@ -494,7 +496,7 @@ TEST_F(Http2FrameDecoderTest, PushPromisePayload) {
   Http2FrameHeader header(7, Http2FrameType::PUSH_PROMISE,
                           Http2FrameFlag::END_HEADERS, 255);
   FrameParts expected(header, "abc");
-  expected.opt_push_promise = Http2PushPromiseFields{256};
+  expected.SetOptPushPromise(Http2PushPromiseFields{256});
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -510,8 +512,8 @@ TEST_F(Http2FrameDecoderTest, GoAwayOpaqueData) {
   };
   Http2FrameHeader header(14, Http2FrameType::GOAWAY, 0, 0);
   FrameParts expected(header, "opaque");
-  expected.opt_goaway =
-      Http2GoAwayFields(256, Http2ErrorCode::FLOW_CONTROL_ERROR);
+  expected.SetOptGoaway(
+      Http2GoAwayFields(256, Http2ErrorCode::FLOW_CONTROL_ERROR));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -615,7 +617,7 @@ TEST_F(Http2FrameDecoderTest, HeadersPayloadPriorityAndPadding) {
                           2);
   size_t total_pad_length = 4;  // Including the Pad Length field.
   FrameParts expected(header, "abc", total_pad_length);
-  expected.opt_priority = Http2PriorityFields(1, 17, true);
+  expected.SetOptPriority(Http2PriorityFields(1, 17, true));
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -635,7 +637,7 @@ TEST_F(Http2FrameDecoderTest, PushPromisePayloadAndPadding) {
                           1);
   size_t total_pad_length = 4;  // Including the Pad Length field.
   FrameParts expected(header, "abc", total_pad_length);
-  expected.opt_push_promise = Http2PushPromiseFields{2};
+  expected.SetOptPushPromise(Http2PushPromiseFields{2});
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(kFrameData, expected));
 }
 
@@ -651,7 +653,7 @@ TEST_F(Http2FrameDecoderTest, DataMissingPadLengthField) {
   };
   Http2FrameHeader header(0, Http2FrameType::DATA, Http2FrameFlag::PADDED, 1);
   FrameParts expected(header);
-  expected.opt_missing_length = 1;
+  expected.SetOptMissingLength(1);
   EXPECT_TRUE(DecodePayloadExpectingError(kFrameData, expected));
 }
 
@@ -667,7 +669,7 @@ TEST_F(Http2FrameDecoderTest, HeaderPaddingTooLong) {
   Http2FrameHeader header(2, Http2FrameType::HEADERS, Http2FrameFlag::PADDED,
                           65536);
   FrameParts expected(header);
-  expected.opt_missing_length = 254;
+  expected.SetOptMissingLength(254);
   EXPECT_TRUE(DecodePayloadExpectingError(kFrameData, expected));
 }
 
@@ -723,7 +725,7 @@ TEST_F(Http2FrameDecoderTest, SettingsWrongSize) {
   };
   Http2FrameHeader header(9, Http2FrameType::SETTINGS, 0, 0);
   FrameParts expected(header);
-  expected.settings.push_back(
+  expected.AppendSetting(
       Http2SettingFields(Http2SettingsParameter::ENABLE_PUSH, 3));
   EXPECT_TRUE(DecodePayloadExpectingFrameSizeError(kFrameData, expected));
 }
@@ -835,7 +837,7 @@ TEST_F(Http2FrameDecoderTest, BeyondMaximum) {
                           Http2FrameFlag::END_STREAM | Http2FrameFlag::PADDED,
                           2);
   FrameParts expected(header);
-  expected.has_frame_size_error = true;
+  expected.SetHasFrameSizeError(true);
   auto validator = [&expected, this](const DecodeBuffer& input,
                                      DecodeStatus status) -> AssertionResult {
     VERIFY_EQ(status, DecodeStatus::kDecodeError);

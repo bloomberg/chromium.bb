@@ -86,7 +86,7 @@ TEST_F(WindowUpdatePayloadDecoderTest, VariousPayloads) {
                             RandFlags(), stream_id);
     set_frame_header(header);
     FrameParts expected(header);
-    expected.opt_window_update_increment = fields.window_size_increment;
+    expected.SetOptWindowUpdateIncrement(fields.window_size_increment);
     EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
   }
 }
