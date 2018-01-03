@@ -798,6 +798,7 @@ interface CSSStyleDeclaration
     setter cssText
 interface CSSStyleRule : CSSRule
     attribute @@toStringTag
+    getter attributeStyleMap
     getter selectorText
     getter style
     method constructor

@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Calling StylePropertyMap.delete with an unsupported property name throws a TypeError
+PASS Deleting a property not in a StylePropertyMap is a no-op
+PASS Deleting a property in the property model removes it from the property model
+FAIL Deleting a custom property in the property model removes it from the property model Failed to execute 'delete' on 'StylePropertyMap': Invalid propertyName: --foo
+PASS Deleting a list-valued property in the property model removes it from the property model
+PASS Deleting a mixed-case property in the property model removes it from the property model
+Harness: the test ran to completion.
+
