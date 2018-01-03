@@ -158,7 +158,7 @@ BASE_EXPORT bool HexStringToUInt64(const StringPiece& input, uint64_t* output);
 // |*output| will contain as many bytes as were successfully parsed prior to the
 // error.  There is no overflow, but input.size() must be evenly divisible by 2.
 // Leading 0x or +/- are not allowed.
-BASE_EXPORT bool HexStringToBytes(const std::string& input,
+BASE_EXPORT bool HexStringToBytes(const StringPiece& input,
                                   std::vector<uint8_t>* output);
 
 }  // namespace base
