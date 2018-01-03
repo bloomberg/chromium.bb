@@ -200,10 +200,9 @@ def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
     pkg_version: The version of the package instance.
     verbose: Enable more logging.
   """
-  if not yaml_file:
-    pkg_yaml_file = os.path.join(sdk_root, 'cipd_%s.yaml' % package)
-    if not os.path.exists(pkg_yaml_file):
-      raise IOError('Cannot find .yaml file for package %s' % package)
+  pkg_yaml_file = yaml_file or os.path.join(sdk_root, 'cipd_%s.yaml' % package)
+  if not os.path.exists(pkg_yaml_file):
+    raise IOError('Cannot find .yaml file for package %s' % package)
 
   if dry_run:
     print 'This `package` command (without -n/--dry-run) would create and',
