@@ -191,6 +191,17 @@ void WallpaperControllerClient::SetCustomizedDefaultWallpaper(
                                                        resized_directory);
 }
 
+void WallpaperControllerClient::UpdateCustomWallpaperLayout(
+    const AccountId& account_id,
+    wallpaper::WallpaperLayout layout) {
+  ash::mojom::WallpaperUserInfoPtr user_info =
+      AccountIdToWallpaperUserInfo(account_id);
+  if (!user_info)
+    return;
+  wallpaper_controller_->UpdateCustomWallpaperLayout(std::move(user_info),
+                                                     layout);
+}
+
 void WallpaperControllerClient::ShowUserWallpaper(const AccountId& account_id) {
   ash::mojom::WallpaperUserInfoPtr user_info =
       AccountIdToWallpaperUserInfo(account_id);

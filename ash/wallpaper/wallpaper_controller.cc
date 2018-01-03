@@ -1184,6 +1184,32 @@ void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
   }
 }
 
+void WallpaperController::UpdateCustomWallpaperLayout(
+    mojom::WallpaperUserInfoPtr user_info,
+    wallpaper::WallpaperLayout layout) {
+  // This method has a very specific use case: the user should be active and
+  // have a custom wallpaper.
+  // The currently active user has index 0.
+  const mojom::UserSession* const active_user_session =
+      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+  if (!active_user_session ||
+      active_user_session->user_info->account_id != user_info->account_id) {
+    return;
+  }
+  WallpaperInfo info;
+  if (!GetUserWallpaperInfo(user_info->account_id, &info,
+                            !user_info->is_ephemeral) ||
+      info.type != wallpaper::CUSTOMIZED) {
+    return;
+  }
+  if (info.layout == layout)
+    return;
+
+  info.layout = layout;
+  SetUserWallpaperInfo(user_info->account_id, info, !user_info->is_ephemeral);
+  ShowUserWallpaper(std::move(user_info));
+}
+
 void WallpaperController::ShowUserWallpaper(
     mojom::WallpaperUserInfoPtr user_info) {
   current_user_ = std::move(user_info);

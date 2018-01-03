@@ -57,6 +57,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
       const base::FilePath& file_path,
       const base::FilePath& resized_directory) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void UpdateCustomWallpaperLayout(ash::mojom::WallpaperUserInfoPtr user_info,
+                                   wallpaper::WallpaperLayout layout) override;
   void ShowUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info) override;
   void ShowSigninWallpaper() override;
   void RemoveUserWallpaper(ash::mojom::WallpaperUserInfoPtr user_info,

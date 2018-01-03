@@ -138,6 +138,13 @@ interface WallpaperController {
   // clears the device policy controlled wallpaper if applicable.
   SetDeviceWallpaperPolicyEnforced(bool enforced);
 
+  // Updates the layout for the user's custom wallpaper and reloads the
+  // wallpaper with the new layout.
+  // |user_info|: The user's information related to wallpaper.
+  // |layout|: The new layout of the wallpaper.
+  UpdateCustomWallpaperLayout(WallpaperUserInfo user_info,
+                              WallpaperLayout layout);
+
   // Shows the user's wallpaper, which is determined in the following order:
   // 1) Use device policy wallpaper if it exists AND we are at the login screen.
   // 2) Use user policy wallpaper if it exists.

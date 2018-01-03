@@ -56,6 +56,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   void SetCustomizedDefaultWallpaper(const GURL& wallpaper_url,
                                      const base::FilePath& file_path,
                                      const base::FilePath& resized_directory);
+  void UpdateCustomWallpaperLayout(const AccountId& account_id,
+                                   wallpaper::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);
   void ShowSigninWallpaper();
   void RemoveUserWallpaper(const AccountId& account_id);

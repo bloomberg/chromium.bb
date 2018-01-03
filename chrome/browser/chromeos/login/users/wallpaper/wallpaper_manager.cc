@@ -356,20 +356,6 @@ void WallpaperManager::ShowSigninWallpaper() {
   WallpaperControllerClient::Get()->ShowSigninWallpaper();
 }
 
-void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
-                                            const WallpaperInfo& info,
-                                            bool is_persistent) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    return;
-  }
-  ash::Shell::Get()->wallpaper_controller()->SetUserWallpaperInfo(
-      account_id, info, is_persistent);
-}
-
 void WallpaperManager::InitializeWallpaper() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -605,19 +591,18 @@ void WallpaperManager::ResizeCustomizedDefaultWallpaper(
       large_wallpaper_image);
 }
 
-void WallpaperManager::InitializeUserWallpaperInfo(
-    const AccountId& account_id) {
+void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
+                                            const WallpaperInfo& info,
+                                            bool is_persistent) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
     // Some unit tests come here without a Shell instance.
     // TODO(crbug.com/776464): This is intended not to work under mash. Make it
     // work again after WallpaperManager is removed.
     return;
   }
-  bool is_persistent =
-      !user_manager::UserManager::Get()->IsUserNonCryptohomeDataEphemeral(
-          account_id);
-  ash::Shell::Get()->wallpaper_controller()->InitializeUserWallpaperInfo(
-      account_id, is_persistent);
+  ash::Shell::Get()->wallpaper_controller()->SetUserWallpaperInfo(
+      account_id, info, is_persistent);
 }
 
 bool WallpaperManager::GetWallpaperFromCache(const AccountId& account_id,
