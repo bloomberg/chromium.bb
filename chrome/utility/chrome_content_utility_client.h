@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "content/public/utility/content_utility_client.h"
 
+class MashServiceFactory;
 class UtilityMessageHandler;
 
 class ChromeContentUtilityClient : public content::ContentUtilityClient {
@@ -41,6 +42,11 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   // True if the utility process runs with elevated privileges.
   bool utility_process_running_elevated_;
+
+#if defined(OS_CHROMEOS)
+  // Must be owned by utility main thread.
+  std::unique_ptr<MashServiceFactory> mash_service_factory_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentUtilityClient);
 };
