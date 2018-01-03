@@ -20,6 +20,8 @@ namespace content {
 // as the user's home directory.
 void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client);
 
+void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client);
+
 void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
                                    const base::CommandLine& command_line);
 
