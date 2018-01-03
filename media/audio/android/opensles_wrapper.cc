@@ -9,6 +9,16 @@
 // proxies for those constants and redefine those when the library is first
 // loaded. For this, it need to be able to change their content and so import
 // the headers without const.  This is correct because OpenSLES.h is a C API.
+
+// We include stdint.h here as a workaround for an issue caused by the
+// #define const below. The inclusion of OpenSLES headers on newer Android NDK
+// versions causes stdint.h to be included, which in turn includes __config.
+// This causes the declaration of __sanitizer_annotate_contiguous_container to
+// not use const parameters, which causes compile issues when building with
+// asan. Including here forces __config to be included while const is still
+// untouched.
+#include <stdint.h>
+
 #define const
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>

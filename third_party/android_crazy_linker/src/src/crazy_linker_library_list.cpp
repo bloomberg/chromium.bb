@@ -241,7 +241,7 @@ _Unwind_Ptr LibraryList::FindArmExIdx(void* pc, int* count) {
     }
   }
   *count = 0;
-  return NULL;
+  return static_cast<_Unwind_Ptr>(NULL);
 }
 #else  // !__arm__
 int LibraryList::IteratePhdr(PhdrIterationCallback callback, void* data) {

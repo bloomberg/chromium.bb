@@ -216,7 +216,9 @@ DataReductionProxySettingsAndroid::GetDailyContentLengths(
 
   if (!lengths.empty()) {
     DCHECK_EQ(lengths.size(), data_reduction_proxy::kNumDaysInHistory);
-    env->SetLongArrayRegion(result, 0, lengths.size(), &lengths[0]);
+    std::vector<jlong> lengths_jlong(lengths.begin(), lengths.end());
+    env->SetLongArrayRegion(result, 0, lengths_jlong.size(),
+                            lengths_jlong.data());
     return ScopedJavaLocalRef<jlongArray>(env, result);
   }
 
