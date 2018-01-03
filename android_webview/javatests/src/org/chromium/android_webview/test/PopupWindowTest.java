@@ -18,7 +18,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.AwActivityTestRule.PopupInfo;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
@@ -81,14 +80,15 @@ public class PopupWindowTest {
     }
 
     @Test
-    @DisabledTest
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testOnPageFinishedCalledOnDomModificationAfterNavigation() throws Throwable {
         final String popupPath = "/popup.html";
-        final String parentPageHtml = CommonResources.makeHtmlPageFrom("", "<script>"
+        final String parentPageHtml = CommonResources.makeHtmlPageFrom("",
+                "<script>"
                         + "function tryOpenWindow() {"
                         + "  window.popupWindow = window.open('" + popupPath + "');"
+                        + "  window.popupWindow.console = {};"
                         + "}"
                         + "function modifyDomOfPopup() {"
                         + "  window.popupWindow.document.body.innerHTML = 'Hello from the parent!';"
