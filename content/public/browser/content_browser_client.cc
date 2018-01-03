@@ -519,6 +519,26 @@ std::unique_ptr<base::Value> ContentBrowserClient::GetServiceManifestOverlay(
   return nullptr;
 }
 
+ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo() =
+    default;
+
+ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
+    const base::string16& process_name)
+    : process_name(process_name) {
+  DCHECK(!process_name.empty());
+}
+
+ContentBrowserClient::OutOfProcessServiceInfo::OutOfProcessServiceInfo(
+    const base::string16& process_name,
+    const std::string& process_group)
+    : process_name(process_name), process_group(process_group) {
+  DCHECK(!process_name.empty());
+  DCHECK(!process_group.empty());
+}
+
+ContentBrowserClient::OutOfProcessServiceInfo::~OutOfProcessServiceInfo() =
+    default;
+
 bool ContentBrowserClient::ShouldTerminateOnServiceQuit(
     const service_manager::Identity& id) {
   return false;

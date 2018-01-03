@@ -12,30 +12,40 @@
 #include "mash/quick_launch/quick_launch.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 
+using content::ContentBrowserClient;
+
 namespace mash_service_registry {
 namespace {
 
 struct Service {
   const char* name;
-  const char* description;
+  const char* display_name;
+  const char* process_group;  // If null, uses a separate process.
 };
 
 constexpr Service kServices[] = {
-    {mash::quick_launch::mojom::kServiceName, "Quick Launch"},
-    {ui::mojom::kServiceName, "UI Service"},
-    {ash::mojom::kServiceName, "Ash Window Manager and Shell"},
-    {"accessibility_autoclick", "Ash Accessibility Autoclick"},
-    {"touch_hud", "Ash Touch Hud"},
-    {font_service::mojom::kServiceName, "Font Service"},
+    {mash::quick_launch::mojom::kServiceName, "Quick Launch", nullptr},
+    {ui::mojom::kServiceName, "UI Service", kAshAndUiProcessGroup},
+    {ash::mojom::kServiceName, "Ash Window Manager and Shell",
+     kAshAndUiProcessGroup},
+    {"accessibility_autoclick", "Ash Accessibility Autoclick", nullptr},
+    {"touch_hud", "Ash Touch Hud", nullptr},
+    {font_service::mojom::kServiceName, "Font Service", nullptr},
 };
 
 }  // namespace
 
 void RegisterOutOfProcessServices(
-    content::ContentBrowserClient::OutOfProcessServiceMap* services) {
-  for (size_t i = 0; i < arraysize(kServices); ++i) {
-    (*services)[kServices[i].name] =
-        base::ASCIIToUTF16(kServices[i].description);
+    ContentBrowserClient::OutOfProcessServiceMap* services) {
+  for (const auto& service : kServices) {
+    base::string16 display_name = base::ASCIIToUTF16(service.display_name);
+    if (service.process_group) {
+      (*services)[service.name] = ContentBrowserClient::OutOfProcessServiceInfo(
+          display_name, service.process_group);
+    } else {
+      (*services)[service.name] =
+          ContentBrowserClient::OutOfProcessServiceInfo(display_name);
+    }
   }
 }
 

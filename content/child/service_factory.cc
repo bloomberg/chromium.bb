@@ -37,6 +37,11 @@ void ServiceFactory::CreateService(
 
   auto it = services_.find(name);
   if (it == services_.end()) {
+    // DCHECK in developer builds to make these errors easier to identify.
+    // Otherwise they result only in cryptic browser error messages.
+    NOTREACHED() << "Unable to start service \"" << name << "\". Did you "
+                 << "forget to register the service in the utility process's"
+                 << "ServiceFactory?";
     OnLoadFailed();
     return;
   }

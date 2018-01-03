@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -788,7 +789,22 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& name,
       mojo::ScopedMessagePipeHandle* handle) {}
 
-  using OutOfProcessServiceMap = std::map<std::string, base::string16>;
+  struct CONTENT_EXPORT OutOfProcessServiceInfo {
+    OutOfProcessServiceInfo();
+    OutOfProcessServiceInfo(const base::string16& process_name);
+    OutOfProcessServiceInfo(const base::string16& process_name,
+                            const std::string& process_group);
+    ~OutOfProcessServiceInfo();
+
+    // The display name of the service process launched for the service.
+    base::string16 process_name;
+
+    // If provided, a string which groups this service into a process shared
+    // by other services using the same string.
+    base::Optional<std::string> process_group;
+  };
+
+  using OutOfProcessServiceMap = std::map<std::string, OutOfProcessServiceInfo>;
 
   // Registers services to be loaded out of the browser process in an
   // utility process. The value of each map entry should be a process name,
