@@ -50,31 +50,6 @@ bool IsWindowOrAncestorLockedToRoot(const aura::Window* window) {
                     IsWindowOrAncestorLockedToRoot(window->parent()));
 }
 
-// Move all transient children to |dst_root|, including the ones in
-// the child windows and transient children of the transient children.
-void MoveAllTransientChildrenToNewRoot(const display::Display& display,
-                                       aura::Window* window) {
-  aura::Window* dst_root =
-      Shell::GetRootWindowControllerWithDisplayId(display.id())
-          ->GetRootWindow();
-  for (aura::Window* transient_child : ::wm::GetTransientChildren(window)) {
-    const int container_id = transient_child->parent()->id();
-    DCHECK_GE(container_id, 0);
-    aura::Window* container = dst_root->GetChildById(container_id);
-    const gfx::Rect transient_child_bounds_in_screen =
-        transient_child->GetBoundsInScreen();
-    container->AddChild(transient_child);
-    transient_child->SetBoundsInScreen(transient_child_bounds_in_screen,
-                                       display);
-
-    // Transient children may have transient children.
-    MoveAllTransientChildrenToNewRoot(display, transient_child);
-  }
-  // Move transient children of the child windows if any.
-  for (aura::Window* child : window->children())
-    MoveAllTransientChildrenToNewRoot(display, child);
-}
-
 }  // namespace
 
 void AdjustBoundsSmallerThan(const gfx::Size& max_size, gfx::Rect* bounds) {
@@ -182,8 +157,6 @@ void SetBoundsInScreen(aura::Window* window,
       window->SetBounds(new_bounds);
 
       dst_container->AddChild(window);
-
-      MoveAllTransientChildrenToNewRoot(display, window);
 
       // Restore focused/active window.
       if (focused && tracker.Contains(focused)) {

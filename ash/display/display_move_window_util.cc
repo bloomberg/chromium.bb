@@ -137,7 +137,7 @@ int64_t GetNextDisplay(const display::Display& origin_display,
 
 }  // namespace
 
-void HandleMoveWindowToDisplay(DisplayMoveWindowDirection direction) {
+void HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection direction) {
   aura::Window* window = wm::GetActiveWindow();
   if (!window)
     return;
