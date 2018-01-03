@@ -205,6 +205,7 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     return If(AllOf(level == SOL_SOCKET,
                     AnyOf(option == SO_SNDTIMEO,
                           option == SO_RCVTIMEO,
+                          option == SO_SNDBUF,
                           option == SO_REUSEADDR)),
               Allow())
            .Else(BaselinePolicy::EvaluateSyscall(sysno));
