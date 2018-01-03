@@ -131,6 +131,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/autofill",
     "//ios/chrome/browser/ui/settings:test_support",
     "//ios/chrome/browser/web:test_support",
+    "//ios/chrome/browser/web:web_internal",
     "//ios/chrome/test/base",
     "//ios/web",
     "//ios/web/public/test",

@@ -7,13 +7,11 @@
 
 #include "base/ios/block_types.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
-
-@class CRWJSInjectionReceiver;
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 
 // Loads the JavaScript file, autofill_controller.js, which contains form
 // parsing and autofill functions.
-@interface JsAutofillManager : CRWJSInjectionManager
+@interface JsAutofillManager : NSObject
 
 // Extracts forms from a web page. Only forms with at least |requiredFields|
 // fields are extracted.
@@ -50,6 +48,12 @@
 
 // Marks up the form with autofill field prediction data (diagnostic tool).
 - (void)fillPredictionData:(NSString*)dataString;
+
+// Designated initializer. |receiver| should not be nil.
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 @end
 

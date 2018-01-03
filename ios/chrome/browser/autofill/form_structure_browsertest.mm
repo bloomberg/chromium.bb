@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -122,7 +123,8 @@ class FormStructureBrowserTest
 };
 
 FormStructureBrowserTest::FormStructureBrowserTest()
-    : DataDrivenTest(GetTestDataDir()) {}
+    : ChromeWebTest(std::make_unique<ChromeWebClient>()),
+      DataDrivenTest(GetTestDataDir()) {}
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();

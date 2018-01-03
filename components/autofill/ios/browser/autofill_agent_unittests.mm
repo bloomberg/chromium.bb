@@ -22,23 +22,6 @@
 #error "This file requires ARC support."
 #endif
 
-class MockWebState : public web::TestWebState {
- public:
-  MockWebState() : js_injection_receiver_(nullptr) {}
-  ~MockWebState() override {}
-
-  CRWJSInjectionReceiver* GetJSInjectionReceiver() const override {
-    return js_injection_receiver_;
-  }
-
-  void SetJSInjectionReceiver(CRWJSInjectionReceiver* receiver) {
-    js_injection_receiver_ = receiver;
-  }
-
- private:
-  CRWJSInjectionReceiver* js_injection_receiver_;
-};
-
 // Test fixture for AutofillAgent testing.
 class AutofillAgentTests : public PlatformTest {
  public:
@@ -46,32 +29,22 @@ class AutofillAgentTests : public PlatformTest {
 
   void SetUp() override {
     PlatformTest::SetUp();
-    // Mock out the JsAutofillManager.
-    mock_js_autofill_manager_ =
-        [OCMockObject mockForClass:[JsAutofillManager class]];
-    mock_web_state_ = std::make_unique<MockWebState>();
-    id mock_js_injection_receiver =
+
+    // Mock CRWJSInjectionReceiver for verifying interactions.
+    mock_js_injection_receiver_ =
         [OCMockObject mockForClass:[CRWJSInjectionReceiver class]];
-
-    mock_web_state_->SetJSInjectionReceiver(mock_js_injection_receiver);
-
-    // Set expectations for setting the JsCastSenderManager instance.
-    [[[mock_js_autofill_manager_ stub] andReturnValue:@YES]
-        isKindOfClass:[JsAutofillManager class]];
-    [[[mock_js_injection_receiver expect] andReturn:mock_js_autofill_manager_]
-        instanceOfClass:[JsAutofillManager class]];
+    test_web_state_.SetJSInjectionReceiver(mock_js_injection_receiver_);
 
     prefs_ = autofill::test::PrefServiceForTesting();
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:prefs_.get()
-                                          webState:mock_web_state_.get()];
+                                          webState:&test_web_state_];
   }
 
-  std::unique_ptr<MockWebState> mock_web_state_;
+  web::TestWebState test_web_state_;
   AutofillAgent* autofill_agent_;
   std::unique_ptr<PrefService> prefs_;
-  // Mock JsSuggestionManager for verifying interactions.
-  id mock_js_autofill_manager_;
+  id mock_js_injection_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillAgentTests);
 };
@@ -96,17 +69,16 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
   field.value = base::ASCIIToUTF16("");
   form.fields.push_back(field);
   // Fields are in alphabetical order.
-  [[mock_js_autofill_manager_ expect] fillForm:
-                                          @"{\"fields\":{"
-                                           "\"name\":\"name_value\","
-                                           "\"number\":\"number_value\","
-                                           "\"unknown\":\"\""
-                                           "},\"formName\":\"\"}"
-                            forceFillFieldName:@""
-                             completionHandler:[OCMArg any]];
+  [[mock_js_injection_receiver_ expect]
+      executeJavaScript:
+          @"__gCrWeb.autofill.fillForm({\"fields\":{\"name\":\"name_value\","
+          @"\"number\":\"number_value\",\"unknown\":\"\"},\"formName\":\"\"}, "
+          @"\"\");"
+      completionHandler:[OCMArg any]];
   [autofill_agent_ onFormDataFilled:form];
-  mock_web_state_->WasShown();
-  EXPECT_OCMOCK_VERIFY(mock_js_autofill_manager_);
+  test_web_state_.WasShown();
+
+  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
 }
 
 TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
@@ -134,15 +106,13 @@ TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
   field.value = base::ASCIIToUTF16("value 2");
   form.fields.push_back(field);
   // Fields are in alphabetical order.
-  [[mock_js_autofill_manager_ expect] fillForm:
-                                          @"{\"fields\":{"
-                                           "\"field1\":\"value 2\","
-                                           "\"region\":\"California\""
-                                           "},\"formName\":\"\"}"
-                            forceFillFieldName:@""
-                             completionHandler:[OCMArg any]];
+  [[mock_js_injection_receiver_ expect]
+      executeJavaScript:
+          @"__gCrWeb.autofill.fillForm({\"fields\":{\"field1\":\"value "
+          @"2\",\"region\":\"California\"},\"formName\":\"\"}, \"\");"
+      completionHandler:[OCMArg any]];
   [autofill_agent_ onFormDataFilled:form];
-  mock_web_state_->WasShown();
+  test_web_state_.WasShown();
 
-  EXPECT_OCMOCK_VERIFY(mock_js_autofill_manager_);
+  EXPECT_OCMOCK_VERIFY(mock_js_injection_receiver_);
 }

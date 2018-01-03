@@ -6,3 +6,4 @@
 goog.provide('__crWeb.chromeBundle');
 
 goog.require('__crWeb.print');
+goog.require('__crWeb.autofill');

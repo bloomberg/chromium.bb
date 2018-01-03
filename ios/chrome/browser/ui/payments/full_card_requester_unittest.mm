@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/test/scoped_key_window.h"
+#import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -61,6 +62,10 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
     AddCreditCard(autofill::test::GetCreditCard());  // Visa.
 
     // Set up what is needed to have an instance of autofill::AutofillManager.
+    CRWTestJSInjectionReceiver* injectionReceiver =
+        [[CRWTestJSInjectionReceiver alloc] init];
+    web_state()->SetJSInjectionReceiver(injectionReceiver);
+
     AutofillAgent* autofill_agent =
         [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
                                           webState:web_state()];

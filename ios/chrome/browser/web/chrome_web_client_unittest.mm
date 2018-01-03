@@ -103,6 +103,20 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptPrint) {
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));
 }
 
+// Tests that ChromeWebClient provides autofill controller script for WKWebView.
+TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
+  // Chrome scripts rely on __gCrWeb object presence.
+  WKWebView* web_view = web::BuildWKWebView(CGRectZero, browser_state());
+  web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
+
+  web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
+  NSString* script =
+      web_client.Get()->GetEarlyPageScriptForMainFrame(browser_state());
+  web::ExecuteJavaScript(web_view, script);
+  EXPECT_NSEQ(@"object",
+              web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.autofill"));
+}
+
 // Tests that ChromeWebClient provides credential manager script for WKWebView
 // if and only if the feature is enabled.
 TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScriptCredentialManager) {

@@ -8,6 +8,7 @@
 #include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/web_js_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -775,7 +776,7 @@ NSString* GenerateTestItemVerifyingJavaScripts(NSString* results,
 class AutofillControllerJsTest : public web::WebJsTest<ChromeWebTest> {
  public:
   AutofillControllerJsTest()
-      : web::WebJsTest<ChromeWebTest>(@[ @"autofill_controller" ]) {}
+      : web::WebJsTest<ChromeWebTest>(std::make_unique<ChromeWebClient>()) {}
 
  protected:
   // Helper method that EXPECTs |javascript| evaluation on page
@@ -858,7 +859,7 @@ void AutofillControllerJsTest::TestExecutingBooleanJavaScriptOnElement(
       {"submit", 0, -1},
   };
 
-  LoadHtmlAndInject(kHTMLForTestingElements);
+  LoadHtml(kHTMLForTestingElements);
   ExecuteBooleanJavaScriptOnElementsAndCheck(
       javascript,
       GetElementsByNameJavaScripts(elementsByName, arraysize(elementsByName)),
@@ -891,7 +892,7 @@ TEST_F(AutofillControllerJsTest, HasTagName) {
 }
 
 TEST_F(AutofillControllerJsTest, CombineAndCollapseWhitespace) {
-  LoadHtmlAndInject(@"<html><body></body></html>");
+  LoadHtml(@"<html><body></body></html>");
 
   EXPECT_NSEQ(@"foobar", ExecuteJavaScriptWithFormat(
                              @"__gCrWeb.autofill.combineAndCollapseWhitespace('"
@@ -926,7 +927,7 @@ void AutofillControllerJsTest::TestInputElementDataEvaluation(
     NSArray* test_data,
     NSString* tag_name) {
   NSString* html_fragment = [test_data objectAtIndex:0U];
-  LoadHtmlAndInject(html_fragment);
+  LoadHtml(html_fragment);
 
   for (NSUInteger i = 1; i < [test_data count]; ++i) {
     NSString* get_element_javascripts = [NSString
@@ -1079,7 +1080,7 @@ TEST_F(AutofillControllerJsTest, GetOptionStringsFromElement) {
   ElementByName testing_elements[] = {
       {"state", 0, -1}, {"course", 0, -1}, {"cars", 0, -1}};
 
-  LoadHtmlAndInject(kHTMLForTestingElements);
+  LoadHtml(kHTMLForTestingElements);
   ExecuteJavaScriptOnElementsAndCheck(
       @"var field = {};"
        "__gCrWeb.autofill.getOptionStringsFromElement(%@, field);"
@@ -1106,7 +1107,7 @@ TEST_F(AutofillControllerJsTest, GetOptionStringsFromElement) {
 }
 
 TEST_F(AutofillControllerJsTest, FillFormField) {
-  LoadHtmlAndInject(kHTMLForTestingElements);
+  LoadHtml(kHTMLForTestingElements);
 
   // Test text and select elements of which the value should be changed.
   const ElementByName elements[] = {
@@ -1219,7 +1220,7 @@ TEST_F(AutofillControllerJsTest, IsAutofillableInputElement) {
 }
 
 TEST_F(AutofillControllerJsTest, ExtractAutofillableElements) {
-  LoadHtmlAndInject(kHTMLForTestingElements);
+  LoadHtml(kHTMLForTestingElements);
   ElementByName expected_elements[] = {
       {"firstname", 0, -1}, {"lastname", 0, -1},
       {"email", 0, -1},     {"phone", 0, -1},
@@ -1246,7 +1247,7 @@ TEST_F(AutofillControllerJsTest, ExtractAutofillableElements) {
 void AutofillControllerJsTest::TestWebFormControlElementToFormField(
     NSArray* test_data,
     NSString* tag_name) {
-  LoadHtmlAndInject([test_data firstObject]);
+  LoadHtml([test_data firstObject]);
 
   for (NSUInteger i = 0; i < arraysize(kFormExtractMasks); ++i) {
     ExtractMask extract_mask = kFormExtractMasks[i];
@@ -1349,7 +1350,7 @@ void AutofillControllerJsTest::TestWebFormElementToFormData(
                                     objectAtIndex:0U]];
   }
   form_html_fragment = [form_html_fragment stringByAppendingString:@"</form>"];
-  LoadHtmlAndInject(form_html_fragment);
+  LoadHtml(form_html_fragment);
 
   NSString* parameter = @"document.getElementsByTagName('form')[0]";
   for (NSUInteger extract_index = 0;
@@ -1413,7 +1414,7 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormDataTooManyFields) {
   }
   html_fragment = [html_fragment stringByAppendingFormat:@"</FORM>"];
 
-  LoadHtmlAndInject(html_fragment);
+  LoadHtml(html_fragment);
   TestWebFormElementToFormDataForOneForm(
       @"document.getElementsByTagName('form')[0]", 1, @"false", @"true");
 }
@@ -1423,7 +1424,7 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormEmpty) {
       @"<FORM name='Test' action='http://c.com' method='post'>";
   html_fragment = [html_fragment stringByAppendingFormat:@"</FORM>"];
 
-  LoadHtmlAndInject(html_fragment);
+  LoadHtml(html_fragment);
   TestWebFormElementToFormDataForOneForm(
       @"document.getElementsByTagName('form')[0]", 1, @"false", @"true");
 }
@@ -1432,7 +1433,7 @@ void AutofillControllerJsTest::TestExtractNewForms(
     NSString* html,
     BOOL is_origin_window_location,
     NSArray* expected_items) {
-  LoadHtmlAndInject(html);
+  LoadHtml(html);
   // Generates verifying javascripts.
   NSMutableArray* verifying_javascripts = [NSMutableArray array];
   for (NSUInteger i = 0U; i < [expected_items count]; ++i) {
@@ -1531,7 +1532,7 @@ TEST_F(AutofillControllerJsTest,
                     "3 <input type='text' name='name3' form='testform'></input>"
                     "4 <input type='text' name='name4' form='testform'></input>"
                     "</body></html>";
-  LoadHtmlAndInject(html);
+  LoadHtml(html);
 
   NSString* verifying_javascript = @"forms[0]['fields'][0]['name']==='name1' &&"
                                    @"forms[0]['fields'][0]['label']==='1' &&"
@@ -1568,7 +1569,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
   html = [html stringByAppendingFormat:@"</form>"];
   html = [html stringByAppendingFormat:@"</body></html>"];
 
-  LoadHtmlAndInject(html);
+  LoadHtml(html);
 
   NSDictionary* expected = @{
     @"name" : @"TestForm",
@@ -1703,7 +1704,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
 }
 
 TEST_F(AutofillControllerJsTest, FillActiveFormField) {
-  LoadHtmlAndInject(kHTMLForTestingElements);
+  LoadHtml(kHTMLForTestingElements);
 
   NSString* newValue = @"new value";
   EXPECT_NSEQ(newValue,
@@ -1766,7 +1767,7 @@ TEST_F(AutofillControllerJsTest, ExtractNewForms) {
   ];
 
   for (NSDictionary* testCase in testCases) {
-    LoadHtmlAndInject(testCase[@"html"]);
+    LoadHtml(testCase[@"html"]);
 
     NSString* result =
         ExecuteJavaScriptWithFormat(@"__gCrWeb.autofill.extractForms(%zu)",

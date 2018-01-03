@@ -13,7 +13,19 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation JsAutofillManager
+@implementation JsAutofillManager {
+  // The injection receiver used to evaluate JavaScript.
+  CRWJSInjectionReceiver* _receiver;
+}
+
+- (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
+  DCHECK(receiver);
+  self = [super init];
+  if (self) {
+    _receiver = receiver;
+  }
+  return self;
+}
 
 - (void)fetchFormsWithMinimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                                completionHandler:
@@ -22,27 +34,24 @@
   NSString* extractFormsJS = [NSString
       stringWithFormat:@"__gCrWeb.autofill.extractForms(%" PRIuNS ");",
                        requiredFieldsCount];
-  [self executeJavaScript:extractFormsJS
-        completionHandler:^(id result, NSError*) {
-          completionHandler(base::mac::ObjCCastStrict<NSString>(result));
-        }];
+  [_receiver executeJavaScript:extractFormsJS
+             completionHandler:^(id result, NSError*) {
+               completionHandler(base::mac::ObjCCastStrict<NSString>(result));
+             }];
 }
 
 #pragma mark -
 #pragma mark ProtectedMethods
-
-- (NSString*)scriptPath {
-  return @"autofill_controller";
-}
 
 - (void)fillActiveFormField:(NSString*)dataString
           completionHandler:(ProceduralBlock)completionHandler {
   NSString* script =
       [NSString stringWithFormat:@"__gCrWeb.autofill.fillActiveFormField(%@);",
                                  dataString];
-  [self executeJavaScript:script completionHandler:^(id, NSError*) {
-    completionHandler();
-  }];
+  [_receiver executeJavaScript:script
+             completionHandler:^(id, NSError*) {
+               completionHandler();
+             }];
 }
 
 - (void)fillForm:(NSString*)dataString
@@ -56,9 +65,10 @@
   NSString* fillFormJS =
       [NSString stringWithFormat:@"__gCrWeb.autofill.fillForm(%@, %s);",
                                  dataString, fieldName.c_str()];
-  [self executeJavaScript:fillFormJS completionHandler:^(id, NSError*) {
-    completionHandler();
-  }];
+  [_receiver executeJavaScript:fillFormJS
+             completionHandler:^(id, NSError*) {
+               completionHandler();
+             }];
 }
 
 - (void)clearAutofilledFieldsForFormNamed:(NSString*)formName
@@ -68,16 +78,17 @@
       [NSString stringWithFormat:
                     @"__gCrWeb.autofill.clearAutofilledFields(%s);",
                     base::GetQuotedJSONString([formName UTF8String]).c_str()];
-  [self executeJavaScript:script completionHandler:^(id, NSError*) {
-    completionHandler();
-  }];
+  [_receiver executeJavaScript:script
+             completionHandler:^(id, NSError*) {
+               completionHandler();
+             }];
 }
 
 - (void)fillPredictionData:(NSString*)dataString {
   NSString* script =
       [NSString stringWithFormat:@"__gCrWeb.autofill.fillPredictionData(%@);",
                                  dataString];
-  [self executeJavaScript:script completionHandler:nil];
+  [_receiver executeJavaScript:script completionHandler:nil];
 }
 
 @end
