@@ -51,6 +51,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
@@ -3837,6 +3838,15 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   EXPECT_FALSE(base::PathExists(db1_journal));
   EXPECT_FALSE(base::PathExists(db2_symlink));
   EXPECT_TRUE(base::PathExists(db2_actual));  // Symlinks shouldn't be followed.
+}
+
+// Tests that calling DatabaseErrorCallback doesn't cause crash. (Regression
+// test for https://crbug.com/796138)
+TEST_F(HistoryBackendTest, DatabaseError) {
+  EXPECT_EQ(nullptr, backend_->GetTypedURLSyncBridge());
+  backend_->DatabaseErrorCallback(SQLITE_CORRUPT, nullptr);
+  // Run loop to let any posted callbacks run before TearDown().
+  base::RunLoop().RunUntilIdle();
 }
 
 // Common implementation for the two tests below, given that the only difference
