@@ -93,8 +93,9 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
               interceptor->GetRequests()[0].find(
-                  "<app appid=\"abc\" version=\"1.0\" nextversion=\"2.0\">"
-                  "<event eventtype=\"3\" eventresult=\"1\"/></app>"))
+                  "<app appid=\"abc\">"
+                  "<event eventtype=\"3\" eventresult=\"1\" "
+                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
     interceptor->Reset();
   }
@@ -114,8 +115,9 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
               interceptor->GetRequests()[0].find(
-                  "<app appid=\"abc\" version=\"1.0\" nextversion=\"2.0\">"
-                  "<event eventtype=\"3\" eventresult=\"0\"/></app>"))
+                  "<app appid=\"abc\">"
+                  "<event eventtype=\"3\" eventresult=\"0\" "
+                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
     interceptor->Reset();
   }
@@ -144,12 +146,13 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
               interceptor->GetRequests()[0].find(
-                  "<app appid=\"abc\" version=\"1.0\" nextversion=\"2.0\">"
+                  "<app appid=\"abc\">"
                   "<event eventtype=\"3\" eventresult=\"0\" errorcat=\"1\" "
                   "errorcode=\"2\" extracode1=\"-1\" diffresult=\"0\" "
                   "differrorcat=\"10\" "
                   "differrorcode=\"20\" diffextracode1=\"-10\" "
-                  "previousfp=\"prev fp\" nextfp=\"next fp\"/></app>"))
+                  "previousfp=\"prev fp\" nextfp=\"next fp\" "
+                  "previousversion=\"1.0\" nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
     interceptor->Reset();
   }
@@ -169,8 +172,28 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
     EXPECT_NE(string::npos,
               interceptor->GetRequests()[0].find(
-                  "<app appid=\"abc\" version=\"1.0\">"
-                  "<event eventtype=\"3\" eventresult=\"0\"/></app>"))
+                  "<app appid=\"abc\"><event eventtype=\"3\" eventresult=\"0\" "
+                  "previousversion=\"1.0\"/></app>"))
+        << interceptor->GetRequestsAsString();
+    interceptor->Reset();
+  }
+
+  {
+    // Test a valid |previouversion| and |next_version| = base::Version("0")
+    // are serialized correctly under <event...> for uninstall.
+    Component component(*update_context, "abc");
+    component.Uninstall(base::Version("1.2.3.4"), 0);
+    component.AppendEvent(BuildUninstalledEventElement(component));
+
+    ping_manager_->SendPing(component);
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
+    EXPECT_NE(string::npos,
+              interceptor->GetRequests()[0].find(
+                  "<app appid=\"abc\">"
+                  "<event eventtype=\"4\" eventresult=\"1\" "
+                  "previousversion=\"1.2.3.4\" nextversion=\"0\"/></app>"))
         << interceptor->GetRequestsAsString();
     interceptor->Reset();
   }
@@ -190,7 +213,8 @@ TEST_F(PingManagerTest, SendPing) {
     download_metrics.downloaded_bytes = 123;
     download_metrics.total_bytes = 456;
     download_metrics.download_time_ms = 987;
-    component.AppendEvent(BuildDownloadCompleteEventElement(download_metrics));
+    component.AppendEvent(
+        BuildDownloadCompleteEventElement(component, download_metrics));
 
     download_metrics = CrxDownloader::DownloadMetrics();
     download_metrics.url = GURL("http://host2/path2");
@@ -199,7 +223,8 @@ TEST_F(PingManagerTest, SendPing) {
     download_metrics.downloaded_bytes = 1230;
     download_metrics.total_bytes = 4560;
     download_metrics.download_time_ms = 9870;
-    component.AppendEvent(BuildDownloadCompleteEventElement(download_metrics));
+    component.AppendEvent(
+        BuildDownloadCompleteEventElement(component, download_metrics));
 
     ping_manager_->SendPing(component);
     base::RunLoop().RunUntilIdle();
@@ -208,14 +233,17 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_NE(
         string::npos,
         interceptor->GetRequests()[0].find(
-            "<app appid=\"abc\" version=\"1.0\" nextversion=\"2.0\">"
-            "<event eventtype=\"3\" eventresult=\"1\"/>"
+            "<app appid=\"abc\">"
+            "<event eventtype=\"3\" eventresult=\"1\" previousversion=\"1.0\" "
+            "nextversion=\"2.0\"/>"
             "<event eventtype=\"14\" eventresult=\"0\" downloader=\"direct\" "
             "errorcode=\"-1\" url=\"http://host1/path1\" downloaded=\"123\" "
-            "total=\"456\" download_time_ms=\"987\"/>"
+            "total=\"456\" download_time_ms=\"987\" previousversion=\"1.0\" "
+            "nextversion=\"2.0\"/>"
             "<event eventtype=\"14\" eventresult=\"1\" downloader=\"bits\" "
             "url=\"http://host2/path2\" downloaded=\"1230\" total=\"4560\" "
-            "download_time_ms=\"9870\"/></app>"))
+            "download_time_ms=\"9870\" previousversion=\"1.0\" "
+            "nextversion=\"2.0\"/></app>"))
         << interceptor->GetRequestsAsString();
     interceptor->Reset();
   }

@@ -2391,8 +2391,8 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
       const auto ping_data = FakePingManagerImpl::ping_data();
       EXPECT_EQ(1u, ping_data.size());
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
-      EXPECT_EQ(base::Version("1.0"), ping_data[0].previous_version);
-      EXPECT_EQ(base::Version("0.0"), ping_data[0].next_version);
+      EXPECT_EQ(base::Version("1.2.3.4"), ping_data[0].previous_version);
+      EXPECT_EQ(base::Version("0"), ping_data[0].next_version);
       EXPECT_EQ(10, ping_data[0].extra_code1);
     }
   };
@@ -2403,7 +2403,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   update_client->SendUninstallPing(
-      "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.0"), 10,
+      "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.2.3.4"), 10,
       base::BindOnce(&CompletionCallbackFake::Callback, quit_closure()));
 
   RunThreads();
@@ -3067,14 +3067,17 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
           "<event eventtype=\"14\" eventresult=\"1\" downloader=\"unknown\" "
           "url=\"http://localhost/download/"
           "runaction_test_win.crx3\" downloaded=\"1843\" "
-          "total=\"1843\" download_time_ms=\"1000\"/>",
+          "total=\"1843\" download_time_ms=\"1000\" previousversion=\"0.0\" "
+          "nextversion=\"1.0\"/>",
           events[0].c_str());
       EXPECT_STREQ(
           "<event eventtype=\"42\" eventresult=\"1\" "
           "errorcode=\"1877345072\"/>",
           events[1].c_str());
-      EXPECT_STREQ("<event eventtype=\"3\" eventresult=\"1\"/>",
-                   events[2].c_str());
+      EXPECT_STREQ(
+          "<event eventtype=\"3\" eventresult=\"1\" previousversion=\"0.0\" "
+          "nextversion=\"1.0\"/>",
+          events[2].c_str());
     }
   };
 

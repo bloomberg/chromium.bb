@@ -69,6 +69,7 @@ std::string BuildUninstalledEventElement(const Component& component);
 // Returns a string representing a download complete event corresponding to
 // one download metrics instance. The event type for this ping event is 14.
 std::string BuildDownloadCompleteEventElement(
+    const Component& component,
     const CrxDownloader::DownloadMetrics& metrics);
 
 std::string BuildActionRunEventElement(bool succeeded,
