@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "net/http2/hpack/hpack_string.h"
+#include "net/http2/hpack/http2_hpack_constants.h"
 #include "net/http2/http2_constants.h"
 #include "net/http2/platform/api/http2_string.h"
 #include "net/http2/tools/failure.h"

@@ -5,6 +5,7 @@
 #include "net/http2/hpack/decoder/hpack_decoder_tables.h"
 
 #include "base/logging.h"
+#include "net/http2/hpack/http2_hpack_constants.h"
 
 namespace net {
 namespace {
