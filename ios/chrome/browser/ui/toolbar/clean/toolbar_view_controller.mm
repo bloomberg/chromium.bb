@@ -6,7 +6,6 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
-#import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
@@ -424,13 +423,15 @@
 }
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
-  UILayoutGuide* omniboxPopupGuide = FindNamedGuide(kOmniboxGuide, self.view);
-  AddSameConstraints(self.view.locationBarContainer, omniboxPopupGuide);
-  UILayoutGuide* backButtonGuide = FindNamedGuide(kBackButtonGuide, self.view);
-  AddSameConstraints(self.view.backButton.imageView, backButtonGuide);
-  UILayoutGuide* forwardButtonGuide =
-      FindNamedGuide(kForwardButtonGuide, self.view);
-  AddSameConstraints(self.view.forwardButton.imageView, forwardButtonGuide);
+  ConstrainNamedGuideToView(kOmniboxGuide, self.view.locationBarContainer);
+  ConstrainNamedGuideToView(kBackButtonGuide, self.view.backButton.imageView);
+  ConstrainNamedGuideToView(kForwardButtonGuide,
+                            self.view.forwardButton.imageView);
+  ConstrainNamedGuideToView(kToolsMenuGuide, self.view.toolsMenuButton);
+  if (!IsIPadIdiom()) {
+    ConstrainNamedGuideToView(kTabSwitcherGuide,
+                              self.view.tabSwitchStripButton.imageView);
+  }
 }
 
 #pragma mark - Trait Collection Changes
@@ -549,24 +550,6 @@
 
 - (UIView*)shareButtonView {
   return self.view.shareButton;
-}
-
-#pragma mark - BubbleViewAnchorPointProvider
-
-- (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint = bubble_util::AnchorPoint(
-      self.view.tabSwitchStripButton.imageView.frame, direction);
-  return [self.view.tabSwitchStripButton.imageView.superview
-      convertPoint:anchorPoint
-            toView:self.view.tabSwitchStripButton.imageView.window];
-}
-
-- (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  CGPoint anchorPoint =
-      bubble_util::AnchorPoint(self.view.toolsMenuButton.frame, direction);
-  return [self.view.toolsMenuButton.superview
-      convertPoint:anchorPoint
-            toView:self.view.toolsMenuButton.window];
 }
 
 #pragma mark - FullscreenUIElement

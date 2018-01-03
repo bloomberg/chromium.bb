@@ -174,13 +174,13 @@
 #pragma mark - BubbleViewAnchorPointProvider
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  return [[self.toolbarCoordinator bubbleAnchorPointProvider]
-      anchorPointForTabSwitcherButton:direction];
+  // No-op. The Clean Toolbar uses named layout guides.
+  return CGPointZero;
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  return [[self.toolbarCoordinator bubbleAnchorPointProvider]
-      anchorPointForToolsMenuButton:direction];
+  // No-op. The Clean Toolbar uses named layout guides.
+  return CGPointZero;
 }
 
 #pragma mark - FullscreenUIElement

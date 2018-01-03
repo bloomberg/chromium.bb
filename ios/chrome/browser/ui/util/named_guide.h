@@ -19,6 +19,11 @@ extern GuideName* const kOmniboxGuide;
 extern GuideName* const kBackButtonGuide;
 // A guide that is constrained to match the frame of the forward button's image.
 extern GuideName* const kForwardButtonGuide;
+// A guide that is constrained to match the frame of the TabSwitcher button's
+// image.
+extern GuideName* const kTabSwitcherGuide;
+// A guide that is constrained to match the frame of the ToolsMenu button.
+extern GuideName* const kToolsMenuGuide;
 
 //
 //////////////////////////////////////////
@@ -31,5 +36,9 @@ UILayoutGuide* FindNamedGuide(GuideName* name, UIView* view);
 // globally accessible under the given |name|.  It is an error to add a guide
 // with the same name as an existing guide.  Returns the newly-created guide.
 UILayoutGuide* AddNamedGuide(GuideName* name, UIView* view);
+
+// Adds constraints such as the layoutGuide with |guideName| matches the |view|.
+// The layout guide has to be owned by |view| or one of its superview.
+void ConstrainNamedGuideToView(GuideName* guideName, UIView* view);
 
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_NAMED_GUIDE_H_
