@@ -40,6 +40,8 @@ class CONTENT_EXPORT MouseLockDispatcher {
   // Clears out the reference to the |target| because it has or is being
   // destroyed. Unlocks if locked. The pointer will not be accessed.
   void OnLockTargetDestroyed(LockTarget* target);
+  // Clears out any reference to a lock target. Unlocks if locked.
+  void ClearLockTarget();
   bool IsMouseLockedTo(LockTarget* target);
 
   // Allow lock target to consumed a mouse event, if it does return true.
