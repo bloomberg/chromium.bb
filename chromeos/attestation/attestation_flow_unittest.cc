@@ -403,6 +403,49 @@ TEST_F(AttestationFlowTest, GetMachineCertificateAlreadyEnrolled) {
   RunUntilIdle();
 }
 
+TEST_F(AttestationFlowTest, GetEnrollmentCertificateAlreadyEnrolled) {
+  StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
+  async_caller.SetUp(true, cryptohome::MOUNT_ERROR_NONE);
+  EXPECT_CALL(async_caller, AsyncTpmAttestationCreateCertRequest(
+                                _, PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
+                                cryptohome::Identification(), "", _))
+      .Times(1);
+  std::string fake_cert_response =
+      cryptohome::MockAsyncMethodCaller::kFakeAttestationCertRequest;
+  fake_cert_response += "_response";
+  EXPECT_CALL(async_caller,
+              AsyncTpmAttestationFinishCertRequest(
+                  fake_cert_response, KEY_DEVICE, cryptohome::Identification(),
+                  kEnterpriseEnrollmentKey, _))
+      .Times(1);
+
+  chromeos::FakeCryptohomeClient client;
+
+  std::unique_ptr<MockServerProxy> proxy(new StrictMock<MockServerProxy>());
+  proxy->DeferToFake(true);
+  EXPECT_CALL(*proxy, GetType()).WillRepeatedly(DoDefault());
+  EXPECT_CALL(
+      *proxy,
+      SendCertificateRequest(
+          cryptohome::MockAsyncMethodCaller::kFakeAttestationCertRequest, _))
+      .Times(1);
+
+  StrictMock<MockObserver> observer;
+  EXPECT_CALL(observer,
+              MockCertificateCallback(
+                  ATTESTATION_SUCCESS,
+                  cryptohome::MockAsyncMethodCaller::kFakeAttestationCert))
+      .Times(1);
+  AttestationFlow::CertificateCallback mock_callback = base::BindRepeating(
+      &MockObserver::MockCertificateCallback, base::Unretained(&observer));
+
+  std::unique_ptr<ServerProxy> proxy_interface(proxy.release());
+  AttestationFlow flow(&async_caller, &client, std::move(proxy_interface));
+  flow.GetCertificate(PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
+                      EmptyAccountId(), "", true, mock_callback);
+  RunUntilIdle();
+}
+
 TEST_F(AttestationFlowTest, GetCertificate_FailCreateCertRequest) {
   StrictMock<cryptohome::MockAsyncMethodCaller> async_caller;
   async_caller.SetUp(false, cryptohome::MOUNT_ERROR_NONE);
