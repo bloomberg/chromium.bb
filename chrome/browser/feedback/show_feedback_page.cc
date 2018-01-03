@@ -20,6 +20,7 @@ namespace chrome {
 void ShowFeedbackPage(Browser* browser,
                       FeedbackSource source,
                       const std::string& description_template,
+                      const std::string& description_placeholder_text,
                       const std::string& category_tag,
                       const std::string& extra_diagnostics) {
   GURL page_url;
@@ -42,7 +43,8 @@ void ShowFeedbackPage(Browser* browser,
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
 
   api->RequestFeedbackForFlow(
-      description_template, category_tag, extra_diagnostics, page_url,
+      description_template, description_placeholder_text, category_tag,
+      extra_diagnostics, page_url,
       source == kFeedbackSourceSadTabPage
           ? feedback_private::FeedbackFlow::FEEDBACK_FLOW_SADTABCRASH
           : feedback_private::FeedbackFlow::FEEDBACK_FLOW_REGULAR);

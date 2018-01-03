@@ -32,6 +32,7 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 #endif  // defined(OS_CHROMEOS)
 
   void RequestFeedbackForFlow(const std::string& description_template,
+                              const std::string& description_placeholder_text,
                               const std::string& category_tag,
                               const std::string& extra_diagnostics,
                               const GURL& page_url,

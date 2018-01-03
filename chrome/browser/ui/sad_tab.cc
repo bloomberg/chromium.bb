@@ -228,6 +228,7 @@ void SadTab::PerformAction(SadTab::Action action) {
         ShowFeedbackPage(
             chrome::FindBrowserWithWebContents(web_contents_),
             chrome::kFeedbackSourceSadTabPage,
+            std::string() /* description_template */,
             l10n_util::GetStringUTF8(kind_ == SAD_TAB_KIND_CRASHED
                                          ? IDS_CRASHED_TAB_FEEDBACK_MESSAGE
                                          : IDS_KILLED_TAB_FEEDBACK_MESSAGE),

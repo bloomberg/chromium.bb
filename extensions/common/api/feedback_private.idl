@@ -44,6 +44,10 @@ namespace feedbackPrivate {
     // The feedback text describing the user issue.
     DOMString description;
 
+    // The placeholder text that will be shown in the description field when
+    // it's empty.
+    DOMString? descriptionPlaceholder;
+
     // The e-mail of the user that initiated this feedback.
     DOMString? email;
 
