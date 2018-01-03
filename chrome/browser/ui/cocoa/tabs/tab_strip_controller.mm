@@ -1578,60 +1578,25 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   if (!contents)
     return;
 
-  static NSImage* throbberWaitingImage =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetNativeImageNamed(IDR_THROBBER_WAITING)
-          .CopyNSImage();
-  static NSImage* throbberWaitingIncognitoImage =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetNativeImageNamed(IDR_THROBBER_WAITING_INCOGNITO)
-          .CopyNSImage();
-  static NSImage* throbberLoadingImage = ui::ResourceBundle::GetSharedInstance()
-                                             .GetNativeImageNamed(IDR_THROBBER)
-                                             .CopyNSImage();
-  static NSImage* throbberLoadingIncognitoImage =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetNativeImageNamed(IDR_THROBBER_INCOGNITO)
-          .CopyNSImage();
-  static NSImage* sadFaviconImage =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetNativeImageNamed(IDR_CRASH_SAD_FAVICON)
-          .CopyNSImage();
-
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabController* tabController = [tabArray_ objectAtIndex:index];
   TabUIHelper* tabUIHelper = TabUIHelper::FromWebContents(contents);
 
-  bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon =
-      favicon::ShouldDisplayFavicon(contents) ||
-      tabStripModel_->IsTabPinned(modelIndex);  // Always show icon if pinned.
+  bool oldShowIcon = [tabController showIcon];
+  bool tabIsCrashed = contents->IsCrashed();
+  bool showIcon = favicon::ShouldDisplayFavicon(contents) || tabIsCrashed ||
+                  tabStripModel_->IsTabPinned(modelIndex);
 
-  TabLoadingState oldState = [tabController loadingState];
-  TabLoadingState newState = kTabDone;
-  NSImage* throbberImage = nil;
-  if (contents->IsCrashed()) {
-    newState = kTabCrashed;
-    newHasIcon = true;
+  TabLoadingState oldLoadingState = [tabController loadingState];
+  TabLoadingState newLoadingState = kTabDone;
+  if (tabIsCrashed) {
+    newLoadingState = kTabCrashed;
   } else if (contents->IsWaitingForResponse()) {
-    newState = kTabWaiting;
-    if ([[[tabController view] window] hasDarkTheme]) {
-      throbberImage = throbberWaitingIncognitoImage;
-    } else {
-      throbberImage = throbberWaitingImage;
-    }
+    newLoadingState = kTabWaiting;
   } else if (contents->IsLoadingToDifferentDocument()) {
-    newState = kTabLoading;
-    if ([[[tabController view] window] hasDarkTheme]) {
-      throbberImage = throbberLoadingIncognitoImage;
-    } else {
-      throbberImage = throbberLoadingImage;
-    }
+    newLoadingState = kTabLoading;
   }
-
-  if (oldState != newState)
-    [tabController setLoadingState:newState];
 
   // Use TabUIHelper to determine if we would like to hide the throbber and
   // override the favicon. We want to hide the throbber for 2 cases. 1) when a
@@ -1641,38 +1606,27 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // So TabUIHelper will fetch the favicon from history if available and use
   // that. For the 2nd case, TabUIhelper will return an empty favicon, so the
   // WebContents' favicon is used.
-  //
-  // When the throbber should be shown, only make changes when the state is
-  // actually changing, to avoid expensive unnecessary view manipulation.
-  // Because while loading, this function is called repeatedly with the same
-  // state. When loading is complete (kTabDone), every call to this function is
-  // significant.
+  NSImage* newImage = nil;
   if (tabUIHelper->ShouldHideThrobber()) {
-    gfx::Image favicon = tabUIHelper->GetFavicon();
-    if (!favicon.IsEmpty()) {
-      [tabController setIconImage:favicon.AsNSImage()];
-    } else {
-      [tabController
-          setIconImage:[self iconImageForContents:contents atIndex:modelIndex]];
-    }
     wasHidingThrobberSet_.insert(contents);
+
+    gfx::Image favicon = tabUIHelper->GetFavicon();
+    newImage = favicon.IsEmpty()
+                   ? [self iconImageForContents:contents atIndex:modelIndex]
+                   : favicon.AsNSImage();
   } else if (base::ContainsKey(wasHidingThrobberSet_, contents) ||
-             newState == kTabDone || oldState != newState ||
-             oldHasIcon != newHasIcon) {
+             newLoadingState == kTabDone ||
+             oldLoadingState != newLoadingState || oldShowIcon != showIcon) {
     wasHidingThrobberSet_.erase(contents);
-    if (newHasIcon) {
-      if (newState == kTabDone) {
-        [tabController setIconImage:[self iconImageForContents:contents
-                                                       atIndex:modelIndex]];
-      } else if (newState == kTabCrashed) {
-        [tabController setIconImage:sadFaviconImage withToastAnimation:YES];
-      } else {
-        [tabController setIconImage:throbberImage];
-      }
-    } else {
-      [tabController setIconImage:nil];
+
+    if (showIcon && newLoadingState == kTabDone) {
+      newImage = [self iconImageForContents:contents atIndex:modelIndex];
     }
   }
+
+  [tabController setIconImage:newImage
+              forLoadingState:newLoadingState
+                     showIcon:showIcon];
 
   TabAlertState alertState = [self alertStateForContents:contents];
   [self updateWindowAlertState:alertState forWebContents:contents];

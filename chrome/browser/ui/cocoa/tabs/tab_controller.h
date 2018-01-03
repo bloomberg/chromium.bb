@@ -42,9 +42,14 @@ enum TabLoadingState {
 
 @interface TabController : NSViewController<TabDraggingEventTarget>
 
-@property(assign, nonatomic) TabLoadingState loadingState;
+@property(readonly, nonatomic) TabLoadingState loadingState;
 
 @property(assign, nonatomic) SEL action;
+// showIcon is YES when the tab should display a favicon (e.g. has an icon, is
+// not the NTP, etc.), and is equivalent to the data.show_icon flag in Views.
+// Actual favicon visibility depends on other factors such as available space,
+// and is reflected in the iconView's isHidden state.
+@property(readonly, nonatomic) BOOL showIcon;
 @property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) BOOL blocked;
 @property(assign, nonatomic) NSString* toolTip;
@@ -55,7 +60,6 @@ enum TabLoadingState {
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) GURL url;
-@property(readonly, nonatomic) NSView* iconView;
 @property(readonly, nonatomic) AlertIndicatorButton* alertIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
@@ -75,11 +79,10 @@ enum TabLoadingState {
 
 // Sets the tab's icon image.
 // |image| must be 16x16 in size.
-// |image| can be a horizontal strip of image sprites which will be animated.
-// Setting |animate| to YES will animate away the old image before animating
-// the new image back to position.
-- (void)setIconImage:(NSImage*)image;
-- (void)setIconImage:(NSImage*)image withToastAnimation:(BOOL)animate;
+// |showIcon| is YES when the tab should show its favicon.
+- (void)setIconImage:(NSImage*)image
+     forLoadingState:(TabLoadingState)loadingState
+            showIcon:(BOOL)showIcon;
 
 // Sets the current tab alert state and updates the views.
 - (void)setAlertState:(TabAlertState)alertState;
@@ -118,6 +121,7 @@ enum TabLoadingState {
 @end
 
 @interface TabController(TestingAPI)
+- (NSView*)iconView;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
 - (BOOL)shouldShowAlertIndicator;
