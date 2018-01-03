@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_clipping_feature.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_private_base_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -185,6 +186,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"clean-toolbar", flag_descriptions::kCleanToolbarName,
      flag_descriptions::kCleanToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kCleanToolbar)},
+    {"clipping-textfield", flag_descriptions::kClippingTextfieldName,
+     flag_descriptions::kClippingTextfieldDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kClippingTextfield)},
     {"bookmark-new-edit-page", flag_descriptions::kBookmarkNewEditPageName,
      flag_descriptions::kBookmarkNewEditPageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kBookmarkNewEditPage)},
