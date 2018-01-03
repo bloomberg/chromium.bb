@@ -272,12 +272,13 @@ std::unique_ptr<service_manager::Service> CreateEmbeddedUIService(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr,
     discardable_memory::DiscardableSharedMemoryManager* memory_manager) {
-  ui::Service::InProcessConfig config;
-  config.resource_runner = task_runner;
-  config.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
-  config.memory_manager = memory_manager;
-  config.should_host_viz = switches::IsMusHostingViz();
-  return std::make_unique<ui::Service>(&config);
+  ui::Service::InitParams params;
+  params.running_standalone = false;
+  params.resource_runner = task_runner;
+  params.image_cursors_set_weak_ptr = image_cursors_set_weak_ptr;
+  params.memory_manager = memory_manager;
+  params.should_host_viz = switches::IsMusHostingViz();
+  return std::make_unique<ui::Service>(params);
 }
 
 void RegisterUIServiceInProcessIfNecessary(

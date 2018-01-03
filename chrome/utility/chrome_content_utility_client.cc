@@ -62,7 +62,7 @@
 #endif
 #endif
 
-#if BUILDFLAG(ENABLE_MUS)
+#if defined(OS_CHROMEOS)
 #include "chrome/utility/mash_service_factory.h"
 #endif
 
@@ -143,6 +143,10 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
     (BUILDFLAG(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
   handlers_.push_back(base::MakeUnique<printing::PrintingHandler>());
+#endif
+
+#if defined(OS_CHROMEOS)
+  mash_service_factory_ = std::make_unique<MashServiceFactory>();
 #endif
 }
 
@@ -293,7 +297,8 @@ void ChromeContentUtilityClient::RegisterServices(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_CHROMEOS)
-  RegisterOutOfProcessMashServices(services);
+  // TODO(jamescook): Figure out why we have to do this when not using --mash.
+  mash_service_factory_->RegisterOutOfProcessServices(services);
 #endif
 }
 
