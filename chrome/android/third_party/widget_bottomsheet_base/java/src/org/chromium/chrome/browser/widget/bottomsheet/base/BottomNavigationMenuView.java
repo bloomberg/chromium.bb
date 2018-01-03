@@ -225,7 +225,7 @@ public class BottomNavigationMenuView extends LinearLayout implements MenuView {
      * @param layoutHeight Height of the navigation menu's container.
      */
     public void updateMenuItemSpacingForMinWidth(int layoutWidth, int layoutHeight) {
-        if (mButtons.length == 0) return;
+        if (mButtons == null || mButtons.length == 0) return;
 
         int menuWidth = Math.min(layoutWidth, layoutHeight);
         if (menuWidth != mMenuWidth) {
