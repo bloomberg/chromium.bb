@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/in_process_display_client.h"
@@ -51,7 +52,8 @@ namespace content {
 class VizProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
                                    public ImageTransportFactory,
-                                   public viz::mojom::CompositingModeWatcher {
+                                   public viz::mojom::CompositingModeWatcher,
+                                   public viz::ContextLostObserver {
  public:
   VizProcessTransportFactory(
       gpu::GpuChannelEstablishFactory* gpu_channel_establish_factory,
@@ -112,6 +114,9 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // viz::mojom::CompositingModeWatcher implementation.
   void CompositingModeFallbackToSoftware() override;
 
+  // viz::ContextLostObserver implementation.
+  void OnContextLost() override;
+
  private:
   struct CompositorData {
     CompositorData();
@@ -157,12 +162,16 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   base::flat_map<ui::Compositor*, CompositorData> compositor_data_map_;
   bool is_gpu_compositing_disabled_ = false;
 
-  // TODO(kylechar): Call OnContextLost() on observers when GPU crashes.
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
 
   std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
-  scoped_refptr<viz::RasterContextProvider> shared_worker_context_provider_;
-  scoped_refptr<ui::ContextProviderCommandBuffer> compositor_context_provider_;
+
+  // ContextProvider used on worker threads for rasterization.
+  scoped_refptr<viz::RasterContextProvider> worker_context_provider_;
+
+  // ContextProvider used on the main thread. Shared by ui::Compositors and also
+  // returned from GetSharedMainThreadContextProvider().
+  scoped_refptr<ui::ContextProviderCommandBuffer> main_context_provider_;
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
