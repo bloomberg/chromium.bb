@@ -241,6 +241,8 @@ cc_component("cc") {
     "tiles/raster_tile_priority_queue_required.h",
     "tiles/software_image_decode_cache.cc",
     "tiles/software_image_decode_cache.h",
+    "tiles/software_image_decode_cache_utils.cc",
+    "tiles/software_image_decode_cache_utils.h",
     "tiles/tile.cc",
     "tiles/tile.h",
     "tiles/tile_draw_info.cc",

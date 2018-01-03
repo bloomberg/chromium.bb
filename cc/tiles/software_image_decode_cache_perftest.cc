@@ -70,8 +70,10 @@ class SoftwareImageDecodeCachePerfTest : public testing::Test {
 
     timer_.Reset();
     do {
-      for (auto& image : images)
-        ImageDecodeCacheKey::FromDrawImage(image, kN32_SkColorType);
+      for (auto& image : images) {
+        SoftwareImageDecodeCache::CacheKey::FromDrawImage(image,
+                                                          kN32_SkColorType);
+      }
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
