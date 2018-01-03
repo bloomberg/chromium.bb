@@ -166,6 +166,10 @@ void PaymentRequestDialogView::ShowProcessingSpinner() {
     observer_for_testing_->OnProcessingSpinnerShown();
 }
 
+bool PaymentRequestDialogView::IsInteractive() const {
+  return !throbber_overlay_.visible();
+}
+
 void PaymentRequestDialogView::OnStartUpdating(
     PaymentRequestSpec::UpdateReason reason) {
   ShowProcessingSpinner();

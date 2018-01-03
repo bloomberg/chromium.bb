@@ -286,6 +286,9 @@ std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {
 
 void CvcUnmaskViewController::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
+  if (!dialog()->IsInteractive())
+    return;
+
   switch (sender->tag()) {
     case static_cast<int>(Tags::CONFIRM_TAG):
       CvcConfirmed();
@@ -396,6 +399,9 @@ void CvcUnmaskViewController::ContentsChanged(
 }
 
 void CvcUnmaskViewController::OnPerformAction(views::Combobox* combobox) {
+  if (!dialog()->IsInteractive())
+    return;
+
   UpdatePayButtonState();
 }
 

@@ -474,6 +474,9 @@ PaymentSheetViewController::CreateExtraFooterView() {
 
 void PaymentSheetViewController::ButtonPressed(views::Button* sender,
                                                const ui::Event& event) {
+  if (!dialog()->IsInteractive())
+    return;
+
   switch (sender->tag()) {
     case static_cast<int>(
         PaymentSheetViewControllerTags::SHOW_ORDER_SUMMARY_BUTTON):
@@ -542,6 +545,9 @@ void PaymentSheetViewController::StyledLabelLinkClicked(
     views::StyledLabel* label,
     const gfx::Range& range,
     int event_flags) {
+  if (!dialog()->IsInteractive())
+    return;
+
   // The only thing that can trigger this is the user clicking on the "settings"
   // link in the data attribution text.
   chrome::ShowSettingsSubPageForProfile(dialog()->GetProfile(),

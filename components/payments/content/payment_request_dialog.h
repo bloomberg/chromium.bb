@@ -25,7 +25,11 @@ class PaymentRequestDialog {
 
   virtual void ShowErrorMessage() = 0;
 
+  // Shows a "Processing..." spinner.
   virtual void ShowProcessingSpinner() = 0;
+
+  // Whether a "Processing..." spinner is showing.
+  virtual bool IsInteractive() const = 0;
 
   // Shows the CVC unmask sheet and starts a FullCardRequest with the info
   // entered by the user.

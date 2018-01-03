@@ -109,6 +109,7 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void CloseDialog() override;
   void ShowErrorMessage() override;
   void ShowProcessingSpinner() override;
+  bool IsInteractive() const override;
 
   // PaymentRequestSpec::Observer:
   void OnStartUpdating(PaymentRequestSpec::UpdateReason reason) override;
