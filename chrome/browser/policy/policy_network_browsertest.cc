@@ -28,6 +28,7 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
@@ -313,6 +314,12 @@ class QuicAllowedPolicyDynamicTest : public QuicTestBase {
     PolicyMap policy_map;
     provider->UpdateChromePolicy(policy_map);
     base::RunLoop().RunUntilIdle();
+
+    // To avoid any races between sending future requests and disabling QUIC in
+    // the network process, flush the NetworkService Mojo interface, which is
+    // the one that has the DisableQuic() method.
+    if (base::FeatureList::IsEnabled(features::kNetworkService))
+      content::FlushNetworkServiceInstanceForTesting();
   }
 
   // Returns the first Profile.
