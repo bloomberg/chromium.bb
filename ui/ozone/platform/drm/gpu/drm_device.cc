@@ -129,72 +129,8 @@ bool CanQueryForResources(int fd) {
   return !drmIoctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &resources);
 }
 
-// TODO(robert.bradford): Replace with libdrm structures after libdrm roll.
-// https://crbug.com/586475
-struct DrmColorLut {
-  uint16_t red;
-  uint16_t green;
-  uint16_t blue;
-  uint16_t reserved;
-};
-
-struct DrmColorCtm {
-  int64_t ctm_coeff[9];
-};
-
-struct DrmModeCreateBlob {
-  uint64_t data;
-  uint32_t length;
-  uint32_t blob_id;
-};
-
-struct DrmModeDestroyBlob {
-  uint32_t blob_id;
-};
-
-#ifndef DRM_IOCTL_MODE_CREATEPROPBLOB
-#define DRM_IOCTL_MODE_CREATEPROPBLOB DRM_IOWR(0xBD, struct DrmModeCreateBlob)
-#endif
-
-#ifndef DRM_IOCTL_MODE_DESTROYPROPBLOB
-#define DRM_IOCTL_MODE_DESTROYPROPBLOB DRM_IOWR(0xBE, struct DrmModeDestroyBlob)
-#endif
-
-int CreatePropertyBlob(int fd, const void* data, size_t length, uint32_t* id) {
-  DrmModeCreateBlob create;
-  int ret;
-
-  if (length >= 0xffffffff)
-    return -ERANGE;
-
-  memset(&create, 0, sizeof(create));
-
-  create.length = length;
-  create.data = (uintptr_t)data;
-  create.blob_id = 0;
-  *id = 0;
-
-  ret = drmIoctl(fd, DRM_IOCTL_MODE_CREATEPROPBLOB, &create);
-  ret = ret < 0 ? -errno : ret;
-  if (ret != 0)
-    return ret;
-
-  *id = create.blob_id;
-  return 0;
-}
-
-int DestroyPropertyBlob(int fd, uint32_t id) {
-  DrmModeDestroyBlob destroy;
-  int ret;
-
-  memset(&destroy, 0, sizeof(destroy));
-  destroy.blob_id = id;
-  ret = drmIoctl(fd, DRM_IOCTL_MODE_DESTROYPROPBLOB, &destroy);
-  return ret < 0 ? -errno : ret;
-}
-
-using ScopedDrmColorLutPtr = std::unique_ptr<DrmColorLut, base::FreeDeleter>;
-using ScopedDrmColorCtmPtr = std::unique_ptr<DrmColorCtm, base::FreeDeleter>;
+using ScopedDrmColorLutPtr = std::unique_ptr<drm_color_lut, base::FreeDeleter>;
+using ScopedDrmColorCtmPtr = std::unique_ptr<drm_color_ctm, base::FreeDeleter>;
 
 ScopedDrmColorLutPtr CreateLutBlob(
     const std::vector<display::GammaRampRGBEntry>& source) {
@@ -202,9 +138,9 @@ ScopedDrmColorLutPtr CreateLutBlob(
   if (source.empty())
     return nullptr;
 
-  ScopedDrmColorLutPtr lut(
-      static_cast<DrmColorLut*>(malloc(sizeof(DrmColorLut) * source.size())));
-  DrmColorLut* p = lut.get();
+  ScopedDrmColorLutPtr lut(static_cast<drm_color_lut*>(
+      malloc(sizeof(drm_color_lut) * source.size())));
+  drm_color_lut* p = lut.get();
   for (size_t i = 0; i < source.size(); ++i) {
     p[i].red = source[i].r;
     p[i].green = source[i].g;
@@ -219,15 +155,15 @@ ScopedDrmColorCtmPtr CreateCTMBlob(
     return nullptr;
 
   ScopedDrmColorCtmPtr ctm(
-      static_cast<DrmColorCtm*>(malloc(sizeof(DrmColorCtm))));
-  for (size_t i = 0; i < arraysize(ctm->ctm_coeff); ++i) {
+      static_cast<drm_color_ctm*>(malloc(sizeof(drm_color_ctm))));
+  for (size_t i = 0; i < arraysize(ctm->matrix); ++i) {
     if (correction_matrix[i] < 0) {
-      ctm->ctm_coeff[i] = static_cast<uint64_t>(
-          -correction_matrix[i] * (static_cast<uint64_t>(1) << 32));
-      ctm->ctm_coeff[i] |= static_cast<uint64_t>(1) << 63;
+      ctm->matrix[i] = static_cast<uint64_t>(-correction_matrix[i] *
+                                             (static_cast<uint64_t>(1) << 32));
+      ctm->matrix[i] |= static_cast<uint64_t>(1) << 63;
     } else {
-      ctm->ctm_coeff[i] = static_cast<uint64_t>(
-          correction_matrix[i] * (static_cast<uint64_t>(1) << 32));
+      ctm->matrix[i] = static_cast<uint64_t>(correction_matrix[i] *
+                                             (static_cast<uint64_t>(1) << 32));
     }
   }
   return ctm;
@@ -244,7 +180,7 @@ bool SetBlobProperty(int fd,
   int res;
 
   if (data) {
-    res = CreatePropertyBlob(fd, data, length, &blob_id);
+    res = drmModeCreatePropertyBlob(fd, data, length, &blob_id);
     if (res != 0) {
       LOG(ERROR) << "Error creating property blob: " << base::safe_strerror(res)
                  << " for property " << property_name;
@@ -261,7 +197,7 @@ bool SetBlobProperty(int fd,
     success = true;
   }
   if (blob_id != 0)
-    DestroyPropertyBlob(fd, blob_id);
+    drmModeDestroyPropertyBlob(fd, blob_id);
   return success;
 }
 
@@ -795,7 +731,7 @@ bool DrmDevice::SetColorCorrection(
               file_.GetPlatformFile(), crtc_id, DRM_MODE_OBJECT_CRTC,
               crtc_props->props[i], property->name,
               reinterpret_cast<unsigned char*>(degamma_blob_data.get()),
-              sizeof(DrmColorLut) * degamma_lut_size))
+              sizeof(drm_color_lut) * degamma_lut_size))
         return false;
     }
     if (!strcmp(property->name, "GAMMA_LUT")) {
@@ -803,7 +739,7 @@ bool DrmDevice::SetColorCorrection(
               file_.GetPlatformFile(), crtc_id, DRM_MODE_OBJECT_CRTC,
               crtc_props->props[i], property->name,
               reinterpret_cast<unsigned char*>(gamma_blob_data.get()),
-              sizeof(DrmColorLut) * gamma_lut_size))
+              sizeof(drm_color_lut) * gamma_lut_size))
         return false;
     }
     if (!strcmp(property->name, "CTM")) {
@@ -811,7 +747,7 @@ bool DrmDevice::SetColorCorrection(
               file_.GetPlatformFile(), crtc_id, DRM_MODE_OBJECT_CRTC,
               crtc_props->props[i], property->name,
               reinterpret_cast<unsigned char*>(ctm_blob_data.get()),
-              sizeof(DrmColorCtm)))
+              sizeof(drm_color_ctm)))
         return false;
     }
   }
