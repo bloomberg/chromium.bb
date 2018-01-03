@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"

@@ -12,6 +12,18 @@
 
 namespace app_list {
 
+namespace {
+
+std::unique_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
+    SpeechRecognitionState state) {
+  // Currently no speech support in app list.
+  // TODO(xiaohuic): when implementing speech support in new app list, we should
+  // either reuse this and related logic or delete them.
+  return nullptr;
+}
+
+}  // namespace
+
 SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
     const gfx::ImageSkia& icon,
     const base::string16& tooltip,
@@ -24,9 +36,8 @@ SearchBoxModel::SearchBoxModel() : is_tablet_mode_(false) {}
 
 SearchBoxModel::~SearchBoxModel() = default;
 
-void SearchBoxModel::SetSpeechRecognitionButton(
-    std::unique_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {
-  speech_button_ = std::move(speech_button);
+void SearchBoxModel::SetSpeechRecognitionButton(SpeechRecognitionState state) {
+  speech_button_ = CreateNewProperty(state);
   for (auto& observer : observers_)
     observer.SpeechRecognitionButtonPropChanged();
 }

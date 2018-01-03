@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -18,27 +18,15 @@
 
 namespace app_list {
 
-namespace {
-
-std::unique_ptr<SearchBoxModel::SpeechButtonProperty> CreateNewProperty(
-    SpeechRecognitionState state) {
-  // Currently no speech support in app list.
-  // TODO(xiaohuic): when implementing speech support in new app list, we should
-  // either reuse this and related logic or delete them.
-  return nullptr;
-}
-
-}  // namespace
-
 SearchResourceManager::SearchResourceManager(Profile* profile,
-                                             SearchBoxModel* search_box,
+                                             AppListModelUpdater* model_updater,
                                              SpeechUIModel* speech_ui)
-    : search_box_(search_box),
+    : model_updater_(model_updater),
       speech_ui_(speech_ui),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   speech_ui_->AddObserver(this);
   // Give |SearchBoxModel| tablet and clamshell A11y Announcements.
-  search_box_->SetTabletAndClamshellAccessibleName(
+  model_updater_->SetSearchTabletAndClamshellAccessibleName(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET),
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME));
   OnSpeechRecognitionStateChanged(speech_ui_->state());
@@ -51,11 +39,12 @@ SearchResourceManager::~SearchResourceManager() {
 void SearchResourceManager::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
   if (is_fullscreen_app_list_enabled_) {
-    search_box_->SetHintText(
+    model_updater_->SetSearchHintText(
         l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT_FULLSCREEN));
   } else {
-    search_box_->SetHintText(l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
-    search_box_->SetSpeechRecognitionButton(CreateNewProperty(new_state));
+    model_updater_->SetSearchHintText(
+        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
+    model_updater_->SetSearchSpeechRecognitionButton(new_state);
   }
 }
 

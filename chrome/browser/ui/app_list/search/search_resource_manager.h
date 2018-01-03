@@ -8,18 +8,18 @@
 #include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/macros.h"
 
+class AppListModelUpdater;
 class Profile;
 
 namespace app_list {
 
-class SearchBoxModel;
 class SpeechUIModel;
 
 // Manages the strings and assets of the app-list search box.
 class SearchResourceManager : public SpeechUIModelObserver {
  public:
   SearchResourceManager(Profile* profile,
-                        SearchBoxModel* search_box,
+                        AppListModelUpdater* model_updater,
                         SpeechUIModel* speech_ui);
   ~SearchResourceManager() override;
 
@@ -28,7 +28,7 @@ class SearchResourceManager : public SpeechUIModelObserver {
   void OnSpeechRecognitionStateChanged(
       SpeechRecognitionState new_state) override;
 
-  SearchBoxModel* search_box_;
+  AppListModelUpdater* model_updater_;
   SpeechUIModel* speech_ui_;
 
   const bool is_fullscreen_app_list_enabled_;

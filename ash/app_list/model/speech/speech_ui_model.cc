@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <limits>
 
+#include "ash/app_list/model/speech/speech_ui_model_observer.h"
+
 namespace app_list {
 
 namespace {

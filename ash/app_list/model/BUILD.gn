@@ -56,6 +56,7 @@ component("search_model") {
   defines = [ "APP_LIST_MODEL_IMPLEMENTATION" ]
 
   deps = [
+    ":speech_ui_model",
     "//base:i18n",
     "//ui/base",
     "//ui/gfx",

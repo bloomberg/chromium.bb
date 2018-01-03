@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/model/app_list_model_export.h"
+#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -18,7 +19,7 @@ namespace app_list {
 
 class SearchBoxModelObserver;
 
-// SearchBoxModel consisits of an icon, a hint text, a user text and a selection
+// SearchBoxModel consists of an icon, a hint text, a user text and a selection
 // model. The icon is rendered to the side of the query editor. The hint text
 // is used as query edit control's placeholder text and displayed when there is
 // no user text in the control. The selection model and the text represents the
@@ -43,8 +44,7 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   ~SearchBoxModel();
 
   // Sets/gets the properties for the button of speech recognition.
-  void SetSpeechRecognitionButton(
-      std::unique_ptr<SpeechButtonProperty> speech_button);
+  void SetSpeechRecognitionButton(SpeechRecognitionState state);
   const SpeechButtonProperty* speech_button() const {
     return speech_button_.get();
   }

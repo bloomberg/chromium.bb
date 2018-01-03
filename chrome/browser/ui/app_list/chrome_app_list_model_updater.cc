@@ -63,6 +63,28 @@ void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
 }
 
+void ChromeAppListModelUpdater::SetSearchTabletAndClamshellAccessibleName(
+    const base::string16& tablet_accessible_name,
+    const base::string16& clamshell_accessible_name) {
+  search_model_->search_box()->SetTabletAndClamshellAccessibleName(
+      tablet_accessible_name, clamshell_accessible_name);
+}
+
+void ChromeAppListModelUpdater::SetSearchHintText(
+    const base::string16& hint_text) {
+  search_model_->search_box()->SetHintText(hint_text);
+}
+
+void ChromeAppListModelUpdater::SetSearchSpeechRecognitionButton(
+    app_list::SpeechRecognitionState state) {
+  search_model_->search_box()->SetSpeechRecognitionButton(state);
+}
+
+void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
+                                                bool initiated_by_user) {
+  search_model_->search_box()->Update(text, initiated_by_user);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Methods only used by ChromeAppListItem that talk to ash directly.
 
