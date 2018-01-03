@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_REQUEST_MANAGER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
@@ -20,32 +21,19 @@ class BackgroundFetchRequestInfo;
 // |BackgroundFetchRegistrationId| that may be backed by a database.
 class BackgroundFetchRequestManager {
  public:
-  using NextRequestCallback =
-      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
-  using MarkedCompleteCallback =
-      base::OnceCallback<void(bool /* has_pending_or_active_requests */)>;
-
   virtual ~BackgroundFetchRequestManager() {}
-
-  // Removes the next request, if any, from the pending requests queue, and
-  // invokes the |callback| with that request, else a null request.
-  virtual void PopNextRequest(
-      const BackgroundFetchRegistrationId& registration_id,
-      NextRequestCallback callback) = 0;
-
-  // Marks that the |request|, part of the Background Fetch identified by
-  // |registration_id|, has been started as |download_guid|.
-  virtual void MarkRequestAsStarted(
-      const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request,
-      const std::string& download_guid) = 0;
 
   // Marks that the |request|, part of the Background Fetch identified by
   // |registration_id|, has completed.
   virtual void MarkRequestAsComplete(
       const BackgroundFetchRegistrationId& registration_id,
-      BackgroundFetchRequestInfo* request,
-      MarkedCompleteCallback callback) = 0;
+      scoped_refptr<BackgroundFetchRequestInfo> request) = 0;
+
+  // Called when the job identified by |registration_id| has been aborted along
+  // with the GUIDs of any associated downloads that were still active.
+  virtual void OnJobAborted(
+      const BackgroundFetchRegistrationId& registration_id,
+      std::vector<std::string> aborted_guids) = 0;
 };
 
 }  // namespace content

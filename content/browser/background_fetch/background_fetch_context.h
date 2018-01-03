@@ -30,6 +30,7 @@ class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
+class BackgroundFetchScheduler;
 class BrowserContext;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -173,6 +174,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   BackgroundFetchEventDispatcher event_dispatcher_;
   std::unique_ptr<BackgroundFetchRegistrationNotifier> registration_notifier_;
   BackgroundFetchDelegateProxy delegate_proxy_;
+  std::unique_ptr<BackgroundFetchScheduler> scheduler_;
 
   // Map from background fetch registration |unique_id|s to active job
   // controllers. Must be destroyed before |data_manager_| and
