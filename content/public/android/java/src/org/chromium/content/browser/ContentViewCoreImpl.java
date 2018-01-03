@@ -1224,14 +1224,14 @@ public class ContentViewCoreImpl
             }
             mWebContentsAccessibility = WebContentsAccessibility.create(
                     mContext, mContainerView, mWebContents, mShouldSetAccessibilityFocusOnPageLoad);
+            // For Lollipop devices, we need to register a broadcast receiver for locale change.
+            if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP
+                    && mContainerView.isAttachedToWindow()) {
+                mWebContentsAccessibility.onAttachedToWindow();
+            }
         }
         if (!mWebContentsAccessibility.isEnabled()) {
             mWebContentsAccessibility.enable();
-        }
-        // For Lollipop devices, we need to register a broadcast receiver for locale change.
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP
-                && mContainerView.isAttachedToWindow()) {
-            mWebContentsAccessibility.onAttachedToWindow();
         }
         return mWebContentsAccessibility.getAccessibilityNodeProvider();
     }
