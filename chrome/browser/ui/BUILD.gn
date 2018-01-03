@@ -607,8 +607,6 @@ split_static_library("ui") {
       "android/infobars/survey_infobar.h",
       "android/infobars/translate_compact_infobar.cc",
       "android/infobars/translate_compact_infobar.h",
-      "android/infobars/translate_infobar.cc",
-      "android/infobars/translate_infobar.h",
       "android/infobars/update_password_infobar.cc",
       "android/infobars/update_password_infobar.h",
       "android/javascript_app_modal_dialog_android.cc",

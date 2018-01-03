@@ -35,6 +35,14 @@ const char kTranslateMaxNumberOfAutoNever[] =
     "translate_max_number_of_auto_never";
 const char kTranslateTabDefaultTextColor[] = "translate_tab_default_text_color";
 
+// ChromeTranslateClient
+// ----------------------------------------------------------
+
+std::unique_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
+    std::unique_ptr<translate::TranslateInfoBarDelegate> delegate) const {
+  return base::MakeUnique<TranslateCompactInfoBar>(std::move(delegate));
+}
+
 // TranslateInfoBar -----------------------------------------------------------
 
 TranslateCompactInfoBar::TranslateCompactInfoBar(
