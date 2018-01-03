@@ -31,7 +31,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxSeccompBPF {
 
     // Options for GPU's PreSandboxHook.
     bool accelerated_video_decode_enabled = false;
-    bool vaapi_accelerated_video_encode_enabled = false;
+    bool accelerated_video_encode_enabled = false;
   };
 
   // This is the API to enable a seccomp-bpf sandbox for content/

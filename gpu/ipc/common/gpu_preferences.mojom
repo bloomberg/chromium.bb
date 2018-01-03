@@ -20,11 +20,10 @@ struct GpuPreferences {
   bool single_process;
   bool in_process_gpu;
   bool disable_accelerated_video_decode;
+  bool disable_accelerated_video_encode;
   bool gpu_startup_dialog;
   bool disable_gpu_watchdog;
   bool gpu_sandbox_start_early;
-
-  bool disable_vaapi_accelerated_video_encode;
 
   bool disable_web_rtc_hw_encoding;
 
