@@ -19,6 +19,8 @@
 
 #if defined(OS_IOS)
 #include "base/ios/ios_util.h"
+#elif defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace base {

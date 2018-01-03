@@ -11,6 +11,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_restrictions.h"
 
+#include <windows.h>
+
 namespace base {
 
 // Make sure our Whence mappings match the system headers.

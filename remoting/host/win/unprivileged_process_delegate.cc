@@ -8,6 +8,8 @@
 
 #include "remoting/host/win/unprivileged_process_delegate.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <sddl.h>
 
 #include <utility>

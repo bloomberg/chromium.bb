@@ -10,6 +10,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <windows.h>
+
 class ModuleWatcherTest : public testing::Test {
  protected:
   ModuleWatcherTest()

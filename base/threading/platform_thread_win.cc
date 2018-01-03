@@ -16,6 +16,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
 
+#include <windows.h>
+
 namespace base {
 
 namespace {

@@ -14,6 +14,8 @@
 #include "device/usb/usb_device_handle_win.h"
 #include "device/usb/webusb_descriptors.h"
 
+#include <windows.h>
+
 namespace device {
 
 namespace {

@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/storage_monitor/storage_monitor.h"
 
+#include <windows.h>
+
 namespace base {
 class FilePath;
 }

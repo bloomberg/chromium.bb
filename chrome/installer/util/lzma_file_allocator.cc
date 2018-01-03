@@ -7,6 +7,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 
+#include <windows.h>
+
 extern "C" {
 #include "third_party/lzma_sdk/7zAlloc.h"
 }

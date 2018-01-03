@@ -4,7 +4,7 @@
 
 mojom = "//mojo/common/logfont_win.mojom"
 os_whitelist = [ "win" ]
-public_headers = []
+public_headers = [ "//base/win/windows_full.h" ]
 traits_headers = [ "//ipc/ipc_message_utils.h" ]
 public_deps = [
   "//ipc",

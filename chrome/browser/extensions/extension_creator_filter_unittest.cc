@@ -15,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace {
 
 class ExtensionCreatorFilterTest : public PlatformTest {

@@ -15,6 +15,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <windows.h>
+
 namespace registry_util {
 
 namespace {

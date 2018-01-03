@@ -10,6 +10,8 @@
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/win/window_impl.h"
 
+#include <windows.h>
+
 namespace ui {
 
 // Helper class for moving a window to the foreground.

@@ -25,6 +25,10 @@
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
+#ifdef ERROR
+#undef ERROR  // Defined by windows.h
+#endif
+
 using buzz::QName;
 using buzz::XmlElement;
 

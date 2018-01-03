@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "base/win/windows_types.h"
 #elif defined(OS_POSIX)
 #include <errno.h>
 #include <pthread.h>
@@ -26,7 +26,7 @@ namespace internal {
 class BASE_EXPORT LockImpl {
  public:
 #if defined(OS_WIN)
-  using NativeHandle = SRWLOCK;
+  using NativeHandle = CHROME_SRWLOCK;
 #elif defined(OS_POSIX)
   using NativeHandle = pthread_mutex_t;
 #endif
@@ -63,7 +63,7 @@ class BASE_EXPORT LockImpl {
 
 #if defined(OS_WIN)
 void LockImpl::Unlock() {
-  ::ReleaseSRWLockExclusive(&native_handle_);
+  ::ReleaseSRWLockExclusive(reinterpret_cast<PSRWLOCK>(&native_handle_));
 }
 #elif defined(OS_POSIX)
 void LockImpl::Unlock() {

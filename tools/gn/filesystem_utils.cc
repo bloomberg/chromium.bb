@@ -15,6 +15,10 @@
 #include "tools/gn/settings.h"
 #include "tools/gn/source_dir.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace {
 
 enum DotDisposition {

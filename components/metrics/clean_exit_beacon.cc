@@ -11,6 +11,7 @@
 #include "components/prefs/pref_service.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"

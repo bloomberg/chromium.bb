@@ -9,6 +9,8 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/resources/grit/ui_unscaled_resources.h"
 
+#include <windows.h>
+
 namespace ui {
 
 namespace {

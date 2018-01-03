@@ -13,6 +13,8 @@
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <windows.h>
+
 namespace {
 
 // The address of this module in memory. The linker will take care of defining

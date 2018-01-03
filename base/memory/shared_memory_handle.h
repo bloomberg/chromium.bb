@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include <windows.h>
 #include "base/process/process_handle.h"
+#include "base/win/windows_types.h"
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <mach/mach.h>
 #include "base/base_export.h"

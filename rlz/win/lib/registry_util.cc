@@ -14,6 +14,8 @@
 #include "rlz/lib/assert.h"
 #include "rlz/win/lib/process_info.h"
 
+#include <windows.h>
+
 namespace rlz_lib {
 
 bool RegKeyReadValue(const base::win::RegKey& key, const wchar_t* name,

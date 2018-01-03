@@ -4,9 +4,10 @@
 
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <psapi.h>
 #include <stddef.h>
-#include <windows.h>
 
 #include <memory>
 

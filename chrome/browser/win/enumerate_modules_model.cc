@@ -4,6 +4,8 @@
 
 #include "chrome/browser/win/enumerate_modules_model.h"
 
+#include <windows.h>
+
 #include <softpub.h>
 #include <stddef.h>
 #include <stdint.h>

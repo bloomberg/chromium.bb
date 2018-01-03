@@ -13,6 +13,8 @@
 #include "base/values.h"
 #include "base/win/registry.h"
 
+#include <windows.h>
+
 namespace remoting {
 
 namespace {

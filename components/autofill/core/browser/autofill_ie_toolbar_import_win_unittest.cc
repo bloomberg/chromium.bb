@@ -15,6 +15,8 @@
 #include "components/os_crypt/os_crypt.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <windows.h>
+
 using base::win::RegKey;
 
 namespace autofill {

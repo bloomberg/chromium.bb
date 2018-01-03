@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include "winbase.h"
 #elif defined(OS_POSIX)
 #include <sys/mman.h>

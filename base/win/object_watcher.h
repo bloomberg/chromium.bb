@@ -5,7 +5,7 @@
 #ifndef BASE_WIN_OBJECT_WATCHER_H_
 #define BASE_WIN_OBJECT_WATCHER_H_
 
-#include <windows.h>
+#include "base/win/windows_types.h"
 
 #include "base/base_export.h"
 #include "base/callback.h"

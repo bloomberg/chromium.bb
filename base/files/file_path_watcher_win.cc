@@ -15,6 +15,8 @@
 #include "base/time/time.h"
 #include "base/win/object_watcher.h"
 
+#include <windows.h>
+
 namespace base {
 
 namespace {

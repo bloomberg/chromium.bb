@@ -10,6 +10,8 @@
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
 
+#include <windows.h>
+
 namespace remoting {
 
 class CurtainModeWin : public CurtainMode {

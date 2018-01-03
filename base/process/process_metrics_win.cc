@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Must be included before process_metrics.h to get full IoCounters definition
+#include <windows.h>
+
 #include "base/process/process_metrics.h"
 
-#include <windows.h>
 #include <psapi.h>
 #include <stddef.h>
 #include <stdint.h>

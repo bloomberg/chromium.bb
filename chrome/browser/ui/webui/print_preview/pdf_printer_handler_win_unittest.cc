@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <commdlg.h>
-#include <windows.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"

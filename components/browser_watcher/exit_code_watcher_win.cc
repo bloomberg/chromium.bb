@@ -11,6 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
 
+#include <windows.h>
+
 namespace browser_watcher {
 
 namespace {

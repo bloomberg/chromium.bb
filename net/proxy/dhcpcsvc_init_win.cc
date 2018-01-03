@@ -7,6 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <dhcpcsdk.h>
 #include <dhcpv6csdk.h>
 

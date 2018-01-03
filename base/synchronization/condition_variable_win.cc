@@ -9,6 +9,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 
+#include <windows.h>
+
 namespace base {
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
@@ -18,7 +20,7 @@ ConditionVariable::ConditionVariable(Lock* user_lock)
 #endif
 {
   DCHECK(user_lock);
-  InitializeConditionVariable(&cv_);
+  InitializeConditionVariable(reinterpret_cast<PCONDITION_VARIABLE>(&cv_));
 }
 
 ConditionVariable::~ConditionVariable() = default;
@@ -36,7 +38,9 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   user_lock_->CheckHeldAndUnmark();
 #endif
 
-  if (!SleepConditionVariableSRW(&cv_, srwlock_, timeout, 0)) {
+  if (!SleepConditionVariableSRW(reinterpret_cast<PCONDITION_VARIABLE>(&cv_),
+                                 reinterpret_cast<PSRWLOCK>(srwlock_), timeout,
+                                 0)) {
     // On failure, we only expect the CV to timeout. Any other error value means
     // that we've unexpectedly woken up.
     // Note that WAIT_TIMEOUT != ERROR_TIMEOUT. WAIT_TIMEOUT is used with the
@@ -51,11 +55,11 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
 }
 
 void ConditionVariable::Broadcast() {
-  WakeAllConditionVariable(&cv_);
+  WakeAllConditionVariable(reinterpret_cast<PCONDITION_VARIABLE>(&cv_));
 }
 
 void ConditionVariable::Signal() {
-  WakeConditionVariable(&cv_);
+  WakeConditionVariable(reinterpret_cast<PCONDITION_VARIABLE>(&cv_));
 }
 
 }  // namespace base

@@ -13,6 +13,8 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
 
+#include <windows.h>
+
 namespace base {
 
 MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
