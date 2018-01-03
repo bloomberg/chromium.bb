@@ -52,13 +52,6 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
   if (blacklisted_features.count(GPU_FEATURE_TYPE_GPU_RASTERIZATION))
     return kGpuFeatureStatusBlacklisted;
 
-#if defined(OS_ANDROID)
-  // GPU Raster is always enabled on >512MB Android devices. On 512MB devices,
-  // it is controlled by a Finch experiment.
-  if (base::SysInfo::AmountOfPhysicalMemoryMB() > 512)
-    return kGpuFeatureStatusEnabled;
-#endif  // defined(OS_ANDROID)
-
   // Gpu Rasterization on platforms that are not fully enabled is controlled by
   // a finch experiment.
   if (!base::FeatureList::IsEnabled(features::kDefaultEnableGpuRasterization))
