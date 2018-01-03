@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/stats.h"
@@ -35,9 +34,9 @@ class DownloadServiceModelImplTest : public testing::Test {
   ~DownloadServiceModelImplTest() override = default;
 
   void SetUp() override {
-    auto store = base::MakeUnique<test::TestStore>();
+    auto store = std::make_unique<test::TestStore>();
     store_ = store.get();
-    model_ = base::MakeUnique<ModelImpl>(std::move(store));
+    model_ = std::make_unique<ModelImpl>(std::move(store));
   }
 
  protected:
@@ -57,7 +56,7 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulLifecycle) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
 }
 
 TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
@@ -71,7 +70,7 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
@@ -94,7 +93,7 @@ TEST_F(DownloadServiceModelImplTest, BadInit) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(false, std::make_unique<std::vector<Entry>>());
 }
 
 TEST_F(DownloadServiceModelImplTest, HardRecoverGoodModel) {
@@ -106,7 +105,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverGoodModel) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   EXPECT_CALL(client_, OnModelHardRecoverComplete(true));
 
@@ -120,7 +119,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverBadModel) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(false, std::make_unique<std::vector<Entry>>());
 
   EXPECT_CALL(client_, OnModelHardRecoverComplete(true));
 
@@ -138,7 +137,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverFailsGoodModel) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   EXPECT_CALL(client_, OnModelHardRecoverComplete(false));
 
@@ -152,7 +151,7 @@ TEST_F(DownloadServiceModelImplTest, HardRecoverFailsBadModel) {
 
   model_->Initialize(&client_);
   EXPECT_TRUE(store_->init_called());
-  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(false, std::make_unique<std::vector<Entry>>());
 
   EXPECT_CALL(client_, OnModelHardRecoverComplete(false));
 
@@ -171,7 +170,7 @@ TEST_F(DownloadServiceModelImplTest, Add) {
   EXPECT_CALL(client_, OnItemAdded(false, entry2.client, entry2.guid)).Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
 
   model_->Add(entry1);
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
@@ -205,7 +204,7 @@ TEST_F(DownloadServiceModelImplTest, Update) {
       .Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   std::vector<Entry*> entries_pointers = model_->PeekEntries();
 
   // Update with a different object.
@@ -243,7 +242,7 @@ TEST_F(DownloadServiceModelImplTest, Remove) {
       .Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   model_->Remove(entry1.guid);
   EXPECT_EQ(entry1.guid, store_->LastRemovedEntry());
@@ -265,7 +264,7 @@ TEST_F(DownloadServiceModelImplTest, Get) {
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   EXPECT_TRUE(test::CompareEntry(&entry, model_->Get(entry.guid)));
   EXPECT_EQ(nullptr, model_->Get(base::GenerateGUID()));
@@ -280,7 +279,7 @@ TEST_F(DownloadServiceModelImplTest, PeekEntries) {
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
 
   std::vector<Entry*> expected_peek = {&entry1, &entry2};
 
@@ -296,7 +295,7 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterAdd) {
   EXPECT_CALL(client_, OnItemRemoved(true, entry.client, entry.guid)).Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
 
   model_->Add(entry);
   EXPECT_TRUE(test::CompareEntry(&entry, model_->Get(entry.guid)));
@@ -323,7 +322,7 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterUpdate) {
       .Times(1);
 
   model_->Initialize(&client_);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
 
   model_->Update(entry2);

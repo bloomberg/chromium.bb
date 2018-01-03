@@ -5,11 +5,11 @@
 #include "components/download/internal/download_store.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/proto/entry.pb.h"
@@ -30,7 +30,7 @@ class DownloadStoreTest : public testing::Test {
   ~DownloadStoreTest() override = default;
 
   void CreateDatabase() {
-    auto db = base::MakeUnique<leveldb_proto::test::FakeDB<protodb::Entry>>(
+    auto db = std::make_unique<leveldb_proto::test::FakeDB<protodb::Entry>>(
         &db_entries_);
     db_ = db.get();
     store_.reset(new DownloadStore(
@@ -189,7 +189,7 @@ TEST_F(DownloadStoreTest, Update) {
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry.
-  auto protos = base::MakeUnique<std::vector<protodb::Entry>>();
+  auto protos = std::make_unique<std::vector<protodb::Entry>>();
   db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
                               base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
@@ -218,7 +218,7 @@ TEST_F(DownloadStoreTest, Remove) {
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry removed.
-  auto protos = base::MakeUnique<std::vector<protodb::Entry>>();
+  auto protos = std::make_unique<std::vector<protodb::Entry>>();
   db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
                               base::Unretained(this), protos.get()));
   db_->LoadCallback(true);
@@ -299,7 +299,7 @@ TEST_F(DownloadStoreTest, AddThenRemove) {
   db_->UpdateCallback(true);
 
   // Query the database directly and check for the entry.
-  auto protos = base::MakeUnique<std::vector<protodb::Entry>>();
+  auto protos = std::make_unique<std::vector<protodb::Entry>>();
   db_->LoadEntries(base::Bind(&DownloadStoreTest::LoadCallback,
                               base::Unretained(this), protos.get()));
   db_->LoadCallback(true);

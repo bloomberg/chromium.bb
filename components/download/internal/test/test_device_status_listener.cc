@@ -4,6 +4,8 @@
 
 #include "components/download/internal/test/test_device_status_listener.h"
 
+#include <memory>
+
 namespace download {
 namespace test {
 
@@ -22,7 +24,7 @@ class FakeBatteryStatusListener : public BatteryStatusListener {
 TestDeviceStatusListener::TestDeviceStatusListener()
     : DeviceStatusListener(base::TimeDelta(), /* startup_delay */
                            base::TimeDelta(), /* online_delay */
-                           base::MakeUnique<FakeBatteryStatusListener>()),
+                           std::make_unique<FakeBatteryStatusListener>()),
       weak_ptr_factory_(this) {}
 
 TestDeviceStatusListener::~TestDeviceStatusListener() {

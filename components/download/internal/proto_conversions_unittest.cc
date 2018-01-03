@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <utility>
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/proto_conversions.h"
 #include "components/download/internal/test/entry_utils.h"
@@ -149,7 +149,7 @@ TEST_F(ProtoConversionsTest, EntryVectorConversion) {
       base::Time::Now(), base::Time::Now(), base::Time::Now(), 1024u, 2, 8, 5));
 
   auto actual = EntryVectorFromProto(
-      EntryVectorToProto(base::MakeUnique<std::vector<Entry>>(expected)));
+      EntryVectorToProto(std::make_unique<std::vector<Entry>>(expected)));
   EXPECT_TRUE(test::CompareEntryList(expected, *actual));
 }
 

@@ -4,9 +4,10 @@
 
 #include "components/download/internal/download_store.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/proto/entry.pb.h"
 #include "components/download/internal/proto_conversions.h"
@@ -53,7 +54,7 @@ void DownloadStore::HardRecover(StoreCallback callback) {
 
 void DownloadStore::OnDatabaseInited(InitCallback callback, bool success) {
   if (!success) {
-    std::move(callback).Run(success, base::MakeUnique<std::vector<Entry>>());
+    std::move(callback).Run(success, std::make_unique<std::vector<Entry>>());
     return;
   }
 
@@ -66,7 +67,7 @@ void DownloadStore::OnDatabaseLoaded(InitCallback callback,
                                      bool success,
                                      std::unique_ptr<ProtoEntryVector> protos) {
   if (!success) {
-    std::move(callback).Run(success, base::MakeUnique<std::vector<Entry>>());
+    std::move(callback).Run(success, std::make_unique<std::vector<Entry>>());
     return;
   }
 
@@ -95,18 +96,18 @@ void DownloadStore::OnDatabaseInitedAfterDestroy(StoreCallback callback,
 
 void DownloadStore::Update(const Entry& entry, StoreCallback callback) {
   DCHECK(IsInitialized());
-  auto entries_to_save = base::MakeUnique<KeyProtoEntryVector>();
+  auto entries_to_save = std::make_unique<KeyProtoEntryVector>();
   protodb::Entry proto = ProtoConversions::EntryToProto(entry);
   entries_to_save->emplace_back(entry.guid, std::move(proto));
-  db_->UpdateEntries(std::move(entries_to_save), base::MakeUnique<KeyVector>(),
+  db_->UpdateEntries(std::move(entries_to_save), std::make_unique<KeyVector>(),
                      std::move(callback));
 }
 
 void DownloadStore::Remove(const std::string& guid, StoreCallback callback) {
   DCHECK(IsInitialized());
-  auto keys_to_remove = base::MakeUnique<KeyVector>();
+  auto keys_to_remove = std::make_unique<KeyVector>();
   keys_to_remove->push_back(guid);
-  db_->UpdateEntries(base::MakeUnique<KeyProtoEntryVector>(),
+  db_->UpdateEntries(std::make_unique<KeyProtoEntryVector>(),
                      std::move(keys_to_remove), std::move(callback));
 }
 

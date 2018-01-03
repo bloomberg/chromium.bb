@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
@@ -40,7 +39,7 @@ class DownloadSchedulerImplTest : public testing::Test {
 
   void BuildScheduler(const std::vector<DownloadClient> clients) {
     scheduler_ =
-        base::MakeUnique<SchedulerImpl>(&task_scheduler_, &config_, clients);
+        std::make_unique<SchedulerImpl>(&task_scheduler_, &config_, clients);
   }
   void DestroyScheduler() { scheduler_.reset(); }
 

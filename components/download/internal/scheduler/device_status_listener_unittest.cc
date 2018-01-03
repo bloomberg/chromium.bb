@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
@@ -87,22 +86,22 @@ class TestDeviceStatusListener : public DeviceStatusListener {
                              std::move(battery_listener)) {}
 
   void BuildNetworkStatusListener() override {
-    network_listener_ = base::MakeUnique<NetworkStatusListenerImpl>();
+    network_listener_ = std::make_unique<NetworkStatusListenerImpl>();
   }
 };
 
 class DeviceStatusListenerTest : public testing::Test {
  public:
   void SetUp() override {
-    auto power_source = base::MakeUnique<base::PowerMonitorTestSource>();
+    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
     power_source_ = power_source.get();
     power_monitor_ =
-        base::MakeUnique<base::PowerMonitor>(std::move(power_source));
+        std::make_unique<base::PowerMonitor>(std::move(power_source));
 
-    auto battery_listener = base::MakeUnique<TestBatteryStatusListener>();
+    auto battery_listener = std::make_unique<TestBatteryStatusListener>();
     test_battery_listener_ = battery_listener.get();
     listener_ =
-        base::MakeUnique<TestDeviceStatusListener>(std::move(battery_listener));
+        std::make_unique<TestDeviceStatusListener>(std::move(battery_listener));
   }
 
   void TearDown() override { listener_.reset(); }

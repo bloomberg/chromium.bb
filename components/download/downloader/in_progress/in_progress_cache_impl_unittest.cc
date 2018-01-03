@@ -4,9 +4,10 @@
 
 #include "components/download/downloader/in_progress/in_progress_cache_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
 #include "base/task_scheduler/post_task.h"
@@ -36,7 +37,7 @@ class InProgressCacheImplTest : public testing::Test {
         base::CreateSequencedTaskRunnerWithTraits(
             {base::MayBlock(), base::TaskPriority::BACKGROUND,
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-    cache_ = base::MakeUnique<InProgressCacheImpl>(file_path, task_runner);
+    cache_ = std::make_unique<InProgressCacheImpl>(file_path, task_runner);
   }
 
  protected:

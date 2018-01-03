@@ -4,7 +4,8 @@
 
 #include "components/download/internal/test/test_store.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "components/download/internal/entry.h"
 
 namespace download {
@@ -24,7 +25,7 @@ void TestStore::Initialize(InitCallback callback) {
 
   if (automatic_callback_response_.has_value())
     TriggerInit(automatic_callback_response_.value(),
-                base::MakeUnique<std::vector<Entry>>());
+                std::make_unique<std::vector<Entry>>());
 }
 
 void TestStore::HardRecover(StoreCallback callback) {

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -35,11 +34,11 @@ class DownloadServiceImplTest : public testing::Test {
   ~DownloadServiceImplTest() override = default;
 
   void SetUp() override {
-    auto config = base::MakeUnique<Configuration>();
-    auto logger = base::MakeUnique<test::EmptyLogger>();
-    auto controller = base::MakeUnique<test::MockController>();
+    auto config = std::make_unique<Configuration>();
+    auto logger = std::make_unique<test::EmptyLogger>();
+    auto controller = std::make_unique<test::MockController>();
     controller_ = controller.get();
-    service_ = base::MakeUnique<DownloadServiceImpl>(
+    service_ = std::make_unique<DownloadServiceImpl>(
         std::move(config), std::move(logger), std::move(controller));
   }
 

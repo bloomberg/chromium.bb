@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -61,8 +60,8 @@ class NavigationMonitorImplTest : public testing::Test {
   ~NavigationMonitorImplTest() override = default;
 
   void SetUp() override {
-    navigation_monitor_ = base::MakeUnique<NavigationMonitorImpl>();
-    observer_ = base::MakeUnique<TestNavigationMonitorObserver>(
+    navigation_monitor_ = std::make_unique<NavigationMonitorImpl>();
+    observer_ = std::make_unique<TestNavigationMonitorObserver>(
         task_runner_, navigation_monitor_.get());
     navigation_monitor_->Configure(base::TimeDelta::FromMilliseconds(20),
                                    base::TimeDelta::FromMilliseconds(200));

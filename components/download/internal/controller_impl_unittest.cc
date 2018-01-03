@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
@@ -145,10 +144,10 @@ class DownloadServiceControllerImplTest : public testing::Test {
   ~DownloadServiceControllerImplTest() override = default;
 
   void SetUp() override {
-    auto client = base::MakeUnique<NiceMock<test::MockClient>>();
-    auto driver = base::MakeUnique<test::TestDownloadDriver>();
-    auto store = base::MakeUnique<test::TestStore>();
-    config_ = base::MakeUnique<Configuration>();
+    auto client = std::make_unique<NiceMock<test::MockClient>>();
+    auto driver = std::make_unique<test::TestDownloadDriver>();
+    auto store = std::make_unique<test::TestStore>();
+    config_ = std::make_unique<Configuration>();
     config_->max_retry_count = 1;
     config_->max_resumption_count = 4;
     config_->file_keep_alive_time = base::TimeDelta::FromMinutes(10);
@@ -156,25 +155,25 @@ class DownloadServiceControllerImplTest : public testing::Test {
     config_->max_concurrent_downloads = 5;
     config_->max_running_downloads = 5;
 
-    log_sink_ = base::MakeUnique<test::BlackHoleLogSink>();
+    log_sink_ = std::make_unique<test::BlackHoleLogSink>();
 
     client_ = client.get();
     driver_ = driver.get();
     store_ = store.get();
 
-    auto clients = base::MakeUnique<DownloadClientMap>();
+    auto clients = std::make_unique<DownloadClientMap>();
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
     clients->insert(std::make_pair(DownloadClient::TEST_2,
-                                   base::MakeUnique<test::EmptyClient>()));
-    auto client_set = base::MakeUnique<ClientSet>(std::move(clients));
-    auto model = base::MakeUnique<ModelImpl>(std::move(store));
+                                   std::make_unique<test::EmptyClient>()));
+    auto client_set = std::make_unique<ClientSet>(std::move(clients));
+    auto model = std::make_unique<ModelImpl>(std::move(store));
     auto device_status_listener =
-        base::MakeUnique<test::TestDeviceStatusListener>();
-    auto scheduler = base::MakeUnique<NiceMock<MockScheduler>>();
-    auto task_scheduler = base::MakeUnique<MockTaskScheduler>();
+        std::make_unique<test::TestDeviceStatusListener>();
+    auto scheduler = std::make_unique<NiceMock<MockScheduler>>();
+    auto task_scheduler = std::make_unique<MockTaskScheduler>();
 
     auto download_file_dir = base::FilePath(kDownloadDirPath);
-    auto file_monitor = base::MakeUnique<NiceMock<MockFileMonitor>>();
+    auto file_monitor = std::make_unique<NiceMock<MockFileMonitor>>();
 
     model_ = model.get();
     device_status_listener_ = device_status_listener.get();
@@ -182,7 +181,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
     task_scheduler_ = task_scheduler.get();
     file_monitor_ = file_monitor.get();
 
-    controller_ = base::MakeUnique<ControllerImpl>(
+    controller_ = std::make_unique<ControllerImpl>(
         config_.get(), log_sink_.get(), std::move(client_set),
         std::move(driver), std::move(model), std::move(device_status_listener),
         &navigation_monitor, std::move(scheduler), std::move(task_scheduler),
@@ -247,7 +246,7 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
   EXPECT_TRUE(store_->init_called());
   EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   EXPECT_EQ(controller_->GetState(), Controller::State::INITIALIZING);
 
@@ -279,7 +278,7 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitDriverFirst) {
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
 
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   EXPECT_EQ(controller_->GetState(), Controller::State::READY);
 
@@ -299,7 +298,7 @@ TEST_F(DownloadServiceControllerImplTest, HardRecoveryAfterFailedModel) {
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(false, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
 
   EXPECT_EQ(controller_->GetState(), Controller::State::RECOVERING);
@@ -331,7 +330,7 @@ TEST_F(DownloadServiceControllerImplTest, HardRecoveryAfterFailedFileMonitor) {
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(false);
 
   EXPECT_EQ(controller_->GetState(), Controller::State::RECOVERING);
@@ -363,7 +362,7 @@ TEST_F(DownloadServiceControllerImplTest, HardRecoveryFails) {
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(false, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(false, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
 
   EXPECT_EQ(controller_->GetState(), Controller::State::RECOVERING);
@@ -410,7 +409,7 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitWithExistingDownload) {
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
 
   task_runner_->RunUntilIdle();
@@ -435,7 +434,7 @@ TEST_F(DownloadServiceControllerImplTest, UnknownFileDeletion) {
   driver_->AddTestData(dentries);
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
 
   task_runner_->RunUntilIdle();
@@ -457,7 +456,7 @@ TEST_F(DownloadServiceControllerImplTest,
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   controller_->OnStartScheduledTask(DownloadTaskType::CLEANUP_TASK,
                                     base::Bind(&NotifyTaskFinished));
@@ -474,7 +473,7 @@ TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {
 
   InitializeController();
   driver_->MakeReady();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
 
   task_runner_->RunUntilIdle();
@@ -489,7 +488,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadAccepted) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -521,7 +520,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBackoff) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -550,7 +549,7 @@ TEST_F(DownloadServiceControllerImplTest,
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -573,7 +572,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithDuplicateCall) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -601,7 +600,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBadClient) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -623,7 +622,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithClientCancel) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -647,7 +646,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithInternalError) {
 
   // Set up the Controller.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>());
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -687,7 +686,7 @@ TEST_F(DownloadServiceControllerImplTest, Pause) {
   // The default network status is disconnected so no entries will be polled
   // from the scheduler.
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -730,7 +729,7 @@ TEST_F(DownloadServiceControllerImplTest, Resume) {
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -765,7 +764,7 @@ TEST_F(DownloadServiceControllerImplTest, Cancel) {
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -792,7 +791,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailed) {
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -824,7 +823,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailedFromDriverCancel) {
       .Times(1);
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -868,7 +867,7 @@ TEST_F(DownloadServiceControllerImplTest, NoopResumeDoesNotHitAttemptCounts) {
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -918,7 +917,7 @@ TEST_F(DownloadServiceControllerImplTest, RetryOnFailure) {
   config_->max_resumption_count = 4;
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -977,7 +976,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -1033,7 +1032,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskScheduledAtEarliestTime) {
   driver_->AddTestData(std::vector<DriverEntry>{dentry1});
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
 
@@ -1067,7 +1066,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
 
   DriverEntry dentry_update;
@@ -1112,7 +1111,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
   // Set up the Controller.
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -1230,7 +1229,7 @@ TEST_F(DownloadServiceControllerImplTest, StartupRecovery) {
   driver_->AddTestData(driver_entries);
   driver_->MakeReady();
   store_->AutomaticallyTriggerAllFutureCallbacks(true);
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
 
   // Allow the initialization routines and persistent layers to do their thing.
@@ -1328,7 +1327,7 @@ TEST_F(DownloadServiceControllerImplTest, ExistingExternalDownload) {
 
   driver_->AddTestData(dentries);
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -1373,7 +1372,7 @@ TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
 
   driver_->AddTestData(dentries);
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -1452,7 +1451,7 @@ TEST_F(DownloadServiceControllerImplTest, CancelTimeTest) {
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -1505,7 +1504,7 @@ TEST_F(DownloadServiceControllerImplTest, RemoveCleanupEligibleDownloads) {
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
 
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   driver_->MakeReady();
   task_runner_->RunUntilIdle();
@@ -1533,7 +1532,7 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxRunning) {
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   store_->AutomaticallyTriggerAllFutureCallbacks(true);
 
@@ -1564,7 +1563,7 @@ TEST_F(DownloadServiceControllerImplTest, ThrottlingConfigMaxConcurrent) {
   device_status_listener_->SetDeviceStatus(
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   store_->AutomaticallyTriggerAllFutureCallbacks(true);
 
@@ -1612,7 +1611,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadTaskQueuesAfterFinish) {
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::METERED));
   driver_->AddTestData(dentries);
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   store_->AutomaticallyTriggerAllFutureCallbacks(true);
 
@@ -1689,7 +1688,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskQueuesAfterFinish) {
       DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
   driver_->AddTestData(dentries);
   InitializeController();
-  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   store_->AutomaticallyTriggerAllFutureCallbacks(true);
   driver_->MakeReady();
