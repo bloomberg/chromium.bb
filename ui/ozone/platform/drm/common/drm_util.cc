@@ -18,11 +18,6 @@
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/edid_parser.h"
 
-#if !defined(DRM_FORMAT_R16)
-// TODO(riju): crbug.com/733703
-#define DRM_FORMAT_R16 fourcc_code('R', '1', '6', ' ')
-#endif
-
 namespace ui {
 
 namespace {
