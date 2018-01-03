@@ -34,7 +34,7 @@ const int64_t kDnsDefaultTimeoutMs = 1000;
 struct NET_EXPORT_PRIVATE DnsConfig {
   DnsConfig();
   DnsConfig(const DnsConfig& other);
-  virtual ~DnsConfig();
+  ~DnsConfig();
 
   bool Equals(const DnsConfig& d) const;
 
