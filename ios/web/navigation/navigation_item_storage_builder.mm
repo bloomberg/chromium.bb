@@ -47,9 +47,9 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   item->should_skip_repost_form_confirmation_ =
       navigation_item_storage.shouldSkipRepostFormConfirmation;
   item->user_agent_type_ = navigation_item_storage.userAgentType;
-  item->post_data_.reset(navigation_item_storage.POSTData);
-  item->http_request_headers_.reset(
-      [navigation_item_storage.HTTPRequestHeaders mutableCopy]);
+  item->post_data_ = navigation_item_storage.POSTData;
+  item->http_request_headers_ =
+      [navigation_item_storage.HTTPRequestHeaders mutableCopy];
   return item;
 }
 

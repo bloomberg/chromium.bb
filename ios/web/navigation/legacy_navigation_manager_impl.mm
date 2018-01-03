@@ -40,7 +40,7 @@ void LegacyNavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
 
 void LegacyNavigationManagerImpl::SetSessionController(
     CRWSessionController* session_controller) {
-  session_controller_.reset(session_controller);
+  session_controller_ = session_controller;
   [session_controller_ setNavigationManager:this];
 }
 

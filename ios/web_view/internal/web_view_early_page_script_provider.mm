@@ -40,7 +40,7 @@ WebViewEarlyPageScriptProvider::FromBrowserState(
 WebViewEarlyPageScriptProvider::~WebViewEarlyPageScriptProvider() = default;
 
 void WebViewEarlyPageScriptProvider::SetScript(NSString* _Nonnull script) {
-  script_.reset([script copy]);
+  script_ = [script copy];
 }
 
 WebViewEarlyPageScriptProvider::WebViewEarlyPageScriptProvider()

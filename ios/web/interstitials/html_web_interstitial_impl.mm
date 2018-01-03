@@ -104,13 +104,13 @@ void HtmlWebInterstitialImpl::CommandReceivedFromWebView(NSString* command) {
 }
 
 CRWContentView* HtmlWebInterstitialImpl::GetContentView() const {
-  return content_view_.get();
+  return content_view_;
 }
 
 void HtmlWebInterstitialImpl::PrepareForDisplay() {
   if (!content_view_) {
-    web_view_delegate_.reset([[CRWWebInterstitialImplWKWebViewDelegate alloc]
-        initWithInterstitial:this]);
+    web_view_delegate_ = [[CRWWebInterstitialImplWKWebViewDelegate alloc]
+        initWithInterstitial:this];
     web_view_ =
         web::BuildWKWebView(CGRectZero, GetWebStateImpl()->GetBrowserState());
     [web_view_ setNavigationDelegate:web_view_delegate_];
@@ -118,9 +118,9 @@ void HtmlWebInterstitialImpl::PrepareForDisplay() {
                                     UIViewAutoresizingFlexibleHeight)];
     NSString* html = base::SysUTF8ToNSString(delegate_->GetHtmlContents());
     [web_view_ loadHTMLString:html baseURL:net::NSURLWithGURL(GetUrl())];
-    content_view_.reset([[CRWWebViewContentView alloc]
-        initWithWebView:web_view_
-             scrollView:[web_view_ scrollView]]);
+    content_view_ =
+        [[CRWWebViewContentView alloc] initWithWebView:web_view_
+                                            scrollView:[web_view_ scrollView]];
   }
 }
 

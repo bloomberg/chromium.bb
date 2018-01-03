@@ -8,7 +8,6 @@
 #import <CoreSpotlight/CoreSpotlight.h>
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/app/spotlight/spotlight_util.h"
 
 class GURL;

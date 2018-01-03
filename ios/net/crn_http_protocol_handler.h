@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
@@ -46,7 +45,7 @@ class MetricsDelegate {
     Metrics();
     ~Metrics();
 
-    base::scoped_nsobject<NSURLSessionTask> task;
+    NSURLSessionTask* task;
     LoadTimingInfo load_timing_info;
     HttpResponseInfo response_info;
     base::Time response_end_time;

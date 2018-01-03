@@ -9,7 +9,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
 
 namespace web {
@@ -47,12 +46,12 @@ class HtmlWebInterstitialImpl : public WebInterstitialImpl {
   std::unique_ptr<HtmlWebInterstitialDelegate> delegate_;
   // The |web_view_|'s delegate.  Used to forward JavaScript commands
   // resulting from user interaction with the interstitial content.
-  base::scoped_nsprotocol<id<WKNavigationDelegate>> web_view_delegate_;
+  id<WKNavigationDelegate> web_view_delegate_;
   // The web view used to show the content. View needs to be resized by the
   // caller.
   WKWebView* web_view_;  // strong
   // The CRWContentView used to display |web_view_controller_|'s view.
-  base::scoped_nsobject<CRWContentView> content_view_;
+  CRWContentView* content_view_;
 };
 
 }  // namespace web

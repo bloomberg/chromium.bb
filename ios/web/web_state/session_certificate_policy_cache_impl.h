@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/web_state/session_certificate_policy_cache.h"
 
 namespace web {
@@ -33,7 +32,7 @@ class SessionCertificatePolicyCacheImpl : public SessionCertificatePolicyCache {
 
  private:
   // An set of CRWSessionCertificateStorages representing allowed certs.
-  base::scoped_nsobject<NSMutableSet> allowed_certs_;
+  NSMutableSet* allowed_certs_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionCertificatePolicyCacheImpl);
 };

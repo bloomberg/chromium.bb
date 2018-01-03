@@ -7,7 +7,6 @@
 
 #include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 
-#include "base/mac/scoped_nsobject.h"
 
 @class UIImage;
 
@@ -20,7 +19,7 @@ class TestSigninResourcesProvider : public ios::SigninResourcesProvider {
   NSString* GetLocalizedString(ios::SigninStringID string_id) override;
 
  private:
-  base::scoped_nsobject<UIImage> default_avatar_;
+  UIImage* default_avatar_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSigninResourcesProvider);
 };

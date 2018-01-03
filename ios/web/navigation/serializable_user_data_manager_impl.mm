@@ -82,7 +82,7 @@ void SerializableUserDataImpl::Decode(NSCoder* coder) {
     data = [NSMutableDictionary dictionary];
   }
   [data addEntriesFromDictionary:GetDecodedLegacyValues(coder)];
-  data_.reset([data copy]);
+  data_ = [data copy];
   DCHECK(data_);
 }
 
@@ -146,7 +146,7 @@ void SerializableUserDataManagerImpl::AddSerializableUserData(
   if (data) {
     SerializableUserDataImpl* data_impl =
         static_cast<SerializableUserDataImpl*>(data);
-    data_.reset([data_impl->data() mutableCopy]);
+    data_ = [data_impl->data() mutableCopy];
     DCHECK(data_);
   }
 }
