@@ -3,32 +3,39 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult('Test that relative links in traces open in the sources panel.\n');
+  TestRunner.addResult('Test that relative links and links with hash open in the sources panel.\n');
 
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
   await TestRunner.addScriptTag('../resources/source3.js');
+  await TestRunner.evaluateInPagePromise('foo()');
+  var messages = Console.ConsoleView.instance()._visibleViewMessages;
 
-  TestRunner.evaluateInPage('foo()', step1);
-  UI.inspectorView._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, panelChanged);
+  TestRunner.runTestSuite([
+    function testClickRelativeLink(next) {
+      var clickTarget = messages[0].element().querySelectorAll('.console-message-text .devtools-link')[1];
+      TestRunner.addResult('Clicking link ' + clickTarget.textContent);
+      UI.inspectorView._tabbedPane.once(UI.TabbedPane.Events.TabSelected).then(() => {
+        TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened.');
+        next();
+      });
+      clickTarget.click();
+    },
 
-  function panelChanged() {
-    TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened.');
-    TestRunner.completeTest();
-  }
-
-  var clickTarget;
-
-  function step1() {
-    var firstMessageEl = Console.ConsoleView.instance()._visibleViewMessages[0].element();
-    clickTarget = firstMessageEl.querySelectorAll('.console-message-text .devtools-link')[1];
-    UI.inspectorView.showPanel('console').then(testClickTarget);
-  }
-
-  function testClickTarget() {
-    TestRunner.addResult('Clicking link ' + clickTarget.textContent);
-    clickTarget.click();
-  }
+    function testClickURLWithHash(next) {
+      UI.inspectorView._tabbedPane.once(UI.TabbedPane.Events.TabSelected).then(() => {
+        TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened.');
+        var clickTarget = messages[1].element().querySelectorAll('.console-message-text .devtools-link')[0];
+        TestRunner.addResult('Clicking link ' + clickTarget.textContent);
+        UI.inspectorView._tabbedPane.once(UI.TabbedPane.Events.TabSelected).then(() => {
+          TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened.');
+          next();
+        });
+        clickTarget.click();
+      });
+      TestRunner.showPanel('console');
+    }
+  ]);
 
   InspectorFrontendHost.openInNewTab = function() {
     TestRunner.addResult('Failure: Open link in new tab!!');
