@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -51,7 +50,7 @@ PingManagerTest::PingManagerTest() {}
 
 void PingManagerTest::SetUp() {
   config_ = base::MakeRefCounted<TestConfigurator>();
-  ping_manager_ = base::MakeUnique<PingManager>(config_);
+  ping_manager_ = std::make_unique<PingManager>(config_);
 }
 
 void PingManagerTest::TearDown() {
@@ -64,7 +63,7 @@ void PingManagerTest::RunThreadsUntilIdle() {
 }
 
 std::unique_ptr<UpdateContext> PingManagerTest::MakeFakeUpdateContext() const {
-  return base::MakeUnique<UpdateContext>(
+  return std::make_unique<UpdateContext>(
       config_, false, std::vector<std::string>(),
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
       UpdateEngine::Callback(), nullptr);
@@ -83,7 +82,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     Component component(*update_context, "abc");
 
-    component.state_ = base::MakeUnique<Component::StateUpdated>(&component);
+    component.state_ = std::make_unique<Component::StateUpdated>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
@@ -104,7 +103,7 @@ TEST_F(PingManagerTest, SendPing) {
     // Test eventresult="0" is sent for failed updates.
     Component component(*update_context, "abc");
     component.state_ =
-        base::MakeUnique<Component::StateUpdateError>(&component);
+        std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
@@ -125,7 +124,7 @@ TEST_F(PingManagerTest, SendPing) {
     // Test the error values and the fingerprints.
     Component component(*update_context, "abc");
     component.state_ =
-        base::MakeUnique<Component::StateUpdateError>(&component);
+        std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
     component.previous_fp_ = "prev fp";
@@ -159,7 +158,7 @@ TEST_F(PingManagerTest, SendPing) {
     // Test an invalid |next_version| is not serialized.
     Component component(*update_context, "abc");
     component.state_ =
-        base::MakeUnique<Component::StateUpdateError>(&component);
+        std::make_unique<Component::StateUpdateError>(&component);
     component.previous_version_ = base::Version("1.0");
 
     component.AppendEvent(BuildUpdateCompleteEventElement(component));
@@ -179,7 +178,7 @@ TEST_F(PingManagerTest, SendPing) {
   {
     // Test the download metrics.
     Component component(*update_context, "abc");
-    component.state_ = base::MakeUnique<Component::StateUpdated>(&component);
+    component.state_ = std::make_unique<Component::StateUpdated>(&component);
     component.previous_version_ = base::Version("1.0");
     component.next_version_ = base::Version("2.0");
     component.AppendEvent(BuildUpdateCompleteEventElement(component));

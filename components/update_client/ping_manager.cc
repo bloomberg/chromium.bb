@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/update_client/configurator.h"
 #include "components/update_client/protocol_builder.h"
 #include "components/update_client/request_sender.h"
@@ -76,7 +75,7 @@ bool PingSender::SendPing(const Component& component) {
   if (urls.empty())
     return false;
 
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(false, BuildEventPingRequest(*config_, component), urls,
                         base::BindOnce(&PingSender::OnRequestSenderComplete,
                                        base::Unretained(this)));
@@ -95,7 +94,7 @@ PingManager::~PingManager() {
 bool PingManager::SendPing(const Component& component) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto ping_sender = base::MakeUnique<PingSender>(config_);
+  auto ping_sender = std::make_unique<PingSender>(config_);
   if (!ping_sender->SendPing(component))
     return false;
 
