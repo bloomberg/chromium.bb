@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/histogram_tester.h"
-#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -30,6 +29,7 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #import "ios/web/public/navigation_item.h"
@@ -123,9 +123,6 @@ static NSString* kNoCreditCardFormHtml =
 NSString* const kCreditCardAutofocusFormHtml =
     @"<form><input type=\"text\" autofocus autocomplete=\"cc-number\"></form>";
 
-// Experiment preference key.
-NSString* const kAutofillVisible = @"AutofillVisible";
-
 // FAIL if a field with the supplied |name| and |fieldType| is not present on
 // the |form|.
 void CheckField(const FormStructure& form,
@@ -157,12 +154,14 @@ class TestConsumer : public WebDataServiceConsumer {
 // Text fixture to test autofill.
 class AutofillControllerTest : public ChromeWebTest {
  public:
-  AutofillControllerTest() = default;
+  AutofillControllerTest()
+      : ChromeWebTest(std::make_unique<ChromeWebClient>()) {}
   ~AutofillControllerTest() override {}
 
  protected:
   void SetUp() override;
   void TearDown() override;
+
   void SetUpForSuggestions(NSString* data);
 
   // Adds key value data to the Personal Data Manager and loads test page.
@@ -207,9 +206,6 @@ void AutofillControllerTest::SetUp() {
   // WebDataService; this is not initialized on a TestChromeBrowserState by
   // default.
   chrome_browser_state_->CreateWebDataService();
-  // Enable autofill experiment.
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults setBool:YES forKey:kAutofillVisible];
 
   AutofillAgent* agent = [[AutofillAgent alloc]
       initWithPrefService:chrome_browser_state_->GetPrefs()
@@ -571,7 +567,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   ExecuteJavaScript(@"submit.click()");
   infobars::InfoBarManager* infobar_manager =
       InfoBarManagerImpl::FromWebState(web_state());
-  base::test::ios::WaitUntilCondition(^bool() {
+  WaitForCondition(^bool() {
     return infobar_manager->infobar_count();
   });
   ExpectMetric("Autofill.CreditCardInfoBar.Local",

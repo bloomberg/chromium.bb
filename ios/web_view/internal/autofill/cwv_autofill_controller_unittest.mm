@@ -46,18 +46,20 @@ NSString* const kTestFieldValue = @"FieldValue";
 
 class CWVAutofillControllerTest : public PlatformTest {
  protected:
-  CWVAutofillControllerTest()
-      : browser_state_(/*off_the_record=*/false),
-        autofill_agent_([[FakeAutofillAgent alloc]
-            initWithPrefService:browser_state_.GetPrefs()
-                       webState:&web_state_]),
-        js_autofill_manager_([[FakeJSAutofillManager alloc] init]) {
+  CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
     l10n_util::OverrideLocaleWithCocoaLocale();
 
     web_state_.SetBrowserState(&browser_state_);
     CRWTestJSInjectionReceiver* injectionReceiver =
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state_.SetJSInjectionReceiver(injectionReceiver);
+
+    js_autofill_manager_ =
+        [[FakeJSAutofillManager alloc] initWithReceiver:injectionReceiver];
+
+    autofill_agent_ =
+        [[FakeAutofillAgent alloc] initWithPrefService:browser_state_.GetPrefs()
+                                              webState:&web_state_];
 
     autofill_controller_ =
         [[CWVAutofillController alloc] initWithWebState:&web_state_

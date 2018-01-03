@@ -112,6 +112,7 @@ source_set("unit_tests") {
 js_compile_bundle("chrome_bundle") {
   closure_entry_point = "__crWeb.chromeBundle"
   sources = [
+    "//components/autofill/ios/browser/resources/autofill_controller.js",
     "resources/chrome_bundle.js",
     "resources/print.js",
   ]
@@ -122,7 +123,7 @@ js_compile_bundle("chrome_bundle") {
   ]
 }
 
-js_compile_unchecked("payment_request") {
+js_compile_checked("payment_request") {
   sources = [
     "resources/payment_request.js",
   ]

@@ -61,7 +61,6 @@ source_set("test_support") {
 js_compile_checked("injected_js") {
   visibility = [ ":browser" ]
   sources = [
-    "resources/autofill_controller.js",
     "resources/suggestion_controller.js",
   ]
 }

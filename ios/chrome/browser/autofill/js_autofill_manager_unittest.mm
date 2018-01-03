@@ -9,6 +9,8 @@
 #include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#import "components/autofill/ios/browser/js_autofill_manager.h"
+#include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -31,13 +33,14 @@ NSNumber* GetDefaultMaxLength() {
 // Text fixture to test JsAutofillManager.
 class JsAutofillManagerTest : public ChromeWebTest {
  protected:
+  JsAutofillManagerTest()
+      : ChromeWebTest(std::make_unique<ChromeWebClient>()) {}
+
   // Loads the given HTML and initializes the Autofill JS scripts.
   void LoadHtml(NSString* html) {
     ChromeWebTest::LoadHtml(html);
-    CRWJSInjectionManager* manager = [web_state()->GetJSInjectionReceiver()
-        instanceOfClass:[JsAutofillManager class]];
-    manager_ = static_cast<JsAutofillManager*>(manager);
-    [manager_ inject];
+    manager_ = [[JsAutofillManager alloc]
+        initWithReceiver:web_state()->GetJSInjectionReceiver()];
   }
   // Testable autofill manager.
   JsAutofillManager* manager_;
@@ -46,7 +49,7 @@ class JsAutofillManagerTest : public ChromeWebTest {
 // Tests that |hasBeenInjected| returns YES after |inject| call.
 TEST_F(JsAutofillManagerTest, InitAndInject) {
   LoadHtml(@"<html></html>");
-  EXPECT_TRUE([manager_ hasBeenInjected]);
+  EXPECT_NSEQ(@"object", ExecuteJavaScript(@"typeof __gCrWeb.autofill"));
 }
 
 // Tests forms extraction method
@@ -128,7 +131,7 @@ TEST_F(JsAutofillManagerTest, FillActiveFormField) {
   NSString* get_element_javascript = @"document.getElementsByName('email')[0]";
   NSString* focus_element_javascript =
       [NSString stringWithFormat:@"%@.focus()", get_element_javascript];
-  [manager_ executeJavaScript:focus_element_javascript completionHandler:nil];
+  ExecuteJavaScript(focus_element_javascript);
   [manager_
       fillActiveFormField:@"{\"name\":\"email\",\"value\":\"newemail@com\"}"
         completionHandler:^{
@@ -136,8 +139,7 @@ TEST_F(JsAutofillManagerTest, FillActiveFormField) {
 
   NSString* element_value_javascript =
       [NSString stringWithFormat:@"%@.value", get_element_javascript];
-  EXPECT_NSEQ(@"newemail@com",
-              web::ExecuteJavaScript(manager_, element_value_javascript));
+  EXPECT_NSEQ(@"newemail@com", ExecuteJavaScript(element_value_javascript));
 }
 
 }  // namespace
