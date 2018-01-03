@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
@@ -27,20 +28,6 @@ namespace {
 
 const char kDefaultTestUrl[] = "https://www.google.com/";
 
-data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle) {
-  ChromeNavigationData* chrome_navigation_data = new ChromeNavigationData();
-  content::WebContentsTester::For(web_contents)
-      ->SetNavigationData(navigation_handle,
-                          base::WrapUnique(chrome_navigation_data));
-  data_reduction_proxy::DataReductionProxyData* data =
-      new data_reduction_proxy::DataReductionProxyData();
-  chrome_navigation_data->SetDataReductionProxyData(base::WrapUnique(data));
-
-  return data;
-}
-
 class TestPreviewsUKMObserver : public PreviewsUKMObserver {
  public:
   TestPreviewsUKMObserver(content::WebContents* web_contents,
@@ -57,23 +44,23 @@ class TestPreviewsUKMObserver : public PreviewsUKMObserver {
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override {
-    data_reduction_proxy::DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
-    data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
-    data->set_request_url(GURL(kDefaultTestUrl));
-    data->set_lite_page_received(lite_page_received_);
+    ChromeNavigationData chrome_navigation_data;
 
-    if (noscript_on_) {
-      // ChromeNavigationData is guaranteed to be non-null at this point, as
-      // DataForNavigationHandle is always called prior to this and creates one.
-      ChromeNavigationData* chrome_navigation_data =
-          static_cast<ChromeNavigationData*>(
-              navigation_handle->GetNavigationData());
-      content::PreviewsState previews_state =
-          chrome_navigation_data->previews_state();
-      chrome_navigation_data->set_previews_state(previews_state |=
-                                                 content::NOSCRIPT_ON);
-    }
+    auto data_reduction_proxy_data =
+        std::make_unique<data_reduction_proxy::DataReductionProxyData>();
+    data_reduction_proxy_data->set_used_data_reduction_proxy(
+        data_reduction_proxy_used_);
+    data_reduction_proxy_data->set_request_url(GURL(kDefaultTestUrl));
+    data_reduction_proxy_data->set_lite_page_received(lite_page_received_);
+    chrome_navigation_data.SetDataReductionProxyData(
+        std::move(data_reduction_proxy_data));
+
+    if (noscript_on_)
+      chrome_navigation_data.set_previews_state(content::NOSCRIPT_ON);
+
+    content::WebContentsTester::For(web_contents_)
+        ->SetNavigationData(navigation_handle,
+                            chrome_navigation_data.ToValue());
 
     return PreviewsUKMObserver::OnCommit(navigation_handle, source_id);
   }

@@ -6,10 +6,10 @@
 
 #include <utility>
 
+#include "base/values.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/ssl_status.h"
@@ -63,7 +63,7 @@ void TestNavigationURLLoader::CallOnRequestRedirected(
 void TestNavigationURLLoader::CallOnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
-    std::unique_ptr<NavigationData> navigation_data) {
+    base::Value navigation_data) {
   // Start the request_ids at 1000 to avoid collisions with request ids from
   // network resources (it should be rare to compare these in unit tests).
   static int request_id = 1000;

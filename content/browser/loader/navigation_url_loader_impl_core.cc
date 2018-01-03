@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -14,7 +15,6 @@
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
@@ -118,7 +118,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
-    std::unique_ptr<NavigationData> navigation_data,
+    base::Value navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream) {
@@ -140,7 +140,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
                      response->DeepCopy(), base::Passed(&body), ssl_info,
-                     base::Passed(&navigation_data), request_id, is_download,
+                     std::move(navigation_data), request_id, is_download,
                      is_stream));
 }
 

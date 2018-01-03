@@ -11,6 +11,10 @@
 #include "base/supports_user_data.h"
 #include "components/previews/core/previews_experiments.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 class URLRequest;
 }
@@ -22,6 +26,10 @@ class PreviewsUserData : public base::SupportsUserData::Data {
  public:
   PreviewsUserData(uint64_t page_id);
   ~PreviewsUserData() override;
+
+  // Convert from/to a base::Value.
+  base::Value ToValue();
+  explicit PreviewsUserData(const base::Value& value);
 
   // Makes a deep copy.
   std::unique_ptr<PreviewsUserData> DeepCopy() const;

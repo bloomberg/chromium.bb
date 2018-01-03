@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -736,7 +736,7 @@ void NavigationRequest::OnResponseStarted(
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
-    std::unique_ptr<NavigationData> navigation_data,
+    base::Value navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,
@@ -805,7 +805,7 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  if (navigation_data)
+  if (!navigation_data.is_none())
     navigation_handle_->set_navigation_data(std::move(navigation_data));
 
   // Store the response and the StreamHandle until checks have been processed.

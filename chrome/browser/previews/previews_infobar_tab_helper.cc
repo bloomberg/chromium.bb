@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -72,10 +73,13 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
 
   previews_user_data_.reset();
   // Store Previews information for this navigation.
-  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
-      navigation_handle->GetNavigationData());
-  if (nav_data && nav_data->previews_user_data()) {
-    previews_user_data_ = nav_data->previews_user_data()->DeepCopy();
+  const base::Value& navigation_data = navigation_handle->GetNavigationData();
+  if (!navigation_data.is_none()) {
+    ChromeNavigationData chrome_navigation_data(navigation_data);
+    if (chrome_navigation_data.previews_user_data()) {
+      previews_user_data_ =
+          chrome_navigation_data.previews_user_data()->DeepCopy();
+    }
   }
 
   uint64_t page_id = (previews_user_data_) ? previews_user_data_->page_id() : 0;

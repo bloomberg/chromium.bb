@@ -9,6 +9,7 @@
 
 #include "base/guid.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -586,7 +587,9 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   response->head.socket_address = socket_address;
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
-  url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
+  url_loader->CallOnResponseStarted(
+      response, MakeEmptyStream(), base::Value()  // navigation_data
+      );
 }
 
 void TestRenderFrameHost::PrepareForCommitIfNecessary() {

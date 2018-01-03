@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_url_loader.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 struct RedirectInfo;
 class SSLInfo;
@@ -23,7 +27,6 @@ namespace content {
 
 class AppCacheNavigationHandle;
 class NavigationURLLoaderImplCore;
-class NavigationData;
 class ServiceWorkerNavigationHandle;
 class StreamHandle;
 struct GlobalRequestID;
@@ -56,7 +59,7 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
   void NotifyResponseStarted(const scoped_refptr<ResourceResponse>& response,
                              std::unique_ptr<StreamHandle> body,
                              const net::SSLInfo& ssl_info,
-                             std::unique_ptr<NavigationData> navigation_data,
+                             base::Value navigation_data,
                              const GlobalRequestID& request_id,
                              bool is_download,
                              bool is_stream);

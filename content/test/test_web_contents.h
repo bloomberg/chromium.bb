@@ -22,6 +22,10 @@ class GURL;
 class Referrer;
 class SkBitmap;
 
+namespace base {
+class Value;
+}
+
 namespace gfx {
 class Size;
 }
@@ -32,7 +36,6 @@ class HttpResponseHeaders;
 
 namespace content {
 
-class NavigationData;
 class NavigationHandle;
 class RenderViewHost;
 class TestRenderViewHost;
@@ -134,9 +137,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                 int error_code,
                                 const base::string16& error_description);
 
-  void SetNavigationData(
-      NavigationHandle* navigation_handle,
-      std::unique_ptr<NavigationData> navigation_data) override;
+  void SetNavigationData(NavigationHandle* navigation_handle,
+                         base::Value navigation_data) override;
 
   void SetHttpResponseHeaders(
       NavigationHandle* navigation_handle,
