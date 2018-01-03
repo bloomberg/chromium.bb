@@ -34,18 +34,6 @@ namespace base {
 class BucketRanges;
 class HistogramSnapshotManager;
 
-// In-memory recorder of usage statistics (aka metrics, aka histograms).
-//
-// Most of the methods are static and act on a global recorder. This global
-// recorder must first be initialized using Initialize() before being used. This
-// global recorder is internally synchronized and all the static methods are
-// thread safe.
-//
-// StatisticsRecorder doesn't have any public constructor. For testing purpose,
-// you can create a temporary recorder using the factory method
-// CreateTemporaryForTesting(). This temporary recorder becomes the global one
-// until deleted. When this temporary recorder is deleted, it restores the
-// previous global one.
 class BASE_EXPORT StatisticsRecorder {
  public:
   // An interface class that allows the StatisticsRecorder to forcibly merge
@@ -58,83 +46,58 @@ class BASE_EXPORT StatisticsRecorder {
 
   typedef std::vector<HistogramBase*> Histograms;
 
-  // Restores the previous global recorder.
-  //
-  // When several temporary recorders are created using
-  // CreateTemporaryForTesting(), these recorders must be deleted in reverse
-  // order of creation.
-  //
-  // This method is thread safe.
-  //
-  // Precondition: The recorder being deleted is the current global recorder.
   ~StatisticsRecorder();
 
-  // Initializes the global recorder. Safe to call multiple times.
-  //
-  // This method is thread safe.
+  // Initializes the StatisticsRecorder system. Safe to call multiple times.
   static void Initialize();
 
-  // Finds out if histograms can now be registered into our list.
-  //
-  // This method is thread safe.
+  // Find out if histograms can now be registered into our list.
   static bool IsActive();
 
-  // Registers a provider of histograms that can be called to merge those into
-  // the global recorder. Calls to ImportProvidedHistograms() will fetch from
-  // registered providers.
-  //
-  // This method is thread safe.
+  // Register a provider of histograms that can be called to merge those into
+  // the global StatisticsRecorder. Calls to ImportProvidedHistograms() will
+  // fetch from registered providers.
   static void RegisterHistogramProvider(
       const WeakPtr<HistogramProvider>& provider);
 
-  // Registers or adds a new histogram to the collection of statistics. If an
+  // Register, or add a new histogram to the collection of statistics. If an
   // identically named histogram is already registered, then the argument
-  // |histogram| will be deleted. The returned value is always the registered
+  // |histogram| will deleted.  The returned value is always the registered
   // histogram (either the argument, or the pre-existing registered histogram).
-  //
-  // This method is thread safe.
   static HistogramBase* RegisterOrDeleteDuplicate(HistogramBase* histogram);
 
-  // Registers or adds a new BucketRanges. If an equivalent BucketRanges is
-  // already registered, then the argument |ranges| will be deleted. The
-  // returned value is always the registered BucketRanges (either the argument,
-  // or the pre-existing one).
-  //
-  // This method is thread safe.
+  // Register, or add a new BucketRanges. If an identically BucketRanges is
+  // already registered, then the argument |ranges| will deleted. The returned
+  // value is always the registered BucketRanges (either the argument, or the
+  // pre-existing one).
   static const BucketRanges* RegisterOrDeleteDuplicateRanges(
       const BucketRanges* ranges);
 
   // Methods for appending histogram data to a string.  Only histograms which
   // have |query| as a substring are written to |output| (an empty string will
   // process all registered histograms).
-  //
-  // These methods are thread safe.
   static void WriteHTMLGraph(const std::string& query, std::string* output);
   static void WriteGraph(const std::string& query, std::string* output);
 
   // Returns the histograms with |verbosity_level| as the serialization
   // verbosity.
-  //
-  // This method is thread safe.
   static std::string ToJSON(JSONVerbosityLevel verbosity_level);
 
-  // Extracts histograms which were marked for use by UMA.
+  // Method for extracting histograms which were marked for use by UMA.
   //
   // This method is thread safe.
   static void GetHistograms(Histograms* output);
 
-  // Extracts BucketRanges used by all histograms registered.
+  // Method for extracting BucketRanges used by all histograms registered.
   static void GetBucketRanges(std::vector<const BucketRanges*>* output);
 
-  // Finds a histogram by name. Matches the exact name. Returns a null pointer
-  // if a matching histogram is not found.
+  // Find a histogram by name. It matches the exact name.
+  // It returns NULL if a matching histogram is not found.
   //
   // This method is thread safe.
   static HistogramBase* FindHistogram(base::StringPiece name);
 
-  // Imports histograms from providers.
-  //
-  // This method must be called on the UI thread.
+  // Imports histograms from providers. This must be called on the UI thread.
   static void ImportProvidedHistograms();
 
   // Snapshots all histograms via |snapshot_manager|. |flags_to_set| is used to
@@ -147,81 +110,71 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramBase::Flags required_flags,
                             HistogramSnapshotManager* snapshot_manager);
 
-  // Extracts registered histograms. Only histograms which have |query| as a
-  // substring are extracted. An empty query will extract all registered
-  // histograms.
+  // GetSnapshot copies some of the pointers to registered histograms into the
+  // caller supplied vector (Histograms). Only histograms which have |query| as
+  // a substring are copied (an empty string will process all registered
+  // histograms).
   //
   // This method is thread safe.
   static void GetSnapshot(const std::string& query, Histograms* snapshot);
 
   typedef base::Callback<void(HistogramBase::Sample)> OnSampleCallback;
 
-  // Sets the callback to notify when a new sample is recorded on the histogram
-  // referred to by |histogram_name|. Can be called before or after the
-  // histogram is created. Returns whether the callback was successfully set.
-  //
-  // This method is thread safe.
+  // SetCallback sets the callback to notify when a new sample is recorded on
+  // the histogram referred to by |histogram_name|. The call to this method can
+  // be be done before or after the histogram is created. This method is thread
+  // safe. The return value is whether or not the callback was successfully set.
   static bool SetCallback(const std::string& histogram_name,
                           const OnSampleCallback& callback);
 
-  // Clears any callback set on the histogram referred to by |histogram_name|.
-  //
-  // This method is thread safe.
+  // ClearCallback clears any callback set on the histogram referred to by
+  // |histogram_name|. This method is thread safe.
   static void ClearCallback(const std::string& histogram_name);
 
-  // Retrieves the callback for the histogram referred to by |histogram_name|,
-  // or a null callback if no callback exists for this histogram.
-  //
-  // This method is thread safe.
+  // FindCallback retrieves the callback for the histogram referred to by
+  // |histogram_name|, or a null callback if no callback exists for this
+  // histogram. This method is thread safe.
   static OnSampleCallback FindCallback(const std::string& histogram_name);
 
   // Returns the number of known histograms.
-  //
-  // This method is thread safe.
   static size_t GetHistogramCount();
 
   // Initializes logging histograms with --v=1. Safe to call multiple times.
   // Is called from ctor but for browser it seems that it is more useful to
   // start logging after statistics recorder, so we need to init log-on-shutdown
   // later.
-  //
-  // This method is thread safe.
   static void InitLogOnShutdown();
 
   // Removes a histogram from the internal set of known ones. This can be
   // necessary during testing persistent histograms where the underlying
   // memory is being released.
-  //
-  // This method is thread safe.
   static void ForgetHistogramForTesting(base::StringPiece name);
 
-  // Creates a temporary StatisticsRecorder object for testing purposes. All new
-  // histograms will be registered in it until it is destructed or pushed aside
-  // for the lifetime of yet another StatisticsRecorder object. The destruction
-  // of the returned object will re-activate the previous one.
-  // StatisticsRecorder objects must be deleted in the opposite order to which
-  // they're created.
-  //
-  // This method is thread safe.
+  // Creates a local StatisticsRecorder object for testing purposes. All new
+  // histograms will be registered in it until it is destructed or pushed
+  // aside for the lifetime of yet another SR object. The destruction of the
+  // returned object will re-activate the previous one. Always release SR
+  // objects in the opposite order to which they're created.
   static std::unique_ptr<StatisticsRecorder> CreateTemporaryForTesting()
       WARN_UNUSED_RESULT;
+
+  // Resets any global instance of the statistics-recorder that was created
+  // by a call to Initialize().
+  static void UninitializeForTesting();
 
   // Sets the record checker for determining if a histogram should be recorded.
   // Record checker doesn't affect any already recorded histograms, so this
   // method must be called very early, before any threads have started.
   // Record checker methods can be called on any thread, so they shouldn't
   // mutate any state.
-  //
   // TODO(iburak): This is not yet hooked up to histogram recording
   // infrastructure.
   static void SetRecordChecker(
       std::unique_ptr<RecordHistogramChecker> record_checker);
 
-  // Checks if the given histogram should be recorded based on the
-  // ShouldRecord() method of the record checker. If the record checker is not
-  // set, returns true.
-  //
-  // This method is thread safe.
+  // Returns true iff the given histogram should be recorded based on
+  // the ShouldRecord() method of the record checker.
+  // If the record checker is not set, returns true.
   static bool ShouldRecordHistogram(uint64_t histogram_hash);
 
  private:
@@ -246,57 +199,52 @@ class BASE_EXPORT StatisticsRecorder {
       unordered_set<const BucketRanges*, BucketRangesHash, BucketRangesEqual>
           RangesMap;
 
+  friend struct LazyInstanceTraitsBase<StatisticsRecorder>;
   friend class StatisticsRecorderTest;
   FRIEND_TEST_ALL_PREFIXES(StatisticsRecorderTest, IterationTest);
 
-  // Fetches set of existing histograms. Ownership of the individual histograms
+  // Fetch set of existing histograms. Ownership of the individual histograms
   // remains with the StatisticsRecorder.
-  //
-  // This method is thread safe.
   static Histograms GetKnownHistograms(bool include_persistent);
 
-  // Gets histogram providers.
-  //
-  // This method is thread safe.
-  static HistogramProviders GetHistogramProviders();
-
-  // Imports histograms from global persistent memory.
-  //
-  // Precondition: The global lock must not be held during this call.
+  // Imports histograms from global persistent memory. The global lock must
+  // not be held during this call.
   static void ImportGlobalPersistentHistograms();
 
-  // Constructs a new StatisticsRecorder and sets it as the current global
-  // recorder.
-  //
-  // Precondition: The global lock is already acquired.
+  // The constructor just initializes static members. Usually client code should
+  // use Initialize to do this. But in test code, you can friend this class and
+  // call the constructor to get a clean StatisticsRecorder.
   StatisticsRecorder();
 
   // Initialize implementation but without lock. Caller should guard
   // StatisticsRecorder by itself if needed (it isn't in unit tests).
-  //
-  // Precondition: The global lock is already acquired.
-  static void InitLogOnShutdownWhileLocked();
+  void InitLogOnShutdownWithoutLock();
 
-  HistogramMap histograms_;
-  CallbackMap callbacks_;
-  RangesMap ranges_;
-  HistogramProviders providers_;
-  std::unique_ptr<RecordHistogramChecker> record_checker_;
+  // These are copies of everything that existed when the (test) Statistics-
+  // Recorder was created. The global ones have to be moved aside to create a
+  // clean environment.
+  std::unique_ptr<HistogramMap> existing_histograms_;
+  std::unique_ptr<CallbackMap> existing_callbacks_;
+  std::unique_ptr<RangesMap> existing_ranges_;
+  std::unique_ptr<HistogramProviders> existing_providers_;
+  std::unique_ptr<RecordHistogramChecker> existing_record_checker_;
 
-  // Previous global recorder that existed when this one was created.
-  StatisticsRecorder* previous_ = nullptr;
+  bool vlog_initialized_ = false;
 
-  // Global lock for internal synchronization.
-  static LazyInstance<Lock>::Leaky lock_;
+  static void Reset();
+  static void DumpHistogramsToVlog(void* instance);
 
-  // Current global recorder. This recorder is used by static methods. When a
-  // new global recorder is created by CreateTemporaryForTesting(), then the
-  // previous global recorder is referenced by top_->previous_.
-  static StatisticsRecorder* top_;
+  static HistogramMap* histograms_;
+  static CallbackMap* callbacks_;
+  static RangesMap* ranges_;
+  static HistogramProviders* providers_;
+  static RecordHistogramChecker* record_checker_;
 
-  // Tracks whether InitLogOnShutdownWhileLocked() has registered a logging
-  // function that will be called when the program finishes.
-  static bool is_vlog_initialized_;
+  // Lock protects access to above maps. This is a LazyInstance to avoid races
+  // when the above methods are used before Initialize(). Previously each method
+  // would do |if (!lock_) return;| which would race with
+  // |lock_ = new Lock;| in StatisticsRecorder(). http://crbug.com/672852.
+  static base::LazyInstance<base::Lock>::Leaky lock_;
 
   DISALLOW_COPY_AND_ASSIGN(StatisticsRecorder);
 };

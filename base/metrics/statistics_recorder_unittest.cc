@@ -30,7 +30,9 @@ class LogStateSaver {
  public:
   LogStateSaver() : old_min_log_level_(logging::GetMinLogLevel()) {}
 
-  ~LogStateSaver() { logging::SetMinLogLevel(old_min_log_level_); }
+  ~LogStateSaver() {
+    logging::SetMinLogLevel(old_min_log_level_);
+  }
 
  private:
   int old_min_log_level_;
@@ -68,8 +70,8 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
 
     // Use persistent memory for histograms if so indicated by test parameter.
     if (use_persistent_histogram_allocator_) {
-      GlobalHistogramAllocator::CreateWithLocalMemory(kAllocatorMemorySize, 0,
-                                                      "StatisticsRecorderTest");
+      GlobalHistogramAllocator::CreateWithLocalMemory(
+          kAllocatorMemorySize, 0, "StatisticsRecorderTest");
     }
   }
 
@@ -80,10 +82,14 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
 
   void InitializeStatisticsRecorder() {
     DCHECK(!statistics_recorder_);
+    StatisticsRecorder::UninitializeForTesting();
     statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
   }
 
-  void UninitializeStatisticsRecorder() { statistics_recorder_.reset(); }
+  void UninitializeStatisticsRecorder() {
+    statistics_recorder_.reset();
+    StatisticsRecorder::UninitializeForTesting();
+  }
 
   Histogram* CreateHistogram(const char* name,
                              HistogramBase::Sample min,
@@ -96,15 +102,18 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
     return new Histogram(name, min, max, registered_ranges);
   }
 
-  void DeleteHistogram(HistogramBase* histogram) { delete histogram; }
+  void DeleteHistogram(HistogramBase* histogram) {
+    delete histogram;
+  }
 
-  void InitLogOnShutdown() { StatisticsRecorder::InitLogOnShutdown(); }
+  void InitLogOnShutdown() {
+    DCHECK(statistics_recorder_);
+    statistics_recorder_->InitLogOnShutdownWithoutLock();
+  }
 
-  bool IsVLogInitialized() { return StatisticsRecorder::is_vlog_initialized_; }
-
-  void ResetVLogInitialized() {
-    UninitializeStatisticsRecorder();
-    StatisticsRecorder::is_vlog_initialized_ = false;
+  bool VLogInitialized() {
+    DCHECK(statistics_recorder_);
+    return statistics_recorder_->vlog_initialized_;
   }
 
   const bool use_persistent_histogram_allocator_;
@@ -268,8 +277,8 @@ TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   ASSERT_EQ(0u, registered_histograms.size());
 
   // Create a histogram.
-  HistogramBase* histogram = Histogram::FactoryGet("TestHistogram", 1, 1000, 10,
-                                                   HistogramBase::kNoFlags);
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "TestHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(1u, registered_histograms.size());
@@ -283,15 +292,15 @@ TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   EXPECT_EQ(histogram, histogram2);
 
   // Create a LinearHistogram.
-  histogram = LinearHistogram::FactoryGet("TestLinearHistogram", 1, 1000, 10,
-                                          HistogramBase::kNoFlags);
+  histogram = LinearHistogram::FactoryGet(
+      "TestLinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(2u, registered_histograms.size());
 
   // Create a BooleanHistogram.
-  histogram = BooleanHistogram::FactoryGet("TestBooleanHistogram",
-                                           HistogramBase::kNoFlags);
+  histogram = BooleanHistogram::FactoryGet(
+      "TestBooleanHistogram", HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(3u, registered_histograms.size());
@@ -300,8 +309,8 @@ TEST_P(StatisticsRecorderTest, RegisterHistogramWithFactoryGet) {
   std::vector<int> custom_ranges;
   custom_ranges.push_back(1);
   custom_ranges.push_back(5);
-  histogram = CustomHistogram::FactoryGet("TestCustomHistogram", custom_ranges,
-                                          HistogramBase::kNoFlags);
+  histogram = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges, HistogramBase::kNoFlags);
   registered_histograms.clear();
   StatisticsRecorder::GetHistograms(&registered_histograms);
   EXPECT_EQ(4u, registered_histograms.size());
@@ -615,33 +624,33 @@ TEST_P(StatisticsRecorderTest, CallbackUsedBeforeHistogramCreatedTest) {
 }
 
 TEST_P(StatisticsRecorderTest, LogOnShutdownNotInitialized) {
-  ResetVLogInitialized();
+  UninitializeStatisticsRecorder();
   logging::SetMinLogLevel(logging::LOG_WARNING);
   InitializeStatisticsRecorder();
   EXPECT_FALSE(VLOG_IS_ON(1));
-  EXPECT_FALSE(IsVLogInitialized());
+  EXPECT_FALSE(VLogInitialized());
   InitLogOnShutdown();
-  EXPECT_FALSE(IsVLogInitialized());
+  EXPECT_FALSE(VLogInitialized());
 }
 
 TEST_P(StatisticsRecorderTest, LogOnShutdownInitializedExplicitly) {
-  ResetVLogInitialized();
+  UninitializeStatisticsRecorder();
   logging::SetMinLogLevel(logging::LOG_WARNING);
   InitializeStatisticsRecorder();
   EXPECT_FALSE(VLOG_IS_ON(1));
-  EXPECT_FALSE(IsVLogInitialized());
+  EXPECT_FALSE(VLogInitialized());
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
   EXPECT_TRUE(VLOG_IS_ON(1));
   InitLogOnShutdown();
-  EXPECT_TRUE(IsVLogInitialized());
+  EXPECT_TRUE(VLogInitialized());
 }
 
 TEST_P(StatisticsRecorderTest, LogOnShutdownInitialized) {
-  ResetVLogInitialized();
+  UninitializeStatisticsRecorder();
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
   InitializeStatisticsRecorder();
   EXPECT_TRUE(VLOG_IS_ON(1));
-  EXPECT_TRUE(IsVLogInitialized());
+  EXPECT_TRUE(VLogInitialized());
 }
 
 class TestHistogramProvider : public StatisticsRecorder::HistogramProvider {
