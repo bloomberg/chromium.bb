@@ -199,7 +199,6 @@ enum AuthenticationState {
   [_secondaryButton removeTarget:self
                           action:@selector(onSecondaryButtonPressed:)
                 forControlEvents:UIControlEventTouchDown];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (void)cancel {

@@ -86,7 +86,6 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)dealloc {
   self.tableView.delegate = nil;
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 - (UIScrollView*)scrollView {

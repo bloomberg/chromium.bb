@@ -1474,7 +1474,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _bookmarkModelBridge.reset();
   [_model removeObserver:self];
   [[UpgradeCenter sharedInstance] unregisterClient:self];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [_toolbarCoordinator setToolbarDelegate:nil];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(nil);

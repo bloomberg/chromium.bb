@@ -46,10 +46,6 @@
 @synthesize willStartNotificationReceived = _willStartNotificationReceived;
 @synthesize didStopNotificationReceived = _didStopNotificationReceived;
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 - (void)setPlayer:(TextToSpeechPlayer*)player {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter removeObserver:self];

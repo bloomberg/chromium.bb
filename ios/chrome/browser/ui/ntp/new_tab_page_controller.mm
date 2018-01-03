@@ -340,7 +340,6 @@ enum {
   [self.homePanel setDelegate:nil];
   [_bookmarkController setDelegate:nil];
   [_openTabsCoordinator setDelegate:nil];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - CRWNativeContent

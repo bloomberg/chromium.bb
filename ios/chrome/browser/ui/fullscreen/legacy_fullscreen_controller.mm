@@ -322,7 +322,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   scopedObserver_.reset();
   observerBridge_.reset();
 }

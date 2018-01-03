@@ -531,7 +531,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   net::HTTPProtocolHandlerDelegate::SetInstance(nullptr);
   net::RequestTracker::SetRequestTrackerFactory(nullptr);
   [NSObject cancelPreviousPerformRequestsWithTarget:self];

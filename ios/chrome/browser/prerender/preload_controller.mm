@@ -179,7 +179,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 - (void)dealloc {
   UMA_HISTOGRAM_COUNTS(kPrerendersPerSessionCountHistogramName,
                        successfulPrerendersPerSessionCount_);
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self cancelPrerender];
 }
 
