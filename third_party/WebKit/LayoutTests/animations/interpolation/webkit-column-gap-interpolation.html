@@ -38,18 +38,11 @@ assertInterpolation({
   {at: 1.5, is: '55px'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-column-gap',
   from: 'initial',
   to: '20px',
-}, [
-  {at: -0.3, is: '0px'},
-  {at: 0, is: '0px'},
-  {at: 0.3, is: '6px'},
-  {at: 0.6, is: '12px'},
-  {at: 1, is: '20px'},
-  {at: 1.5, is: '30px'},
-]);
+});
 
 assertInterpolation({
   property: '-webkit-column-gap',
@@ -64,18 +57,17 @@ assertInterpolation({
   {at: 1.5, is: '0px'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: '-webkit-column-gap',
   from: 'unset',
   to: '20px',
-}, [
-  {at: -0.3, is: '0px'},
-  {at: 0, is: '0px'},
-  {at: 0.3, is: '6px'},
-  {at: 0.6, is: '12px'},
-  {at: 1, is: '20px'},
-  {at: 1.5, is: '30px'},
-]);
+});
+
+assertNoInterpolation({
+  property: '-webkit-column-gap',
+  from: 'normal',
+  to: '20px',
+});
 
 assertInterpolation({
   property: '-webkit-column-gap',
