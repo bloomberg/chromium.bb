@@ -66,7 +66,7 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       ssl_(item.ssl_),
       timestamp_(item.timestamp_),
       user_agent_type_(item.user_agent_type_),
-      http_request_headers_([item.http_request_headers_ copy]),
+      http_request_headers_([item.http_request_headers_ mutableCopy]),
       serialized_state_object_([item.serialized_state_object_ copy]),
       is_created_from_push_state_(item.is_created_from_push_state_),
       has_state_been_replaced_(item.has_state_been_replaced_),
