@@ -40,7 +40,7 @@ class JavascriptInjector : public WebContentsUserData<JavascriptInjector> {
                        const base::android::JavaParamRef<jstring>& name);
 
  private:
-  // A weak reference to the Java GestureListenerManager object.
+  // A weak reference to the Java JavascriptInjectorImpl object.
   JavaObjectWeakGlobalRef java_ref_;
 
   // Manages injecting Java objects.
