@@ -958,6 +958,24 @@ public final class PrefServiceBridge {
         nativeMoveAcceptLanguage(languageCode, offset);
     }
 
+    /**
+     * @param languageCode A valid language code to check.
+     * @return Whether the given language is blocked by the user.
+     */
+    public boolean isBlockedLanguage(String languageCode) {
+        return nativeIsBlockedLanguage(languageCode);
+    }
+
+    /**
+     * Sets the blocked state of a given language.
+     *
+     * @param languageCode A valid language code to change.
+     * @param blocked Whether to set language blocked.
+     */
+    public void setLanguageBlockedState(String languageCode, boolean blocked) {
+        nativeSetLanguageBlockedState(languageCode, blocked);
+    }
+
     private native boolean nativeIsContentSettingEnabled(int contentSettingType);
     private native boolean nativeIsContentSettingManaged(int contentSettingType);
     private native void nativeSetContentSettingEnabled(int contentSettingType, boolean allow);
@@ -1146,6 +1164,8 @@ public final class PrefServiceBridge {
     private native void nativeGetUserAcceptLanguages(List<String> list);
     private native void nativeUpdateUserAcceptLanguages(String language, boolean add);
     private native void nativeMoveAcceptLanguage(String language, int offset);
+    private native boolean nativeIsBlockedLanguage(String language);
+    private native void nativeSetLanguageBlockedState(String language, boolean blocked);
     private native String nativeGetDownloadDefaultDirectory();
     private native void nativeSetDownloadDefaultDirectory(String directory);
 }

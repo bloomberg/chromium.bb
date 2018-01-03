@@ -49,8 +49,14 @@ public class LanguageListPreference extends Preference {
                     ArrayList<Item> menuItems = new ArrayList<>();
                     // Show "Offer to translate" option if "Chrome Translate" is enabled.
                     if (PrefServiceBridge.getInstance().isTranslateEnabled()) {
+                        // Set this row checked if the language is unblocked.
+                        int endIconResId =
+                                PrefServiceBridge.getInstance().isBlockedLanguage(info.getCode())
+                                ? 0
+                                : R.drawable.ic_check_googblue_24dp;
+                        // Add checked icon at the end.
                         menuItems.add(new Item(mContext,
-                                R.string.languages_item_option_offer_to_translate,
+                                R.string.languages_item_option_offer_to_translate, endIconResId,
                                 info.isSupported()));
                     }
 
@@ -64,7 +70,10 @@ public class LanguageListPreference extends Preference {
                 @Override
                 public void onItemSelected(Item item) {
                     if (item.getTextId() == R.string.languages_item_option_offer_to_translate) {
-                        // TODO(crbug/783049): Handle "offer to translate" event.
+                        // Toggle current blocked state of this language.
+                        boolean state = (item.getEndIconId() == 0);
+                        PrefServiceBridge.getInstance().setLanguageBlockedState(
+                                info.getCode(), !state);
                     } else if (item.getTextId() == R.string.remove) {
                         LanguagesManager.getInstance().removeFromAcceptLanguages(info.getCode());
                     }

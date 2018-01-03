@@ -50,6 +50,7 @@
 #include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -1220,6 +1221,35 @@ static void JNI_PrefServiceBridge_MoveAcceptLanguage(
 
   for (int i = 0; i < offset; ++i) {
     translate_prefs->RearrangeLanguage(language_code, where, languages);
+  }
+}
+
+static jboolean JNI_PrefServiceBridge_IsBlockedLanguage(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& language) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+
+  std::string language_code(ConvertJavaStringToUTF8(env, language));
+  translate::ToTranslateLanguageSynonym(&language_code);
+
+  return translate_prefs->IsBlockedLanguage(language_code);
+}
+
+static void JNI_PrefServiceBridge_SetLanguageBlockedState(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& language,
+    jboolean blocked) {
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs =
+      ChromeTranslateClient::CreateTranslatePrefs(GetPrefService());
+  std::string language_code(ConvertJavaStringToUTF8(env, language));
+
+  if (blocked) {
+    translate_prefs->BlockLanguage(language_code);
+  } else {
+    translate_prefs->UnblockLanguage(language_code);
   }
 }
 
