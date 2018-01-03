@@ -11,6 +11,7 @@
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/gpu/windows/d3d11_video_decoder_impl.h"
 
 namespace {
 
@@ -46,17 +47,13 @@ namespace media {
 
 D3D11VideoDecoder::D3D11VideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb,
-    deprecated::OutputWithReleaseMailboxCB output_cb)
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
     : impl_task_runner_(std::move(gpu_task_runner)), weak_factory_(this) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
   // frame, and along with a callback that will hop back to the impl thread
   // when it's released.
-  impl_ = base::MakeUnique<D3D11VideoDecoderImpl>(
-      get_stub_cb, media::BindToCurrentLoop(base::Bind(
-                       &D3D11VideoDecoder::OutputWithThreadHoppingRelease,
-                       weak_factory_.GetWeakPtr(), std::move(output_cb))));
+  impl_ = base::MakeUnique<D3D11VideoDecoderImpl>(get_stub_cb);
   impl_weak_ = impl_->GetWeakPtr();
 }
 
@@ -122,25 +119,6 @@ bool D3D11VideoDecoder::CanReadWithoutStalling() const {
 int D3D11VideoDecoder::GetMaxDecodeRequests() const {
   // Wrong thread, but it's okay.
   return impl_->GetMaxDecodeRequests();
-}
-
-void D3D11VideoDecoder::OutputWithThreadHoppingRelease(
-    deprecated::OutputWithReleaseMailboxCB output_cb,
-    deprecated::ReleaseMailboxCB impl_thread_cb,
-    const scoped_refptr<VideoFrame>& video_frame) {
-  // Called on our thread to output a video frame.  Modify the release cb so
-  // that it jumps back to the impl thread.
-  output_cb.Run(
-      base::BindOnce(&D3D11VideoDecoder::OnMailboxReleased,
-                     weak_factory_.GetWeakPtr(), std::move(impl_thread_cb)),
-      video_frame);
-}
-
-void D3D11VideoDecoder::OnMailboxReleased(
-    deprecated::ReleaseMailboxCB impl_thread_cb,
-    const gpu::SyncToken& token) {
-  impl_task_runner_->PostTask(FROM_HERE,
-                              base::BindOnce(std::move(impl_thread_cb), token));
 }
 
 }  // namespace media
