@@ -65,7 +65,6 @@ from devil.android import device_utils
 from devil.android.sdk import intent
 import lighttpd_server
 from pylib import constants
-from pylib import pexpect
 from telemetry import android
 from telemetry import benchmark
 from telemetry import benchmark_runner
@@ -80,9 +79,9 @@ QUIC_SERVER = os.path.join(BUILD_DIR, 'quic_server')
 CERT_PATH = os.path.join('net', 'data', 'ssl', 'certificates')
 QUIC_CERT_DIR = os.path.join(REPOSITORY_ROOT, CERT_PATH)
 QUIC_CERT_HOST = 'test.example.com'
-QUIC_CERT_FILENAME = 'quic_%s.crt' % QUIC_CERT_HOST
+QUIC_CERT_FILENAME = 'quic-chain.pem'
 QUIC_CERT = os.path.join(QUIC_CERT_DIR, QUIC_CERT_FILENAME)
-QUIC_KEY = os.path.join(QUIC_CERT_DIR, 'quic_%s.key.pkcs8' % QUIC_CERT_HOST)
+QUIC_KEY = os.path.join(QUIC_CERT_DIR, 'quic-leaf-cert.key')
 APP_APK = os.path.join(BUILD_DIR, 'apks', 'CronetPerfTest.apk')
 APP_PACKAGE = 'org.chromium.net'
 APP_ACTIVITY = '.CronetPerfTestActivity'
@@ -229,15 +228,13 @@ class QuicServer(object):
     self._quic_server_doc_root = quic_server_doc_root
 
   def StartupQuicServer(self, device):
-    # Chromium's presubmit checks aren't smart enough to understand
-    # the redirect done in build/android/pylib/pexpect.py.
-    # pylint: disable=no-member
-    self._process = pexpect.spawn(QUIC_SERVER,
-                                  ['--quic_response_cache_dir=%s' %
-                                      self._quic_server_doc_root,
-                                   '--certificate_file=%s' % QUIC_CERT,
-                                   '--key_file=%s' % QUIC_KEY,
-                                   '--port=%d' % QUIC_PORT])
+    cmd = [QUIC_SERVER,
+           '--quic_response_cache_dir=%s' % self._quic_server_doc_root,
+           '--certificate_file=%s' % QUIC_CERT,
+           '--key_file=%s' % QUIC_KEY,
+           '--port=%d' % QUIC_PORT]
+    print "Starting Quic Server", cmd
+    self._process = subprocess.Popen(cmd)
     assert self._process != None
     # Wait for quic_server to start serving.
     waited_s = 0
