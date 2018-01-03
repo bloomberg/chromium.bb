@@ -2860,7 +2860,9 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   TX_SIZE best_tx_size = TX_8X8;
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
   TX_TYPE best_tx_type;
-
+#if CONFIG_TXK_SEL
+  TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+#endif
   av1_zero(filter_intra_mode_info);
   mbmi->filter_intra_mode_info.use_filter_intra = 1;
   mbmi->mode = DC_PRED;
@@ -2888,6 +2890,11 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       best_tx_size = mic->mbmi.tx_size;
       filter_intra_mode_info = mbmi->filter_intra_mode_info;
       best_tx_type = mic->mbmi.tx_type;
+#if CONFIG_TXK_SEL
+      memcpy(best_txk_type, mbmi->txk_type,
+             sizeof(*best_txk_type) *
+                 (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
       *rate = this_rate;
       *rate_tokenonly = tokenonly_rd_stats.rate;
       *distortion = tokenonly_rd_stats.dist;
@@ -2901,6 +2908,11 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->tx_size = best_tx_size;
     mbmi->filter_intra_mode_info = filter_intra_mode_info;
     mbmi->tx_type = best_tx_type;
+#if CONFIG_TXK_SEL
+    memcpy(mbmi->txk_type, best_txk_type,
+           sizeof(*best_txk_type) *
+               (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
     return 1;
   } else {
     return 0;
@@ -9402,6 +9414,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         int filter_intra_selected_flag = 0;
         TX_SIZE best_tx_size = mbmi->tx_size;
         TX_TYPE best_tx_type = mbmi->tx_type;
+#if CONFIG_TXK_SEL
+        TX_TYPE best_txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+        memcpy(best_txk_type, mbmi->txk_type,
+               sizeof(*best_txk_type) *
+                   (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
         FILTER_INTRA_MODE best_fi_mode = FILTER_DC_PRED;
         int64_t best_rd_tmp = INT64_MAX;
         if (rate_y != INT_MAX &&
@@ -9430,6 +9448,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           if (this_rd_tmp < best_rd_tmp) {
             best_tx_size = mbmi->tx_size;
             best_tx_type = mbmi->tx_type;
+#if CONFIG_TXK_SEL
+            memcpy(best_txk_type, mbmi->txk_type,
+                   sizeof(*best_txk_type) *
+                       (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
             best_fi_mode = fi_mode;
             rd_stats_y = rd_stats_y_fi;
             rate_y = rd_stats_y_fi.rate;
@@ -9442,6 +9465,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
         mbmi->tx_size = best_tx_size;
         mbmi->tx_type = best_tx_type;
+#if CONFIG_TXK_SEL
+        memcpy(mbmi->txk_type, best_txk_type,
+               sizeof(*best_txk_type) *
+                   (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
+#endif
         if (filter_intra_selected_flag) {
           mbmi->filter_intra_mode_info.use_filter_intra = 1;
           mbmi->filter_intra_mode_info.filter_intra_mode = best_fi_mode;
