@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,6 +15,8 @@
 GuideName* const kOmniboxGuide = @"kOmniboxGuide";
 GuideName* const kBackButtonGuide = @"kBackButtonGuide";
 GuideName* const kForwardButtonGuide = @"kForwardButtonGuide";
+GuideName* const kTabSwitcherGuide = @"kTabSwitcherGuide";
+GuideName* const kToolsMenuGuide = @"kToolsMenuGuide";
 
 UILayoutGuide* FindNamedGuide(GuideName* name, UIView* view) {
   while (view) {
@@ -32,4 +35,9 @@ UILayoutGuide* AddNamedGuide(GuideName* name, UIView* view) {
   guide.identifier = name;
   [view addLayoutGuide:guide];
   return guide;
+}
+
+void ConstrainNamedGuideToView(GuideName* guideName, UIView* view) {
+  UILayoutGuide* layoutGuide = FindNamedGuide(guideName, view);
+  AddSameConstraints(view, layoutGuide);
 }

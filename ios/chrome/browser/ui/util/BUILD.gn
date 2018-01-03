@@ -38,6 +38,7 @@ source_set("util") {
     "unicode_util.mm",
   ]
   deps = [
+    ":constraints_ui",
     "//base",
     "//base:i18n",
     "//ios/chrome/browser",

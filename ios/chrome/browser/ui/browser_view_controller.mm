@@ -122,6 +122,7 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/browser_container_view.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
+#import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_controller_presenter.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -191,6 +192,7 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
@@ -2085,6 +2087,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     AddNamedGuide(kOmniboxGuide, self.view);
     AddNamedGuide(kBackButtonGuide, self.view);
     AddNamedGuide(kForwardButtonGuide, self.view);
+    AddNamedGuide(kToolsMenuGuide, self.view);
+    AddNamedGuide(kTabSwitcherGuide, self.view);
   }
   minY += CGRectGetHeight(toolbarFrame);
   if (initialLayout)
@@ -2428,10 +2432,19 @@ bubblePresenterForFeature:(const base::Feature&)feature
     tabSwitcherAnchor = [self.tabStripCoordinator
         anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
   } else {
-    DCHECK([_toolbarCoordinator
-        respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
-    tabSwitcherAnchor = [_toolbarCoordinator
-        anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+    if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+      UILayoutGuide* guide = FindNamedGuide(kTabSwitcherGuide, self.view);
+      CGPoint anchorPoint =
+          bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
+      tabSwitcherAnchor =
+          [guide.owningView convertPoint:anchorPoint
+                                  toView:guide.owningView.window];
+    } else {
+      DCHECK([_toolbarCoordinator
+          respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
+      tabSwitcherAnchor = [_toolbarCoordinator
+          anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
+    }
   }
 
   // If the feature engagement tracker does not consider it valid to display
@@ -2489,8 +2502,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   NSString* text = l10n_util::GetNSStringWithFixup(
       IDS_IOS_NEW_INCOGNITO_TAB_IPH_PROMOTION_TEXT);
-  CGPoint toolsButtonAnchor = [_toolbarCoordinator
-      anchorPointForToolsMenuButton:BubbleArrowDirectionUp];
+  CGPoint toolsButtonAnchor;
+  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+    UILayoutGuide* guide = FindNamedGuide(kToolsMenuGuide, self.view);
+    CGPoint anchorPoint =
+        bubble_util::AnchorPoint(guide.layoutFrame, BubbleArrowDirectionUp);
+    toolsButtonAnchor = [guide.owningView convertPoint:anchorPoint
+                                                toView:guide.owningView.window];
+  } else {
+    toolsButtonAnchor = [_toolbarCoordinator
+        anchorPointForToolsMenuButton:BubbleArrowDirectionUp];
+  }
 
   // If the feature engagement tracker does not consider it valid to display
   // the incognito tab tip, then end early to prevent the potential reassignment

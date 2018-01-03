@@ -73,7 +73,6 @@ source_set("toolbar_ui") {
     "//ios/chrome/app/theme",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services/requirements",
-    "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fullscreen:new_fullscreen_ui",
     "//ios/chrome/browser/ui/history_popup/requirements",
