@@ -135,11 +135,12 @@ class MockBlacklistStore : public suggestions::BlacklistStore {
   MOCK_METHOD1(FilterSuggestions, void(SuggestionsProfile*));
 };
 
-class SuggestionsServiceTest : public testing::Test {
+class SuggestionsServiceTest : public testing::Test,
+                               public OAuth2TokenService::DiagnosticsObserver {
  protected:
   SuggestionsServiceTest()
-      : task_runner_(new base::TestMockTimeTaskRunner()),
-        task_runner_handle_(task_runner_),
+      : task_runner_(new base::TestMockTimeTaskRunner(
+            base::TestMockTimeTaskRunner::Type::kBoundToThread)),
         signin_client_(&pref_service_),
         signin_manager_(&signin_client_, &account_tracker_),
         request_context_(
@@ -153,9 +154,12 @@ class SuggestionsServiceTest : public testing::Test {
     signin_manager_.SignIn(kAccountId);
     token_service_.UpdateCredentials(kAccountId, "refresh_token");
     token_service_.set_auto_post_fetch_response_on_message_loop(true);
+    token_service_.AddDiagnosticsObserver(this);
   }
 
-  ~SuggestionsServiceTest() override {}
+  ~SuggestionsServiceTest() override {
+    token_service_.RemoveDiagnosticsObserver(this);
+  }
 
   void SetUp() override {
     EXPECT_CALL(*sync_service(), CanSyncStart())
@@ -225,9 +229,21 @@ class SuggestionsServiceTest : public testing::Test {
     return suggestions_service_.get();
   }
 
+  void set_on_access_token_request_callback(base::OnceClosure callback) {
+    on_access_token_request_callback_ = std::move(callback);
+  }
+
  private:
+  // OAuth2TokenService::DiagnosticsObserver:
+  void OnAccessTokenRequested(
+      const std::string& account_id,
+      const std::string& consumer_id,
+      const OAuth2TokenService::ScopeSet& scopes) override {
+    if (on_access_token_request_callback_)
+      std::move(on_access_token_request_callback_).Run();
+  }
+
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
@@ -240,6 +256,7 @@ class SuggestionsServiceTest : public testing::Test {
   MockImageManager* mock_thumbnail_manager_;
   MockBlacklistStore* mock_blacklist_store_;
   TestSuggestionsStore* test_suggestions_store_;
+  base::OnceClosure on_access_token_request_callback_;
 
   std::unique_ptr<SuggestionsServiceImpl> suggestions_service_;
 
@@ -406,7 +423,12 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
   EXPECT_CALL(*blacklist_store(), GetTimeUntilReadyForUpload(_))
       .WillOnce(Return(false));
 
+  base::RunLoop run_loop;
+  set_on_access_token_request_callback(run_loop.QuitClosure());
+
   suggestions_service()->FetchSuggestionsData();
+
+  run_loop.Run();
 
   token_service()->IssueErrorForAllPendingRequests(GoogleServiceAuthError(
       GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
