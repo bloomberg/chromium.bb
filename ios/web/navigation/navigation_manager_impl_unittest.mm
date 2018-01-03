@@ -2293,12 +2293,8 @@ TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
   }
 
   navigation_manager()->GoToIndex(0);
-  // Preserve the existing behavior of legacy navigation manager for change
-  // management, even though it seems like a bug that the back-forward
-  // transition bit is not set for same-document history navigation.
-  EXPECT_EQ(GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER,
-            (navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
-             ui::PAGE_TRANSITION_FORWARD_BACK) > 0);
+  EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+              ui::PAGE_TRANSITION_FORWARD_BACK);
 
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
