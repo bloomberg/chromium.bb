@@ -17,6 +17,11 @@ class PdfToEmfConverterFactory : public mojom::PdfToEmfConverterFactory {
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~PdfToEmfConverterFactory() override;
 
+  // TODO(crbug.com/798782): remove when the Cloud print chrome/service is
+  // removed.
+  PdfToEmfConverterFactory();
+  static void Create(mojom::PdfToEmfConverterFactoryRequest request);
+
  private:
   // mojom::PdfToEmfConverterFactory implementation.
   void CreateConverter(mojo::ScopedHandle pdf_file_in,

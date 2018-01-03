@@ -40,10 +40,6 @@ PrintingHandler::~PrintingHandler() = default;
 bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingHandler, message)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop,
-                        OnRenderPDFPagesToMetafileStop)
-#endif  // OS_WIN
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_GetPrinterCapsAndDefaults,
                         OnGetPrinterCapsAndDefaults)
@@ -54,12 +50,6 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
-#if defined(OS_WIN)
-void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
-  ReleaseProcess();
-}
-#endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintingHandler::OnGetPrinterCapsAndDefaults(

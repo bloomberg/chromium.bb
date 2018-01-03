@@ -44,6 +44,7 @@
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
+#include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 #include "chrome/services/util_win/public/interfaces/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
 #endif
@@ -178,6 +179,13 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
     registry->AddInterface(base::Bind(CreateResourceUsageReporter),
                            base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
+#if defined(OS_WIN)
+    // TODO(crbug.com/798782): remove when the Cloud print chrome/service is
+    // removed.
+    registry->AddInterface(
+        base::Bind(printing::PdfToEmfConverterFactory::Create),
+        base::ThreadTaskRunnerHandle::Get());
+#endif
   }
 
   connection->AddConnectionFilter(
