@@ -27,8 +27,8 @@ namespace media {
 class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
                                                public D3D11VideoDecoderClient {
  public:
-  D3D11VideoDecoderImpl(base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-                        deprecated::OutputWithReleaseMailboxCB output_cb);
+  D3D11VideoDecoderImpl(
+      base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
   ~D3D11VideoDecoderImpl() override;
 
   // VideoDecoder implementation:
@@ -47,9 +47,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   // D3D11VideoDecoderClient implementation.
   D3D11PictureBuffer* GetPicture() override;
-  void OutputResult(D3D11PictureBuffer* buffer,
-                    size_t input_buffer_id) override;
-  size_t input_buffer_id() const override;
+  void OutputResult(D3D11PictureBuffer* buffer) override;
 
   // Return a weak ptr, since D3D11VideoDecoder constructs callbacks for us.
   base::WeakPtr<D3D11VideoDecoderImpl> GetWeakPtr();
@@ -61,7 +59,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   void OnMailboxReleased(D3D11PictureBuffer* buffer,
                          const gpu::SyncToken& sync_token);
 
-  base::Callback<gpu::CommandBufferStub*()> get_stub_cb_;
+  base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
   gpu::CommandBufferStub* stub_ = nullptr;
   // A helper for creating textures. Only valid while |stub_| is valid.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
@@ -84,7 +82,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
 
   std::vector<std::unique_ptr<D3D11PictureBuffer>> picture_buffers_;
 
-  deprecated::OutputWithReleaseMailboxCB output_cb_;
+  VideoDecoder::OutputCB output_cb_;
 
   base::WeakPtrFactory<D3D11VideoDecoderImpl> weak_factory_;
 

@@ -28,10 +28,8 @@ class D3D11PictureBuffer;
 
 class D3D11VideoDecoderClient {
  public:
-  virtual size_t input_buffer_id() const = 0;
   virtual D3D11PictureBuffer* GetPicture() = 0;
-  virtual void OutputResult(D3D11PictureBuffer* picture,
-                            size_t input_buffer_id) = 0;
+  virtual void OutputResult(D3D11PictureBuffer* picture) = 0;
 };
 
 class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
@@ -64,8 +62,8 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
 
  private:
-  void SubmitSliceData();
-  void RetrieveBitstreamBuffer();
+  bool SubmitSliceData();
+  bool RetrieveBitstreamBuffer();
 
   D3D11VideoDecoderClient* client_;
 

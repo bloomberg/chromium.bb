@@ -9,6 +9,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -27,11 +28,8 @@ static bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
 }  // namespace
 
 D3D11VideoDecoderImpl::D3D11VideoDecoderImpl(
-    base::Callback<gpu::CommandBufferStub*()> get_stub_cb,
-    deprecated::OutputWithReleaseMailboxCB output_cb)
-    : get_stub_cb_(get_stub_cb),
-      output_cb_(std::move(output_cb)),
-      weak_factory_(this) {}
+    base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
+    : get_stub_cb_(get_stub_cb), weak_factory_(this) {}
 
 D3D11VideoDecoderImpl::~D3D11VideoDecoderImpl() {
   // TODO(liberato): be sure to clear |picture_buffers_| on the main thread.
@@ -47,7 +45,7 @@ void D3D11VideoDecoderImpl::Initialize(const VideoDecoderConfig& config,
                                        bool low_delay,
                                        CdmContext* cdm_context,
                                        const InitCB& init_cb,
-                                       const OutputCB& /* output_cb */) {
+                                       const OutputCB& output_cb) {
   stub_ = get_stub_cb_.Run();
   if (!MakeContextCurrent(stub_)) {
     init_cb.Run(false);
@@ -56,6 +54,8 @@ void D3D11VideoDecoderImpl::Initialize(const VideoDecoderConfig& config,
   // TODO(liberato): see GpuVideoFrameFactory.
   // stub_->AddDestructionObserver(this);
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder());
+
+  output_cb_ = output_cb;
 
   // The device is threadsafe.  Does GetImmediateContext create a new object?
   // If so, then we can just use it on the MCVD thread.  All we need to do is
@@ -361,14 +361,7 @@ D3D11PictureBuffer* D3D11VideoDecoderImpl::GetPicture() {
   return nullptr;
 }
 
-size_t D3D11VideoDecoderImpl::input_buffer_id() const {
-  // NOTE: nobody uses this for anything.  it just gets returned to us with
-  // OutputResult.  It can be removed once we replace the VDA.
-  return 0;
-}
-
-void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer,
-                                         size_t input_buffer_id) {
+void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer) {
   buffer->set_in_client_use(true);
 
   // Note: The pixel format doesn't matter.
@@ -380,12 +373,10 @@ void D3D11VideoDecoderImpl::OutputResult(D3D11PictureBuffer* buffer,
       VideoFrame::ReleaseMailboxCB(), buffer->picture_buffer().size(),
       visible_rect, natural_size, timestamp);
 
-  // TODO(liberato): The VideoFrame release callback will not be called after
-  // MojoVideoDecoderService is destructed.  See VideoFrameFactoryImpl.
-  // NOTE: i think that we drop the picture buffers, which might work okay.
-  output_cb_.Run(base::Bind(&D3D11VideoDecoderImpl::OnMailboxReleased,
-                            weak_factory_.GetWeakPtr(), buffer),
-                 frame);
+  frame->SetReleaseMailboxCB(media::BindToCurrentLoop(
+      base::BindOnce(&D3D11VideoDecoderImpl::OnMailboxReleased,
+                     weak_factory_.GetWeakPtr(), buffer)));
+  output_cb_.Run(frame);
 }
 
 void D3D11VideoDecoderImpl::OnMailboxReleased(
