@@ -46,9 +46,11 @@ class LatencyTracker {
 
   void ReportUkmScrollLatency(
       const InputMetricEvent& metric_event,
-      const std::string& metric_name,
       const LatencyInfo::LatencyComponent& start_component,
-      const LatencyInfo::LatencyComponent& end_component,
+      const LatencyInfo::LatencyComponent&
+          time_to_scroll_update_swap_begin_component,
+      const LatencyInfo::LatencyComponent& time_to_handled_component,
+      bool is_main_thread,
       const ukm::SourceId ukm_source_id);
 
   void ComputeEndToEndLatencyHistograms(

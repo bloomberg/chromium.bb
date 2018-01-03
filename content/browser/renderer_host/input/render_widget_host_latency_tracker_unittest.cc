@@ -144,7 +144,7 @@ class RenderWidgetHostLatencyTrackerTest
   }
 
   void ExpectUkmReported(const char* event_name,
-                         const char* metric_name,
+                         const std::vector<std::string>& metric_names,
                          size_t expected_count) {
     const ukm::TestUkmRecorder* ukm_recoder =
         test_browser_client_.GetTestUkmRecorder();
@@ -153,7 +153,9 @@ class RenderWidgetHostLatencyTrackerTest
     EXPECT_EQ(expected_count, entries.size());
     for (const auto* const entry : entries) {
       ukm_recoder->ExpectEntrySourceHasUrl(entry, GURL(kUrl));
-      EXPECT_TRUE(ukm_recoder->EntryHasMetric(entry, metric_name));
+      for (const auto& metric_name : metric_names) {
+        EXPECT_TRUE(ukm_recoder->EntryHasMetric(entry, metric_name.c_str()));
+      }
     }
   }
 
@@ -289,8 +291,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
 
       // UKM metrics.
       total_ukm_entry_count++;
-      ExpectUkmReported("Event.ScrollBegin.Wheel",
-                        "TimeToScrollUpdateSwapBegin", total_ukm_entry_count);
+      ExpectUkmReported(
+          "Event.ScrollBegin.Wheel",
+          {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
+          total_ukm_entry_count);
       // Rappor metrics.
       EXPECT_TRUE(
           RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -402,8 +406,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
 
       // UKM metrics.
       total_ukm_entry_count++;
-      ExpectUkmReported("Event.ScrollUpdate.Wheel",
-                        "TimeToScrollUpdateSwapBegin", total_ukm_entry_count);
+      ExpectUkmReported(
+          "Event.ScrollUpdate.Wheel",
+          {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
+          total_ukm_entry_count);
       // Rappor metrics.
       EXPECT_TRUE(
           RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -538,8 +544,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
 
     // UKM metrics.
     total_ukm_entry_count++;
-    ExpectUkmReported("Event.ScrollBegin.Touch", "TimeToScrollUpdateSwapBegin",
-                      total_ukm_entry_count);
+    ExpectUkmReported(
+        "Event.ScrollBegin.Touch",
+        {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
+        total_ukm_entry_count);
     // Rappor metrics.
     EXPECT_TRUE(
         RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -659,8 +667,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
 
     // UKM metrics.
     total_ukm_entry_count++;
-    ExpectUkmReported("Event.ScrollUpdate.Touch", "TimeToScrollUpdateSwapBegin",
-                      total_ukm_entry_count);
+    ExpectUkmReported(
+        "Event.ScrollUpdate.Touch",
+        {"TimeToScrollUpdateSwapBegin", "TimeToHandled", "IsMainThread"},
+        total_ukm_entry_count);
 
     // Rappor metrics.
     EXPECT_TRUE(
