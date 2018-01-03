@@ -28,7 +28,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/test/focus_manager_test.h"
-#include "ui/views/test/views_pixel_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -58,12 +57,10 @@ class TestLabel : public Label {
 
   void SimulatePaint() {
     SkBitmap bitmap;
-    SimulatePaint(&bitmap, SK_ColorTRANSPARENT);
-  }
-
-  void SimulatePaint(SkBitmap* bitmap, SkColor color) {
+    SkColor color = SK_ColorTRANSPARENT;
     Paint(PaintInfo::CreateRootPaintInfo(
-        ui::CanvasPainter(bitmap, bounds().size(), 1.f, color, false).context(),
+        ui::CanvasPainter(&bitmap, bounds().size(), 1.f, color, false)
+            .context(),
         bounds().size()));
   }
 
@@ -408,25 +405,6 @@ TEST_F(LabelTest, ElideBehaviorMinimumWidth) {
 
   label()->SetSize(label()->GetMinimumSize());
   EXPECT_EQ(text, label()->GetDisplayTextForTesting());
-}
-
-// Pixel test for FADE_TAIL.
-TEST_F(LabelTest, FadedString) {
-  TestLabel label;
-  label.SetBounds(0, 0, 28, 28);
-  label.SetText(base::ASCIIToUTF16("Tests!"));
-  label.SetFontList(gfx::FontList("Arial, 12px"));
-  label.SetElideBehavior(gfx::FADE_TAIL);
-  label.SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  SkBitmap bitmap;
-  label.SetEnabledColor(SK_ColorRED);
-  label.SimulatePaint(&bitmap, SK_ColorBLUE);
-  ASSERT_FALSE(bitmap.empty());
-
-  bool used_fallback;
-  bool pixel_test = test::PixelTest(bitmap, "string_faded.png", &used_fallback);
-  EXPECT_TRUE(pixel_test || used_fallback);
 }
 
 TEST_F(LabelTest, MultiLineProperty) {
