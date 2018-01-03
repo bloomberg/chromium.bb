@@ -90,6 +90,9 @@ TEST_F(NavigationItemTest, Copy) {
   EXPECT_NSEQ([postData0 dataUsingEncoding:NSUTF8StringEncoding],
               copy.GetPostData());
   EXPECT_NSEQ(state0, copy.GetSerializedStateObject());
+
+  // Ensure that HTTP headers are still mutable after the copying.
+  copy.AddHttpRequestHeaders(@{});
 }
 
 // Tests whether |NavigationItem::AddHttpRequestHeaders()| adds the passed
