@@ -1622,7 +1622,7 @@ void NetworkQualityEstimator::OnUpdatedTransportRTTAvailable(
     const base::TimeDelta& rtt,
     const base::Optional<nqe::internal::IPHash>& host) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(nqe::internal::InvalidRTT(), rtt);
+  DCHECK_LT(nqe::internal::INVALID_RTT_THROUGHPUT, rtt.InMilliseconds());
 
   Observation observation(rtt.InMilliseconds(), tick_clock_->NowTicks(),
                           current_network_id_.signal_strength,
