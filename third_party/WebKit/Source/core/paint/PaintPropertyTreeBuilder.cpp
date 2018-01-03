@@ -1652,6 +1652,8 @@ void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
+  // TODO(crbug.com/797779): Implement fragments across frame boundaries.
+
   const auto* enclosing_pagination_layer =
       context_.painting_layer->EnclosingPaginationLayer();
   if (!enclosing_pagination_layer)
@@ -1679,8 +1681,7 @@ void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
       first_fragment.SetPaginationOffset(
           ToLayoutPoint(iterator.PaginationOffset()));
     }
-  } else {
-    DCHECK(parent_composited_layer);
+  } else if (parent_composited_layer) {
     // All objects under the composited layer use the same pagination offset.
     first_fragment.SetPaginationOffset(
         parent_composited_layer->GetLayoutObject()
