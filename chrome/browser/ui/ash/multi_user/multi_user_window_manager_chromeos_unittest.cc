@@ -31,6 +31,8 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -308,6 +310,8 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 };
 
 void MultiUserWindowManagerChromeOSTest::SetUp() {
+  chromeos::DeviceSettingsService::Initialize();
+  chromeos::CrosSettings::Initialize();
   ash_test_helper()->set_test_shell_delegate(new TestShellDelegateChromeOS);
   ash::AshTestEnvironmentContent* test_environment =
       static_cast<ash::AshTestEnvironmentContent*>(
@@ -354,6 +358,8 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
   chromeos::WallpaperManager::Shutdown();
   wallpaper_controller_client_.reset();
   profile_manager_.reset();
+  chromeos::CrosSettings::Shutdown();
+  chromeos::DeviceSettingsService::Shutdown();
 }
 
 std::string MultiUserWindowManagerChromeOSTest::GetStatus() {

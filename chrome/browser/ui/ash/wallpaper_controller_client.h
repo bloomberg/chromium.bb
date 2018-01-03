@@ -77,6 +77,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
   // WallpaperController interface in ash.
   ash::mojom::WallpaperControllerPtr wallpaper_controller_;
 
+  WallpaperPolicyHandler policy_handler_;
+
   // Binds to the client interface.
   mojo::Binding<ash::mojom::WallpaperControllerClient> binding_;
 

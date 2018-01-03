@@ -24,7 +24,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_image/user_image.h"
@@ -236,10 +235,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // A wrapper of |WallpaperController::InitializeUserWallpaperInfo|.
   void InitializeUserWallpaperInfo(const AccountId& account_id);
 
-  // If the device is enterprise managed and the device wallpaper policy exists,
-  // set the device wallpaper as the login screen wallpaper.
-  bool SetDeviceWallpaperIfApplicable(const AccountId& account_id);
-
   // A wrapper of |WallpaperController::GetWallpaperFromCache|.
   bool GetWallpaperFromCache(const AccountId& account_id,
                              gfx::ImageSkia* image);
@@ -262,6 +257,7 @@ class WallpaperManager : public wm::ActivationChangeObserver,
                             wallpaper::WallpaperInfo* info) const;
 
   // Returns true if the device wallpaper should be set for the account.
+  // TODO(xdai): Remove this function after migrating ShowUserWallpaper().
   bool ShouldSetDeviceWallpaper(const AccountId& account_id,
                                 std::string* url,
                                 std::string* hash);
@@ -306,30 +302,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
       const AccountId& account_id,
       std::unique_ptr<user_manager::UserImage> user_image);
 
-  // This is called when the device wallpaper policy changes.
-  void OnDeviceWallpaperPolicyChanged();
-  // This is call after checking if the device wallpaper exists.
-  void OnDeviceWallpaperExists(const AccountId& account_id,
-                               const std::string& url,
-                               const std::string& hash,
-                               bool exist);
-  // This is called after the device wallpaper is download (either successful or
-  // failed).
-  void OnDeviceWallpaperDownloaded(const AccountId& account_id,
-                                   const std::string& hash,
-                                   bool success,
-                                   const GURL& url);
-  // Check if the device wallpaper matches the hash that's provided in the
-  // device wallpaper policy setting.
-  void OnCheckDeviceWallpaperMatchHash(const AccountId& account_id,
-                                       const std::string& url,
-                                       const std::string& hash,
-                                       bool match);
-  // This is called when the device wallpaper is decoded successfully.
-  void OnDeviceWallpaperDecoded(
-      const AccountId& account_id,
-      std::unique_ptr<user_manager::UserImage> user_image);
-
   // A wrapper of |WallpaperController::SetCustomizedDefaultWallpaperImpl|.
   void SetCustomizedDefaultWallpaperImpl(
       const base::FilePath& customized_default_wallpaper_file_small,
@@ -349,11 +321,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
-
-  std::unique_ptr<CrosSettings::ObserverSubscription>
-      device_wallpaper_image_subscription_;
-  std::unique_ptr<CustomizationWallpaperDownloader>
-      device_wallpaper_downloader_;
 
   // The number of loaded wallpapers.
   int loaded_wallpapers_for_test_ = 0;
