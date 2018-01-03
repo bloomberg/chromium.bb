@@ -18,17 +18,6 @@ group("config") {
   }
 }
 
-source_set("crash_keys") {
-  sources = [
-    "gpu_crash_keys.cc",
-    "gpu_crash_keys.h",
-  ]
-
-  deps = [
-    "//components/crash/core/common:crash_key",
-  ]
-}
-
 process_json_outputs = [
   "$target_gen_dir/gpu_driver_bug_list_arrays_and_structs_autogen.h",
   "$target_gen_dir/gpu_driver_bug_list_autogen.cc",
@@ -85,6 +74,8 @@ source_set("config_sources") {
     "gpu_blacklist.h",
     "gpu_control_list.cc",
     "gpu_control_list.h",
+    "gpu_crash_keys.cc",
+    "gpu_crash_keys.h",
     "gpu_driver_bug_list.cc",
     "gpu_driver_bug_list.h",
     "gpu_driver_bug_workaround_type.h",
@@ -124,8 +115,11 @@ source_set("config_sources") {
 
   configs += [ "//gpu:gpu_implementation" ]
 
+  public_deps = [
+    "//components/crash/core/common:crash_key",
+  ]
+
   deps = [
-    ":crash_keys",
     ":process_json",
     "//base",
     "//third_party/re2",
