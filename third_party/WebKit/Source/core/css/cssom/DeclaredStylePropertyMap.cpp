@@ -6,9 +6,9 @@
 
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyValueSet.h"
-
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/StyleRule.h"
 
 namespace blink {
@@ -36,6 +36,21 @@ void DeclaredStylePropertyMap::SetProperty(CSSPropertyID property_id,
     return;
   CSSStyleSheet::RuleMutationScope mutation_scope(owner_rule_);
   GetStyleRule()->MutableProperties().SetProperty(property_id, value);
+}
+
+void DeclaredStylePropertyMap::SetCustomProperty(
+    const AtomicString& property_name,
+    const CSSValue& value) {
+  if (!GetStyleRule())
+    return;
+  CSSStyleSheet::RuleMutationScope mutation_scope(owner_rule_);
+
+  DCHECK(value.IsVariableReferenceValue());
+  CSSVariableData* variable_data =
+      ToCSSVariableReferenceValue(value).VariableDataValue();
+  GetStyleRule()->MutableProperties().SetProperty(
+      CSSPropertyVariable,
+      *CSSCustomPropertyDeclaration::Create(property_name, variable_data));
 }
 
 void DeclaredStylePropertyMap::RemoveProperty(CSSPropertyID property_id) {

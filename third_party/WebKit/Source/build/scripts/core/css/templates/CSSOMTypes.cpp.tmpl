@@ -35,6 +35,8 @@ bool CSSOMTypes::PropertyCanTake(CSSPropertyID id,
 bool CSSOMTypes::PropertyCanTakeType(CSSPropertyID id,
                                      CSSStyleValue::StyleValueType type) {
   switch (id) {
+    case CSSPropertyVariable:
+      return type == CSSStyleValue::kUnparsedType;
     {% for property in properties if property.typedom_types %}
     case {{property.property_id}}:
       return (
