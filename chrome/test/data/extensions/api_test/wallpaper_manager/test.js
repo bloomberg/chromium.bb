@@ -39,13 +39,8 @@ chrome.test.getConfig(function(config) {
       requestImage(url, function(requestStatus, response) {
         if (requestStatus === 200) {
           wallpaperJpeg = response;
-          chrome.wallpaperPrivate.setWallpaper(wallpaperJpeg,
-                                               'CENTER_CROPPED',
-                                               url,
-                                               pass(function() {
-            chrome.wallpaperPrivate.setCustomWallpaperLayout('CENTER',
-                fail('Only custom wallpaper can change layout.'));
-          }));
+          chrome.wallpaperPrivate.setWallpaper(
+              wallpaperJpeg, 'CENTER_CROPPED', url, pass());
         } else {
           chrome.test.fail('Failed to load test.jpg from local server.');
         }

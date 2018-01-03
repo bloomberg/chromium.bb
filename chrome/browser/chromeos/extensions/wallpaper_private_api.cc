@@ -575,24 +575,12 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunAsync() {
       set_custom_wallpaper_layout::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  chromeos::WallpaperManager* wallpaper_manager =
-      chromeos::WallpaperManager::Get();
-  wallpaper::WallpaperInfo info;
-  wallpaper_manager->GetLoggedInUserWallpaperInfo(&info);
-  if (info.type != wallpaper::CUSTOMIZED) {
-    SetError("Only custom wallpaper can change layout.");
-    return false;
-  }
-  info.layout = wallpaper_api_util::GetLayoutEnum(
+  wallpaper::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
-  wallpaper_api_util::RecordCustomWallpaperLayout(info.layout);
-
-  const AccountId& account_id =
-      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
-  bool is_persistent = !user_manager::UserManager::Get()
-                            ->IsCurrentUserNonCryptohomeDataEphemeral();
-  wallpaper_manager->SetUserWallpaperInfo(account_id, info, is_persistent);
-  wallpaper_manager->UpdateWallpaper(false /* clear_cache */);
+  wallpaper_api_util::RecordCustomWallpaperLayout(new_layout);
+  WallpaperControllerClient::Get()->UpdateCustomWallpaperLayout(
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+      new_layout);
   SendResponse(true);
 
   return true;

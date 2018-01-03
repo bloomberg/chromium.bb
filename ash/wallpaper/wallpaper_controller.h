@@ -322,8 +322,7 @@ class ASH_EXPORT WallpaperController
   // Returns whether the current wallpaper is blurred.
   bool IsWallpaperBlurred() const { return is_wallpaper_blurred_; }
 
-  // TODO(crbug.com/776464): Make this private. WallpaperInfo should be an
-  // internal concept. In addition, change |is_persistent| to |is_ephemeral| to
+  // TODO(crbug.com/776464): Change |is_persistent| to |is_ephemeral| to
   // be consistent with |mojom::WallpaperUserInfo|.
   // Sets wallpaper info for |account_id| and saves it to local state if
   // |is_persistent| is true.
@@ -402,6 +401,8 @@ class ASH_EXPORT WallpaperController
       const base::FilePath& file_path,
       const base::FilePath& resized_directory) override;
   void SetDeviceWallpaperPolicyEnforced(bool enforced) override;
+  void UpdateCustomWallpaperLayout(mojom::WallpaperUserInfoPtr user_info,
+                                   wallpaper::WallpaperLayout layout) override;
   // TODO(crbug.com/776464): |ShowUserWallpaper| is incomplete until device
   // policy wallpaper is migrated. Callers from chrome should use
   // |WallpaperManager::ShowUserWallpaper| instead. Callers in ash can't use it

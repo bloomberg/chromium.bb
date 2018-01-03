@@ -160,11 +160,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // device policy wallpaper or the default wallpaper.
   void ShowSigninWallpaper();
 
-  // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
-  void SetUserWallpaperInfo(const AccountId& account_id,
-                            const wallpaper::WallpaperInfo& info,
-                            bool is_persistent);
-
   // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
   // in, uses a solid color wallpaper. If logged in as a stub user, uses an
   // empty wallpaper.
@@ -232,8 +227,10 @@ class WallpaperManager : public wm::ActivationChangeObserver,
       gfx::ImageSkia* small_wallpaper_image,
       gfx::ImageSkia* large_wallpaper_image);
 
-  // A wrapper of |WallpaperController::InitializeUserWallpaperInfo|.
-  void InitializeUserWallpaperInfo(const AccountId& account_id);
+  // A wrapper of |WallpaperController::SetUserWallpaperInfo|.
+  void SetUserWallpaperInfo(const AccountId& account_id,
+                            const wallpaper::WallpaperInfo& info,
+                            bool is_persistent);
 
   // A wrapper of |WallpaperController::GetWallpaperFromCache|.
   bool GetWallpaperFromCache(const AccountId& account_id,
