@@ -8,7 +8,7 @@
 
 namespace blink {
 
-const CSSValue* CSSMathValue::ToCSSValue(SecureContextMode) const {
+const CSSValue* CSSMathValue::ToCSSValue() const {
   CSSCalcExpressionNode* node = ToCalcExpressionNode();
   if (!node)
     return nullptr;

@@ -33,12 +33,11 @@ CSSValueList* CssValueListForPropertyID(CSSPropertyID property_id) {
 }
 
 const CSSValue* StyleValueToCSSValue(const CSSProperty& property,
-                                     const CSSStyleValue& style_value,
-                                     SecureContextMode secure_context_mode) {
+                                     const CSSStyleValue& style_value) {
   const CSSPropertyID property_id = property.PropertyID();
   if (!CSSOMTypes::PropertyCanTake(property_id, style_value))
     return nullptr;
-  return style_value.ToCSSValueWithProperty(property_id, secure_context_mode);
+  return style_value.ToCSSValueWithProperty(property_id);
 }
 
 const CSSValue* CoerceStyleValueOrString(
@@ -51,8 +50,7 @@ const CSSValue* CoerceStyleValueOrString(
     if (!value.GetAsCSSStyleValue())
       return nullptr;
 
-    return StyleValueToCSSValue(property, *value.GetAsCSSStyleValue(),
-                                execution_context.GetSecureContextMode());
+    return StyleValueToCSSValue(property, *value.GetAsCSSStyleValue());
   } else {
     DCHECK(value.IsString());
     const auto values = StyleValueFactory::FromString(
@@ -61,8 +59,7 @@ const CSSValue* CoerceStyleValueOrString(
     if (values.size() != 1U)
       return nullptr;
 
-    return StyleValueToCSSValue(property, *values[0],
-                                execution_context.GetSecureContextMode());
+    return StyleValueToCSSValue(property, *values[0]);
   }
 }
 
@@ -83,8 +80,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
         return nullptr;
 
       css_values.push_back(
-          StyleValueToCSSValue(property, *value.GetAsCSSStyleValue(),
-                               execution_context.GetSecureContextMode()));
+          StyleValueToCSSValue(property, *value.GetAsCSSStyleValue()));
     } else {
       DCHECK(value.IsString());
       if (!parser_context)
@@ -97,8 +93,7 @@ const CSSValue* CoerceStyleValuesOrStrings(
 
       for (const auto& subvalue : subvalues) {
         DCHECK(subvalue);
-        css_values.push_back(StyleValueToCSSValue(
-            property, *subvalue, execution_context.GetSecureContextMode()));
+        css_values.push_back(StyleValueToCSSValue(property, *subvalue));
       }
     }
   }

@@ -140,7 +140,7 @@ bool CSSUnitValue::Equals(const CSSNumericValue& other) const {
   return value_ == other_unit_value.value_ && unit_ == other_unit_value.unit_;
 }
 
-const CSSPrimitiveValue* CSSUnitValue::ToCSSValue(SecureContextMode) const {
+const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
   return CSSPrimitiveValue::Create(value_, unit_);
 }
 

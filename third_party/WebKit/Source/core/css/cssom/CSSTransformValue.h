@@ -34,7 +34,7 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
 
   DOMMatrix* toMatrix(ExceptionState&) const;
 
-  const CSSValue* ToCSSValue(SecureContextMode) const override;
+  const CSSValue* ToCSSValue() const override;
 
   StyleValueType GetType() const override { return kTransformType; }
 

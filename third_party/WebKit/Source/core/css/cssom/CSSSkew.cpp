@@ -87,7 +87,7 @@ const DOMMatrix* CSSSkew::AsMatrix(ExceptionState&) const {
   return result;
 }
 
-const CSSFunctionValue* CSSSkew::ToCSSValue(SecureContextMode) const {
+const CSSFunctionValue* CSSSkew::ToCSSValue() const {
   // TDOO(meade): Handle calc angles here.
   CSSUnitValue* ax = ToCSSUnitValue(ax_);
   CSSUnitValue* ay = ToCSSUnitValue(ay_);

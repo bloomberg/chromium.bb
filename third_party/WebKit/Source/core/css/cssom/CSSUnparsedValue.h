@@ -27,7 +27,7 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
   static CSSUnparsedValue* FromCSSValue(const CSSVariableReferenceValue&);
   static CSSUnparsedValue* FromCSSValue(const CSSVariableData&);
 
-  const CSSValue* ToCSSValue(SecureContextMode) const override;
+  const CSSValue* ToCSSValue() const override;
 
   StyleValueType GetType() const override { return kUnparsedType; }
 

@@ -52,12 +52,8 @@ CSSTransformComponent* CSSTransformComponent::FromCSSValue(
   }
 }
 
-String CSSTransformComponent::toString(
-    const ExecutionContext* execution_context) const {
-  const CSSValue* result =
-      ToCSSValue(execution_context->GetSecureContextMode());
-  // TODO(meade): Remove this once all the number and length types are
-  // rewritten.
+String CSSTransformComponent::toString() const {
+  const CSSValue* result = ToCSSValue();
   return result ? result->CssText() : "";
 }
 

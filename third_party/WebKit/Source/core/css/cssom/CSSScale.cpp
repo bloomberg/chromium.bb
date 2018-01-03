@@ -157,10 +157,9 @@ const DOMMatrix* CSSScale::AsMatrix(ExceptionState& exception_state) const {
   return result->scaleSelf(x->value(), y->value(), z->value());
 }
 
-const CSSFunctionValue* CSSScale::ToCSSValue(
-    SecureContextMode secure_context_mode) const {
-  const CSSValue* x = x_->ToCSSValue(secure_context_mode);
-  const CSSValue* y = y_->ToCSSValue(secure_context_mode);
+const CSSFunctionValue* CSSScale::ToCSSValue() const {
+  const CSSValue* x = x_->ToCSSValue();
+  const CSSValue* y = y_->ToCSSValue();
   if (!x || !y)
     return nullptr;
 
@@ -169,7 +168,7 @@ const CSSFunctionValue* CSSScale::ToCSSValue(
   result->Append(*x);
   result->Append(*y);
   if (!is2D()) {
-    const CSSValue* z = z_->ToCSSValue(secure_context_mode);
+    const CSSValue* z = z_->ToCSSValue();
     if (!z)
       return nullptr;
     result->Append(*z);

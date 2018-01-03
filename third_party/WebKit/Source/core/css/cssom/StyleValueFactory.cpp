@@ -72,8 +72,7 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
 
 CSSStyleValueVector UnsupportedCSSValue(const CSSValue& value) {
   CSSStyleValueVector style_value_vector;
-  style_value_vector.push_back(
-      CSSUnsupportedStyleValue::Create(value.CssText()));
+  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(value));
   return style_value_vector;
 }
 

@@ -50,7 +50,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
     return unit_ == CSSPrimitiveValue::UnitType::kPercentage;
   }
 
-  const CSSPrimitiveValue* ToCSSValue(SecureContextMode) const final;
+  const CSSPrimitiveValue* ToCSSValue() const final;
   CSSCalcExpressionNode* ToCalcExpressionNode() const final;
 
  private:
