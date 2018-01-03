@@ -232,11 +232,11 @@ class AbstractPayloadDecoderTest : public PayloadDecoderBaseTest {
       VERIFY_FALSE(listener_.IsInProgress());
       VERIFY_EQ(1u, listener_.size());
       const FrameParts* frame = listener_.frame(0);
-      VERIFY_EQ(header, frame->frame_header);
-      VERIFY_TRUE(frame->has_frame_size_error);
+      VERIFY_EQ(header, frame->GetFrameHeader());
+      VERIFY_TRUE(frame->GetHasFrameSizeError());
       // Verify did not get OnPaddingTooLong, as we should only ever produce
       // one of these two errors for a single frame.
-      VERIFY_FALSE(frame->opt_missing_length);
+      VERIFY_FALSE(frame->GetOptMissingLength());
       return validator(input, status);
     };
     VERIFY_AND_RETURN_SUCCESS(
@@ -403,11 +403,11 @@ class AbstractPaddablePayloadDecoderTest
       VERIFY_FALSE(listener.IsInProgress());
       VERIFY_EQ(1u, listener.size());
       const FrameParts* frame = listener.frame(0);
-      VERIFY_EQ(header, frame->frame_header);
-      VERIFY_TRUE(frame->opt_missing_length);
-      VERIFY_EQ(expected_missing_length, frame->opt_missing_length.value());
+      VERIFY_EQ(header, frame->GetFrameHeader());
+      VERIFY_TRUE(frame->GetOptMissingLength());
+      VERIFY_EQ(expected_missing_length, frame->GetOptMissingLength().value());
       // Verify did not get OnFrameSizeError.
-      VERIFY_FALSE(frame->has_frame_size_error);
+      VERIFY_FALSE(frame->GetHasFrameSizeError());
       return ::testing::AssertionSuccess();
     };
     VERIFY_AND_RETURN_SUCCESS(

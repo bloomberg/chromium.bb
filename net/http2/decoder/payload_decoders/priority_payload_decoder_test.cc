@@ -80,7 +80,7 @@ TEST_F(PriorityPayloadDecoderTest, VariousPayloads) {
                             RandStreamId());
     set_frame_header(header);
     FrameParts expected(header);
-    expected.opt_priority = fields;
+    expected.SetOptPriority(fields);
     EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
   }
 }

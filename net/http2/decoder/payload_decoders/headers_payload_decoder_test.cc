@@ -126,7 +126,7 @@ TEST_P(HeadersPayloadDecoderTest, VariousHpackPayloadSizes) {
       ScrubFlagsOfHeader(&frame_header);
       FrameParts expected(frame_header, hpack_payload, total_pad_length_);
       if (has_priority) {
-        expected.opt_priority = priority;
+        expected.SetOptPriority(priority);
       }
       EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(frame_builder_.buffer(),
                                                       expected));

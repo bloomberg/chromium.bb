@@ -98,7 +98,7 @@ TEST_P(GoAwayOpaqueDataLengthTests, ValidLength) {
                           RandStreamId());
   set_frame_header(header);
   FrameParts expected(header, opaque_data);
-  expected.opt_goaway = goaway;
+  expected.SetOptGoaway(goaway);
   ASSERT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
 }
 

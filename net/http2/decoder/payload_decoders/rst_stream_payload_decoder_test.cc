@@ -82,7 +82,7 @@ TEST_F(RstStreamPayloadDecoderTest, AllErrors) {
                             RandStreamId());
     set_frame_header(header);
     FrameParts expected(header);
-    expected.opt_rst_stream_error_code = error_code;
+    expected.SetOptRstStreamErrorCode(error_code);
     EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
   }
 }

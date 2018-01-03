@@ -10,9 +10,6 @@
 // info that a test expects to be recorded during the decoding of a frame
 // with the actual recorded value (i.e. by providing a comparator).
 
-// TODO(jamessynge): Convert FrameParts to a class, hide the members, add
-// getters/setters.
-
 #include <stddef.h>
 
 #include <vector>
@@ -29,11 +26,8 @@
 namespace net {
 namespace test {
 
-// Forward declarations.
-struct FrameParts;
-std::ostream& operator<<(std::ostream& out, const FrameParts& v);
-
-struct FrameParts : public Http2FrameDecoderListener {
+class FrameParts : public Http2FrameDecoderListener {
+ public:
   // The first callback for every type of frame includes the frame header; this
   // is the only constructor used during decoding of a frame.
   explicit FrameParts(const Http2FrameHeader& header);
@@ -113,36 +107,82 @@ struct FrameParts : public Http2FrameDecoderListener {
                         size_t missing_length) override;
   void OnFrameSizeError(const Http2FrameHeader& header) override;
 
-  // The fields are public for access by tests.
+  void AppendSetting(const Http2SettingFields& setting_fields) {
+    settings_.push_back(setting_fields);
+  }
 
-  const Http2FrameHeader frame_header;
+  const Http2FrameHeader& GetFrameHeader() const { return frame_header_; }
 
-  Http2String payload;
-  Http2String padding;
-  Http2String altsvc_origin;
-  Http2String altsvc_value;
+  base::Optional<Http2PriorityFields> GetOptPriority() const {
+    return opt_priority_;
+  }
+  base::Optional<Http2ErrorCode> GetOptRstStreamErrorCode() const {
+    return opt_rst_stream_error_code_;
+  }
+  base::Optional<Http2PushPromiseFields> GetOptPushPromise() const {
+    return opt_push_promise_;
+  }
+  base::Optional<Http2PingFields> GetOptPing() const { return opt_ping_; }
+  base::Optional<Http2GoAwayFields> GetOptGoaway() const { return opt_goaway_; }
+  base::Optional<size_t> GetOptPadLength() const { return opt_pad_length_; }
+  base::Optional<size_t> GetOptPayloadLength() const {
+    return opt_payload_length_;
+  }
+  base::Optional<size_t> GetOptMissingLength() const {
+    return opt_missing_length_;
+  }
+  base::Optional<size_t> GetOptAltsvcOriginLength() const {
+    return opt_altsvc_origin_length_;
+  }
+  base::Optional<size_t> GetOptAltsvcValueLength() const {
+    return opt_altsvc_value_length_;
+  }
+  base::Optional<size_t> GetOptWindowUpdateIncrement() const {
+    return opt_window_update_increment_;
+  }
+  bool GetHasFrameSizeError() const { return has_frame_size_error_; }
 
-  base::Optional<Http2PriorityFields> opt_priority;
-  base::Optional<Http2ErrorCode> opt_rst_stream_error_code;
-  base::Optional<Http2PushPromiseFields> opt_push_promise;
-  base::Optional<Http2PingFields> opt_ping;
-  base::Optional<Http2GoAwayFields> opt_goaway;
+  void SetOptPriority(base::Optional<Http2PriorityFields> opt_priority) {
+    opt_priority_ = opt_priority;
+  }
+  void SetOptRstStreamErrorCode(
+      base::Optional<Http2ErrorCode> opt_rst_stream_error_code) {
+    opt_rst_stream_error_code_ = opt_rst_stream_error_code;
+  }
+  void SetOptPushPromise(
+      base::Optional<Http2PushPromiseFields> opt_push_promise) {
+    opt_push_promise_ = opt_push_promise;
+  }
+  void SetOptPing(base::Optional<Http2PingFields> opt_ping) {
+    opt_ping_ = opt_ping;
+  }
+  void SetOptGoaway(base::Optional<Http2GoAwayFields> opt_goaway) {
+    opt_goaway_ = opt_goaway;
+  }
+  void SetOptPadLength(base::Optional<size_t> opt_pad_length) {
+    opt_pad_length_ = opt_pad_length;
+  }
+  void SetOptPayloadLength(base::Optional<size_t> opt_payload_length) {
+    opt_payload_length_ = opt_payload_length;
+  }
+  void SetOptMissingLength(base::Optional<size_t> opt_missing_length) {
+    opt_missing_length_ = opt_missing_length;
+  }
+  void SetOptAltsvcOriginLength(
+      base::Optional<size_t> opt_altsvc_origin_length) {
+    opt_altsvc_origin_length_ = opt_altsvc_origin_length;
+  }
+  void SetOptAltsvcValueLength(base::Optional<size_t> opt_altsvc_value_length) {
+    opt_altsvc_value_length_ = opt_altsvc_value_length;
+  }
+  void SetOptWindowUpdateIncrement(
+      base::Optional<size_t> opt_window_update_increment) {
+    opt_window_update_increment_ = opt_window_update_increment;
+  }
 
-  base::Optional<size_t> opt_pad_length;
-  base::Optional<size_t> opt_payload_length;
-  base::Optional<size_t> opt_missing_length;
-  base::Optional<size_t> opt_altsvc_origin_length;
-  base::Optional<size_t> opt_altsvc_value_length;
-
-  base::Optional<size_t> opt_window_update_increment;
-
-  bool has_frame_size_error = false;
-
-  std::vector<Http2SettingFields> settings;
-
-  // These booleans are not checked by CompareCollectedFrames.
-  bool got_start_callback = false;
-  bool got_end_callback = false;
+  void SetHasFrameSizeError(bool has_frame_size_error) {
+    has_frame_size_error_ = has_frame_size_error;
+  }
 
  private:
   // ASSERT during an On* method that we're handling a frame of type
@@ -169,7 +209,38 @@ struct FrameParts : public Http2FrameDecoderListener {
   ::testing::AssertionResult AppendString(Http2StringPiece source,
                                           Http2String* target,
                                           base::Optional<size_t>* opt_length);
+
+  const Http2FrameHeader frame_header_;
+
+  Http2String payload_;
+  Http2String padding_;
+  Http2String altsvc_origin_;
+  Http2String altsvc_value_;
+
+  base::Optional<Http2PriorityFields> opt_priority_;
+  base::Optional<Http2ErrorCode> opt_rst_stream_error_code_;
+  base::Optional<Http2PushPromiseFields> opt_push_promise_;
+  base::Optional<Http2PingFields> opt_ping_;
+  base::Optional<Http2GoAwayFields> opt_goaway_;
+
+  base::Optional<size_t> opt_pad_length_;
+  base::Optional<size_t> opt_payload_length_;
+  base::Optional<size_t> opt_missing_length_;
+  base::Optional<size_t> opt_altsvc_origin_length_;
+  base::Optional<size_t> opt_altsvc_value_length_;
+
+  base::Optional<size_t> opt_window_update_increment_;
+
+  bool has_frame_size_error_ = false;
+
+  std::vector<Http2SettingFields> settings_;
+
+  // These booleans are not checked by CompareCollectedFrames.
+  bool got_start_callback_ = false;
+  bool got_end_callback_ = false;
 };
+
+std::ostream& operator<<(std::ostream& out, const FrameParts& v);
 
 }  // namespace test
 }  // namespace net

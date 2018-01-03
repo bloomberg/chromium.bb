@@ -101,7 +101,7 @@ Http2FrameDecoderListener* FramePartsCollector::FrameError(
     // frame before detecting the error; for example, the DATA payload decoder
     // calls OnDataStart before it can detect padding errors, hence before it
     // can call OnPaddingTooLong.
-    EXPECT_EQ(header, current_frame_->frame_header);
+    EXPECT_EQ(header, current_frame_->GetFrameHeader());
   }
   Http2FrameDecoderListener* result = current_frame();
   collected_frames_.push_back(std::move(current_frame_));

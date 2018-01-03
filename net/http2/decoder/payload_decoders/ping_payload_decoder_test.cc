@@ -85,7 +85,7 @@ TEST_F(PingPayloadDecoderTest, Ping) {
                             RandFlags() & ~Http2FrameFlag::ACK, RandStreamId());
     set_frame_header(header);
     FrameParts expected(header);
-    expected.opt_ping = fields;
+    expected.SetOptPing(fields);
     EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
   }
 }
@@ -100,7 +100,7 @@ TEST_F(PingPayloadDecoderTest, PingAck) {
                             RandFlags() | Http2FrameFlag::ACK, RandStreamId());
     set_frame_header(header);
     FrameParts expected(header);
-    expected.opt_ping = fields;
+    expected.SetOptPing(fields);
     EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
   }
 }

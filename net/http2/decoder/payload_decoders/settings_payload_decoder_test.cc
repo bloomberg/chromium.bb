@@ -129,7 +129,7 @@ TEST_F(SettingsPayloadDecoderTest, OneRealSetting) {
                               RandStreamId());
       set_frame_header(header);
       FrameParts expected(header);
-      expected.settings.push_back(fields);
+      expected.AppendSetting(fields);
       EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
     }
   }
@@ -149,7 +149,7 @@ TEST_F(SettingsPayloadDecoderTest, ManySettings) {
     Http2SettingFields fields(static_cast<Http2SettingsParameter>(n),
                               Random().Rand32());
     fb.Append(fields);
-    expected.settings.push_back(fields);
+    expected.AppendSetting(fields);
   }
   ASSERT_EQ(size, fb.size());
   EXPECT_TRUE(DecodePayloadAndValidateSeveralWays(fb.buffer(), expected));
