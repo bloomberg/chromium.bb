@@ -486,8 +486,16 @@ void WebRuntimeFeatures::EnableWorkStealingInScriptRunner(bool enable) {
   RuntimeEnabledFeatures::SetWorkStealingInScriptRunnerEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableStopLoadingInBackgroundAndroid(bool enable) {
-  RuntimeEnabledFeatures::SetStopLoadingInBackgroundAndroidEnabled(enable);
+void WebRuntimeFeatures::EnableStopInBackground(bool enable) {
+  RuntimeEnabledFeatures::SetStopInBackgroundEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableStopLoadingInBackground(bool enable) {
+  RuntimeEnabledFeatures::SetStopLoadingInBackgroundEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableStopNonTimersInBackground(bool enable) {
+  RuntimeEnabledFeatures::SetStopNonTimersInBackgroundEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {

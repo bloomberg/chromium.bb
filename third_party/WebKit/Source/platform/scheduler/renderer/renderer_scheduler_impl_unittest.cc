@@ -2553,7 +2553,7 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
 }
 
 TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedLoadingSuspension) {
-  ScopedStopLoadingInBackgroundAndroidForTest stop_loading_enabler(true);
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
 
   scheduler_->SetStoppingWhenBackgroundedEnabled(true);
 
