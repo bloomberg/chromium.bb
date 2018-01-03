@@ -416,7 +416,7 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
 
 LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
     : wallpaper_bounds_(wallpaper_bounds),
-      startup_sound_played_(StartupUtils::IsOobeCompleted()),
+      oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
       animation_weak_ptr_factory_(this) {
   if (ash_util::IsRunningInMash()) {
     // Animation, and initializing hidden, are not currently supported for Mash.
@@ -628,7 +628,7 @@ void LoginDisplayHostWebUI::SetStatusAreaVisible(bool visible) {
 void LoginDisplayHostWebUI::StartWizard(OobeScreen first_screen) {
   DisableKeyboardOverscroll();
 
-  TryToPlayStartupSound();
+  TryToPlayOobeStartupSound();
 
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
@@ -928,7 +928,7 @@ void LoginDisplayHostWebUI::EmitLoginPromptVisibleCalled() {
 // LoginDisplayHostWebUI, chromeos::CrasAudioHandler::AudioObserver:
 
 void LoginDisplayHostWebUI::OnActiveOutputNodeChanged() {
-  TryToPlayStartupSound();
+  TryToPlayOobeStartupSound();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1188,16 +1188,16 @@ void LoginDisplayHostWebUI::SetOobeProgressBarVisible(bool visible) {
   GetOobeUI()->ShowOobeUI(visible);
 }
 
-void LoginDisplayHostWebUI::TryToPlayStartupSound() {
+void LoginDisplayHostWebUI::TryToPlayOobeStartupSound() {
   if (is_voice_interaction_oobe_)
     return;
 
-  if (startup_sound_played_ || login_prompt_visible_time_.is_null() ||
+  if (oobe_startup_sound_played_ || login_prompt_visible_time_.is_null() ||
       !CrasAudioHandler::Get()->GetPrimaryActiveOutputNode()) {
     return;
   }
 
-  startup_sound_played_ = true;
+  oobe_startup_sound_played_ = true;
 
   // Don't try play startup sound if login prompt is already visible
   // for a long time or can't be played.
@@ -1214,7 +1214,7 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
   if (!login_prompt_visible_time_.is_null())
     return;
   login_prompt_visible_time_ = base::TimeTicks::Now();
-  TryToPlayStartupSound();
+  TryToPlayOobeStartupSound();
 }
 
 // static

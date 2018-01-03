@@ -178,7 +178,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // Tries to play startup sound. If sound can't be played right now,
   // for instance, because cras server is not initialized, playback
   // will be delayed.
-  void TryToPlayStartupSound();
+  void TryToPlayOobeStartupSound();
 
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
@@ -279,7 +279,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // True when request to play startup sound was sent to
   // SoundsManager.
   // After OOBE is completed, this is always initialized with true.
-  bool startup_sound_played_ = false;
+  bool oobe_startup_sound_played_ = false;
 
   // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
   // during a login session and restored afterwards.
