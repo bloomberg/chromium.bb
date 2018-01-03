@@ -861,49 +861,8 @@ static INLINE int get_ext_tx_types(TX_SIZE tx_size, BLOCK_SIZE bs, int is_inter,
   return av1_num_ext_tx_set[set_type];
 }
 
-static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
-  static const char LUT[BLOCK_SIZES_ALL] = {
-    0,  // BLOCK_4X4
-    1,  // BLOCK_4X8
-    1,  // BLOCK_8X4
-    0,  // BLOCK_8X8
-    1,  // BLOCK_8X16
-    1,  // BLOCK_16X8
-    0,  // BLOCK_16X16
-    1,  // BLOCK_16X32
-    1,  // BLOCK_32X16
-    0,  // BLOCK_32X32
-    1,  // BLOCK_32X64
-    1,  // BLOCK_64X32
-    0,  // BLOCK_64X64
-#if CONFIG_EXT_PARTITION
-    0,  // BLOCK_64X128
-    0,  // BLOCK_128X64
-    0,  // BLOCK_128X128
-#endif  // CONFIG_EXT_PARTITION
-    1,  // BLOCK_4X16
-    1,  // BLOCK_16X4
-    1,  // BLOCK_8X32
-    1,  // BLOCK_32X8
-    1,  // BLOCK_16X64
-    1,  // BLOCK_64X16
-#if CONFIG_EXT_PARTITION
-    1,  // BLOCK_32X128
-    1,  // BLOCK_128X32
-#endif  // CONFIG_EXT_PARTITION
-  };
-
-  return LUT[bsize];
-}
-
 #define TXSIZEMAX(t1, t2) (tx_size_2d[(t1)] >= tx_size_2d[(t2)] ? (t1) : (t2))
 #define TXSIZEMIN(t1, t2) (tx_size_2d[(t1)] <= tx_size_2d[(t2)] ? (t1) : (t2))
-
-static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
-                                     const MB_MODE_INFO *mbmi) {
-  return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
-         !xd->lossless[mbmi->segment_id];
-}
 
 static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
   return max_txsize_rect_lookup[is_inter][bsize];
@@ -1096,18 +1055,6 @@ static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize, int is_inter) {
   }
   assert(depth <= MAX_TX_CATS);
   return depth - 1;
-}
-
-static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize,
-                                   int is_inter) {
-  TX_SIZE ctx_size = get_max_rect_tx_size(bsize, is_inter);
-  int depth = 0;
-  while (tx_size != ctx_size) {
-    depth++;
-    ctx_size = sub_tx_size_map[is_inter][ctx_size];
-    assert(depth <= MAX_TX_DEPTH);
-  }
-  return depth;
 }
 
 static INLINE TX_SIZE depth_to_tx_size(int depth, BLOCK_SIZE bsize,
