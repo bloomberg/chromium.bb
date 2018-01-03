@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.AccountHolder;
@@ -89,11 +90,34 @@ public class AccountManagerFacadeTest {
         });
     }
 
+    @Test
+    @SmallTest
+    public void testGetAccounts() throws AccountManagerDelegateException {
+        Assert.assertArrayEquals(new Account[] {}, mFacade.getGoogleAccounts());
+
+        Account account = addTestAccount("test@gmail.com");
+        Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
+
+        Account account2 = addTestAccount("test2@gmail.com");
+        Assert.assertArrayEquals(new Account[] {account, account2}, mFacade.getGoogleAccounts());
+
+        Account account3 = addTestAccount("test3@gmail.com");
+        Assert.assertArrayEquals(
+                new Account[] {account, account2, account3}, mFacade.getGoogleAccounts());
+
+        removeTestAccount(account2);
+        Assert.assertArrayEquals(new Account[] {account, account3}, mFacade.getGoogleAccounts());
+    }
+
     private Account addTestAccount(String accountName) {
         Account account = AccountManagerFacade.createAccountFromName(accountName);
         AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
         mDelegate.addAccountHolderExplicitly(holder);
         Assert.assertFalse(AccountManagerFacade.get().isUpdatePending());
         return account;
+    }
+
+    private void removeTestAccount(Account account) {
+        mDelegate.removeAccountHolderExplicitly(AccountHolder.builder(account).build());
     }
 }
