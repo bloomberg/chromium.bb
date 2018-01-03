@@ -68,7 +68,8 @@ namespace base {
 
 namespace {
 
-#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
+#if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
+    defined(OS_ANDROID) && __ANDROID_API__ < 21
 static int CallStat(const char *path, stat_wrapper_t *sb) {
   AssertBlockingAllowed();
   return stat(path, sb);
@@ -77,7 +78,8 @@ static int CallLstat(const char *path, stat_wrapper_t *sb) {
   AssertBlockingAllowed();
   return lstat(path, sb);
 }
-#else  //  defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
+#else  //  defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) ||
+//  defined(OS_ANDROID) && __ANDROID_API__ < 21
 static int CallStat(const char *path, stat_wrapper_t *sb) {
   AssertBlockingAllowed();
   return stat64(path, sb);
