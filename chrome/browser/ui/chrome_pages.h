@@ -66,6 +66,7 @@ void ShowConflicts(Browser* browser);
 void ShowFeedbackPage(Browser* browser,
                       FeedbackSource source,
                       const std::string& description_template,
+                      const std::string& description_placeholder_text,
                       const std::string& category_tag,
                       const std::string& extra_diagnostics);
 

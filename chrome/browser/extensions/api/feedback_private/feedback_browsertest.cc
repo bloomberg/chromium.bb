@@ -79,9 +79,9 @@ class FeedbackTest : public ExtensionBrowserTest {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
-    api->RequestFeedbackForFlow("Test description", "Test tag",
-                                extra_diagnostics, GURL("http://www.test.com"),
-                                flow);
+    api->RequestFeedbackForFlow("Test description", "Test placeholder",
+                                "Test tag", extra_diagnostics,
+                                GURL("http://www.test.com"), flow);
   }
 };
 

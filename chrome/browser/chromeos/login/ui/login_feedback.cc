@@ -255,7 +255,7 @@ void LoginFeedback::EnsureFeedbackUI() {
   extensions::FeedbackPrivateAPI* api =
       extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile_);
   api->RequestFeedbackForFlow(
-      description_, "Login", std::string(), GURL(),
+      description_, std::string(), "Login", std::string(), GURL(),
       extensions::api::feedback_private::FeedbackFlow::FEEDBACK_FLOW_LOGIN);
 
   // Make sure there is a feedback app window opened.

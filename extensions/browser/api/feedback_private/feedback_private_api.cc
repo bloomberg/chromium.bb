@@ -97,6 +97,7 @@ LogSourceAccessManager* FeedbackPrivateAPI::GetLogSourceAccessManager() const {
 
 void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const std::string& description_template,
+    const std::string& description_placeholder_text,
     const std::string& category_tag,
     const std::string& extra_diagnostics,
     const GURL& page_url,
@@ -104,6 +105,8 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
+    info.description_placeholder =
+        std::make_unique<std::string>(description_placeholder_text);
     info.category_tag = std::make_unique<std::string>(category_tag);
     info.page_url = std::make_unique<std::string>(page_url.spec());
     info.system_information = std::make_unique<SystemInformationList>();
