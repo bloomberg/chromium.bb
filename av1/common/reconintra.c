@@ -2166,12 +2166,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 }
 
-static void predict_intra_block_helper(const AV1_COMMON *cm,
-                                       const MACROBLOCKD *xd, int wpx, int hpx,
-                                       TX_SIZE tx_size, PREDICTION_MODE mode,
-                                       const uint8_t *ref, int ref_stride,
-                                       uint8_t *dst, int dst_stride,
-                                       int col_off, int row_off, int plane) {
+void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                             int wpx, int hpx, TX_SIZE tx_size,
+                             PREDICTION_MODE mode, const uint8_t *ref,
+                             int ref_stride, uint8_t *dst, int dst_stride,
+                             int col_off, int row_off, int plane) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE bsize = mbmi->sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -2293,9 +2292,9 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     CFL_CTX *const cfl = &xd->cfl;
     CFL_PRED_TYPE pred_plane = get_cfl_pred_type(plane);
     if (cfl->dc_pred_is_cached[pred_plane] == 0) {
-      av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                              txsize_to_bsize[tx_size], mode, dst, dst_stride,
-                              dst, dst_stride, blk_col, blk_row, plane);
+      av1_predict_intra_block(cm, xd, pd->width, pd->height, tx_size, mode, dst,
+                              dst_stride, dst, dst_stride, blk_col, blk_row,
+                              plane);
       if (cfl->use_dc_pred_cache) {
         cfl_store_dc_pred(xd, dst, pred_plane, tx_size_wide[tx_size]);
         cfl->dc_pred_is_cached[pred_plane] = 1;
@@ -2307,204 +2306,8 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 #endif
-  av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                          txsize_to_bsize[tx_size], mode, dst, dst_stride, dst,
-                          dst_stride, blk_col, blk_row, plane);
-}
-
-// Copy the given row of dst into the equivalent row of ref, saving
-// the overwritten data to tmp. Returns zero if no copy happened (so
-// no restore is needed)
-//
-// Note that ref_row and dst_row follow the usual hibd convention
-// where you convert to a uint16_t* with CONVERT_TO_SHORTPTR(). tmp
-// does not follow that convention: it's a genuine pointer which is
-// correctly aligned and sized for either 8 or 16 bit data.
-//
-// matching_strides is a boolean flag which should be nonzero if ref
-// and dst have the same stride.
-static int overwrite_ref_row(int matching_strides, int buf_flags,
-                             int block_width, const uint8_t *dst_row,
-                             uint8_t *ref_row, uint8_t *tmp_row) {
-  if (ref_row == dst_row && matching_strides) return 0;
-
-  int row_bytes = block_width;
-
-  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
-    row_bytes *= 2;
-    ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
-    dst_row = (const uint8_t *)CONVERT_TO_SHORTPTR(dst_row);
-  }
-
-  memcpy(tmp_row, ref_row, row_bytes);
-  memcpy(ref_row, dst_row, row_bytes);
-  return 1;
-}
-
-static void restore_ref_row(int buf_flags, int block_width,
-                            const uint8_t *tmp_row, uint8_t *ref_row) {
-  int row_bytes = block_width;
-  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
-    row_bytes *= 2;
-    ref_row = (uint8_t *)CONVERT_TO_SHORTPTR(ref_row);
-  }
-  memcpy(ref_row, tmp_row, row_bytes);
-}
-
-// The column equivalent of overwrite_ref_row. ref_row and dst_row
-// point at the relevant column of the first row of the block.
-static int overwrite_ref_col(int buf_flags, int block_height,
-                             const uint8_t *dst_row, int dst_stride,
-                             uint8_t *ref_row, int ref_stride,
-                             uint8_t *tmp_row) {
-  if (ref_row == dst_row && ref_stride == dst_stride) return 0;
-
-  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
-    uint16_t *tmp_16 = (uint16_t *)tmp_row;
-    uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
-    const uint16_t *dst_16 = CONVERT_TO_SHORTPTR(dst_row);
-
-    for (int i = 0; i < block_height; ++i) {
-      tmp_16[i] = ref_16[i * ref_stride];
-      ref_16[i * ref_stride] = dst_16[i * dst_stride];
-    }
-  } else {
-    for (int i = 0; i < block_height; ++i) {
-      tmp_row[i] = ref_row[i * ref_stride];
-      ref_row[i * ref_stride] = dst_row[i * dst_stride];
-    }
-  }
-  return 1;
-}
-
-static void restore_ref_col(int buf_flags, int block_height,
-                            const uint8_t *tmp_row, uint8_t *ref_row,
-                            int ref_stride) {
-  if (buf_flags & YV12_FLAG_HIGHBITDEPTH) {
-    const uint16_t *tmp_16 = (const uint16_t *)tmp_row;
-    uint16_t *ref_16 = CONVERT_TO_SHORTPTR(ref_row);
-
-    for (int i = 0; i < block_height; ++i) {
-      ref_16[i * ref_stride] = tmp_16[i];
-    }
-  } else {
-    for (int i = 0; i < block_height; ++i) {
-      ref_row[i * ref_stride] = tmp_row[i];
-    }
-  }
-}
-
-void av1_predict_intra_block(const AV1_COMMON *cm, const MACROBLOCKD *xd,
-                             int wpx, int hpx, BLOCK_SIZE bsize,
-                             PREDICTION_MODE mode, const uint8_t *ref,
-                             int ref_stride, uint8_t *dst, int dst_stride,
-                             int col_off, int row_off, int plane) {
-  const int block_width = block_size_wide[bsize];
-  const int block_height = block_size_high[bsize];
-  const TX_SIZE tx_size = get_max_rect_tx_size(bsize, 0);
-  assert(tx_size < TX_SIZES_ALL);
-
-  // Start by running the helper to predict either the entire block
-  // (if the block is square or the same size as tx_size) or the top
-  // or left of the block if it's tall and thin or short and wide.
-  predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, ref, ref_stride,
-                             dst, dst_stride, col_off, row_off, plane);
-
-  // If the block is square, we're done.
-  if (block_width == block_height) return;
-
-  if (block_width == tx_size_wide[tx_size] &&
-      block_height == tx_size_high[tx_size])
-    return;
-
-  // A block should only fail to have a matching transform if it's
-  // large and rectangular (such large transform sizes aren't
-  // available).
-  assert((block_width == wpx && block_height == hpx) ||
-         (block_width == (wpx >> 1) && block_height == hpx) ||
-         (block_width == wpx && block_height == (hpx >> 1)));
-
-  // The tmp buffer needs to be big enough to hold MAX_SB_SIZE samples
-  // from the image. If CONFIG_HIGHBITDEPTH is enabled, it also needs
-  // to be big enough and correctly aligned to hold 16-bit entries.
-  uint16_t tmp_buf[MAX_SB_SIZE];
-  uint8_t *tmp = (uint8_t *)tmp_buf;
-
-  if (block_width < block_height) {
-    // The block is tall and thin. We've already done the top part,
-    // and need to repeat the prediction down the rest of the block.
-
-    const int tx_height = tx_size_high[tx_size];
-    const int tx_height_off = tx_height >> tx_size_wide_log2[0];
-    assert(tx_height_off << tx_size_wide_log2[0] == tx_height);
-
-    int next_row_off = row_off + tx_height_off;
-    int next_row_idx = tx_height;
-
-    while (next_row_idx < block_height) {
-      const int last_row_idx = next_row_idx - 1;
-
-      // Cast away the const to make a mutable pointer to the last
-      // row of ref. This will be snapshotted and restored later.
-      uint8_t *last_ref_row = (uint8_t *)ref + last_row_idx * ref_stride;
-      uint8_t *last_dst_row = dst + last_row_idx * dst_stride;
-
-      const int needs_restore =
-          overwrite_ref_row(ref_stride == dst_stride, xd->cur_buf->flags,
-                            block_width, last_dst_row, last_ref_row, tmp);
-
-      const uint8_t *next_ref_row = ref + next_row_idx * ref_stride;
-      uint8_t *next_dst_row = dst + next_row_idx * dst_stride;
-
-      predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, next_ref_row,
-                                 ref_stride, next_dst_row, dst_stride, col_off,
-                                 next_row_off, plane);
-
-      if (needs_restore)
-        restore_ref_row(xd->cur_buf->flags, block_width, tmp, last_ref_row);
-
-      next_row_idx += tx_height;
-      next_row_off += tx_height_off;
-    }
-  } else {
-    // The block is short and wide. We've already done the left part,
-    // and need to repeat the prediction to the right.
-
-    const int tx_width = tx_size_wide[tx_size];
-    const int tx_width_off = tx_width >> tx_size_wide_log2[0];
-    assert(tx_width_off << tx_size_wide_log2[0] == tx_width);
-
-    int next_col_off = col_off + tx_width_off;
-    int next_col_idx = tx_width;
-
-    while (next_col_idx < block_width) {
-      const int last_col_idx = next_col_idx - 1;
-
-      // Cast away the const to make a mutable pointer to ref,
-      // starting at the last column written. This will be
-      // snapshotted and restored later.
-      uint8_t *last_ref_col = (uint8_t *)ref + last_col_idx;
-      uint8_t *last_dst_col = dst + last_col_idx;
-
-      const int needs_restore =
-          overwrite_ref_col(xd->cur_buf->flags, block_height, last_dst_col,
-                            dst_stride, last_ref_col, ref_stride, tmp);
-
-      const uint8_t *next_ref_col = ref + next_col_idx;
-      uint8_t *next_dst_col = dst + next_col_idx;
-
-      predict_intra_block_helper(cm, xd, wpx, hpx, tx_size, mode, next_ref_col,
-                                 ref_stride, next_dst_col, dst_stride,
-                                 next_col_off, row_off, plane);
-
-      if (needs_restore)
-        restore_ref_col(xd->cur_buf->flags, block_height, tmp, last_ref_col,
-                        ref_stride);
-
-      next_col_idx += tx_width;
-      next_col_off += tx_width_off;
-    }
-  }
+  av1_predict_intra_block(cm, xd, pd->width, pd->height, tx_size, mode, dst,
+                          dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 }
 
 void av1_init_intra_predictors(void) {
