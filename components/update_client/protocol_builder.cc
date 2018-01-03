@@ -84,9 +84,23 @@ const char* DownloaderToString(CrxDownloader::DownloadMetrics::Downloader d) {
   }
 }
 
+// Returns a formatted string of previousversion and nextversion in an event.
+std::string EventVersions(const Component& component) {
+  std::string event_versions;
+  base::StringAppendF(&event_versions, " previousversion=\"%s\"",
+                      component.previous_version().GetString().c_str());
+  const base::Version& next_version = component.next_version();
+  if (next_version.IsValid()) {
+    base::StringAppendF(&event_versions, " nextversion=\"%s\"",
+                        next_version.GetString().c_str());
+  }
+  return event_versions;
+}
+
 }  // namespace
 
 std::string BuildDownloadCompleteEventElement(
+    const Component& component,
     const CrxDownloader::DownloadMetrics& metrics) {
   using base::StringAppendF;
 
@@ -113,6 +127,7 @@ std::string BuildDownloadCompleteEventElement(
     StringAppendF(&event, " download_time_ms=\"%s\"",
                   base::NumberToString(metrics.download_time_ms).c_str());
   }
+  base::StrAppend(&event, {EventVersions(component)});
   StringAppendF(&event, "/>");
   return event;
 }
@@ -150,6 +165,7 @@ std::string BuildUpdateCompleteEventElement(const Component& component) {
                   component.previous_fp().c_str());
   if (!component.next_fp().empty())
     StringAppendF(&event, " nextfp=\"%s\"", component.next_fp().c_str());
+  base::StrAppend(&event, {EventVersions(component)});
   StringAppendF(&event, "/>");
   return event;
 }
@@ -161,8 +177,10 @@ std::string BuildUninstalledEventElement(const Component& component) {
 
   std::string event;
   StringAppendF(&event, "<event eventtype=\"4\" eventresult=\"1\"");
-  if (component.extra_code1())
+  if (component.extra_code1()) {
     StringAppendF(&event, " extracode1=\"%d\"", component.extra_code1());
+  }
+  base::StrAppend(&event, {EventVersions(component)});
   StringAppendF(&event, "/>");
   return event;
 }
@@ -381,19 +399,8 @@ std::string BuildEventPingRequest(const Configurator& config,
          component.state() == ComponentState::kUpdated ||
          component.state() == ComponentState::kUninstalled);
 
-  // |next_version| is an optional argument for some ping types. This member
-  // is set by the value returned in the update check response. However, some
-  // of the pings are sent as a result of actions where the response did not
-  // include a manifest, neither a version.
   std::string app =
-      base::StringPrintf("<app appid=\"%s\"", component.id().c_str());
-  base::StringAppendF(&app, " version=\"%s\"",
-                      component.previous_version().GetString().c_str());
-  if (component.next_version().IsValid()) {
-    base::StrAppend(
-        &app, {" nextversion=\"", component.next_version().GetString(), "\""});
-  }
-  app.push_back('>');
+      base::StringPrintf("<app appid=\"%s\">", component.id().c_str());
   base::StrAppend(&app, component.events());
   app.append("</app>");
 
