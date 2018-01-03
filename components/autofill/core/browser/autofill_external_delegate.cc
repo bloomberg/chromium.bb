@@ -53,7 +53,6 @@ AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
       should_show_scan_credit_card_(false),
       is_credit_card_popup_(false),
       should_show_cc_signin_promo_(false),
-      has_shown_address_book_prompt(false),
       weak_ptr_factory_(this) {
   DCHECK(manager);
 }
@@ -67,9 +66,6 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormData& form,
                                        const FormFieldData& field,
                                        const gfx::RectF& element_bounds) {
-  if (!query_form_.SameFormAs(form))
-    has_shown_address_book_prompt = false;
-
   query_form_ = form;
   query_field_ = field;
   query_id_ = query_id;

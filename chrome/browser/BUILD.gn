@@ -2952,7 +2952,6 @@ split_static_library("browser") {
     ]
     libs += [
       "Accelerate.framework",
-      "AddressBook.framework",
       "AudioUnit.framework",
       "DiskArbitration.framework",
       "IOKit.framework",

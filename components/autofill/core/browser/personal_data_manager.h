@@ -100,8 +100,7 @@ class PersonalDataManager : public KeyedService,
   void MarkObserversInsufficientFormDataForImport();
 
   // Called to indicate |data_model| was used (to fill in a form). Updates
-  // the database accordingly. Can invalidate |data_model|, particularly if
-  // it's a Mac address book entry.
+  // the database accordingly. Can invalidate |data_model|.
   virtual void RecordUseOf(const AutofillDataModel& data_model);
 
   // Saves |imported_profile| to the WebDB if it exists. Returns the guid of
