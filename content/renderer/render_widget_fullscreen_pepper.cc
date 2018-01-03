@@ -303,6 +303,11 @@ void RenderWidgetFullscreenPepper::ScrollRect(
 }
 
 void RenderWidgetFullscreenPepper::Destroy() {
+  // The plugin instance is going away reset any lock target that is set
+  // on the dispatcher since this object can still live and receive IPC
+  // responses and may call a dangling lock_target.
+  mouse_lock_dispatcher_->ClearLockTarget();
+
   // This function is called by the plugin instance as it's going away, so reset
   // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
   plugin_ = nullptr;

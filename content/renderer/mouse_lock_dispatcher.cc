@@ -44,6 +44,10 @@ void MouseLockDispatcher::OnLockTargetDestroyed(LockTarget* target) {
   }
 }
 
+void MouseLockDispatcher::ClearLockTarget() {
+  OnLockTargetDestroyed(target_);
+}
+
 bool MouseLockDispatcher::IsMouseLockedTo(LockTarget* target) {
   return mouse_locked_ && target_ == target;
 }
