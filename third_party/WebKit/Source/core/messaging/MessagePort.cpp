@@ -89,7 +89,7 @@ void MessagePort::postMessage(ScriptState* script_state,
     return;
 
   channel_.PostMojoMessage(
-      mojom::blink::TransferableMessage::SerializeAsMessage(&msg));
+      mojom::blink::TransferableMessage::WrapAsMessage(std::move(msg)));
 }
 
 MessagePortChannel MessagePort::Disentangle() {

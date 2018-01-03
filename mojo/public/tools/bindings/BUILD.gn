@@ -29,6 +29,7 @@ action("precompile_templates") {
     "$mojom_generator_root/generators/cpp_templates/struct_serialization_declaration.tmpl",
     "$mojom_generator_root/generators/cpp_templates/struct_traits_declaration.tmpl",
     "$mojom_generator_root/generators/cpp_templates/struct_traits_definition.tmpl",
+    "$mojom_generator_root/generators/cpp_templates/struct_unserialized_message_context.tmpl",
     "$mojom_generator_root/generators/cpp_templates/union_data_view_declaration.tmpl",
     "$mojom_generator_root/generators/cpp_templates/union_data_view_definition.tmpl",
     "$mojom_generator_root/generators/cpp_templates/union_declaration.tmpl",

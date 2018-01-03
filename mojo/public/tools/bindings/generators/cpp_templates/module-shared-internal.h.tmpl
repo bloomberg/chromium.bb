@@ -76,6 +76,7 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}}_Data =
 {%- for struct in structs %}
 {%-   if not struct|is_native_only_kind %}
 {%      include "struct_declaration.tmpl" %}
+{%      include "struct_unserialized_message_context.tmpl" %}
 {%-   endif %}
 {%- endfor %}
 
