@@ -652,7 +652,11 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   EXPECT_EQ("1,2", page_flip_waiter.selected_pages());
   EXPECT_EQ(2, GetPaginationModel()->selected_page());
 
+  // Cancel drag and put the dragged view back to its ideal position so that
+  // the next drag would pick it up.
   apps_grid_view_->EndDrag(true);
+  test_api_->LayoutToIdealBounds();
+
   // Now drag to the top edge, and test the other direction.
   to.set_y(apps_grid_bounds.y());
 
