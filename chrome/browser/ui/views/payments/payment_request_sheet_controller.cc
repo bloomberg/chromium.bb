@@ -321,6 +321,9 @@ PaymentRequestSheetController::CreateExtraFooterView() {
 
 void PaymentRequestSheetController::ButtonPressed(views::Button* sender,
                                                   const ui::Event& event) {
+  if (!dialog()->IsInteractive())
+    return;
+
   switch (static_cast<PaymentRequestCommonTags>(sender->tag())) {
     case PaymentRequestCommonTags::CLOSE_BUTTON_TAG:
       dialog()->CloseDialog();
@@ -349,11 +352,11 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
       std::make_unique<views::GridLayout>(container.get()));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(1, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
   std::unique_ptr<views::View> extra_view = CreateExtraFooterView();
@@ -397,6 +400,10 @@ bool PaymentRequestSheetController::GetSheetId(DialogViewID* sheet_id) {
 }
 
 bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
+  // Return "true" to prevent other views from handling the event.
+  if (!dialog()->IsInteractive())
+    return true;
+
   if (primary_button_ && primary_button_->enabled())
     ButtonPressed(primary_button_.get(), DummyEvent());
   return true;
