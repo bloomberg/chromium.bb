@@ -227,7 +227,7 @@ lou_checkTable(const char *tableList);
 LIBLOUIS_API
 void EXPORT_CALL
 lou_registerTableResolver(
-		char **(EXPORT_CALL *resolver)(const char *table, const char *base));
+		char **(*resolver)(const char *table, const char *base));
 
 /**
  * Compile a table entry on the fly at run-time
