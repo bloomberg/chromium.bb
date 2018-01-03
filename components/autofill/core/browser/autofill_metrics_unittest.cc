@@ -248,9 +248,6 @@ AutofillMetricsTest::~AutofillMetricsTest() {
 void AutofillMetricsTest::SetUp() {
   autofill_client_.SetPrefs(test::PrefServiceForTesting());
 
-  // Ensure Mac OS X does not pop up a modal dialog for the Address Book.
-  test::DisableSystemServices(autofill_client_.GetPrefs());
-
   // Set up identity services.
   signin_client_ =
       std::make_unique<TestSigninClient>(autofill_client_.GetPrefs());

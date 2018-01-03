@@ -154,10 +154,6 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Whether the credit card signin promo should be shown to the user.
   bool should_show_cc_signin_promo_;
 
-  // Whether the access Address Book prompt has ever been shown for the current
-  // |query_form_|. This variable is only used on OSX.
-  bool has_shown_address_book_prompt;
-
   // The current data list values.
   std::vector<base::string16> data_list_values_;
   std::vector<base::string16> data_list_labels_;

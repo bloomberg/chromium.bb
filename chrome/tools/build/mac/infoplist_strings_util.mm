@@ -256,10 +256,6 @@ int main(int argc, char* const argv[]) {
         LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                IDS_ABOUT_VERSION_COPYRIGHT,
                                "IDS_ABOUT_VERSION_COPYRIGHT");
-    NSString* address_book_prompt_description =
-        LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
-                               IDS_AUTOFILL_ADDRESS_BOOK_PROMPT_DESCRIPTION,
-                               "IDS_AUTOFILL_ADDRESS_BOOK_PROMPT_DESCRIPTION");
 
     NSString* copyright = base::SysUTF16ToNSString(
         base::i18n::MessageFormatter::FormatWithNumberedArgs(
@@ -276,12 +272,10 @@ int main(int argc, char* const argv[]) {
           @"CFBundleDisplayName = \"%@\";\n"
           @"CFBundleGetInfoString = \"%@\";\n"
           @"CFBundleName = \"%@\";\n"
-          @"NSContactsUsageDescription = \"%@\";\n"
           @"NSHumanReadableCopyright = \"%@\";\n",
           EscapeForStringsFileValue(name),
           EscapeForStringsFileValue(get_info),
           EscapeForStringsFileValue(short_name),
-          EscapeForStringsFileValue(address_book_prompt_description),
           EscapeForStringsFileValue(copyright)];
 
     // We set up Xcode projects expecting strings files to be UTF8, so make

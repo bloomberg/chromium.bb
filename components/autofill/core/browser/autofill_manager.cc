@@ -765,8 +765,7 @@ void AutofillManager::FillOrPreviewForm(
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  // NOTE: RefreshDataModels may invalidate |data_model| because it causes the
-  // PersonalDataManager to reload Mac address book entries. Thus it must come
+  // NOTE: RefreshDataModels may invalidate |data_model|. Thus it must come
   // before GetProfile or GetCreditCard.
   if (!RefreshDataModels() || !driver()->RendererIsAvailable())
     return;
@@ -1331,8 +1330,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
       }
     }
 
-    // Note that this may invalidate |data_model|, particularly if it is a Mac
-    // address book entry.
+    // Note that this may invalidate |data_model|.
     if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
       personal_data_->RecordUseOf(data_model);
 
@@ -1387,8 +1385,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (autofilled_form_signatures_.size() > kMaxRecentFormSignaturesToRemember)
     autofilled_form_signatures_.pop_back();
 
-  // Note that this may invalidate |data_model|, particularly if it is a Mac
-  // address book entry.
+  // Note that this may invalidate |data_model|.
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
     personal_data_->RecordUseOf(data_model);
 

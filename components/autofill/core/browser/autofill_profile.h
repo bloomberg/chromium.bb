@@ -36,8 +36,6 @@ class AutofillProfile : public AutofillDataModel,
     LOCAL_PROFILE,
     // A profile synced down from the server. These are read-only locally.
     SERVER_PROFILE,
-    // An auxiliary profile, such as a Mac address book entry.
-    AUXILIARY_PROFILE,
   };
 
   enum ValidityState {
