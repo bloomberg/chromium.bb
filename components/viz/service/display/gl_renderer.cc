@@ -3347,11 +3347,15 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
   // Round the size of the IOSurface to a multiple of 64 pixels. This reduces
   // memory fragmentation. https://crbug.com/146070. This also allows IOSurfaces
   // to be more easily reused during a resize operation.
-  uint32_t iosurface_multiple = 64;
-  uint32_t iosurface_width = cc::MathUtil::UncheckedRoundUp(
-      static_cast<uint32_t>(updated_dst_rect.width()), iosurface_multiple);
-  uint32_t iosurface_height = cc::MathUtil::UncheckedRoundUp(
-      static_cast<uint32_t>(updated_dst_rect.height()), iosurface_multiple);
+  uint32_t iosurface_width = static_cast<uint32_t>(updated_dst_rect.width());
+  uint32_t iosurface_height = static_cast<uint32_t>(updated_dst_rect.height());
+  if (!settings_->dont_round_texture_sizes_for_pixel_tests) {
+    uint32_t iosurface_multiple = 64;
+    iosurface_width =
+        cc::MathUtil::CheckedRoundUp(iosurface_width, iosurface_multiple);
+    iosurface_height =
+        cc::MathUtil::CheckedRoundUp(iosurface_height, iosurface_multiple);
+  }
 
   *resource = overlay_resource_pool_->AcquireResource(
       gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,

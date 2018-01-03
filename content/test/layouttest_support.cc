@@ -331,6 +331,9 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     renderer_settings.allow_antialiasing &=
         !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
     renderer_settings.highp_threshold_min = 2048;
+    // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
+    // floating point badness in texcoords.
+    renderer_settings.dont_round_texture_sizes_for_pixel_tests = true;
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;
