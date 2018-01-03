@@ -50,6 +50,7 @@ class PrimaryAccountAccessTokenFetcher : public SigninManagerBase::Observer,
   void Start();
 
   void WaitForRefreshToken();
+  void ScheduleStartAccessTokenRequest();
   void StartAccessTokenRequest();
 
   // SigninManagerBase::Observer implementation.
