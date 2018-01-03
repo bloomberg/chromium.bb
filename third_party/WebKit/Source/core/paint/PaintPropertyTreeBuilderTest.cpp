@@ -3735,6 +3735,36 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameUnderMulticol) {
   // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div style='columns: 3; column-gap: 0; column-fill: auto;
+        width: 300px; height: 200px'>
+      <div style='height: 300px'></div>
+      <iframe id='iframe' style='will-change: transform;
+          width: 90px; height: 300px; border: none; background: green'></iframe>
+    </div>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>body { margin: 0 }</style>
+    <div style='columns: 2; column-gap: 0; column-fill: auto;
+        width: 80px; height: 100px'>
+      <div id="multicolContent" style='height: 200px; background: blue'></div>
+    </div>
+  )HTML");
+
+  // This should not crash on duplicated subsequences in the iframe.
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // TODO(crbug.com/797779): Add code to verify fragments under the iframe.
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        FragmentedBecomesUnfragmentedClearPaginationOffset) {
   SetBodyInnerHTML(R"HTML(
