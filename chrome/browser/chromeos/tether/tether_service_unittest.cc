@@ -303,6 +303,12 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   void TearDown() override {
     ShutdownTetherService();
 
+    // As of crbug.com/798605, SHUT_DOWN should not be logged since it does not
+    // contribute meaningful data.
+    histogram_tester_.ExpectBucketCount(
+        "InstantTethering.FeatureState",
+        TetherService::TetherFeatureState::SHUT_DOWN, 0 /* count */);
+
     message_center::MessageCenter::Shutdown();
     chromeos::NetworkConnect::Shutdown();
     chromeos::NetworkHandler::Shutdown();
@@ -503,9 +509,8 @@ TEST_F(TetherServiceTest, TestSuspend) {
   fake_power_manager_client_->SendSuspendImminent(
       power_manager::SuspendImminent_Reason_OTHER);
 
-  VerifyTetherFeatureStateRecorded(
-      TetherService::TetherFeatureState::OTHER_OR_UNKNOWN,
-      2 /* expected_count */);
+  VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::SUSPENDED,
+                                   2 /* expected_count */);
 }
 
 TEST_F(TetherServiceTest, TestBleAdvertisingNotSupported) {
