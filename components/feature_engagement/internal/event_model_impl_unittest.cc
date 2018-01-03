@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/feature_engagement/internal/editable_configuration.h"
@@ -102,7 +101,7 @@ class TestEventStorageValidator : public EventStorageValidator {
 // Creates a TestInMemoryEventStore containing three hard coded events.
 std::unique_ptr<TestInMemoryEventStore> CreatePrefilledStore() {
   std::unique_ptr<std::vector<Event>> events =
-      base::MakeUnique<std::vector<Event>>();
+      std::make_unique<std::vector<Event>>();
 
   Event foo;
   foo.set_name("foo");
@@ -123,7 +122,7 @@ std::unique_ptr<TestInMemoryEventStore> CreatePrefilledStore() {
   test::SetEventCountForDay(&qux, 3, 2);
   events->push_back(qux);
 
-  return base::MakeUnique<TestInMemoryEventStore>(std::move(events), true);
+  return std::make_unique<TestInMemoryEventStore>(std::move(events), true);
 }
 
 class EventModelImplTest : public ::testing::Test {
@@ -138,7 +137,7 @@ class EventModelImplTest : public ::testing::Test {
     std::unique_ptr<TestInMemoryEventStore> store = CreateStore();
     store_ = store.get();
 
-    auto storage_validator = base::MakeUnique<TestEventStorageValidator>();
+    auto storage_validator = std::make_unique<TestEventStorageValidator>();
     storage_validator_ = storage_validator.get();
 
     model_.reset(
@@ -175,8 +174,8 @@ class LoadFailingEventModelImplTest : public EventModelImplTest {
   LoadFailingEventModelImplTest() : EventModelImplTest() {}
 
   std::unique_ptr<TestInMemoryEventStore> CreateStore() override {
-    return base::MakeUnique<TestInMemoryEventStore>(
-        base::MakeUnique<std::vector<Event>>(), false);
+    return std::make_unique<TestInMemoryEventStore>(
+        std::make_unique<std::vector<Event>>(), false);
   }
 };
 

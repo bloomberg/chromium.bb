@@ -4,11 +4,11 @@
 
 #include "components/feature_engagement/internal/in_memory_event_store.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,7 +21,7 @@ InMemoryEventStore::InMemoryEventStore(
     : EventStore(), events_(std::move(events)), ready_(false) {}
 
 InMemoryEventStore::InMemoryEventStore()
-    : InMemoryEventStore(base::MakeUnique<std::vector<Event>>()) {}
+    : InMemoryEventStore(std::make_unique<std::vector<Event>>()) {}
 
 InMemoryEventStore::~InMemoryEventStore() = default;
 

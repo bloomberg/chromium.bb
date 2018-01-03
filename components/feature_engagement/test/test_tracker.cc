@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/feature_engagement/internal/chrome_variations_configuration.h"
 #include "components/feature_engagement/internal/event_model_impl.h"
@@ -25,24 +24,24 @@ namespace feature_engagement {
 
 // static
 std::unique_ptr<Tracker> CreateTestTracker() {
-  auto configuration = base::MakeUnique<ChromeVariationsConfiguration>();
+  auto configuration = std::make_unique<ChromeVariationsConfiguration>();
   configuration->ParseFeatureConfigs(GetAllFeatures());
 
   auto storage_validator =
-      base::MakeUnique<FeatureConfigEventStorageValidator>();
+      std::make_unique<FeatureConfigEventStorageValidator>();
   storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
 
-  auto raw_event_model = base::MakeUnique<EventModelImpl>(
-      base::MakeUnique<InMemoryEventStore>(), std::move(storage_validator));
+  auto raw_event_model = std::make_unique<EventModelImpl>(
+      std::make_unique<InMemoryEventStore>(), std::move(storage_validator));
 
   auto event_model =
-      base::MakeUnique<InitAwareEventModel>(std::move(raw_event_model));
+      std::make_unique<InitAwareEventModel>(std::move(raw_event_model));
 
-  return base::MakeUnique<TrackerImpl>(
-      std::move(event_model), base::MakeUnique<NeverAvailabilityModel>(),
+  return std::make_unique<TrackerImpl>(
+      std::move(event_model), std::make_unique<NeverAvailabilityModel>(),
       std::move(configuration), std::make_unique<NoopDisplayLockController>(),
-      base::MakeUnique<FeatureConfigConditionValidator>(),
-      base::MakeUnique<SystemTimeProvider>());
+      std::make_unique<FeatureConfigConditionValidator>(),
+      std::make_unique<SystemTimeProvider>());
 }
 
 }  // namespace feature_engagement

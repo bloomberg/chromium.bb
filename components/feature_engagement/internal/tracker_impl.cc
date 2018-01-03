@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/user_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -54,7 +53,7 @@ std::unique_ptr<Tracker> CreateDemoModeTracker() {
   DVLOG(2) << "Enabling demo mode. Chosen feature: " << chosen_feature_name;
 
   std::unique_ptr<EditableConfiguration> configuration =
-      base::MakeUnique<EditableConfiguration>();
+      std::make_unique<EditableConfiguration>();
 
   // Create valid configurations for all features to ensure that the
   // OnceConditionValidator acknowledges that thet meet conditions once.
@@ -72,16 +71,16 @@ std::unique_ptr<Tracker> CreateDemoModeTracker() {
     configuration->SetConfiguration(feature, feature_config);
   }
 
-  auto raw_event_model = base::MakeUnique<EventModelImpl>(
-      base::MakeUnique<InMemoryEventStore>(),
-      base::MakeUnique<NeverEventStorageValidator>());
+  auto raw_event_model = std::make_unique<EventModelImpl>(
+      std::make_unique<InMemoryEventStore>(),
+      std::make_unique<NeverEventStorageValidator>());
 
-  return base::MakeUnique<TrackerImpl>(
-      base::MakeUnique<InitAwareEventModel>(std::move(raw_event_model)),
-      base::MakeUnique<NeverAvailabilityModel>(), std::move(configuration),
+  return std::make_unique<TrackerImpl>(
+      std::make_unique<InitAwareEventModel>(std::move(raw_event_model)),
+      std::make_unique<NeverAvailabilityModel>(), std::move(configuration),
       std::make_unique<NoopDisplayLockController>(),
-      base::MakeUnique<OnceConditionValidator>(),
-      base::MakeUnique<SystemTimeProvider>());
+      std::make_unique<OnceConditionValidator>(),
+      std::make_unique<SystemTimeProvider>());
 }
 
 }  // namespace
@@ -98,39 +97,39 @@ Tracker* Tracker::Create(
     return CreateDemoModeTracker().release();
 
   std::unique_ptr<leveldb_proto::ProtoDatabase<Event>> event_db =
-      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<Event>>(
+      std::make_unique<leveldb_proto::ProtoDatabaseImpl<Event>>(
           background_task_runner);
 
   base::FilePath event_storage_dir = storage_dir.Append(kEventDBStorageDir);
-  auto event_store = base::MakeUnique<PersistentEventStore>(
+  auto event_store = std::make_unique<PersistentEventStore>(
       event_storage_dir, std::move(event_db));
 
-  auto configuration = base::MakeUnique<ChromeVariationsConfiguration>();
+  auto configuration = std::make_unique<ChromeVariationsConfiguration>();
   configuration->ParseFeatureConfigs(GetAllFeatures());
 
   auto event_storage_validator =
-      base::MakeUnique<FeatureConfigEventStorageValidator>();
+      std::make_unique<FeatureConfigEventStorageValidator>();
   event_storage_validator->InitializeFeatures(GetAllFeatures(), *configuration);
 
-  auto raw_event_model = base::MakeUnique<EventModelImpl>(
+  auto raw_event_model = std::make_unique<EventModelImpl>(
       std::move(event_store), std::move(event_storage_validator));
 
   auto event_model =
-      base::MakeUnique<InitAwareEventModel>(std::move(raw_event_model));
+      std::make_unique<InitAwareEventModel>(std::move(raw_event_model));
   auto condition_validator =
-      base::MakeUnique<FeatureConfigConditionValidator>();
-  auto time_provider = base::MakeUnique<SystemTimeProvider>();
+      std::make_unique<FeatureConfigConditionValidator>();
+  auto time_provider = std::make_unique<SystemTimeProvider>();
 
   base::FilePath availability_storage_dir =
       storage_dir.Append(kAvailabilityDBStorageDir);
   auto availability_db =
-      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<Availability>>(
+      std::make_unique<leveldb_proto::ProtoDatabaseImpl<Availability>>(
           background_task_runner);
   auto availability_store_loader = base::BindOnce(
       &PersistentAvailabilityStore::LoadAndUpdateStore,
       availability_storage_dir, std::move(availability_db), GetAllFeatures());
 
-  auto availability_model = base::MakeUnique<AvailabilityModelImpl>(
+  auto availability_model = std::make_unique<AvailabilityModelImpl>(
       std::move(availability_store_loader));
 
   return new TrackerImpl(
