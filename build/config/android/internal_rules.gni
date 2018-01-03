@@ -2490,10 +2490,8 @@ if (enable_java_templates) {
 
       if (_has_lint_target) {
         android_lint("${_main_target_name}__lint") {
-          # TODO(agrieve): Move this forward into the if block once downstream
-          #     is updated.
-          forward_variables_from(invoker, [ "android_manifest" ])
           if (invoker.type == "android_apk") {
+            forward_variables_from(invoker, [ "android_manifest" ])
           } else if (defined(invoker.android_manifest_for_lint)) {
             android_manifest = invoker.android_manifest_for_lint
           }
