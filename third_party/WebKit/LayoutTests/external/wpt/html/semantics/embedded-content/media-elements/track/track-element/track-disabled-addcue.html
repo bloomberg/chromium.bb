@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<title>Test adding cues to a disabled text track. </title>
-<script src="../media-file.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>Adding cues to a disabled text track</title>
+<script src="/common/media.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
 async_test(function(t) {
     var cueDuration = 0.1;
@@ -17,18 +17,17 @@ async_test(function(t) {
     }
 
     // Waiting for 2 cue durations to elapse.
-    video.ontimeupdate = t.step_func(function(e) {
-        if (e.target.currentTime < (2 * cueDuration))
+    video.ontimeupdate = t.step_func(function(event) {
+        if (event.target.currentTime < (2 * cueDuration))
             return;
 
         // End test after at least 2 cueDurations to make sure the test
-        // doesn't crash during the period the first 2 cues would have been
-        // rendered if the track was not disabled.
-        // 2 cue durations have elapsed.
+        // would have gone through the period where the first 2 cues would
+        // have been rendered if the track was not disabled.
         t.done();
     });
 
-    video.src = findMediaFile("video", "../content/test");
+    video.src = getVideoURI("/media/test");
     video.play();
 });
 </script>
