@@ -1105,12 +1105,14 @@ static int find_affine_int(int np, const int *pts1, const int *pts2,
 
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  const int isuy = (mi_row * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1);
-  const int isux = (mi_col * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1);
-  const int suy = isuy * 8;
-  const int sux = isux * 8;
+  const int rsuy = (AOMMAX(bh, MI_SIZE) / 2 - 1);
+  const int rsux = (AOMMAX(bw, MI_SIZE) / 2 - 1);
+  const int suy = rsuy * 8;
+  const int sux = rsux * 8;
   const int duy = suy + mvy;
   const int dux = sux + mvx;
+  const int isuy = (mi_row * MI_SIZE + rsuy);
+  const int isux = (mi_col * MI_SIZE + rsux);
 
   // Assume the center pixel of the block has exactly the same motion vector
   // as transmitted for the block. First shift the origin of the source
