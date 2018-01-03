@@ -134,7 +134,7 @@ class OptionalBase {
   template <class... Args>
   void Init(Args&&... args) {
     DCHECK(storage_.is_null_);
-    new (&storage_.value_) T(std::forward<Args>(args)...);
+    ::new (&storage_.value_) T(std::forward<Args>(args)...);
     storage_.is_null_ = false;
   }
 
