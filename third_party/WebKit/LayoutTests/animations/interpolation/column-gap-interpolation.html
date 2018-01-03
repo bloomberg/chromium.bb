@@ -2,11 +2,11 @@
 <meta charset="UTF-8">
 <style>
 .parent {
-  -webkit-column-gap: 90px;
+  column-gap: 90px;
 }
 .target {
-  -webkit-column-count: 2;
-  -webkit-column-gap: 10px;
+  column-count: 2;
+  column-gap: 10px;
 }
 .expected div {
   opacity: 0.7;
@@ -26,7 +26,7 @@
 <script src='resources/interpolation-test.js'></script>
 <script>
 assertInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: neutralKeyframe,
   to: '40px',
 }, [
@@ -39,13 +39,13 @@ assertInterpolation({
 ]);
 
 assertNoInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: 'initial',
   to: '20px',
 });
 
 assertInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: 'inherit',
   to: '20px',
 }, [
@@ -58,23 +58,23 @@ assertInterpolation({
 ]);
 
 assertNoInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: 'unset',
   to: '20px',
 });
 
 assertNoInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: 'normal',
   to: '20px',
 });
 
 assertInterpolation({
-  property: '-webkit-column-gap',
+  property: 'column-gap',
   from: '0px',
   to: '100px'
 }, [
-  {at: -0.3, is: '0'}, // -webkit-column-gap can't be negative.
+  {at: -0.3, is: '0'}, // column-gap can't be negative.
   {at: 0, is: '0'},
   {at: 0.3, is: '30px'},
   {at: 0.6, is: '60px'},
