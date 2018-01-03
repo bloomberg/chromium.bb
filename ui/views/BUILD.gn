@@ -951,6 +951,8 @@ source_set("views_unittests_sources") {
     "layout/grid_layout_unittest.cc",
     "paint_info_unittest.cc",
     "rect_based_targeting_utils_unittest.cc",
+    "test/views_pixel_test.cc",
+    "test/views_pixel_test.h",
     "test/widget_test_unittest.cc",
     "view_model_unittest.cc",
     "view_model_utils_unittest.cc",
@@ -968,6 +970,10 @@ source_set("views_unittests_sources") {
     "window/dialog_delegate_unittest.cc",
   ]
 
+  data = [
+    "test/data/",
+  ]
+
   configs += [ "//build/config:precompiled_headers" ]
 
   # Make all deps in this target public so both views_unittests and
@@ -979,6 +985,7 @@ source_set("views_unittests_sources") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
+    "//cc:test_support",
     "//cc/paint",
     "//components/vector_icons",
     "//services/ui/public/interfaces",
