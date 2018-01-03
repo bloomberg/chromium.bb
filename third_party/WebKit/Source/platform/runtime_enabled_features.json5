@@ -945,7 +945,7 @@
     },
     {
       name: "ServerTiming",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ServiceWorkerScriptFullCodeCache",
