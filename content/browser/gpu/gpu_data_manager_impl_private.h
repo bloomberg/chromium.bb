@@ -188,6 +188,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 
+  // Contains the 1000 most recent log messages.
   std::vector<LogMessage> log_messages_;
 
   // Current card force-disabled due to GPU crashes, or disabled through
