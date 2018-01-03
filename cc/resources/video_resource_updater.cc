@@ -486,21 +486,20 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
       // The |resource_size_pixels| is the size of the resource we want to
       // upload to.
-      gfx::Size resource_size_pixels = plane_resource.resource_size();
+      const gfx::Size resource_size_pixels = plane_resource.resource_size();
       // The |video_stride_bytes| is the width of the video frame we are
       // uploading (including non-frame data to fill in the stride).
-      int video_stride_bytes = video_frame->stride(i);
+      const int video_stride_bytes = video_frame->stride(i);
 
-      size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
+      const size_t bytes_per_row = ResourceUtil::CheckedWidthInBytes<size_t>(
           resource_size_pixels.width(), plane_resource.resource_format());
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
-      size_t upload_image_stride =
+      const size_t upload_image_stride =
           MathUtil::CheckedRoundUp<size_t>(bytes_per_row, 4u);
 
       // R16_EXT can represent 16-bit int, so we don't need a conversion step.
       bool needs_conversion = false;
-      int shift = 0;
 
       // viz::LUMINANCE_F16 uses half-floats, so we always need a conversion
       // step.
@@ -511,7 +510,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         // If bits_per_channel > 8 and we can't use viz::LUMINANCE_F16 or
         // R16_EXT we need to shift the data down and create an 8-bit texture.
         needs_conversion = true;
-        shift = bits_per_channel - 8;
       }
       const uint8_t* pixels;
       if (static_cast<int>(upload_image_stride) == video_stride_bytes &&
@@ -519,35 +517,35 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         pixels = video_frame->data(i);
       } else {
         // Avoid malloc for each frame/plane if possible.
-        size_t needed_size =
+        const size_t needed_size =
             upload_image_stride * resource_size_pixels.height();
         if (upload_pixels_.size() < needed_size)
           upload_pixels_.resize(needed_size);
 
-        for (int row = 0; row < resource_size_pixels.height(); ++row) {
-          if (plane_resource.resource_format() == viz::LUMINANCE_F16) {
+        if (plane_resource.resource_format() == viz::LUMINANCE_F16) {
+          for (int row = 0; row < resource_size_pixels.height(); ++row) {
             uint16_t* dst = reinterpret_cast<uint16_t*>(
                 &upload_pixels_[upload_image_stride * row]);
             const uint16_t* src = reinterpret_cast<uint16_t*>(
                 video_frame->data(i) + (video_stride_bytes * row));
             half_float_maker->MakeHalfFloats(src, bytes_per_row / 2, dst);
-          } else if (shift != 0) {
-            // We have more-than-8-bit input which we need to shift
-            // down to fit it into an 8-bit texture.
-            uint8_t* dst = &upload_pixels_[upload_image_stride * row];
-            const uint16_t* src = reinterpret_cast<uint16_t*>(
-                video_frame->data(i) + (video_stride_bytes * row));
-            for (size_t i = 0; i < bytes_per_row; i++)
-              dst[i] = src[i] >> shift;
-          } else {
-            // Input and output are the same size and format, but
-            // differ in stride, copy one row at a time.
-            uint8_t* dst = &upload_pixels_[upload_image_stride * row];
-            const uint8_t* src =
-                video_frame->data(i) + (video_stride_bytes * row);
-            memcpy(dst, src, bytes_per_row);
           }
+        } else if (bits_per_channel > 8) {
+          const int scale = 0x10000 >> (bits_per_channel - 8);
+          libyuv::Convert16To8Plane(
+              reinterpret_cast<uint16_t*>(video_frame->data(i)),
+              video_stride_bytes / 2, upload_pixels_.data(),
+              upload_image_stride, scale, bytes_per_row,
+              resource_size_pixels.height());
+        } else {
+          // Make a copy because input and output are the same size and
+          // format, but differ in stride.
+          libyuv::CopyPlane(video_frame->data(i), video_stride_bytes,
+                            upload_pixels_.data(), upload_image_stride,
+                            resource_size_pixels.width(),
+                            resource_size_pixels.height());
         }
+
         pixels = &upload_pixels_[0];
       }
 
