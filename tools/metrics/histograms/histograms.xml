@@ -2504,6 +2504,55 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.BootContinueCodeInstallationResult"
+    enum="ArcBootContinueCodeInstallationResult">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>Code installation result for ARC boot continue.</summary>
+</histogram>
+
+<histogram name="Arc.CodeIntegrityCheckingTotalTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>
+    Total time needed to check the integrity of host generated code. If
+    signature checking fails, it also includes the time to regenerate and sign
+    the code.
+  </summary>
+</histogram>
+
+<histogram name="Arc.CodeRelocationResult" enum="ArcCodeRelocationResult">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>Host code relocation result.</summary>
+</histogram>
+
+<histogram name="Arc.CodeRelocationTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>Time needed to relocate boot*.art files.</summary>
+</histogram>
+
+<histogram name="Arc.CodeSigningTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>Time needed to sign boot*.art files.</summary>
+</histogram>
+
+<histogram name="Arc.CodeVerificationResult" enum="ArcCodeVerificationResult">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>
+    Code verification result for host generated code for boot for login screen.
+  </summary>
+</histogram>
+
+<histogram name="Arc.CodeVerificationTime" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>xzhou@google.com</owner>
+  <summary>Time needed to verify host generated code.</summary>
+</histogram>
+
 <histogram name="Arc.ComplianceReportSinceUpdateNotificationTime" units="ms">
   <owner>alexchau@google.com</owner>
   <owner>emaxx@google.com</owner>
