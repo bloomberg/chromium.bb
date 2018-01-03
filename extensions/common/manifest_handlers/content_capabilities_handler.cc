@@ -65,7 +65,8 @@ bool ContentCapabilitiesHandler::Parse(Extension* extension,
     return false;
 
   int supported_schemes = URLPattern::SCHEME_HTTPS;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
     // We don't have a suitable HTTPS test server, so this will have to do.
     supported_schemes |= URLPattern::SCHEME_HTTP;
   }
