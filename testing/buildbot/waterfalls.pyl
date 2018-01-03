@@ -1123,7 +1123,7 @@
           'mash:all',
         ],
         'test_suites': {
-          'gtest_tests': 'mojo_chromiumos_gtests',
+          'gtest_tests': 'mojo_chromiumos_fyi_gtests',
           'isolated_scripts': 'mojo_chromiumos_isolated_scripts',
         },
       },
