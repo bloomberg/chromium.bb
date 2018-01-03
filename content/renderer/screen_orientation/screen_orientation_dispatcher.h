@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
@@ -63,14 +62,8 @@ class CONTENT_EXPORT ScreenOrientationDispatcher
     screen_orientation_ = std::move(screen_orientation_for_tests);
   }
 
-  // The pending_callbacks_ map is mostly meant to have a unique ID to associate
-  // with every callback going trough the dispatcher. The map will own the
-  // pointer in the sense that it will destroy it when Remove() will be called.
-  // Furthermore, we only expect to have one callback at a time in this map,
-  // which is what IDMap was designed for.
-  using CallbackMap =
-      base::IDMap<std::unique_ptr<blink::WebLockOrientationCallback>>;
-  CallbackMap pending_callbacks_;
+  std::unique_ptr<blink::WebLockOrientationCallback> pending_callback_;
+  int request_id_ = 0;
 
   ScreenOrientationAssociatedPtr screen_orientation_;
 
