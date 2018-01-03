@@ -455,7 +455,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
 
   // Regular results.
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout)) {
-    // For no description, shift down halfways to draw contents in middle.
+    // For no description, shift down halfway to draw contents in middle.
     if (description_max_width == 0)
       y += GetTextHeight() / 2;
 

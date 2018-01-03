@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest,
 
   // Execute a command and check if it deactivate touch editing. Paste & Go is
   // chosen since it is specific to Omnibox and its execution wouldn't be
-  // delgated to the base Textfield class.
+  // delegated to the base Textfield class.
   omnibox_view_views->ExecuteCommand(IDS_PASTE_AND_GO, ui::EF_NONE);
   EXPECT_FALSE(textfield_test_api.touch_selection_controller());
 }
