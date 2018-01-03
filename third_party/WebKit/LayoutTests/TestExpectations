@@ -3183,7 +3183,7 @@ crbug.com/755405 [ Android ] editing/selection/leave-requested-block.html [ Fail
 crbug.com/755405 [ Android ] editing/selection/previous-line-position.html [ Failure ]
 crbug.com/755405 [ Android ] editing/style/block-styles-007.html [ Failure ]
 crbug.com/755405 [ Android ] fast/backgrounds/background-clip-text.html [ Failure ]
-crbug.com/755405 [ Android ] fast/css/child-style-can-override-visited-style.html [ Failure ]
+crbug.com/755405 [ Android ] fast/css/child-style-can-override-visited-style.html [ Failure Timeout ]
 crbug.com/755405 [ Android ] fast/css/clip-zooming.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css/compare-content-style.html [ Failure ]
 crbug.com/755405 [ Android ] fast/css/first-letter-hover.html [ Failure ]
