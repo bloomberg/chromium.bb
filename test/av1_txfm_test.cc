@@ -330,6 +330,14 @@ void txfm_stage_range_check(const int8_t *stage_range, int stage_num,
     // make sure there is no overflow while doing half_btf()
     EXPECT_LE(stage_range[i] + cos_bit[i], high_range);
     EXPECT_LE(stage_range[i + 1] + cos_bit[i], high_range);
+    if (stage_range[i] + cos_bit[i] > high_range) {
+      std::cout << i;
+      assert(0);
+    }
+    if (stage_range[i + 1] + cos_bit[i] > high_range) {
+      std::cout << i;
+      assert(0);
+    }
   }
 }
 }  // namespace libaom_test

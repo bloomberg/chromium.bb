@@ -150,9 +150,9 @@ vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X8, 3.2, 0.58));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X4, 3.2, 0.58));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 6.5, 1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 6.5, 1));
-    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 50, 7));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X16, 15, 1.5));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X8, 15, 1.5));
+    param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_16X32, 55, 7));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_32X16, 30, 7));
 
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X16, 5, 0.7));

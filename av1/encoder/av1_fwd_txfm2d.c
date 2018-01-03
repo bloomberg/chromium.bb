@@ -64,22 +64,28 @@ void av1_gen_fwd_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   }
 
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
-  int rect_shift = 0;
+  int rect_type_shift = 0;
+
   int shift2 = shift[2];
-  if (rect_type == 2 || rect_type == -2) {
+  if (rect_type == 1 || rect_type == -1) {
+    rect_type_shift = 1;
+  } else if (rect_type == 2 || rect_type == -2) {
     const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
+
     // For 64x16 / 16x64 / 32x8 / 8x32 shift 2 bits, and
     // For 16x4 / 4x16 shift by 1 bit.
-    rect_shift = (txfm_size_max >= 32) ? 2 : 1;
+    rect_type_shift = (txfm_size_max >= 32) ? 2 : 1;
   }
-  while (rect_shift > 0 && shift2 < 0) {
+
+  while (rect_type_shift > 0 && shift2 < 0) {
     shift2++;
-    rect_shift--;
+    rect_type_shift--;
   }
+
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_row[i] = cfg->row_cfg->stage_range[i] + shift[0] + shift[1] +
-                         bd + 1 + rect_shift;
+                         bd + 1 + rect_type_shift;
   }
 }
 
@@ -100,8 +106,15 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
                                                         : cfg->col_cfg->shift;
   int shift2 = shift[2];
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
+  int rect_type1_shift = 0;
   int rect_type2_shift = 0;
-  if (rect_type == 2 || rect_type == -2) {
+  if (rect_type == 1 || rect_type == -1) {
+    rect_type1_shift = 1;
+    while (rect_type1_shift > 0 && shift2 < 0) {
+      shift2++;
+      rect_type1_shift--;
+    }
+  } else if (rect_type == 2 || rect_type == -2) {
     const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
     // For 64x16 / 16x64 / 32x8 / 8x32 shift 2 bits, and
     // For 16x4 / 4x16 shift by 1 bit.
@@ -141,10 +154,10 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
     // transform is rectangular and the size difference is a factor of 2.
     // If the size difference is a factor of 4, multiply by
     // 2^rect_type_2_extra_shift.
-    if (rect_type == 1) {
+    if (abs(rect_type) == 1 && rect_type1_shift == 1) {
       for (r = 0; r < txfm_size_row; ++r)
         temp_out[r] = (int32_t)fdct_round_shift(temp_out[r] * Sqrt2);
-    } else if (rect_type == 2) {
+    } else if (abs(rect_type) == 2) {
       av1_round_shift_array(temp_out, txfm_size_row, -rect_type2_shift);
     }
     av1_round_shift_array(temp_out, txfm_size_row, -shift[1]);
@@ -160,20 +173,13 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
 
   // Rows
   for (r = 0; r < txfm_size_row; ++r) {
-    // Multiply everything by Sqrt2 on the larger dimension if the
-    // transform is rectangular and the size difference is a factor of 2.
-    // If the size difference is a factor of 4, multiply by 2.
-    if (rect_type == -1) {
-      for (c = 0; c < txfm_size_col; ++c)
-        buf[r * txfm_size_col + c] =
-            (int32_t)fdct_round_shift(buf[r * txfm_size_col + c] * Sqrt2);
-    } else if (rect_type == -2) {
-      for (c = 0; c < txfm_size_col; ++c)
-        buf[r * txfm_size_col + c] =
-            buf[r * txfm_size_col + c] * (1 << rect_type2_shift);
-    }
     txfm_func_row(buf + r * txfm_size_col, output + r * txfm_size_col,
                   cos_bit_row, stage_range_row);
+    if (abs(rect_type) == 1 && rect_type1_shift == 0) {
+      for (c = 0; c < txfm_size_col; ++c)
+        output[r * txfm_size_col + c] =
+            (int32_t)fdct_round_shift(output[r * txfm_size_col + c] * InvSqrt2);
+    }
     av1_round_shift_array(output + r * txfm_size_col, txfm_size_col, -shift2);
   }
 }

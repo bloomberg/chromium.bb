@@ -261,21 +261,25 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   const int txfm_size_row = cfg->col_cfg->txfm_size;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   if (txfm_size_col == txfm_size_row) assert(rect_type == 0);
-  int rect_type2_shift = 0;
-  if (rect_type == 2 || rect_type == -2) {
-    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
-    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
-    // for any additional shift.
-    rect_type2_shift = (txfm_size_max == 16 ? 1 : 0);
-  }
+  int rect_type_shift = 0;
   // Take the shift from the larger dimension in the rectangular case.
   const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
                                                         : cfg->col_cfg->shift;
+
   int shift1 = shift[1];
-  while (rect_type2_shift > 0 && shift1 < 0) {
-    shift1++;
-    rect_type2_shift--;
+  if (rect_type == 1 || rect_type == -1) {
+    rect_type_shift = 1;
+  } else if (rect_type == 2 || rect_type == -2) {
+    const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
+    // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
+    // for any additional shift.
+    rect_type_shift = (txfm_size_max == 16 ? 1 : 0);
   }
+  while (rect_type_shift > 0 && shift1 < 0) {
+    shift1++;
+    rect_type_shift--;
+  }
+
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->row_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_row[i] = cfg->row_cfg->stage_range[i] + fwd_shift + bd + 1;
@@ -283,7 +287,7 @@ void av1_gen_inv_stage_range(int8_t *stage_range_col, int8_t *stage_range_row,
   // i < MAX_TXFM_STAGE_NUM will mute above array bounds warning
   for (int i = 0; i < cfg->col_cfg->stage_num && i < MAX_TXFM_STAGE_NUM; ++i) {
     stage_range_col[i] = cfg->col_cfg->stage_range[i] + fwd_shift + shift[0] +
-                         bd + 1 + rect_type2_shift;
+                         bd + 1 + rect_type_shift;
   }
 }
 
@@ -304,8 +308,15 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
                                                         : cfg->col_cfg->shift;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
   int rect_type2_shift = 0;
+  int rect_type1_shift = 0;
   int shift1 = shift[1];
-  if (rect_type == 2 || rect_type == -2) {
+  if (rect_type == 1 || rect_type == -1) {
+    rect_type1_shift = 1;
+    while (rect_type1_shift > 0 && shift1 < 0) {
+      shift1++;
+      rect_type1_shift--;
+    }
+  } else if (rect_type == 2 || rect_type == -2) {
     const int txfm_size_max = AOMMAX(txfm_size_col, txfm_size_row);
     // For 16x4 / 4x16 shift 1 bit, for 32x8 / 8x32 / 64x16 / 16x64 no need
     // for any additional shift.
@@ -341,7 +352,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
     // Multiply everything by Sqrt2 if the transform is rectangular with
     // log ratio being 1 or -1, if the log ratio is 2 or -2, multiply by
     // 2^rect_type2_shift.
-    if (abs(rect_type) == 1) {
+    if (rect_type1_shift == 1) {
       for (c = 0; c < txfm_size_col; ++c)
         buf_ptr[c] = (int32_t)dct_const_round_shift(buf_ptr[c] * Sqrt2);
     } else if (rect_type2_shift) {
@@ -362,6 +373,11 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
         temp_in[r] = buf[r * txfm_size_col + (txfm_size_col - c - 1)];
     }
     txfm_func_col(temp_in, temp_out, cos_bit_col, stage_range_col);
+    if (abs(rect_type) == 1 && rect_type1_shift == 0) {
+      for (r = 0; r < txfm_size_row; ++r) {
+        temp_out[r] = (int32_t)dct_const_round_shift(temp_out[r] * InvSqrt2);
+      }
+    }
     av1_round_shift_array(temp_out, txfm_size_row, -shift1);
     if (cfg->ud_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r) {
