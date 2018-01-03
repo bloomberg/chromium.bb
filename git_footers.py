@@ -15,6 +15,7 @@ import git_common as git
 
 FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): *(.*)$')
 CHROME_COMMIT_POSITION_PATTERN = re.compile(r'^([\w/\-\.]+)@{#(\d+)}$')
+FOOTER_KEY_BLACKLIST = set(['http', 'https'])
 
 
 def normalize_name(header):
@@ -24,10 +25,9 @@ def normalize_name(header):
 def parse_footer(line):
   """Returns footer's (key, value) if footer is valid, else None."""
   match = FOOTER_PATTERN.match(line)
-  if match:
+  if match and match.group(1) not in FOOTER_KEY_BLACKLIST:
     return (match.group(1), match.group(2))
-  else:
-    return None
+  return None
 
 
 def parse_footers(message):

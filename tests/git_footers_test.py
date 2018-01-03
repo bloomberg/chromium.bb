@@ -89,6 +89,24 @@ My commit message is my best friend. It is my life. I must master it.
                       'For': ['example'],
                       'And-Only-Valid': ['footers taken']})
 
+  def testAvoidingURLs(self):
+    message = ('Someone accidentally put a URL in the footers.\n'
+               '\n'
+               'Followed: by\n'
+               'http://domain.tld\n'
+               'Some: footers')
+    self.assertEqual(git_footers.split_footers(message),
+                     (['Someone accidentally put a URL in the footers.',
+                       ''],
+                      ['Followed: by',
+                       'http://domain.tld',
+                       'Some: footers'],
+                      [('Followed', 'by'),
+                       ('Some', 'footers')]))
+    self.assertEqual(git_footers.parse_footers(message),
+                     {'Followed': ['by'],
+                      'Some': ['footers']})
+
   def testGetFooterChangeId(self):
     msg = '\n'.join(['whatever',
                      '',
