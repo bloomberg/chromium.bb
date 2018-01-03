@@ -17,8 +17,10 @@
 
 class FakeSigninManagerBase : public SigninManagerBase {
  public:
-  FakeSigninManagerBase(SigninClient* client,
-                        AccountTrackerService* account_tracker_service);
+  FakeSigninManagerBase(
+      SigninClient* client,
+      AccountTrackerService* account_tracker_service,
+      SigninErrorController* signin_error_controller = nullptr);
   ~FakeSigninManagerBase() override;
 
   void SignIn(const std::string& account_id);
@@ -33,7 +35,9 @@ class FakeSigninManager : public SigninManager {
   FakeSigninManager(SigninClient* client,
                     ProfileOAuth2TokenService* token_service,
                     AccountTrackerService* account_tracker_service,
-                    GaiaCookieManagerService* cookie_manager_service);
+                    GaiaCookieManagerService* cookie_manager_service,
+                    SigninErrorController* signin_error_controller = nullptr);
+
   ~FakeSigninManager() override;
 
   void set_auth_in_progress(const std::string& account_id) {

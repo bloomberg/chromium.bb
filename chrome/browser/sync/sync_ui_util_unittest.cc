@@ -78,7 +78,8 @@ class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
   explicit FakeSigninManagerForSyncUIUtilTest(Profile* profile)
       : FakeSigninManagerBase(
             ChromeSigninClientFactory::GetForProfile(profile),
-            AccountTrackerServiceFactory::GetForProfile(profile)),
+            AccountTrackerServiceFactory::GetForProfile(profile),
+            SigninErrorControllerFactory::GetForProfile(profile)),
         auth_in_progress_(false) {
     Initialize(nullptr);
   }

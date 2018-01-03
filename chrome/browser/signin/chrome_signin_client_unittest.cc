@@ -5,8 +5,10 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -173,8 +175,15 @@ class MockChromeSigninClient : public ChromeSigninClient {
 
 class MockSigninManager : public SigninManager {
  public:
-  explicit MockSigninManager(SigninClient* client)
-      : SigninManager(client, nullptr, &fake_service_, nullptr) {}
+  explicit MockSigninManager(SigninClient* client,
+                             SigninErrorController* signin_error_controller)
+      : SigninManager(client,
+                      nullptr,
+                      &fake_service_,
+                      nullptr,
+                      signin_error_controller) {
+    DCHECK(signin_error_controller);
+  }
 
   MOCK_METHOD3(DoSignOut,
                void(signin_metrics::ProfileSignout,
@@ -191,7 +200,8 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
 
     signin_util::SetForceSigninForTesting(true);
     CreateClient(browser()->profile());
-    manager_.reset(new MockSigninManager(client_.get()));
+    manager_ = std::make_unique<MockSigninManager>(client_.get(),
+                                                   fake_controller_.get());
   }
 
   void TearDown() override {
@@ -200,7 +210,8 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
   }
 
   void CreateClient(Profile* profile) {
-    SigninErrorController* controller = new SigninErrorController();
+    SigninErrorController* controller = new SigninErrorController(
+        SigninErrorController::AccountMode::ANY_ACCOUNT);
     client_.reset(new MockChromeSigninClient(profile, controller));
     fake_controller_.reset(controller);
   }
@@ -232,7 +243,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
   signin_metrics::SignoutDelete delete_metric =
       signin_metrics::SignoutDelete::IGNORE_METRIC;
 
-  MockSigninManager other_manager(client_.get());
+  MockSigninManager other_manager(client_.get(), fake_controller_.get());
   other_manager.CopyCredentialsFrom(*manager_.get());
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
@@ -257,7 +268,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
   signin_util::SetForceSigninForTesting(false);
   CreateClient(browser()->profile());
-  manager_.reset(new MockSigninManager(client_.get()));
+  manager_ = std::make_unique<MockSigninManager>(client_.get(),
+                                                 fake_controller_.get());
 
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::ABORT_SIGNIN;
@@ -279,7 +291,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutGuestSession) {
   std::unique_ptr<TestingProfile> profile = builder.Build();
 
   CreateClient(profile.get());
-  manager_.reset(new MockSigninManager(client_.get()));
+  manager_ = std::make_unique<MockSigninManager>(client_.get(),
+                                                 fake_controller_.get());
 
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::ABORT_SIGNIN;

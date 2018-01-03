@@ -4,8 +4,10 @@
 
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 
 SigninErrorControllerFactory::SigninErrorControllerFactory()
     : BrowserContextKeyedServiceFactory(
@@ -28,5 +30,13 @@ SigninErrorControllerFactory* SigninErrorControllerFactory::GetInstance() {
 
 KeyedService* SigninErrorControllerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new SigninErrorController();
+  SigninErrorController::AccountMode account_mode =
+#if defined(OS_CHROMEOS)
+      SigninErrorController::AccountMode::ANY_ACCOUNT;
+#else
+      signin::IsAccountConsistencyMirrorEnabled()
+          ? SigninErrorController::AccountMode::ANY_ACCOUNT
+          : SigninErrorController::AccountMode::PRIMARY_ACCOUNT;
+#endif
+  return new SigninErrorController(account_mode);
 }
