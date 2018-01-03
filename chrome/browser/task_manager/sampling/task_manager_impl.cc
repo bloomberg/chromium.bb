@@ -524,7 +524,8 @@ void TaskManagerImpl::OnReceivedMemoryDump(
     auto it = task_groups_by_proc_id_.find(pmd->pid);
     if (it == task_groups_by_proc_id_.end())
       continue;
-    it->second->set_footprint_bytes(pmd->os_dump->private_footprint_kb * 1024);
+    it->second->set_footprint_bytes(
+        static_cast<uint64_t>(pmd->os_dump->private_footprint_kb) * 1024);
   }
 }
 
