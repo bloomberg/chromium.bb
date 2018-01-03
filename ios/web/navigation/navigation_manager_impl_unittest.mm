@@ -2227,6 +2227,8 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
 
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_FALSE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+               ui::PAGE_TRANSITION_FORWARD_BACK);
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
@@ -2240,6 +2242,8 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentDocument) {
   }
 
   navigation_manager()->GoToIndex(0);
+  EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+              ui::PAGE_TRANSITION_FORWARD_BACK);
 
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     // Since LoadCurrentItem() is noop in test, we can only verify that the
@@ -2270,6 +2274,8 @@ TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
 
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  EXPECT_FALSE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+               ui::PAGE_TRANSITION_FORWARD_BACK);
 
   EXPECT_CALL(navigation_manager_delegate(), RecordPageStateInNavigationItem());
   EXPECT_CALL(navigation_manager_delegate(), ClearTransientContent());
@@ -2282,6 +2288,12 @@ TEST_P(NavigationManagerTest, GoToIndexSameDocument) {
   }
 
   navigation_manager()->GoToIndex(0);
+  // Preserve the existing behavior of legacy navigation manager for change
+  // management, even though it seems like a bug that the back-forward
+  // transition bit is not set for same-document history navigation.
+  EXPECT_EQ(GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER,
+            (navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+             ui::PAGE_TRANSITION_FORWARD_BACK) > 0);
 
   if (GetParam() == TEST_LEGACY_NAVIGATION_MANAGER) {
     EXPECT_EQ(0, navigation_manager()->GetLastCommittedItemIndex());
@@ -2309,6 +2321,8 @@ TEST_P(NavigationManagerTest, GoToIndexDifferentUserAgentType) {
 
   EXPECT_CALL(navigation_manager_delegate(), WillChangeUserAgentType());
   navigation_manager()->GoToIndex(0);
+  EXPECT_TRUE(navigation_manager()->GetItemAtIndex(0)->GetTransitionType() &
+              ui::PAGE_TRANSITION_FORWARD_BACK);
 }
 
 TEST_P(NavigationManagerTest, LoadIfNecessary) {

@@ -456,6 +456,9 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
 
 void WKBasedNavigationManagerImpl::FinishGoToIndex(int index) {
   DiscardNonCommittedItems();
+  NavigationItem* item = GetItemAtIndex(index);
+  item->SetTransitionType(ui::PageTransitionFromInt(
+      item->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
   WKBackForwardListItem* wk_item = GetWKItemAtIndex(index);
   DCHECK(wk_item);
   [delegate_->GetWebViewNavigationProxy() goToBackForwardListItem:wk_item];
