@@ -877,8 +877,6 @@ crbug.com/267206 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hit
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Timeout Failure ]
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
 
-crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
-crbug.com/520737 [ Mac ] external/wpt/css/css-writing-modes/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 # gpuBenchmarking.pinchBy is busted on desktops
@@ -925,7 +923,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touc
 
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
-crbug.com/518989 [ Mac ] external/wpt/css/css-writing-modes/writing-mode-vertical-rl-002.xht [ Failure Pass Timeout ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
@@ -1698,7 +1695,6 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 
-crbug.com/564109 [ Win ] external/wpt/css/css-fonts/font-display/font-display.html [ Failure Pass Timeout ]
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
@@ -2915,8 +2911,6 @@ crbug.com/725470 editing/shadow/doubleclick-on-meter-in-shadow-crash.html [ Cras
 # Failures when using libc++.  Rebaseline after landing https://codereview.chromium.org/2933573002/
 crbug.com/734873 [ Linux ] fast/backgrounds/size/contain-and-cover.html [ Pass Failure ]
 
-crbug.com/729836 [ Win ] fast/workers/chromium/worker-document-leak.html [ Pass Failure ]
-
 # More flaky tests on Mac
 crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
 crbug.com/731111 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
@@ -2926,7 +2920,7 @@ crbug.com/731518 [ Win Linux Mac ] webaudio/DynamicsCompressor/dynamicscompresso
 
 crbug.com/731509 [ Win ] css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure Pass Timeout ]
 
-crbug.com/731535 [ Win ] fast/dom/Window/window-resize-contents.html [ Failure Pass Timeout ]
+crbug.com/731535 [ Win7 ] fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 
@@ -3058,13 +3052,13 @@ crbug.com/708499 [ Linux ] virtual/wheelscrolllatching/fast/compositor-wheel-scr
 # Sheriff failure 2017-08-29
 crbug.com/727252 [ Win7 ] external/wpt/media-source/mediasource-endofstream.html [ Pass Timeout ]
 
-crbug.com/746904 [ Win ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
-
 crbug.com/731018 [ Mac ] sensor/accelerometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/ambient-light-sensor.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass Crash ]
 crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
+
+crbug.com/746904 [ Win7 ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
 
 # Tests failing on Android after https://chromium-review.googlesource.com/612442
 crbug.com/755405 [ Android ] compositing/rendering-contexts.html [ Failure ]
@@ -3196,51 +3190,35 @@ crbug.com/757165 [ Win ] external/wpt/preload/download-resources.html [ Skip ]
 crbug.com/757165 [ Win ] external/wpt/preload/preload-default-csp.sub.html [ Skip ]
 crbug.com/757165 [ Win ] external/wpt/service-workers/service-worker/navigation-redirect.https.html [ Skip ]
 crbug.com/757165 [ Win ] fast/forms/file/recover-file-input-in-unposted-form.html [ Skip ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-1st-stop.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-aligned-not-aligned.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-clipped-overflowed-content.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-container-only-white-space.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-container-white-space.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-date.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-display-contents-crash.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-div-in-anchor-and-img-crash.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-div-in-anchor.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-div-scrollable-but-without-focusable-content.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-fully-aligned-horizontally.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-fully-aligned-vertically.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-hidden-focusable-element.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-hidden-iframe.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-hidden-iframe-zero-size.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-iframe-nested.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-iframe-no-focusable-content.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-iframe-no-scrollable-content.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-iframe-recursive-offset-parent.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-iframe-with-offscreen-focusable-element.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-imagemap-area-not-focusable.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-imagemap-area-without-image.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-imagemap-overlapped-areas.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-imagemap-simple.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-input.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-media-elements.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-multiple-select-focusring.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-multiple-select.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-not-below.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-not-rightof.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-offscreen-content.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-only-clipped-overflow-content.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-overlapping-elements.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-radio-group.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-radio.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-simple-content-overflow.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-single-select.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-single-select-list.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-symmetrically-positioned.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-table-traversal.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-textarea.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-tiny-table-traversal.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-two-elements-one-line.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Pass Failure Timeout Crash ]
-crbug.com/757165 [ Win ] fast/spatial-navigation/snav-zero-margin-content.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] fast/spatial-navigation/snav-z-index.html [ Pass Failure Timeout Crash ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-filter-test.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/devtools/console/console-links-in-errors-with-trace.js [ Skip ]
@@ -3277,10 +3255,10 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pa
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Skip ]
-#These are currently skipped on all OSes due to crbug.com/785931
+# These are currently skipped on all OSes due to crbug.com/785931
 #crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
 #crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Skip ]
-#This is currently skipped on all OSes due to crbug.com/775957
+# This is currently skipped on all OSes due to crbug.com/775957
 #crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
@@ -3349,24 +3327,17 @@ crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html
 # Sheriff failure 2017-09-18
 crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
 
-#Layout test corrupted after Skia rect tessellation change due to apparent SwiftShader bug.
-#This was previously skipped on Windows in the section for crbug.com/757165
+# Layout test corrupted after Skia rect tessellation change due to apparent SwiftShader bug.
+# This was previously skipped on Windows in the section for crbug.com/757165
 crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 
 # Sheriff failures 2017-09-20
-# Timeouts flakily on chromium.webkit/WebKit Win7 and WebKit Win10
-# Fails flakily on chromium.mac/Mac10.12 Tests and WebKit Mac10.12.
-crbug.com/767040 [ Mac10.12 ] external/wpt/clear-site-data/storage.https.html [ Pass Failure ]
 # Fails reliably on last 3 builds of this bot.
 crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
 
 # Sheriff failures 2017-09-21
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
-
-# Sheriff failures 2017-09-22
-
-# Sheriff failures 2017-09-29
 
 # Sheriff failures 2017-10-02
 crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
@@ -3388,8 +3359,6 @@ crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-text
 crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure Pass ]
-
-# Sheriff failures 2017-10-11
 
 # Sheriff failures 2017-10-13
 crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
@@ -3477,7 +3446,7 @@ crbug.com/667560 http/tests/devtools/elements/elements-panel-rewrite-href.js [ F
 crbug.com/795542 http/tests/devtools/elements/elements-panel-selection-after-delete.js [ Timeout Pass ]
 
 # Sheriff failures 2017-11-16
-crbug.com/785980 [ Win7 Win10 ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
+crbug.com/785980 [ Win ] http/tests/devtools/network/network-xhr-same-url-as-main-resource.js [ Failure Pass ]
 
 # Sheriff failures 2017-11-17
 crbug.com/786235 http/tests/misc/resource-timing-sizes-tags.html [ Failure Pass ]
@@ -3489,12 +3458,14 @@ crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageS
 crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
 crbug.com/789139 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
 crbug.com/785179 [ Mac10.11 ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
+
 # Sheriff failures 2017-11-29
 crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789567 virtual/rootlayerscrolls/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789567 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789478 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
 crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
+
 # Sheriff failures 2017-11-30
 crbug.com/789921 [ Win7 ] media/video-controls-overflow-menu-last-button-visible.html [ Pass Failure ]
 crbug.com/789111 virtual/pwa-full-code-cache/http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
@@ -3538,14 +3509,15 @@ crbug.com/798572 virtual/enable_wasm/external/wpt/wasm/wasm_service_worker_test.
 
 # Sheriff failures 2017-12-15
 crbug.com/795250 [ Win7 Linux ] virtual/scroll_customization/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
-crbug.com/795250 [ Win7 ] virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-hover-state-iframe.html [ Pass Failure ]
+
+# Sheriff 2017-12-21
+crbug.com/796926 [ Win10 ] inspector-protocol/layout-fonts/fallback-pua-last-resort.js [ Pass Failure ]
 
 # Does not work on Mac
 crbug.com/793771 [ Mac ] virtual/modern-media-controls/media/controls/modern/scrubbing.html [ Skip ]
 
 crbug.com/797138 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Crash ]
 crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-get.sub.https.html [ Crash ]
-
 
 # Sheriff failures 2018-01-02
 crbug.com/798527 [ Linux ] virtual/spv175/compositing/gestures/gesture-tapHighlight-with-box-shadow.html [ Pass Failure ]
