@@ -53536,6 +53536,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.ContentObserver.NetworkQualityMeaningfullyChanged"
+    enum="BooleanChanged">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    This metric is recorded when the network quality change notification is
+    received by content and before the network quality change is notified to the
+    renderers. Records true if the notified network quality change is
+    meaningfully different from the last network quality notified to the
+    renderers.
+  </summary>
+</histogram>
+
 <histogram name="NQE.Correlation.ResourceLoadTime.0Kb_128Kb">
   <obsolete>
     Obsoleted in December 2017.

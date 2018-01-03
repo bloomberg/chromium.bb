@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 
@@ -53,28 +54,46 @@ class NET_EXPORT_PRIVATE NetworkQuality {
   bool IsFaster(const NetworkQuality& other) const;
 
   // Returns the estimate of the round trip time at the HTTP layer.
-  const base::TimeDelta& http_rtt() const { return http_rtt_; }
+  const base::TimeDelta& http_rtt() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return http_rtt_;
+  }
 
-  void set_http_rtt(const base::TimeDelta& http_rtt) { http_rtt_ = http_rtt; }
+  void set_http_rtt(base::TimeDelta http_rtt) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    http_rtt_ = http_rtt;
+    DCHECK_LE(INVALID_RTT_THROUGHPUT, http_rtt_.InMilliseconds());
+  }
 
   // Returns the estimate of the round trip time at the transport layer.
-  const base::TimeDelta& transport_rtt() const { return transport_rtt_; }
+  const base::TimeDelta& transport_rtt() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return transport_rtt_;
+  }
 
-  void set_transport_rtt(const base::TimeDelta& transport_rtt) {
+  void set_transport_rtt(base::TimeDelta transport_rtt) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     transport_rtt_ = transport_rtt;
+    DCHECK_LE(INVALID_RTT_THROUGHPUT, transport_rtt_.InMilliseconds());
   }
 
   // Returns the estimate of the downstream throughput in Kbps (Kilobits per
   // second).
   int32_t downstream_throughput_kbps() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return downstream_throughput_kbps_;
   }
 
   void set_downstream_throughput_kbps(int32_t downstream_throughput_kbps) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     downstream_throughput_kbps_ = downstream_throughput_kbps;
+    DCHECK_LE(INVALID_RTT_THROUGHPUT, downstream_throughput_kbps_);
   }
 
  private:
+  // Verifies that the value of network quality is within the expected range.
+  void VerifyValueCorrectness() const;
+
   // Estimated round trip time at the HTTP layer.
   base::TimeDelta http_rtt_;
 
@@ -83,6 +102,8 @@ class NET_EXPORT_PRIVATE NetworkQuality {
 
   // Estimated downstream throughput in kilobits per second.
   int32_t downstream_throughput_kbps_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace internal
