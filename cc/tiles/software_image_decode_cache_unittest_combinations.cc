@@ -104,7 +104,6 @@ class AtRaster : public virtual BaseTest {
     SCOPED_TRACE(base::StringPrintf("Failure from line %d", line));
     EXPECT_EQ(decoded.image()->width(), expected_size.width());
     EXPECT_EQ(decoded.image()->height(), expected_size.height());
-    EXPECT_TRUE(decoded.is_at_raster_decode());
     cache().DrawWithImageFinished(draw_image, decoded);
   }
 };
@@ -128,7 +127,6 @@ class Predecode : public virtual BaseTest {
     SCOPED_TRACE(base::StringPrintf("Failure from line %d", line));
     EXPECT_EQ(decoded.image()->width(), expected_size.width());
     EXPECT_EQ(decoded.image()->height(), expected_size.height());
-    EXPECT_FALSE(decoded.is_at_raster_decode());
     cache().DrawWithImageFinished(draw_image, decoded);
   }
 };

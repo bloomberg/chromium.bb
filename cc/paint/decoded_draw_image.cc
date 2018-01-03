@@ -13,8 +13,7 @@ DecodedDrawImage::DecodedDrawImage(sk_sp<const SkImage> image,
     : image_(std::move(image)),
       src_rect_offset_(src_rect_offset),
       scale_adjustment_(scale_adjustment),
-      filter_quality_(filter_quality),
-      at_raster_decode_(false) {}
+      filter_quality_(filter_quality) {}
 
 DecodedDrawImage::DecodedDrawImage()
     : DecodedDrawImage(nullptr, kNone_SkFilterQuality) {}

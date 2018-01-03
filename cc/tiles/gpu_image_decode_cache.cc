@@ -691,7 +691,6 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
   DecodedDrawImage decoded_draw_image(
       std::move(image), SkSize(), scale_factor,
       CalculateDesiredFilterQuality(draw_image));
-  decoded_draw_image.set_at_raster_decode(image_data->is_at_raster);
   return decoded_draw_image;
 }
 

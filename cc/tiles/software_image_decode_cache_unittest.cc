@@ -1007,7 +1007,6 @@ TEST(SoftwareImageDecodeCacheTest, GetDecodedImageForDraw) {
   EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
   cache.UnrefImage(draw_image);
@@ -1041,7 +1040,6 @@ TEST(SoftwareImageDecodeCacheTest,
   EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
-  EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
   cache.UnrefImage(draw_image);
@@ -1067,7 +1065,6 @@ TEST(SoftwareImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
 
   cache.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
@@ -1093,7 +1090,6 @@ TEST(SoftwareImageDecodeCacheTest,
   EXPECT_FLOAT_EQ(0.5f, decoded_draw_image.scale_adjustment().height());
   EXPECT_EQ(kLow_SkFilterQuality, decoded_draw_image.filter_quality());
   EXPECT_FALSE(decoded_draw_image.is_scale_adjustment_identity());
-  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
 
   DecodedDrawImage another_decoded_draw_image =
       cache.GetDecodedImageForDraw(draw_image);
