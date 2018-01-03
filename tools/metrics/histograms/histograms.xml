@@ -21325,6 +21325,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.MainThreadEventQueue.Continuous.FreshnessTime"
     units="microseconds">
+  <obsolete>
+    Deprecated 01/2018 due to lack of usage.
+  </obsolete>
   <owner>dtapuska@chromium.org</owner>
   <summary>
     Time between when a continuous event (touchmove, mousemove, mousewheel) was
@@ -21337,6 +21340,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.MainThreadEventQueue.Continuous.QueueingTime"
     units="microseconds">
+  <obsolete>
+    Deprecated 01/2018 due to lack of usage.
+  </obsolete>
   <owner>dtapuska@chromium.org</owner>
   <summary>
     Time between when a continuous event (touchmove, mousemove, mousewheel) was
@@ -21359,6 +21365,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.MainThreadEventQueue.NonContinuous.QueueingTime"
     units="microseconds">
+  <obsolete>
+    Deprecated 01/2018 due to lack of usage.
+  </obsolete>
   <owner>dtapuska@chromium.org</owner>
   <summary>
     Time between when a non-continuous event (not touchmove, mousemove,
