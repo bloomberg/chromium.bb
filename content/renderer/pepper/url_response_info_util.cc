@@ -31,10 +31,10 @@ namespace content {
 
 namespace {
 
-class HeaderFlattener : public WebHTTPHeaderVisitor {
+class HeadersToString : public WebHTTPHeaderVisitor {
  public:
-  HeaderFlattener() {}
-  ~HeaderFlattener() override {}
+  HeadersToString() {}
+  ~HeadersToString() override {}
 
   const std::string& buffer() const { return buffer_; }
 
@@ -88,9 +88,9 @@ void DataFromWebURLResponse(RendererPpapiHostImpl* host_impl,
         response.HttpHeaderField(WebString::FromUTF8("Location")).Utf8();
   }
 
-  HeaderFlattener flattener;
-  response.VisitHTTPHeaderFields(&flattener);
-  data.headers = flattener.buffer();
+  HeadersToString headers_to_string;
+  response.VisitHTTPHeaderFields(&headers_to_string);
+  data.headers = headers_to_string.buffer();
 
   WebString file_path = response.DownloadFilePath();
   if (!file_path.IsEmpty()) {
