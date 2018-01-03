@@ -7401,7 +7401,7 @@ static int64_t motion_mode_rd(
     int64_t tmp_dist;
     int tmp_rate2 =
         motion_mode != SIMPLE_TRANSLATION ? rate2_bmc_nocoeff : rate2_nocoeff;
-
+    *skip_txfm_sb = 0;
     *mbmi = base_mbmi;
     mbmi->motion_mode = motion_mode;
     if (mbmi->motion_mode == OBMC_CAUSAL) {
