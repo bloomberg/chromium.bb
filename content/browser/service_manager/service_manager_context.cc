@@ -40,6 +40,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_test.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "device/geolocation/geolocation_provider.h"
@@ -306,9 +307,11 @@ void RegisterUIServiceInProcessIfNecessary(
 #endif
 
 std::unique_ptr<service_manager::Service> CreateNetworkService() {
-  // TODO(jam): make in-process network service work with test interfaces.
-  return std::make_unique<NetworkServiceImpl>(
-      std::make_unique<service_manager::BinderRegistry>());
+  // The test interface doesn't need to be implemented in the in-process case.
+  auto registry = std::make_unique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::BindRepeating(
+      [](content::mojom::NetworkServiceTestRequest request) {}));
+  return std::make_unique<NetworkServiceImpl>(std::move(registry));
 }
 
 }  // namespace
