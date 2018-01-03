@@ -68,13 +68,13 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
   // the SignatureValidator class will handle the actual DER decoding and
   // ASN.1 parsing. Check for an expected size range only -- valid ECDSA
   // signatures are between 8 and 72 bytes.
-  if (!base::HexStringToBytes(sig_hex.as_string(), ecdsa_signature_out))
+  if (!base::HexStringToBytes(sig_hex, ecdsa_signature_out))
     return false;
   if (ecdsa_signature_out->size() < 8 || ecdsa_signature_out->size() > 72)
     return false;
 
   // Decode the SHA-256 hash; it should be exactly 32 bytes, no more or less.
-  if (!base::HexStringToBytes(hash_hex.as_string(), request_hash_out))
+  if (!base::HexStringToBytes(hash_hex, request_hash_out))
     return false;
   if (request_hash_out->size() != crypto::kSHA256Length)
     return false;

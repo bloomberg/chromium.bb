@@ -284,23 +284,6 @@ typedef BaseHexIteratorRangeToInt64Traits<StringPiece::const_iterator>
 typedef BaseHexIteratorRangeToUInt64Traits<StringPiece::const_iterator>
     HexIteratorRangeToUInt64Traits;
 
-template <typename STR>
-bool HexStringToBytesT(const STR& input, std::vector<uint8_t>* output) {
-  DCHECK_EQ(output->size(), 0u);
-  size_t count = input.size();
-  if (count == 0 || (count % 2) != 0)
-    return false;
-  for (uintptr_t i = 0; i < count / 2; ++i) {
-    uint8_t msb = 0;  // most significant 4 bits
-    uint8_t lsb = 0;  // least significant 4 bits
-    if (!CharToDigit<16>(input[i * 2], &msb) ||
-        !CharToDigit<16>(input[i * 2 + 1], &lsb))
-      return false;
-    output->push_back((msb << 4) | lsb);
-  }
-  return true;
-}
-
 template <typename VALUE, int BASE>
 class StringPieceToNumberTraits
     : public BaseIteratorRangeToNumberTraits<StringPiece::const_iterator,
@@ -498,8 +481,21 @@ bool HexStringToUInt64(const StringPiece& input, uint64_t* output) {
       input.begin(), input.end(), output);
 }
 
-bool HexStringToBytes(const std::string& input, std::vector<uint8_t>* output) {
-  return HexStringToBytesT(input, output);
+bool HexStringToBytes(const StringPiece& input, std::vector<uint8_t>* output) {
+  DCHECK_EQ(output->size(), 0u);
+  size_t count = input.size();
+  if (count == 0 || (count % 2) != 0)
+    return false;
+  for (uintptr_t i = 0; i < count / 2; ++i) {
+    uint8_t msb = 0;  // most significant 4 bits
+    uint8_t lsb = 0;  // least significant 4 bits
+    if (!CharToDigit<16>(input[i * 2], &msb) ||
+        !CharToDigit<16>(input[i * 2 + 1], &lsb)) {
+      return false;
+    }
+    output->push_back((msb << 4) | lsb);
+  }
+  return true;
 }
 
 }  // namespace base
