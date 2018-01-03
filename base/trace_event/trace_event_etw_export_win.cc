@@ -15,6 +15,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 
+#include <windows.h>
+
 // The GetProcAddress technique is borrowed from
 // https://github.com/google/UIforETW/tree/master/ETWProviders
 //

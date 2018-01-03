@@ -14,6 +14,8 @@
 #if defined(OS_POSIX)
 #include <signal.h>
 #define USE_SIGNALS 1
+#elif defined(OS_WIN)
+#include <windows.h>
 #endif
 
 using base::subtle::Atomic32;

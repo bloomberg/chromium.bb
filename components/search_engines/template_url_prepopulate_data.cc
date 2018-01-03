@@ -26,6 +26,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #undef IN  // On Windows, windef.h defines this, which screws up "India" cases.
 #elif defined(OS_MACOSX)
 #include "base/mac/scoped_cftyperef.h"

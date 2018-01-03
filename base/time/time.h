@@ -79,10 +79,8 @@
 #endif
 
 #if defined(OS_WIN)
-// For FILETIME in FromFileTime, until it moves to a new converter class.
-// See TODO(iyengar) below.
-#include <windows.h>
 #include "base/gtest_prod_util.h"
+#include "base/win/windows_types.h"
 #endif
 
 namespace base {

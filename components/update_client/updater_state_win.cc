@@ -15,6 +15,8 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 
+#include <windows.h>
+
 // TODO(sorin): implement this in terms of
 // chrome/installer/util/google_update_settings (crbug.com/615187).
 

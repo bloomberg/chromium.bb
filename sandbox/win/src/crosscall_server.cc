@@ -16,6 +16,10 @@
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/crosscall_params.h"
 
+// See comment in atomicops.h. This is needed any time windows.h is included
+// after atomicops.h.
+#undef MemoryBarrier
+
 // This code performs the ipc message validation. Potential security flaws
 // on the ipc are likelier to be found in this code than in the rest of
 // the ipc code.

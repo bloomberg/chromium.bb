@@ -4,9 +4,10 @@
 
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <psapi.h>
 #include <tchar.h>
-#include <windows.h>
 
 #include <base/strings/sys_string_conversions.h>
 #include <base/win/pe_image.h>

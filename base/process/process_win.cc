@@ -10,6 +10,8 @@
 #include "base/process/kill.h"
 #include "base/threading/thread_restrictions.h"
 
+#include <windows.h>
+
 namespace {
 
 DWORD kBasicProcessAccess =

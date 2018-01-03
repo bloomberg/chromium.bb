@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 
+#include <windows.h>
+
 class MultiProcessLockWin : public MultiProcessLock {
  public:
   explicit MultiProcessLockWin(const std::string& name) : name_(name) { }

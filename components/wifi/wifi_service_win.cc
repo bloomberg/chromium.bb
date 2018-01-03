@@ -4,6 +4,8 @@
 
 #include "components/wifi/wifi_service.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <iphlpapi.h>
 #include <objbase.h>
 #include <stddef.h>

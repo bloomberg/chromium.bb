@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
+#include <windows.h>
+
 namespace base {
 namespace win {
 

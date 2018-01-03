@@ -14,6 +14,10 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace {
 
 // ----------------------------------------------------------------------------

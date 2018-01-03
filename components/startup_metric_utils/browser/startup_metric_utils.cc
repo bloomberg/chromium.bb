@@ -29,6 +29,7 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include <winternl.h>
 #include "base/win/win_util.h"
 #endif

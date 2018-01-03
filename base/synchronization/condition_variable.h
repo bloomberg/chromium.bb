@@ -76,7 +76,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include "base/win/windows_types.h"
 #endif
 
 namespace base {
@@ -105,8 +105,8 @@ class BASE_EXPORT ConditionVariable {
  private:
 
 #if defined(OS_WIN)
-  CONDITION_VARIABLE cv_;
-  SRWLOCK* const srwlock_;
+  CHROME_CONDITION_VARIABLE cv_;
+  CHROME_SRWLOCK* const srwlock_;
 #elif defined(OS_POSIX)
   pthread_cond_t condition_;
   pthread_mutex_t* user_mutex_;

@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/backend_impl.h"
 #include "net/disk_cache/blockfile/disk_format.h"
@@ -16,6 +17,10 @@
 #include "net/disk_cache/blockfile/errors.h"
 #include "net/disk_cache/blockfile/histogram_macros.h"
 #include "net/disk_cache/blockfile/stress_support.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 // Provide a BackendImpl object to macros from histogram_macros.h.
 #define CACHE_UMA_BACKEND_IMPL_OBJ backend_

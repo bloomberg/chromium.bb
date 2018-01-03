@@ -4,10 +4,11 @@
 
 #include "device/serial/serial_device_enumerator_win.h"
 
+#include <windows.h>  // Must be in front of other Windows header files.
+
 #include <devguid.h>
 #include <setupapi.h>
 #include <stdint.h>
-#include <windows.h>
 
 #include <memory>
 #include <unordered_set>

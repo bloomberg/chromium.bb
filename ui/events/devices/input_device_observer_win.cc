@@ -9,6 +9,8 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 
+#include <windows.h>
+
 // This macro provides the implementation for the observer notification methods.
 #define NOTIFY_OBSERVERS_METHOD(method_decl, observer_call) \
   void InputDeviceObserverWin::method_decl {                \

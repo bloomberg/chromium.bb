@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "net/disk_cache/disk_cache.h"
 
+#include <windows.h>
+
 namespace disk_cache {
 
 void* MappedFile::Init(const base::FilePath& name, size_t size) {

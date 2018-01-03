@@ -4,6 +4,8 @@
 
 #include "ui/gfx/animation/animation.h"
 
+#include <windows.h>
+
 namespace gfx {
 
 // static

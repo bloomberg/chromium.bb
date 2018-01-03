@@ -5,6 +5,7 @@
 #include "base/syslog_logging.h"
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"

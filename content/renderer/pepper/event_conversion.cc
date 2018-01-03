@@ -28,6 +28,10 @@
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 using ppapi::InputEventData;
 using ppapi::TouchPointWithTilt;
 using blink::WebInputEvent;

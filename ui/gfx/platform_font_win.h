@@ -14,6 +14,8 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
 
+#include <windows.h>
+
 struct IDWriteFactory;
 struct IDWriteFont;
 

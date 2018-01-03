@@ -21,6 +21,8 @@
 #if defined(OS_POSIX)
 #include <stdio.h>
 #include <unistd.h>
+#elif defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace diagnostics {

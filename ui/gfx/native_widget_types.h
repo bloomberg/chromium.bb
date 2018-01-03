@@ -52,7 +52,7 @@ class Event;
 #endif  // defined(USE_AURA)
 
 #if defined(OS_WIN)
-#include <windows.h>  // NOLINT
+#include "base/win/windows_types.h"
 typedef struct HFONT__* HFONT;
 struct IAccessible;
 #elif defined(OS_IOS)

@@ -5,10 +5,10 @@
 #ifndef BASE_WIN_REGISTRY_H_
 #define BASE_WIN_REGISTRY_H_
 
-#include <windows.h>
 #include <stdint.h>
 #include <string>
 #include <vector>
+#include "base/win/windows_types.h"
 
 #include "base/base_export.h"
 #include "base/macros.h"

@@ -13,6 +13,8 @@
 #include "ui/gfx/win/msg_util.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
+#include <windows.h>
+
 namespace ui {
 
 namespace {

@@ -9,6 +9,8 @@
 #include <unistd.h>
 
 #include "base/posix/eintr_wrapper.h"
+#elif defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace IPC {

@@ -12,6 +12,8 @@
 
 #include <malloc.h>
 
+#include <windows.h>
+
 extern "C" {
 
 void* (*malloc_unchecked)(size_t) = &base::allocator::UncheckedAlloc;

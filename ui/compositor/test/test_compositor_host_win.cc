@@ -12,6 +12,8 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/win/window_impl.h"
 
+#include <windows.h>
+
 namespace ui {
 
 class TestCompositorHostWin : public TestCompositorHost,

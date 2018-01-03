@@ -10,6 +10,10 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace gfx {
 
 class AnimationTest: public testing::Test {

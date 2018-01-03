@@ -18,6 +18,10 @@
 #include "content/public/common/content_features.h"
 #include "gpu/ipc/common/memory_stats.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace task_manager {
 
 namespace {

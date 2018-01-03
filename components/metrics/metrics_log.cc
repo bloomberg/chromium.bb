@@ -38,6 +38,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include <windows.h>
 #include "base/win/current_module.h"
 #endif
 

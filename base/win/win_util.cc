@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Must be included before process_metrics.h to get full IoCounters definition
+#include <windows.h>
+
 #include "base/win/win_util.h"
 
 #include <aclapi.h>
 #include <cfgmgr32.h>
+#include <initguid.h>
 #include <powrprof.h>
 #include <shobjidl.h>  // Must be before propkey.
-#include <initguid.h>
+
 #include <inspectable.h>
 #include <mdmregistration.h>
 #include <objbase.h>
@@ -23,7 +27,7 @@
 #include <signal.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <tchar.h> // Must be before tpcshrd.h or for any use of _T macro
+#include <tchar.h>  // Must be before tpcshrd.h or for any use of _T macro
 #include <tpcshrd.h>
 #include <uiviewsettingsinterop.h>
 #include <windows.ui.viewmanagement.h>

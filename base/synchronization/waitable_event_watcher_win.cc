@@ -8,6 +8,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/win/object_watcher.h"
 
+#include <windows.h>
+
 namespace base {
 
 WaitableEventWatcher::WaitableEventWatcher() = default;

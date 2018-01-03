@@ -143,6 +143,11 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #endif
 
+// Windows defines 'PostMessage', so we have to undef it.
+#ifdef PostMessage
+#undef PostMessage
+#endif
+
 using base::StringPrintf;
 using ppapi::InputEventData;
 using ppapi::PpapiGlobals;

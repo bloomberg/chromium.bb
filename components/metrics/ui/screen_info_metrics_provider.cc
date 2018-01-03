@@ -9,11 +9,13 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace metrics {
 
 #if defined(OS_WIN)
-
-#include <windows.h>
 
 namespace {
 
