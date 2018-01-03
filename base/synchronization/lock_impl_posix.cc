@@ -8,6 +8,8 @@
 
 #include "base/debug/activity_tracker.h"
 #include "base/synchronization/lock.h"
+#include "base/synchronization/synchronization_flags.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace internal {
@@ -76,11 +78,13 @@ void LockImpl::Lock() {
 
 // static
 bool LockImpl::PriorityInheritanceAvailable() {
-#if PRIORITY_INHERITANCE_LOCKS_POSSIBLE() && defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_MUTEX_PRIORITY_INHERITANCE)
+  return true;
+#elif PRIORITY_INHERITANCE_LOCKS_POSSIBLE() && defined(OS_MACOSX)
   return true;
 #else
   // Security concerns prevent the use of priority inheritance mutexes on Linux.
-  //   * CVE-2010-0622 - wake_futex_pi unlocks incorrect, possible DoS.
+  //   * CVE-2010-0622 - Linux < 2.6.33-rc7, wake_futex_pi possible DoS.
   //     https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2010-0622
   //   * CVE-2012-6647 - Linux < 3.5.1, futex_wait_requeue_pi possible DoS.
   //     https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2012-6647
@@ -92,7 +96,7 @@ bool LockImpl::PriorityInheritanceAvailable() {
   //   * glibc Bug 14652: https://sourceware.org/bugzilla/show_bug.cgi?id=14652
   //     Fixed in glibc 2.17.
   //     Priority inheritance mutexes may deadlock with condition variables
-  //     during recacquisition of the mutex after the condition variable is
+  //     during reacquisition of the mutex after the condition variable is
   //     signalled.
   return false;
 #endif

@@ -50,6 +50,11 @@ declare_args() {
 
   # Set to true to disable COM init check hooks.
   com_init_check_hook_disabled = false
+
+  # Set to true to enable mutex priority inheritance. See the comments in
+  # LockImpl::PriorityInheritanceAvailable() in lock_impl_posix.cc for the
+  # platform requirements to safely enable priority inheritance.
+  enable_mutex_priority_inheritance = false
 }
 
 if (is_android) {
@@ -1146,6 +1151,7 @@ jumbo_component("base") {
     ":cfi_flags",
     ":debugging_flags",
     ":protected_memory_flags",
+    ":synchronization_flags",
     "//base/numerics:base_numerics",
   ]
 
@@ -1756,6 +1762,14 @@ buildflag_header("protected_memory_flags") {
   # buildflag entries added to this header must also must be manually added to
   # tools/gn/bootstrap/bootstrap.py
   flags = [ "USE_LLD=$use_lld" ]
+}
+
+buildflag_header("synchronization_flags") {
+  header = "synchronization_flags.h"
+  header_dir = "base/synchronization"
+
+  flags =
+      [ "ENABLE_MUTEX_PRIORITY_INHERITANCE=$enable_mutex_priority_inheritance" ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
