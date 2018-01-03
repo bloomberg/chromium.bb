@@ -28,6 +28,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -135,16 +136,12 @@ class EventLocationHandler : public ui::EventHandler {
 
 class ExtendedDesktopTest : public AshTestBase {
  public:
+  ExtendedDesktopTest() = default;
+  ~ExtendedDesktopTest() override = default;
+
   views::Widget* CreateTestWidget(const gfx::Rect& bounds) {
     return CreateTestWidgetWithParentAndContext(nullptr, CurrentContext(),
                                                 bounds, false);
-  }
-
-  views::Widget* CreateTestWidgetWithParent(views::Widget* parent,
-                                            const gfx::Rect& bounds,
-                                            bool child) {
-    CHECK(parent);
-    return CreateTestWidgetWithParentAndContext(parent, nullptr, bounds, child);
   }
 
   views::Widget* CreateTestWidgetWithParentAndContext(views::Widget* parent,
@@ -162,6 +159,9 @@ class ExtendedDesktopTest : public AshTestBase {
     widget->Show();
     return widget;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ExtendedDesktopTest);
 };
 
 // Test conditions that root windows in extended desktop mode must satisfy.
@@ -587,47 +587,82 @@ TEST_F(ExtendedDesktopTest, MoveWindowToDisplay) {
 TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
   UpdateDisplay("1000x600,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  views::Widget* w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
-  views::Widget* w1_t1 = CreateTestWidgetWithParent(
-      w1, gfx::Rect(50, 50, 50, 50), false /* transient */);
-  // Transient child of the transient child.
-  views::Widget* w1_t11 = CreateTestWidgetWithParent(
-      w1_t1, gfx::Rect(1200, 70, 35, 35), false /* transient */);
+  // Create and activate a normal window |w1|.
+  aura::Window* w1 =
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 100, 100));
+  wm::ActivateWindow(w1);
+  // |w1_t1| is a transient child window of |w1|.
+  std::unique_ptr<aura::Window> w1_t1 = CreateChildWindow(
+      w1, gfx::Rect(50, 50, 50, 50), kShellWindowId_DefaultContainer);
+  ::wm::AddTransientChild(w1, w1_t1.get());
+  // |w1_t11| is a transient child window of transient child window |w1_t1|.
+  std::unique_ptr<aura::Window> w1_t11 = CreateChildWindow(
+      w1_t1.get(), gfx::Rect(2, 7, 35, 35), kShellWindowId_DefaultContainer);
+  ::wm::AddTransientChild(w1_t1.get(), w1_t11.get());
 
-  views::Widget* w11 = CreateTestWidgetWithParent(w1, gfx::Rect(10, 10, 40, 40),
-                                                  true /* child */);
-  views::Widget* w11_t1 = CreateTestWidgetWithParent(
-      w1, gfx::Rect(1300, 100, 80, 80), false /* transient */);
+  // |w11| is a non-transient child window of |w1|.
+  std::unique_ptr<aura::Window> w11 = CreateChildWindow(
+      w1, gfx::Rect(10, 10, 40, 40), kShellWindowId_DefaultContainer);
+  // |w11_t1| is a transient child window of |w11|.
+  std::unique_ptr<aura::Window> w11_t1 = CreateChildWindow(
+      w11.get(), gfx::Rect(30, 10, 80, 80), kShellWindowId_DefaultContainer);
+  ::wm::AddTransientChild(w11.get(), w11_t1.get());
 
-  EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], w11->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], w1_t1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], w1_t11->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[0], w11_t1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("50,50 50x50", w1_t1->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1200,70 35x35", w1_t11->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("20,20 40x40", w11->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1300,100 80x80", w11_t1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ(root_windows[0], w1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w1_t1->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w1_t11->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w11->GetRootWindow());
+  EXPECT_EQ(root_windows[0], w11_t1->GetRootWindow());
+  EXPECT_EQ("10,10 100x100", w1->GetBoundsInScreen().ToString());
+  EXPECT_EQ("60,60 50x50", w1_t1->GetBoundsInScreen().ToString());
+  EXPECT_EQ("62,67 35x35", w1_t11->GetBoundsInScreen().ToString());
+  EXPECT_EQ("20,20 40x40", w11->GetBoundsInScreen().ToString());
+  EXPECT_EQ("50,30 80x80", w11_t1->GetBoundsInScreen().ToString());
 
-  w1->SetBounds(gfx::Rect(1100, 10, 100, 100));
+  w1->SetBoundsInScreen(gfx::Rect(1200, 10, 100, 100), GetSecondaryDisplay());
 
-  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], w1_t11->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], w11->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(root_windows[1], w11_t1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w1_t1->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w1_t11->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w11->GetRootWindow());
+  EXPECT_EQ(root_windows[1], w11_t1->GetRootWindow());
 
-  EXPECT_EQ("1110,20 40x40", w11->GetWindowBoundsInScreen().ToString());
-  // Transient window's screen bounds stays the same.
-  EXPECT_EQ("50,50 50x50", w1_t1->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1200,70 35x35", w1_t11->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("1300,100 80x80", w11_t1->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("1200,10 100x100", w1->GetBoundsInScreen().ToString());
+  EXPECT_EQ("1250,60 50x50", w1_t1->GetBoundsInScreen().ToString());
+  EXPECT_EQ("1252,67 35x35", w1_t11->GetBoundsInScreen().ToString());
+  EXPECT_EQ("1210,20 40x40", w11->GetBoundsInScreen().ToString());
+  EXPECT_EQ("1240,30 80x80", w11_t1->GetBoundsInScreen().ToString());
+}
 
-  // Transient window doesn't move between root window unless
-  // its transient parent moves.
-  w1_t1->SetBounds(gfx::Rect(10, 50, 50, 50));
-  EXPECT_EQ(root_windows[1], w1_t1->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("10,50 50x50", w1_t1->GetWindowBoundsInScreen().ToString());
+// Test transient child is parented after its transient parent moved to another
+// root window.
+TEST_F(ExtendedDesktopTest, PostMoveParentTransientChild) {
+  UpdateDisplay("600X400,600x400");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  // Create and activate a normal window.
+  aura::Window* window =
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 100, 100));
+  wm::ActivateWindow(window);
+  // Create a transient child window of |window| without parenting to |window|
+  // yet.
+  std::unique_ptr<aura::Window> child(new aura::Window(nullptr));
+  child->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  child->Init(ui::LAYER_TEXTURED);
+  child->SetBounds(gfx::Rect(50, 50, 50, 50));
+  child->Show();
+  ::wm::AddTransientChild(window, child.get());
+
+  // Move |window| to another display and ensure that crash doesn't happen.
+  window->SetBoundsInScreen(gfx::Rect(610, 10, 100, 100),
+                            GetSecondaryDisplay());
+
+  // Parent |child| to |window| now.
+  window->AddChild(child.get());
+
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ(root_windows[1], child->GetRootWindow());
+  EXPECT_EQ("610,10 100x100", window->GetBoundsInScreen().ToString());
+  EXPECT_EQ("660,60 50x50", child->GetBoundsInScreen().ToString());
 }
 
 // Test if the Window::ConvertPointToTarget works across root windows.

@@ -106,6 +106,33 @@ float GetCurrentSnappedWidthRatio(aura::Window* window) {
          static_cast<float>(maximized_bounds.width());
 }
 
+// Move all transient children to |dst_root|, including the ones in the child
+// windows and transient children of the transient children.
+void MoveAllTransientChildrenToNewRoot(aura::Window* window) {
+  aura::Window* dst_root = window->GetRootWindow();
+  for (aura::Window* transient_child : ::wm::GetTransientChildren(window)) {
+    if (!transient_child->parent())
+      continue;
+    const int container_id = transient_child->parent()->id();
+    DCHECK_GE(container_id, 0);
+    aura::Window* container = dst_root->GetChildById(container_id);
+    if (container->Contains(transient_child))
+      continue;
+    gfx::Rect child_bounds = transient_child->bounds();
+    ::wm::ConvertRectToScreen(dst_root, &child_bounds);
+    container->AddChild(transient_child);
+    transient_child->SetBoundsInScreen(
+        child_bounds,
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window));
+
+    // Transient children may have transient children.
+    MoveAllTransientChildrenToNewRoot(transient_child);
+  }
+  // Move transient children of the child windows if any.
+  for (aura::Window* child : window->children())
+    MoveAllTransientChildrenToNewRoot(child);
+}
+
 }  // namespace
 
 WindowState::~WindowState() {
@@ -625,6 +652,13 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
+}
+
+void WindowState::OnWindowAddedToRootWindow(aura::Window* window) {
+  DCHECK_EQ(window_, window);
+  if (::wm::GetTransientParent(window))
+    return;
+  MoveAllTransientChildrenToNewRoot(window);
 }
 
 }  // namespace wm

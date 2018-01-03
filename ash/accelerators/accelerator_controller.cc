@@ -288,7 +288,7 @@ void HandleMoveWindowBetweenDisplays(AcceleratorAction action) {
     base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Right_Display"));
     direction = DisplayMoveWindowDirection::kRight;
   }
-  HandleMoveWindowToDisplay(direction);
+  HandleMoveActiveWindowToDisplay(direction);
 }
 
 void HandleToggleMirrorMode() {
