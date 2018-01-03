@@ -31,9 +31,6 @@ namespace test {
 class HpackDecoderTablesPeer;
 }  // namespace test
 
-// TODO(jamessynge): Move to hpack_constants.h
-const size_t kFirstDynamicTableIndex = 62;
-
 // HpackDecoderTablesDebugListener supports a QUIC experiment, enabling
 // the gathering of information about the time-line of use of HPACK
 // dynamic table entries.
