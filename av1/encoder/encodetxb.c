@@ -333,8 +333,6 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
 
 #if CONFIG_LV_MAP_MULTI
   if (is_eob && stats->low_qc == 0) {
-    stats->low_qc = qc;
-    stats->low_dqc = dqc;
     low_qc_cost = qc_cost;
     stats->rd_low = stats->rd;  // disable selection of low_qc in this case.
   } else {
@@ -375,6 +373,7 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
         RDCOST(txb_info->rdmult, low_qc_eob_cost, stats->dist_low);
     rd_eob = (rd_eob > rd_eob_low) ? rd_eob_low : rd_eob;
   }
+
   stats->nz_rd = AOMMIN(stats->rd_low, stats->rd) - rd_eob;
 #else
   const int is_nz = (stats->rd_low < stats->rd && stats->low_qc == 0) ? 0 : 1;
