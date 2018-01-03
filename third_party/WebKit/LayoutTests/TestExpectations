@@ -1626,20 +1626,7 @@ crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
-# Mac10.10-specific failures that still need triaging.
-# Form controls need rebaseline because of the default font change.
-# If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
-# rebaseline. See crbug.com/508768#c6
-crbug.com/509025 [ Mac10.10 ] fast/css/css2-system-fonts.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failure ]
-
 crbug.com/545140 [ Mac10.10 Mac10.11 Retina Mac10.12 ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
-
-crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollbar.html [ Failure ]
-crbug.com/509025 [ Mac10.10 ] virtual/mouseevent_fractional/fast/events/context-no-deselect.html [ Failure ]
 
 crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
 crbug.com/652995 fast/forms/text/input-text-scroll-left-on-blur.html [ Pass Failure ]
