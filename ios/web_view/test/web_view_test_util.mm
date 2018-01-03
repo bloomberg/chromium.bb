@@ -32,7 +32,6 @@ bool LoadUrl(CWVWebView* web_view, NSURL* url) {
 }
 
 bool TapWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
-  // TODO(crbug.com/725524): Share this script with Chrome.
   NSString* script = [NSString
       stringWithFormat:@"(function() {"
                         "  var element = document.getElementById('%@');"
