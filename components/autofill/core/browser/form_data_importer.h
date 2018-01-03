@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "build/build_config.h"
@@ -49,8 +50,8 @@ class FormDataImporter {
  protected:
   // Exposed for testing.
   void set_credit_card_save_manager(
-      CreditCardSaveManager* credit_card_save_manager) {
-    credit_card_save_manager_.reset(credit_card_save_manager);
+      std::unique_ptr<CreditCardSaveManager> credit_card_save_manager) {
+    credit_card_save_manager_ = std::move(credit_card_save_manager);
   }
 
  private:
