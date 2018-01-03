@@ -9,11 +9,6 @@
 
 namespace flag_descriptions {
 
-const char kStopLoadingInBackgroundName[] = "Stop loading in background";
-const char kStopLoadingInBackgroundDescription[] =
-    "Stop loading tasks and loading "
-    "resources, in the background, after certain grace time.";
-
 const char kAccelerated2dCanvasName[] = "Accelerated 2D canvas";
 const char kAccelerated2dCanvasDescription[] =
     "Enables the use of the GPU to perform 2d canvas rendering instead of "
@@ -1355,6 +1350,16 @@ const char kSpellingFeedbackFieldTrialName[] = "Spelling Feedback Field Trial";
 const char kSpellingFeedbackFieldTrialDescription[] =
     "Enable the field trial for sending user feedback to spelling service.";
 
+const char kStopInBackgroundName[] = "Stop in background";
+const char kStopInBackgroundDescription[] =
+    "Stop scheduler task queues, in the background, "
+    " after certain grace time.";
+
+const char kStopLoadingInBackgroundName[] = "Stop loading in background";
+const char kStopLoadingInBackgroundDescription[] =
+    "Stop loading tasks and loading "
+    "resources, in the background, after certain grace time.";
+
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
 const char kSuggestionsWithSubStringMatchDescription[] =
@@ -2208,10 +2213,6 @@ const char kOneGoogleBarOnLocalNtpName[] =
 const char kOneGoogleBarOnLocalNtpDescription[] =
     "Show a OneGoogleBar on the local New Tab page if Google is the default "
     "search engine.";
-
-const char kPauseBackgroundTabsName[] = "Pause background tabs";
-const char kPauseBackgroundTabsDescription[] =
-    "Pause timers in background tabs after 5 minutes on desktop.";
 
 const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
 const char kUseGoogleLocalNtpDescription[] =

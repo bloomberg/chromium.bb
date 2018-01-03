@@ -30,7 +30,6 @@
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
-#include "chrome/common/pause_tabs_field_trial.h"
 #include "chrome/common/pdf_uma.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/plugin.mojom.h"
@@ -1228,12 +1227,7 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 }
 
 bool ChromeContentRendererClient::AllowStoppingWhenProcessBackgrounded() {
-#if defined(OS_ANDROID)
-  return true;
-#else
-  // TODO(ojan): Plumb the engagement values for this feature to WebViewImpl.
-  return base::FeatureList::IsEnabled(pausetabs::kFeature);
-#endif
+  return base::FeatureList::IsEnabled(features::kStopInBackground);
 }
 
 bool ChromeContentRendererClient::AllowPopup() {

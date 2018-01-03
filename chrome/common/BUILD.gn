@@ -156,7 +156,6 @@ static_library("common") {
     "page_load_metrics/page_track_decider.h",
     "partial_circular_buffer.cc",
     "partial_circular_buffer.h",
-    "pause_tabs_field_trial.h",
     "pdf_uma.cc",
     "pdf_uma.h",
     "pref_names_util.cc",

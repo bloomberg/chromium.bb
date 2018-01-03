@@ -825,6 +825,9 @@ extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];
 extern const char kSpellingFeedbackFieldTrialName[];
 extern const char kSpellingFeedbackFieldTrialDescription[];
 
+extern const char kStopInBackgroundName[];
+extern const char kStopInBackgroundDescription[];
+
 extern const char kStopLoadingInBackgroundName[];
 extern const char kStopLoadingInBackgroundDescription[];
 
@@ -1347,9 +1350,6 @@ extern const char kOmniboxTailSuggestionsDescription[];
 
 extern const char kOneGoogleBarOnLocalNtpName[];
 extern const char kOneGoogleBarOnLocalNtpDescription[];
-
-extern const char kPauseBackgroundTabsName[];
-extern const char kPauseBackgroundTabsDescription[];
 
 extern const char kUseGoogleLocalNtpName[];
 extern const char kUseGoogleLocalNtpDescription[];

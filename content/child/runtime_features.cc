@@ -411,8 +411,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kV8ContextSnapshot))
     WebRuntimeFeatures::EnableV8ContextSnapshot(true);
 
+  if (base::FeatureList::IsEnabled(features::kStopInBackground))
+    WebRuntimeFeatures::EnableStopInBackground(true);
+
   if (base::FeatureList::IsEnabled(features::kStopLoadingInBackground))
-    WebRuntimeFeatures::EnableStopLoadingInBackgroundAndroid(true);
+    WebRuntimeFeatures::EnableStopLoadingInBackground(true);
 
   WebRuntimeFeatures::EnablePWAFullCodeCache(
       base::FeatureList::IsEnabled(features::kPWAFullCodeCache));

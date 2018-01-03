@@ -56,6 +56,10 @@ const char* CrossOriginStateToString(bool is_cross_origin) {
   }
 }
 
+bool StopNonTimersInBackgroundEnabled() {
+  return RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled();
+}
+
 }  // namespace
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -338,6 +342,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeDeferred(true)
+            .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     deferrable_task_queue_->SetBlameContext(blame_context_);
     deferrable_task_queue_->SetFrameScheduler(this);
@@ -355,6 +360,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFramePausable)
             .SetShouldReportWhenExecutionBlocked(true)
+            .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     pausable_task_queue_->SetBlameContext(blame_context_);
     pausable_task_queue_->SetFrameScheduler(this);
@@ -507,7 +513,7 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
 
 WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
-  if (RuntimeEnabledFeatures::StopLoadingInBackgroundAndroidEnabled() &&
+  if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       page_stopped_) {
     DCHECK(!page_visible_);
     return WebFrameScheduler::ThrottlingState::kStopped;
