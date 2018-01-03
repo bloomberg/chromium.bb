@@ -4464,7 +4464,7 @@ struct kernel_statfs {
 #endif
 
 #if !defined(__NR_pipe)
-  LSS_INLINE pid_t LSS_NAME(pipe)(int *pipefd) {
+  LSS_INLINE int LSS_NAME(pipe)(int *pipefd) {
     return LSS_NAME(pipe2)(pipefd, 0);
   }
 #endif
