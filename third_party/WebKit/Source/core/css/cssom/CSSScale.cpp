@@ -153,8 +153,13 @@ const DOMMatrix* CSSScale::AsMatrix(ExceptionState& exception_state) const {
     return nullptr;
   }
 
-  DOMMatrix* result = DOMMatrix::Create();
-  return result->scaleSelf(x->value(), y->value(), z->value());
+  DOMMatrix* matrix = DOMMatrix::Create();
+  if (is2D())
+    matrix->scaleSelf(x->value(), y->value());
+  else
+    matrix->scaleSelf(x->value(), y->value(), z->value());
+
+  return matrix;
 }
 
 const CSSFunctionValue* CSSScale::ToCSSValue() const {

@@ -177,7 +177,12 @@ const DOMMatrix* CSSTranslation::AsMatrix(
   }
 
   DOMMatrix* matrix = DOMMatrix::Create();
-  return matrix->translate(x->value(), y->value(), z->value());
+  if (is2D())
+    matrix->translateSelf(x->value(), y->value());
+  else
+    matrix->translateSelf(x->value(), y->value(), z->value());
+
+  return matrix;
 }
 
 const CSSFunctionValue* CSSTranslation::ToCSSValue() const {
