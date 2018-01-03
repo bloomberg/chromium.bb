@@ -713,7 +713,7 @@ void RequestCoordinator::UpdateCurrentConditionsFromAndroid() {
   if (use_test_device_conditions_)
     return;
 
-  current_conditions_ = base::MakeUnique<DeviceConditions>(
+  current_conditions_ = std::make_unique<DeviceConditions>(
       scheduler_->GetCurrentDeviceConditions());
 }
 

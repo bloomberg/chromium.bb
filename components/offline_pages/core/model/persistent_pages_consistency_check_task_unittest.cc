@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/persistent_pages_consistency_check_task.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -77,8 +79,8 @@ PersistentPagesConsistencyCheckTaskTest::
 void PersistentPagesConsistencyCheckTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
   ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
-  policy_controller_ = base::MakeUnique<ClientPolicyController>();
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  policy_controller_ = std::make_unique<ClientPolicyController>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void PersistentPagesConsistencyCheckTaskTest::TearDown() {
@@ -138,7 +140,7 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
-  auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
+  auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
@@ -178,7 +180,7 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest,
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
-  auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
+  auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
@@ -219,7 +221,7 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, MAYBE_CombinedTest) {
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
-  auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
+  auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 
@@ -253,7 +255,7 @@ TEST_F(PersistentPagesConsistencyCheckTaskTest, TestKeepingNonMhtmlFile) {
   EXPECT_EQ(0LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(persistent_dir()));
 
-  auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
+  auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store(), policy_controller(), persistent_dir());
   runner()->RunTask(std::move(task));
 

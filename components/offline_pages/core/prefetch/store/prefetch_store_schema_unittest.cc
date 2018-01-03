@@ -5,8 +5,8 @@
 #include "components/offline_pages/core/prefetch/store/prefetch_store_schema.h"
 
 #include <limits>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -96,7 +96,7 @@ class PrefetchStoreSchemaTest : public testing::Test {
   ~PrefetchStoreSchemaTest() override = default;
 
   void SetUp() override {
-    db_ = base::MakeUnique<sql::Connection>();
+    db_ = std::make_unique<sql::Connection>();
     ASSERT_TRUE(db_->OpenInMemory());
     ASSERT_FALSE(sql::MetaTable::DoesTableExist(db_.get()));
   }

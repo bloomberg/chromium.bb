@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_request_test_base.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/mock_entropy_provider.h"
@@ -26,8 +28,8 @@ PrefetchRequestTestBase::PrefetchRequestTestBase()
 PrefetchRequestTestBase::~PrefetchRequestTestBase() {}
 
 void PrefetchRequestTestBase::SetUp() {
-  field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
-      base::MakeUnique<base::MockEntropyProvider>());
+  field_trial_list_ = std::make_unique<base::FieldTrialList>(
+      std::make_unique<base::MockEntropyProvider>());
 }
 
 void PrefetchRequestTestBase::SetUpExperimentOption() {
@@ -43,7 +45,7 @@ void PrefetchRequestTestBase::SetUpExperimentOption() {
   base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
 
   std::unique_ptr<base::FeatureList> feature_list =
-      base::MakeUnique<base::FeatureList>();
+      std::make_unique<base::FeatureList>();
   feature_list->RegisterFieldTrialOverride(
       kPrefetchingOfflinePagesFeature.name,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());

@@ -63,23 +63,23 @@ class StubPrefetchConfiguration : public PrefetchConfiguration {
 }  // namespace
 
 PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
-  dispatcher_ = base::MakeUnique<TestPrefetchDispatcher>();
-  metrics_collector_ = base::MakeUnique<TestOfflineMetricsCollector>(nullptr);
-  gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
+  dispatcher_ = std::make_unique<TestPrefetchDispatcher>();
+  metrics_collector_ = std::make_unique<TestOfflineMetricsCollector>(nullptr);
+  gcm_handler_ = std::make_unique<TestPrefetchGCMHandler>();
   network_request_factory_ =
-      base::MakeUnique<TestPrefetchNetworkRequestFactory>();
+      std::make_unique<TestPrefetchNetworkRequestFactory>();
   prefetch_store_ =
-      base::MakeUnique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
-  suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
+      std::make_unique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
+  suggested_articles_observer_ = std::make_unique<SuggestedArticlesObserver>();
   prefetch_downloader_ =
       base::WrapUnique(new PrefetchDownloaderImpl(kTestChannel));
-  prefetch_importer_ = base::MakeUnique<TestPrefetchImporter>();
+  prefetch_importer_ = std::make_unique<TestPrefetchImporter>();
   // This sets up the testing articles as an empty vector, we can ignore the
   // result here.  This allows us to not create a ContentSuggestionsService.
   suggested_articles_observer_->GetTestingArticles();
   prefetch_background_task_handler_ =
-      base::MakeUnique<StubPrefetchBackgroundTaskHandler>();
-  prefetch_configuration_ = base::MakeUnique<StubPrefetchConfiguration>();
+      std::make_unique<StubPrefetchBackgroundTaskHandler>();
+  prefetch_configuration_ = std::make_unique<StubPrefetchConfiguration>();
 }
 
 PrefetchServiceTestTaco::~PrefetchServiceTestTaco() = default;
@@ -151,7 +151,7 @@ void PrefetchServiceTestTaco::CreatePrefetchService() {
         network_request_factory_ && prefetch_store_ &&
         suggested_articles_observer_ && prefetch_downloader_);
 
-  prefetch_service_ = base::MakeUnique<PrefetchServiceImpl>(
+  prefetch_service_ = std::make_unique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
       std::move(gcm_handler_), std::move(network_request_factory_),
       std::move(prefetch_store_), std::move(suggested_articles_observer_),

@@ -64,7 +64,7 @@ OfflinePageMetadataStoreTestUtil::ReleaseStore() {
 
 void OfflinePageMetadataStoreTestUtil::InsertItem(const OfflinePageItem& page) {
   AddPageResult result;
-  auto task = base::MakeUnique<AddPageTask>(
+  auto task = std::make_unique<AddPageTask>(
       store(), page,
       base::Bind([](AddPageResult* out_result,
                     AddPageResult cb_result) { *out_result = cb_result; },

@@ -40,12 +40,12 @@ class PrefetchDownloadFlowTest : public TaskTestBase {
     TaskTestBase::SetUp();
 
     prefetch_service_taco_.reset(new PrefetchServiceTestTaco);
-    auto downloader = base::MakeUnique<PrefetchDownloaderImpl>(
+    auto downloader = std::make_unique<PrefetchDownloaderImpl>(
         &download_service_, kTestChannel);
-    download_client_ = base::MakeUnique<TestDownloadClient>(downloader.get());
+    download_client_ = std::make_unique<TestDownloadClient>(downloader.get());
     download_service_.set_client(download_client_.get());
     prefetch_service_taco_->SetPrefetchDispatcher(
-        base::MakeUnique<PrefetchDispatcherImpl>());
+        std::make_unique<PrefetchDispatcherImpl>());
     prefetch_service_taco_->SetPrefetchStore(store_util()->ReleaseStore());
     prefetch_service_taco_->SetPrefetchDownloader(std::move(downloader));
     prefetch_service_taco_->CreatePrefetchService();
@@ -75,7 +75,7 @@ class PrefetchDownloadFlowTest : public TaskTestBase {
 
   void BeginBackgroundTask() {
     prefetch_dispatcher()->BeginBackgroundTask(
-        base::MakeUnique<PrefetchBackgroundTask>(
+        std::make_unique<PrefetchBackgroundTask>(
             prefetch_service_taco_->prefetch_service()));
     RunUntilIdle();
   }

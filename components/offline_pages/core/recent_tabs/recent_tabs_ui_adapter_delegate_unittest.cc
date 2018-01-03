@@ -71,13 +71,13 @@ class RecentTabsUIAdapterDelegateTest : public testing::Test {
 RecentTabsUIAdapterDelegateTest::RecentTabsUIAdapterDelegateTest()
     : task_runner_(new base::TestMockTimeTaskRunner()),
       task_runner_handle_(task_runner_) {
-  request_coordinator_taco_ = base::MakeUnique<RequestCoordinatorStubTaco>();
+  request_coordinator_taco_ = std::make_unique<RequestCoordinatorStubTaco>();
   request_coordinator_taco_->CreateRequestCoordinator();
 
-  auto delegate = base::MakeUnique<RecentTabsUIAdapterDelegate>(&model);
+  auto delegate = std::make_unique<RecentTabsUIAdapterDelegate>(&model);
   adapter_delegate = delegate.get();
 
-  adapter = base::MakeUnique<DownloadUIAdapter>(
+  adapter = std::make_unique<DownloadUIAdapter>(
       nullptr, &model, request_coordinator_taco_->request_coordinator(),
       std::move(delegate));
 }

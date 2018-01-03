@@ -4,9 +4,10 @@
 
 #include "components/offline_pages/core/model/complete_offline_page_upgrade_task.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
@@ -115,7 +116,7 @@ void CompleteOfflinePageUpgradeTaskTest::CompleteUpgradeDone(
 TEST_F(CompleteOfflinePageUpgradeTaskTest, Success) {
   OfflinePageItem original_page = CreateOfflinePage();
 
-  auto task = base::MakeUnique<CompleteOfflinePageUpgradeTask>(
+  auto task = std::make_unique<CompleteOfflinePageUpgradeTask>(
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());
@@ -138,7 +139,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, Success) {
 }
 
 TEST_F(CompleteOfflinePageUpgradeTaskTest, ItemMissing) {
-  auto task = base::MakeUnique<CompleteOfflinePageUpgradeTask>(
+  auto task = std::make_unique<CompleteOfflinePageUpgradeTask>(
       store(), 42, temporary_file_path(), target_file_path(), kDummyDigest,
       sizeof(kContentsOfTempFile), callback());
   runner()->RunTask(std::move(task));
@@ -155,7 +156,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, TemporaryFileMissing) {
   // This ensures the temporary file won't be there.
   EXPECT_TRUE(base::DeleteFile(temporary_file_path(), false));
 
-  auto task = base::MakeUnique<CompleteOfflinePageUpgradeTask>(
+  auto task = std::make_unique<CompleteOfflinePageUpgradeTask>(
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());
@@ -179,7 +180,7 @@ TEST_F(CompleteOfflinePageUpgradeTaskTest, TargetFileNameInUse) {
   // This ensures target name is taken.
   EXPECT_TRUE(base::CopyFile(temporary_file_path(), target_file_path()));
 
-  auto task = base::MakeUnique<CompleteOfflinePageUpgradeTask>(
+  auto task = std::make_unique<CompleteOfflinePageUpgradeTask>(
       store(), original_page.offline_id, temporary_file_path(),
       target_file_path(), kDummyDigest, sizeof(kContentsOfTempFile),
       callback());

@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
@@ -41,7 +40,7 @@ class PrefetchNetworkRequestFactoryTest : public PrefetchRequestTestBase {
 
 PrefetchNetworkRequestFactoryTest::PrefetchNetworkRequestFactoryTest()
     : request_context_(new net::TestURLRequestContextGetter(task_runner())) {
-  request_factory_ = base::MakeUnique<PrefetchNetworkRequestFactoryImpl>(
+  request_factory_ = std::make_unique<PrefetchNetworkRequestFactoryImpl>(
       request_context_.get(), version_info::Channel::UNKNOWN, "a user agent");
 }
 

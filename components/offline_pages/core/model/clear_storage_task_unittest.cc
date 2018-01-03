@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/clear_storage_task.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -134,7 +136,7 @@ void ClearStorageTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   // Setting up policies for testing.
-  policy_controller_ = base::MakeUnique<ClientPolicyController>();
+  policy_controller_ = std::make_unique<ClientPolicyController>();
 }
 
 void ClearStorageTaskTest::TearDown() {
@@ -185,7 +187,7 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting,
 }
 
 void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
-  auto task = base::MakeUnique<ClearStorageTask>(
+  auto task = std::make_unique<ClearStorageTask>(
       store(), archive_manager(), policy_controller(), start_time,
       base::Bind(&ClearStorageTaskTest::OnClearStorageDone, AsWeakPtr()));
 
@@ -193,7 +195,7 @@ void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::Now());
   Initialize({{kBookmarkNamespace, 1, 1}, {kLastNNamespace, 1, 1}},
              clock.get());
@@ -214,7 +216,7 @@ TEST_F(ClearStorageTaskTest, ClearPagesLessThanLimit) {
 }
 
 TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::Now());
   Initialize({{kBookmarkNamespace, 30, 0}, {kLastNNamespace, 100, 1}},
              clock.get());
@@ -235,7 +237,7 @@ TEST_F(ClearStorageTaskTest, ClearPagesMoreFreshPages) {
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::Now());
   Initialize({{kDownloadNamespace, 20, 0}}, clock.get());
 
@@ -254,7 +256,7 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPages) {
 }
 
 TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::Now());
   // Sets the free space with 1KB.
   Initialize({{kDownloadNamespace, 20, 0}}, clock.get());
@@ -275,7 +277,7 @@ TEST_F(ClearStorageTaskTest, TryClearPersistentPagesWithStoragePressure) {
 }
 
 TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
-  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto clock = std::make_unique<base::SimpleTestClock>();
   clock->SetNow(base::Time::Now());
   // Initializing with 20 unexpired and 0 expired pages in bookmark namespace,
   // 30 unexpired and 1 expired pages in last_n namespace, and 40 persistent

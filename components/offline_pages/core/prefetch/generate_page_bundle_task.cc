@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
@@ -66,7 +65,7 @@ std::unique_ptr<std::vector<FetchedUrl>> FetchUrlsSync(sql::Connection* db) {
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::NEW_REQUEST));
 
-  auto urls = base::MakeUnique<std::vector<FetchedUrl>>();
+  auto urls = std::make_unique<std::vector<FetchedUrl>>();
   while (statement.Step()) {
     urls->push_back(
         FetchedUrl(statement.ColumnInt64(0),   // offline_id
@@ -113,7 +112,7 @@ std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
     urls->resize(kMaxUrlsToSend);
   }
 
-  auto url_specs = base::MakeUnique<std::vector<std::string>>();
+  auto url_specs = std::make_unique<std::vector<std::string>>();
   for (const auto& url : *urls) {
     if (!UpdateStateSync(db, url.offline_id, clock))
       return nullptr;

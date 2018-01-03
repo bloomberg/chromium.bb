@@ -161,16 +161,16 @@ void PageRenovatorBrowserTest::InitializeWithTestingRenovations(
   ASSERT_TRUE(render_frame_) << "Navigate should have been called.";
 
   std::vector<std::unique_ptr<PageRenovation>> renovations;
-  renovations.push_back(base::MakeUnique<FooPageRenovation>());
-  renovations.push_back(base::MakeUnique<BarPageRenovation>());
-  renovations.push_back(base::MakeUnique<AlwaysRenovation>());
+  renovations.push_back(std::make_unique<FooPageRenovation>());
+  renovations.push_back(std::make_unique<BarPageRenovation>());
+  renovations.push_back(std::make_unique<AlwaysRenovation>());
 
   page_renovation_loader_.reset(new PageRenovationLoader);
   page_renovation_loader_->SetSourceForTest(
       base::ASCIIToUTF16(kTestRenovationScript));
   page_renovation_loader_->SetRenovationsForTest(std::move(renovations));
 
-  auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
+  auto script_injector = std::make_unique<RenderFrameScriptInjector>(
       render_frame_, content::ISOLATED_WORLD_ID_CONTENT_END);
   page_renovator_.reset(new PageRenovator(
       page_renovation_loader_.get(), std::move(script_injector), fake_url));
@@ -182,7 +182,7 @@ void PageRenovatorBrowserTest::InitializeWithRealRenovations(
 
   page_renovation_loader_.reset(new PageRenovationLoader);
 
-  auto script_injector = base::MakeUnique<RenderFrameScriptInjector>(
+  auto script_injector = std::make_unique<RenderFrameScriptInjector>(
       render_frame_, content::ISOLATED_WORLD_ID_CONTENT_END);
   page_renovator_.reset(new PageRenovator(
       page_renovation_loader_.get(), std::move(script_injector), fake_url));

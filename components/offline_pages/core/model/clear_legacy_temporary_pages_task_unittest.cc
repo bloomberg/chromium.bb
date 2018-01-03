@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/model/clear_legacy_temporary_pages_task.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -68,7 +70,7 @@ ClearLegacyTemporaryPagesTaskTest::~ClearLegacyTemporaryPagesTaskTest() {}
 void ClearLegacyTemporaryPagesTaskTest::SetUp() {
   store_test_util_.BuildStoreInMemory();
   ASSERT_TRUE(legacy_archives_dir_.CreateUniqueTempDir());
-  policy_controller_ = base::MakeUnique<ClientPolicyController>();
+  policy_controller_ = std::make_unique<ClientPolicyController>();
 }
 
 void ClearLegacyTemporaryPagesTaskTest::TearDown() {
@@ -104,7 +106,7 @@ TEST_F(ClearLegacyTemporaryPagesTaskTest,
   EXPECT_EQ(2LL, store_test_util()->GetPageCount());
   EXPECT_EQ(2UL, test_utils::GetFileCountInDirectory(legacy_archives_dir()));
 
-  auto task = base::MakeUnique<ClearLegacyTemporaryPagesTask>(
+  auto task = std::make_unique<ClearLegacyTemporaryPagesTask>(
       store(), policy_controller(), legacy_archives_dir());
   runner()->RunTask(std::move(task));
 

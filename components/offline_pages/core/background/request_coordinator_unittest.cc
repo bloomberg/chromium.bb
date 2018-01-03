@@ -353,7 +353,7 @@ RequestCoordinatorTest::RequestCoordinatorTest()
 RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
 void RequestCoordinatorTest::SetUp() {
-  coordinator_taco_ = base::MakeUnique<RequestCoordinatorStubTaco>();
+  coordinator_taco_ = std::make_unique<RequestCoordinatorStubTaco>();
 
   std::unique_ptr<OfflinerStub> offliner(new OfflinerStub());
   // Save raw pointer for use by the tests.
@@ -361,7 +361,7 @@ void RequestCoordinatorTest::SetUp() {
   coordinator_taco_->SetOffliner(std::move(offliner));
 
   std::unique_ptr<NetworkQualityProviderStub> network_quality_provider =
-      base::MakeUnique<NetworkQualityProviderStub>();
+      std::make_unique<NetworkQualityProviderStub>();
   // Save raw pointer for use by the tests.
   network_quality_provider_ = network_quality_provider.get();
   coordinator_taco_->SetNetworkQualityProvider(

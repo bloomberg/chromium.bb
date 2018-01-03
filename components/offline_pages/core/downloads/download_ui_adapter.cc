@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -62,7 +61,7 @@ void DownloadUIAdapter::AttachToOfflinePageModel(
 DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page,
                                       bool temporarily_hidden,
                                       bool is_suggested)
-    : ui_item(base::MakeUnique<OfflineItem>(
+    : ui_item(std::make_unique<OfflineItem>(
           OfflineItemConversions::CreateOfflineItem(page, is_suggested))),
       is_request(false),
       offline_id(page.offline_id),
@@ -71,7 +70,7 @@ DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page,
 
 DownloadUIAdapter::ItemInfo::ItemInfo(const SavePageRequest& request,
                                       bool temporarily_hidden)
-    : ui_item(base::MakeUnique<OfflineItem>(
+    : ui_item(std::make_unique<OfflineItem>(
           OfflineItemConversions::CreateOfflineItem(request))),
       is_request(true),
       offline_id(request.request_id()),
@@ -147,7 +146,7 @@ void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
   bool is_suggested = model->GetPolicyController()->IsSuggested(
       added_page.client_id.name_space);
   AddItemHelper(
-      base::MakeUnique<ItemInfo>(added_page, temporarily_hidden, is_suggested));
+      std::make_unique<ItemInfo>(added_page, temporarily_hidden, is_suggested));
 }
 
 void DownloadUIAdapter::OfflinePageDeleted(
@@ -164,7 +163,7 @@ void DownloadUIAdapter::OnAdded(const SavePageRequest& added_request) {
 
   bool temporarily_hidden =
       delegate_->IsTemporarilyHiddenInUI(added_request.client_id());
-  AddItemHelper(base::MakeUnique<ItemInfo>(added_request, temporarily_hidden));
+  AddItemHelper(std::make_unique<ItemInfo>(added_request, temporarily_hidden));
 }
 
 // RequestCoordinator::Observer
@@ -198,7 +197,7 @@ void DownloadUIAdapter::OnChanged(const SavePageRequest& request) {
 
   bool temporarily_hidden =
       delegate_->IsTemporarilyHiddenInUI(request.client_id());
-  items_[guid] = base::MakeUnique<ItemInfo>(request, temporarily_hidden);
+  items_[guid] = std::make_unique<ItemInfo>(request, temporarily_hidden);
 
   if (state_ != State::LOADED)
     return;
@@ -398,7 +397,7 @@ void DownloadUIAdapter::OnOfflinePagesLoaded(
       bool is_suggested =
           model_->GetPolicyController()->IsSuggested(page.client_id.name_space);
       std::unique_ptr<ItemInfo> item =
-          base::MakeUnique<ItemInfo>(page, temporarily_hidden, is_suggested);
+          std::make_unique<ItemInfo>(page, temporarily_hidden, is_suggested);
       items_[guid] = std::move(item);
     }
   }
@@ -424,7 +423,7 @@ void DownloadUIAdapter::OnRequestsLoaded(
       bool temporarily_hidden =
           delegate_->IsTemporarilyHiddenInUI(request->client_id());
       std::unique_ptr<ItemInfo> item =
-          base::MakeUnique<ItemInfo>(*request.get(), temporarily_hidden);
+          std::make_unique<ItemInfo>(*request.get(), temporarily_hidden);
       items_[guid] = std::move(item);
     }
   }

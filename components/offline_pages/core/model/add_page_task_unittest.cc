@@ -109,7 +109,7 @@ AddPageTask::AddPageTaskCallback AddPageTaskTest::add_page_callback() {
 }
 
 void AddPageTaskTest::AddPage(const OfflinePageItem& page) {
-  auto task = base::MakeUnique<AddPageTask>(store(), page, add_page_callback());
+  auto task = std::make_unique<AddPageTask>(store(), page, add_page_callback());
   runner()->RunTask(std::move(task));
 }
 
@@ -188,7 +188,7 @@ TEST_F(AddPageTaskTest, AddTwoIdenticalPages) {
 TEST_F(AddPageTaskTest, AddPageWithInvalidStore) {
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem page = generator()->CreateItem();
-  auto task = base::MakeUnique<AddPageTask>(nullptr, page, add_page_callback());
+  auto task = std::make_unique<AddPageTask>(nullptr, page, add_page_callback());
   runner()->RunTask(std::move(task));
 
   // Start checking if the page is added into the store.

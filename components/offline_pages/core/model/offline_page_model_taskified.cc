@@ -190,7 +190,7 @@ void OfflinePageModelTaskified::SavePage(
 
 void OfflinePageModelTaskified::AddPage(const OfflinePageItem& page,
                                         const AddPageCallback& callback) {
-  auto task = base::MakeUnique<AddPageTask>(
+  auto task = std::make_unique<AddPageTask>(
       store_.get(), page,
       base::BindOnce(&OfflinePageModelTaskified::OnAddPageDone,
                      weak_ptr_factory_.GetWeakPtr(), page, callback));
@@ -198,7 +198,7 @@ void OfflinePageModelTaskified::AddPage(const OfflinePageItem& page,
 }
 
 void OfflinePageModelTaskified::MarkPageAccessed(int64_t offline_id) {
-  auto task = base::MakeUnique<MarkPageAccessedTask>(store_.get(), offline_id,
+  auto task = std::make_unique<MarkPageAccessedTask>(store_.get(), offline_id,
                                                      GetCurrentTime());
   task_queue_.AddTask(std::move(task));
 }
@@ -466,7 +466,7 @@ void OfflinePageModelTaskified::PostClearLegacyTemporaryPagesTask() {
 void OfflinePageModelTaskified::ClearLegacyTemporaryPages() {
   // TODO(romax): When we have external directory, adding the support of getting
   // 'legacy' directory and replace the persistent one here.
-  auto task = base::MakeUnique<ClearLegacyTemporaryPagesTask>(
+  auto task = std::make_unique<ClearLegacyTemporaryPagesTask>(
       store_.get(), policy_controller_.get(),
       archive_manager_->GetPersistentArchivesDir());
   task_queue_.AddTask(std::move(task));
@@ -491,7 +491,7 @@ void OfflinePageModelTaskified::PostClearCachedPagesTask(bool is_initializing) {
 }
 
 void OfflinePageModelTaskified::ClearCachedPages() {
-  auto task = base::MakeUnique<ClearStorageTask>(
+  auto task = std::make_unique<ClearStorageTask>(
       store_.get(), archive_manager_.get(), policy_controller_.get(),
       GetCurrentTime(),
       base::BindOnce(&OfflinePageModelTaskified::OnClearCachedPagesDone,
@@ -522,14 +522,14 @@ void OfflinePageModelTaskified::PostCheckMetadataConsistencyTask(
 }
 
 void OfflinePageModelTaskified::CheckTemporaryPagesConsistency() {
-  auto task = base::MakeUnique<TemporaryPagesConsistencyCheckTask>(
+  auto task = std::make_unique<TemporaryPagesConsistencyCheckTask>(
       store_.get(), policy_controller_.get(),
       archive_manager_->GetTemporaryArchivesDir());
   task_queue_.AddTask(std::move(task));
 }
 
 void OfflinePageModelTaskified::CheckPersistentPagesConsistency() {
-  auto task = base::MakeUnique<PersistentPagesConsistencyCheckTask>(
+  auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store_.get(), policy_controller_.get(),
       archive_manager_->GetPersistentArchivesDir());
   task_queue_.AddTask(std::move(task));

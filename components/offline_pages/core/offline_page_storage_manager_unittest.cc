@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -271,7 +270,7 @@ void OfflinePageStorageManagerTest::Initialize(
       model_.get(), policy_controller(), archive_manager_.get()));
   manager_->SetClockForTesting(std::move(clock));
 
-  histogram_tester_ = base::MakeUnique<base::HistogramTester>();
+  histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
 
 void OfflinePageStorageManagerTest::TryClearPages() {

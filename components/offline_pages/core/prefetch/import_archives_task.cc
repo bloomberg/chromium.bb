@@ -4,11 +4,12 @@
 
 #include "components/offline_pages/core/prefetch/import_archives_task.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -45,7 +46,7 @@ std::unique_ptr<std::vector<PrefetchArchiveInfo>> GetArchivesSync(
         store_utils::FromDatabaseFilePath(statement.ColumnString(6));
     archive.file_size = statement.ColumnInt64(7);
     if (!archives)
-      archives = base::MakeUnique<std::vector<PrefetchArchiveInfo>>();
+      archives = std::make_unique<std::vector<PrefetchArchiveInfo>>();
     archives->push_back(archive);
   }
 
