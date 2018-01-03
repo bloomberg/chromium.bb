@@ -605,7 +605,8 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  frame_connector_->SetChildFrameSurface(surface_info, sequence);
+  if (frame_connector_)
+    frame_connector_->SetChildFrameSurface(surface_info, sequence);
 }
 
 void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
