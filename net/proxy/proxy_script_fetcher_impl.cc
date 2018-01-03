@@ -35,7 +35,17 @@ const int kDefaultMaxResponseBytes = 1048576;  // 1 megabyte
 
 // The maximum duration (in milliseconds) allowed for fetching the PAC script.
 // Responses exceeding this will fail with ERR_TIMED_OUT.
-const int kDefaultMaxDurationMs = 300000;  // 5 minutes
+//
+// This timeout applies to both scripts fetched in the course of WPAD, as well
+// as explicitly configured ones.
+//
+// If the default timeout is too high, auto-detect can stall for a long time,
+// and if it is too low then slow loading scripts may be skipped.
+//
+// 30 seconds is a compromise between those competing goals. This value also
+// appears to match Microsoft Edge (based on testing).
+constexpr base::TimeDelta kDefaultMaxDuration =
+    base::TimeDelta::FromSeconds(30);
 
 // Returns true if |mime_type| is one of the known PAC mime type.
 bool IsPacMimeType(const std::string& mime_type) {
@@ -82,7 +92,7 @@ ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
       result_code_(OK),
       result_text_(NULL),
       max_response_bytes_(kDefaultMaxResponseBytes),
-      max_duration_(base::TimeDelta::FromMilliseconds(kDefaultMaxDurationMs)),
+      max_duration_(kDefaultMaxDuration),
       weak_factory_(this) {
   DCHECK(url_request_context);
 }
