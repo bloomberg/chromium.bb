@@ -101,7 +101,8 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
         };
 
         final CharSequence tosAndPrivacyText;
-        if (getProperties().getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT)) {
+        Bundle freProperties = getPageDelegate().getProperties();
+        if (freProperties.getBoolean(AccountFirstRunFragment.IS_CHILD_ACCOUNT)) {
             tosAndPrivacyText =
                     SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy_child_account),
                             new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
