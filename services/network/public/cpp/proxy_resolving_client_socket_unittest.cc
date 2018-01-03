@@ -94,14 +94,6 @@ TEST_F(ProxyResolvingClientSocketTest, ConnectError) {
     socket_data.set_connect_data(net::MockConnect(
         test.is_error_sync ? net::SYNCHRONOUS : net::ASYNC, net::ERR_FAILED));
     socket_factory.AddSocketDataProvider(&socket_data);
-    net::StaticSocketDataProvider socket_data2;
-    if (!test.is_direct) {
-      // TODO(xunjieli): https://crbug.com/793076. When net::ERR_FAILED is
-      // reported with proxy, this should not be retried.
-      socket_data2.set_connect_data(net::MockConnect(
-          test.is_error_sync ? net::SYNCHRONOUS : net::ASYNC, net::ERR_FAILED));
-      socket_factory.AddSocketDataProvider(&socket_data2);
-    }
 
     ProxyResolvingClientSocket proxy_resolving_socket(
         &socket_factory, context_getter, net::SSLConfig(), kDestination);
@@ -109,13 +101,13 @@ TEST_F(ProxyResolvingClientSocketTest, ConnectError) {
     int status = proxy_resolving_socket.Connect(callback.callback());
     EXPECT_EQ(net::ERR_IO_PENDING, status);
     status = callback.WaitForResult();
-    EXPECT_EQ(net::ERR_FAILED, status);
+    if (test.is_direct) {
+      EXPECT_EQ(net::ERR_FAILED, status);
+    } else {
+      EXPECT_EQ(net::ERR_PROXY_CONNECTION_FAILED, status);
+    }
     EXPECT_TRUE(socket_data.AllReadDataConsumed());
     EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-    if (!test.is_direct) {
-      EXPECT_TRUE(socket_data2.AllReadDataConsumed());
-      EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
-    }
   }
 }
 
