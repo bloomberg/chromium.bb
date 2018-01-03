@@ -78,6 +78,9 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
       CallbackStack::Item* item = marking_stack_->Pop();
       T* obj = reinterpret_cast<T*>(item->Object());
       auto pos = std::find(objects_.begin(), objects_.end(), obj);
+      // The following check makes sure that there are no unexpected objects on
+      // the marking stack. If it fails then the write barrier fired for an
+      // unexpected object.
       EXPECT_NE(objects_.end(), pos);
       objects_.erase(pos);
     }
@@ -849,6 +852,88 @@ TEST(IncrementalMarkingTest, HeapTerminatedArrayBuilder) {
       builder.Append(TerminatedArrayNode(obj));
     }
     array = builder.Release();
+  }
+}
+
+// =============================================================================
+// HeapHashMap support. ========================================================
+// =============================================================================
+
+TEST(IncrementalMarkingTest, HeapHashMapInsertMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    map.insert(obj1, obj2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSetMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    map.Set(obj1, obj2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSetMemberOnlyValue) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  map.insert(obj1, obj2);
+  {
+    // Only |obj3| is newly added to |map|, so we only expect the barrier to
+    // fire on this one.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj3});
+    map.Set(obj1, obj3);
+    EXPECT_FALSE(HeapObjectHeader::FromPayload(obj1)->IsMarked());
+    EXPECT_FALSE(HeapObjectHeader::FromPayload(obj2)->IsMarked());
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapIteratorChangeKey) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  map.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj3});
+    auto it = map.find(obj1);
+    EXPECT_NE(map.end(), it);
+    it->key = obj3;
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapIteratorChangeValue) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  map.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj3});
+    auto it = map.find(obj1);
+    EXPECT_NE(map.end(), it);
+    it->value = obj3;
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapCopyMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map1;
+  map1.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    EXPECT_TRUE(map1.Contains(obj1));
+    HeapHashMap<Member<Object>, Member<Object>> map2(map1);
+    EXPECT_TRUE(map1.Contains(obj1));
+    EXPECT_TRUE(map2.Contains(obj1));
   }
 }
 

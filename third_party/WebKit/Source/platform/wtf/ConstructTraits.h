@@ -14,7 +14,7 @@ namespace WTF {
 // ConstructTraits is used to construct elements in WTF collections. All
 // in-place constructions that may assign Oilpan objects must be dispatched
 // through ConstructAndNotifyElement.
-template <typename T, typename Allocator>
+template <typename T, typename Traits, typename Allocator>
 class ConstructTraits {
   STATIC_ONLY(ConstructTraits);
 
@@ -24,14 +24,14 @@ class ConstructTraits {
   template <typename... Args>
   static T* ConstructAndNotifyElement(void* location, Args&&... args) {
     T* object = new (NotNull, location) T(std::forward<Args>(args)...);
-    Allocator::template NotifyNewObject<T, VectorTraits<T>>(object);
+    Allocator::template NotifyNewObject<T, Traits>(object);
     return object;
   }
 
   // After constructing elements using memcopy or memmove (or similar)
   // |NotifyNewElements| needs to be called to propagate that information.
   static void NotifyNewElements(T* array, size_t len) {
-    Allocator::template NotifyNewObjects<T, VectorTraits<T>>(array, len);
+    Allocator::template NotifyNewObjects<T, Traits>(array, len);
   }
 };
 

@@ -21,9 +21,10 @@
 #ifndef WTF_HashMap_h
 #define WTF_HashMap_h
 
+#include <initializer_list>
+#include "platform/wtf/ConstructTraits.h"
 #include "platform/wtf/HashTable.h"
 #include "platform/wtf/allocator/PartitionAllocator.h"
-#include <initializer_list>
 
 namespace WTF {
 
@@ -310,7 +311,7 @@ struct HashMapValueTraits : KeyValuePairHashTraits<KeyTraits, MappedTraits> {
   }
 };
 
-template <typename ValueTraits, typename HashFunctions>
+template <typename ValueTraits, typename HashFunctions, typename Allocator>
 struct HashMapTranslator {
   STATIC_ONLY(HashMapTranslator);
   template <typename T>
@@ -523,12 +524,13 @@ template <typename T,
           typename V,
           typename W,
           typename X,
-          typename Y>
+          typename Allocator>
 template <typename IncomingKeyType, typename IncomingMappedType>
-typename HashMap<T, U, V, W, X, Y>::AddResult
-HashMap<T, U, V, W, X, Y>::InlineAdd(IncomingKeyType&& key,
-                                     IncomingMappedType&& mapped) {
-  return impl_.template insert<HashMapTranslator<ValueTraits, HashFunctions>>(
+typename HashMap<T, U, V, W, X, Allocator>::AddResult
+HashMap<T, U, V, W, X, Allocator>::InlineAdd(IncomingKeyType&& key,
+                                             IncomingMappedType&& mapped) {
+  return impl_.template insert<
+      HashMapTranslator<ValueTraits, HashFunctions, Allocator>>(
       std::forward<IncomingKeyType>(key),
       std::forward<IncomingMappedType>(mapped));
 }

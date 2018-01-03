@@ -523,29 +523,32 @@ std::ostream& operator<<(std::ostream& stream,
 
 using std::swap;
 
-template <typename T, typename Allocator, bool enterGCForbiddenScope>
+template <typename T,
+          typename Allocator,
+          typename Traits,
+          bool enterGCForbiddenScope>
 struct Mover {
   STATIC_ONLY(Mover);
   static void Move(T&& from, T& to) {
     to.~T();
-    ConstructTraits<T, Allocator>::ConstructAndNotifyElement(&to,
-                                                             std::move(from));
+    ConstructTraits<T, Traits, Allocator>::ConstructAndNotifyElement(
+        &to, std::move(from));
   }
 };
 
-template <typename T, typename Allocator>
-struct Mover<T, Allocator, true> {
+template <typename T, typename Allocator, typename Traits>
+struct Mover<T, Allocator, Traits, true> {
   STATIC_ONLY(Mover);
   static void Move(T&& from, T& to) {
     to.~T();
     Allocator::EnterGCForbiddenScope();
-    ConstructTraits<T, Allocator>::ConstructAndNotifyElement(&to,
-                                                             std::move(from));
+    ConstructTraits<T, Traits, Allocator>::ConstructAndNotifyElement(
+        &to, std::move(from));
     Allocator::LeaveGCForbiddenScope();
   }
 };
 
-template <typename HashFunctions, typename Allocator>
+template <typename HashFunctions, typename Traits, typename Allocator>
 class IdentityHashTranslator {
   STATIC_ONLY(IdentityHashTranslator);
 
@@ -561,7 +564,7 @@ class IdentityHashTranslator {
   template <typename T, typename U, typename V>
   static void Translate(T& location, U&&, V&& value) {
     location = std::forward<V>(value);
-    ConstructTraits<T, Allocator>::NotifyNewElements(&location, 1);
+    ConstructTraits<T, Traits, Allocator>::NotifyNewElements(&location, 1);
   }
 };
 
@@ -685,7 +688,7 @@ class HashTable final
   typedef Value ValueType;
   typedef Extractor ExtractorType;
   typedef KeyTraits KeyTraitsType;
-  typedef IdentityHashTranslator<HashFunctions, Allocator>
+  typedef IdentityHashTranslator<HashFunctions, Traits, Allocator>
       IdentityTranslatorType;
   typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
@@ -1199,7 +1202,7 @@ struct HashTableBucketInitializer<false> {
   STATIC_ONLY(HashTableBucketInitializer);
   template <typename Traits, typename Allocator, typename Value>
   static void Initialize(Value& bucket) {
-    ConstructTraits<Value, Allocator>::ConstructAndNotifyElement(
+    ConstructTraits<Value, Traits, Allocator>::ConstructAndNotifyElement(
         &bucket, Traits::EmptyValue());
   }
 };
@@ -1398,7 +1401,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   ++stats_->numReinserts;
 #endif
   Value* new_entry = LookupForWriting(Extractor::Extract(entry)).first;
-  Mover<ValueType, Allocator,
+  Mover<ValueType, Allocator, Traits,
         Traits::template NeedsToForbidGCOnMove<>::value>::Move(std::move(entry),
                                                                *new_entry);
 
@@ -1682,7 +1685,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
         InitializeBucket(temporary_table[i]);
       }
     } else {
-      Mover<ValueType, Allocator,
+      Mover<ValueType, Allocator, Traits,
             Traits::template NeedsToForbidGCOnMove<>::value>::
           Move(std::move(table_[i]), temporary_table[i]);
       table_[i].~ValueType();
@@ -1917,12 +1920,12 @@ void HashTable<Key,
 #endif
 
   if (table_) {
-    ConstructTraits<ValueType, Allocator>::NotifyNewElements(table_,
-                                                             table_size_);
+    ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(
+        table_, table_size_);
   }
   if (other.table_) {
-    ConstructTraits<ValueType, Allocator>::NotifyNewElements(other.table_,
-                                                             other.table_size_);
+    ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(
+        other.table_, other.table_size_);
   }
 }
 

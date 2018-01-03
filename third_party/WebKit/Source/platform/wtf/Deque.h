@@ -499,7 +499,7 @@ inline void Deque<T, inlineCapacity, Allocator>::push_back(U&& value) {
     end_ = 0;
   else
     ++end_;
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       new_element, std::forward<U>(value));
 }
 
@@ -511,7 +511,7 @@ inline void Deque<T, inlineCapacity, Allocator>::push_front(U&& value) {
     start_ = buffer_.capacity() - 1;
   else
     --start_;
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       &buffer_.Buffer()[start_], std::forward<U>(value));
 }
 
@@ -524,7 +524,7 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_back(Args&&... args) {
     end_ = 0;
   else
     ++end_;
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       new_element, std::forward<Args>(args)...);
 }
 
@@ -536,7 +536,7 @@ inline void Deque<T, inlineCapacity, Allocator>::emplace_front(Args&&... args) {
     start_ = buffer_.capacity() - 1;
   else
     --start_;
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       &buffer_.Buffer()[start_], std::forward<Args>(args)...);
 }
 

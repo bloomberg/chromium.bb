@@ -45,7 +45,8 @@ class TerminatedArrayBuilder {
     CHECK_LT(count_, capacity_);
     DCHECK(!item.IsLastInArray());
     array_->at(count_++) = item;
-    ConstructTraits<T, typename ArrayType<T>::Allocator::BackendAllocator>::
+    ConstructTraits<T, VectorTraits<T>,
+                    typename ArrayType<T>::Allocator::BackendAllocator>::
         NotifyNewElements(&array_->at(count_ - 1), 1);
     if (count_ == capacity_)
       array_->at(capacity_ - 1).SetLastInArray(true);

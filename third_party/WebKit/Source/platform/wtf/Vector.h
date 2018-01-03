@@ -153,8 +153,8 @@ struct VectorMover<false, T, Allocator> {
   STATIC_ONLY(VectorMover);
   static void Move(T* src, T* src_end, T* dst) {
     while (src != src_end) {
-      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst,
-                                                               std::move(*src));
+      ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
+          dst, std::move(*src));
       src->~T();
       ++dst;
       ++src;
@@ -168,8 +168,10 @@ struct VectorMover<false, T, Allocator> {
       while (src != src_end) {
         --src_end;
         --dst_end;
-        ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
-            dst_end, std::move(*src_end));
+        ConstructTraits<T, VectorTraits<T>,
+                        Allocator>::ConstructAndNotifyElement(dst_end,
+                                                              std::move(
+                                                                  *src_end));
         src_end->~T();
       }
     }
@@ -177,8 +179,8 @@ struct VectorMover<false, T, Allocator> {
   static void Swap(T* src, T* src_end, T* dst) {
     std::swap_ranges(src, src_end, dst);
     const size_t len = src_end - src;
-    ConstructTraits<T, Allocator>::NotifyNewElements(src, len);
-    ConstructTraits<T, Allocator>::NotifyNewElements(dst, len);
+    ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(src, len);
+    ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(dst, len);
   }
 };
 
@@ -190,7 +192,8 @@ struct VectorMover<true, T, Allocator> {
       memcpy(dst, src,
              reinterpret_cast<const char*>(src_end) -
                  reinterpret_cast<const char*>(src));
-      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+          dst, src_end - src);
     }
   }
   static void MoveOverlapping(const T* src, const T* src_end, T* dst) {
@@ -198,7 +201,8 @@ struct VectorMover<true, T, Allocator> {
       memmove(dst, src,
               reinterpret_cast<const char*>(src_end) -
                   reinterpret_cast<const char*>(src));
-      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+          dst, src_end - src);
     }
   }
   static void Swap(T* src, T* src_end, T* dst) {
@@ -206,8 +210,8 @@ struct VectorMover<true, T, Allocator> {
                      reinterpret_cast<char*>(src_end),
                      reinterpret_cast<char*>(dst));
     const size_t len = src_end - src;
-    ConstructTraits<T, Allocator>::NotifyNewElements(src, len);
-    ConstructTraits<T, Allocator>::NotifyNewElements(dst, len);
+    ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(src, len);
+    ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(dst, len);
   }
 };
 
@@ -220,7 +224,8 @@ struct VectorCopier<false, T, Allocator> {
   template <typename U>
   static void UninitializedCopy(const U* src, const U* src_end, T* dst) {
     while (src != src_end) {
-      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst, *src);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
+          dst, *src);
       ++dst;
       ++src;
     }
@@ -235,7 +240,8 @@ struct VectorCopier<true, T, Allocator> {
       memcpy(dst, src,
              reinterpret_cast<const char*>(src_end) -
                  reinterpret_cast<const char*>(src));
-      ConstructTraits<T, Allocator>::NotifyNewElements(dst, src_end - src);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+          dst, src_end - src);
     }
   }
   template <typename U>
@@ -252,7 +258,8 @@ struct VectorFiller<false, T, Allocator> {
   STATIC_ONLY(VectorFiller);
   static void UninitializedFill(T* dst, T* dst_end, const T& val) {
     while (dst != dst_end) {
-      ConstructTraits<T, Allocator>::ConstructAndNotifyElement(dst, T(val));
+      ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
+          dst, T(val));
       ++dst;
     }
   }
@@ -534,11 +541,12 @@ class VectorBuffer<T, 0, Allocator>
     std::swap(capacity_, other.capacity_);
     std::swap(size_, other.size_);
     if (buffer_) {
-      ConstructTraits<T, Allocator>::NotifyNewElements(buffer_, size_);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(buffer_,
+                                                                        size_);
     }
     if (other.buffer_) {
-      ConstructTraits<T, Allocator>::NotifyNewElements(other.buffer_,
-                                                       other.size_);
+      ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+          other.buffer_, other.size_);
     }
   }
 
@@ -686,11 +694,12 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       std::swap(capacity_, other.capacity_);
       std::swap(size_, other.size_);
       if (buffer_) {
-        ConstructTraits<T, Allocator>::NotifyNewElements(buffer_, size_);
+        ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+            buffer_, size_);
       }
       if (other.buffer_) {
-        ConstructTraits<T, Allocator>::NotifyNewElements(other.buffer_,
-                                                         other.size_);
+        ConstructTraits<T, VectorTraits<T>, Allocator>::NotifyNewElements(
+            other.buffer_, other.size_);
       }
       return;
     }
@@ -1721,7 +1730,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
   DCHECK(Allocator::IsAllocationAllowed());
   if (LIKELY(size() != capacity())) {
     ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-    ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+    ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
         end(), std::forward<U>(val));
     ++size_;
     return;
@@ -1739,8 +1748,9 @@ ALWAYS_INLINE T& Vector<T, inlineCapacity, Allocator>::emplace_back(
     ExpandCapacity(size() + 1);
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-  T* t = ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
-      end(), std::forward<Args>(args)...);
+  T* t =
+      ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
+          end(), std::forward<Args>(args)...);
   ++size_;
   return *t;
 }
@@ -1774,7 +1784,7 @@ NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::AppendSlowCase(
   DCHECK(begin());
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       end(), std::forward<U>(*ptr));
   ++size_;
 }
@@ -1805,7 +1815,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::UncheckedAppend(
   push_back(std::forward<U>(val));
 #else
   DCHECK_LT(size(), capacity());
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       end(), std::forward<U>(val));
   ++size_;
 #endif
@@ -1825,7 +1835,7 @@ inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), size_, size_ + 1);
   T* spot = begin() + position;
   TypeOperations::MoveOverlapping(spot, end(), spot + 1);
-  ConstructTraits<T, Allocator>::ConstructAndNotifyElement(
+  ConstructTraits<T, VectorTraits<T>, Allocator>::ConstructAndNotifyElement(
       spot, std::forward<U>(*data));
   ++size_;
 }
