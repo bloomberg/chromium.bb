@@ -50,31 +50,7 @@ NOINLINE void ThreadUnresponsive_UI() {
   ReportThreadHang();
 }
 
-NOINLINE void ThreadUnresponsive_DB() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_FILE() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_FILE_USER_BLOCKING() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
-}
-
 NOINLINE void ThreadUnresponsive_PROCESS_LAUNCHER() {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  ReportThreadHang();
-}
-
-NOINLINE void ThreadUnresponsive_CACHE() {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
   ReportThreadHang();
@@ -91,19 +67,16 @@ NOINLINE void CrashBecauseThreadWasUnresponsive(
   switch (thread_id) {
     case content::BrowserThread::UI:
       return ThreadUnresponsive_UI();
-    case content::BrowserThread::DB:
-      return ThreadUnresponsive_DB();
-    case content::BrowserThread::FILE:
-      return ThreadUnresponsive_FILE();
-    case content::BrowserThread::FILE_USER_BLOCKING:
-      return ThreadUnresponsive_FILE_USER_BLOCKING();
     case content::BrowserThread::PROCESS_LAUNCHER:
       return ThreadUnresponsive_PROCESS_LAUNCHER();
-    case content::BrowserThread::CACHE:
-      return ThreadUnresponsive_CACHE();
     case content::BrowserThread::IO:
       return ThreadUnresponsive_IO();
     case content::BrowserThread::ID_COUNT:
+    // TODO(gab): Get rid of deprecated BrowserThread IDs.
+    case content::BrowserThread::DB:
+    case content::BrowserThread::FILE:
+    case content::BrowserThread::FILE_USER_BLOCKING:
+    case content::BrowserThread::CACHE:
       NOTREACHED();
       break;
   }
