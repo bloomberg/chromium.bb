@@ -171,8 +171,6 @@ class OptionalBase {
 // https://chromium.googlesource.com/chromium/src/+/master/docs/optional.md
 //
 // These are the differences between the specification and the implementation:
-// - The constructor and emplace method using initializer_list are not
-//   implemented because 'initializer_list' is banned from Chromium.
 // - Constructors do not use 'constexpr' as it is a C++14 extension.
 // - 'constexpr' might be missing in some places for reasons specified locally.
 // - No exceptions are thrown, because they are banned from Chromium.
@@ -199,6 +197,17 @@ class Optional : public internal::OptionalBase<T> {
   template <class... Args>
   constexpr explicit Optional(in_place_t, Args&&... args)
       : internal::OptionalBase<T>(in_place, std::forward<Args>(args)...) {}
+
+  template <
+      class U,
+      class... Args,
+      class = std::enable_if_t<std::is_constructible<value_type,
+                                                     std::initializer_list<U>&,
+                                                     Args...>::value>>
+  constexpr explicit Optional(in_place_t,
+                              std::initializer_list<U> il,
+                              Args&&... args)
+      : internal::OptionalBase<T>(in_place, il, std::forward<Args>(args)...) {}
 
   ~Optional() = default;
 
@@ -312,6 +321,18 @@ class Optional : public internal::OptionalBase<T> {
   void emplace(Args&&... args) {
     FreeIfNeeded();
     Init(std::forward<Args>(args)...);
+  }
+
+  template <
+      class U,
+      class... Args,
+      class = std::enable_if_t<std::is_constructible<value_type,
+                                                     std::initializer_list<U>&,
+                                                     Args...>::value>>
+  T& emplace(std::initializer_list<U> il, Args&&... args) {
+    FreeIfNeeded();
+    Init(il, std::forward<Args>(args)...);
+    return storage_.value_;
   }
 
  private:
@@ -504,6 +525,12 @@ constexpr bool operator>=(const U& value, const Optional<T>& opt) {
 template <class T>
 constexpr Optional<typename std::decay<T>::type> make_optional(T&& value) {
   return Optional<typename std::decay<T>::type>(std::forward<T>(value));
+}
+
+template <class T, class U, class... Args>
+constexpr Optional<T> make_optional(std::initializer_list<U> il,
+                                    Args&&... args) {
+  return Optional<T>(in_place, il, std::forward<Args>(args)...);
 }
 
 template <class T>

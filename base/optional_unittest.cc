@@ -4,9 +4,15 @@
 
 #include "base/optional.h"
 
+#include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::ElementsAre;
 
 namespace base {
 
@@ -272,6 +278,22 @@ TEST(OptionalTest, ConstructorForwardArguments) {
     Optional<TestObject> a(base::in_place, 0, 0.1);
     EXPECT_TRUE(!!a);
     EXPECT_TRUE(TestObject(0, 0.1) == a.value());
+  }
+}
+
+TEST(OptionalTest, ConstructorForwardInitListAndArguments) {
+  {
+    Optional<std::vector<int>> opt(in_place, {3, 1});
+    EXPECT_TRUE(opt);
+    EXPECT_THAT(*opt, ElementsAre(3, 1));
+    EXPECT_EQ(2u, opt->size());
+  }
+
+  {
+    Optional<std::vector<int>> opt(in_place, {3, 1}, std::allocator<int>());
+    EXPECT_TRUE(opt);
+    EXPECT_THAT(*opt, ElementsAre(3, 1));
+    EXPECT_EQ(2u, opt->size());
   }
 }
 
@@ -577,6 +599,24 @@ TEST(OptionalTest, Emplace) {
 
     EXPECT_TRUE(!!a);
     EXPECT_TRUE(TestObject(1, 0.2) == a.value());
+  }
+
+  {
+    Optional<std::vector<int>> a;
+    auto& ref = a.emplace({2, 3});
+    static_assert(std::is_same<std::vector<int>&, decltype(ref)>::value, "");
+    EXPECT_TRUE(a);
+    EXPECT_THAT(*a, ElementsAre(2, 3));
+    EXPECT_EQ(&ref, &*a);
+  }
+
+  {
+    Optional<std::vector<int>> a;
+    auto& ref = a.emplace({4, 5}, std::allocator<int>());
+    static_assert(std::is_same<std::vector<int>&, decltype(ref)>::value, "");
+    EXPECT_TRUE(a);
+    EXPECT_THAT(*a, ElementsAre(4, 5));
+    EXPECT_EQ(&ref, &*a);
   }
 }
 
@@ -1348,6 +1388,15 @@ TEST(OptionalTest, MakeOptional) {
 
     EXPECT_EQ(TestObject::State::MOVE_CONSTRUCTED,
               base::make_optional(std::move(value))->state());
+  }
+
+  {
+    auto str1 = make_optional<std::string>({'1', '2', '3'});
+    EXPECT_EQ("123", *str1);
+
+    auto str2 =
+        make_optional<std::string>({'a', 'b', 'c'}, std::allocator<char>());
+    EXPECT_EQ("abc", *str2);
   }
 }
 
