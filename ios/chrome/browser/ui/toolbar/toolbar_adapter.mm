@@ -56,7 +56,7 @@
 #pragma mark - Abstract WebToolbar
 
 - (void)browserStateDestroyed {
-  return;
+  [self.toolbarCoordinator stop];
 }
 
 - (void)updateToolbarState {
