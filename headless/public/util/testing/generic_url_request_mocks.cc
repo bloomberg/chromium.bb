@@ -50,7 +50,7 @@ void MockCookieStore::SetCanonicalCookieAsync(
     bool secure_source,
     bool can_modify_httponly,
     SetCookiesCallback callback) {
-  CHECK(false);
+  cookies_.push_back(std::move(*cookie));
 }
 
 void MockCookieStore::GetCookiesWithOptionsAsync(

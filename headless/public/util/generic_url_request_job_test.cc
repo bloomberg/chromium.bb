@@ -27,7 +27,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::AllOf;
+using testing::ElementsAre;
+using testing::Eq;
 using testing::NotNull;
+using testing::Property;
 using testing::_;
 
 std::ostream& operator<<(std::ostream& os, const base::DictionaryValue& value) {
@@ -517,6 +521,27 @@ TEST_F(GenericURLRequestJobTest, RequestWithCookies) {
       })";
 
   EXPECT_THAT(fetch_request_, MatchesJson(expected_request_json));
+}
+
+TEST_F(GenericURLRequestJobTest, ResponseWithCookies) {
+  std::string reply = R"(
+      {
+        "url": "https://example.com",
+        "data": "Reply",
+        "headers": {
+          "Set-Cookie": "A=foobar; path=/; "
+        }
+      })";
+
+  std::unique_ptr<net::URLRequest> request(
+      CreateAndCompleteGetJob(GURL("https://example.com"), reply));
+
+  EXPECT_THAT(*cookie_store_.cookies(),
+              ElementsAre(AllOf(
+                  Property(&net::CanonicalCookie::Name, Eq("A")),
+                  Property(&net::CanonicalCookie::Value, Eq("foobar")),
+                  Property(&net::CanonicalCookie::Domain, Eq("example.com")),
+                  Property(&net::CanonicalCookie::Path, Eq("/")))));
 }
 
 TEST_F(GenericURLRequestJobTest, OnResourceLoadFailed) {

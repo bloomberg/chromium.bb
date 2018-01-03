@@ -143,6 +143,34 @@ void GenericURLRequestJob::OnFetchComplete(
   body_size_ = body_size;
   load_timing_info_ = load_timing_info;
 
+  // Save any cookies from the response.
+  if (!(request_->load_flags() & net::LOAD_DO_NOT_SAVE_COOKIES) &&
+      request_->context()->cookie_store()) {
+    net::CookieOptions options;
+    options.set_include_httponly();
+
+    base::Time response_date;
+    if (!response_headers_->GetDateValue(&response_date))
+      response_date = base::Time();
+    options.set_server_time(response_date);
+
+    // Set all cookies, without waiting for them to be set. Any subsequent read
+    // will see the combined result of all cookie operation.
+    const base::StringPiece name("Set-Cookie");
+    std::string cookie_line;
+    size_t iter = 0;
+    while (response_headers_->EnumerateHeader(&iter, name, &cookie_line)) {
+      std::unique_ptr<net::CanonicalCookie> cookie =
+          net::CanonicalCookie::Create(final_url, cookie_line,
+                                       base::Time::Now(), options);
+      if (!cookie || !CanSetCookie(*cookie, &options))
+        continue;
+      request_->context()->cookie_store()->SetCanonicalCookieAsync(
+          std::move(cookie), final_url.SchemeIsCryptographic(),
+          !options.exclude_httponly(), net::CookieStore::SetCookiesCallback());
+    }
+  }
+
   DispatchHeadersComplete();
 
   delegate_->OnResourceLoadComplete(this, final_url, response_headers_, body_,
