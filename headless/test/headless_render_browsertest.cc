@@ -1174,4 +1174,69 @@ document.cookie = x + 'baz';
 };
 HEADLESS_RENDER_BROWSERTEST(CookieUpdatedFromJs);
 
+class InCrossOriginObject : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://foo.com/", HttpOk(R"|(
+ <html><body>
+  <iframe id='myframe' src='http://bar.com/'></iframe>
+   <script>
+    window.onload = function() {
+      try {
+        var a = 0 in document.getElementById('myframe').contentWindow;
+      } catch (e) {
+        console.log(e.message);
+      }
+    };
+ </script><p>Pass</p></body></html>)|"));
+    GetProtocolHandler()->InsertResponse("http://bar.com/",
+                                         HttpOk(R"|(<html></html>)|"));
+    return GURL("http://foo.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(NextNode(dom_snapshot, FindTag(dom_snapshot, "P")),
+                NodeValue("Pass"));
+    EXPECT_THAT(console_log_,
+                ElementsAre(StartsWith("L Blocked a frame with origin "
+                                       "\"http://foo.com\" from accessing")));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(InCrossOriginObject);
+
+class ContentSecurityPolicy : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    // Only first 3 scripts of 4 on the page are whitelisted for execution.
+    // Therefore only 3 linest in the log are expected.
+    GetProtocolHandler()->InsertResponse(
+        "http://example.com/",
+        {"HTTP/1.1 200 OK\r\n"
+         "Content-Type: text/html\r\n"
+         "Content-Security-Policy: script-src"
+         " 'sha256-INSsCHXoo4K3+jDRF8FSvl13GP22I9vcqcJjkq35Y20='"
+         " 'sha384-77lSn5Q6V979pJ8W2TXc6Lrj98LughR0ofkFwa+"
+         "qOEtlcofEdLPkOPtpJF8QQMev'"
+         " 'sha512-"
+         "2cS3KZwfnxFo6lvBvAl113f5N3QCRgtRJBbtFaQHKOhk36sdYYKFvhCqGTvbN7pBKUfsj"
+         "fCQgFF4MSbCQuvT8A=='\r\n\r\n"
+         "<!DOCTYPE html>\n"
+         "<script>console.log('pass256');</script>\n"
+         "<script>console.log('pass384');</script>\n"
+         "<script>console.log('pass512');</script>\n"
+         "<script>console.log('fail');</script>"});
+    // For example, regenerate sha256 hash with:
+    // echo -n "console.log('pass256');" \
+    //   | openssl sha256 -binary \
+    //   | openssl base64
+    return GURL("http://example.com/");
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    EXPECT_THAT(console_log_,
+                ElementsAre("L pass256", "L pass384", "L pass512"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(ContentSecurityPolicy);
+
 }  // namespace headless
