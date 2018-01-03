@@ -42,6 +42,7 @@ TEST(SurfaceTest, PresentationCallback) {
             .Build();
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    testing::Mock::VerifyAndClearExpectations(&client);
   }
 
   {
@@ -55,6 +56,7 @@ TEST(SurfaceTest, PresentationCallback) {
     EXPECT_CALL(client, DidDiscardCompositorFrame(1)).Times(1);
     EXPECT_CALL(client, DidReceiveCompositorFrameAck(testing::_)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    testing::Mock::VerifyAndClearExpectations(&client);
   }
 
   {
@@ -66,6 +68,7 @@ TEST(SurfaceTest, PresentationCallback) {
                                 .Build();
     EXPECT_CALL(client, DidDiscardCompositorFrame(3)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    testing::Mock::VerifyAndClearExpectations(&client);
   }
 
   {
@@ -77,6 +80,7 @@ TEST(SurfaceTest, PresentationCallback) {
             .SetDeviceScaleFactor(2.f)
             .SetPresentationToken(4)
             .Build();
+    EXPECT_CALL(client, DidDiscardCompositorFrame(2)).Times(1);
     EXPECT_CALL(client, DidDiscardCompositorFrame(4)).Times(1);
     support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }

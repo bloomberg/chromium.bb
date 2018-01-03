@@ -1000,9 +1000,12 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Create the child surface by submitting a frame to it.
   EXPECT_EQ(nullptr, GetSurfaceForId(child_id));
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
-
+  TransferableResource resource;
+  resource.id = 1234;
+  child_support1().SubmitCompositorFrame(
+      child_id.local_surface_id(),
+      MakeCompositorFrame(empty_surface_ids(), empty_surface_ids(),
+                          {resource}));
   // Verify that the child surface is created.
   Surface* surface = GetSurfaceForId(child_id);
   EXPECT_NE(nullptr, surface);
@@ -1022,9 +1025,17 @@ TEST_F(SurfaceSynchronizationTest, SurfaceResurrection) {
 
   // Child submits another frame to the same local surface id that is marked
   // destroyed.
-  surface_observer().Reset();
-  child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
-                                         MakeDefaultCompositorFrame());
+  {
+    std::vector<ReturnedResource> returned_resources =
+        TransferableResource::ReturnResources({resource});
+    EXPECT_CALL(support_client_, ReclaimResources(_)).Times(0);
+    EXPECT_CALL(support_client_,
+                DidReceiveCompositorFrameAck(Eq(returned_resources)));
+    surface_observer().Reset();
+    child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
+                                           MakeDefaultCompositorFrame());
+    testing::Mock::VerifyAndClearExpectations(&support_client_);
+  }
 
   // Verify that the surface that was marked destroyed is recovered and is being
   // used again.
