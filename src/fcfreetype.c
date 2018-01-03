@@ -1690,13 +1690,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
     if (os2 && os2->version != 0xffff)
     {
 	weight = os2->usWeightClass;
-	if (weight < 10 && weight_mult != 1.0)
-	{
-		/* Work around bad values by cleaning them up before
-		 * multiplying by weight_mult. */
-		weight = FcWeightToOpenTypeDouble (FcWeightFromOpenTypeDouble (weight));
-	}
-	weight = FcWeightFromOpenTypeDouble ((int) (weight * weight_mult + .5));
+	weight = FcWeightFromOpenTypeDouble (weight * weight_mult);
 	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
 	    printf ("\tos2 weight class %d multiplier %g maps to weight %g\n",
 		    os2->usWeightClass, weight_mult, weight);
