@@ -57,6 +57,7 @@ static_library("service") {
     "//base",
     "//chrome:strings",
     "//chrome/common",
+    "//chrome/services/printing/public/interfaces",
     "//components/cloud_devices/common",
     "//components/data_use_measurement/core",
     "//components/network_session_configurator/browser",

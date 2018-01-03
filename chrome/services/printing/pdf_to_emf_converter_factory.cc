@@ -14,6 +14,8 @@ PdfToEmfConverterFactory::PdfToEmfConverterFactory(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
     : service_ref_(std::move(service_ref)) {}
 
+PdfToEmfConverterFactory::PdfToEmfConverterFactory() = default;
+
 PdfToEmfConverterFactory::~PdfToEmfConverterFactory() = default;
 
 void PdfToEmfConverterFactory::CreateConverter(
@@ -31,4 +33,10 @@ void PdfToEmfConverterFactory::CreateConverter(
   std::move(callback).Run(std::move(converter_ptr), page_count);
 }
 
+// static
+void PdfToEmfConverterFactory::Create(
+    mojom::PdfToEmfConverterFactoryRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<PdfToEmfConverterFactory>(),
+                          std::move(request));
+}
 }  // namespace printing

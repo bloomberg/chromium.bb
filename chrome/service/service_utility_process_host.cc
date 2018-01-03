@@ -27,6 +27,7 @@
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
+#include "chrome/services/printing/public/interfaces/pdf_to_emf_converter.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
@@ -38,6 +39,8 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/emf_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -91,20 +94,72 @@ class ServiceSandboxedProcessLauncherDelegate
   DISALLOW_COPY_AND_ASSIGN(ServiceSandboxedProcessLauncherDelegate);
 };
 
+// This implementation does not do any font pre-caching.
+// TODO(thestig): Can this be deleted and the PdfToEmfConverterClient be made
+// optional?
+class ServicePdfToEmfConverterClientImpl
+    : public printing::mojom::PdfToEmfConverterClient {
+ public:
+  explicit ServicePdfToEmfConverterClientImpl(
+      printing::mojom::PdfToEmfConverterClientRequest request)
+      : binding_(this, std::move(request)) {}
+
+ private:
+  // mojom::PdfToEmfConverterClient:
+  void PreCacheFontCharacters(
+      const std::vector<uint8_t>& logfont_data,
+      const base::string16& characters,
+      PreCacheFontCharactersCallback callback) override {
+    std::move(callback).Run();
+  }
+
+  mojo::Binding<printing::mojom::PdfToEmfConverterClient> binding_;
+};
+
 }  // namespace
 
 class ServiceUtilityProcessHost::PdfToEmfState {
  public:
-  explicit PdfToEmfState(ServiceUtilityProcessHost* host) : host_(host) {}
+  explicit PdfToEmfState(base::WeakPtr<ServiceUtilityProcessHost> host)
+      : weak_host_(host) {}
+
   ~PdfToEmfState() { Stop(); }
 
   bool Start(base::File pdf_file,
              const printing::PdfRenderSettings& conversion_settings) {
     if (!temp_dir_.CreateUniqueTempDir())
       return false;
-    return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
-        IPC::TakePlatformFileForTransit(std::move(pdf_file)),
-        conversion_settings));
+
+    weak_host_->BindInterface(
+        printing::mojom::PdfToEmfConverterFactory::Name_,
+        mojo::MakeRequest(&pdf_to_emf_converter_factory_).PassMessagePipe());
+
+    pdf_to_emf_converter_factory_.set_connection_error_handler(base::BindOnce(
+        &PdfToEmfState::OnFailed, weak_host_,
+        std::string("Connection to PdfToEmfConverterFactory error.")));
+
+    printing::mojom::PdfToEmfConverterClientPtr pdf_to_emf_converter_client_ptr;
+    pdf_to_emf_converter_client_impl_ =
+        std::make_unique<ServicePdfToEmfConverterClientImpl>(
+            mojo::MakeRequest(&pdf_to_emf_converter_client_ptr));
+
+    pdf_to_emf_converter_factory_->CreateConverter(
+        mojo::WrapPlatformFile(pdf_file.TakePlatformFile()),
+        conversion_settings, std::move(pdf_to_emf_converter_client_ptr),
+        base::BindOnce(
+            &ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount,
+            weak_host_));
+    return true;
+  }
+
+  void GotPageCount(printing::mojom::PdfToEmfConverterPtr converter,
+                    uint32_t page_count) {
+    DCHECK(!pdf_to_emf_converter_.is_bound());
+    pdf_to_emf_converter_ = std::move(converter);
+    pdf_to_emf_converter_.set_connection_error_handler(
+        base::BindOnce(&PdfToEmfState::OnFailed, weak_host_,
+                       std::string("Connection to PdfToEmfConverter error.")));
+    page_count_ = page_count;
   }
 
   void GetMorePages() {
@@ -113,10 +168,16 @@ class ServiceUtilityProcessHost::PdfToEmfState {
            current_page_ < page_count_) {
       ++pages_in_progress_;
       emf_files_.push(CreateTempFile());
-      host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage(
+
+      // We need to dup the file as mojo::WrapPlatformFile takes ownership of
+      // the passed file.
+      base::File temp_file_copy = emf_files_.back().Duplicate();
+      pdf_to_emf_converter_->ConvertPage(
           current_page_++,
-          IPC::GetPlatformFileForTransit(
-              emf_files_.back().GetPlatformFile(), false)));
+          mojo::WrapPlatformFile(temp_file_copy.TakePlatformFile()),
+          base::BindOnce(
+              &ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone,
+              weak_host_));
     }
   }
 
@@ -140,12 +201,19 @@ class ServiceUtilityProcessHost::PdfToEmfState {
     return file;
   }
 
-  void set_page_count(int page_count) { page_count_ = page_count; }
-  bool has_page_count() { return page_count_ > 0; }
+  bool has_page_count() const { return page_count_ > 0; }
 
  private:
+  static void OnFailed(const base::WeakPtr<ServiceUtilityProcessHost>& host,
+                       const std::string& error_message) {
+    LOG(ERROR) << "Failed to convert PDF: " << error_message;
+    host->OnChildDisconnected();
+  }
+
   void Stop() {
-    host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop());
+    // Disconnect interface ptrs so that the printing service process stop.
+    pdf_to_emf_converter_factory_.reset();
+    pdf_to_emf_converter_.reset();
   }
 
   base::File CreateTempFile() {
@@ -161,11 +229,18 @@ class ServiceUtilityProcessHost::PdfToEmfState {
   }
 
   base::ScopedTempDir temp_dir_;
-  ServiceUtilityProcessHost* const host_;
+  base::WeakPtr<ServiceUtilityProcessHost> weak_host_;
   base::queue<base::File> emf_files_;
   int page_count_ = 0;
   int current_page_ = 0;
   int pages_in_progress_ = 0;
+
+  std::unique_ptr<ServicePdfToEmfConverterClientImpl>
+      pdf_to_emf_converter_client_impl_;
+
+  printing::mojom::PdfToEmfConverterPtr pdf_to_emf_converter_;
+
+  printing::mojom::PdfToEmfConverterFactoryPtr pdf_to_emf_converter_factory_;
 };
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
@@ -195,7 +270,8 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   DCHECK(!waiting_for_reply_);
   waiting_for_reply_ = true;
 
-  pdf_to_emf_state_ = std::make_unique<PdfToEmfState>(this);
+  pdf_to_emf_state_ =
+      std::make_unique<PdfToEmfState>(weak_ptr_factory_.GetWeakPtr());
   return pdf_to_emf_state_->Start(std::move(pdf_file), render_settings);
 }
 
@@ -316,11 +392,6 @@ bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
     IPC_MESSAGE_HANDLER(
-        ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageCount,
-        OnRenderPDFPagesToMetafilesPageCount)
-    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_RenderPDFPagesToMetafiles_PageDone,
-                        OnRenderPDFPagesToMetafilesPageDone)
-    IPC_MESSAGE_HANDLER(
         ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
         OnGetPrinterCapsAndDefaultsSucceeded)
     IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
@@ -359,13 +430,13 @@ void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {
 }
 
 void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageCount(
-    int page_count) {
+    printing::mojom::PdfToEmfConverterPtr converter,
+    uint32_t page_count) {
   DCHECK(waiting_for_reply_);
-  if (!pdf_to_emf_state_ || page_count <= 0 ||
-      pdf_to_emf_state_->has_page_count()) {
+  if (page_count == 0 || pdf_to_emf_state_->has_page_count())
     return OnPDFToEmfFinished(false);
-  }
-  pdf_to_emf_state_->set_page_count(page_count);
+
+  pdf_to_emf_state_->GotPageCount(std::move(converter), page_count);
   pdf_to_emf_state_->GetMorePages();
 }
 

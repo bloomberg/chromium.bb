@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/services/printing/public/interfaces/pdf_to_emf_converter.mojom.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "ipc/ipc_platform_file.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
@@ -132,9 +133,13 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   void OnMetafileSpooled(bool success);
   void OnPDFToEmfFinished(bool success);
 
-  // Messages handlers:
-  void OnRenderPDFPagesToMetafilesPageCount(int page_count);
+  // PdfToEmfState callbacks:
+  void OnRenderPDFPagesToMetafilesPageCount(
+      printing::mojom::PdfToEmfConverterPtr converter,
+      uint32_t page_count);
   void OnRenderPDFPagesToMetafilesPageDone(bool success, float scale_factor);
+
+  // IPC Messages handlers:
   void OnGetPrinterCapsAndDefaultsSucceeded(
       const std::string& printer_name,
       const printing::PrinterCapsAndDefaults& caps_and_defaults);
