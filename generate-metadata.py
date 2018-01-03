@@ -81,8 +81,8 @@ def generate_metadata(path):
   with open(package_path) as file:
     data = json.load(file)
     name = data['name']
-    tarball_address = data['dist']['tarball']
     version = data['version']
+    tarball_address = 'https://registry.npmjs.org/%s/-/%s-%s.tgz' % (name, name, version)
 
   output_lines = []
   for line in template_lines:
