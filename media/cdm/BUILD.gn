@@ -31,6 +31,7 @@ source_set("cdm") {
 
     # TODO(crbug.com/676224): Move this to |enable_library_cdms| block below
     # when EnabledIf attribute is supported in mojom.
+    "cdm_proxy.cc",
     "cdm_proxy.h",
     "cenc_utils.cc",
     "cenc_utils.h",
