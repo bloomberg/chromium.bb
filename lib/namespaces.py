@@ -117,6 +117,13 @@ def _SafeTcSetPgrp(fd, pgrp):
     os.tcsetpgrp(fd, pgrp)
 
 
+def _ForwardToChildPid(pid, signal_to_forward):
+  """Setup a signal handler that forwards the given signal to the given pid."""
+  def _ForwardingHandler(signum, _frame):
+    os.kill(pid, signum)
+  signal.signal(signal_to_forward, _ForwardingHandler)
+
+
 def CreatePidNs():
   """Start a new pid namespace
 
@@ -125,8 +132,22 @@ def CreatePidNs():
 
   If functionality is not available, then it will return w/out doing anything.
 
+  A note about the processes generated as a result of calling this function:
+  You call CreatePidNs() in pid X
+  - X launches Pid Y,
+    - Pid X will now do nothing but wait for Pid Y to finish and then sys.exit()
+      with that return code
+    - Y launches Pid Z
+      - Pid Y will now do nothing but wait for Pid Z to finish and then
+        sys.exit() with that return code
+      - **Pid Z returns from CreatePidNs**. So, the caller of this function
+        continues in a different process than the one that made the call.
+          - All SIGTERM/SIGINT signals are forwarded down from pid X to pid Z to
+            handle.
+          - SIGKILL will only kill pid X, and leak Pid Y and Z.
+
   Returns:
-    The last pid outside of the namespace.
+    The last pid outside of the namespace. (i.e., pid X)
   """
   first_pid = os.getpid()
 
@@ -153,9 +174,10 @@ def CreatePidNs():
   if pid:
     proctitle.settitle('pid ns', 'external init')
 
-    # Mask SIGINT with the assumption that the child will catch & process it.
-    # We'll pass that back up below.
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    # We forward termination signals to the child and trust the child to respond
+    # sanely. Later, ExitAsStatus propagates the exit status back up.
+    _ForwardToChildPid(pid, signal.SIGINT)
+    _ForwardToChildPid(pid, signal.SIGTERM)
 
     # Forward the control of the terminal to the child so it can manage input.
     _SafeTcSetPgrp(sys.stdin.fileno(), pid)
@@ -191,9 +213,10 @@ def CreatePidNs():
     if pid:
       proctitle.settitle('pid ns', 'init')
 
-      # Mask SIGINT with the assumption that the child will catch & process it.
-      # We'll pass that back up below.
-      signal.signal(signal.SIGINT, signal.SIG_IGN)
+      # We forward termination signals to the child and trust the child to
+      # respond sanely. Later, ExitAsStatus propagates the exit status back up.
+      _ForwardToChildPid(pid, signal.SIGINT)
+      _ForwardToChildPid(pid, signal.SIGTERM)
 
       # Now that we're in a new pid namespace, start a new process group so that
       # children have something valid to use.  Otherwise getpgrp/etc... will get
