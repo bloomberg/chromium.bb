@@ -273,7 +273,7 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   void RemoveTemporaryReference(const SurfaceId& surface_id, bool remove_range);
 
   // Marks old temporary references for logging and deletion.
-  void MarkOldTemporaryReferences();
+  void MarkOldTemporaryReference();
 
   // Removes the surface from the surface map and destroys it.
   void DestroySurfaceInternal(const SurfaceId& surface_id);
