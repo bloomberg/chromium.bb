@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
+#import "ios/chrome/browser/ui/toolbar/public/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
@@ -37,13 +38,14 @@
 
 - (void)setToolsMenuIsVisibleForToolsMenuButton:(BOOL)isVisible;
 - (void)start;
+- (void)stop;
 
 @end
 
 @interface LegacyToolbarCoordinator
     : ChromeCoordinator<PrimaryToolbarCoordinator,
-                        BubbleViewAnchorPointProvider,
                         IncognitoViewControllerDelegate,
+                        LegacyToolbarCoordinator,
                         ToolbarSnapshotProviding,
                         ToolsMenuPresentationStateProvider>
 
@@ -72,16 +74,6 @@
 - (void)updateToolbarState;
 - (CGRect)visibleOmniboxFrame;
 - (void)triggerToolsMenuButtonAnimation;
-- (BOOL)isShowingToolsMenu;
-
-// TODO(crbug.com/788705): Legacy interface. Removes those methods once the old
-// toolbar is removed.
-- (void)selectedTabChanged;
-- (void)setTabCount:(NSInteger)tabCount;
-- (void)browserStateDestroyed;
-- (void)setShareButtonEnabled:(BOOL)enabled;
-- (void)currentPageLoadStarted;
-- (void)adjustToolbarHeight;
 
 @end
 

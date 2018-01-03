@@ -149,6 +149,9 @@ using web::WebStateImpl;
 - (void)selectedTabChanged;
 - (void)dismissToolsMenuPopup;
 - (void)cancelOmniboxEdit;
+- (void)setBackgroundAlpha:(CGFloat)alpha;
+- (void)browserStateDestroyed;
+- (void)stop;
 
 - (ToolbarButtonUpdater*)buttonUpdater;
 - (void)setToolsMenuStateProvider:(id)provider;
@@ -197,6 +200,15 @@ using web::WebStateImpl;
   return;
 }
 - (void)start {
+  return;
+}
+- (void)setBackgroundAlpha:(CGFloat)alpha {
+  return;
+}
+- (void)browserStateDestroyed {
+  return;
+}
+- (void)stop {
   return;
 }
 @end

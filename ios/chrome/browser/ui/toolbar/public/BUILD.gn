@@ -7,6 +7,7 @@ source_set("public") {
   sources = [
     "abstract_toolbar.h",
     "abstract_web_toolbar.h",
+    "legacy_toolbar_coordinator.h",
     "omnibox_focuser.h",
     "primary_toolbar_coordinator.h",
     "side_swipe_toolbar_interacting.h",
@@ -21,6 +22,7 @@ source_set("public") {
     ":toolbar_base_feature",
     "//base",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/bubble",
   ]
 }
 
