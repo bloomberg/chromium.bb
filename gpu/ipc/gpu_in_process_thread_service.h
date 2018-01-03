@@ -23,7 +23,7 @@ class GPU_EXPORT GpuInProcessThreadService
   GpuInProcessThreadService(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       gpu::SyncPointManager* sync_point_manager,
-      gpu::gles2::MailboxManager* mailbox_manager,
+      gpu::MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLShareGroup> share_group,
       const GpuFeatureInfo& gpu_feature_info);
 

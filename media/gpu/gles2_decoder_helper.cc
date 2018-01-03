@@ -100,7 +100,7 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
   gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     gpu::gles2::ContextGroup* group = decoder_->GetContextGroup();
-    gpu::gles2::MailboxManager* mailbox_manager = group->mailbox_manager();
+    gpu::MailboxManager* mailbox_manager = group->mailbox_manager();
     gpu::Mailbox mailbox = gpu::Mailbox::Generate();
     mailbox_manager->ProduceTexture(mailbox, texture_ref->texture());
     return mailbox;

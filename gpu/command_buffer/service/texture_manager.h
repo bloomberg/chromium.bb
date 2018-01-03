@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
+#include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_image.h"
@@ -37,45 +38,10 @@ struct DecoderFramebufferState;
 class ErrorState;
 class FeatureInfo;
 class FramebufferManager;
-class MailboxManager;
 class ProgressReporter;
 class Texture;
 class TextureManager;
 class TextureRef;
-
-class GPU_EXPORT TextureBase {
- public:
-  explicit TextureBase(GLuint service_id);
-  virtual ~TextureBase();
-
-  // The service side OpenGL id of the texture.
-  GLuint service_id() const { return service_id_; }
-
-  // Returns the target this texure was first bound to or 0 if it has not
-  // been bound. Once a texture is bound to a specific target it can never be
-  // bound to a different target.
-  GLenum target() const { return target_; }
-
- protected:
-  // The id of the texture.
-  GLuint service_id_;
-
-  // The target. 0 if unset, otherwise GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP.
-  //             Or GL_TEXTURE_2D_ARRAY or GL_TEXTURE_3D (for GLES3).
-  GLenum target_;
-
-  void SetTarget(GLenum target);
-
-  void DeleteFromMailboxManager();
-
- private:
-  friend class MailboxManagerSync;
-  friend class MailboxManagerImpl;
-
-  void SetMailboxManager(MailboxManager* mailbox_manager);
-
-  MailboxManager* mailbox_manager_;
-};
 
 // A ref-counted version of the TextureBase class that deletes the texture after
 // all references have been released.
@@ -343,7 +309,6 @@ class GPU_EXPORT Texture final : public TextureBase {
                               bool immutable);
 
  private:
-  friend class MailboxManagerImpl;
   friend class MailboxManagerSync;
   friend class MailboxManagerTest;
   friend class TextureDefinition;

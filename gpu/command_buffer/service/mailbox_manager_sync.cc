@@ -269,7 +269,7 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
         texture, TextureGroupRef(kNewTextureVersion, group_for_texture)));
   }
 
-  DCHECK(texture->mailbox_manager_ == this);
+  DCHECK(texture->mailbox_manager() == this);
 }
 
 void MailboxManagerSync::TextureDeleted(TextureBase* texture_base) {

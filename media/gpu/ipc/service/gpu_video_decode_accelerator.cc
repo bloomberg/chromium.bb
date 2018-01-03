@@ -422,7 +422,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       return;
     }
     for (size_t j = 0; j < textures_per_buffer_; j++) {
-      gpu::gles2::TextureBase* texture_base =
+      gpu::TextureBase* texture_base =
           command_decoder->GetTextureBase(buffer_texture_ids[j]);
       if (!texture_base) {
         DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];

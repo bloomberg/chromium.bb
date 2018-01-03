@@ -40,6 +40,7 @@ namespace gpu {
 struct ContextCreationAttribs;
 struct Mailbox;
 struct SyncToken;
+class TextureBase;
 
 namespace gles2 {
 
@@ -55,7 +56,6 @@ class Outputter;
 class QueryManager;
 class ShaderTranslatorInterface;
 class Texture;
-class TextureBase;
 class TransformFeedbackManager;
 class VertexArrayManager;
 struct ContextState;

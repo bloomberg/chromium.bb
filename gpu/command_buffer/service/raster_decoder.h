@@ -31,6 +31,9 @@
 #include "gpu/gpu_export.h"
 
 namespace gpu {
+
+class TextureBase;
+
 namespace raster {
 
 // This class implements the AsyncAPIInterface interface, decoding
@@ -102,7 +105,7 @@ class GPU_EXPORT RasterDecoder : public gles2::GLES2Decoder,
   void PerformPollingWork() override;
   bool GetServiceTextureId(uint32_t client_texture_id,
                            uint32_t* service_texture_id) override;
-  gles2::TextureBase* GetTextureBase(uint32_t client_id) override;
+  TextureBase* GetTextureBase(uint32_t client_id) override;
   bool ClearLevel(gles2::Texture* texture,
                   unsigned target,
                   int level,

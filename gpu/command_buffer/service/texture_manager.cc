@@ -477,30 +477,6 @@ void TextureManager::Destroy() {
   DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
-TextureBase::TextureBase(GLuint service_id)
-    : service_id_(service_id), target_(GL_NONE), mailbox_manager_(nullptr) {}
-
-TextureBase::~TextureBase() {
-  DCHECK_EQ(nullptr, mailbox_manager_);
-}
-
-void TextureBase::SetTarget(GLenum target) {
-  DCHECK_EQ(0u, target_);  // you can only set this once.
-  target_ = target;
-}
-
-void TextureBase::DeleteFromMailboxManager() {
-  if (mailbox_manager_) {
-    mailbox_manager_->TextureDeleted(this);
-    mailbox_manager_ = nullptr;
-  }
-}
-
-void TextureBase::SetMailboxManager(MailboxManager* mailbox_manager) {
-  DCHECK(!mailbox_manager_ || mailbox_manager_ == mailbox_manager);
-  mailbox_manager_ = mailbox_manager;
-}
-
 TexturePassthrough::TexturePassthrough(GLuint service_id, GLenum target)
     : TextureBase(service_id),
       have_context_(true),
