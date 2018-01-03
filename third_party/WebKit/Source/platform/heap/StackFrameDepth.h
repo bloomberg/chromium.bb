@@ -77,7 +77,7 @@ class PLATFORM_EXPORT StackFrameDepth final {
   // The stack pointer is assumed to grow towards lower addresses;
   // |kMinimumStackLimit| then being the limit that a stack
   // pointer will always exceed.
-  static const uintptr_t kMinimumStackLimit = ~0ul;
+  static const uintptr_t kMinimumStackLimit = ~uintptr_t{0};
 
   static uintptr_t GetFallbackStackLimit();
 
