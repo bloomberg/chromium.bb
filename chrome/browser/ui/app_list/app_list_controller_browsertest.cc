@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/model/search/search_result_observer.h"

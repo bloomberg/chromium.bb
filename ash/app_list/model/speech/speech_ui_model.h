@@ -8,13 +8,23 @@
 #include <stdint.h>
 
 #include "ash/app_list/model/app_list_model_export.h"
-#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
+
+class SpeechUIModelObserver;
+
+enum SpeechRecognitionState {
+  SPEECH_RECOGNITION_OFF = 0,
+  SPEECH_RECOGNITION_READY,
+  SPEECH_RECOGNITION_RECOGNIZING,
+  SPEECH_RECOGNITION_IN_SPEECH,
+  SPEECH_RECOGNITION_STOPPING,
+  SPEECH_RECOGNITION_NETWORK_ERROR,
+};
 
 // SpeechUIModel provides the interface to update the UI for speech recognition.
 class APP_LIST_MODEL_EXPORT SpeechUIModel {

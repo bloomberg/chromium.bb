@@ -11,7 +11,6 @@
 
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_view_state.h"
-#include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/speech/speech_ui_model.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
@@ -187,8 +186,8 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
   OnTemplateURLServiceChanged();
 
   // Clear search query.
-  search_model_->search_box()->Update(base::string16(),
-                                      false /* initiated_by_user */);
+  model_updater_->UpdateSearchBox(base::string16(),
+                                  false /* initiated_by_user */);
 }
 
 void AppListViewDelegate::OnGetWallpaperColorsCallback(
@@ -208,7 +207,7 @@ void AppListViewDelegate::SetUpSearchUI() {
                                         false);
 
   search_resource_manager_.reset(new app_list::SearchResourceManager(
-      profile_, search_model_->search_box(), speech_ui_.get()));
+      profile_, model_updater_, speech_ui_.get()));
 
   search_controller_ = CreateSearchController(profile_, model_updater_,
                                               search_model_, controller_);
@@ -377,7 +376,7 @@ void AppListViewDelegate::OnTemplateURLServiceChanged() {
       default_provider->GetEngineType(
           template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
-  search_model_->SetSearchEngineIsGoogle(is_google);
+  model_updater_->SetSearchEngineIsGoogle(is_google);
 
   app_list::StartPageService* start_page_service =
       app_list::StartPageService::Get(profile_);
