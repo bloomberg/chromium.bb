@@ -575,6 +575,9 @@ using ios::material::TimingFunction;
 - (void)start {
 }
 
+- (void)stop {
+}
+
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   UILayoutGuide* omniboxPopupGuide = FindNamedGuide(kOmniboxGuide, self.view);
   // The layout guide should be positioned with the same constraints as the

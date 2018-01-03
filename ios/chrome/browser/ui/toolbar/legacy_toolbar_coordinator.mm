@@ -73,6 +73,9 @@
 }
 
 - (void)stop {
+  [self.toolbarController setBackgroundAlpha:1.0];
+  [self.toolbarController browserStateDestroyed];
+  [self.toolbarController stop];
   if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
     [self stopObservingFullscreen];
   self.toolbarController = nil;
@@ -130,10 +133,7 @@
 }
 
 - (void)browserStateDestroyed {
-  [self.toolbarController setBackgroundAlpha:1.0];
-  [self.toolbarController browserStateDestroyed];
-  if (base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen))
-    [self stopObservingFullscreen];
+  [self stop];
 }
 
 - (void)updateToolbarState {

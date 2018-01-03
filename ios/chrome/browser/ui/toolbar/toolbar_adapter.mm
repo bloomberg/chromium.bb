@@ -129,6 +129,10 @@
   [self.toolbarCoordinator start];
 }
 
+- (void)stop {
+  [self.toolbarCoordinator stop];
+}
+
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
