@@ -309,7 +309,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
 
   const auto& iter = client_buffers_.find(buffer_id);
   DCHECK(iter != client_buffers_.end());
-  const scoped_refptr<ClientBuffer> buffer = iter->second;
+  scoped_refptr<ClientBuffer> buffer = iter->second;
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
           static_cast<media::VideoPixelFormat>(info->pixel_format),
@@ -322,12 +322,11 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
     return;
   }
 
-  BufferFinishedCallback buffer_finished_callback = media::BindToCurrentLoop(
-      base::Bind(&VideoCaptureImpl::OnClientBufferFinished,
-                 weak_factory_.GetWeakPtr(), buffer_id, buffer));
-  frame->AddDestructionObserver(
-      base::BindOnce(&VideoCaptureImpl::DidFinishConsumingFrame,
-                     frame->metadata(), buffer_finished_callback));
+  frame->AddDestructionObserver(base::BindOnce(
+      &VideoCaptureImpl::DidFinishConsumingFrame, frame->metadata(),
+      media::BindToCurrentLoop(base::BindOnce(
+          &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
+          buffer_id, std::move(buffer)))));
 
   frame->metadata()->MergeInternalValuesFrom(*info->metadata);
 
@@ -350,9 +349,29 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
 
 void VideoCaptureImpl::OnClientBufferFinished(
     int buffer_id,
-    const scoped_refptr<ClientBuffer>& /* ignored_buffer */,
+    scoped_refptr<ClientBuffer> buffer,
     double consumer_resource_utilization) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+// Subtle race note: It's important that the |buffer| argument be
+// std::move()'ed to this method and never copied. This is so that the caller,
+// DidFinishConsumingFrame(), does not implicitly retain a reference while it
+// is running the trampoline callback on another thread. This is necessary to
+// ensure the reference count on the ClientBuffer will be correct at the time
+// OnBufferDestroyed() is called. http://crbug.com/797851
+#if DCHECK_IS_ON()
+  // The ClientBuffer should have exactly two references to it at this point,
+  // one is this method's second argument and the other is from
+  // |client_buffers_|.
+  DCHECK(!buffer->HasOneRef());
+  ClientBuffer* const buffer_raw_ptr = buffer.get();
+  buffer = nullptr;
+  // Now there should be only one reference, from |client_buffers_|.
+  DCHECK(buffer_raw_ptr->HasOneRef());
+#else
+  buffer = nullptr;
+#endif
+
   GetVideoCaptureHost()->ReleaseBuffer(
       device_id_, buffer_id, consumer_resource_utilization);
 }
@@ -436,7 +455,7 @@ mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(
     const media::VideoFrameMetadata* metadata,
-    const BufferFinishedCallback& callback_to_io_thread) {
+    BufferFinishedCallback callback_to_io_thread) {
   // Note: This function may be called on any thread by the VideoFrame
   // destructor.  |metadata| is still valid for read-access at this point.
   double consumer_resource_utilization = -1.0;
@@ -444,7 +463,7 @@ void VideoCaptureImpl::DidFinishConsumingFrame(
                            &consumer_resource_utilization)) {
     consumer_resource_utilization = -1.0;
   }
-  callback_to_io_thread.Run(consumer_resource_utilization);
+  std::move(callback_to_io_thread).Run(consumer_resource_utilization);
 }
 
 }  // namespace content
