@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/values.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
@@ -20,7 +21,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -328,9 +328,8 @@ void TestWebContents::TestDidFailLoadWithError(
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
-void TestWebContents::SetNavigationData(
-    NavigationHandle* navigation_handle,
-    std::unique_ptr<NavigationData> navigation_data) {
+void TestWebContents::SetNavigationData(NavigationHandle* navigation_handle,
+                                        base::Value navigation_data) {
   static_cast<NavigationHandleImpl*>(navigation_handle)
       ->set_navigation_data(std::move(navigation_data));
 }

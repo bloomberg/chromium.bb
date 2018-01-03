@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/offline_pages/offliner_helper.h"
@@ -607,14 +608,11 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
           kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
           net::Error::OK));
   // Set up ChromeNavigationData on the handle.
-  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
-      new ChromeNavigationData());
-  chrome_navigation_data->set_previews_state(
+  ChromeNavigationData chrome_navigation_data;
+  chrome_navigation_data.set_previews_state(
       content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
-  std::unique_ptr<content::NavigationData> navigation_data(
-      chrome_navigation_data.release());
   offliner()->web_contents_tester()->SetNavigationData(
-      handle.get(), std::move(navigation_data));
+      handle.get(), chrome_navigation_data.ToValue());
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
@@ -641,14 +639,11 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
           kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
           net::Error::OK));
   // Set up ChromeNavigationData on the handle.
-  std::unique_ptr<ChromeNavigationData> chrome_navigation_data(
-      new ChromeNavigationData());
-  chrome_navigation_data->set_previews_state(
+  ChromeNavigationData chrome_navigation_data;
+  chrome_navigation_data.set_previews_state(
       content::PreviewsTypes::CLIENT_LOFI_ON);
-  std::unique_ptr<content::NavigationData> navigation_data(
-      chrome_navigation_data.release());
   offliner()->web_contents_tester()->SetNavigationData(
-      handle.get(), std::move(navigation_data));
+      handle.get(), chrome_navigation_data.ToValue());
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),

@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +61,7 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
     const net::SSLInfo& ssl_info,
-    std::unique_ptr<NavigationData> navigation_data,
+    base::Value navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
     bool is_stream,

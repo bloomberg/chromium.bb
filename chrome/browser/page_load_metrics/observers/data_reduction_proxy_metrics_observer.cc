@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -24,7 +25,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -106,7 +106,7 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
 
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
 
-// Check if the NavigationData indicates anything about the DataReductionProxy.
+// Check if the navigation data indicates anything about the DataReductionProxy.
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
@@ -120,18 +120,16 @@ DataReductionProxyMetricsObserver::OnCommit(
   // will be called is in MetricsWebContentsObserver's destrcutor, which is
   // called in WebContents destructor.
   browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
-  // As documented in content/public/browser/navigation_handle.h, this
-  // NavigationData is a clone of the NavigationData instance returned from
-  // ResourceDispatcherHostDelegate::GetNavigationData during commit.
-  // Because ChromeResourceDispatcherHostDelegate always returns a
-  // ChromeNavigationData, it is safe to static_cast here.
-  ChromeNavigationData* chrome_navigation_data =
-      static_cast<ChromeNavigationData*>(
-          navigation_handle->GetNavigationData());
-  if (!chrome_navigation_data)
+  const base::Value& navigation_data = navigation_handle->GetNavigationData();
+  if (navigation_data.is_none())
     return STOP_OBSERVING;
+  // As documented in content/public/browser/navigation_handle.h, this
+  // navigation data is the one returned from
+  // ResourceDispatcherHostDelegate::GetNavigationData() during commit.
+  ChromeNavigationData chrome_navigation_data(navigation_data);
+
   data_reduction_proxy::DataReductionProxyData* data =
-      chrome_navigation_data->GetDataReductionProxyData();
+      chrome_navigation_data.GetDataReductionProxyData();
   if (!data || !data->used_data_reduction_proxy())
     return STOP_OBSERVING;
   data_ = data->DeepCopy();

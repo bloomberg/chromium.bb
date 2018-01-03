@@ -21,13 +21,16 @@
 
 class GURL;
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace net {
 class HttpResponseHeaders;
 }  // namespace net
 
 namespace content {
 struct GlobalRequestID;
-class NavigationData;
 class NavigationThrottle;
 class RenderFrameHost;
 class SiteInstance;
@@ -313,7 +316,7 @@ class CONTENT_EXPORT NavigationHandle {
   // The NavigationData that the embedder returned from
   // ResourceDispatcherHostDelegate::GetNavigationData during commit. This will
   // be a clone of the NavigationData.
-  virtual NavigationData* GetNavigationData() = 0;
+  virtual const base::Value& GetNavigationData() = 0;
 };
 
 }  // namespace content

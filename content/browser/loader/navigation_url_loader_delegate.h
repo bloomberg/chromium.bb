@@ -13,6 +13,10 @@
 #include "content/common/content_export.h"
 #include "content/public/common/url_loader.mojom.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 struct RedirectInfo;
 class SSLInfo;
@@ -20,7 +24,6 @@ class SSLInfo;
 
 namespace content {
 
-class NavigationData;
 class StreamHandle;
 struct GlobalRequestID;
 struct ResourceResponse;
@@ -50,7 +53,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body_stream,
       const net::SSLInfo& ssl_info,
-      std::unique_ptr<NavigationData> navigation_data,
+      base::Value navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
       bool is_stream,

@@ -15,6 +15,10 @@
 class GURL;
 class SkBitmap;
 
+namespace base {
+class Value;
+}
+
 namespace gfx {
 class Size;
 }
@@ -26,7 +30,6 @@ class HttpResponseHeaders;
 namespace content {
 
 class BrowserContext;
-class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
 
@@ -99,9 +102,8 @@ class WebContentsTester {
                                ui::PageTransition transition) = 0;
 
   // Sets NavgationData on |navigation_handle|.
-  virtual void SetNavigationData(
-      NavigationHandle* navigation_handle,
-      std::unique_ptr<NavigationData> navigation_data) = 0;
+  virtual void SetNavigationData(NavigationHandle* navigation_handle,
+                                 base::Value navigation_data) = 0;
 
   // Sets HttpResponseData on |navigation_handle|.
   virtual void SetHttpResponseHeaders(

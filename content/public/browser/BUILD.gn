@@ -167,7 +167,6 @@ jumbo_source_set("browser_sources") {
     "native_web_keyboard_event.h",
     "navigation_controller.cc",
     "navigation_controller.h",
-    "navigation_data.h",
     "navigation_details.cc",
     "navigation_details.h",
     "navigation_entry.h",

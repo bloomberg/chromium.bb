@@ -505,8 +505,8 @@ const GURL& NavigationHandleImpl::GetBaseURLForDataURL() {
   return base_url_for_data_url_;
 }
 
-NavigationData* NavigationHandleImpl::GetNavigationData() {
-  return navigation_data_.get();
+const base::Value& NavigationHandleImpl::GetNavigationData() {
+  return navigation_data_;
 }
 
 void NavigationHandleImpl::SetOnDeferCallbackForTesting(

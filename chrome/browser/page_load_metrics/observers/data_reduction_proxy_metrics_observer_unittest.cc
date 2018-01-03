@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
@@ -36,20 +37,6 @@ namespace data_reduction_proxy {
 namespace {
 
 const char kDefaultTestUrl[] = "http://google.com";
-
-data_reduction_proxy::DataReductionProxyData* DataForNavigationHandle(
-    content::WebContents* web_contents,
-    content::NavigationHandle* navigation_handle) {
-  ChromeNavigationData* chrome_navigation_data = new ChromeNavigationData();
-  content::WebContentsTester::For(web_contents)
-      ->SetNavigationData(navigation_handle,
-                          base::WrapUnique(chrome_navigation_data));
-  data_reduction_proxy::DataReductionProxyData* data =
-      new data_reduction_proxy::DataReductionProxyData();
-  chrome_navigation_data->SetDataReductionProxyData(base::WrapUnique(data));
-
-  return data;
-}
 
 // Pingback client responsible for recording the timing information it receives
 // from a SendPingback call.
@@ -117,11 +104,17 @@ class TestDataReductionProxyMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override {
-    DataReductionProxyData* data =
-        DataForNavigationHandle(web_contents_, navigation_handle);
+    auto data = std::make_unique<DataReductionProxyData>();
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
     data->set_lofi_requested(lofi_used_);
+    ChromeNavigationData chrome_navigation_data;
+    chrome_navigation_data.SetDataReductionProxyData(std::move(data));
+
+    content::WebContentsTester::For(web_contents_)
+        ->SetNavigationData(navigation_handle,
+                            chrome_navigation_data.ToValue());
+
     return DataReductionProxyMetricsObserver::OnCommit(navigation_handle,
                                                        source_id);
   }
