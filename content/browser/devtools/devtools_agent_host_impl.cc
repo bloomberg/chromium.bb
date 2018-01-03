@@ -235,7 +235,7 @@ bool DevToolsAgentHostImpl::SendProtocolMessageToClient(
   DevToolsSession* session = SessionById(session_id);
   if (!session)
     return false;
-  session->SendMessageToClient(message);
+  session->client()->DispatchProtocolMessage(this, message);
   return true;
 }
 

@@ -59,10 +59,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       mojom::BeginNavigationParams* begin_params,
       bool* report_raw_headers);
 
-  static void OnCancelPendingNavigation(RenderFrameHost* pending,
-                                        RenderFrameHost* current);
-  static void OnBeforeNavigation(RenderFrameHost* current,
-                                 RenderFrameHost* pending);
   static void OnResetNavigationRequest(NavigationRequest* navigation_request);
 
   static std::vector<std::unique_ptr<NavigationThrottle>>
@@ -94,7 +90,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool Close() override;
   base::TimeTicks GetLastActivityTime() override;
 
-  // PlzNavigate
   RenderFrameHostImpl* GetFrameHostForTesting() { return frame_host_; }
 
  private:
@@ -125,28 +120,14 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void WasHidden() override;
   void DidReceiveCompositorFrame() override;
 
-  void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
-                                  RenderFrameHost* new_host);
-
-  void SetPending(RenderFrameHostImpl* host);
-  void CommitPending();
-  void DiscardPending();
-  void UpdateProtocolHandlers(RenderFrameHostImpl* host);
-
   bool IsChildFrame();
 
-  void OnClientsAttached();
-  void OnClientsDetached();
-
-  void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
   void DestroyOnRenderFrameGone();
-
-  bool CheckConsistency();
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
   void MaybeReattachToRenderFrame();
-  void GrantPolicy(RenderFrameHostImpl* host);
-  void RevokePolicy(RenderFrameHostImpl* host);
+  void GrantPolicy();
+  void RevokePolicy();
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
@@ -156,22 +137,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       viz::CompositorFrameMetadata frame_metadata);
   bool EnsureAgent();
 
-  class FrameHostHolder;
-
-  std::unique_ptr<FrameHostHolder> current_;
-  std::unique_ptr<FrameHostHolder> pending_;
-
-  // Stores per-host state between DisconnectWebContents and ConnectWebContents.
-  base::flat_map<int, std::string> disconnected_cookie_for_session_;
-
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   device::mojom::WakeLockPtr wake_lock_;
 #endif
-  RenderFrameHostImpl* handlers_frame_host_;
-  bool current_frame_crashed_;
-
-  // PlzNavigate
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;

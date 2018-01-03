@@ -355,22 +355,17 @@ void PageHandler::Navigate(const std::string& url,
       gurl,
       Referrer(GURL(referrer.fromMaybe("")), blink::kWebReferrerPolicyDefault),
       type, std::string());
-  if (IsBrowserSideNavigationEnabled()) {
-    std::string frame_id =
-        web_contents->GetMainFrame()->GetDevToolsFrameToken().ToString();
-    if (navigate_callback_) {
-      std::string error_string = net::ErrorToString(net::ERR_ABORTED);
-      navigate_callback_->sendSuccess(frame_id, Maybe<std::string>(),
-                                      Maybe<std::string>(error_string));
-    }
-    if (web_contents->GetMainFrame()->frame_tree_node()->navigation_request())
-      navigate_callback_ = std::move(callback);
-    else
-      callback->sendSuccess(frame_id, Maybe<std::string>(),
-                            Maybe<std::string>());
-    return;
+  std::string frame_id =
+      web_contents->GetMainFrame()->GetDevToolsFrameToken().ToString();
+  if (navigate_callback_) {
+    std::string error_string = net::ErrorToString(net::ERR_ABORTED);
+    navigate_callback_->sendSuccess(frame_id, Maybe<std::string>(),
+                                    Maybe<std::string>(error_string));
   }
-  callback->fallThrough();
+  if (web_contents->GetMainFrame()->frame_tree_node()->navigation_request())
+    navigate_callback_ = std::move(callback);
+  else
+    callback->sendSuccess(frame_id, Maybe<std::string>(), Maybe<std::string>());
 }
 
 void PageHandler::NavigationReset(NavigationRequest* navigation_request) {

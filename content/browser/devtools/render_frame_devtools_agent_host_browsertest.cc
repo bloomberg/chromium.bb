@@ -31,9 +31,6 @@ class RenderFrameDevToolsAgentHostBrowserTest : public ContentBrowserTest {
 // See https://crbug.com/695203.
 IN_PROC_BROWSER_TEST_F(RenderFrameDevToolsAgentHostBrowserTest,
                        CancelCrossOriginNavigationAfterReadyToCommit) {
-  if (!IsBrowserSideNavigationEnabled())
-    return;
-
   ControllableHttpResponse response_b(embedded_test_server(), "/response_b");
   ControllableHttpResponse response_c(embedded_test_server(), "/response_c");
   EXPECT_TRUE(embedded_test_server()->Start());

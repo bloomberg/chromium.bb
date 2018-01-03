@@ -141,8 +141,7 @@ void TargetAutoAttacher::AgentHostClosed(DevToolsAgentHost* host) {
 }
 
 bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
-  return IsBrowserSideNavigationEnabled() && auto_attach_ &&
-         attach_to_frames_ && wait_for_debugger_on_start_;
+  return auto_attach_ && attach_to_frames_ && wait_for_debugger_on_start_;
 }
 
 DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(

@@ -14,8 +14,9 @@
 
 namespace content {
 
-// static
-bool DevToolsSession::ShouldSendOnIO(const std::string& method) {
+namespace {
+
+bool ShouldSendOnIO(const std::string& method) {
   // Keep in sync with WebDevToolsAgent::ShouldInterruptForMethod.
   // TODO(dgozman): find a way to share this.
   return method == "Debugger.pause" || method == "Debugger.setBreakpoint" ||
@@ -24,6 +25,8 @@ bool DevToolsSession::ShouldSendOnIO(const std::string& method) {
          method == "Debugger.setBreakpointsActive" ||
          method == "Performance.getMetrics";
 }
+
+}  // namespace
 
 DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
                                  DevToolsAgentHostClient* client,
@@ -53,10 +56,6 @@ void DevToolsSession::AddHandler(
   handler->Wire(dispatcher_.get());
   handler->SetRenderer(process_, host_);
   handlers_[handler->name()] = std::move(handler);
-}
-
-void DevToolsSession::SetRenderFrameHost(RenderFrameHostImpl* frame_host) {
-  SetRenderer(frame_host ? frame_host->GetProcess() : nullptr, frame_host);
 }
 
 void DevToolsSession::SetRenderer(RenderProcessHost* process_host,
@@ -91,10 +90,6 @@ void DevToolsSession::ReattachToAgent(
       mojo::MakeRequest(&io_session_ptr_), state_cookie());
   session_ptr_.set_connection_error_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
-}
-
-void DevToolsSession::SendMessageToClient(const std::string& message) {
-  client_->DispatchProtocolMessage(agent_host_, message);
 }
 
 void DevToolsSession::SendMessageFromProcessorIPC(int session_id,
