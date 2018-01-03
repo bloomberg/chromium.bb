@@ -11,6 +11,18 @@ package login_manager;
 // ARC startup options sent from Chrome to session manager. This message is
 // used in SessionManagerInterface.StartArcInterface method.
 message StartArcInstanceRequest {
+  enum PackageCacheMode {
+    // Performs packages cache setup if the pre-generated cache exists.
+    DEFAULT = 0;
+    // Performs packages cache setup if the pre-generated cache exists and
+    // copies resulting packages.xml to the temporary location after
+    // SystemServer initialized the package manager.
+    COPY_ON_INIT = 1;
+    // Skips packages cache setup and copies resulting packages.xml to the
+    // temporary location after SystemServer initialized the package manager.
+    SKIP_SETUP_COPY_ON_INIT = 2;
+  }
+
   // Account ID of the user to start ARC for. This must be the same as the
   // one given in StartSession.
   optional string account_id = 1;
@@ -36,5 +48,8 @@ message StartArcInstanceRequest {
   // Option to enable native bridge experiment (b/63133475).
   optional bool native_bridge_experiment = 6;
 
-  // Next ID to use: 7
+  // Optional mode for packages cache tests.
+  optional PackageCacheMode packages_cache_mode = 7 [default = DEFAULT];
+
+  // Next ID to use: 8
 }
