@@ -89,6 +89,7 @@ FLAG_REL = 8
 FLAG_REL_LOCAL = 16
 FLAG_GENERATED_SOURCE = 32
 FLAG_CLONE = 64
+FLAG_HOT = 128
 
 
 DIFF_STATUS_UNCHANGED = 0
@@ -247,6 +248,8 @@ class BaseSymbol(object):
       parts.append('gen')
     if flags & FLAG_CLONE:
       parts.append('clone')
+    if flags & FLAG_HOT:
+      parts.append('hot')
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):

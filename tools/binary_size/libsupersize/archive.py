@@ -72,6 +72,9 @@ def _StripLinkerAddedSymbolPrefixes(raw_symbols):
     elif full_name.startswith('rel.'):
       symbol.flags |= models.FLAG_REL
       symbol.full_name = full_name[4:]
+    elif full_name.startswith('hot.'):
+      symbol.flags |= models.FLAG_HOT
+      symbol.full_name = full_name[4:]
 
 
 def _NormalizeNames(raw_symbols):
