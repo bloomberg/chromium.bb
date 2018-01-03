@@ -477,8 +477,8 @@ bool TaskTracker::IsPostingBlockShutdownTaskAfterShutdownAllowed() {
 }
 #endif
 
-int TaskTracker::GetNumIncompleteUndelayedTasksForTesting() const {
-  return subtle::NoBarrier_Load(&num_incomplete_undelayed_tasks_);
+bool TaskTracker::HasIncompleteUndelayedTasksForTesting() const {
+  return subtle::Acquire_Load(&num_incomplete_undelayed_tasks_) != 0;
 }
 
 bool TaskTracker::BeforePostTask(TaskShutdownBehavior shutdown_behavior) {
