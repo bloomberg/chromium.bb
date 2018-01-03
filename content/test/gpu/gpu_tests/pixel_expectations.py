@@ -12,6 +12,9 @@ class PixelExpectations(GpuTestExpectations):
     # self.Fail('Pixel_Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    # Needs rebaseline.
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'])
+
     # Seems to be flaky on the new AMD R7 240 drivers.
     self.Flaky('Pixel_GpuRasterization_BlueBox',
         ['win', ('amd', 0x6613)], bug=653538)
