@@ -15,8 +15,8 @@
 #include "public/web/WebView.h"
 
 namespace blink {
+namespace virtual_time_test {
 
-namespace {
 class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
  public:
   const String Result() const { return result_; }
@@ -30,7 +30,6 @@ class ScriptExecutionCallbackHelper : public WebScriptExecutionCallback {
 
   String result_;
 };
-}  // namespace
 
 class VirtualTimeTest : public SimTest {
  protected:
@@ -252,4 +251,5 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
 #undef MAYBE_AllowVirtualTimeToAdvance
 #undef MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
 #undef MAYBE_DOMTimersSuspended
+}  // namespace virtual_time_test
 }  // namespace blink
