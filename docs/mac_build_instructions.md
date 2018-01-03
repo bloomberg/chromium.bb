@@ -41,12 +41,19 @@ $ export PATH="$PATH:/path/to/depot_tools"
 
 ## Get the code
 
+Ensure that unicode filenames aren't mangled by HFS:
+
+```shell
+$ git config --global core.precomposeUnicode true
+```
+
 Create a `chromium` directory for the checkout and change to it (you can call
 this whatever you like and put it wherever you like, as long as the full path
 has no spaces):
 
 ```shell
 $ mkdir chromium && cd chromium
+$ git config --global core.precomposeUnicode true
 ```
 
 Run the `fetch` tool from `depot_tools` to check out the code and its
