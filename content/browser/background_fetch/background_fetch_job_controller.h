@@ -16,6 +16,7 @@
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,7 +35,8 @@ class BackgroundFetchRequestManager;
 // registration has been aborted, or once it has completed/failed and the
 // waitUntil promise has been resolved so UpdateUI can no longer be called).
 class CONTENT_EXPORT BackgroundFetchJobController final
-    : public BackgroundFetchDelegateProxy::Controller {
+    : public BackgroundFetchDelegateProxy::Controller,
+      public BackgroundFetchScheduler::Controller {
  public:
   using FinishedCallback =
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
@@ -50,12 +52,8 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const BackgroundFetchRegistration& registration,
       BackgroundFetchRequestManager* request_manager,
       ProgressCallback progress_callback,
-      FinishedCallback finished_callback);
+      BackgroundFetchScheduler::FinishedCallback finished_callback);
   ~BackgroundFetchJobController() override;
-
-  // Starts fetching the first few requests. The controller will continue to
-  // fetch new content until all requests have been handled.
-  void Start();
 
   // Initializes the job controller with the status of the active and completed
   // downloads. Only called when this has been loaded from the database.
@@ -74,11 +72,6 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Aborts the job including cancelling any ongoing downloads.
   void Abort();
 
-  // Returns the registration id for which this job is fetching data.
-  const BackgroundFetchRegistrationId& registration_id() const {
-    return registration_id_;
-  }
-
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
 
@@ -96,20 +89,15 @@ class CONTENT_EXPORT BackgroundFetchJobController final
       const scoped_refptr<BackgroundFetchRequestInfo>& request) override;
   void AbortFromUser() override;
 
+  // BackgroundFetchScheduler::Controller implementation:
+  bool HasMoreRequests() override;
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request) override;
+
  private:
   // Aborts a job updating the registration with the new state. If
   // |cancel_download| is true, the ongoing download is also cancelled
   // (otherwise it assumes that has already happened).
   void Abort(bool cancel_download);
-
-  // Requests the download manager to start fetching |request|.
-  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
-
-  // Called when a completed download has been marked as such in DataManager.
-  void DidMarkRequestCompleted(bool has_pending_or_active_requests);
-
-  // The registration id on behalf of which this controller is fetching data.
-  BackgroundFetchRegistrationId registration_id_;
 
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
@@ -132,8 +120,11 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Callback run each time download progress updates.
   ProgressCallback progress_callback_;
 
-  // Callback for when all fetches have completed/failed/aborted.
-  FinishedCallback finished_callback_;
+  // Number of requests that comprise the whole job.
+  int total_downloads_ = 0;
+
+  // Number of the requests that have been completed so far.
+  int completed_downloads_ = 0;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
 

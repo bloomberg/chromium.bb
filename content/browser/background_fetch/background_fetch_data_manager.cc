@@ -82,24 +82,9 @@ class BackgroundFetchDataManager::RegistrationData {
     return request;
   }
 
-  // Marks the |request| as having started with the given |download_guid|.
-  // Persistent storage needs to store the association so we can resume fetches
-  // after a browser restart, here we just verify that the |request| is active.
-  void MarkRequestAsStarted(BackgroundFetchRequestInfo* request,
-                            const std::string& download_guid) {
-    const auto iter = std::find_if(
-        active_requests_.begin(), active_requests_.end(),
-        [&request](scoped_refptr<BackgroundFetchRequestInfo> active_request) {
-          return active_request->request_index() == request->request_index();
-        });
-
-    // The |request| must have been consumed from this RegistrationData.
-    DCHECK(iter != active_requests_.end());
-  }
-
   // Marks the |request| as having completed. Verifies that the |request| is
   // currently active and moves it to the |completed_requests_| vector.
-  bool MarkRequestAsComplete(BackgroundFetchRequestInfo* request) {
+  void MarkRequestAsComplete(BackgroundFetchRequestInfo* request) {
     const auto iter = std::find_if(
         active_requests_.begin(), active_requests_.end(),
         [&request](scoped_refptr<BackgroundFetchRequestInfo> active_request) {
@@ -113,10 +98,6 @@ class BackgroundFetchDataManager::RegistrationData {
     active_requests_.erase(iter);
 
     complete_requests_downloaded_bytes_ += request->GetFileSize();
-
-    bool has_pending_or_active_requests =
-        !pending_requests_.empty() || !active_requests_.empty();
-    return has_pending_or_active_requests;
   }
 
   // Returns the vector with all completed requests part of this registration.
@@ -325,33 +306,19 @@ void BackgroundFetchDataManager::PopNextRequest(
   std::move(callback).Run(std::move(next_request));
 }
 
-void BackgroundFetchDataManager::MarkRequestAsStarted(
-    const BackgroundFetchRegistrationId& registration_id,
-    BackgroundFetchRequestInfo* request,
-    const std::string& download_guid) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  auto iter = registrations_.find(registration_id.unique_id());
-  DCHECK(iter != registrations_.end());
-
-  RegistrationData* registration_data = iter->second.get();
-  registration_data->MarkRequestAsStarted(request, download_guid);
-}
-
 void BackgroundFetchDataManager::MarkRequestAsComplete(
     const BackgroundFetchRegistrationId& registration_id,
     BackgroundFetchRequestInfo* request,
-    MarkedCompleteCallback callback) {
+    BackgroundFetchScheduler::MarkedCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto iter = registrations_.find(registration_id.unique_id());
   DCHECK(iter != registrations_.end());
 
   RegistrationData* registration_data = iter->second.get();
-  bool has_pending_or_active_requests =
-      registration_data->MarkRequestAsComplete(request);
+  registration_data->MarkRequestAsComplete(request);
 
-  std::move(callback).Run(has_pending_or_active_requests);
+  std::move(callback).Run();
 }
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(

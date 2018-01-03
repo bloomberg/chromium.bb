@@ -10,6 +10,7 @@
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_notifier.h"
+#include "content/browser/background_fetch/background_fetch_scheduler.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -47,6 +48,7 @@ BackgroundFetchContext::BackgroundFetchContext(
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
       delegate_proxy_(browser_context_->GetBackgroundFetchDelegate()),
+      scheduler_(std::make_unique<BackgroundFetchScheduler>(&data_manager_)),
       weak_factory_(this) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -182,7 +184,8 @@ void BackgroundFetchContext::CreateController(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      &delegate_proxy_, registration_id, options, registration, &data_manager_,
+      &delegate_proxy_, registration_id, options, registration,
+      scheduler_.get(),
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
                           base::Unretained(registration_notifier_.get())),
@@ -197,9 +200,7 @@ void BackgroundFetchContext::CreateController(
       data_manager_.GetTotalNumberOfRequests(registration_id),
       std::vector<std::string>() /* outstanding download GUIDs */);
 
-  // Start fetching the first few requests immediately. At some point in the
-  // future we may want a more elaborate scheduling mechanism here.
-  controller->Start();
+  scheduler_->AddJobController(controller.get());
 
   job_controllers_.insert(
       std::make_pair(registration_id.unique_id(), std::move(controller)));

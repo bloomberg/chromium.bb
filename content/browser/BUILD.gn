@@ -411,6 +411,8 @@ jumbo_source_set("browser") {
     "background_fetch/background_fetch_request_info.cc",
     "background_fetch/background_fetch_request_info.h",
     "background_fetch/background_fetch_request_manager.h",
+    "background_fetch/background_fetch_scheduler.cc",
+    "background_fetch/background_fetch_scheduler.h",
     "background_fetch/background_fetch_service_impl.cc",
     "background_fetch/background_fetch_service_impl.h",
     "background_fetch/storage/cleanup_task.cc",
