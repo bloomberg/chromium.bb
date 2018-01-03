@@ -164,9 +164,10 @@ class BASE_EXPORT TaskTracker {
   virtual bool IsPostingBlockShutdownTaskAfterShutdownAllowed();
 #endif
 
-  // Returns the number of undelayed tasks that haven't completed their
-  // execution (still queued or in progress).
-  int GetNumIncompleteUndelayedTasksForTesting() const;
+  // Returns true if there are undelayed tasks that haven't completed their
+  // execution (still queued or in progress). If it returns false: the side-
+  // effects of all completed tasks are guaranteed to be visible to the caller.
+  bool HasIncompleteUndelayedTasksForTesting() const;
 
  private:
   class State;

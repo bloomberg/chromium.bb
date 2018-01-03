@@ -209,10 +209,10 @@ void ScopedTaskEnvironment::RunUntilIdle() {
     // the above logic as it'd then be possible for a TaskScheduler task to be
     // running during the DisallowRunTasks() test, causing it to fail, but then
     // post to the main thread and complete before the loop's condition is
-    // verified which could result in GetNumIncompleteUndelayedTasksForTesting()
-    // returning 0 and the loop erroneously exiting with a pending task on the
-    // main thread.
-    if (task_tracker_->GetNumIncompleteUndelayedTasksForTesting() == 0)
+    // verified which could result in HasIncompleteUndelayedTasksForTesting()
+    // returning false and the loop erroneously exiting with a pending task on
+    // the main thread.
+    if (!task_tracker_->HasIncompleteUndelayedTasksForTesting())
       break;
   }
 
