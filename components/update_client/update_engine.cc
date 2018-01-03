@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
@@ -43,7 +42,7 @@ UpdateContext::UpdateContext(
       crx_downloader_factory(crx_downloader_factory) {
   for (const auto& id : ids)
     components.insert(
-        std::make_pair(id, base::MakeUnique<Component>(*this, id)));
+        std::make_pair(id, std::make_unique<Component>(*this, id)));
 }
 
 UpdateContext::~UpdateContext() {}
@@ -79,7 +78,7 @@ void UpdateEngine::Update(bool is_foreground,
     return;
   }
 
-  const auto result = update_contexts_.insert(base::MakeUnique<UpdateContext>(
+  const auto result = update_contexts_.insert(std::make_unique<UpdateContext>(
       config_, is_foreground, ids, std::move(crx_data_callback),
       notify_observers_callback_, std::move(callback),
       crx_downloader_factory_));
@@ -345,7 +344,7 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const auto result = update_contexts_.insert(base::MakeUnique<UpdateContext>(
+  const auto result = update_contexts_.insert(std::make_unique<UpdateContext>(
       config_, false, std::vector<std::string>{id},
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
       std::move(callback), nullptr));

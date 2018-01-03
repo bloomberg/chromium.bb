@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -94,7 +93,7 @@ static std::unique_ptr<std::string> GetAttributePtr(
   for (xmlAttr* attr = node->properties; attr != nullptr; attr = attr->next) {
     if (!xmlStrcmp(attr->name, name) && attr->children &&
         attr->children->content) {
-      return base::MakeUnique<std::string>(
+      return std::make_unique<std::string>(
           reinterpret_cast<const char*>(attr->children->content));
     }
   }

@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_checker.h"
@@ -133,7 +132,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
   if (IsEncryptionRequired(components))
     RemoveUnsecureUrls(&urls);
 
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       config_->EnabledCupSigning(),
       BuildUpdateCheckRequest(*config_, ids_checked_, components, metadata_,
@@ -224,7 +223,7 @@ void UpdateCheckerImpl::UpdateCheckFailed(const IdToComponentPtrMap& components,
 std::unique_ptr<UpdateChecker> UpdateChecker::Create(
     const scoped_refptr<Configurator>& config,
     PersistedData* persistent) {
-  return base::MakeUnique<UpdateCheckerImpl>(config, persistent);
+  return std::make_unique<UpdateCheckerImpl>(config, persistent);
 }
 
 }  // namespace update_client

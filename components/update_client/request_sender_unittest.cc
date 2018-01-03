@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -87,7 +86,7 @@ RequestSenderTest::~RequestSenderTest() {}
 void RequestSenderTest::SetUp() {
   config_ = base::MakeRefCounted<TestConfigurator>();
   interceptor_factory_ =
-      base::MakeUnique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
+      std::make_unique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
   post_interceptor_1_ =
       interceptor_factory_->CreateInterceptorForPath(kUrlPath1);
   post_interceptor_2_ =
@@ -139,7 +138,7 @@ TEST_F(RequestSenderTest, RequestSendSuccess) {
       new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
 
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       false, "test", urls,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
@@ -177,7 +176,7 @@ TEST_F(RequestSenderTest, RequestSendSuccessWithFallback) {
   EXPECT_TRUE(post_interceptor_2_->ExpectRequest(new PartialMatch("test")));
 
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       false, "test", urls,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
@@ -206,7 +205,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
       post_interceptor_2_->ExpectRequest(new PartialMatch("test"), 403));
 
   const std::vector<GURL> urls = {GURL(kUrl1), GURL(kUrl2)};
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       false, "test", urls,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
@@ -230,7 +229,7 @@ TEST_F(RequestSenderTest, RequestSendFailed) {
 // Tests that the request fails when no urls are provided.
 TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
   std::vector<GURL> urls;
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       false, "test", urls,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,
@@ -246,7 +245,7 @@ TEST_F(RequestSenderTest, RequestSendCupError) {
       new PartialMatch("test"), test_file("updatecheck_reply_1.xml")));
 
   const std::vector<GURL> urls = {GURL(kUrl1)};
-  request_sender_ = base::MakeUnique<RequestSender>(config_);
+  request_sender_ = std::make_unique<RequestSender>(config_);
   request_sender_->Send(
       true, "test", urls,
       base::BindOnce(&RequestSenderTest::RequestSenderComplete,

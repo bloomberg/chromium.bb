@@ -16,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_checker.h"
@@ -69,7 +68,7 @@ UpdateClientImpl::UpdateClientImpl(
     : is_stopped_(false),
       config_(config),
       ping_manager_(std::move(ping_manager)),
-      update_engine_(base::MakeUnique<UpdateEngine>(
+      update_engine_(std::make_unique<UpdateEngine>(
           config,
           update_checker_factory,
           crx_downloader_factory,
@@ -243,7 +242,7 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
   return base::MakeRefCounted<UpdateClientImpl>(
-      config, base::MakeUnique<PingManager>(config), &UpdateChecker::Create,
+      config, std::make_unique<PingManager>(config), &UpdateChecker::Create,
       &CrxDownloader::Create);
 }
 

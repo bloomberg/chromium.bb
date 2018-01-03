@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -177,7 +176,7 @@ class UpdateClientTest : public testing::Test {
   scoped_refptr<update_client::TestConfigurator> config_ =
       base::MakeRefCounted<TestConfigurator>();
   std::unique_ptr<TestingPrefServiceSimple> pref_ =
-      base::MakeUnique<TestingPrefServiceSimple>();
+      std::make_unique<TestingPrefServiceSimple>();
   std::unique_ptr<update_client::PersistedData> metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientTest);
@@ -187,7 +186,7 @@ constexpr int UpdateClientTest::kNumWorkerThreads_;
 
 UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
-  metadata_ = base::MakeUnique<PersistedData>(pref_.get(), nullptr);
+  metadata_ = std::make_unique<PersistedData>(pref_.get(), nullptr);
 }
 
 UpdateClientTest::~UpdateClientTest() {
@@ -237,7 +236,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -270,7 +269,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -288,7 +287,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -347,7 +346,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -429,7 +428,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -482,7 +481,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -557,7 +556,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -661,7 +660,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -739,7 +738,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -825,7 +824,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -926,7 +925,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -1001,7 +1000,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1091,7 +1090,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -1208,7 +1207,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -1289,7 +1288,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1417,7 +1416,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -1476,7 +1475,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -1529,7 +1528,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1603,7 +1602,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -1722,7 +1721,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -1815,7 +1814,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -1904,7 +1903,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -1937,7 +1936,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -1954,10 +1953,10 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
   };
 
   std::unique_ptr<PingManager> ping_manager =
-      base::MakeUnique<FakePingManager>(config());
+      std::make_unique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2015,7 +2014,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2080,7 +2079,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2137,7 +2136,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2206,7 +2205,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2240,7 +2239,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2257,10 +2256,10 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
   };
 
   std::unique_ptr<FakePingManager> ping_manager =
-      base::MakeUnique<FakePingManager>(config());
+      std::make_unique<FakePingManager>(config());
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2310,7 +2309,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2325,7 +2324,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2336,7 +2335,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManagerImpl>(config()),
+          config(), std::make_unique<FakePingManagerImpl>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   const std::vector<std::string> empty_id_list;
@@ -2400,7 +2399,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   update_client->SendUninstallPing(
@@ -2457,7 +2456,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2499,7 +2498,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2517,7 +2516,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2630,7 +2629,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2736,7 +2735,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2800,7 +2799,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
   config()->SetEnabledComponentUpdates(false);
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2876,7 +2875,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -2900,7 +2899,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -2918,7 +2917,7 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   MockObserver observer;
@@ -2956,7 +2955,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -3021,7 +3020,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -3081,7 +3080,7 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   // The action is a program which returns 1877345072 as a hardcoded value.
@@ -3114,7 +3113,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     static std::unique_ptr<UpdateChecker> Create(
         const scoped_refptr<Configurator>& config,
         PersistedData* metadata) {
-      return base::MakeUnique<FakeUpdateChecker>();
+      return std::make_unique<FakeUpdateChecker>();
     }
 
     void CheckForUpdates(const std::vector<std::string>& ids_to_check,
@@ -3160,7 +3159,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
     static std::unique_ptr<CrxDownloader> Create(
         bool is_background_download,
         net::URLRequestContextGetter* context_getter) {
-      return base::MakeUnique<FakeCrxDownloader>();
+      return std::make_unique<FakeCrxDownloader>();
     }
 
     FakeCrxDownloader() : CrxDownloader(nullptr) {}
@@ -3219,7 +3218,7 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
-          config(), base::MakeUnique<FakePingManager>(config()),
+          config(), std::make_unique<FakePingManager>(config()),
           &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
 
   // The action is a program which returns 1877345072 as a hardcoded value.

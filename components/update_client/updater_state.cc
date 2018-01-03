@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +29,7 @@ std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   UpdaterState updater_state(is_machine);
   updater_state.ReadState();
-  return base::MakeUnique<Attributes>(updater_state.BuildAttributes());
+  return std::make_unique<Attributes>(updater_state.BuildAttributes());
 #else
   return nullptr;
 #endif  // OS_WIN or Mac

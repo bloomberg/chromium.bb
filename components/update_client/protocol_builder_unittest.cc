@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "components/update_client/protocol_builder.h"
@@ -53,7 +52,7 @@ TEST(UpdateClientUtils, BuildProtocolRequestUpdaterStateAttributes) {
   attributes["updatepolicy"] = "-1";
   request = BuildProtocolRequest(
       "", "", "", "", "", "", "", "",
-      base::MakeUnique<UpdaterState::Attributes>(attributes));
+      std::make_unique<UpdaterState::Attributes>(attributes));
   EXPECT_NE(std::string::npos, request.find(" domainjoined=\"1\""));
   const std::string updater_element =
       "<updater autoupdatecheckenabled=\"0\" "
