@@ -146,8 +146,9 @@ def _GetSymbolsMapping(dry_run, file_mapping):
     symbols_mapping[os.path.basename(target)] = source
     symbols_mapping[target] = source
 
-    if dry_run:
-      print 'Symbols:', binary_name, '->', symbols_mapping[target]
+  if dry_run:
+    for target, path in symbols_mapping.iteritems():
+      print 'Symbols:', target, '->', path
 
   return symbols_mapping
 
