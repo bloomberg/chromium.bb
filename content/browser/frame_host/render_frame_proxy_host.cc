@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -18,6 +19,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/scoped_active_url.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -131,6 +133,10 @@ bool RenderFrameProxyHost::Send(IPC::Message *msg) {
 }
 
 bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
+  // Crash reports trigerred by IPC messages for this proxy should be associated
+  // with the URL of the current RenderFrameHost that is being proxied.
+  ScopedActiveURL scoped_active_url(this);
+
   if (cross_process_frame_connector_.get() &&
       cross_process_frame_connector_->OnMessageReceived(msg))
     return true;

@@ -1448,6 +1448,8 @@ jumbo_source_set("browser") {
     "sandbox_ipc_linux.h",
     "sandbox_parameters_mac.h",
     "sandbox_parameters_mac.mm",
+    "scoped_active_url.cc",
+    "scoped_active_url.h",
     "screen_orientation/screen_orientation_provider.cc",
     "screen_orientation/screen_orientation_provider.h",
     "service_manager/common_browser_interfaces.cc",

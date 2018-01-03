@@ -73,6 +73,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_interface_binders.h"
+#include "content/browser/scoped_active_url.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -845,6 +846,12 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!render_frame_created_)
     return false;
 
+  // Crash reports trigerred by IPC messages for this frame should be associated
+  // with its URL.
+  // TODO(lukasza): Also call SetActiveURL for mojo messages dispatched to
+  // either the FrameHost interface or to interfaces bound by this frame.
+  ScopedActiveURL scoped_active_url(this);
+
   // This message map is for handling internal IPC messages which should not
   // be dispatched to other objects.
   bool handled = true;
@@ -1511,6 +1518,13 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
         validated_params,
     service_manager::mojom::InterfaceProviderRequest
         interface_provider_request) {
+  // DidCommitProvisionalLoad IPC should be associated with the URL being
+  // committed (not with the *last* committed URL that most other IPCs are
+  // associated with).
+  ScopedActiveURL scoped_active_url(
+      validated_params->url,
+      frame_tree_node()->frame_tree()->root()->current_origin());
+
   ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();
 

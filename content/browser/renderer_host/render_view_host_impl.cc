@@ -43,6 +43,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/scoped_active_url.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
@@ -732,6 +733,10 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
       return true;
     }
   }
+
+  // Crash reports trigerred by the IPC messages below should be associated
+  // with URL of the main frame.
+  ScopedActiveURL scoped_active_url(this);
 
   if (delegate_->OnMessageReceived(this, msg))
     return true;
