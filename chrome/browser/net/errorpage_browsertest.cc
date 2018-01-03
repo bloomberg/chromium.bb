@@ -464,24 +464,6 @@ class DNSErrorPageTest : public ErrorPageTest {
         base::BindRepeating(
             [](DNSErrorPageTest* owner,
                content::URLLoaderInterceptor::RequestParams* params) {
-              // Handle mock failed request. The error code is embedded in the
-              // query.  Here we strip it out, and call OnComplete with it.
-              // TODO(dougt) mock.failed.request handling can be moved into the
-              // URLLoaderInterceptor implementation so that we can share this
-              // with other tests.
-              if (params->url_request.url.GetWithEmptyPath().spec() ==
-                  "http://mock.failed.request/") {
-                std::string query = params->url_request.url.query();
-                std::string error_code = query.substr(query.find("=") + 1);
-
-                int error = 0;
-                base::StringToInt(error_code, &error);
-                network::URLLoaderCompletionStatus status;
-                status.error_code = error;
-                params->client->OnComplete(status);
-                return true;
-              }
-
               // Add an interceptor that serves LinkDoctor responses
               if (google_util::LinkDoctorBaseURL() == params->url_request.url) {
                 // Send RequestCreated so that anyone blocking on

@@ -22,6 +22,9 @@ class URLLoaderFactoryGetter;
 //     -at ResourceMessageFilter for non network-service code path
 //     -by sending renderer an intermediate URLLoaderFactory for network-service
 //      codepath, as that normally routes directly to the network process
+//     -http(s)://mock.failed.request/foo URLs internally, copying the behavior
+//      of net::URLRequestFailedJob
+//
 // Notes:
 //  -intercepting frame requests doesn't work yet for non network-service case
 //   (will work once http://crbug.com/747130 is fixed)

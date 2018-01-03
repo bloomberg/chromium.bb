@@ -50,9 +50,23 @@ class URLLoaderInterceptor::Interceptor : public mojom::URLLoaderFactory {
     params.client = std::move(client);
     params.traffic_annotation = traffic_annotation;
     // We don't intercept the blob URL for plznavigate requests.
-    if (url_request.resource_body_stream_url.is_empty() &&
+    if (params.url_request.resource_body_stream_url.is_empty() &&
         parent_->callback_.Run(&params))
       return;
+
+    // mock.failed.request is a special request whereby the query indicates what
+    // error code to respond with.
+    if (params.url_request.url.DomainIs("mock.failed.request")) {
+      std::string query = params.url_request.url.query();
+      std::string error_code = query.substr(query.find("=") + 1);
+
+      int error = 0;
+      base::StringToInt(error_code, &error);
+      network::URLLoaderCompletionStatus status;
+      status.error_code = error;
+      params.client->OnComplete(status);
+      return;
+    }
 
     original_factory_getter_.Run()->CreateLoaderAndStart(
         std::move(params.request), params.routing_id, params.request_id,
@@ -144,7 +158,7 @@ URLLoaderInterceptor::URLLoaderInterceptor(const InterceptCallback& callback,
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (intercept_subresources &&
+  if (intercept_subresources_ &&
       base::FeatureList::IsEnabled(features::kNetworkService)) {
     RenderFrameHostImpl::SetNetworkFactoryForTesting(base::BindRepeating(
         &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
