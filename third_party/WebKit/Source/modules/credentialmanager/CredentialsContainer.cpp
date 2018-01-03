@@ -100,8 +100,16 @@ bool IsSameOriginWithAncestors(const Frame* frame) {
 bool CheckSecurityRequirementsBeforeRequest(
     ScriptPromiseResolver* resolver,
     RequiredOriginType required_origin_type) {
-  // Credential Management is not exposed to Workers or Worklets, so the current
-  // realm execution context must have a responsible browsing context.
+  // Ignore calls if the current realm execution context is no longer valid,
+  // e.g., because the responsible document was detached.
+  DCHECK(resolver->GetExecutionContext());
+  if (resolver->GetExecutionContext()->IsContextDestroyed()) {
+    resolver->Reject();
+    return false;
+  }
+
+  // The API is not exposed to Workers or Worklets, so if the current realm
+  // execution context is valid, it must have a responsible browsing context.
   SECURITY_CHECK(resolver->GetFrame());
 
   String error_message;
