@@ -54,11 +54,6 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
   }
 }
 
-float GetDeviceScaleFactor() {
-  views::LinuxUI* linux_ui = views::LinuxUI::instance();
-  return linux_ui ? linux_ui->GetDeviceScaleFactor() : 1;
-}
-
 }  // namespace
 
 namespace libgtkui {
@@ -233,6 +228,15 @@ void ParseButtonLayout(const std::string& button_string,
 }
 
 #if GTK_MAJOR_VERSION > 2
+namespace {
+
+float GetDeviceScaleFactor() {
+  views::LinuxUI* linux_ui = views::LinuxUI::instance();
+  return linux_ui ? linux_ui->GetDeviceScaleFactor() : 1;
+}
+
+}  // namespace
+
 void* GetGdkSharedLibrary() {
   std::string lib_name =
       "libgdk-" + std::to_string(GTK_MAJOR_VERSION) + ".so.0";
