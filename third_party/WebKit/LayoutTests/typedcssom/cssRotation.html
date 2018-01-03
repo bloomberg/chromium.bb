@@ -111,28 +111,4 @@ test(() => {
   });
 }, "Invalid arguments to constructor should throw");
 
-test(() => {
-  // Obtained by doing the following in a console:
-  // $0.style.transform = 'rotate3d(1, 2, 3, 10rad)';
-  // getComputedStyle($0).transform
-  let expected3DMatrix = new DOMMatrixReadOnly(
-      [-0.707709, -0.173463, 0.684878, 0,
-      0.698912, -0.313623, 0.642778, 0,
-      0.103295, 0.933569, 0.343189, 0,
-      0, 0, 0, 1]);
-  let expected2DMatrix = new DOMMatrixReadOnly(
-      [Math.cos(10), Math.sin(10), -Math.sin(10), Math.cos(10), 0, 0]);
-
-  let rotation = new CSSRotation(1, 2, 3, CSS.rad(10));
-  let transformValue = new CSSTransformValue([rotation]);
-
-  assert_matrix_approx_equals(
-      transformValue.toMatrix(), expected3DMatrix, EPSILON);
-
-  rotation.is2D = true;
-
-  assert_matrix_approx_equals(
-      transformValue.toMatrix(), expected2DMatrix, EPSILON);
-}, "x, y, and z attributes have no effect on toMatrix if is2D is set to true");
-
 </script>
