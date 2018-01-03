@@ -58,7 +58,9 @@ class WebPointerProperties {
       PointerType pointer_type_param = PointerType::kUnknown,
       Button button_param = Button::kNoButton,
       WebFloatPoint position_in_widget = WebFloatPoint(),
-      WebFloatPoint position_in_screen = WebFloatPoint())
+      WebFloatPoint position_in_screen = WebFloatPoint(),
+      int movement_x = 0,
+      int movement_y = 0)
       : id(id_param),
         force(std::numeric_limits<float>::quiet_NaN()),
         tilt_x(0),
@@ -67,8 +69,8 @@ class WebPointerProperties {
         twist(0),
         button(button_param),
         pointer_type(pointer_type_param),
-        movement_x(0),
-        movement_y(0),
+        movement_x(movement_x),
+        movement_y(movement_y),
         position_in_widget_(position_in_widget),
         position_in_screen_(position_in_screen) {}
 

@@ -371,11 +371,36 @@ WebHitTestResult WebFrameWidgetImpl::HitTestResultAt(const WebPoint& point) {
 
 const WebInputEvent* WebFrameWidgetImpl::current_input_event_ = nullptr;
 
+WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
+  if (doing_drag_and_drop_)
+    return WebInputEventResult::kHandledSuppressed;
+
+  if (!GetPage())
+    return WebInputEventResult::kNotHandled;
+
+  if (local_root_) {
+    if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
+      devtools->DispatchBufferedTouchEvents();
+  }
+  if (IgnoreInputEvents())
+    return WebInputEventResult::kNotHandled;
+
+  return local_root_->GetFrame()
+      ->GetEventHandler()
+      .DispatchBufferedTouchEvents();
+}
+
 WebInputEventResult WebFrameWidgetImpl::HandleInputEvent(
+    const WebCoalescedInputEvent& coalesced_event) {
+  return HandleInputEventIncludingTouch(coalesced_event);
+}
+
+WebInputEventResult WebFrameWidgetImpl::HandleInputEventInternal(
     const WebCoalescedInputEvent& coalesced_event) {
   const WebInputEvent& input_event = coalesced_event.Event();
   TRACE_EVENT1("input", "WebFrameWidgetImpl::handleInputEvent", "type",
                WebInputEvent::GetName(input_event.GetType()));
+  DCHECK(!WebInputEvent::IsTouchEventType(input_event.GetType()));
 
   // If a drag-and-drop operation is in progress, ignore input events.
   if (doing_drag_and_drop_)

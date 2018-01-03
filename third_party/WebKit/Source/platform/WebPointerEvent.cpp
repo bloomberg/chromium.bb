@@ -68,12 +68,14 @@ WebPointerEvent::WebPointerEvent(WebInputEvent::Type type,
   SetModifiers(mouse_event.GetModifiers());
 }
 
-WebPointerEvent::WebPointerEvent(WebPointerProperties::PointerType type,
-                                 double time_stamp_seconds)
-    : WebPointerEvent() {
-  pointer_type = type;
-  SetTimeStampSeconds(time_stamp_seconds);
-  SetType(WebInputEvent::Type::kPointerCausedUaAction);
+WebPointerEvent WebPointerEvent::CreatePointerCausesUaActionEvent(
+    WebPointerProperties::PointerType type,
+    double time_stamp_seconds) {
+  WebPointerEvent event;
+  event.pointer_type = type;
+  event.SetTimeStampSeconds(time_stamp_seconds);
+  event.SetType(WebInputEvent::Type::kPointerCausedUaAction);
+  return event;
 }
 
 WebPointerEvent WebPointerEvent::WebPointerEventInRootFrame() const {
