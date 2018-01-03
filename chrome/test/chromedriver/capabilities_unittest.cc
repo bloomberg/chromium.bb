@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/strings/pattern.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
@@ -530,11 +531,11 @@ TEST(ParseCapabilities, MobileEmulationDeviceName) {
 
   ASSERT_EQ(1u, capabilities.switches.GetSize());
   ASSERT_TRUE(capabilities.switches.HasSwitch("user-agent"));
-  ASSERT_EQ(
+  ASSERT_TRUE(base::MatchPattern(
+      capabilities.switches.GetSwitchValue("user-agent"),
       "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) "
-      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3227.0 Mobile "
-      "Safari/537.36",
-      capabilities.switches.GetSwitchValue("user-agent"));
+      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/*.*.*.* Mobile "
+      "Safari/537.36"));
 
   ASSERT_EQ(360, capabilities.device_metrics->width);
   ASSERT_EQ(640, capabilities.device_metrics->height);

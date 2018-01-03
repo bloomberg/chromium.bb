@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file was generated at (2017-09-29 09:51:48.959567) by running:
+// This file was generated at (2018-01-03 09:47:36.639726) by running:
 //     ./chrome/test/chromedriver/embed_mobile_devices_in_cpp.py --directory
 //     chrome/test/chromedriver/chrome/
 //     third_party/WebKit/Source/devtools/front_end/emulated_devices/module.json
