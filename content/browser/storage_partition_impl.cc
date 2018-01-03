@@ -458,6 +458,9 @@ StoragePartitionImpl::StoragePartitionImpl(
 StoragePartitionImpl::~StoragePartitionImpl() {
   browser_context_ = nullptr;
 
+  if (url_loader_factory_getter_)
+    url_loader_factory_getter_->OnStoragePartitionDestroyed();
+
   if (GetDatabaseTracker()) {
     GetDatabaseTracker()->task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&storage::DatabaseTracker::Shutdown,

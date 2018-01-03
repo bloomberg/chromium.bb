@@ -26,12 +26,17 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT URLLoaderFactoryGetter();
 
   // Initializes this object on the UI thread. The |partition| is used to
-  // initialize the URLLoaderFactories for the network service and AppCache.
+  // initialize the URLLoaderFactories for the network service and AppCache, and
+  // will be cached to recover from connection error.
   void Initialize(StoragePartitionImpl* partition);
+
+  // Clear the cached pointer to |StoragePartitionImpl| on the UI thread. Should
+  // be called when the partition is going away.
+  void OnStoragePartitionDestroyed();
 
   // Called on the IO thread to get the URLLoaderFactory to the network service.
   // The pointer shouldn't be cached.
-  mojom::URLLoaderFactory* GetNetworkFactory();
+  CONTENT_EXPORT mojom::URLLoaderFactory* GetNetworkFactory();
 
   // Called on the IO thread to get the URLLoaderFactory to the blob service.
   // The pointer shouldn't be cached.
@@ -56,6 +61,9 @@ class URLLoaderFactoryGetter
   CONTENT_EXPORT static void SetGetNetworkFactoryCallbackForTesting(
       const GetNetworkFactoryCallback& get_network_factory_callback);
 
+  // Call |network_factory_.FlushForTesting()| on IO thread. For test use only.
+  CONTENT_EXPORT void FlushNetworkInterfaceOnIOThreadForTesting();
+
  private:
   friend class base::DeleteHelper<URLLoaderFactoryGetter>;
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
@@ -64,10 +72,22 @@ class URLLoaderFactoryGetter
   void InitializeOnIOThread(mojom::URLLoaderFactoryPtrInfo network_factory,
                             mojom::URLLoaderFactoryPtrInfo blob_factory);
 
+  // Send |network_factory_request| to cached |StoragePartitionImpl|.
+  void HandleNetworkFactoryRequestOnUIThread(
+      mojom::URLLoaderFactoryRequest network_factory_request);
+
+  // Call |network_factory_.FlushForTesting()|. For test use only.
+  void FlushNetworkInterfaceForTesting();
+
   // Only accessed on IO thread.
   mojom::URLLoaderFactoryPtr network_factory_;
   mojom::URLLoaderFactoryPtr blob_factory_;
   mojom::URLLoaderFactory* test_factory_ = nullptr;
+
+  // Used to re-create |network_factory_| when connection error happens. Can
+  // only be accessed on UI thread. Must be cleared by |StoragePartitionImpl|
+  // when it's going away.
+  StoragePartitionImpl* partition_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryGetter);
 };
