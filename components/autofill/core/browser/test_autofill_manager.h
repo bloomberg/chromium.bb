@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_TEST_AUTOFILL_MANAGER_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -34,11 +36,12 @@ class TestAutofillManager : public AutofillManager {
                       AutofillClient* client,
                       TestPersonalDataManager* personal_data);
   // Called by CreditCardSaveManagerTest.
-  TestAutofillManager(AutofillDriver* driver,
-                      AutofillClient* client,
-                      TestPersonalDataManager* personal_data,
-                      CreditCardSaveManager* credit_card_save_manager,
-                      payments::TestPaymentsClient* payments_client);
+  TestAutofillManager(
+      AutofillDriver* driver,
+      AutofillClient* client,
+      TestPersonalDataManager* personal_data,
+      std::unique_ptr<CreditCardSaveManager> credit_card_save_manager,
+      payments::TestPaymentsClient* payments_client);
   ~TestAutofillManager() override;
 
   // AutofillManager overrides.
