@@ -88,6 +88,7 @@ ifeq ($(CONFIG_LOOP_RESTORATION),yes)
 AV1_COMMON_SRCS-yes += common/restoration.h
 AV1_COMMON_SRCS-yes += common/restoration.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/selfguided_sse4.c
+AV1_COMMON_SRCS-$(HAVE_AVX2) += common/x86/selfguided_avx2.c
 endif
 ifeq ($(CONFIG_INTRA_EDGE),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/intra_edge_sse4.c

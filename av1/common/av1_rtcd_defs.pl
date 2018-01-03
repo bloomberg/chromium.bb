@@ -509,10 +509,10 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
 if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
   add_proto qw/void apply_selfguided_restoration/, "const uint8_t *dat, int width, int height, int stride, int eps, const int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf, int bit_depth, int highbd";
-  specialize qw/apply_selfguided_restoration sse4_1/;
+  specialize qw/apply_selfguided_restoration sse4_1 avx2/;
 
   add_proto qw/void av1_selfguided_restoration/, "const uint8_t *dgd, int width, int height, int stride, int32_t *flt1, int32_t *flt2, int flt_stride, const sgr_params_type *params, int bit_depth, int highbd";
-  specialize qw/av1_selfguided_restoration sse4_1/;
+  specialize qw/av1_selfguided_restoration sse4_1 avx2/;
 }
 
 # CONVOLVE_ROUND/COMPOUND_ROUND functions

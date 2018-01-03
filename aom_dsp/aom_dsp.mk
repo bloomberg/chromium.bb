@@ -16,6 +16,7 @@ DSP_SRCS-yes += aom_dsp_common.h
 DSP_SRCS-$(HAVE_MSA)    += mips/macros_msa.h
 
 DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms.h
+DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms_avx2.h
 
 # bit reader
 DSP_SRCS-yes += prob.h

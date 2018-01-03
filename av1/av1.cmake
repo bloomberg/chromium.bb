@@ -420,6 +420,10 @@ if (CONFIG_LOOP_RESTORATION)
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/selfguided_sse4.c")
 
+  set(AOM_AV1_COMMON_INTRIN_AVX2
+      ${AOM_AV1_COMMON_INTRIN_AVX2}
+      "${AOM_ROOT}/av1/common/x86/selfguided_avx2.c")
+
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/pickrst.c"
