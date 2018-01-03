@@ -1050,10 +1050,8 @@ GLenum ResourceProvider::GetImageTextureTarget(
     gfx::BufferUsage usage,
     viz::ResourceFormat format) const {
   gfx::BufferFormat buffer_format = BufferFormat(format);
-  bool found = std::find(texture_target_exception_list_.begin(),
-                         texture_target_exception_list_.end(),
-                         std::make_pair(usage, buffer_format)) !=
-               texture_target_exception_list_.end();
+  bool found = base::ContainsValue(texture_target_exception_list_,
+                                   std::make_pair(usage, buffer_format));
   return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
 }
 
