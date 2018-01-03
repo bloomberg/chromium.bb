@@ -1,5 +1,5 @@
 table: [tables/unicode.dis, tables/mn-MN.utb]
 tests:
-  - # Hello world
+  - # Hello world  
     - Сайн байна уу дэлхий
-    - ⠘⠎⠁⠯⠝ ⠃⠁⠯⠝⠁ ⠥⠥ ⠙⠪⠇⠓⠊⠯
+    - ⠠⠎⠁⠯⠝ ⠃⠁⠯⠝⠁ ⠥⠥ ⠙⠪⠇⠓⠊⠯

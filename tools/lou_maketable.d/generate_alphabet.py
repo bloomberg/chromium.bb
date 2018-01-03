@@ -31,7 +31,7 @@ def main():
     args = parser.parse_args()
     load_table(args.TABLE)
     conn, c = open_dictionary(args.DICTIONARY)
-    c.execute("SELECT text FROM dictionary WHERE chunked_text IS NOT NULL")
+    c.execute("SELECT text FROM dictionary WHERE braille IS NOT NULL")
     alphabet = ""
     for text, in c.fetchall():
         alphabet = "".join(set(alphabet + text))

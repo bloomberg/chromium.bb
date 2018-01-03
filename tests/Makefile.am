@@ -37,9 +37,7 @@ inpos_match_replace_SOURCES = inpos_match_replace.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
-outpos_SOURCES = outpos.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
-pass1Only_SOURCES = pass1Only.c
 pass2_SOURCES = pass2.c
 pass2_inpos_SOURCES = pass2_inpos.c
 present_progressive_SOURCES = default_table.h present_progressive.c
@@ -82,9 +80,7 @@ program_TESTS =					\
 	lastworditalafter			\
 	letterDefTest				\
 	logging					\
-	outpos					\
 	pass0_typebuf				\
-	pass1Only				\
 	pass2					\
 	pass2_inpos				\
 	present_progressive			\
@@ -92,7 +88,7 @@ program_TESTS =					\
 	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	uplow_with_unicode				\
+	uplow_with_unicode			\
 	suggestChunks
 
 check_PROGRAMS = $(program_TESTS)
@@ -104,7 +100,6 @@ if !CROSS_COMPILING
 dist_check_SCRIPTS +=	 			\
 	check_all_tables.pl			\
 	check_endless_loop.pl			\
-	check_included_tables.sh		\
 	multiple_table_path.pl			\
 	ueb_test_data.pl
 endif
@@ -116,29 +111,29 @@ XFAIL_TESTS =					\
 	present_progressive			\
 	lastworditalafter			\
 	en_gb_g1_italics			\
-	squash_space				\
-	compbrlAtCursor
+	squash_space
 
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
 	yaml/back_cont_then_punc.yaml		\
+	yaml/before_begmidword.yaml		\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/capsword_for_back.yaml		\
 	yaml/chr-us-g1_harness.yaml		\
-	yaml/before_begmidword.yaml		\
+	yaml/compbrlAtCursor_with_equals.yaml	\
 	yaml/da-dk-g08.yaml			\
-	yaml/da-dk-g16.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
 	yaml/da-dk-g16-lit.yaml			\
+	yaml/da-dk-g16.yaml			\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
 	yaml/da-dk-g18.yaml			\
-	yaml/da-dk-g26.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
 	yaml/da-dk-g26-lit.yaml			\
-	yaml/da-dk-g26l.yaml			\
+	yaml/da-dk-g26.yaml			\
 	yaml/da-dk-g26l-lit.yaml		\
+	yaml/da-dk-g26l.yaml			\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
 	yaml/da-dk-g28.yaml			\
 	yaml/da-dk-g28l.yaml			\
@@ -176,6 +171,7 @@ dist_yaml_TESTS =				\
 	yaml/fi_harness.yaml			\
 	yaml/foo.yaml				\
 	yaml/fr-bfu-comp6.yaml			\
+	yaml/fr-bfu-g2.yaml			\
 	yaml/fr-bfu-g2_harness.yaml		\
 	yaml/fr-fr-g1.yaml			\
 	yaml/ga-g1_harness.yaml			\
@@ -185,15 +181,19 @@ dist_yaml_TESTS =				\
 	yaml/hu-hu-comp8_harness.yaml		\
 	yaml/hu-hu-g1_backward.yaml		\
 	yaml/hu-hu-g1_harness.yaml		\
+	yaml/inpos_outpos.yaml			\
 	yaml/issue-238.yaml			\
-	yaml/issue-401.yaml			\
 	yaml/issue-35.yaml			\
 	yaml/issue-384.yaml			\
 	yaml/issue-400.yaml			\
+	yaml/issue-401.yaml			\
+	yaml/issue-406.yaml			\
+	yaml/issue-479.yaml			\
 	yaml/iu-ca-g1_harness.yaml		\
 	yaml/ko-2006-g2_harness.yaml		\
 	yaml/ko-g2_harness.yaml			\
 	yaml/letterDefTest_harness.yaml		\
+	yaml/lt-6dot_harness.yaml		\
 	yaml/lt_harness.yaml			\
 	yaml/lv_harness.yaml			\
 	yaml/mn-MN_harness.yaml			\
@@ -209,6 +209,7 @@ dist_yaml_TESTS =				\
 	yaml/no_harness.yaml			\
 	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
+	yaml/pass1Only.yaml			\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sk-g1_harness.yaml			\
 	yaml/sr-g1_harness.yaml			\
@@ -224,7 +225,9 @@ LOG_COMPILE = $(WINE)
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
-XFAIL_TESTS += ueb_test_data.pl
+XFAIL_TESTS +=					\
+	ueb_test_data.pl
+
 
 TESTS =				\
 	$(program_TESTS)	\

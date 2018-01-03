@@ -1,3 +1,14 @@
+#+locale:fr
+#+type:computer
+#+dots:8
+
+#-display-name: Unified French 8 dots
+#-author: André-Abush CLAUSE <dev@andreabc.net>
+#-author: Michel Such <michel.such@free.fr>
+#-author: The BRLTTY Team <http://brltty.com/>
+#-license: LGPLv2.1
+#-updated: 2017-11-28
+
 # liblouis: Unified French 8 dots Braille table
 
 # Copyright (C) 1995-2004 by The BRLTTY Team
@@ -37,6 +48,7 @@ space \t 124678              # tab 9
 space \x001B 1b         # escape
 space \x000A 0          # lf
 space \x000D 0          # cr
+space \x007f 0
 
 include latinLetterDef8Dots.uti
 
@@ -74,31 +86,12 @@ uplow \x00C3\x00E3 178,18		a tilde
 uplow \x00D1\x00F1 134578,1245678		n tilde
 uplow \x00D5\x00F5 1378,4678		o tilde
 
-# Define digits and litdigits
-# Don't include digits6DotsPlusDot6.uti and litdigits6DotsPlusDot6.uti
-# because of problems with french 0 (3456) and NVDA
+digit 0 3456
+litdigit        0      3456
+comp6 0 3456
 
-digit        0      3456
-digit        1      16
-digit        2      126
-digit        3      146
-digit        4      1456
-digit        5      156
-digit        6      1246
-digit        7      12456
-digit        8      1256
-digit        9      246
-
-litdigit 0 3456
-litdigit 1 16
-litdigit 2 126
-litdigit 3 146
-litdigit 4 1456
-litdigit 5 156
-litdigit 6 1246
-litdigit 7 12456
-litdigit 8 1256
-litdigit 9 246
+include digits6DotsPlusDot6.uti
+include litdigits6DotsPlusDot6.uti
 
 punctuation , 2		virgule
 punctuation ; 23		point-virgule
@@ -253,8 +246,7 @@ include braille-patterns.cti
 include fr-bfu-comp68.cti
 
 midnum \s 0								espace entre les chiffres
-midnum , 2
-decpoint . 256
+decpoint , 2
 midnum - 36
 midnum + 23578							plus
 midnum / 34

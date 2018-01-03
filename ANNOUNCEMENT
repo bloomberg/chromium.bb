@@ -1,7 +1,7 @@
-liblouis 3.3.0 has been released
+liblouis 3.4.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.3.0. The release is available for download at:
+3.4.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,79 +18,128 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-This release brings a slew of Braille table improvements, fixes a
-number of security related bugs and introduces a new tool to generate
-liblouis Braille tables based on a corpus of know good Braille
-translations. For a detailed list of all the changes refer to
+This release brings together a lot of work by lots of different
+people. Probably the most prominent fix is the work on output
+positions by Bue and Bert. NVDA should benefit from this. Then there
+are new and massively improved tables like the Lithuanian 6-dot table
+by Rimas or the improved back-translation for French by Michel and
+André-Abush to name just a few. There are too many contributors to
+name them here, thanks to them all.
 
-    https://github.com/liblouis/liblouis/milestone/13?closed=1
+For a detailed list of all the changes refer to
+
+    https://github.com/liblouis/liblouis/milestone/14?closed=1
 
 New features
 ~~~~~~~~~~~~
+- Add support for `inputPos' and `outputPos' checking in
+  `lou_checkyaml' thanks to Bue Vester-Andersen. See the manual for
+  details and examples.
 
-maketable tool
---------------
-  A new tool `lou_maketable' enables the creation of tables based on a
-  corpus of known good Braille translations. This has huge potential to
-  simplify table maintenance for tables that have so far been dominated
-  by large exception lists. Thanks to Bert Frees.
-
-
-Meta data query API
--------------------
-  A new API and a corresponding command line tool to query table meta
-  data thanks to Bert Frees
 
 Bug fixes
 ~~~~~~~~~
+- output positions (`outputPos') are now calculated based on input
+  positions (`inputPos') thanks to Bert Frees. This avoids a whole
+  class of bugs that previously plagued the output positions. This fix
+  also obviates the need for the `pass1Only' flag. See below for the
+  deprecation notice.
 
-Back translation
-----------------
-  - UEB grade 2
-    - Fix back-translation of whole word contractions followed by other
-      contractions thanks to James Teh.
-    - Fix back-translation for contractions followed by punctuation
-      thanks to James Teh.
-
-Security
---------
-  - Fix a number of CVEs (illegal address access, buffer overflow and
-    use-after-free or in terms of CVEs: CVE-2017-13738, CVE-2017-13739,
-    CVE-2017-13740, CVE-2017-13741, CVE-2017-13742 and CVE-2017-13744)
-    thanks to Mike Gorse.
-  - Fix CVE-2017-13743 thanks to Christian Egli.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-  - New table for Croatian grade 1 Braille thanks to Zlatko Sobočan.
-  - Fixes and tests for Slovak Braille thanks to Simon Aittamaa
-  - Numerous fixes in the character definitions of the Spanish tables
-    thanks to Simon Aittamaa
-  - Unified French 6 dots and 8 dots improvements for back-translation
-    thanks to Michel Such
-  - Updates to the Chinese braille table thanks to Coscell Kao
-  - Updates to Nemeth character definitions thanks to Attila Hammer
-  - The Hungarian tables now conform to the new 2017 standard thanks to
-    Attila Hammer
+
+- Addition of Nemeth and Kangxi radical characters and other
+  improvements to Chinese braille (`zh-tw.ctb') thanks to Bo-Cheng
+  Jhan and 黃偉豪.
+- Improvements to the Spanish chardefs table thanks to Luis Lorente
+  Barajas and Simon Aittamaa.
+- Fixed a lowercase ó in Spanish first reported for NVDA thanks to
+  Sukil Etxenike.
+- New Norwegian 6-dot display braille table for Braillo embossers
+  thanks to Lars Bjørndal
+- Added a bunch of whitespace-like codepoints as spaces thanks to
+  Rimas Kudelis
+- Added Lithuanian 6-dot table thanks to Rimas Kudelis.
+- Addition of more characters to the French tables thanks to Samuel
+  Thibault
+- Improvements to the Hungarian tables thanks to Attila Hammer
+- Improvements to the Mongolian tables thanks to Tsengel Maidar
+- Fix some math signs in Czech Braille (`cs-chardefs.cti'). Thanks to
+  Christian Herden of ViewPlus for reporting this.
+- Updates to the SEB British Braille Tables thanks to Paul Wood
+- Massive improvements to French back-translation thanks to Michel
+  Such and André-Abush Clause
+
+Other changes
+~~~~~~~~~~~~~
+
+Improved documentation
+----------------------
+- Bue Vester-Andersen added some notes about back-translation and
+  documented all possible values of the `mode' parameter. Also the
+  description of `decpoint' and `litdigit' was improved.
+- The `match' opcode is now documented thanks to Mike Gray and
+  Christian Egli.
+
+
+lou_maketable
+-------------
+Numerous bug fixes and performance enhancements thanks to Bert Frees
+
+
+Code refactoring
+----------------
+Many global variables have been removed thanks to Bert Frees
+
+
+Code formatting
+---------------
+Thanks to clang-format There is now a uniform coding style over the
+whole code base
+
+
+Fix broken NMakefile
+--------------------
+Thanks to Davy Kager building with nmake should work again
+
+
+Deprecation notice
+~~~~~~~~~~~~~~~~~~
+The `pass1Only' flag has been deprecated. Its use should be avoided,
+and it will be completely removed from the code in the next version of
+Liblouis. When using the `pass1Only' flag in this release you will get
+a warning.
+
+
+Backwards incompatible changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+None
+
 
 New, renamed or removed tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New
 ---
-  - hr-g1.ctb
-  - hr-g1.tbl
+- no-no-braillo-047-01.dis
+- lt-6dot.utb
+
 
 Renamed
 -------
-  - hr.ctb -> hr-comp8.utb
-  - hr.tbl -> hr-comp8.tbl
+None
+
+
+Removed
+-------
+None
 
 Next release
 ============
 
-The next release will be published on December 4, 2017 so please keep
-up the excellent work and keep those improvements coming.
+The next release will be published on March 5 2018 so please keep up
+the excellent work and keep those improvements coming.
 
 Share and Enjoy!
 
