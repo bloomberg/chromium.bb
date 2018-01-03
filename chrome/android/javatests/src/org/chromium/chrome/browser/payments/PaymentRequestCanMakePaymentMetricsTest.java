@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DECEMBER;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_YEAR;
 
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
@@ -95,7 +98,8 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyToEdit());
         mPaymentRequestTestRule.setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {11, 1, 0}, mPaymentRequestTestRule.getBillingAddressChangeProcessed());
+                new int[] {DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS},
+                mPaymentRequestTestRule.getBillingAddressChangeProcessed());
         mPaymentRequestTestRule.setTextInCardEditorAndWait(
                 new String[] {"4111111111111111", "Jon Doe"},
                 mPaymentRequestTestRule.getEditorTextUpdate());

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
+
 import android.content.DialogInterface;
 import android.support.test.filters.MediumTest;
 
@@ -34,8 +36,6 @@ public class PaymentRequestIncompleteServerCardTest implements MainActivityStart
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
-
-    private static final int FIRST_BILLING_ADDRESS = 0;
 
     @Override
     public void onMainActivityStarted()
