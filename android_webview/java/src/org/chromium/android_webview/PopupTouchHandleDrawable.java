@@ -150,8 +150,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         mContainer.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
         mContainer.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mAlpha = 1.f;
-        mVisible = getVisibility() == VISIBLE;
+        mAlpha = 0.f;
+        mVisible = false;
+        setVisibility(INVISIBLE);
         mFocused = mContentViewCore.getContainerView().hasWindowFocus();
 
         mParentPositionObserver = new ViewPositionObserver(mContentViewCore.getContainerView());
