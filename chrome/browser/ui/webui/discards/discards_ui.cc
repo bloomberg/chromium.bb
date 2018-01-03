@@ -62,10 +62,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       // showing the chrome://favicon default in that case.
       info->favicon_url = tab.favicon_url;
       info->title = base::UTF16ToUTF8(tab.title);
-      info->is_app = tab.is_app;
-      info->is_internal = tab.is_internal_page;
       info->is_media = tab.is_media;
-      info->is_pinned = tab.is_pinned;
       info->is_discarded = tab.is_discarded;
       info->discard_count = tab.discard_count;
       info->utility_rank = rank++;

@@ -64,10 +64,7 @@ cr.define('discards', function() {
     }
 
     // Compares boolean fields.
-    if ([
-          'isApp', 'isInternal', 'isMedia', 'isPinned', 'isDiscarded',
-          'isAutoDiscardable'
-        ].includes(sortKey)) {
+    if (['isMedia', 'isDiscarded', 'isAutoDiscardable'].includes(sortKey)) {
       if (val1 == val2)
         return 0;
       return val1 ? 1 : -1;
@@ -247,13 +244,8 @@ cr.define('discards', function() {
         info.faviconUrl ? info.faviconUrl : 'chrome://favicon';
     row.querySelector('.title-div').textContent = info.title;
     row.querySelector('.tab-url-cell').textContent = info.tabUrl;
-    row.querySelector('.is-app-cell').textContent = boolToString(info.isApp);
-    row.querySelector('.is-internal-cell').textContent =
-        boolToString(info.isInternal);
     row.querySelector('.is-media-cell').textContent =
         boolToString(info.isMedia);
-    row.querySelector('.is-pinned-cell').textContent =
-        boolToString(info.isPinned);
     row.querySelector('.is-discarded-cell').textContent =
         boolToString(info.isDiscarded);
     row.querySelector('.discard-count-cell').textContent =
