@@ -82,6 +82,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   bool request_payer_email() const override;
   PaymentShippingType shipping_type() const override;
 
+  bool supports_basic_card() const { return !supported_card_networks_.empty(); }
+
   const std::vector<std::string>& supported_card_networks() const {
     return supported_card_networks_;
   }

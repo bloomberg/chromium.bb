@@ -229,6 +229,9 @@ void PaymentMethodViewController::FillContentView(views::View* content_view) {
 
 std::unique_ptr<views::View>
 PaymentMethodViewController::CreateExtraFooterView() {
+  if (!spec()->supports_basic_card())
+    return nullptr;
+
   auto extra_view = base::MakeUnique<views::View>();
 
   extra_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
