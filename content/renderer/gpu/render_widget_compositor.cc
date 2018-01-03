@@ -327,7 +327,7 @@ std::unique_ptr<cc::LayerTreeHost> RenderWidgetCompositor::CreateLayerTreeHost(
     // shared memory allocations which need to make synchronous calls to the
     // IO thread.
     params.image_worker_task_runner = base::CreateSequencedTaskRunnerWithTraits(
-        {base::WithBaseSyncPrimitives(), base::TaskPriority::BACKGROUND,
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {
