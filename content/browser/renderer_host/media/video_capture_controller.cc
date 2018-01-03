@@ -160,7 +160,14 @@ void VideoCaptureController::BufferContext::DecreaseConsumerCount() {
 
 mojo::ScopedSharedBufferHandle
 VideoCaptureController::BufferContext::CloneHandle() {
-  return buffer_handle_->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
+  // Special behavior here: If the handle was already read-only, the Clone()
+  // call here will maintain that read-only permission. If it was read-write,
+  // the cloned handle will have read-write permission.
+  //
+  // TODO(crbug.com/797470): We should be able to demote read-write to read-only
+  // permissions when Clone()'ing handles. Currently, this causes a crash.
+  return buffer_handle_->Clone(
+      mojo::SharedBufferHandle::AccessMode::READ_WRITE);
 }
 
 VideoCaptureController::VideoCaptureController(
