@@ -105,15 +105,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Free all memory allocated in CreateSurfaces.
   virtual void DestroySurfaces();
 
-  // Create a VASurface of |va_format|, |size| and using |va_attribs|
-  // attributes. The ownership of the surface is transferred to the
-  // caller. It differs from surfaces created using CreateSurfaces(),
-  // where VaapiWrapper is the owner of the surfaces.
-  scoped_refptr<VASurface> CreateUnownedSurface(
-      unsigned int va_format,
-      const gfx::Size& size,
-      const std::vector<VASurfaceAttrib>& va_attribs);
-
   // Create a VASurface for |pixmap|. The ownership of the surface is
   // transferred to the caller. It differs from surfaces created using
   // CreateSurfaces(), where VaapiWrapper is the owner of the surfaces.
@@ -226,6 +217,15 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   // Free all memory allocated in CreateSurfaces.
   void DestroySurfaces_Locked();
+
+  // Create a VASurface of |va_format|, |size| and using |va_attribs|
+  // attributes. The ownership of the surface is transferred to the
+  // caller. It differs from surfaces created using CreateSurfaces(),
+  // where VaapiWrapper is the owner of the surfaces.
+  scoped_refptr<VASurface> CreateUnownedSurface(
+      unsigned int va_format,
+      const gfx::Size& size,
+      const std::vector<VASurfaceAttrib>& va_attribs);
   // Destroys a |va_surface| created using CreateUnownedSurface.
   void DestroyUnownedSurface(VASurfaceID va_surface_id);
 
