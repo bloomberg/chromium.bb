@@ -133,6 +133,14 @@ void InitializeColorSchemes() {
   normal_scheme.omnibox_voice_search_button_colors.background_down = 0xFFFAFAFA;
   normal_scheme.cursor = 0xFF5595FE;
 
+  normal_scheme.snackbar_foreground = 0xFFEEEEEE;
+  normal_scheme.snackbar_background = 0xDD212121;
+  normal_scheme.snackbar_button_colors.background =
+      normal_scheme.snackbar_background;
+  normal_scheme.snackbar_button_colors.foreground = 0xFFFFD500;
+  normal_scheme.snackbar_button_colors.background_hover = 0xDD2D2D2D;
+  normal_scheme.snackbar_button_colors.background_down = 0xDD2D2D2D;
+
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();
   fullscreen_scheme.world_background = 0xFF000714;

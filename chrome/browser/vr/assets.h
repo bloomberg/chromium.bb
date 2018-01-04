@@ -42,6 +42,7 @@ class Assets {
                                   std::unique_ptr<SkBitmap> background_image,
                                   const base::Version& component_version)>
       OnAssetsLoadedCallback;
+  typedef base::RepeatingCallback<void()> OnComponentReadyCallback;
 
   // Returns the single assets instance and creates it on first call.
   static Assets* GetInstance();
@@ -62,6 +63,11 @@ class Assets {
   // Must be called on the main thread.
   bool ComponentReady();
 
+  // |on_component_ready| is called on main thread when assets component becomes
+  // ready to use or got updated. Must be called on the main thread.
+  void SetOnComponentReadyCallback(
+      const OnComponentReadyCallback& on_component_ready);
+
  private:
   static void LoadAssetsTask(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -81,6 +87,7 @@ class Assets {
   base::FilePath component_install_dir_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<MetricsHelper> metrics_helper_;
+  OnComponentReadyCallback on_component_ready_callback_;
 
   base::WeakPtrFactory<Assets> weak_ptr_factory_;
 

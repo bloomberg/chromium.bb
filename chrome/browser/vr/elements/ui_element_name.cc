@@ -106,6 +106,7 @@ static const char* g_ui_element_name_strings[] = {
     "kSpeechRecognitionListening",
     "kSpeechRecognitionListeningGrowingCircle",
     "kSpeechRecognitionListeningCloseButton",
+    "kDownloadedSnackbar",
 };
 
 static_assert(

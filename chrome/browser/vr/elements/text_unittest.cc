@@ -32,7 +32,7 @@ TEST(Text, MultiLine) {
   EXPECT_GT(text->GetTextureSizeForTest().height(), initial_size.height());
 
   // Enforce single-line rendering.
-  text->SetTextLayoutMode(kSingleLineFixedWidth);
+  text->SetLayoutMode(kSingleLineFixedWidth);
   EXPECT_EQ(text->LayOutTextForTest().size(), 1u);
   EXPECT_LT(text->GetTextureSizeForTest().height(), initial_size.height());
 }

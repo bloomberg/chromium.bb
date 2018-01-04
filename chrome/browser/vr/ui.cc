@@ -201,6 +201,10 @@ void Ui::SetOmniboxSuggestions(
   model_->omnibox_suggestions = suggestions->suggestions;
 }
 
+void Ui::OnAssetsComponentReady() {
+  model_->can_apply_new_background = true;
+}
+
 bool Ui::ShouldRenderWebVr() {
   return model_->web_vr.has_produced_frames();
 }
@@ -323,6 +327,7 @@ void Ui::SetBackgroundImage(std::unique_ptr<SkBitmap> bitmap) {
   DCHECK(background);
   background->SetImage(std::move(bitmap));
   model_->background_loaded = true;
+  model_->can_apply_new_background = false;
 }
 
 void Ui::ReinitializeForTest(const UiInitialState& ui_initial_state) {

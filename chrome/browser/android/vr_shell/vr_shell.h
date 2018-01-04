@@ -234,6 +234,8 @@ class VrShell : device::GvrGamepadDataProvider,
 
   content::WebContents* GetNonNativePageWebContents() const;
 
+  void OnAssetsComponentReady();
+
   bool vr_shell_enabled_;
 
   bool webvr_mode_ = false;

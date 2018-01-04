@@ -29,6 +29,7 @@ class MockUiBrowserInterface : public UiBrowserInterface {
   MOCK_METHOD1(SetVoiceSearchActive, void(bool active));
   MOCK_METHOD1(StartAutocomplete, void(const base::string16& string));
   MOCK_METHOD0(StopAutocomplete, void());
+  MOCK_METHOD0(LoadAssets, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUiBrowserInterface);

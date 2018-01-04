@@ -64,7 +64,7 @@ void Toast::AddText(const base::string16& text,
   text_element->set_hit_testable(false);
   text_element->SetDrawPhase(draw_phase());
   text_element->SetText(text);
-  text_element->SetTextLayoutMode(text_layout_mode);
+  text_element->SetLayoutMode(text_layout_mode);
   text_element->set_owner_name_for_test(name());
   text_element->SetVisible(true);
   text_ = text_element.get();

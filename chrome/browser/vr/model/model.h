@@ -41,6 +41,7 @@ struct Model {
   UiElementRenderer::TextureLocation content_location =
       UiElementRenderer::kTextureLocationLocal;
   bool background_available = false;
+  bool can_apply_new_background = false;
   bool background_loaded = false;
 
   // WebVR state.
