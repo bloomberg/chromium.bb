@@ -484,7 +484,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         int currentPageIndex = mPager.getCurrentItem();
         while (currentPageIndex < mPagerAdapter.getCount()) {
             FirstRunPage currentPage = (FirstRunPage) mPagerAdapter.getItem(currentPageIndex);
-            if (!currentPage.shouldSkipPageOnCreate(getApplicationContext())) return;
+            if (!currentPage.shouldSkipPageOnCreate()) return;
             if (!jumpToPage(currentPageIndex + 1)) return;
             currentPageIndex = mPager.getCurrentItem();
         }

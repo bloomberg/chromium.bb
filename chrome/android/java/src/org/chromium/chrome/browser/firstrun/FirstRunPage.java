@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Fragment;
-import android.content.Context;
 
 /**
  * A first run page shown in the First Run ViewPager.
@@ -13,9 +12,8 @@ import android.content.Context;
 public class FirstRunPage extends Fragment {
     /**
      * @return Whether this page should be skipped on the FRE creation.
-     * @param appContext An application context.
      */
-    public boolean shouldSkipPageOnCreate(Context appContext) {
+    public boolean shouldSkipPageOnCreate() {
         return false;
     }
 
