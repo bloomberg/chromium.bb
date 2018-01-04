@@ -9,7 +9,8 @@ typedef (Float32Array or Float64Array or DOMMatrix) RotationMatrixType;
 
 [
     OriginTrialEnabled=Sensor,
-    SecureContext
+    SecureContext,
+    Exposed=Window
 ] interface OrientationSensor : Sensor {
     [CachedAttribute=isReadingDirty] readonly attribute FrozenArray<double>? quaternion;
     [RaisesException, MeasureAs=OrientationSensorPopulateMatrix] void populateMatrix(RotationMatrixType targetBuffer);
