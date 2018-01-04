@@ -65,35 +65,4 @@ ShellPort::ShellPort() {
   instance_ = this;
 }
 
-int ShellPort::GetOpenSystemModalWindowContainerId() {
-  if (simulate_modal_window_open_for_testing_)
-    return kShellWindowId_SystemModalContainer;
-
-  // Traverse all system modal containers, and find its direct child window
-  // with "SystemModal" setting, and visible.
-  // Note: LockSystemModalContainer is more restrictive, so make it preferable
-  // to SystemModalCotainer.
-  constexpr int modal_window_ids[] = {kShellWindowId_LockSystemModalContainer,
-                                      kShellWindowId_SystemModalContainer};
-  for (aura::Window* root : Shell::GetAllRootWindows()) {
-    for (int modal_window_id : modal_window_ids) {
-      aura::Window* system_modal = root->GetChildById(modal_window_id);
-      if (!system_modal)
-        continue;
-      for (const aura::Window* child : system_modal->children()) {
-        if (child->GetProperty(aura::client::kModalKey) ==
-                ui::MODAL_TYPE_SYSTEM &&
-            child->layer()->GetTargetVisibility()) {
-          return modal_window_id;
-        }
-      }
-    }
-  }
-  return -1;
-}
-
-bool ShellPort::IsSystemModalWindowOpen() {
-  return GetOpenSystemModalWindowContainerId() >= 0;
-}
-
 }  // namespace ash

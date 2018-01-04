@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "components/exo/buffer.h"
@@ -230,7 +229,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
   // Make the window modal.
   modal.shell_surface()->SetSystemModal(true);
 
-  EXPECT_TRUE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
   EXPECT_CALL(delegate, OnTouchShape(testing::_, testing::_, testing::_))
       .Times(testing::AnyNumber());
   EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(window.surface()))
@@ -270,7 +269,7 @@ TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
 
   // Make the window non-modal.
   modal.shell_surface()->SetSystemModal(false);
-  EXPECT_FALSE(ash::ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
 
   // Check if touch events on non-modal window are registered.
   {

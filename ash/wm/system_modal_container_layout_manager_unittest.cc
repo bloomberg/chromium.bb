@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_util.h"
@@ -763,23 +762,23 @@ TEST_F(SystemModalContainerLayoutManagerTest, UpdateModalType) {
       new TestWindow(false), modal_container);
   widget->Show();
   aura::Window* window = widget->GetNativeWindow();
-  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
 
   // Setting twice should not cause error.
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_NONE);
-  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
 
   window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
 
   widget->Close();
-  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
 }
 
 TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
@@ -792,11 +791,11 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
       Shell::GetPrimaryRootWindowController()->GetSystemModalLayoutManager(
           modal_window.get());
 
-  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 
   // Make sure that a child visibility change should not cause
@@ -806,15 +805,15 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
   child->Init(ui::LAYER_TEXTURED);
   modal_window->AddChild(child.get());
   child->Show();
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 
   modal_window->Hide();
-  EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());
 
   modal_window->Show();
-  EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 }
 
@@ -843,7 +842,7 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
         new TestWindow(true), Shell::GetPrimaryRootWindow(),
         gfx::Rect(200, 200, 100, 100));
     widget->Show();
-    EXPECT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+    EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
 
     // Events should be blocked.
     GenerateEvents(window.get());
@@ -855,7 +854,7 @@ class InputTestDelegate : public aura::test::TestWindowDelegate {
     Reset();
 
     widget->Close();
-    EXPECT_FALSE(ShellPort::Get()->IsSystemModalWindowOpen());
+    EXPECT_FALSE(Shell::IsSystemModalWindowOpen());
 
     GenerateEvents(window.get());
 

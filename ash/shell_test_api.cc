@@ -53,4 +53,8 @@ void ShellTestApi::ResetPowerButtonControllerForTest() {
       shell_->backlights_forced_off_setter_.get());
 }
 
+void ShellTestApi::SimulateModalWindowOpenForTest(bool modal_window_open) {
+  shell_->simulate_modal_window_open_for_test_ = modal_window_open;
+}
+
 }  // namespace ash
