@@ -25,11 +25,10 @@ enum class NewTabButtonStyle { UNINITIALIZED, BLUE, GRAY, HIDDEN };
 
 @interface TabSwitcherView : UIView<UIScrollViewDelegate>
 
-@property(unsafe_unretained, nonatomic, readonly)
-    TabSwitcherHeaderView* headerView;
-@property(unsafe_unretained, nonatomic, readonly) UIScrollView* scrollView;
+@property(nonatomic, readonly, weak) TabSwitcherHeaderView* headerView;
+@property(nonatomic, readonly, weak) UIScrollView* scrollView;
 
-@property(nonatomic, unsafe_unretained) id<TabSwitcherViewDelegate> delegate;
+@property(nonatomic, weak) id<TabSwitcherViewDelegate> delegate;
 
 // Select the panel at the given index, updating both the header and content.
 // The panel selection will be animated if VoiceOver is disabled.
