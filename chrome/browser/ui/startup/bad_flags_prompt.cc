@@ -49,7 +49,7 @@ void ShowBadFlagsInfoBar(content::WebContents* web_contents,
     switch_value = "=" + switch_value;
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents),
-      infobars::InfoBarDelegate::BAD_FLAGS_PROMPT, nullptr,
+      infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, nullptr,
       l10n_util::GetStringFUTF16(
           message_id,
           base::UTF8ToUTF16(std::string("--") + flag + switch_value)),

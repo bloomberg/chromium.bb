@@ -60,7 +60,7 @@ bool SearchGeolocationDisclosureInfoBarDelegate::
     infobars::InfoBar* existing_infobar = infobar_service->infobar_at(i);
     if (existing_infobar->delegate()->GetIdentifier() ==
         infobars::InfoBarDelegate::
-            SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE) {
+            SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID) {
       return true;
     }
   }
@@ -106,7 +106,7 @@ SearchGeolocationDisclosureInfoBarDelegate::GetInfoBarType() const {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 SearchGeolocationDisclosureInfoBarDelegate::GetIdentifier() const {
-  return SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE;
+  return SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE_ANDROID;
 }
 
 int SearchGeolocationDisclosureInfoBarDelegate::GetIconId() const {

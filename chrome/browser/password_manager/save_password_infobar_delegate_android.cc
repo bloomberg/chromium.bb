@@ -72,7 +72,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 SavePasswordInfoBarDelegate::GetIdentifier() const {
-  return SAVE_PASSWORD_INFOBAR_DELEGATE;
+  return SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE;
 }
 
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {

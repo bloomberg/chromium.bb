@@ -140,7 +140,7 @@ bool SessionCrashedInfoBarDelegate::Create(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 SessionCrashedInfoBarDelegate::GetIdentifier() const {
-  return SESSION_CRASHED_INFOBAR_DELEGATE;
+  return SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS;
 }
 
 base::string16 SessionCrashedInfoBarDelegate::GetMessageText() const {
@@ -281,7 +281,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   DCHECK(infobar->delegate());
   if (_sessionRestored ||
       infobar->delegate()->GetIdentifier() !=
-          infobars::InfoBarDelegate::SESSION_CRASHED_INFOBAR_DELEGATE) {
+          infobars::InfoBarDelegate::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS) {
     return;
   }
 

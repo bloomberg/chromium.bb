@@ -88,7 +88,7 @@ UpdatePasswordInfoBarDelegate::UpdatePasswordInfoBarDelegate(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 UpdatePasswordInfoBarDelegate::GetIdentifier() const {
-  return UPDATE_PASSWORD_INFOBAR_DELEGATE;
+  return UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE;
 }
 
 int UpdatePasswordInfoBarDelegate::GetButtons() const {

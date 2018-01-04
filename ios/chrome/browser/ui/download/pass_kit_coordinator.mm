@@ -115,7 +115,7 @@ PresentAddPassesDialogResult GetUmaResult(
   DCHECK(InfoBarManagerImpl::FromWebState(_webState));
   SimpleAlertInfoBarDelegate::Create(
       InfoBarManagerImpl::FromWebState(_webState),
-      infobars::InfoBarDelegate::SHOW_PASSKIT_INFOBAR_ERROR_DELEGATE,
+      infobars::InfoBarDelegate::SHOW_PASSKIT_ERROR_INFOBAR_DELEGATE_IOS,
       /*vector_icon=*/nullptr,
       l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR),
       /*auto_expire=*/true);

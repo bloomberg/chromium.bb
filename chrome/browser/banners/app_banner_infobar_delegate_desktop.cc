@@ -57,7 +57,7 @@ AppBannerInfoBarDelegateDesktop::GetInfoBarType() const {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 AppBannerInfoBarDelegateDesktop::GetIdentifier() const {
-  return APP_BANNER_INFOBAR_DELEGATE_DESKTOP;
+  return APP_BANNER_INFOBAR_DELEGATE;
 }
 
 const gfx::VectorIcon& AppBannerInfoBarDelegateDesktop::GetVectorIcon() const {

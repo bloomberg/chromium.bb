@@ -109,7 +109,7 @@ KeystonePromotionInfoBarDelegate::~KeystonePromotionInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 KeystonePromotionInfoBarDelegate::GetIdentifier() const {
-  return KEYSTONE_PROMOTION_INFOBAR_DELEGATE;
+  return KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC;
 }
 
 int KeystonePromotionInfoBarDelegate::GetIconId() const {

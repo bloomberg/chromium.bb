@@ -86,7 +86,7 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetBranding() const {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 IOSChromeUpdatePasswordInfoBarDelegate::GetIdentifier() const {
-  return UPDATE_PASSWORD_INFOBAR_DELEGATE;
+  return UPDATE_PASSWORD_INFOBAR_DELEGATE_MOBILE;
 }
 
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetMessageText() const {

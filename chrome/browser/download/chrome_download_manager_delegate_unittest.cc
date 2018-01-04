@@ -976,9 +976,8 @@ class AndroidDownloadInfobarCounter
  private:
   void OnInfoBarAdded(infobars::InfoBar* infobar) override {
     if (infobar->delegate()->GetIdentifier() ==
-        infobars::InfoBarDelegate::CHROME_DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE) {
+        infobars::InfoBarDelegate::DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID)
       ++infobar_count_;
-    }
     infobar->delegate()->InfoBarDismissed();
     infobar->RemoveSelf();
   }

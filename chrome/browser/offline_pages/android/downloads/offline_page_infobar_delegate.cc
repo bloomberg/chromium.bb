@@ -58,7 +58,7 @@ OfflinePageInfoBarDelegate::OfflinePageInfoBarDelegate(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 OfflinePageInfoBarDelegate::GetIdentifier() const {
-  return OFFLINE_PAGE_INFOBAR_DELEGATE;
+  return OFFLINE_PAGE_INFOBAR_DELEGATE_ANDROID;
 }
 
 bool OfflinePageInfoBarDelegate::EqualsDelegate(

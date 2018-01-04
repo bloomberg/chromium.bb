@@ -46,7 +46,7 @@ class BlockPopupInfoBarDelegate : public ConfirmInfoBarDelegate {
   ~BlockPopupInfoBarDelegate() override {}
 
   InfoBarIdentifier GetIdentifier() const override {
-    return POPUP_BLOCKED_INFOBAR_DELEGATE;
+    return POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE;
   }
 
   gfx::Image GetIcon() const override {

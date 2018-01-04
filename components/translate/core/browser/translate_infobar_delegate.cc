@@ -56,7 +56,7 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 TranslateInfoBarDelegate::GetIdentifier() const {
-  return TRANSLATE_INFOBAR_DELEGATE;
+  return TRANSLATE_INFOBAR_DELEGATE_NON_AURA;
 }
 
 // static

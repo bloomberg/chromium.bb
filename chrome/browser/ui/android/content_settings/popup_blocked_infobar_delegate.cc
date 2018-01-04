@@ -59,7 +59,7 @@ PopupBlockedInfoBarDelegate::~PopupBlockedInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 PopupBlockedInfoBarDelegate::GetIdentifier() const {
-  return POPUP_BLOCKED_INFOBAR_DELEGATE;
+  return POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE;
 }
 
 int PopupBlockedInfoBarDelegate::GetIconId() const {
