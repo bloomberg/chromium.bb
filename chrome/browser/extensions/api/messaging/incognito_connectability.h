@@ -11,6 +11,8 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "url/gurl.h"
 
+class InfoBarService;
+
 namespace content {
 class BrowserContext;
 class WebContents;
@@ -18,7 +20,6 @@ class WebContents;
 
 namespace infobars {
 class InfoBar;
-class InfoBarManager;
 }
 
 namespace extensions {
@@ -73,7 +74,7 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
     TabContext(const TabContext& other);
     ~TabContext();
 
-    // The infobar being shown in a given tab. The InfoBarManager maintains
+    // The infobar being shown in a given tab. The InfoBarService maintains
     // ownership of this object. This struct must always be destroyed before the
     // infobar it tracks.
     infobars::InfoBar* infobar;
@@ -88,7 +89,7 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
 
   typedef std::map<std::string, std::set<GURL> > ExtensionToOriginsMap;
   typedef std::pair<std::string, GURL> ExtensionOriginPair;
-  typedef std::map<infobars::InfoBarManager*, TabContext> PendingOrigin;
+  typedef std::map<InfoBarService*, TabContext> PendingOrigin;
   typedef std::map<ExtensionOriginPair, PendingOrigin> PendingOriginMap;
 
   // Called with the user's selection from the infobar.
@@ -96,7 +97,7 @@ class IncognitoConnectability : public BrowserContextKeyedAPI {
   // without selecting allow or deny.
   void OnInteractiveResponse(const std::string& extension_id,
                              const GURL& origin,
-                             infobars::InfoBarManager* infobar_manager,
+                             InfoBarService* infobar_service,
                              ScopedAlertTracker::Mode response);
 
   // Returns true if the (|extension|, |origin|) pair appears in the map.
