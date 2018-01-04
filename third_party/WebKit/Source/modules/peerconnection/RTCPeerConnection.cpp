@@ -278,10 +278,23 @@ WebRTCConfiguration ParseConfiguration(ExecutionContext* context,
   } else {
     DCHECK_EQ(rtcp_mux_policy_string, "require");
   }
+
+  WebRTCSdpSemantics sdp_semantics = WebRTCSdpSemantics::kDefault;
+  if (configuration.hasSdpSemantics()) {
+    String sdp_semantics_string = configuration.sdpSemantics();
+    if (sdp_semantics_string == "plan-b") {
+      sdp_semantics = WebRTCSdpSemantics::kPlanB;
+    } else {
+      DCHECK_EQ(sdp_semantics_string, "unified-plan");
+      sdp_semantics = WebRTCSdpSemantics::kUnifiedPlan;
+    }
+  }
+
   WebRTCConfiguration web_configuration;
   web_configuration.ice_transport_policy = ice_transport_policy;
   web_configuration.bundle_policy = bundle_policy;
   web_configuration.rtcp_mux_policy = rtcp_mux_policy;
+  web_configuration.sdp_semantics = sdp_semantics;
 
   if (configuration.hasIceServers()) {
     Vector<WebRTCIceServer> ice_servers;
