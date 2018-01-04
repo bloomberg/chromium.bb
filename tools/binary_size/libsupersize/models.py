@@ -57,6 +57,19 @@ SECTION_TEXT = '.text'
 # Used by SymbolGroup when they contain a mix of sections.
 SECTION_MULTIPLE = '.*'
 
+NATIVE_SECTIONS = (
+    SECTION_BSS,
+    SECTION_DATA,
+    SECTION_DATA_REL_RO,
+    SECTION_DATA_REL_RO_LOCAL,
+    SECTION_RODATA,
+    SECTION_TEXT,
+)
+PAK_SECTIONS = (
+    SECTION_PAK_NONTRANSLATED,
+    SECTION_PAK_TRANSLATIONS,
+)
+
 SECTION_NAME_TO_SECTION = {
     SECTION_BSS: 'b',
     SECTION_DATA: 'd',
@@ -102,90 +115,98 @@ DIFF_PREFIX_BY_STATUS = ['= ', '~ ', '+ ', '- ']
 STRING_LITERAL_NAME = 'string literal'
 
 
-class SizeInfo(object):
-  """Represents all size information for a single binary.
+class BaseSizeInfo(object):
+  """Base class for SizeInfo and DeltaSizeInfo.
 
   Fields:
     section_sizes: A dict of section_name -> size.
     raw_symbols: A SymbolGroup containing all top-level symbols (no groups).
-    symbols: A SymbolGroup where symbols have been grouped by full_name (where
-        applicable). May be re-assigned when it is desirable to show custom
-        groupings while still printing metadata and section_sizes.
-    metadata: A dict.
-    size_path: Path to .size file this was loaded from (or None).
+    symbols: A SymbolGroup of all symbols, where symbols have been
+        grouped by full_name (where applicable). May be re-assigned when it is
+        desirable to show custom groupings while still printing metadata and
+        section_sizes.
+    native_symbols: Subset of |symbols| that are from native code.
+    pak_symbols: Subset of |symbols| that are from pak files.
   """
   __slots__ = (
       'section_sizes',
       'raw_symbols',
       '_symbols',
-      'metadata',
-      'size_path',
+      '_native_symbols',
+      '_pak_symbols',
   )
 
-  """Root size information."""
-  def __init__(self, section_sizes, raw_symbols, metadata=None, symbols=None,
-               size_path=None):
+  def __init__(self, section_sizes, raw_symbols, symbols=None):
     if isinstance(raw_symbols, list):
       raw_symbols = SymbolGroup(raw_symbols)
     self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
     self.raw_symbols = raw_symbols
     self._symbols = symbols
+    self._native_symbols = None
+    self._pak_symbols = None
+
+  @property
+  def symbols(self):
+    if self._symbols is None:
+      logging.debug('Clustering symbols')
+      self._symbols = self.raw_symbols._Clustered()
+      logging.debug('Done clustering symbols')
+    return self._symbols
+
+  @symbols.setter
+  def symbols(self, value):
+    self._symbols = value
+
+  @property
+  def native_symbols(self):
+    if self._native_symbols is None:
+      # Use self.symbols rather than raw_symbols here so that _Clustered()
+      # is not performed twice (slow) if accessing both properties.
+      self._native_symbols = self.symbols.WhereIsNative()
+    return self._native_symbols
+
+  @property
+  def pak_symbols(self):
+    if self._pak_symbols is None:
+      self._pak_symbols = self.raw_symbols.WhereIsPak()
+    return self._pak_symbols
+
+
+class SizeInfo(BaseSizeInfo):
+  """Represents all size information for a single binary.
+
+  Fields:
+    metadata: A dict.
+    size_path: Path to .size file this was loaded from (or None).
+  """
+  __slots__ = (
+      'metadata',
+      'size_path',
+  )
+
+  def __init__(self, section_sizes, raw_symbols, metadata=None, symbols=None,
+               size_path=None):
+    super(SizeInfo, self).__init__(section_sizes, raw_symbols, symbols=symbols)
     self.metadata = metadata or {}
     self.size_path = size_path
 
-  @property
-  def symbols(self):
-    if self._symbols is None:
-      logging.debug('Clustering symbols')
-      self._symbols = self.raw_symbols._Clustered()
-      logging.debug('Done clustering symbols')
-    return self._symbols
 
-  @symbols.setter
-  def symbols(self, value):
-    self._symbols = value
-
-
-class DeltaSizeInfo(object):
+class DeltaSizeInfo(BaseSizeInfo):
   """What you get when you Diff() two SizeInfo objects.
 
   Fields:
-    section_sizes: A dict of section_name -> size delta.
-    raw_symbols: A DeltaSymbolGroup with all top-level symbols in it
-        (no groups).
-    symbols: A DeltaSymbolGroup where symbols have been grouped by full_name
-        (where applicable). May be re-assigned when it is desirable to show
-        custom groupings while still printing metadata and section_sizes.
-    before_metadata: metadata of the "before" SizeInfo.
-    after_metadata: metadata of the "after" SizeInfo.
+    before: SizeInfo for "before".
+    after: SizeInfo for "after".
   """
   __slots__ = (
-      'section_sizes',
-      'raw_symbols',
-      '_symbols',
-      'before_metadata',
-      'after_metadata',
+      'before',
+      'after',
   )
 
-  def __init__(self, section_sizes, raw_symbols, before_metadata,
-               after_metadata):
-    self.section_sizes = section_sizes
-    self.raw_symbols = raw_symbols
-    self.before_metadata = before_metadata
-    self.after_metadata = after_metadata
-    self._symbols = None
-
-  @property
-  def symbols(self):
-    if self._symbols is None:
-      logging.debug('Clustering symbols')
-      self._symbols = self.raw_symbols._Clustered()
-      logging.debug('Done clustering symbols')
-    return self._symbols
-
-  @symbols.setter
-  def symbols(self, value):
-    self._symbols = value
+  def __init__(self, before, after, section_sizes, raw_symbols):
+    super(DeltaSizeInfo, self).__init__(section_sizes, raw_symbols)
+    self.before = before
+    self.after = after
 
 
 class BaseSymbol(object):
@@ -686,6 +707,14 @@ class SymbolGroup(BaseSymbol):
       if section in SECTION_TO_SECTION_NAME:
         ret.section_name = SECTION_TO_SECTION_NAME[section]
     return ret
+
+  def WhereIsNative(self):
+    return self.WhereInSection(
+        ''.join(SECTION_NAME_TO_SECTION[s] for s in NATIVE_SECTIONS))
+
+  def WhereIsPak(self):
+    return self.WhereInSection(
+        ''.join(SECTION_NAME_TO_SECTION[s] for s in PAK_SECTIONS))
 
   def WhereIsTemplate(self):
     return self.Filter(lambda s: s.template_name is not s.name)

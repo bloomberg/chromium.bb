@@ -127,5 +127,4 @@ def Diff(before, after):
       section_sizes[k] = v
 
   symbol_diff = _DiffSymbolGroups(before.raw_symbols, after.raw_symbols)
-  return models.DeltaSizeInfo(section_sizes, symbol_diff, before.metadata,
-                              after.metadata)
+  return models.DeltaSizeInfo(before, after, section_sizes, symbol_diff)
