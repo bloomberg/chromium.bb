@@ -29,7 +29,7 @@ using namespace v8_helpers;
 
 namespace {
 
-base::LazyInstance<WakeEventPage>::DestructorAtExit g_instance =
+base::LazyInstance<WakeEventPage>::DestructorAtExit g_wake_event_page_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -98,7 +98,7 @@ class WakeEventPage::WakeEventPageNativeHandler
 
 // static
 WakeEventPage* WakeEventPage::Get() {
-  return g_instance.Pointer();
+  return g_wake_event_page_instance.Pointer();
 }
 
 void WakeEventPage::Init(content::RenderThread* render_thread) {
