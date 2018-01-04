@@ -6,7 +6,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description("Verifies the minimum resolution is 5 microseconds.");
+description("Verifies the minimum resolution is 100 microseconds.");
 
 function testTimeResolution(highResTimeFunc) {
     var t0 = highResTimeFunc();
@@ -15,10 +15,10 @@ function testTimeResolution(highResTimeFunc) {
         t1 = highResTimeFunc();
     }
 
-    var expectedResolutionMilliseconds = 0.005;
+    var expectedResolutionMilliseconds = 0.100;
     var integerMultipleOfResolution = (t1 - t0) / expectedResolutionMilliseconds;
     shouldBeNearZeroOrOne = integerMultipleOfResolution % 1;
-    shouldBe("shouldBeNearZeroOrOne < 1e-10 || Math.abs(shouldBeNearZeroOrOne - 1) < 1e-10", "true");
+    shouldBe("shouldBeNearZeroOrOne < 1e-5 || Math.abs(shouldBeNearZeroOrOne - 1) < 1e-5", "true");
 }
 
 function timeByPerformanceNow() {

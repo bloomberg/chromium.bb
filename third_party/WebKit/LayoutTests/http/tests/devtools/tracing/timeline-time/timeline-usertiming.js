@@ -14,16 +14,23 @@
           performance.measure("a", "a-start", "a-end");
       }
 
+      function doWork()
+      {
+          for(var i = 0; i < 10000; i++) {}
+      }
+
       function nestedPerformanceMeasure()
       {
           performance.mark("a-start");
           {
               performance.mark("b-start");
+              doWork();
               performance.mark("b-end");
               {
                   performance.mark("c-start");
                   {
                       performance.mark("d-start");
+                      doWork();
                       performance.mark("d-end");
                   }
                   performance.mark("c-end");
@@ -51,9 +58,11 @@
       function parentMeasureIsOnTop()
       {
           performance.mark("startTime1");
+          doWork();
           performance.mark("endTime1");
 
           performance.mark("startTime2");
+          doWork();
           performance.mark("endTime2");
 
           performance.measure("durationTime1", "startTime1", "endTime1");

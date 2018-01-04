@@ -45,6 +45,7 @@
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
 #include "platform/Histogram.h"
+#include "platform/TimeClamper.h"
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/runtime_enabled_features.h"
@@ -581,8 +582,8 @@ void PerformanceBase::DeliverObservationsTimerFired(TimerBase*) {
 
 // static
 double PerformanceBase::ClampTimeResolution(double time_seconds) {
-  const double kResolutionSeconds = 0.000005;
-  return floor(time_seconds / kResolutionSeconds) * kResolutionSeconds;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(TimeClamper, clamper, ());
+  return clamper.ClampTimeResolution(time_seconds);
 }
 
 // static
@@ -594,11 +595,11 @@ DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
   if (!monotonic_time || !time_origin)
     return 0.0;
 
-  double time_in_seconds = monotonic_time - time_origin;
-  if (time_in_seconds < 0 && !allow_negative_value)
+  double clamped_time_in_seconds =
+      ClampTimeResolution(monotonic_time) - ClampTimeResolution(time_origin);
+  if (clamped_time_in_seconds < 0 && !allow_negative_value)
     return 0.0;
-  return ConvertSecondsToDOMHighResTimeStamp(
-      ClampTimeResolution(time_in_seconds));
+  return ConvertSecondsToDOMHighResTimeStamp(clamped_time_in_seconds);
 }
 
 DOMHighResTimeStamp PerformanceBase::MonotonicTimeToDOMHighResTimeStamp(
