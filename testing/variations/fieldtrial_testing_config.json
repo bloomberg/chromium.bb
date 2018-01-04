@@ -1173,6 +1173,21 @@
             ]
         }
     ],
+    "DefaultPassthroughCommandDecoder": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "DefaultPassthroughCommandDecoder",
+                    "enable_features": [
+                        "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopIOSPromotion": [
         {
             "platforms": [

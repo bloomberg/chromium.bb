@@ -96,3 +96,8 @@ class PixelExpectations(GpuTestExpectations):
     # Failing on NVIDIA Shield TV; not sure why yet.
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
               ['android', 'nvidia'], bug=791733)
+
+    # Temporary supression to rebaseline Video tests on Windows with the
+    # passthrough command decoder
+    self.Fail('Pixel_DirectComposition_Video_MP4', ['win'], bug=602688)
+    self.Fail('Pixel_DirectComposition_Video_VP9', ['win'], bug=602688)
