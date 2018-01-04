@@ -353,7 +353,8 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (save_data_enabled_)
     request.SetHTTPHeaderField(HTTPNames::Save_Data, "on");
 
-  if (GetLocalFrameClient()->IsClientLoFiActiveForFrame()) {
+  if (GetLocalFrameClient()->GetPreviewsStateForFrame() &
+      WebURLRequest::kClientLoFiOn) {
     request.AddHTTPHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/features/6072546726248448>; "

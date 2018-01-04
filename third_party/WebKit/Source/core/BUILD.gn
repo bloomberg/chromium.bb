@@ -1813,6 +1813,7 @@ jumbo_source_set("unit_tests") {
     "frame/FrameTestHelpers.cpp",
     "frame/FrameTestHelpers.h",
     "frame/HistoryTest.cpp",
+    "frame/LocalFrameTest.cpp",
     "frame/LocalFrameViewTest.cpp",
     "frame/MHTMLTest.cpp",
     "frame/OriginsUsingFeaturesTest.cpp",

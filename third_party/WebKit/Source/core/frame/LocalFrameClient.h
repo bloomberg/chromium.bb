@@ -335,14 +335,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void SetEffectiveConnectionTypeForTesting(
       WebEffectiveConnectionType) {}
 
-  // Returns whether or not Client Lo-Fi is enabled for the frame
-  // (and so image requests may be replaced with a placeholder).
-  virtual bool IsClientLoFiActiveForFrame() { return false; }
-
-  // Returns whether or not the requested image should be replaced with a
-  // placeholder as part of the Client Lo-Fi previews feature.
-  virtual bool ShouldUseClientLoFiForRequest(const ResourceRequest&) {
-    return false;
+  // Returns the PreviewsState active for the frame.
+  virtual WebURLRequest::PreviewsState GetPreviewsStateForFrame() const {
+    return WebURLRequest::kPreviewsUnspecified;
   }
 
   // Overwrites the given URL to use an HTML5 embed if possible. An empty URL is

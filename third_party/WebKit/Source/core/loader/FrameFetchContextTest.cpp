@@ -95,7 +95,7 @@ class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
                void(const ResourceRequest&, const ResourceResponse&));
   MOCK_METHOD0(UserAgent, String());
   MOCK_METHOD0(MayUseClientLoFiForImageRequests, bool());
-  MOCK_METHOD0(IsClientLoFiActiveForFrame, bool());
+  MOCK_CONST_METHOD0(GetPreviewsStateForFrame, WebURLRequest::PreviewsState());
 };
 
 class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
@@ -1389,16 +1389,16 @@ TEST_F(FrameFetchContextTest, ArchiveWhenDetached) {
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        ClientLoFiInterventionHeader) {
   // Verify header not added if Lo-Fi not active.
-  EXPECT_CALL(*client, IsClientLoFiActiveForFrame())
-      .WillRepeatedly(::testing::Return(false));
+  EXPECT_CALL(*client, GetPreviewsStateForFrame())
+      .WillRepeatedly(::testing::Return(WebURLRequest::kPreviewsOff));
   ResourceRequest resource_request("http://www.example.com/style.css");
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchMainResource);
   EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
 
   // Verify header is added if Lo-Fi is active.
-  EXPECT_CALL(*client, IsClientLoFiActiveForFrame())
-      .WillRepeatedly(::testing::Return(true));
+  EXPECT_CALL(*client, GetPreviewsStateForFrame())
+      .WillRepeatedly(::testing::Return(WebURLRequest::kClientLoFiOn));
   fetch_context->AddAdditionalRequestHeaders(resource_request,
                                              kFetchSubresource);
   EXPECT_EQ(
