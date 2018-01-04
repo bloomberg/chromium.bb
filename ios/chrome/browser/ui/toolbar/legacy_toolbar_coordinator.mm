@@ -11,8 +11,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller_factory.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
-#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_updater.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
@@ -33,7 +33,6 @@
 @end
 
 @implementation LegacyToolbarCoordinator
-@synthesize tabModel = _tabModel;
 @synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolbarController = _toolbarController;
 
@@ -116,10 +115,6 @@
   // or not, and does so by storing a reference to the coordinator to query.
   _toolsMenuCoordinator.presentationProvider = _toolbarController;
   [toolbarController start];
-}
-
-- (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
-  self.toolbarController.delegate = delegate;
 }
 
 - (void)adjustToolbarHeight {

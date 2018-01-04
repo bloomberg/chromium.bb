@@ -132,7 +132,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_controller.h"
-#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"

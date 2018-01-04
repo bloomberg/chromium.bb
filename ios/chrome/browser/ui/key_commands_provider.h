@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
 @protocol KeyCommandsPlumbing<NSObject>
 

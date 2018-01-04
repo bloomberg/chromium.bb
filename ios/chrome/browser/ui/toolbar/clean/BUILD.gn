@@ -58,7 +58,6 @@ source_set("toolbar") {
 
 source_set("toolbar_ui") {
   sources = [
-    "omnibox_focuser.h",
     "toolbar_button_updater.h",
     "toolbar_button_updater.mm",
     "toolbar_consumer.h",

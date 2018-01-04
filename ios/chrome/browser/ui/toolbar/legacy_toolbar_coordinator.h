@@ -11,20 +11,14 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/side_swipe/side_swipe_toolbar_interacting.h"
-#import "ios/chrome/browser/ui/toolbar/clean/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/abstract_web_toolbar.h"
+#import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_provider.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @protocol ActivityServicePositioner;
-@protocol QRScannerResultLoading;
 @class Tab;
-@protocol TabHistoryPositioner;
-@protocol TabHistoryUIUpdater;
-@protocol VoiceSearchControllerDelegate;
-@protocol WebToolbarDelegate;
 @protocol ToolsMenuConfigurationProvider;
 
 @class CommandDispatcher;
@@ -47,15 +41,11 @@
 @end
 
 @interface LegacyToolbarCoordinator
-    : ChromeCoordinator<BubbleViewAnchorPointProvider,
+    : ChromeCoordinator<PrimaryToolbarCoordinator,
+                        BubbleViewAnchorPointProvider,
                         IncognitoViewControllerDelegate,
-                        OmniboxFocuser,
-                        SideSwipeToolbarInteracting,
                         ToolbarSnapshotProviding,
                         ToolsMenuPresentationStateProvider>
-
-@property(nonatomic, weak) TabModel* tabModel;
-@property(nonatomic, strong) UIViewController* toolbarViewController;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
             toolsMenuConfigurationProvider:
@@ -72,34 +62,26 @@
     NS_UNAVAILABLE;
 
 // Returns the different protocols and superclass now implemented by the
-- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate;
+// internal ViewController.
 - (id<ActivityServicePositioner>)activityServicePositioner;
-- (id<TabHistoryPositioner>)tabHistoryPositioner;
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
-- (id<QRScannerResultLoading>)QRScannerResultLoader;
 
 // Sets the toolbarController for this coordinator.
 - (void)setToolbarController:(id<Toolbar>)toolbarController;
 
-// Sets the delegate for the toolbar.
-- (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate;
-
-// TabModel callbacks.
-- (void)selectedTabChanged;
-- (void)setTabCount:(NSInteger)tabCount;
-
-// WebToolbarController public interface.
-- (void)browserStateDestroyed;
+// ToolbarController public interface.
 - (void)updateToolbarState;
-- (void)setShareButtonEnabled:(BOOL)enabled;
-- (void)showPrerenderingAnimation;
-- (BOOL)isOmniboxFirstResponder;
-- (BOOL)showingOmniboxPopup;
-- (void)currentPageLoadStarted;
 - (CGRect)visibleOmniboxFrame;
 - (void)triggerToolsMenuButtonAnimation;
-- (void)adjustToolbarHeight;
 - (BOOL)isShowingToolsMenu;
+
+// TODO(crbug.com/788705): Legacy interface. Removes those methods once the old
+// toolbar is removed.
+- (void)selectedTabChanged;
+- (void)setTabCount:(NSInteger)tabCount;
+- (void)browserStateDestroyed;
+- (void)setShareButtonEnabled:(BOOL)enabled;
+- (void)currentPageLoadStarted;
+- (void)adjustToolbarHeight;
 
 @end
 
