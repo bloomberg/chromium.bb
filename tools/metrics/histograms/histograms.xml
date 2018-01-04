@@ -34503,6 +34503,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MSE.DemuxerDestructionTime" units="ms">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Amount of time taken to destroy one ChunkDemuxer object, not including
+    initial background task scheduling delay.
+  </summary>
+</histogram>
+
 <histogram name="Media.MSE.DetectedTrackCount.Audio">
   <owner>wolenetz@chromium.org</owner>
   <summary>
