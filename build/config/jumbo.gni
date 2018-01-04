@@ -127,9 +127,19 @@ template("internal_jumbo_target") {
         merge_limit = jumbo_file_merge_default
       }
     }
+    has_c_file = false
+    has_objective_c_file = false
+    has_S_file = false
     assert(merge_limit > 0)
     foreach(source_file, invoker_sources) {
-      if (get_path_info(source_file, "extension") != "h") {
+      source_ext = get_path_info(source_file, "extension")
+      if (source_ext == "c") {
+        has_c_file = true
+      } else if (source_ext == "mm") {
+        has_objective_c_file = true
+      } else if (source_ext == "S") {
+        has_S_file = true
+      } else if (source_ext == "cc" || source_ext == "cpp") {
         if (current_file_index == next_chunk_start) {
           jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_" +
                            next_chunk_number + ".cc" ]
@@ -148,22 +158,7 @@ template("internal_jumbo_target") {
       assert(next_chunk_start >= 0)  # Prevent "unused variable"
       assert(next_chunk_number <= 2)  # Prevent "unused variable"
     }
-  }
 
-  if (use_jumbo_build_for_target) {
-    has_c_file = false
-    has_objective_c_file = false
-    has_S_file = false
-    foreach(source_file, invoker_sources) {
-      source_ext = get_path_info(source_file, "extension")
-      if (source_ext == "c") {
-        has_c_file = true
-      } else if (source_ext == "mm") {
-        has_objective_c_file = true
-      } else if (source_ext == "S") {
-        has_S_file = true
-      }
-    }
     if (has_c_file) {
       jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_c.c" ]
     }
@@ -173,7 +168,9 @@ template("internal_jumbo_target") {
     if (has_S_file) {
       jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_S.S" ]
     }
+  }
 
+  if (use_jumbo_build_for_target) {
     merge_action_name = target_name + "__jumbo_merge"
 
     # Create an action that calls a script that merges all the source files.
