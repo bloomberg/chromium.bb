@@ -30,6 +30,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/cocoa/a11y_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -228,6 +229,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
   DCHECK_EQ([self download], downloadModel->download());
+
+  if (downloadModel->download()->GetState() != DownloadItem::IN_PROGRESS)
+    ui::a11y_util::PlayElementUpdatedSound(self.view.window);
+
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
     [progressView_ setStateFromDownload:downloadModel];
     CGFloat preferredWidth = progressView_.preferredWidth;
