@@ -98,7 +98,7 @@ AutofillSaveCardInfoBarDelegateMobile::GetInfoBarType() const {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 AutofillSaveCardInfoBarDelegateMobile::GetIdentifier() const {
-  return AUTOFILL_CC_INFOBAR_DELEGATE;
+  return AUTOFILL_CC_INFOBAR_DELEGATE_MOBILE;
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::ShouldExpire(

@@ -99,7 +99,7 @@ ReSignInInfoBarDelegate::~ReSignInInfoBarDelegate() {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 ReSignInInfoBarDelegate::GetIdentifier() const {
-  return RE_SIGN_IN_INFOBAR_DELEGATE;
+  return RE_SIGN_IN_INFOBAR_DELEGATE_IOS;
 }
 
 base::string16 ReSignInInfoBarDelegate::GetMessageText() const {

@@ -53,7 +53,7 @@ IOSChromeSavePasswordInfoBarDelegate::IOSChromeSavePasswordInfoBarDelegate(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 IOSChromeSavePasswordInfoBarDelegate::GetIdentifier() const {
-  return IOS_CHROME_SAVE_PASSWORD_INFOBAR_DELEGATE;
+  return SAVE_PASSWORD_INFOBAR_DELEGATE_MOBILE;
 }
 
 base::string16 IOSChromeSavePasswordInfoBarDelegate::GetMessageText() const {

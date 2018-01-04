@@ -69,7 +69,7 @@ SyncErrorInfoBarDelegate::~SyncErrorInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 SyncErrorInfoBarDelegate::GetIdentifier() const {
-  return SYNC_ERROR_INFOBAR_DELEGATE;
+  return SYNC_ERROR_INFOBAR_DELEGATE_IOS;
 }
 
 base::string16 SyncErrorInfoBarDelegate::GetMessageText() const {

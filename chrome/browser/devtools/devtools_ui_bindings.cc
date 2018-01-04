@@ -174,7 +174,7 @@ DevToolsConfirmInfoBarDelegate::~DevToolsConfirmInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 DevToolsConfirmInfoBarDelegate::GetIdentifier() const {
-  return DEV_TOOLS_CONFIRM_INFOBAR_DELEGATE;
+  return DEV_TOOLS_INFOBAR_DELEGATE;
 }
 
 base::string16 DevToolsConfirmInfoBarDelegate::GetMessageText() const {

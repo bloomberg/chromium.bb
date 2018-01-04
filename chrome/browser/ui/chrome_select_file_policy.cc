@@ -32,8 +32,9 @@ void ChromeSelectFilePolicy::SelectFileDenied() {
   if (source_contents_) {
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(source_contents_),
-        infobars::InfoBarDelegate::CHROME_SELECT_FILE_POLICY, nullptr,
-        l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR), true);
+        infobars::InfoBarDelegate::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE,
+        nullptr, l10n_util::GetStringUTF16(IDS_FILE_SELECTION_DIALOG_INFOBAR),
+        true);
   } else {
     LOG(WARNING) << "File-selection dialogs are disabled but no WebContents "
                  << "is given to display the InfoBar.";

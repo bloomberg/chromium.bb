@@ -44,7 +44,7 @@ void DangerousDownloadInfoBarDelegate::OnDownloadDestroyed(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 DangerousDownloadInfoBarDelegate::GetIdentifier() const {
-  return CONFIRM_DANGEROUS_DOWNLOAD;
+  return DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID;
 }
 
 int DangerousDownloadInfoBarDelegate::GetIconId() const {

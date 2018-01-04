@@ -284,7 +284,7 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 AppBannerInfoBarDelegateAndroid::GetIdentifier() const {
-  return APP_BANNER_INFOBAR_DELEGATE_ANDROID;
+  return APP_BANNER_INFOBAR_DELEGATE;
 }
 
 void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {

@@ -150,7 +150,7 @@ PermissionUpdateInfoBarDelegate::~PermissionUpdateInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 PermissionUpdateInfoBarDelegate::GetIdentifier() const {
-  return PERMISSION_UPDATE_INFOBAR_DELEGATE;
+  return PERMISSION_UPDATE_INFOBAR_DELEGATE_ANDROID;
 }
 
 int PermissionUpdateInfoBarDelegate::GetIconId() const {

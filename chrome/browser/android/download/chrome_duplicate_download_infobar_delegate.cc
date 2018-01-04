@@ -72,7 +72,7 @@ ChromeDuplicateDownloadInfoBarDelegate::ChromeDuplicateDownloadInfoBarDelegate(
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 ChromeDuplicateDownloadInfoBarDelegate::GetIdentifier() const {
-  return CHROME_DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE;
+  return DUPLICATE_DOWNLOAD_INFOBAR_DELEGATE_ANDROID;
 }
 
 bool ChromeDuplicateDownloadInfoBarDelegate::Accept() {

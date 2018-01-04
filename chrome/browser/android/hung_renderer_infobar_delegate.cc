@@ -40,7 +40,7 @@ HungRendererInfoBarDelegate::~HungRendererInfoBarDelegate() {
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 HungRendererInfoBarDelegate::GetIdentifier() const {
-  return HUNG_RENDERER_INFOBAR_DELEGATE;
+  return HUNG_RENDERER_INFOBAR_DELEGATE_ANDROID;
 }
 
 void HungRendererInfoBarDelegate::InfoBarDismissed() {
