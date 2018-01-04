@@ -72,6 +72,9 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
   // Underlying OS wifi API.
   std::unique_ptr<WlanApiInterface> wlan_api_;
 
+  // Controls the polling update interval.
+  std::unique_ptr<WifiPollingPolicy> polling_policy_;
+
   // Holder for delayed tasks; takes care of cleanup.
   base::WeakPtrFactory<WifiDataProviderCommon> weak_factory_;
 

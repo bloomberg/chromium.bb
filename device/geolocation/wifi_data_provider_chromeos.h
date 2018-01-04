@@ -39,7 +39,7 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   void ScheduleNextScan(int interval);
 
   // Will schedule starting of the scanning process.
-  void ScheduleStart(int interval);
+  void ScheduleStart();
 
   // Will schedule stopping of the scanning process.
   void ScheduleStop();
@@ -47,8 +47,8 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   // Get access point data from chromeos.
   bool GetAccessPointData(WifiData::AccessPointDataSet* data);
 
-  // Create the policy for controlling the polling update interval.
-  std::unique_ptr<WifiPollingPolicy> CreatePollingPolicy();
+  // Controls the polling update interval. (client thread)
+  std::unique_ptr<WifiPollingPolicy> polling_policy_;
 
   // The latest wifi data. (client thread)
   WifiData wifi_data_;
