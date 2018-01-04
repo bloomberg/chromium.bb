@@ -30,7 +30,7 @@ const base::FilePath::CharType kFileTypePoliciesBinaryPbFileName[] =
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: khaoiebndkojlmppeemjhbpbandiljpe
-const uint8_t kPublicKeySHA256[32] = {
+const uint8_t kFileTypePoliciesPublicKeySHA256[32] = {
     0xa7, 0x0e, 0x84, 0x1d, 0x3a, 0xe9, 0xbc, 0xff, 0x44, 0xc9, 0x71,
     0xf1, 0x0d, 0x38, 0xb9, 0xf4, 0x65, 0x92, 0x31, 0x01, 0x47, 0x3f,
     0x1b, 0x7c, 0x11, 0xb0, 0x85, 0x0f, 0xa3, 0xfd, 0xe1, 0xe5};
@@ -110,8 +110,9 @@ base::FilePath FileTypePoliciesComponentInstallerPolicy::GetRelativeInstallDir()
 
 void FileTypePoliciesComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(kPublicKeySHA256,
-               kPublicKeySHA256 + arraysize(kPublicKeySHA256));
+  hash->assign(kFileTypePoliciesPublicKeySHA256,
+               kFileTypePoliciesPublicKeySHA256 +
+                   arraysize(kFileTypePoliciesPublicKeySHA256));
 }
 
 std::string FileTypePoliciesComponentInstallerPolicy::GetName() const {

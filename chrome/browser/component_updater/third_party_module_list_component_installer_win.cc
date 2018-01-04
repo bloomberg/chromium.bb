@@ -36,7 +36,7 @@ namespace component_updater {
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the component.
 // The component id is: EHGIDPNDBLLACPJALKIIMKBADGJFNNMC
-const uint8_t kPublicKeySHA256[32] = {
+const uint8_t kThirdPartyModuleListPublicKeySHA256[32] = {
     0x47, 0x68, 0x3f, 0xd3, 0x1b, 0xb0, 0x2f, 0x90, 0xba, 0x88, 0xca,
     0x10, 0x36, 0x95, 0xdd, 0xc2, 0x29, 0xd1, 0x4f, 0x38, 0xf2, 0x9d,
     0x6c, 0x9c, 0x68, 0x6c, 0xa2, 0xa4, 0xa2, 0x8e, 0xa5, 0x5c};
@@ -102,7 +102,8 @@ ThirdPartyModuleListComponentInstallerPolicy::GetRelativeInstallDir() const {
 
 void ThirdPartyModuleListComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
+  hash->assign(std::begin(kThirdPartyModuleListPublicKeySHA256),
+               std::end(kThirdPartyModuleListPublicKeySHA256));
 }
 
 std::string ThirdPartyModuleListComponentInstallerPolicy::GetName() const {

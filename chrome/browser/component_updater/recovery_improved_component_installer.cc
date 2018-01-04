@@ -18,7 +18,7 @@ namespace component_updater {
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the component CRX.
 // The component id is: ihnlcenocehgdaegdmhbidjhnhdchfmm
-constexpr uint8_t kPublicKeySHA256[32] = {
+constexpr uint8_t kRecoveryImprovedPublicKeySHA256[32] = {
     0x87, 0xdb, 0x24, 0xde, 0x24, 0x76, 0x30, 0x46, 0x3c, 0x71, 0x83,
     0x97, 0xd7, 0x32, 0x75, 0xcc, 0xd5, 0x7f, 0xec, 0x09, 0x60, 0x6d,
     0x20, 0xc3, 0x81, 0xd7, 0xce, 0x7b, 0x10, 0x15, 0x44, 0xd1};
@@ -67,7 +67,8 @@ base::FilePath RecoveryImprovedInstallerPolicy::GetRelativeInstallDir() const {
 
 void RecoveryImprovedInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
+  hash->assign(std::begin(kRecoveryImprovedPublicKeySHA256),
+               std::end(kRecoveryImprovedPublicKeySHA256));
 }
 
 std::string RecoveryImprovedInstallerPolicy::GetName() const {
