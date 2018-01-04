@@ -4,8 +4,6 @@
 
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 
-#include <stdint.h>
-
 // static
 bool ObsoleteSystem::IsObsoleteNowOrSoon() {
   return false;
