@@ -171,6 +171,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetTargetResult FindMouseEventTarget(
       RenderWidgetHostViewBase* root_view,
       const blink::WebMouseEvent& event) const;
+  RenderWidgetHostViewBase* FindMouseWheelEventTarget(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebMouseWheelEvent& event,
+      gfx::PointF* transformed_point) const;
 
   // |mouse_event| is in the coord-space of |target|.
   void DispatchMouseEvent(RenderWidgetHostViewBase* root_view,
