@@ -21,8 +21,8 @@
           "autofill::mojom::PasswordAutofillAgent",
           "autofill::mojom::PasswordGenerationAgent",
           "blink::mojom::document_metadata::CopylessPaste",
-          "chrome::mojom::InsecureContentRenderer",
           "chrome::mojom::ChromeRenderFrame",
+          "chrome::mojom::ContentSettingsRenderer",
           "dom_distiller::mojom::DistillerPageNotifierService",
           "extensions::mojom::AppWindow",
           "spellcheck::mojom::SpellCheckPanel"
