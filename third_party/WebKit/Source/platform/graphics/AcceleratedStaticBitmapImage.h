@@ -61,10 +61,11 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const final;
   scoped_refptr<StaticBitmapImage> MakeUnaccelerated() final;
 
-  void CopyToTexture(WebGraphicsContext3DProvider*,
+  bool CopyToTexture(gpu::gles2::GLES2Interface* dest_gl,
                      GLenum dest_target,
                      GLuint dest_texture_id,
-                     bool flip_y,
+                     bool unpack_premultiply_alpha,
+                     bool unpack_flip_y,
                      const IntPoint& dest_point,
                      const IntRect& source_sub_rectangle) override;
 

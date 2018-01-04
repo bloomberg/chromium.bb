@@ -1689,7 +1689,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void TexImageBitmapByGPU(ImageBitmap*,
                            GLenum,
                            GLuint,
-                           bool,
                            GLint,
                            GLint,
                            const IntRect&);

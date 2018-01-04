@@ -141,16 +141,17 @@ void AcceleratedStaticBitmapImage::UpdateSyncToken(gpu::SyncToken sync_token) {
   texture_holder_->UpdateSyncToken(sync_token);
 }
 
-void AcceleratedStaticBitmapImage::CopyToTexture(
-    WebGraphicsContext3DProvider* dest_provider,
+bool AcceleratedStaticBitmapImage::CopyToTexture(
+    gpu::gles2::GLES2Interface* dest_gl,
     GLenum dest_target,
     GLuint dest_texture_id,
-    bool flip_y,
+    bool unpack_premultiply_alpha,
+    bool unpack_flip_y,
     const IntPoint& dest_point,
     const IntRect& source_sub_rectangle) {
   CheckThread();
   if (!IsValid())
-    return;
+    return false;
   // |destProvider| may not be the same context as the one used for |m_image|,
   // so we use a mailbox to generate a texture id for |destProvider| to access.
 
@@ -159,7 +160,6 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
   EnsureMailbox(kUnverifiedSyncToken, GL_NEAREST);
 
   // Get a texture id that |destProvider| knows about and copy from it.
-  gpu::gles2::GLES2Interface* dest_gl = dest_provider->ContextGL();
   dest_gl->WaitSyncTokenCHROMIUM(
       texture_holder_->GetSyncToken().GetConstData());
   GLuint source_texture_id = dest_gl->CreateAndConsumeTextureCHROMIUM(
@@ -167,11 +167,13 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
   dest_gl->CopySubTextureCHROMIUM(
       source_texture_id, 0, dest_target, dest_texture_id, 0, dest_point.X(),
       dest_point.Y(), source_sub_rectangle.X(), source_sub_rectangle.Y(),
-      source_sub_rectangle.Width(), source_sub_rectangle.Height(), flip_y,
-      false, false);
+      source_sub_rectangle.Width(), source_sub_rectangle.Height(),
+      unpack_flip_y ? GL_FALSE : GL_TRUE, GL_FALSE,
+      unpack_premultiply_alpha ? GL_FALSE : GL_TRUE);
   // This drops the |destGL| context's reference on our |m_mailbox|, but it's
   // still held alive by our SkImage.
   dest_gl->DeleteTextures(1, &source_texture_id);
+  return true;
 }
 
 PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
