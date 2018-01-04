@@ -5,12 +5,10 @@
 #ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_CONNECTOR_IMPL_H_
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_CONNECTOR_IMPL_H_
 
-#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
 #include "content/common/shared_worker/shared_worker_connector.mojom.h"
 
 namespace content {
-class ResourceContext;
 
 // Instances of this class live on the UI thread and have their lifetime bound
 // to a Mojo connection.
@@ -22,19 +20,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
                      mojom::SharedWorkerConnectorRequest request);
 
  private:
-  friend class SharedWorkerServiceImplTest;
-
-  static void CreateInternal(int process_id,
-                             int frame_id,
-                             ResourceContext* resource_context,
-                             const WorkerStoragePartition& partition,
-                             mojom::SharedWorkerConnectorRequest request);
-
-  SharedWorkerConnectorImpl(
-      int process_id,
-      int frame_id,
-      ResourceContext* resource_context,
-      const WorkerStoragePartition& worker_storage_partition);
+  SharedWorkerConnectorImpl(int process_id, int frame_id);
 
   // mojom::SharedWorkerConnector methods:
   void Connect(
@@ -45,8 +31,6 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
 
   const int process_id_;
   const int frame_id_;
-  ResourceContext* resource_context_;
-  WorkerStoragePartition worker_storage_partition_;
 };
 
 }  // namespace content

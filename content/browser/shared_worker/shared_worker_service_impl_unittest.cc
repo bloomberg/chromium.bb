@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
-#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -43,10 +42,8 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
       RenderProcessHost* process_host,
       int frame_id) {
     mojom::SharedWorkerConnectorPtr connector;
-    SharedWorkerConnectorImpl::CreateInternal(
-        process_host->GetID(), frame_id,
-        process_host->GetBrowserContext()->GetResourceContext(), *partition_,
-        mojo::MakeRequest(&connector));
+    SharedWorkerConnectorImpl::Create(process_host->GetID(), frame_id,
+                                      mojo::MakeRequest(&connector));
     return connector;
   }
 
@@ -77,18 +74,7 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
  protected:
-  SharedWorkerServiceImplTest()
-      : browser_context_(new TestBrowserContext()),
-        partition_(new WorkerStoragePartition(
-            BrowserContext::GetDefaultStoragePartition(browser_context_.get())
-                ->GetURLRequestContext(),
-            nullptr /* media_url_request_context */,
-            nullptr /* appcache_service */,
-            nullptr /* quota_manager */,
-            nullptr /* filesystem_context */,
-            nullptr /* database_tracker */,
-            nullptr /* indexed_db_context */,
-            nullptr /* service_worker_context */)) {}
+  SharedWorkerServiceImplTest() : browser_context_(new TestBrowserContext()) {}
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -99,14 +85,11 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
-    static_cast<SharedWorkerServiceImpl*>(SharedWorkerService::GetInstance())
-        ->ResetForTesting();
     browser_context_.reset();
     RenderViewHostImplTestHarness::TearDown();
   }
 
   std::unique_ptr<TestBrowserContext> browser_context_;
-  std::unique_ptr<WorkerStoragePartition> partition_;
   static std::queue<mojom::SharedWorkerFactoryRequest>
       s_factory_request_received_;
   std::unique_ptr<MockRenderProcessHostFactory> render_process_host_factory_;

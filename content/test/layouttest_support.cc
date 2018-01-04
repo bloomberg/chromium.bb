@@ -27,6 +27,7 @@
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -439,8 +440,10 @@ void EnableBrowserLayoutTestMode() {
   RenderWidgetHostImpl::DisableResizeAckCheckForTesting();
 }
 
-void TerminateAllSharedWorkersForTesting(base::OnceClosure callback) {
-  static_cast<SharedWorkerServiceImpl*>(SharedWorkerService::GetInstance())
+void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
+                                         base::OnceClosure callback) {
+  static_cast<SharedWorkerServiceImpl*>(
+      storage_partition->GetSharedWorkerService())
       ->TerminateAllWorkersForTesting(std::move(callback));
 }
 

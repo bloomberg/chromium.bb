@@ -13,6 +13,7 @@
 #include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -53,10 +54,12 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
 }  // namespace
 
 SharedWorkerHost::SharedWorkerHost(
+    SharedWorkerServiceImpl* service,
     std::unique_ptr<SharedWorkerInstance> instance,
     int process_id,
     int route_id)
     : binding_(this),
+      service_(service),
       instance_(std::move(instance)),
       process_id_(process_id),
       route_id_(route_id),
@@ -111,7 +114,9 @@ void SharedWorkerHost::AllowFileSystem(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AllowFileSystemOnIOThread, url,
-                     instance_->resource_context(),
+                     RenderProcessHost::FromID(process_id_)
+                         ->GetBrowserContext()
+                         ->GetResourceContext(),
                      GetRenderFrameIDsForWorker(), std::move(callback)));
 }
 
@@ -121,7 +126,9 @@ void SharedWorkerHost::AllowIndexedDB(const GURL& url,
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&AllowIndexedDBOnIOThread, url, name,
-                     instance_->resource_context(),
+                     RenderProcessHost::FromID(process_id_)
+                         ->GetBrowserContext()
+                         ->GetResourceContext(),
                      GetRenderFrameIDsForWorker()),
       std::move(callback));
 }
@@ -250,8 +257,7 @@ void SharedWorkerHost::OnClientConnectionLost() {
 void SharedWorkerHost::OnWorkerConnectionLost() {
   // This will destroy |this| resulting in client's observing their mojo
   // connection being dropped.
-  static_cast<SharedWorkerServiceImpl*>(SharedWorkerService::GetInstance())
-      ->DestroyHost(this);
+  service_->DestroyHost(this);
 }
 
 void SharedWorkerHost::GetInterface(

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "content/browser/shared_worker/worker_storage_partition.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
@@ -16,7 +15,6 @@
 #include "url/origin.h"
 
 namespace content {
-class ResourceContext;
 
 // SharedWorkerInstance is copyable value-type data type. It could be passed to
 // the UI thread and be used for comparison in SharedWorkerDevToolsManager.
@@ -29,8 +27,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
       const std::string& content_security_policy,
       blink::WebContentSecurityPolicyType content_security_policy_type,
       blink::WebAddressSpace creation_address_space,
-      ResourceContext* resource_context,
-      const WorkerStoragePartitionId& partition_id,
       blink::mojom::SharedWorkerCreationContextType creation_context_type);
   SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
@@ -41,9 +37,7 @@ class CONTENT_EXPORT SharedWorkerInstance {
   // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
   bool Matches(const GURL& url,
                const std::string& name,
-               const url::Origin& constructor_origin,
-               const WorkerStoragePartitionId& partition,
-               ResourceContext* resource_context) const;
+               const url::Origin& constructor_origin) const;
   bool Matches(const SharedWorkerInstance& other) const;
 
   // Accessors.
@@ -59,10 +53,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   blink::WebAddressSpace creation_address_space() const {
     return creation_address_space_;
   }
-  ResourceContext* resource_context() const {
-    return resource_context_;
-  }
-  const WorkerStoragePartitionId& partition_id() const { return partition_id_; }
   blink::mojom::SharedWorkerCreationContextType creation_context_type() const {
     return creation_context_type_;
   }
@@ -79,8 +69,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
   const std::string content_security_policy_;
   const blink::WebContentSecurityPolicyType content_security_policy_type_;
   const blink::WebAddressSpace creation_address_space_;
-  ResourceContext* const resource_context_;
-  const WorkerStoragePartitionId partition_id_;
   const blink::mojom::SharedWorkerCreationContextType creation_context_type_;
 };
 

@@ -790,7 +790,11 @@ void BlinkTestController::OnTestFinished() {
 }
 
 void BlinkTestController::OnAllServiceWorkersCleared() {
+  // TODO(nhiroki): Add a comment about the reason why we terminate all shared
+  // workers here.
   TerminateAllSharedWorkersForTesting(
+      BrowserContext::GetStoragePartition(
+          ShellContentBrowserClient::Get()->browser_context(), nullptr),
       base::BindOnce(&BlinkTestController::OnAllSharedWorkersDestroyed,
                      weak_factory_.GetWeakPtr()));
 }

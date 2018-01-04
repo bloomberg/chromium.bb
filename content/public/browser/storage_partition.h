@@ -53,6 +53,7 @@ class DOMStorageContext;
 class IndexedDBContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
+class SharedWorkerService;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -91,6 +92,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual IndexedDBContext* GetIndexedDBContext() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
+  virtual SharedWorkerService* GetSharedWorkerService() = 0;
   virtual CacheStorageContext* GetCacheStorageContext() = 0;
 #if !defined(OS_ANDROID)
   virtual HostZoomMap* GetHostZoomMap() = 0;

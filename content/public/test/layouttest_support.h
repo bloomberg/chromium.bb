@@ -45,6 +45,7 @@ namespace content {
 class RenderFrame;
 class RendererGamepadProvider;
 class RenderView;
+class StoragePartition;
 struct Manifest;
 
 // Turn the browser process into layout test mode.
@@ -53,7 +54,8 @@ void EnableBrowserLayoutTestMode();
 // Terminates all workers and notifies when complete. This is used for
 // testing when it is important to make sure that all shared worker activity
 // has stopped.
-void TerminateAllSharedWorkersForTesting(base::OnceClosure callback);
+void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
+                                         base::OnceClosure callback);
 
 ///////////////////////////////////////////////////////////////////////////////
 // The following methods are meant to be used from a renderer.

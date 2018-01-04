@@ -64,6 +64,10 @@ ServiceWorkerContext* TestStoragePartition::GetServiceWorkerContext() {
   return service_worker_context_;
 }
 
+SharedWorkerService* TestStoragePartition::GetSharedWorkerService() {
+  return shared_worker_service_;
+}
+
 CacheStorageContext* TestStoragePartition::GetCacheStorageContext() {
   return cache_storage_context_;
 }

@@ -33,6 +33,7 @@ namespace content {
 
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
+class SharedWorkerServiceImpl;
 
 // The SharedWorkerHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. This is owned by
@@ -41,7 +42,8 @@ class SharedWorkerInstance;
 class SharedWorkerHost : public mojom::SharedWorkerHost,
                          public service_manager::mojom::InterfaceProvider {
  public:
-  SharedWorkerHost(std::unique_ptr<SharedWorkerInstance> instance,
+  SharedWorkerHost(SharedWorkerServiceImpl* service,
+                   std::unique_ptr<SharedWorkerInstance> instance,
                    int process_id,
                    int route_id);
   ~SharedWorkerHost() override;
@@ -109,6 +111,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   mojo::Binding<mojom::SharedWorkerHost> binding_;
+  SharedWorkerServiceImpl* service_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
 
