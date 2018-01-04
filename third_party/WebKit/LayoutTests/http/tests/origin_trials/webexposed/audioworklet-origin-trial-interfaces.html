@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!--
+  Generate token with the command:
+  tools/origin_trials/generate_token.py http://127.0.0.1:8000 AudioWorklet \
+    --expire-timestamp=2000000000
+-->
+<html>
+  <head>
+    <title>
+      AudioWorklet Interface Exposed by Origin Trial
+    </title>
+    <meta charset="utf-8">
+    <meta http-equiv="origin-trial" content="Ao6nN+X7Mfg/2fBkWhI2DVdWHwslhOAfSeqD4pPKKzkZ37MLbrnWqO8Tn3apWwRfd/U0GyZHBhghuekDLa4PkwgAAABUeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiQXVkaW9Xb3JrbGV0IiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9">
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../../../webaudio-resources/audit.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      let audit = Audit.createTaskRunner();
+      let realtimeContext = new AudioContext();
+
+      // Test if AudioWorklet is visible via BaseAudioContext.
+      audit.define(
+          'AudioWorklet in BaseAudioContext',
+          (task, should) => {
+            should(realtimeContext.audioWorklet instanceof AudioWorklet,
+                   'Context.audioWorklet being an instance of AudioWorklet')
+                .beTrue();
+            task.done();
+          });
+
+      // Test if AudioWorkletGlobalScope parses JS code correctly.
+      // AudioWorkletProcessor must be available to pass the assertion.
+      audit.define(
+          'Create AudioWorkletNode after .addModule() call',
+          (task, should) => {
+            realtimeContext.audioWorklet
+                .addModule('../../webaudio/audio-worklet/dummy-processor.js')
+                .then(() => {
+                    let dummyWorkletNode =
+                        new AudioWorkletNode(realtimeContext, 'dummy');
+                    should(dummyWorkletNode instanceof AudioWorkletNode,
+                           'dummyWorkeletNode being an instance of ' +
+                           'AudioWorkletNode')
+                        .beTrue();
+                    task.done();
+                });
+          });
+
+      audit.run();
+    </script>
+  </body>
+</html>

@@ -8,8 +8,7 @@
     Constructor,
     ConstructorCallWith=ExecutionContext,
     Exposed=AudioWorklet,
-    Global=(Worklet,AudioWorklet),
-    OriginTrialEnabled=AudioWorklet
+    Global=(Worklet,AudioWorklet)
 ] interface AudioWorkletProcessor {
   readonly attribute MessagePort port;
 };

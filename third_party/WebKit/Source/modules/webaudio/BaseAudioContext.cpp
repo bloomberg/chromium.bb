@@ -147,8 +147,7 @@ void BaseAudioContext::Initialize() {
 
   FFTFrame::Initialize();
 
-  if (OriginTrials::audioWorkletEnabled(GetExecutionContext()) ||
-      RuntimeEnabledFeatures::AudioWorkletEnabled()) {
+  if (OriginTrials::audioWorkletEnabled(GetExecutionContext())) {
     audio_worklet_ = AudioWorklet::Create(this);
   }
 
