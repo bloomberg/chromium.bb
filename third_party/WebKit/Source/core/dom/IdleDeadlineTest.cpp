@@ -89,7 +89,7 @@ TEST_F(IdleDeadlineTest, deadlineInFuture) {
   IdleDeadline* deadline =
       IdleDeadline::Create(1.25, IdleDeadline::CallbackType::kCalledWhenIdle);
   // Note: the deadline is computed with reduced resolution.
-  EXPECT_FLOAT_EQ(249.995, deadline->timeRemaining());
+  EXPECT_FLOAT_EQ(250.0, deadline->timeRemaining());
 }
 
 TEST_F(IdleDeadlineTest, deadlineInPast) {
