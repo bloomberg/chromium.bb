@@ -264,27 +264,6 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Listener for receiving the messages related with interacting with the omnibox during startup.
-     */
-    public interface OmniboxLivenessListener {
-        /**
-         * Called after the first draw when the omnibox can receive touch events.
-         */
-        void onOmniboxInteractive();
-
-        /**
-         * Called when the native libraries are loaded and listeners with native components
-         * have been initialized.
-         */
-        void onOmniboxFullyFunctional();
-
-        /**
-         * Called when the omnibox is focused.
-         */
-        void onOmniboxFocused();
-    }
-
-    /**
      * Class to handle input from a hardware keyboard when the focus is on the URL bar. In
      * particular, handle navigating the suggestions list from the keyboard.
      */
@@ -867,7 +846,6 @@ public class LocationBarLayout extends FrameLayout
         }
         mDeferredNativeRunnables.clear();
 
-        mUrlBar.onNativeLibraryReady();
         updateVisualsForState();
     }
 
