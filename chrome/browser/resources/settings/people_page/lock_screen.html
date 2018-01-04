@@ -62,17 +62,17 @@
         @apply(--settings-list-frame-padding);
       }
 
-      .list-frame[disabled] {
-        opacity: var(--settings-disabled-opacity);
-        pointer-events: none;
-      }
-
       .no-padding {
         padding: 0;
       }
 
       .underbar {
         border-bottom: var(--settings-separator-line);
+      }
+
+      #unlockType[disabled] {
+        opacity: var(--settings-disabled-opacity);
+        pointer-events: none;
       }
     </style>
 
@@ -91,8 +91,9 @@
               </cr-policy-indicator>
             </template>
           </div>
-          <div class="list-frame" disabled$="[[quickUnlockDisabledByPolicy_]]">
+          <div class="list-frame" >
             <paper-radio-group id="unlockType"
+                disabled$="[[quickUnlockDisabledByPolicy_]]"
                 selected="{{selectedUnlockType}}">
               <paper-radio-button name="password" class="list-item underbar">
                 <div class="start">

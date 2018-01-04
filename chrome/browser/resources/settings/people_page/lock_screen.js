@@ -264,8 +264,10 @@ Polymer({
     this.showPasswordPromptDialog_ = false;
     if (!this.setModes_)
       settings.navigateToPreviousRoute();
-    else
+    else if (!this.$$('#unlockType').disabled)
       cr.ui.focusWithoutInk(assert(this.$$('#unlockType')));
+    else
+      cr.ui.focusWithoutInk(assert(this.$$('#screenLockDiv')));
   },
 
   /**
