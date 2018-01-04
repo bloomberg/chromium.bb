@@ -297,32 +297,20 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
                                   [self fadeAnimationLayers]);
 }
 
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator {
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+                completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
   // Hide the rightView button so its not visibile on its initial layout
   // while the expan animation is happening.
   self.rightView.hidden = YES;
-  self.rightView.frame = [self rightViewRectForBounds:self.bounds];
-  [animator addAnimations:^{
-    [self layoutIfNeeded];
-    [self.rightView layoutIfNeeded];
-  }];
+  self.rightView.alpha = 0;
+  self.rightView.frame = CGRectLayoutOffset(
+      [self rightViewRectForBounds:self.bounds], kToolbarButtonAnimationOffset);
 
-  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+  [completionAnimator addAnimations:^{
     self.rightView.hidden = NO;
-    self.rightView.alpha = 0;
-    self.rightView.frame =
-        CGRectLayoutOffset(self.rightView.frame, kToolbarButtonAnimationOffset);
-    [UIViewPropertyAnimator
-        runningPropertyAnimatorWithDuration:0.2
-                                      delay:0.1
-                                    options:UIViewAnimationOptionCurveEaseOut
-                                 animations:^{
-                                   self.rightView.alpha = 1.0;
-                                   self.rightView.frame = CGRectLayoutOffset(
-                                       self.rightView.frame,
-                                       -kToolbarButtonAnimationOffset);
-                                 }
-                                 completion:nil];
+    self.rightView.alpha = 1.0;
+    self.rightView.frame = CGRectLayoutOffset(self.rightView.frame,
+                                              -kToolbarButtonAnimationOffset);
   }];
 }
 

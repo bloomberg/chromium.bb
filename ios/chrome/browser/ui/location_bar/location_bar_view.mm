@@ -284,11 +284,13 @@ const CGFloat kTextFieldTrailingOffset = 3;
       }];
 }
 
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator {
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+                completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
   // TODO(crbug.com/791455): Due to crbug.com/774121 |self.leadingButton| is
   // hidden in line 151 before the animation starts. For this reason any
   // animation we try doing on |self.leadingButton| will not be visible.
-  [self.textField addExpandOmniboxAnimations:animator];
+  [self.textField addExpandOmniboxAnimations:animator
+                          completionAnimator:completionAnimator];
 }
 
 - (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {

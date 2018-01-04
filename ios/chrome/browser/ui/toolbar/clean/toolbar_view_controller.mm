@@ -74,7 +74,9 @@
   return self;
 }
 
-- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator {
+- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator
+                   completionAnimator:
+                       (UIViewPropertyAnimator*)completionAnimator {
   // iPad should never try to animate.
   DCHECK(!IsIPadIdiom());
   [NSLayoutConstraint
@@ -130,29 +132,21 @@
                 delayFactor:ios::material::kDuration2];
   }
 
-  // When the locationBarContainer has been expanded the Contract button will
-  // fade in.
-  void (^contractButtonAnimation)() = ^{
-    self.view.contractButton.alpha = 1;
-    [self setHorizontalTranslationOffset:0
-                                forViews:@[ self.view.contractButton ]];
-  };
-  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
-    [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
-                                forViews:@[ self.view.contractButton ]];
-
-    [UIViewPropertyAnimator
-        runningPropertyAnimatorWithDuration:ios::material::kDuration1
-                                      delay:ios::material::kDuration4
-                                    options:UIViewAnimationOptionCurveEaseOut
-                                 animations:contractButtonAnimation
-                                 completion:nil];
-  }];
   [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
     CGFloat borderWidth = (finalPosition == UIViewAnimatingPositionEnd)
                               ? 0
                               : kLocationBarBorderWidth;
     self.view.locationBarContainer.layer.borderWidth = borderWidth;
+  }];
+
+  // When the locationBarContainer has been expanded the Contract button will
+  // fade in.
+  [self setHorizontalTranslationOffset:kToolbarButtonAnimationOffset
+                              forViews:@[ self.view.contractButton ]];
+  [completionAnimator addAnimations:^{
+    self.view.contractButton.alpha = 1;
+    [self setHorizontalTranslationOffset:0
+                                forViews:@[ self.view.contractButton ]];
   }];
 
   self.expanded = YES;

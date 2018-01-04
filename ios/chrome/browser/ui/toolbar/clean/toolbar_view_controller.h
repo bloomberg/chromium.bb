@@ -51,7 +51,11 @@
 
 // Adds the toolbar expanded state animations to |animator|, and changes the
 // toolbar constraints in preparation for the animation.
-- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator;
+// Adds the toolbar post-expanded state animations (fading-in the contract
+// button) to the |completionAnimator|.
+- (void)addToolbarExpansionAnimations:(UIViewPropertyAnimator*)animator
+                   completionAnimator:
+                       (UIViewPropertyAnimator*)completionAnimator;
 // Adds the toolbar contracted state animations to |animator|, and changes the
 // toolbar constraints in preparation for the animation.
 - (void)addToolbarContractionAnimations:(UIViewPropertyAnimator*)animator;
