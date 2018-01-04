@@ -184,13 +184,20 @@ void GpuArcVideoDecodeAccelerator::ProvidePictureBuffers(
   output_pixel_format_ = format;
   pending_coded_size_ = dimensions;
 
-  mojom::PictureBufferFormatPtr pbf = mojom::PictureBufferFormat::New();
-  pbf->pixel_format = pixel_format;
-  pbf->buffer_size = media::VideoFrame::AllocationSize(format, dimensions);
-  pbf->min_num_buffers = requested_num_of_buffers;
-  pbf->coded_width = dimensions.width();
-  pbf->coded_height = dimensions.height();
-  client_->ProvidePictureBuffers(std::move(pbf));
+  if (client_.version() == 0) {
+    auto pbf = mojom::PictureBufferFormatDeprecated::New();
+    pbf->pixel_format = pixel_format;
+    pbf->buffer_size = media::VideoFrame::AllocationSize(format, dimensions);
+    pbf->min_num_buffers = requested_num_of_buffers;
+    pbf->coded_width = dimensions.width();
+    pbf->coded_height = dimensions.height();
+    client_->ProvidePictureBuffersDeprecated(std::move(pbf));
+  } else {
+    auto pbf = mojom::PictureBufferFormat::New();
+    pbf->min_num_buffers = requested_num_of_buffers;
+    pbf->coded_size = dimensions;
+    client_->ProvidePictureBuffers(std::move(pbf));
+  }
 }
 
 void GpuArcVideoDecodeAccelerator::DismissPictureBuffer(
@@ -537,6 +544,16 @@ void GpuArcVideoDecodeAccelerator::AssignPictureBuffers(uint32_t count) {
 }
 
 void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
+    int32_t picture_buffer_id,
+    mojom::HalPixelFormat format,
+    mojo::ScopedHandle handle,
+    std::vector<VideoFramePlane> planes) {
+  // TODO(owenlin): Implement this function.
+  ImportBufferForPictureDeprecated(picture_buffer_id, std::move(handle),
+                                   std::move(planes));
+}
+
+void GpuArcVideoDecodeAccelerator::ImportBufferForPictureDeprecated(
     int32_t picture_buffer_id,
     mojo::ScopedHandle handle,
     std::vector<VideoFramePlane> planes) {

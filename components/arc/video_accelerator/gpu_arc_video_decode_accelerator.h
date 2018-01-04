@@ -63,7 +63,12 @@ class GpuArcVideoDecodeAccelerator
       AllocateProtectedBufferCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
   void AssignPictureBuffers(uint32_t count) override;
+  void ImportBufferForPictureDeprecated(
+      int32_t picture_buffer_id,
+      mojo::ScopedHandle handle,
+      std::vector<VideoFramePlane> planes) override;
   void ImportBufferForPicture(int32_t picture_buffer_id,
+                              mojom::HalPixelFormat format,
                               mojo::ScopedHandle handle,
                               std::vector<VideoFramePlane> planes) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
