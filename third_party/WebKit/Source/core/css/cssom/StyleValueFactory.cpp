@@ -42,8 +42,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
 }
 
 CSSStyleValue* CreateStyleValue(const CSSValue& value) {
-  if (value.IsCSSWideKeyword() || value.IsIdentifierValue() ||
-      value.IsCustomIdentValue())
+  if (value.IsIdentifierValue() || value.IsCustomIdentValue())
     return CSSKeywordValue::FromCSSValue(value);
   if (value.IsPrimitiveValue())
     return CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value));
@@ -63,6 +62,9 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
 
 CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
                                             const CSSValue& value) {
+  if (value.IsCSSWideKeyword())
+    return CSSKeywordValue::FromCSSValue(value);
+
   CSSStyleValue* style_value =
       CreateStyleValueWithPropertyInternal(property_id, value);
   if (style_value)
