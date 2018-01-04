@@ -135,8 +135,7 @@ class DriveAppIcon {
 
   // Extracts the icon category from the given string. Returns false and does
   // not change |result| when |scheme| has an unrecognizable value.
-  static bool GetIconCategory(const base::StringPiece& category,
-                              IconCategory* result);
+  static bool GetIconCategory(base::StringPiece category, IconCategory* result);
 
   friend class base::internal::RepeatedMessageConverter<DriveAppIcon>;
   friend class AppResource;
@@ -901,7 +900,7 @@ class ChangeResource {
 
   // Extracts the change type from the given string. Returns false and does
   // not change |result| when |type_name| has an unrecognizable value.
-  static bool GetType(const base::StringPiece& type_name,
+  static bool GetType(base::StringPiece type_name,
                       ChangeResource::ChangeType* result);
 
   int64_t change_id_;

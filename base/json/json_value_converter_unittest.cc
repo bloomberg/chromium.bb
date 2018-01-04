@@ -30,7 +30,7 @@ struct SimpleMessage {
   std::vector<std::unique_ptr<std::string>> string_values;
   SimpleMessage() : foo(0), baz(false), bstruct(false), simple_enum(FOO) {}
 
-  static bool ParseSimpleEnum(const StringPiece& value, SimpleEnum* field) {
+  static bool ParseSimpleEnum(StringPiece value, SimpleEnum* field) {
     if (value == "foo") {
       *field = FOO;
       return true;

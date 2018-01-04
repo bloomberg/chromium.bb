@@ -72,7 +72,7 @@
 // Sometimes JSON format uses string representations for other types such
 // like enum, timestamp, or URL.  You can use RegisterCustomField method
 // and specify a function to convert a StringPiece to your type.
-//   bool ConvertFunc(const StringPiece& s, YourEnum* result) {
+//   bool ConvertFunc(StringPiece s, YourEnum* result) {
 //     // do something and return true if succeed...
 //   }
 //   struct Message {
@@ -215,7 +215,7 @@ class ValueFieldConverter : public ValueConverter<FieldType> {
 template <typename FieldType>
 class CustomFieldConverter : public ValueConverter<FieldType> {
  public:
-  typedef bool(*ConvertFunc)(const StringPiece& value, FieldType* field);
+  typedef bool (*ConvertFunc)(StringPiece value, FieldType* field);
 
   explicit CustomFieldConverter(ConvertFunc convert_func)
       : convert_func_(convert_func) {}
@@ -407,10 +407,9 @@ class JSONValueConverter {
   }
 
   template <typename FieldType>
-  void RegisterCustomField(
-      const std::string& field_name,
-      FieldType StructType::* field,
-      bool (*convert_func)(const StringPiece&, FieldType*)) {
+  void RegisterCustomField(const std::string& field_name,
+                           FieldType StructType::*field,
+                           bool (*convert_func)(StringPiece, FieldType*)) {
     fields_.push_back(
         std::make_unique<internal::FieldConverter<StructType, FieldType>>(
             field_name, field,

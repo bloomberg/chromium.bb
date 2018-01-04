@@ -116,33 +116,31 @@ bool EscapeJSONStringImpl(const S& str, bool put_in_quotes, std::string* dest) {
 
 }  // namespace
 
-bool EscapeJSONString(const StringPiece& str,
+bool EscapeJSONString(StringPiece str, bool put_in_quotes, std::string* dest) {
+  return EscapeJSONStringImpl(str, put_in_quotes, dest);
+}
+
+bool EscapeJSONString(StringPiece16 str,
                       bool put_in_quotes,
                       std::string* dest) {
   return EscapeJSONStringImpl(str, put_in_quotes, dest);
 }
 
-bool EscapeJSONString(const StringPiece16& str,
-                      bool put_in_quotes,
-                      std::string* dest) {
-  return EscapeJSONStringImpl(str, put_in_quotes, dest);
-}
-
-std::string GetQuotedJSONString(const StringPiece& str) {
+std::string GetQuotedJSONString(StringPiece str) {
   std::string dest;
   bool ok = EscapeJSONStringImpl(str, true, &dest);
   DCHECK(ok);
   return dest;
 }
 
-std::string GetQuotedJSONString(const StringPiece16& str) {
+std::string GetQuotedJSONString(StringPiece16 str) {
   std::string dest;
   bool ok = EscapeJSONStringImpl(str, true, &dest);
   DCHECK(ok);
   return dest;
 }
 
-std::string EscapeBytesAsInvalidJSONString(const StringPiece& str,
+std::string EscapeBytesAsInvalidJSONString(StringPiece str,
                                            bool put_in_quotes) {
   std::string dest;
 
