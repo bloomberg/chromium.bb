@@ -22,6 +22,7 @@ SelectToSpeakOptionsPage.prototype = {
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice');
     this.syncSelectControlToPref_('rate', 'rate');
+    this.syncSelectControlToPref_('pitch', 'pitch');
     this.syncCheckboxControlToPref_(
         'wordHighlight', 'wordHighlight', function(checked) {
           let elem = document.getElementById('highlightSubOption');
