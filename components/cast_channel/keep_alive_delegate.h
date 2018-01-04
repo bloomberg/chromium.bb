@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 
@@ -39,9 +40,6 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   ~KeepAliveDelegate() override;
 
-  // Creates a keep-alive message (e.g. PING or PONG).
-  static CastMessage CreateKeepAliveMessage(const char* message_type);
-
   void SetTimersForTest(std::unique_ptr<base::Timer> injected_ping_timer,
                         std::unique_ptr<base::Timer> injected_liveness_timer);
 
@@ -50,9 +48,6 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   void OnError(ChannelError error_state) override;
   void OnMessage(const CastMessage& message) override;
 
-  static const char kHeartbeatPingType[];
-  static const char kHeartbeatPongType[];
-
  private:
   // Restarts the ping/liveness timeout timers. Called when a message
   // is received from the remote end.
@@ -60,10 +55,10 @@ class KeepAliveDelegate : public CastTransport::Delegate {
 
   // Sends a formatted PING or PONG message to the remote side.
   void SendKeepAliveMessage(const CastMessage& message,
-                            const char* message_type);
+                            CastMessageType message_type);
 
   // Callback for SendKeepAliveMessage.
-  void SendKeepAliveMessageComplete(const char* message_type, int rv);
+  void SendKeepAliveMessageComplete(CastMessageType message_type, int rv);
 
   // Called when the liveness timer expires, indicating that the remote
   // end has not responded within the |liveness_timeout_| interval.
@@ -98,10 +93,10 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   std::unique_ptr<base::Timer> liveness_timer_;
 
   // The PING message to send over the wire.
-  CastMessage ping_message_;
+  const CastMessage ping_message_;
 
   // The PONG message to send over the wire.
-  CastMessage pong_message_;
+  const CastMessage pong_message_;
 
   THREAD_CHECKER(thread_checker_);
 
