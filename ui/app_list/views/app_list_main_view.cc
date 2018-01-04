@@ -5,11 +5,11 @@
 #include "ui/app_list/views/app_list_main_view.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search/search_box_model.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -167,13 +167,13 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
 }
 
 void AppListMainView::QueryChanged(SearchBoxView* sender) {
+  base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;
-  base::TrimWhitespace(search_model_->search_box()->text(), base::TRIM_ALL,
-                       &query);
+  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
   bool should_show_search = !query.empty();
   contents_view_->ShowSearchResults(should_show_search);
 
-  delegate_->StartSearch();
+  delegate_->StartSearch(raw_query);
 }
 
 void AppListMainView::BackButtonPressed() {

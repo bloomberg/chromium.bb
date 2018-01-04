@@ -239,9 +239,9 @@ app_list::SpeechUIModel* AppListViewDelegate::GetSpeechUI() {
   return speech_ui_.get();
 }
 
-void AppListViewDelegate::StartSearch() {
+void AppListViewDelegate::StartSearch(const base::string16& raw_query) {
   if (search_controller_) {
-    search_controller_->Start();
+    search_controller_->Start(raw_query);
     controller_->OnSearchStarted();
   }
 }

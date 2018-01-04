@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -22,17 +21,18 @@
 
 namespace app_list {
 
-SearchController::SearchController(SearchBoxModel* search_box,
-                                   SearchModel::SearchResults* results,
+SearchController::SearchController(SearchModel::SearchResults* results,
                                    History* history)
-    : search_box_(search_box), mixer_(new Mixer(results)), history_(history) {}
+    : mixer_(new Mixer(results)), history_(history) {}
 
 SearchController::~SearchController() {
 }
 
-void SearchController::Start() {
+void SearchController::Start(const base::string16& raw_query) {
+  last_raw_query_ = raw_query;
+
   base::string16 query;
-  base::TrimWhitespace(search_box_->text(), base::TRIM_ALL, &query);
+  base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
 
   dispatching_query_ = true;
   for (const auto& provider : providers_)
@@ -59,7 +59,7 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
     // Count AppList.Search here because it is composed of search + action.
     base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
-    UMA_HISTOGRAM_COUNTS_100(kSearchQueryLength, search_box_->text().size());
+    UMA_HISTOGRAM_COUNTS_100(kSearchQueryLength, last_raw_query_.size());
 
     if (result->distance_from_origin() >= 0) {
       UMA_HISTOGRAM_COUNTS_100(kSearchResultDistanceFromOrigin,
@@ -70,8 +70,7 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   result->Open(event_flags);
 
   if (history_ && history_->IsReady()) {
-    history_->AddLaunchEvent(base::UTF16ToUTF8(search_box_->text()),
-                             result->id());
+    history_->AddLaunchEvent(base::UTF16ToUTF8(last_raw_query_), result->id());
   }
 }
 
@@ -102,7 +101,7 @@ void SearchController::OnResultsChanged() {
 
   KnownResults known_results;
   if (history_ && history_->IsReady()) {
-    history_->GetKnownResults(base::UTF16ToUTF8(search_box_->text()))
+    history_->GetKnownResults(base::UTF16ToUTF8(last_raw_query_))
         ->swap(known_results);
   }
 
