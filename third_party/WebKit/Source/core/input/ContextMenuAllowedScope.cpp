@@ -13,6 +13,7 @@ ContextMenuAllowedScope::ContextMenuAllowedScope() {
 }
 
 ContextMenuAllowedScope::~ContextMenuAllowedScope() {
+  DCHECK_GT(g_context_menu_allowed_count, 0U);
   g_context_menu_allowed_count--;
 }
 
