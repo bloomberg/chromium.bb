@@ -3555,3 +3555,4 @@ crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-
 
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
+crbug.com/799127 [ Mac ] external/wpt/resource-timing/test_resource_timing.html [ Failure ]
