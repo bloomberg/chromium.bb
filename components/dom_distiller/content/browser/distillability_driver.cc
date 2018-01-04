@@ -28,9 +28,12 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
   ~DistillabilityServiceImpl() override {
   }
 
-  void NotifyIsDistillable(bool is_distillable, bool is_last_update) override {
+  void NotifyIsDistillable(bool is_distillable,
+                           bool is_last_update,
+                           bool is_mobile_friendly) override {
     if (!distillability_driver_) return;
-    distillability_driver_->OnDistillability(is_distillable, is_last_update);
+    distillability_driver_->OnDistillability(is_distillable, is_last_update,
+                                             is_mobile_friendly);
   }
 
  private:
@@ -43,8 +46,8 @@ DistillabilityDriver::DistillabilityDriver(
       weak_factory_(this) {
   if (!web_contents) return;
   frame_interfaces_.AddInterface(
-      base::Bind(&DistillabilityDriver::CreateDistillabilityService,
-                 base::Unretained(this)));
+      base::BindRepeating(&DistillabilityDriver::CreateDistillabilityService,
+                          base::Unretained(this)));
 }
 
 DistillabilityDriver::~DistillabilityDriver() {
@@ -59,14 +62,16 @@ void DistillabilityDriver::CreateDistillabilityService(
 }
 
 void DistillabilityDriver::SetDelegate(
-    const base::Callback<void(bool, bool)>& delegate) {
+    const base::RepeatingCallback<void(bool, bool, bool)>& delegate) {
   m_delegate_ = delegate;
 }
 
-void DistillabilityDriver::OnDistillability(bool distillable, bool is_last) {
+void DistillabilityDriver::OnDistillability(bool distillable,
+                                            bool is_last,
+                                            bool is_mobile_friendly) {
   if (m_delegate_.is_null()) return;
 
-  m_delegate_.Run(distillable, is_last);
+  m_delegate_.Run(distillable, is_last, is_mobile_friendly);
 }
 
 void DistillabilityDriver::OnInterfaceRequestFromFrame(

@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.content_public.browser.WebContents;
 
@@ -14,6 +17,8 @@ import org.chromium.content_public.browser.WebContents;
  */
 @JNINamespace("android")
 public class DomDistillerTabUtils {
+    // Triggering heuristics encoded in native enum DistillerHeuristicsType.
+    private static Integer sHeuristics;
 
     private DomDistillerTabUtils() {
     }
@@ -63,13 +68,13 @@ public class DomDistillerTabUtils {
     }
 
     /**
-     * Detect if any heuristic is being used to determine if a page is distillable. On the native
-     * side, this is testing if the heuristic is not "NONE".
+     * Detect if any heuristic is being used to determine if a page is distillable.
+     * This is testing if the heuristic is not "NONE".
      *
      * @return True if heuristics are being used to detect distillable pages.
      */
     public static boolean isDistillerHeuristicsEnabled() {
-        return nativeIsDistillerHeuristicsEnabled();
+        return getDistillerHeuristics() != DistillerHeuristicsType.NONE;
     }
 
     /**
@@ -78,7 +83,31 @@ public class DomDistillerTabUtils {
      * @return True if heuristic is ALWAYS_TRUE.
      */
     public static boolean isHeuristicAlwaysTrue() {
-        return nativeIsHeuristicAlwaysTrue();
+        return getDistillerHeuristics() == DistillerHeuristicsType.ALWAYS_TRUE;
+    }
+
+    /**
+     * Check if the distiller should report mobile-friendly pages as non-distillable.
+     *
+     * @return True if heuristic is ADABOOST_MODEL, and neither "Simplified view for accessibility"
+     * nor TalkBack is enabled.
+     */
+    public static boolean shouldExcludeMobileFriendly() {
+        if (PrefServiceBridge.getInstance().getBoolean(Pref.READER_FOR_ACCESSIBILITY_ENABLED)
+                || AccessibilityUtil.isAccessibilityEnabled()) {
+            return false;
+        }
+        return getDistillerHeuristics() == DistillerHeuristicsType.ADABOOST_MODEL;
+    }
+
+    /**
+     * Cached version of nativeGetDistillerHeuristics().
+     */
+    public static @DistillerHeuristicsType int getDistillerHeuristics() {
+        if (sHeuristics == null) {
+            sHeuristics = nativeGetDistillerHeuristics();
+        }
+        return sHeuristics;
     }
 
     /**
@@ -106,8 +135,7 @@ public class DomDistillerTabUtils {
     private static native void nativeDistillAndView(
             WebContents sourceWebContents, WebContents destinationWebContents);
     private static native String nativeGetFormattedUrlFromOriginalDistillerUrl(String url);
-    private static native boolean nativeIsDistillerHeuristicsEnabled();
-    private static native boolean nativeIsHeuristicAlwaysTrue();
+    private static native int nativeGetDistillerHeuristics();
     private static native void nativeSetInterceptNavigationDelegate(
             InterceptNavigationDelegate delegate, WebContents webContents);
 }

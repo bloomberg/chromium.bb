@@ -27,9 +27,11 @@ void OnIsPageDistillableResult(const JavaRef<jobject>& callback,
 
 void OnIsPageDistillableUpdate(const JavaRef<jobject>& callback,
                                bool isDistillable,
-                               bool isLast) {
+                               bool isLast,
+                               bool isMobileFriendly) {
   Java_DistillablePageUtils_callOnIsPageDistillableUpdate(
-      base::android::AttachCurrentThread(), callback, isDistillable, isLast);
+      base::android::AttachCurrentThread(), callback, isDistillable, isLast,
+      isMobileFriendly);
 }
 }  // namespace
 

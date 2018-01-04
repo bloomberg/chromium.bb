@@ -172,4 +172,10 @@ if (is_android) {
     ]
     jni_package = "dom_distiller_core"
   }
+
+  java_cpp_enum("distiller_type_java") {
+    sources = [
+      "experiments.h",
+    ]
+  }
 }

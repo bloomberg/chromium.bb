@@ -78,12 +78,13 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
                                const DistillablePageDetector* detector,
                                const DistillablePageDetector* long_page,
                                bool is_last,
-                               bool exclude_mobile) {
-  WebDistillabilityFeatures features = doc.DistillabilityFeatures();
+                               bool& is_mobile_friendly) {
   GURL parsed_url(doc.Url());
   if (!parsed_url.is_valid()) {
     return false;
   }
+  WebDistillabilityFeatures features = doc.DistillabilityFeatures();
+  is_mobile_friendly = features.is_mobile_friendly;
   std::vector<double> derived = CalculateDerivedFeatures(
       features.open_graph, parsed_url, features.element_count,
       features.anchor_count, features.form_count, features.moz_score,
@@ -147,26 +148,23 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   if (blacklisted) {
     return false;
   }
-  if (exclude_mobile && features.is_mobile_friendly) {
-    return false;
-  }
   return distillable && long_article;
 }
 
-bool IsDistillablePage(WebDocument& doc, bool is_last) {
+bool IsDistillablePage(WebDocument& doc,
+                       bool is_last,
+                       bool& is_mobile_friendly) {
   switch (GetDistillerHeuristicsType()) {
     case DistillerHeuristicsType::ALWAYS_TRUE:
       return true;
     case DistillerHeuristicsType::OG_ARTICLE:
       return doc.DistillabilityFeatures().open_graph;
     case DistillerHeuristicsType::ADABOOST_MODEL:
-      return IsDistillablePageAdaboost(
-          doc, DistillablePageDetector::GetNewModel(),
-          DistillablePageDetector::GetLongPageModel(), is_last, true);
     case DistillerHeuristicsType::ALL_ARTICLES:
       return IsDistillablePageAdaboost(
           doc, DistillablePageDetector::GetNewModel(),
-          DistillablePageDetector::GetLongPageModel(), is_last, false);
+          DistillablePageDetector::GetLongPageModel(), is_last,
+          is_mobile_friendly);
     case DistillerHeuristicsType::NONE:
     default:
       return false;
@@ -206,8 +204,10 @@ void DistillabilityAgent::DidMeaningfulLayout(
       &distillability_service);
   DCHECK(distillability_service);
   if (!distillability_service.is_bound()) return;
-  distillability_service->NotifyIsDistillable(
-      IsDistillablePage(doc, is_last), is_last);
+  bool is_mobile_friendly = false;
+  bool is_distillable = IsDistillablePage(doc, is_last, is_mobile_friendly);
+  distillability_service->NotifyIsDistillable(is_distillable, is_last,
+                                              is_mobile_friendly);
 }
 
 DistillabilityAgent::~DistillabilityAgent() {}

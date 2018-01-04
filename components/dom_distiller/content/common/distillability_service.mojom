@@ -5,7 +5,10 @@
 module dom_distiller.mojom;
 
 // This service is implemented in the browser process and is used by the
-// renderer to notify the Reader Mode UI if a page is distillable.
+// renderer to notify the Reader Mode UI whether a page is distillable.
+// |is_mobile_friendly| is only valid when the heuristics is ADABOOST_MODEL
+// or ALL_ARTICLES.
 interface DistillabilityService {
-  NotifyIsDistillable(bool page_is_distillable, bool is_last_update);
+  NotifyIsDistillable(bool page_is_distillable, bool is_last_update,
+      bool is_mobile_friendly);
 };
