@@ -68,9 +68,6 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateBrowserControlsState,
 
 // JavaScript related messages -----------------------------------------------
 
-// Tells the frame it is displaying an interstitial page.
-IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
-
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 // Message sent from the renderer to the browser to schedule to download the
 // page at a later time.

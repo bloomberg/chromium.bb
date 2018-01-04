@@ -12,13 +12,13 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/common/insecure_content_renderer.mojom.h"
+#include "chrome/common/content_settings_renderer.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/features/features.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "url/gurl.h"
@@ -40,7 +40,7 @@ class ContentSettingsObserver
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<ContentSettingsObserver>,
       public blink::WebContentSettingsClient,
-      public chrome::mojom::InsecureContentRenderer {
+      public chrome::mojom::ContentSettingsRenderer {
  public:
   // Set |should_whitelist| to true if |render_frame()| contains content that
   // should be whitelisted for content settings.
@@ -115,15 +115,15 @@ class ContentSettingsObserver
                                 bool is_same_document_navigation) override;
   void OnDestruct() override;
 
-  // chrome::mojom::InsecureContentRenderer:
+  // chrome::mojom::ContentSettingsRenderer:
   void SetAllowRunningInsecureContent() override;
+  void SetAsInterstitial() override;
 
-  void OnInsecureContentRendererRequest(
-      chrome::mojom::InsecureContentRendererRequest request);
+  void OnContentSettingsRendererRequest(
+      chrome::mojom::ContentSettingsRendererAssociatedRequest request);
 
   // Message handlers.
   void OnLoadBlockedPlugins(const std::string& identifier);
-  void OnSetAsInterstitial();
   void OnRequestFileSystemAccessAsyncResponse(int request_id, bool allowed);
 
   // Resets the |content_blocked_| array.
@@ -182,8 +182,7 @@ class ContentSettingsObserver
   // If true, IsWhitelistedForContentSettings will always return true.
   const bool should_whitelist_;
 
-  mojo::BindingSet<chrome::mojom::InsecureContentRenderer>
-      insecure_content_renderer_bindings_;
+  mojo::AssociatedBindingSet<chrome::mojom::ContentSettingsRenderer> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsObserver);
 };

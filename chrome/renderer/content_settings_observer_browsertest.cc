@@ -14,11 +14,13 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -110,7 +112,16 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
 
 }  // namespace
 
-using ContentSettingsObserverBrowserTest = ChromeRenderViewTest;
+class ContentSettingsObserverBrowserTest : public ChromeRenderViewTest {
+  void SetUp() override {
+    ChromeRenderViewTest::SetUp();
+    // Unbind the ContentSettingsRenderer interface that would be registered by
+    // the ContentSettingsObserver created when the render frame is created.
+    view_->GetMainRenderFrame()
+        ->GetAssociatedInterfaceRegistry()
+        ->RemoveInterface(chrome::mojom::ContentSettingsRenderer::Name_);
+  }
+};
 
 TEST_F(ContentSettingsObserverBrowserTest, DidBlockContentType) {
   MockContentSettingsObserver observer(view_->GetMainRenderFrame(),
@@ -468,7 +479,7 @@ TEST_F(ContentSettingsObserverBrowserTest, ContentSettingsInterstitialPages) {
   ContentSettingsObserver* observer =
       ContentSettingsObserver::Get(view_->GetMainRenderFrame());
   observer->SetContentSettingRules(&content_setting_rules);
-  observer->OnSetAsInterstitial();
+  observer->SetAsInterstitial();
 
   // Load a page which contains a script.
   LoadHTML(kScriptHtml);
