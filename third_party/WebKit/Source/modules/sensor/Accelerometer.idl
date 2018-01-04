@@ -11,7 +11,8 @@
     ConstructorCallWith=ExecutionContext,
     SecureContext,
     RaisesException=Constructor,
-    MeasureAs=AccelerometerConstructor
+    MeasureAs=AccelerometerConstructor,
+    Exposed=Window
 ] interface Accelerometer : Sensor {
     readonly attribute unrestricted double? x;
     readonly attribute unrestricted double? y;

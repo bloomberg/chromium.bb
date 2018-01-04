@@ -4,11 +4,13 @@
 
 // https://w3c.github.io/clipboard-apis/#clipboard-interface
 
-[SecureContext]
-interface Clipboard : EventTarget {
-  [CallWith=ScriptState] Promise<DataTransfer> read();
-  [CallWith=ScriptState] Promise<DOMString> readText();
+[
+    SecureContext,
+    Exposed=Window
+] interface Clipboard : EventTarget {
+    [CallWith=ScriptState] Promise<DataTransfer> read();
+    [CallWith=ScriptState] Promise<DOMString> readText();
 
-  [CallWith=ScriptState] Promise<void> write(DataTransfer data);
-  [CallWith=ScriptState] Promise<void> writeText(DOMString data);
+    [CallWith=ScriptState] Promise<void> write(DataTransfer data);
+    [CallWith=ScriptState] Promise<void> writeText(DOMString data);
 };

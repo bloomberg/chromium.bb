@@ -11,6 +11,7 @@
     ConstructorCallWith=ExecutionContext,
     SecureContext,
     RaisesException=Constructor,
-    MeasureAs=LinearAccelerationSensorConstructor
+    MeasureAs=LinearAccelerationSensorConstructor,
+    Exposed=Window
 ] interface LinearAccelerationSensor : Accelerometer {
 };
