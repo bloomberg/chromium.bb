@@ -661,6 +661,8 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
     if (!AvailableSpace(direction) ||
         (direction == kForRows &&
          !layout_grid_->CachedHasDefiniteLogicalHeight())) {
+      UseCounter::Count(layout_grid_->GetDocument(),
+                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
       if (min_track_breadth.HasPercentage())
         min_track_breadth = Length(kAuto);
       if (max_track_breadth.HasPercentage())
@@ -740,14 +742,6 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
       flexible_sized_tracks_index_.push_back(i);
     if (track_size.HasAutoMaxTrackBreadth() && !track_size.IsFitContent())
       auto_sized_tracks_for_stretch_index_.push_back(i);
-
-    if (direction_ == kForRows &&
-        !layout_grid_->CachedHasDefiniteLogicalHeight() &&
-        (track_size.MinTrackBreadth().HasPercentage() ||
-         track_size.MaxTrackBreadth().HasPercentage())) {
-      UseCounter::Count(layout_grid_->GetDocument(),
-                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
-    }
   }
 }
 
