@@ -15,6 +15,16 @@ DecodedDrawImage::DecodedDrawImage(sk_sp<const SkImage> image,
       scale_adjustment_(scale_adjustment),
       filter_quality_(filter_quality) {}
 
+DecodedDrawImage::DecodedDrawImage(
+    base::Optional<uint32_t> transfer_cache_entry_id,
+    const SkSize& src_rect_offset,
+    const SkSize& scale_adjustment,
+    SkFilterQuality filter_quality)
+    : transfer_cache_entry_id_(transfer_cache_entry_id),
+      src_rect_offset_(src_rect_offset),
+      scale_adjustment_(scale_adjustment),
+      filter_quality_(filter_quality) {}
+
 DecodedDrawImage::DecodedDrawImage()
     : DecodedDrawImage(nullptr, kNone_SkFilterQuality) {}
 

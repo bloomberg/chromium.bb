@@ -11,7 +11,14 @@
 
 namespace cc {
 class DisplayItemList;
+class ImageProvider;
 }  // namespace cc
+
+namespace gfx {
+class Rect;
+class Vector2d;
+class Vector2dF;
+}  // namespace gfx
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
@@ -141,14 +148,10 @@ class RasterInterface {
                                    GLboolean use_distance_field_text,
                                    GLint pixel_config) = 0;
   virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
-                              GLint translate_x,
-                              GLint translate_y,
-                              GLint clip_x,
-                              GLint clip_y,
-                              GLint clip_w,
-                              GLint clip_h,
-                              GLfloat post_translate_x,
-                              GLfloat post_translate_y,
+                              cc::ImageProvider* provider,
+                              const gfx::Vector2d& translate,
+                              const gfx::Rect& playback_rect,
+                              const gfx::Vector2dF& post_translate,
                               GLfloat post_scale) = 0;
   virtual void EndRasterCHROMIUM() = 0;
 

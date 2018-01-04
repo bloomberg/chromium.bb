@@ -13,6 +13,40 @@ TransferCacheTestHelper::TransferCacheTestHelper(GrContext* context)
     : context_(context) {}
 TransferCacheTestHelper::~TransferCacheTestHelper() = default;
 
+bool TransferCacheTestHelper::LockEntryDirect(TransferCacheEntryType type,
+                                              uint32_t id) {
+  return LockEntryInternal(type, id);
+}
+
+void TransferCacheTestHelper::CreateEntryDirect(
+    const ClientTransferCacheEntry& client_entry) {
+  CreateEntryInternal(client_entry);
+}
+
+void TransferCacheTestHelper::UnlockEntriesDirect(
+    const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries) {
+  for (const auto& entry : entries) {
+    locked_entries_.erase(entry);
+  }
+  EnforceLimits();
+}
+
+void TransferCacheTestHelper::DeleteEntryDirect(TransferCacheEntryType type,
+                                                uint32_t id) {
+  auto key = std::make_pair(type, id);
+  locked_entries_.erase(key);
+  entries_.erase(key);
+}
+
+void TransferCacheTestHelper::SetGrContext(GrContext* context) {
+  context_ = context;
+}
+
+void TransferCacheTestHelper::SetCachedItemsLimit(size_t limit) {
+  cached_items_limit_ = limit;
+  EnforceLimits();
+}
+
 ServiceTransferCacheEntry* TransferCacheTestHelper::GetEntryInternal(
     TransferCacheEntryType type,
     uint32_t id) {
@@ -29,6 +63,7 @@ bool TransferCacheTestHelper::LockEntryInternal(TransferCacheEntryType type,
   if (entries_.find(key) == entries_.end())
     return false;
   locked_entries_.insert(key);
+  EnforceLimits();
   return true;
 }
 
@@ -54,12 +89,28 @@ void TransferCacheTestHelper::CreateEntryInternal(
   // Put things into the cache.
   entries_[key] = std::move(service_entry);
   locked_entries_.insert(key);
+  EnforceLimits();
 }
 
 void TransferCacheTestHelper::FlushEntriesInternal(
     const std::vector<EntryKey>& entries) {
   for (auto& entry : entries)
     locked_entries_.erase(entry);
+  EnforceLimits();
+}
+
+void TransferCacheTestHelper::EnforceLimits() {
+  for (auto it = entries_.begin(); it != entries_.end();) {
+    if (entries_.size() <= cached_items_limit_)
+      break;
+
+    auto found = locked_entries_.find(it->first);
+    if (found == locked_entries_.end()) {
+      it = entries_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 }  // namespace cc
