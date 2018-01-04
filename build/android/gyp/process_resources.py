@@ -665,16 +665,36 @@ def _CreateLinkApkArgs(options):
   return link_command
 
 
-def _EnableDebugInManifest(manifest_path, temp_dir):
+def _ExtractVersionFromSdk(aapt_path, sdk_path):
+  output = subprocess.check_output([aapt_path, 'dump', 'badging', sdk_path])
+  version_code = re.search(r"versionCode='(.*?)'", output).group(1)
+  version_name = re.search(r"versionName='(.*?)'", output).group(1)
+  return version_code, version_name,
+
+
+def _FixManifest(options, temp_dir):
   debug_manifest_path = os.path.join(temp_dir, 'AndroidManifest.xml')
   _ANDROID_NAMESPACE = 'http://schemas.android.com/apk/res/android'
   _TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
   ElementTree.register_namespace('android', _ANDROID_NAMESPACE)
   ElementTree.register_namespace('tools', _TOOLS_NAMESPACE)
-  original_manifest = ElementTree.parse(manifest_path)
+  original_manifest = ElementTree.parse(options.android_manifest)
 
-  app_node = original_manifest.find('application')
-  app_node.set('{%s}%s' % (_ANDROID_NAMESPACE, 'debuggable'), 'true')
+  version_code, version_name = _ExtractVersionFromSdk(
+      options.aapt_path, options.android_sdk_jar)
+
+  # ElementTree.find does not work if the required tag is the root.
+  if original_manifest.getroot().tag == 'manifest':
+    manifest_node = original_manifest.getroot()
+  else:
+    manifest_node = original_manifest.find('manifest')
+
+  manifest_node.set('platformBuildVersionCode', version_code)
+  manifest_node.set('platformBuildVersionName', version_name)
+
+  if options.debuggable:
+    app_node = original_manifest.find('application')
+    app_node.set('{%s}%s' % (_ANDROID_NAMESPACE, 'debuggable'), 'true')
 
   with open(debug_manifest_path, 'w') as debug_manifest:
     debug_manifest.write(ElementTree.tostring(
@@ -775,11 +795,8 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   link_command += ['--output-text-symbols', r_txt_path]
   link_command += ['--java', gen_dir]
 
-  if options.debuggable:
-    debug_manifest = _EnableDebugInManifest(options.android_manifest, temp_dir)
-    link_command += ['--manifest', debug_manifest]
-  else:
-    link_command += ['--manifest', options.android_manifest]
+  fixed_manifest = _FixManifest(options, temp_dir)
+  link_command += ['--manifest', fixed_manifest]
 
   partials = _CompileDeps(options.aapt_path, dep_subdirs, temp_dir)
   for partial in partials:
