@@ -35,6 +35,7 @@
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 #include "components/offline_pages/core/offline_page_test_store.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/filename_util.h"
@@ -495,6 +496,36 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeEdgeCase) {
   RunUntilIdle();
   EXPECT_TRUE(ret);
   EXPECT_EQ(kTestFileSize * 1, last_cache_size());
+}
+
+TEST_F(OfflinePageUtilsTest, TestExtractOfflineHeaderValueFromNavigationEntry) {
+  std::unique_ptr<content::NavigationEntry> entry(
+      content::NavigationEntry::Create());
+  std::string header_value;
+
+  // Expect empty string if no header is present.
+  header_value =
+      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  EXPECT_EQ("", header_value);
+
+  // Expect correct header value for correct header format.
+  entry->AddExtraHeaders("X-Chrome-offline: foo");
+  header_value =
+      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  EXPECT_EQ("foo", header_value);
+
+  // Expect empty string if multiple headers are set.
+  entry->AddExtraHeaders("Another-Header: bar");
+  header_value =
+      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  EXPECT_EQ("", header_value);
+
+  // Expect empty string for incorrect header format.
+  entry = content::NavigationEntry::Create();
+  entry->AddExtraHeaders("Random value");
+  header_value =
+      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(*entry);
+  EXPECT_EQ("", header_value);
 }
 
 }  // namespace offline_pages

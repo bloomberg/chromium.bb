@@ -112,6 +112,8 @@ class OfflinePageTabHelper :
 
   void SelectPageForURLDone(const OfflinePageItem* offline_page);
 
+  void GetPageByOfflineIdDone(const OfflinePageItem* offline_page);
+
   void DuplicateCheckDoneForScheduleDownload(
       content::WebContents* web_contents,
       const std::string& name_space,

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -15,43 +14,18 @@
 #include "base/strings/string16.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
-#include "crypto/secure_hash.h"
-#include "crypto/sha2.h"
 #include "net/base/filename_util.h"
 
 namespace offline_pages {
 namespace {
 const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
-
-std::string ComputeDigest(const base::FilePath& file_path) {
-  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!file.IsValid())
-    return std::string();
-
-  std::unique_ptr<crypto::SecureHash> secure_hash(
-      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
-
-  const int kMaxBufferSize = 1024;
-  std::vector<char> buffer(kMaxBufferSize);
-  int bytes_read;
-  do {
-    bytes_read = file.ReadAtCurrentPos(buffer.data(), kMaxBufferSize);
-    if (bytes_read > 0)
-      secure_hash->Update(buffer.data(), bytes_read);
-  } while (bytes_read > 0);
-  if (bytes_read < 0)
-    return std::string();
-
-  std::string result_bytes(crypto::kSHA256Length, 0);
-  secure_hash->Finish(&(result_bytes[0]), result_bytes.size());
-  return result_bytes;
-}
 
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
@@ -70,7 +44,7 @@ void ComputeDigestOnFileThread(
     const base::Callback<void(const std::string&)>& callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&ComputeDigest, file_path), callback);
+      base::Bind(&OfflinePageUtils::ComputeDigest, file_path), callback);
 }
 }  // namespace
 

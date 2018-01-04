@@ -5,6 +5,7 @@
 #include "chrome/browser/offline_pages/offline_page_info_handler.h"
 
 #include "base/strings/string_util.h"
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 #include "content/public/browser/navigation_entry.h"
@@ -28,19 +29,9 @@ OfflinePageInfoHandler::~OfflinePageInfoHandler() {}
 
 std::string OfflinePageInfoHandler::GetExtendedInfo(
     const content::NavigationEntry& entry) const {
-  std::string extra_headers = entry.GetExtraHeaders();
-  if (extra_headers.empty())
-    return std::string();
-
-  // The offline header will be the only extra header if it is present.
-  std::string offline_header_key(offline_pages::kOfflinePageHeader);
-  offline_header_key += ": ";
-  if (!base::StartsWith(extra_headers, offline_header_key,
-                        base::CompareCase::INSENSITIVE_ASCII)) {
-    return std::string();
-  }
-  std::string header_value = extra_headers.substr(offline_header_key.length());
-  if (header_value.find("\n") != std::string::npos)
+  std::string header_value =
+      OfflinePageUtils::ExtractOfflineHeaderValueFromNavigationEntry(entry);
+  if (header_value.empty())
     return std::string();
 
   OfflinePageHeader header(header_value);

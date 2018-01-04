@@ -607,6 +607,18 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Get the url to launch the offline page associated with the provided offline ID. Depending on
+     * whether it is trusted or not, either http/https or file URL will be returned in the callback.
+     *
+     * @param offlineId ID of the offline page.
+     * @param callback callback to pass back the url string if found. Will pass back
+     * <code>null</code> if not.
+     */
+    public void getLaunchUrlByOfflineId(long offlineId, Callback<String> callback) {
+        nativeGetLaunchUrlByOfflineId(mNativeOfflinePageBridge, offlineId, callback);
+    }
+
+    /**
      * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
      * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
      * will occur.
@@ -738,4 +750,6 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeCheckForNewOfflineContent(
             long nativeOfflinePageBridge, long freshnessTimeMillis, Callback<String> callback);
+    private native void nativeGetLaunchUrlByOfflineId(
+            long nativeOfflinePageBridge, long offlineId, Callback<String> callback);
 }
