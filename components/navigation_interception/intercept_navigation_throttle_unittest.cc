@@ -5,6 +5,7 @@
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -13,9 +14,12 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using content::NavigationThrottle;
 using testing::_;
@@ -59,31 +63,47 @@ class InterceptNavigationThrottleTest
   InterceptNavigationThrottleTest()
       : mock_callback_receiver_(new MockInterceptCallbackReceiver()) {}
 
-  NavigationThrottle::ThrottleCheckResult
-  SimulateWillStart(const GURL& url, const GURL& sanitized_url, bool is_post) {
-    std::unique_ptr<content::NavigationHandle> test_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            url, main_rfh(), false, net::OK, false, is_post);
-    test_handle->RegisterThrottleForTesting(
-        base::MakeUnique<InterceptNavigationThrottle>(
-            test_handle.get(),
-            base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                       base::Unretained(mock_callback_receiver_.get()))));
-    return test_handle->CallWillStartRequestForTesting();
+  std::unique_ptr<content::NavigationThrottle> CreateThrottle(
+      content::NavigationHandle* handle) {
+    return std::make_unique<InterceptNavigationThrottle>(
+        handle, base::BindRepeating(
+                    &MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
+                    base::Unretained(mock_callback_receiver_.get())));
   }
 
-  NavigationThrottle::ThrottleCheckResult Simulate302() {
-    std::unique_ptr<content::NavigationHandle> test_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(kTestUrl), main_rfh(), false, net::OK, false, true);
-    test_handle->RegisterThrottleForTesting(
-        base::MakeUnique<InterceptNavigationThrottle>(
-            test_handle.get(),
-            base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                       base::Unretained(mock_callback_receiver_.get()))));
-    test_handle->CallWillStartRequestForTesting();
-    return test_handle->CallWillRedirectRequestForTesting(GURL(kTestUrl), false,
-                                                          GURL(), false);
+  std::unique_ptr<content::TestNavigationThrottleInserter>
+  CreateThrottleInserter() {
+    return std::make_unique<content::TestNavigationThrottleInserter>(
+        web_contents(),
+        base::BindRepeating(&InterceptNavigationThrottleTest::CreateThrottle,
+                            base::Unretained(this)));
+  }
+
+  NavigationThrottle::ThrottleCheckResult SimulateNavigation(
+      const GURL& url,
+      std::vector<GURL> redirect_chain,
+      bool is_post) {
+    auto throttle_inserter = CreateThrottleInserter();
+    std::unique_ptr<content::NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+    auto failed = [](content::NavigationSimulator* sim) {
+      return sim->GetLastThrottleCheckResult().action() !=
+             NavigationThrottle::PROCEED;
+    };
+
+    if (is_post)
+      simulator->SetMethod("POST");
+
+    simulator->Start();
+    if (failed(simulator.get()))
+      return simulator->GetLastThrottleCheckResult();
+    for (const GURL& url : redirect_chain) {
+      simulator->Redirect(url);
+      if (failed(simulator.get()))
+        return simulator->GetLastThrottleCheckResult();
+    }
+    simulator->Commit();
+    return simulator->GetLastThrottleCheckResult();
   }
 
   std::unique_ptr<MockInterceptCallbackReceiver> mock_callback_receiver_;
@@ -97,7 +117,7 @@ TEST_F(InterceptNavigationThrottleTest,
       *mock_callback_receiver_,
       ShouldIgnoreNavigation(web_contents(), NavigationParamsUrlIsTest()));
   NavigationThrottle::ThrottleCheckResult result =
-      SimulateWillStart(GURL(kTestUrl), GURL(kTestUrl), false);
+      SimulateNavigation(GURL(kTestUrl), {}, false);
 
   EXPECT_EQ(NavigationThrottle::PROCEED, result);
 }
@@ -110,7 +130,7 @@ TEST_F(InterceptNavigationThrottleTest,
       *mock_callback_receiver_,
       ShouldIgnoreNavigation(web_contents(), NavigationParamsUrlIsTest()));
   NavigationThrottle::ThrottleCheckResult result =
-      SimulateWillStart(GURL(kTestUrl), GURL(kTestUrl), false);
+      SimulateNavigation(GURL(kTestUrl), {}, false);
 
   EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE, result);
 }
@@ -123,7 +143,7 @@ TEST_F(InterceptNavigationThrottleTest, CallbackIsPostFalseForGet) {
       .WillOnce(Return(false));
 
   NavigationThrottle::ThrottleCheckResult result =
-      SimulateWillStart(GURL(kTestUrl), GURL(kTestUrl), false);
+      SimulateNavigation(GURL(kTestUrl), {}, false);
 
   EXPECT_EQ(NavigationThrottle::PROCEED, result);
 }
@@ -135,7 +155,7 @@ TEST_F(InterceptNavigationThrottleTest, CallbackIsPostTrueForPost) {
                            Property(&NavigationParams::is_post, Eq(true)))))
       .WillOnce(Return(false));
   NavigationThrottle::ThrottleCheckResult result =
-      SimulateWillStart(GURL(kTestUrl), GURL(kTestUrl), true);
+      SimulateNavigation(GURL(kTestUrl), {}, true);
 
   EXPECT_EQ(NavigationThrottle::PROCEED, result);
 }
@@ -152,9 +172,28 @@ TEST_F(InterceptNavigationThrottleTest,
                   _, AllOf(NavigationParamsUrlIsTest(),
                            Property(&NavigationParams::is_post, Eq(false)))))
       .WillOnce(Return(false));
-  NavigationThrottle::ThrottleCheckResult result = Simulate302();
 
+  NavigationThrottle::ThrottleCheckResult result =
+      SimulateNavigation(GURL(kTestUrl), {GURL(kTestUrl)}, true);
   EXPECT_EQ(NavigationThrottle::PROCEED, result);
+}
+
+// Ensure POST navigations are cancelled before the start.
+TEST_F(InterceptNavigationThrottleTest, PostNavigationCancelledAtStart) {
+  EXPECT_CALL(*mock_callback_receiver_,
+              ShouldIgnoreNavigation(
+                  _, AllOf(NavigationParamsUrlIsTest(),
+                           Property(&NavigationParams::is_post, Eq(true)))))
+      .WillOnce(Return(true));
+
+  auto throttle_inserter = CreateThrottleInserter();
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(GURL(kTestUrl),
+                                                            main_rfh());
+  simulator->SetMethod("POST");
+  simulator->Start();
+  auto result = simulator->GetLastThrottleCheckResult();
+  EXPECT_EQ(NavigationThrottle::CANCEL_AND_IGNORE, result);
 }
 
 }  // namespace navigation_interception
