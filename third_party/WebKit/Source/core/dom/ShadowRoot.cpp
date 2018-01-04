@@ -168,7 +168,8 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
   // There's no style to update so just calling recalcStyle means we're updated.
   ClearNeedsStyleRecalc();
 
-  RecalcDescendantStyles(change);
+  if (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc())
+    RecalcDescendantStyles(change);
   ClearChildNeedsStyleRecalc();
 }
 
