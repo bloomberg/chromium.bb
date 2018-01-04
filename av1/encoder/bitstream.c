@@ -41,12 +41,12 @@
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
 
-#if CONFIG_LV_MAP
-#include "av1/encoder/encodetxb.h"
-#endif  // CONFIG_LV_MAP
 #include "av1/encoder/bitstream.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemv.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif  // CONFIG_LV_MAP
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/segmentation.h"
