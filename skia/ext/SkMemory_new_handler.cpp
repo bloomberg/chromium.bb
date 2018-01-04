@@ -8,6 +8,7 @@
 #include "base/process/memory.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "third_party/skia/include/private/SkMalloc.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
