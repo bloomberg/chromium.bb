@@ -297,6 +297,12 @@
     "references_use_default_args": true
   },
   {
+    "prefix": "spv175",
+    "base": "fast/pagination",
+    "args": ["--enable-slimming-paint-v175", "--root-layer-scrolls"],
+    "references_use_default_args": true
+  },
+  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]
