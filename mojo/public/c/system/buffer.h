@@ -148,8 +148,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
 // |*buffer| points to memory with the requested part of the buffer. On
 // failure |*buffer| it is not modified.
 //
-// A single buffer handle may have multiple active mappings The permissions
-// (e.g., writable or executable) of the returned memory depend on th
+// A single buffer handle may have multiple active mappings. The permissions
+// (e.g., writable or executable) of the returned memory depend on the
 // properties of the buffer and properties attached to the buffer handle, as
 // well as |flags|.
 //

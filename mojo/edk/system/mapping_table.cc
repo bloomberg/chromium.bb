@@ -34,13 +34,14 @@ MojoResult MappingTable::AddMapping(
   return MOJO_RESULT_OK;
 }
 
-MojoResult MappingTable::RemoveMapping(void* address) {
+MojoResult MappingTable::RemoveMapping(
+    void* address,
+    std::unique_ptr<PlatformSharedBufferMapping>* mapping) {
   AddressToMappingMap::iterator it = address_to_mapping_map_.find(address);
   if (it == address_to_mapping_map_.end())
     return MOJO_RESULT_INVALID_ARGUMENT;
-  PlatformSharedBufferMapping* mapping_to_delete = it->second;
+  mapping->reset(it->second);
   address_to_mapping_map_.erase(it);
-  delete mapping_to_delete;
   return MOJO_RESULT_OK;
 }
 
