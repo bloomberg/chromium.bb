@@ -16,6 +16,7 @@
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 

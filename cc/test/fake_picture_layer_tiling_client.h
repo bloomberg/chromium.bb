@@ -13,11 +13,13 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
+class LayerTreeResourceProvider;
 
 class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  public:
   FakePictureLayerTilingClient();
-  explicit FakePictureLayerTilingClient(ResourceProvider* resource_provider);
+  explicit FakePictureLayerTilingClient(
+      LayerTreeResourceProvider* resource_provider);
   ~FakePictureLayerTilingClient() override;
 
   // PictureLayerTilingClient implementation.

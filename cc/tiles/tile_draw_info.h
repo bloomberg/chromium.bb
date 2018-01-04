@@ -11,6 +11,7 @@
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 
 namespace cc {
 

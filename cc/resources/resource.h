@@ -5,11 +5,11 @@
 #ifndef CC_RESOURCES_RESOURCE_H_
 #define CC_RESOURCES_RESOURCE_H_
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "cc/cc_export.h"
-#include "cc/resources/resource_provider.h"
-#include "cc/resources/resource_util.h"
+#include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_id.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {

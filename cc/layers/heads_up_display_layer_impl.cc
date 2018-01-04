@@ -89,7 +89,7 @@ std::unique_ptr<LayerImpl> HeadsUpDisplayLayerImpl::CreateLayerImpl(
 
 void HeadsUpDisplayLayerImpl::AcquireResource(
     DrawMode draw_mode,
-    ResourceProvider* resource_provider) {
+    LayerTreeResourceProvider* resource_provider) {
   for (auto& resource : resources_) {
     if (!resource_provider->InUseByConsumer(resource->id())) {
       resource.swap(resources_.back());
@@ -116,7 +116,7 @@ void HeadsUpDisplayLayerImpl::AcquireResource(
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseUnmatchedSizeResources(
-    ResourceProvider* resource_provider) {
+    LayerTreeResourceProvider* resource_provider) {
   base::EraseIf(resources_,
                 [this](const std::unique_ptr<ScopedResource>& resource) {
                   return internal_content_bounds_ != resource->size();
@@ -170,7 +170,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     DrawMode draw_mode,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     viz::ContextProvider* context_provider,
     const viz::RenderPassList& list) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE || !resources_.back()->id())

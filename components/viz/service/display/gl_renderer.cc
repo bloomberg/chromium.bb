@@ -45,6 +45,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource.h"
 #include "components/viz/common/resources/resource_fence.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"

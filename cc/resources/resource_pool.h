@@ -15,11 +15,17 @@
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "ui/gfx/geometry/rect.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
 
@@ -31,7 +37,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
       base::TimeDelta::FromSeconds(5);
 
   static std::unique_ptr<ResourcePool> CreateForGpuMemoryBufferResources(
-      ResourceProvider* resource_provider,
+      LayerTreeResourceProvider* resource_provider,
       base::SingleThreadTaskRunner* task_runner,
       gfx::BufferUsage usage,
       const base::TimeDelta& expiration_delay,
@@ -42,7 +48,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   }
 
   static std::unique_ptr<ResourcePool> Create(
-      ResourceProvider* resource_provider,
+      LayerTreeResourceProvider* resource_provider,
       bool gpu_resources,
       base::SingleThreadTaskRunner* task_runner,
       viz::ResourceTextureHint hint,
@@ -108,14 +114,14 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
  protected:
   // Constructor for creating GPU memory buffer resources.
-  ResourcePool(ResourceProvider* resource_provider,
+  ResourcePool(LayerTreeResourceProvider* resource_provider,
                base::SingleThreadTaskRunner* task_runner,
                gfx::BufferUsage usage,
                const base::TimeDelta& expiration_delay,
                bool disallow_non_exact_reuse);
 
   // Constructor for creating standard resources.
-  ResourcePool(ResourceProvider* resource_provider,
+  ResourcePool(LayerTreeResourceProvider* resource_provider,
                bool gpu_resources,
                base::SingleThreadTaskRunner* task_runner,
                viz::ResourceTextureHint hint,
@@ -128,11 +134,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   class PoolResource : public ScopedResource {
    public:
     static std::unique_ptr<PoolResource> Create(
-        ResourceProvider* resource_provider) {
+        LayerTreeResourceProvider* resource_provider) {
       return base::WrapUnique(new PoolResource(resource_provider));
     }
     void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                      const ResourceProvider* resource_provider,
+                      const LayerTreeResourceProvider* resource_provider,
                       bool is_free) const;
 
     uint64_t content_id() const { return content_id_; }
@@ -147,7 +153,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     }
 
    private:
-    explicit PoolResource(ResourceProvider* resource_provider)
+    explicit PoolResource(LayerTreeResourceProvider* resource_provider)
         : ScopedResource(resource_provider), content_id_(0) {}
     uint64_t content_id_;
     base::TimeTicks last_usage_;
@@ -178,7 +184,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
-  ResourceProvider* resource_provider_ = nullptr;
+  LayerTreeResourceProvider* resource_provider_ = nullptr;
   bool use_gpu_resources_ = false;
   bool use_gpu_memory_buffers_ = false;
   gfx::BufferUsage usage_ = gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;

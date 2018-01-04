@@ -12,16 +12,19 @@
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
+#include "components/viz/common/resources/resource_texture_hint.h"
+#include "ui/gfx/buffer_types.h"
 
 #if DCHECK_IS_ON()
 #include "base/threading/platform_thread.h"
 #endif
 
 namespace cc {
+class LayerTreeResourceProvider;
 
 class CC_EXPORT ScopedResource : public Resource {
  public:
-  explicit ScopedResource(ResourceProvider* provider);
+  explicit ScopedResource(LayerTreeResourceProvider* provider);
   virtual ~ScopedResource();
 
   void AllocateSoftware(const gfx::Size& size,
@@ -39,7 +42,7 @@ class CC_EXPORT ScopedResource : public Resource {
   viz::ResourceTextureHint hint() const { return hint_; }
 
  private:
-  ResourceProvider* resource_provider_;
+  LayerTreeResourceProvider* resource_provider_;
   viz::ResourceTextureHint hint_ = viz::ResourceTextureHint::kDefault;
 
 #if DCHECK_IS_ON()

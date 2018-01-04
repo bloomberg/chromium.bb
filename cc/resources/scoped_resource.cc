@@ -4,9 +4,11 @@
 
 #include "cc/resources/scoped_resource.h"
 
+#include "cc/resources/layer_tree_resource_provider.h"
+
 namespace cc {
 
-ScopedResource::ScopedResource(ResourceProvider* resource_provider)
+ScopedResource::ScopedResource(LayerTreeResourceProvider* resource_provider)
     : resource_provider_(resource_provider) {
   DCHECK(resource_provider_);
 }
