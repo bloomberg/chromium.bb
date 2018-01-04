@@ -93,40 +93,49 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
 
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/simple.html"));
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
 
-  content::WindowedNotificationObserver infobar_added_1(
+  // Adding a theme should create an infobar.
+  {
+    content::WindowedNotificationObserver infobar_added(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
         content::NotificationService::AllSources());
-  InstallExtension("theme.crx");
-  infobar_added_1.Wait();
+    InstallExtension("theme.crx");
+    infobar_added.Wait();
+    EXPECT_EQ(1u, infobar_service->infobar_count());
+  }
 
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("/simple.html"),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WindowedNotificationObserver infobar_added_2(
+  // Adding a theme in a new tab should close the old tab's infobar.
+  {
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), embedded_test_server()->GetURL("/simple.html"),
+        WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    content::WindowedNotificationObserver infobar_added(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
         content::NotificationService::AllSources());
-  content::WindowedNotificationObserver infobar_removed_1(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+    content::WindowedNotificationObserver infobar_removed(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::NotificationService::AllSources());
-  InstallExtension("theme2.crx");
-  infobar_removed_1.Wait();
-  infobar_added_2.Wait();
-  EXPECT_EQ(
-      0u,
-      InfoBarService::FromWebContents(
-          browser()->tab_strip_model()->GetWebContentsAt(0))->infobar_count());
+    InstallExtension("theme2.crx");
+    infobar_removed.Wait();
+    infobar_added.Wait();
+    EXPECT_EQ(0u, infobar_service->infobar_count());
+    infobar_service = InfoBarService::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    EXPECT_EQ(1u, infobar_service->infobar_count());
+  }
 
-  content::WindowedNotificationObserver infobar_removed_2(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+  // Switching back to the default theme should close the infobar.
+  {
+    content::WindowedNotificationObserver infobar_removed(
+        chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
         content::NotificationService::AllSources());
-  ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
-  infobar_removed_2.Wait();
-  EXPECT_EQ(0u,
-            InfoBarService::FromWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents())->
-                infobar_count());
+    ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
+    infobar_removed.Wait();
+    EXPECT_EQ(0u, infobar_service->infobar_count());
+  }
 }
 
 namespace {
