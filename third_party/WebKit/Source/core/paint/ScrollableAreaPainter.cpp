@@ -24,11 +24,11 @@ namespace blink {
 void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
                                          const IntPoint& paint_offset,
                                          const CullRect& cull_rect) {
-  if (GetScrollableArea().Box().Style()->Resize() == EResize::kNone)
+  if (GetScrollableArea().GetLayoutBox()->Style()->Resize() == EResize::kNone)
     return;
 
   IntRect abs_rect = GetScrollableArea().ResizerCornerRect(
-      GetScrollableArea().Box().PixelSnappedBorderBoxRect(
+      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
           GetScrollableArea().Layer()->SubpixelAccumulation()),
       kResizerForPointer);
   if (abs_rect.IsEmpty())
@@ -74,8 +74,8 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
   IntPoint points[4];
   bool on_left = false;
   if (GetScrollableArea()
-          .Box()
-          .ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
+          .GetLayoutBox()
+          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     on_left = true;
     points[0].SetX(resizer_corner_rect.X() + 1);
     points[1].SetX(resizer_corner_rect.X() + resizer_corner_rect.Width() -
@@ -127,7 +127,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
     const CullRect& cull_rect,
     bool painting_overlay_controls) {
   // Don't do anything if we have no overflow.
-  if (!GetScrollableArea().Box().HasOverflowClip())
+  if (!GetScrollableArea().GetLayoutBox()->HasOverflowClip())
     return;
 
   IntPoint adjusted_paint_offset = paint_offset;
@@ -155,7 +155,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
     if (!OverflowControlsIntersectRect(adjusted_cull_rect))
       return;
 
-    LayoutView* layout_view = GetScrollableArea().Box().View();
+    LayoutView* layout_view = GetScrollableArea().GetLayoutBox()->View();
 
     PaintLayer* painting_root =
         GetScrollableArea().Layer()->EnclosingLayerWithCompositedLayerMapping(
@@ -173,7 +173,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
 
   IntRect clip_rect(adjusted_paint_offset,
                     GetScrollableArea().Layer()->PixelSnappedSize());
-  ClipRecorder clip_recorder(context, GetScrollableArea().Box(),
+  ClipRecorder clip_recorder(context, *GetScrollableArea().GetLayoutBox(),
                              DisplayItem::kClipLayerOverflowControls,
                              clip_rect);
 
@@ -207,7 +207,7 @@ void ScrollableAreaPainter::PaintOverflowControls(
 bool ScrollableAreaPainter::OverflowControlsIntersectRect(
     const CullRect& cull_rect) const {
   const IntRect border_box =
-      GetScrollableArea().Box().PixelSnappedBorderBoxRect(
+      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
           GetScrollableArea().Layer()->SubpixelAccumulation());
 
   if (cull_rect.IntersectsCullRect(
@@ -267,7 +267,7 @@ const DisplayItemClient& ScrollableAreaPainter::DisplayItemClientForCorner()
     const {
   if (const auto* graphics_layer = GetScrollableArea().LayerForScrollCorner())
     return *graphics_layer;
-  return GetScrollableArea().Box();
+  return *GetScrollableArea().GetLayoutBox();
 }
 
 }  // namespace blink

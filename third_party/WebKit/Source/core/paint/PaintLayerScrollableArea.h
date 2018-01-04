@@ -411,8 +411,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
-  // TODO(ymalik): Remove box() and update callers to use layoutBox() instead.
-  LayoutBox& Box() const;
   PaintLayer* Layer() const override;
 
   LayoutScrollbarPart* Resizer() const override { return resizer_; }
@@ -432,7 +430,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
   bool IsPaintLayerScrollableArea() const override { return true; }
 
-  LayoutBox* GetLayoutBox() const override { return &Box(); }
+  LayoutBox* GetLayoutBox() const override;
 
   FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
                                       const LayoutObject*,
