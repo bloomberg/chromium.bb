@@ -60,7 +60,7 @@
 
 @interface LabelLinkController ()
 // Private property exposed publically in testing interface.
-@property(nonatomic, unsafe_unretained) Class textMapperClass;
+@property(nonatomic, weak) Class textMapperClass;
 
 // The original attributed text set on the label.  This may be different from
 // the label's |attributedText| property, as additional style attributes may be

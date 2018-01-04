@@ -55,9 +55,8 @@ class ChromeBrowserState;
 
 @interface TabSwitcherPanelController : NSObject
 
-@property(unsafe_unretained, nonatomic, readonly) TabSwitcherPanelView* view;
-@property(nonatomic, unsafe_unretained) id<TabSwitcherPanelControllerDelegate>
-    delegate;
+@property(nonatomic, readonly, weak) TabSwitcherPanelView* view;
+@property(nonatomic, weak) id<TabSwitcherPanelControllerDelegate> delegate;
 @property(nonatomic, readonly) TabSwitcherSessionType sessionType;
 @property(nonatomic, readonly, weak) id<SigninPresenter, SyncPresenter>
     presenter;

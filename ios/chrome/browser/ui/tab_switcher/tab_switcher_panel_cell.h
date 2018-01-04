@@ -35,7 +35,7 @@ extern NSString* const kTabSwicherPanelCellCloseButtonAccessibilityID;
 + (NSString*)identifier;
 
 // The cell delegate.
-@property(nonatomic, unsafe_unretained) id<SessionCellDelegate> delegate;
+@property(nonatomic, weak) id<SessionCellDelegate> delegate;
 
 @end
 
