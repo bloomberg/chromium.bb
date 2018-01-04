@@ -184,6 +184,16 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
     Section()->SetNeedsCellRecalc();
 }
 
+void LayoutTableRow::RemoveChild(LayoutObject* old_child) {
+  if (!DocumentBeingDestroyed()) {
+    LayoutTableCell* prev_cell =
+        ToLayoutTableCell(old_child->PreviousSibling());
+    LayoutTableCell* next_cell = ToLayoutTableCell(old_child->NextSibling());
+    MergeAnonymousTablePartsIfNeeded(prev_cell, next_cell);
+  }
+  LayoutTableBoxComponent::RemoveChild(old_child);
+}
+
 void LayoutTableRow::UpdateLayout() {
   DCHECK(NeedsLayout());
   LayoutAnalyzer::Scope analyzer(*this);

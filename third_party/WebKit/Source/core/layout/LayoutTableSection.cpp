@@ -202,6 +202,15 @@ void LayoutTableSection::AddChild(LayoutObject* child,
   LayoutTableBoxComponent::AddChild(child, before_child);
 }
 
+void LayoutTableSection::RemoveChild(LayoutObject* old_child) {
+  if (!DocumentBeingDestroyed()) {
+    MergeAnonymousTablePartsIfNeeded(
+        ToLayoutTableRow(old_child->PreviousSibling()),
+        ToLayoutTableRow(old_child->NextSibling()));
+  }
+  LayoutTableBoxComponent::RemoveChild(old_child);
+}
+
 static inline void CheckThatVectorIsDOMOrdered(
     const Vector<LayoutTableCell*, 1>& cells) {
 #ifndef NDEBUG

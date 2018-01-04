@@ -233,6 +233,18 @@ void LayoutTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
   section->AddChild(child);
 }
 
+void LayoutTable::RemoveChild(LayoutObject* old_child) {
+  if (!DocumentBeingDestroyed()) {
+    LayoutObject* prev = old_child->PreviousSibling();
+    LayoutObject* next = old_child->NextSibling();
+    if (prev && next && prev->IsTableSection() && next->IsTableSection()) {
+      MergeAnonymousTablePartsIfNeeded(ToLayoutTableSection(prev),
+                                       ToLayoutTableSection(next));
+    }
+  }
+  LayoutBlock::RemoveChild(old_child);
+}
+
 void LayoutTable::AddCaption(const LayoutTableCaption* caption) {
   DCHECK_EQ(captions_.Find(caption), kNotFound);
   captions_.push_back(const_cast<LayoutTableCaption*>(caption));
