@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/display/display_prefs.h"
 
 #include <stddef.h>
 
@@ -14,14 +14,12 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/display.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
@@ -33,6 +31,7 @@
 #include "url/url_util.h"
 
 namespace chromeos {
+
 namespace {
 
 const char kInsetsTopKey[] = "insets_top";
@@ -165,20 +164,19 @@ display::DisplayManager* GetDisplayManager() {
 bool UserCanSaveDisplayPreference() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   return user_manager->IsUserLoggedIn() &&
-      (user_manager->IsLoggedInAsUserWithGaiaAccount() ||
-       user_manager->IsLoggedInAsSupervisedUser() ||
-       user_manager->IsLoggedInAsKioskApp());
+         (user_manager->IsLoggedInAsUserWithGaiaAccount() ||
+          user_manager->IsLoggedInAsSupervisedUser() ||
+          user_manager->IsLoggedInAsKioskApp());
 }
 
-void LoadDisplayLayouts() {
-  PrefService* local_state = g_browser_process->local_state();
+void LoadDisplayLayouts(PrefService* local_state) {
   display::DisplayLayoutStore* layout_store =
       GetDisplayManager()->layout_store();
 
-  const base::DictionaryValue* layouts = local_state->GetDictionary(
-      prefs::kSecondaryDisplays);
-  for (base::DictionaryValue::Iterator it(*layouts);
-       !it.IsAtEnd(); it.Advance()) {
+  const base::DictionaryValue* layouts =
+      local_state->GetDictionary(prefs::kSecondaryDisplays);
+  for (base::DictionaryValue::Iterator it(*layouts); !it.IsAtEnd();
+       it.Advance()) {
     std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
     if (!display::JsonToDisplayLayout(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
@@ -202,12 +200,11 @@ void LoadDisplayLayouts() {
   }
 }
 
-void LoadDisplayProperties() {
-  PrefService* local_state = g_browser_process->local_state();
-  const base::DictionaryValue* properties = local_state->GetDictionary(
-      prefs::kDisplayProperties);
-  for (base::DictionaryValue::Iterator it(*properties);
-       !it.IsAtEnd(); it.Advance()) {
+void LoadDisplayProperties(PrefService* local_state) {
+  const base::DictionaryValue* properties =
+      local_state->GetDictionary(prefs::kDisplayProperties);
+  for (base::DictionaryValue::Iterator it(*properties); !it.IsAtEnd();
+       it.Advance()) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!it.value().GetAsDictionary(&dict_value) || dict_value == nullptr)
       continue;
@@ -247,8 +244,7 @@ void LoadDisplayProperties() {
   }
 }
 
-void LoadDisplayRotationState() {
-  PrefService* local_state = g_browser_process->local_state();
+void LoadDisplayRotationState(PrefService* local_state) {
   const base::DictionaryValue* properties =
       local_state->GetDictionary(prefs::kDisplayRotationLock);
 
@@ -264,8 +260,7 @@ void LoadDisplayRotationState() {
       rotation_lock, static_cast<display::Display::Rotation>(rotation));
 }
 
-void LoadDisplayTouchAssociations() {
-  PrefService* local_state = g_browser_process->local_state();
+void LoadDisplayTouchAssociations(PrefService* local_state) {
   const base::DictionaryValue* properties =
       local_state->GetDictionary(prefs::kDisplayTouchAssociations);
 
@@ -306,7 +301,6 @@ void LoadDisplayTouchAssociations() {
   // a couple of milestones when everything is stable.
   const display::TouchDeviceIdentifier& fallback_identifier =
       display::TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier();
-  local_state = g_browser_process->local_state();
   properties = local_state->GetDictionary(prefs::kDisplayProperties);
   for (base::DictionaryValue::Iterator it(*properties); !it.IsAtEnd();
        it.Advance()) {
@@ -340,8 +334,7 @@ void LoadDisplayTouchAssociations() {
 
 // Loads mirror info for each external display, the info will later be used to
 // restore mirror mode.
-void LoadExternalDisplayMirrorInfo() {
-  PrefService* local_state = g_browser_process->local_state();
+void LoadExternalDisplayMirrorInfo(PrefService* local_state) {
   const base::ListValue* pref_data =
       local_state->GetList(prefs::kExternalDisplayMirrorInfo);
   std::set<int64_t> external_display_mirror_info;
@@ -360,12 +353,12 @@ void LoadExternalDisplayMirrorInfo() {
       external_display_mirror_info);
 }
 
-void StoreDisplayLayoutPref(const display::DisplayIdList& list,
+void StoreDisplayLayoutPref(PrefService* local_state,
+                            const display::DisplayIdList& list,
                             const display::DisplayLayout& display_layout) {
   DCHECK(display::DisplayLayout::Validate(list, display_layout));
   std::string name = display::DisplayIdListToString(list);
 
-  PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, prefs::kSecondaryDisplays);
   base::DictionaryValue* pref_data = update.Get();
   std::unique_ptr<base::Value> layout_value(new base::DictionaryValue());
@@ -378,7 +371,7 @@ void StoreDisplayLayoutPref(const display::DisplayIdList& list,
     pref_data->Set(name, std::move(layout_value));
 }
 
-void StoreCurrentDisplayLayoutPrefs() {
+void StoreCurrentDisplayLayoutPrefs(PrefService* local_state) {
   display::DisplayManager* display_manager = GetDisplayManager();
   if (!UserCanSaveDisplayPreference() ||
       display_manager->num_connected_displays() < 2) {
@@ -397,12 +390,11 @@ void StoreCurrentDisplayLayoutPrefs() {
     return;
   }
 
-  StoreDisplayLayoutPref(list, display_layout);
+  StoreDisplayLayoutPref(local_state, list, display_layout);
 }
 
-void StoreCurrentDisplayProperties() {
+void StoreCurrentDisplayProperties(PrefService* local_state) {
   display::DisplayManager* display_manager = GetDisplayManager();
-  PrefService* local_state = g_browser_process->local_state();
 
   DictionaryPrefUpdate update(local_state, prefs::kDisplayProperties);
   base::DictionaryValue* pref_data = update.Get();
@@ -464,7 +456,7 @@ typedef std::map<chromeos::DisplayPowerState, std::string>
     DisplayPowerStateToStringMap;
 
 const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
-  // Don't save or retore ALL_OFF state. crbug.com/318456.
+  // Don't save or retore ALL_OFF state. http://crbug.com/318456.
   static const DisplayPowerStateToStringMap* map = display::CreateToStringMap(
       chromeos::DISPLAY_POWER_ALL_ON, "all_on",
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
@@ -482,32 +474,46 @@ bool GetDisplayPowerStateFromString(const base::StringPiece& state,
   return false;
 }
 
-void StoreDisplayPowerState(DisplayPowerState power_state) {
+void StoreDisplayPowerState(PrefService* local_state,
+                            DisplayPowerState power_state) {
   const DisplayPowerStateToStringMap* map = GetDisplayPowerStateToStringMap();
   DisplayPowerStateToStringMap::const_iterator iter = map->find(power_state);
   if (iter != map->end()) {
-    PrefService* local_state = g_browser_process->local_state();
     local_state->SetString(prefs::kDisplayPowerState, iter->second);
   }
 }
 
-void StoreCurrentDisplayPowerState() {
+void StoreCurrentDisplayPowerState(PrefService* local_state) {
   StoreDisplayPowerState(
+      local_state,
       ash::Shell::Get()->display_configurator()->requested_power_state());
 }
 
-void StoreCurrentDisplayRotationLockPrefs() {
+void StoreDisplayRotationPrefs(PrefService* local_state,
+                               display::Display::Rotation rotation,
+                               bool rotation_lock) {
+  DictionaryPrefUpdate update(local_state, prefs::kDisplayRotationLock);
+  base::DictionaryValue* pref_data = update.Get();
+  pref_data->SetBoolean("lock", rotation_lock);
+  pref_data->SetInteger("orientation", static_cast<int>(rotation));
+}
+
+void StoreCurrentDisplayRotationLockPrefs(PrefService* local_state) {
+  if (!display::Display::HasInternalDisplay())
+    return;
+  display::Display::Rotation rotation =
+      GetDisplayManager()
+          ->GetDisplayInfo(display::Display::InternalDisplayId())
+          .GetRotation(display::Display::ROTATION_SOURCE_ACCELEROMETER);
   bool rotation_lock = ash::Shell::Get()
                            ->display_manager()
                            ->registered_internal_display_rotation_lock();
-  StoreDisplayRotationPrefs(rotation_lock);
+  StoreDisplayRotationPrefs(local_state, rotation, rotation_lock);
 }
 
-void StoreDisplayTouchAssociations() {
+void StoreDisplayTouchAssociations(PrefService* local_state) {
   display::TouchDeviceManager* touch_device_manager =
       GetDisplayManager()->touch_device_manager();
-
-  PrefService* local_state = g_browser_process->local_state();
 
   DictionaryPrefUpdate update(local_state, prefs::kDisplayTouchAssociations);
   base::DictionaryValue* pref_data = update.Get();
@@ -557,8 +563,7 @@ void StoreDisplayTouchAssociations() {
 }
 
 // Stores mirror info for each external display.
-void StoreExternalDisplayMirrorInfo() {
-  PrefService* local_state = g_browser_process->local_state();
+void StoreExternalDisplayMirrorInfo(PrefService* local_state) {
   ListPrefUpdate update(local_state, prefs::kExternalDisplayMirrorInfo);
   base::ListValue* pref_data = update.Get();
   pref_data->Clear();
@@ -568,9 +573,12 @@ void StoreExternalDisplayMirrorInfo() {
     pref_data->GetList().emplace_back(base::Value(base::Int64ToString(id)));
 }
 
+DisplayPrefs* g_display_prefs = nullptr;
+
 }  // namespace
 
-void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
+// static
+void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // Per-display preference.
   registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
   registry->RegisterDictionaryPref(prefs::kDisplayProperties);
@@ -582,12 +590,25 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
 }
 
-void StoreDisplayPrefs() {
+// static
+DisplayPrefs* DisplayPrefs::Get() {
+  CHECK(g_display_prefs);
+  return g_display_prefs;
+}
+
+DisplayPrefs::DisplayPrefs(PrefService* local_state)
+    : local_state_(local_state) {
+  g_display_prefs = this;
+}
+
+DisplayPrefs::~DisplayPrefs() = default;
+
+void DisplayPrefs::StoreDisplayPrefs() {
   // Stores the power state regardless of the login status, because the power
   // state respects to the current status (close/open) of the lid which can be
-  // changed in any situation. See crbug.com/285360
-  StoreCurrentDisplayPowerState();
-  StoreCurrentDisplayRotationLockPrefs();
+  // changed in any situation. See http://crbug.com/285360
+  StoreCurrentDisplayPowerState(local_state_);
+  StoreCurrentDisplayRotationLockPrefs(local_state_);
 
   // Do not store prefs when the confirmation dialog is shown.
   if (!UserCanSaveDisplayPreference() ||
@@ -595,37 +616,21 @@ void StoreDisplayPrefs() {
     return;
   }
 
-  StoreCurrentDisplayLayoutPrefs();
-  StoreCurrentDisplayProperties();
-  StoreDisplayTouchAssociations();
-  StoreExternalDisplayMirrorInfo();
+  StoreCurrentDisplayLayoutPrefs(local_state_);
+  StoreCurrentDisplayProperties(local_state_);
+  StoreDisplayTouchAssociations(local_state_);
+  StoreExternalDisplayMirrorInfo(local_state_);
 }
 
-void StoreDisplayRotationPrefs(bool rotation_lock) {
-  if (!display::Display::HasInternalDisplay())
-    return;
-
-  PrefService* local_state = g_browser_process->local_state();
-  DictionaryPrefUpdate update(local_state, prefs::kDisplayRotationLock);
-  base::DictionaryValue* pref_data = update.Get();
-  pref_data->SetBoolean("lock", rotation_lock);
-  display::Display::Rotation rotation =
-      GetDisplayManager()
-          ->GetDisplayInfo(display::Display::InternalDisplayId())
-          .GetRotation(display::Display::ROTATION_SOURCE_ACCELEROMETER);
-  pref_data->SetInteger("orientation", static_cast<int>(rotation));
-}
-
-void LoadDisplayPreferences(bool first_run_after_boot) {
-  LoadDisplayLayouts();
-  LoadDisplayProperties();
-  LoadExternalDisplayMirrorInfo();
-  LoadDisplayRotationState();
-  LoadDisplayTouchAssociations();
+void DisplayPrefs::LoadDisplayPreferences(bool first_run_after_boot) {
+  LoadDisplayLayouts(local_state_);
+  LoadDisplayProperties(local_state_);
+  LoadExternalDisplayMirrorInfo(local_state_);
+  LoadDisplayRotationState(local_state_);
+  LoadDisplayTouchAssociations(local_state_);
   if (!first_run_after_boot) {
-    PrefService* local_state = g_browser_process->local_state();
     // Restore DisplayPowerState:
-    std::string value = local_state->GetString(prefs::kDisplayPowerState);
+    std::string value = local_state_->GetString(prefs::kDisplayPowerState);
     chromeos::DisplayPowerState power_state;
     if (GetDisplayPowerStateFromString(value, &power_state)) {
       ash::Shell::Get()->display_configurator()->SetInitialDisplayPower(
@@ -634,26 +639,31 @@ void LoadDisplayPreferences(bool first_run_after_boot) {
   }
 }
 
-// Stores the display layout for given display pairs.
-void StoreDisplayLayoutPrefForTest(const display::DisplayIdList& list,
-                                   const display::DisplayLayout& layout) {
-  StoreDisplayLayoutPref(list, layout);
+void DisplayPrefs::StoreDisplayRotationPrefsForTest(
+    display::Display::Rotation rotation,
+    bool rotation_lock) {
+  StoreDisplayRotationPrefs(local_state_, rotation, rotation_lock);
 }
 
-// Stores the given |power_state|.
-void StoreDisplayPowerStateForTest(DisplayPowerState power_state) {
-  StoreDisplayPowerState(power_state);
+void DisplayPrefs::StoreDisplayLayoutPrefForTest(
+    const display::DisplayIdList& list,
+    const display::DisplayLayout& layout) {
+  StoreDisplayLayoutPref(local_state_, list, layout);
 }
 
-void LoadTouchAssociationPreferenceForTest() {
-  LoadDisplayTouchAssociations();
+void DisplayPrefs::StoreDisplayPowerStateForTest(
+    DisplayPowerState power_state) {
+  StoreDisplayPowerState(local_state_, power_state);
 }
 
-void StoreLegacyTouchDataForTest(int64_t display_id,
-                                 const display::TouchCalibrationData& data) {
-  PrefService* local_state = g_browser_process->local_state();
+void DisplayPrefs::LoadTouchAssociationPreferenceForTest() {
+  LoadDisplayTouchAssociations(local_state_);
+}
 
-  DictionaryPrefUpdate update(local_state, prefs::kDisplayProperties);
+void DisplayPrefs::StoreLegacyTouchDataForTest(
+    int64_t display_id,
+    const display::TouchCalibrationData& data) {
+  DictionaryPrefUpdate update(local_state_, prefs::kDisplayProperties);
   base::DictionaryValue* pref_data = update.Get();
   std::unique_ptr<base::DictionaryValue> property_value =
       std::make_unique<base::DictionaryValue>();
@@ -661,7 +671,7 @@ void StoreLegacyTouchDataForTest(int64_t display_id,
   pref_data->Set(base::Int64ToString(display_id), std::move(property_value));
 }
 
-bool ParseTouchCalibrationStringForTest(
+bool DisplayPrefs::ParseTouchCalibrationStringForTest(
     const std::string& str,
     display::TouchCalibrationData::CalibrationPointPairQuad* point_pair_quad) {
   return ParseTouchCalibrationStringValue(str, point_pair_quad);

@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -30,13 +30,13 @@ void DisplayConfigurationObserver::OnDisplaysInitialized() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kFirstExecAfterBoot) &&
       save_preference_) {
-    StoreDisplayPrefs();
+    DisplayPrefs::Get()->StoreDisplayPrefs();
   }
 }
 
 void DisplayConfigurationObserver::OnDisplayConfigurationChanged() {
   if (save_preference_)
-    StoreDisplayPrefs();
+    DisplayPrefs::Get()->StoreDisplayPrefs();
 }
 
 void DisplayConfigurationObserver::OnTabletModeStarted() {

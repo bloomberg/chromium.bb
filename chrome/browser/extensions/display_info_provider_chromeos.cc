@@ -15,7 +15,7 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "extensions/common/api/system_display.h"
@@ -415,8 +415,9 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
     if (!ash::Shell::Get()
              ->resolution_notification_controller()
              ->PrepareNotificationAndSetDisplayMode(
-                 id, current_mode, new_mode,
-                 base::Bind(&chromeos::StoreDisplayPrefs))) {
+                 id, current_mode, new_mode, base::BindRepeating([]() {
+                   chromeos::DisplayPrefs::Get()->StoreDisplayPrefs();
+                 }))) {
       *error = "Unable to set the display mode.";
       return false;
     }
