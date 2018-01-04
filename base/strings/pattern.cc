@@ -154,13 +154,13 @@ struct NextCharUTF16 {
 
 }  // namespace
 
-bool MatchPattern(const StringPiece& eval, const StringPiece& pattern) {
+bool MatchPattern(StringPiece eval, StringPiece pattern) {
   return MatchPatternT(eval.data(), eval.data() + eval.size(),
                        pattern.data(), pattern.data() + pattern.size(),
                        0, NextCharUTF8());
 }
 
-bool MatchPattern(const StringPiece16& eval, const StringPiece16& pattern) {
+bool MatchPattern(StringPiece16 eval, StringPiece16 pattern) {
   return MatchPatternT(eval.data(), eval.data() + eval.size(),
                        pattern.data(), pattern.data() + pattern.size(),
                        0, NextCharUTF16());
