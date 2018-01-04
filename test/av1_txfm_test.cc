@@ -54,6 +54,34 @@ void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
       *type0 = TYPE_ADST;
       *type1 = TYPE_ADST;
       break;
+    case IDTX:
+      *type0 = TYPE_IDTX;
+      *type1 = TYPE_IDTX;
+      break;
+    case H_DCT:
+      *type0 = TYPE_IDTX;
+      *type1 = TYPE_DCT;
+      break;
+    case V_DCT:
+      *type0 = TYPE_DCT;
+      *type1 = TYPE_IDTX;
+      break;
+    case H_ADST:
+      *type0 = TYPE_IDTX;
+      *type1 = TYPE_ADST;
+      break;
+    case V_ADST:
+      *type0 = TYPE_ADST;
+      *type1 = TYPE_IDTX;
+      break;
+    case H_FLIPADST:
+      *type0 = TYPE_IDTX;
+      *type1 = TYPE_ADST;
+      break;
+    case V_FLIPADST:
+      *type0 = TYPE_ADST;
+      *type1 = TYPE_IDTX;
+      break;
     default:
       *type0 = TYPE_DCT;
       *type1 = TYPE_DCT;
@@ -62,6 +90,7 @@ void get_txfm1d_type(TX_TYPE txfm2d_type, TYPE_TXFM *type0, TYPE_TXFM *type1) {
   }
 }
 
+double Sqrt2 = pow(2, 0.5);
 double invSqrt2 = 1 / pow(2, 0.5);
 
 double dct_matrix(double n, double k, int size) {
@@ -154,11 +183,30 @@ void reference_adst_1d(const double *in, double *out, int size) {
   }
 }
 
+void reference_idtx_1d(const double *in, double *out, int size) {
+  double scale = 0;
+  if (size == 4)
+    scale = Sqrt2;
+  else if (size == 8)
+    scale = 2;
+  else if (size == 16)
+    scale = 2 * Sqrt2;
+  else if (size == 32)
+    scale = 4;
+  else if (size == 64)
+    scale = 4 * Sqrt2;
+  for (int k = 0; k < size; ++k) {
+    out[k] = in[k] * scale;
+  }
+}
+
 void reference_hybrid_1d(double *in, double *out, int size, int type) {
   if (type == TYPE_DCT)
     reference_dct_1d(in, out, size);
-  else
+  else if (type == TYPE_ADST)
     reference_adst_1d(in, out, size);
+  else
+    reference_idtx_1d(in, out, size);
 }
 
 double get_amplification_factor(TX_TYPE tx_type, TX_SIZE tx_size) {

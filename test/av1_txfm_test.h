@@ -30,6 +30,7 @@ namespace libaom_test {
 typedef enum {
   TYPE_DCT = 0,
   TYPE_ADST,
+  TYPE_IDTX,
   TYPE_IDCT,
   TYPE_IADST,
   TYPE_LAST

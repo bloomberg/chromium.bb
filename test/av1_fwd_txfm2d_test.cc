@@ -136,7 +136,7 @@ class AV1FwdTxfm2d : public ::testing::TestWithParam<AV1FwdTxfm2dParam> {
 
 vector<AV1FwdTxfm2dParam> GetTxfm2dParamList() {
   vector<AV1FwdTxfm2dParam> param_list;
-  for (int t = 0; t <= FLIPADST_ADST; ++t) {
+  for (int t = 0; t < TX_TYPES; ++t) {
     const TX_TYPE tx_type = static_cast<TX_TYPE>(t);
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_4X4, 2, 0.5));
     param_list.push_back(AV1FwdTxfm2dParam(tx_type, TX_8X8, 5, 0.6));

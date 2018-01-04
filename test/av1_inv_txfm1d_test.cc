@@ -28,7 +28,7 @@ const int txfm_size_ls[] = {
 #endif  // CONFIG_TX64X64
 };
 
-const TxfmFunc fwd_txfm_func_ls[][2] = {
+const TxfmFunc fwd_txfm_func_ls[][txfm_type_num] = {
   { av1_fdct4_new, av1_fadst4_new },
   { av1_fdct8_new, av1_fadst8_new },
   { av1_fdct16_new, av1_fadst16_new },
@@ -38,7 +38,7 @@ const TxfmFunc fwd_txfm_func_ls[][2] = {
 #endif
 };
 
-const TxfmFunc inv_txfm_func_ls[][2] = {
+const TxfmFunc inv_txfm_func_ls[][txfm_type_num] = {
   { av1_idct4_new, av1_iadst4_new },
   { av1_idct8_new, av1_iadst8_new },
   { av1_idct16_new, av1_iadst16_new },

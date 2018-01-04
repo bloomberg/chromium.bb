@@ -18,10 +18,12 @@ using libaom_test::reference_hybrid_1d;
 using libaom_test::TYPE_TXFM;
 using libaom_test::TYPE_DCT;
 using libaom_test::TYPE_ADST;
+using libaom_test::TYPE_IDTX;
 
 namespace {
-const int txfm_type_num = 2;
-const TYPE_TXFM txfm_type_ls[2] = { TYPE_DCT, TYPE_ADST };
+const int txfm_type_num = 3;
+const TYPE_TXFM txfm_type_ls[txfm_type_num] = { TYPE_DCT, TYPE_ADST,
+                                                TYPE_IDTX };
 
 #if CONFIG_TX64X64
 const int txfm_size_num = 5;
@@ -35,13 +37,13 @@ const int txfm_size_ls[] = { 4, 8, 16, 32,
 #endif  // CONFIG_TX64X64
 };
 
-const TxfmFunc fwd_txfm_func_ls[][2] = {
-  { av1_fdct4_new, av1_fadst4_new },
-  { av1_fdct8_new, av1_fadst8_new },
-  { av1_fdct16_new, av1_fadst16_new },
-  { av1_fdct32_new, av1_fadst32_new },
+const TxfmFunc fwd_txfm_func_ls[][txfm_type_num] = {
+  { av1_fdct4_new, av1_fadst4_new, av1_fidentity4_c },
+  { av1_fdct8_new, av1_fadst8_new, av1_fidentity8_c },
+  { av1_fdct16_new, av1_fadst16_new, av1_fidentity16_c },
+  { av1_fdct32_new, av1_fadst32_new, av1_fidentity32_c },
 #if CONFIG_TX64X64
-  { av1_fdct64_new, NULL },
+  { av1_fdct64_new, NULL, NULL },
 #endif
 };
 
