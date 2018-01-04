@@ -2895,6 +2895,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="190" label="AIRH_UNEXPECTED_BITSTREAM"/>
   <int value="191" label="ARH_UNEXPECTED_BITSTREAM"/>
   <int value="192" label="RDH_NULL_CLIENT"/>
+  <int value="193" label="RVH_WEB_UI_BINDINGS_MISMATCH"/>
+  <int value="194" label="WCI_NEW_WIDGET_PROCESS_MISMATCH"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

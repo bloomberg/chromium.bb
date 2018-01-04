@@ -348,8 +348,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
 
   // Revoke the access to the file and submit the form. The renderer process
   // should be terminated.
-  RenderProcessHostWatcher process_exit_observer(
-      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
   ChildProcessSecurityPolicyImpl* security_policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   security_policy->RevokeAllPermissionsForFile(rfh->GetProcess()->GetID(),
@@ -366,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
       "document.getElementById('file-form').submit();",
       &result));
   EXPECT_TRUE(result);
-  process_exit_observer.Wait();
+  EXPECT_EQ(bad_message::RFH_ILLEGAL_UPLOAD_PARAMS, process_kill_waiter.Wait());
 }
 
 // Test case to verify that redirects to data: URLs are properly disallowed,
@@ -476,12 +475,11 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
 
   // Receiving the invalid IPC message should lead to renderer process
   // termination.
-  RenderProcessHostWatcher process_exit_observer(
-      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-
+  RenderProcessHostKillWaiter process_kill_waiter(rfh->GetProcess());
   rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
       common_params, std::move(begin_params));
-  process_exit_observer.Wait();
+  EXPECT_EQ(bad_message::RFH_BASE_URL_FOR_DATA_URL_SPECIFIED,
+            process_kill_waiter.Wait());
 
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
       rfh->GetProcess()->GetID(), file_path));

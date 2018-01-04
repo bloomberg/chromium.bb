@@ -564,16 +564,14 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, MaliciousPostWithFileData) {
       target_contents->GetMainFrame()->GetProcess()->GetID(), file_path));
 
   // Submit the form and wait until the malicious renderer gets killed.
-  RenderProcessHostWatcher process_exit_observer(
-      form_contents->GetMainFrame()->GetProcess(),
-      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostKillWaiter kill_waiter(
+      form_contents->GetMainFrame()->GetProcess());
   EXPECT_TRUE(ExecuteScript(
       form_contents,
       "setTimeout(\n"
       "  function() { document.getElementById('file-form').submit(); },\n"
       "  0);"));
-  process_exit_observer.Wait();
-  EXPECT_FALSE(process_exit_observer.did_exit_normally());
+  EXPECT_EQ(bad_message::RFPH_ILLEGAL_UPLOAD_PARAMS, kill_waiter.Wait());
 
   // The target frame should still be at the original location - the malicious
   // navigation should have been stopped.
