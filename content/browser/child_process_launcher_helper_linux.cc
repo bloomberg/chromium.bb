@@ -41,7 +41,7 @@ ChildProcessLauncherHelper::GetFilesToMap() {
                                       GetProcessType(), command_line());
 }
 
-void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
+bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     const PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
   // Convert FD mapping to FileHandleMappingVector
@@ -57,6 +57,8 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   }
 
   options->environ = delegate_->GetEnvironment();
+
+  return true;
 }
 
 ChildProcessLauncherHelper::Process
