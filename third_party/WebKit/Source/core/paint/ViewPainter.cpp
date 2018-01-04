@@ -34,6 +34,11 @@ void ViewPainter::Paint(const PaintInfo& paint_info,
 
   DCHECK(!layout_view_.GetFrameView()->ShouldThrottleRendering());
 
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    BlockPainter(layout_view_).Paint(paint_info, paint_offset);
+    return;
+  }
+
   layout_view_.PaintObject(paint_info, paint_offset);
   BlockPainter(layout_view_)
       .PaintOverflowControlsIfNeeded(paint_info, paint_offset);
