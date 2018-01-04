@@ -2,7 +2,7 @@
   "comments": [
     "Clang tip-of-tree builder for iOS."
   ],
-  "xcode version": "9.0",
+  "xcode build version": "9C40b",
   "gn_args": [
     "ios_enable_code_signing=false",
     "is_component_build=false",

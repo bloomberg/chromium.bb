@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests on FYI ios-simualtor."
   ],
-  "xcode version": "9.0",
+  "xcode build version": "9C40b",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
@@ -13,7 +13,7 @@
     "use_goma=true"
   ],
   "configuration": "Debug",
-  "sdk": "iphonesimulator11.0",
+  "sdk": "iphonesimulator11.2",
   "tests": [
     {
       "include": "common_tests.json",
@@ -21,8 +21,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0"
+      "os": "11.2"
     },
     {
       "app": "ios_chrome_integration_egtests",
@@ -30,8 +29,7 @@
         "--enable-features=CredentialManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     },
     {
@@ -41,7 +39,6 @@
       ],
       "device type": "iPad Air 2",
       "os": "10.0",
-      "xcode version": "9.0",
       "xctest": true
     },
     {
@@ -50,8 +47,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     },
     {
@@ -60,8 +56,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     },
     {
@@ -70,8 +65,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     },
     {
@@ -80,8 +74,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     },
     {
@@ -90,8 +83,7 @@
         "--enable-features=SlimNavigationManager"
       ],
       "device type": "iPhone 6s",
-      "os": "11.0",
-      "xcode version": "9.0",
+      "os": "11.2",
       "xctest": true
     }
   ]
