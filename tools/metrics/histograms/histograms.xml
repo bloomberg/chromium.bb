@@ -70,7 +70,7 @@ name has to have at least N dots in it.
 
 If a <histogram> or a <suffix> element is only provided so that its name can be
 extended by <histogram_suffixes>, the element should be annotated with the
-attribute base="true". This instructs tools not to treat the base name as a
+attribute 'base="true"'. This instructs tools not to treat the base name as a
 distinct histogram.
 
 If two histogram_suffixes affect the same histogram, generated lists will be
@@ -33788,6 +33788,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Media.EME" enum="CdmPromiseResult">
+  <owner>sandersd@chromium.org</owner>
+  <summary>Result of EME promises that were handled by Chromium code.</summary>
+</histogram>
+
+<histogram base="true" name="Media.EME.addKey" enum="MediaKeyException">
+  <obsolete>
+    Deprecated 02/2016 with removal of prefixed EME.
+  </obsolete>
+  <owner>xhwang@chromium.org</owner>
+  <summary>addKey result</summary>
+</histogram>
+
+<histogram base="true" name="Media.EME.cancelKeyRequest"
+    enum="MediaKeyException">
+  <obsolete>
+    Deprecated 02/2016 with removal of prefixed EME.
+  </obsolete>
+  <owner>xhwang@chromium.org</owner>
+  <summary>cancelKeyRequest result.</summary>
+</histogram>
+
 <histogram name="Media.EME.CdmFileIO.FileSizeKBOnError" units="KB">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -33847,76 +33869,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The time spent to load a library CDM.</summary>
 </histogram>
 
-<histogram name="Media.EME.ClearKey" enum="CdmPromiseResult">
-  <owner>sandersd@chromium.org</owner>
+<histogram base="true" name="Media.EME.CreateCdm" enum="BooleanSuccess">
+  <owner>xhwang@chromium.org</owner>
   <summary>
-    Result of promises for Clear Key key systems that were handled by Chromium
-    code.
+    Whether the CDM instance is created successfully. Reported each time a CDM
+    instance creation is attempted, usually as a result of Javascript call of
+    createMediaKeys().
   </summary>
 </histogram>
 
-<histogram name="Media.EME.ClearKey.addKey" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
+<histogram base="true" name="Media.EME.CreateCdmTime" units="ms">
   <owner>xhwang@chromium.org</owner>
-  <summary>addKey result using the Clear Key key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.cancelKeyRequest" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>cancelKeyRequest result using the Clear Key key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.CreateCdm" enum="BooleanSuccess">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    Whether the CDM instance for Clear Key key system is created successfully.
-    Reported each time a CDM instance creation is attempted, usually as a result
-    of Javascript call of createMediaKeys().
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.CreateCdmTime" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to create the CDM instance for Clear Key key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.generateKeyRequest"
-    enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>generateKeyRequest result using the Clear Key key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.KeyAdded">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyAdded event count using the Clear Key key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.KeyError" enum="MediaKeyError">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyError event count using the Clear Key key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.ClearKey.TimeTo" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to resolve a CDM promise for Clear Key key system.
-  </summary>
+  <summary>The time it takes to create the CDM instance.</summary>
 </histogram>
 
 <histogram name="Media.EME.EncryptedEvent" enum="BooleanEncryptedEvent">
@@ -33940,6 +33904,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Media.EME.generateKeyRequest"
+    enum="MediaKeyException">
+  <obsolete>
+    Deprecated 02/2016 with removal of prefixed EME.
+  </obsolete>
+  <owner>xhwang@chromium.org</owner>
+  <summary>generateKeyRequest result.</summary>
+</histogram>
+
 <histogram name="Media.EME.IsIncognito" enum="BooleanIncognito">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -33947,6 +33920,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     an incognito window or in Chrome OS guest mode. Players that never started
     playback are excluded. Recorded once at time of player destruction.
   </summary>
+</histogram>
+
+<histogram base="true" name="Media.EME.KeyAdded">
+  <obsolete>
+    Deprecated 02/2016 with removal of prefixed EME.
+  </obsolete>
+  <owner>xhwang@chromium.org</owner>
+  <summary>KeyAdded event count.</summary>
+</histogram>
+
+<histogram base="true" name="Media.EME.KeyError" enum="MediaKeyError">
+  <obsolete>
+    Deprecated 02/2016 with removal of prefixed EME.
+  </obsolete>
+  <owner>xhwang@chromium.org</owner>
+  <summary>KeyError event count.</summary>
+</histogram>
+
+<histogram base="true" name="Media.EME.KeyStatusSystemCode" units="system code">
+  <owner>media-dev@chromium.org</owner>
+  <summary>System code count associated with key status.</summary>
 </histogram>
 
 <histogram name="Media.EME.KeySystemSupport.Widevine"
@@ -33998,166 +33992,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.EME.Unknown" enum="CdmPromiseResult">
-  <owner>sandersd@chromium.org</owner>
-  <summary>
-    Result of promises for unknown key systems that were handled by Chromium
-    code.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.addKey" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
+<histogram base="true" name="Media.EME.SystemCode" units="system code">
   <owner>xhwang@chromium.org</owner>
-  <summary>addKey result using an unknown key system.</summary>
+  <summary>System code count in promise rejection.</summary>
 </histogram>
 
-<histogram name="Media.EME.Unknown.cancelKeyRequest" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
+<histogram base="true" name="Media.EME.TimeTo" units="ms">
   <owner>xhwang@chromium.org</owner>
-  <summary>cancelKeyRequest result using an unknown key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.CreateCdm" enum="BooleanSuccess">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    Whether the CDM instance for an unknown key system is created successfully.
-    Reported each time a CDM instance creation is attempted, usually as a result
-    of Javascript call of createMediaKeys().
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.CreateCdmTime" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to create the CDM instance for an unknown key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.generateKeyRequest" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>generateKeyRequest result using an unknown key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.KeyAdded">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyAdded event count using an unknown key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.KeyError" enum="MediaKeyError">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyError event count using an unknown key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.SystemCode" units="system code">
-  <owner>xhwang@chromium.org</owner>
-  <summary>System code count using an unknown key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Unknown.TimeTo" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to resolve a CDM promise for an unknown key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine" enum="CdmPromiseResult">
-  <owner>sandersd@chromium.org</owner>
-  <summary>
-    Result of promises for Widevine key systems that were handled by Chromium
-    code.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.addKey" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>addKey result using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.cancelKeyRequest" enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>cancelKeyRequest result using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.CreateCdm" enum="BooleanSuccess">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    Whether the CDM instance for Widevine key system is created successfully.
-    Reported each time a CDM instance creation is attempted, usually as a result
-    of Javascript call of createMediaKeys().
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.CreateCdmTime" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to create the CDM instance for the Widevine key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.generateKeyRequest"
-    enum="MediaKeyException">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>generateKeyRequest result using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.KeyAdded">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyAdded event count using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.KeyError" enum="MediaKeyError">
-  <obsolete>
-    Deprecated 02/2016 with removal of prefixed EME.
-  </obsolete>
-  <owner>xhwang@chromium.org</owner>
-  <summary>KeyError event count using the Widevine key system.</summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.KeyStatusSystemCode" units="system code">
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    System code count associated with key status using the Widevine key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.SystemCode" units="system code">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    System code count in promise rejection using the Widevine key system.
-  </summary>
-</histogram>
-
-<histogram name="Media.EME.Widevine.TimeTo" units="ms">
-  <owner>xhwang@chromium.org</owner>
-  <summary>
-    The time it takes to resolve a CDM promise for the Widevine key system.
-  </summary>
+  <summary>The time it takes to resolve a EME promise.</summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.VideoCapability.HasEmptyRobustness"
@@ -103725,6 +103567,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="UserGestureSinceLoad"/>
   <suffix name="NoUserGestureSinceLoad"/>
   <affected-histogram name="JSDialogs.CharacterCount"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="KeySystemPrefix" separator="." ordering="prefix,2">
+  <suffix name="ClearKey" label="Clear Key key system"/>
+  <suffix name="Unknown" label="Unknown key system"/>
+  <suffix name="Widevine" label="Widevine key system"/>
+  <affected-histogram name="Media.EME.addKey"/>
+  <affected-histogram name="Media.EME.cancelKeyRequest"/>
+  <affected-histogram name="Media.EME.CreateCdm"/>
+  <affected-histogram name="Media.EME.CreateCdmTime"/>
+  <affected-histogram name="Media.EME.generateKeyRequest"/>
+  <affected-histogram name="Media.EME.KeyAdded"/>
+  <affected-histogram name="Media.EME.KeyError"/>
+  <affected-histogram name="Media.EME.KeyStatusSystemCode"/>
+  <affected-histogram name="Media.EME.SystemCode"/>
+  <affected-histogram name="Media.EME.TimeTo"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="KeySystemSuffix" separator=".">
+  <suffix name="ClearKey" label="Clear Key key system"/>
+  <suffix name="Unknown" label="Unknown key system"/>
+  <suffix name="Widevine" label="Widevine key system"/>
+  <affected-histogram name="Media.EME"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LateBindingExperiment" separator="_">
