@@ -70,12 +70,13 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     int pending_nav_entry_id,
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
-    bool is_form_submission) {
+    bool is_form_submission,
+    const base::Optional<std::string>& suggested_filename) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
       is_same_document, navigation_start, pending_nav_entry_id,
       started_from_context_menu, should_check_main_world_csp,
-      is_form_submission));
+      is_form_submission, suggested_filename));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -88,7 +89,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     int pending_nav_entry_id,
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
-    bool is_form_submission)
+    bool is_form_submission,
+    const base::Optional<std::string>& suggested_filename)
     : url_(url),
       has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
@@ -124,6 +126,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       should_check_main_world_csp_(should_check_main_world_csp),
       is_form_submission_(is_form_submission),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
+      suggested_filename_(suggested_filename),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN2("navigation", "NavigationHandle", this,
                            "frame_tree_node",

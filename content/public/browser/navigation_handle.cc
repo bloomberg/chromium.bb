@@ -37,7 +37,8 @@ NavigationHandle::CreateNavigationHandleForTesting(
           is_same_document, base::TimeTicks::Now(), 0,
           false,                  // started_from_context_menu
           CSPDisposition::CHECK,  // should_check_main_world_csp
-          false);                 // is_form_submission
+          false,                  // is_form_submission
+          base::nullopt);         // suggested_filename
   handle_impl->set_render_frame_host(rfhi);
   if (error != net::OK)
     handle_impl->set_net_error_code(error);
