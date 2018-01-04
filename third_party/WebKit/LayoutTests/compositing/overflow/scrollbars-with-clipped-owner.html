@@ -1,6 +1,13 @@
 <!DOCTYPE HTML>
 <html>
   <head>
+    <script>
+        // Disable implicit root scroller since the outer div is full screen
+        // and would otherwise be promoted to rootScroller. Doing so causes it
+        // to be composited and produces off-by-one differences due to how
+        // scrollbar positions are calculated in the compositor.
+        window.internals.runtimeFlags.implicitRootScrollerEnabled = false;
+    </script>
     <style>
       body {
         margin: 0px;
