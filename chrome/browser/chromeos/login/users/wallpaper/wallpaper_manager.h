@@ -39,10 +39,6 @@ class CommandLine;
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
-
 namespace user_manager {
 class UserImage;
 }  // namespace user_manager
@@ -59,37 +55,6 @@ extern const char kWallpaperSequenceTokenName[];
 class WallpaperManager : public wm::ActivationChangeObserver,
                          public aura::WindowObserver {
  public:
-  class TestApi {
-   public:
-    explicit TestApi(WallpaperManager* wallpaper_manager);
-    virtual ~TestApi();
-
-    bool GetWallpaperFromCache(const AccountId& account_id,
-                               gfx::ImageSkia* image);
-
-    bool GetPathFromCache(const AccountId& account_id, base::FilePath* path);
-
-    void SetWallpaperCache(const AccountId& account_id,
-                           const base::FilePath& path,
-                           const gfx::ImageSkia& image);
-
-   private:
-    WallpaperManager* wallpaper_manager_;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
-  class Observer {
-   public:
-    virtual ~Observer() {}
-    // Notified when the wallpaper animation finishes.
-    virtual void OnWallpaperAnimationFinished(const AccountId& account_id) {}
-    // Notified when the wallpaper is updated.
-    virtual void OnUpdateWallpaperForTesting() {}
-    // Notified when the wallpaper pending list is empty.
-    virtual void OnPendingListEmptyForTesting() {}
-  };
-
   ~WallpaperManager() override;
 
   // Expects there is no instance of WallpaperManager and create one.
@@ -118,10 +83,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // in, uses a solid color wallpaper. If logged in as a stub user, uses an
   // empty wallpaper.
   void InitializeWallpaper();
-
-  // Updates current wallpaper. It may switch the size of wallpaper based on the
-  // current display's resolution.
-  void UpdateWallpaper(bool clear_cache);
 
   // Gets wallpaper information of logged in user.
   bool GetLoggedInUserWallpaperInfo(wallpaper::WallpaperInfo* info);
@@ -155,12 +116,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // Called when the wallpaper policy has been cleared for |account_id|.
   void OnPolicyCleared(const std::string& policy, const AccountId& account_id);
 
-  // Adds given observer to the list.
-  void AddObserver(Observer* observer);
-
-  // Removes given observer from the list.
-  void RemoveObserver(Observer* observer);
-
   // Opens the wallpaper picker window.
   void OpenWallpaperPicker();
 
@@ -173,8 +128,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   void OnWindowDestroying(aura::Window* window) override;
 
  private:
-  friend class WallpaperManagerBrowserTest;
-  friend class WallpaperManagerBrowserTestDefaultWallpaper;
   friend class WallpaperManagerPolicyTest;
 
   WallpaperManager();
@@ -183,16 +136,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   void SetUserWallpaperInfo(const AccountId& account_id,
                             const wallpaper::WallpaperInfo& info,
                             bool is_persistent);
-
-  // A wrapper of |WallpaperController::GetWallpaperFromCache|.
-  bool GetWallpaperFromCache(const AccountId& account_id,
-                             gfx::ImageSkia* image);
-
-  // A wrapper of |WallpaperController::GetPathFromCache|.
-  bool GetPathFromCache(const AccountId& account_id, base::FilePath* path);
-
-  // The number of wallpapers have loaded. For test only.
-  int loaded_wallpapers_for_test() const;
 
   // Gets the CommandLine representing the current process's command line.
   base::CommandLine* GetCommandLine();
@@ -215,9 +158,6 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   void SetDefaultWallpaperImpl(const AccountId& account_id,
                                bool show_wallpaper);
 
-  // Notify all registered observers.
-  void NotifyAnimationFinished();
-
   // Record the Wallpaper App that the user is using right now on Chrome OS.
   void RecordWallpaperAppType();
 
@@ -234,17 +174,8 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // mash.
   wallpaper::WallpaperInfo* GetCachedWallpaperInfo();
 
-  // Returns the wallpaper cache map, or a dummy value under mash.
-  ash::CustomWallpaperMap* GetWallpaperCacheMap();
-
-  // Returns the account id of |current_user_|, or an empty value under mash.
-  AccountId GetCurrentUserAccountId();
-
   std::unique_ptr<CrosSettings::ObserverSubscription>
       show_user_name_on_signin_subscription_;
-
-  // The number of loaded wallpapers.
-  int loaded_wallpapers_for_test_ = 0;
 
   base::ThreadChecker thread_checker_;
 
@@ -257,12 +188,7 @@ class WallpaperManager : public wm::ActivationChangeObserver,
   // A placeholder for |current_user_wallpaper_info_| under mash.
   wallpaper::WallpaperInfo dummy_current_user_wallpaper_info_;
 
-  // A placeholder for |wallpaper_cache_map_| under mash.
-  ash::CustomWallpaperMap dummy_wallpaper_cache_map_;
-
   bool should_cache_wallpaper_ = false;
-
-  base::ObserverList<Observer> observers_;
 
   bool retry_download_if_failed_ = true;
 

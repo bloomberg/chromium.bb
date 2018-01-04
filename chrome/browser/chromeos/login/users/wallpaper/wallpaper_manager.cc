@@ -12,7 +12,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_decoder.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -148,31 +147,6 @@ void AssertCalledOnWallpaperSequence(base::SequencedTaskRunner* task_runner) {
 
 const char kWallpaperSequenceTokenName[] = "wallpaper-sequence";
 
-// TestApi:
-WallpaperManager::TestApi::TestApi(WallpaperManager* wallpaper_manager)
-    : wallpaper_manager_(wallpaper_manager) {}
-
-WallpaperManager::TestApi::~TestApi() {}
-
-bool WallpaperManager::TestApi::GetWallpaperFromCache(
-    const AccountId& account_id,
-    gfx::ImageSkia* image) {
-  return wallpaper_manager_->GetWallpaperFromCache(account_id, image);
-}
-
-bool WallpaperManager::TestApi::GetPathFromCache(const AccountId& account_id,
-                                                 base::FilePath* path) {
-  return wallpaper_manager_->GetPathFromCache(account_id, path);
-}
-
-void WallpaperManager::TestApi::SetWallpaperCache(const AccountId& account_id,
-                                                  const base::FilePath& path,
-                                                  const gfx::ImageSkia& image) {
-  DCHECK(!image.isNull());
-  (*wallpaper_manager_->GetWallpaperCacheMap())[account_id] =
-      ash::CustomWallpaperElement(path, image);
-}
-
 // WallpaperManager, public: ---------------------------------------------------
 
 WallpaperManager::~WallpaperManager() {
@@ -278,23 +252,6 @@ void WallpaperManager::InitializeWallpaper() {
   ShowUserWallpaper(user_manager->GetActiveUser()->GetAccountId());
 }
 
-void WallpaperManager::UpdateWallpaper(bool clear_cache) {
-  for (auto& observer : observers_)
-    observer.OnUpdateWallpaperForTesting();
-  if (clear_cache)
-    GetWallpaperCacheMap()->clear();
-
-  // For GAIA login flow, |current_user_| may not be set before user login. If
-  // UpdateWallpaper is called at GAIA login screen, no wallpaper will be set.
-  // It could result a black screen on external monitors.
-  // See http://crbug.com/265689 for detail.
-  AccountId current_user_account_id = GetCurrentUserAccountId();
-  if (current_user_account_id.empty())
-    ShowSigninWallpaper();
-  else
-    ShowUserWallpaper(current_user_account_id);
-}
-
 bool WallpaperManager::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -347,18 +304,11 @@ void WallpaperManager::OnPolicyFetched(const std::string& policy,
   if (!data)
     return;
 
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    user_image_loader::StartWithData(
-        task_runner_, std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
-        0,  // Do not crop.
-        base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
-                   weak_factory_.GetWeakPtr(), account_id));
-  } else {
-    ash::WallpaperController::DecodeWallpaperIfApplicable(
-        base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
-                   weak_factory_.GetWeakPtr(), account_id),
-        std::move(data), true /* data_is_ready */);
-  }
+  user_image_loader::StartWithData(
+      task_runner_, std::move(data), ImageDecoder::ROBUST_JPEG_CODEC,
+      0,  // Do not crop.
+      base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
+                 weak_factory_.GetWeakPtr(), account_id));
 }
 
 bool WallpaperManager::IsPolicyControlled(const AccountId& account_id) const {
@@ -395,14 +345,6 @@ void WallpaperManager::OnPolicyCleared(const std::string& policy,
   if (user_manager::UserManager::Get()->IsUserLoggedIn()) {
     SetDefaultWallpaperImpl(account_id, true /*show_wallpaper=*/);
   }
-}
-
-void WallpaperManager::AddObserver(WallpaperManager::Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WallpaperManager::RemoveObserver(WallpaperManager::Observer* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void WallpaperManager::OpenWallpaperPicker() {
@@ -468,36 +410,6 @@ void WallpaperManager::SetUserWallpaperInfo(const AccountId& account_id,
   }
   ash::Shell::Get()->wallpaper_controller()->SetUserWallpaperInfo(
       account_id, info, is_persistent);
-}
-
-bool WallpaperManager::GetWallpaperFromCache(const AccountId& account_id,
-                                             gfx::ImageSkia* image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    return false;
-  }
-  return ash::Shell::Get()->wallpaper_controller()->GetWallpaperFromCache(
-      account_id, image);
-}
-
-bool WallpaperManager::GetPathFromCache(const AccountId& account_id,
-                                        base::FilePath* path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash()) {
-    // Some unit tests come here without a Shell instance.
-    // TODO(crbug.com/776464): This is intended not to work under mash. Make it
-    // work again after WallpaperManager is removed.
-    return false;
-  }
-  return ash::Shell::Get()->wallpaper_controller()->GetPathFromCache(account_id,
-                                                                     path);
-}
-
-int WallpaperManager::loaded_wallpapers_for_test() const {
-  return loaded_wallpapers_for_test_;
 }
 
 base::CommandLine* WallpaperManager::GetCommandLine() {
@@ -600,11 +512,6 @@ void WallpaperManager::SetDefaultWallpaperImpl(const AccountId& account_id,
       account_id, user->GetType(), show_wallpaper);
 }
 
-void WallpaperManager::NotifyAnimationFinished() {
-  for (auto& observer : observers_)
-    observer.OnWallpaperAnimationFinished(GetCurrentUserAccountId());
-}
-
 void WallpaperManager::RecordWallpaperAppType() {
   user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
   Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
@@ -659,18 +566,6 @@ wallpaper::WallpaperInfo* WallpaperManager::GetCachedWallpaperInfo() {
   return ash::Shell::Get()
       ->wallpaper_controller()
       ->GetCurrentUserWallpaperInfo();
-}
-
-ash::CustomWallpaperMap* WallpaperManager::GetWallpaperCacheMap() {
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
-    return &dummy_wallpaper_cache_map_;
-  return ash::Shell::Get()->wallpaper_controller()->GetWallpaperCacheMap();
-}
-
-AccountId WallpaperManager::GetCurrentUserAccountId() {
-  if (!ash::Shell::HasInstance() || ash_util::IsRunningInMash())
-    return EmptyAccountId();
-  return ash::Shell::Get()->wallpaper_controller()->GetCurrentUserAccountId();
 }
 
 }  // namespace chromeos
