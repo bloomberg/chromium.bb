@@ -791,10 +791,11 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   // Update the PreviewsState for main frame response if needed.
   if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME &&
       request->url().SchemeIsHTTPOrHTTPS()) {
-    content::PreviewsState committed_state =
-        DetermineCommittedPreviews(request, response->head.previews_state);
+    content::PreviewsState committed_state = DetermineCommittedPreviews(
+        request,
+        static_cast<content::PreviewsState>(response->head.previews_state));
     // Update previews state in response to renderer.
-    response->head.previews_state = committed_state;
+    response->head.previews_state = static_cast<int>(committed_state);
     // Update previews state in nav data to UI.
     ChromeNavigationData* data =
         ChromeNavigationData::GetDataAndCreateIfNecessary(request);

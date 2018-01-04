@@ -70,7 +70,6 @@ class ReplaceContentPeer : public SecurityFilterPeer {
       const network::URLLoaderCompletionStatus& status) override;
 
  private:
-  content::ResourceResponseInfo response_info_;
   std::string mime_type_;
   std::string data_;
 

@@ -776,7 +776,8 @@ void NavigationRequest::OnResponseStarted(
           : kAppCacheNoHostId;
 
   // Update the previews state of the request.
-  common_params_.previews_state = response->head.previews_state;
+  common_params_.previews_state =
+      static_cast<PreviewsState>(response->head.previews_state);
 
   // Select an appropriate renderer to commit the navigation.
   RenderFrameHostImpl* render_frame_host = nullptr;
