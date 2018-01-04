@@ -33,6 +33,16 @@ if (is_android) {
       # Android SDK release. Currently, only "o_mr1" is publicly supported.
       android_sdk_release = default_android_sdk_release
     }
+
+    # This is the result of profiling Chromium. Blindly applying it to arbitrary
+    # downstream projects and hoping it'll grant a speedup seems fragile. (Not
+    # to mention that it resides in a Chromium-specific directory.)
+    if (build_with_chromium) {
+      # The default AFDO profile used by public builds. Value may differ in
+      # internal builds.
+      clang_default_afdo_profile =
+          rebase_path("//chrome/android/profiles/chrome-profile-3309-text.prof")
+    }
   }
 
   if (!defined(extra_chrome_shared_library_configs)) {

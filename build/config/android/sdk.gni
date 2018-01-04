@@ -8,8 +8,3 @@ default_android_sdk_release = "o_mr1"
 
 # SDK releases against which public builds are supported.
 public_sdk_releases = [ "o_mr1" ]
-
-# The default AFDO profile used by public builds. Value may differ in
-# internal builds.
-clang_default_afdo_profile =
-    rebase_path("//chrome/android/profiles/chrome-profile-3309-text.prof")
