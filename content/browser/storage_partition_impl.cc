@@ -550,6 +550,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
   partition->service_worker_context_->set_storage_partition(partition.get());
 
+  partition->shared_worker_service_ =
+      std::make_unique<SharedWorkerServiceImpl>();
+
   partition->appcache_service_ =
       new ChromeAppCacheService(quota_manager_proxy.get());
 
@@ -698,6 +701,10 @@ CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {
 
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   return service_worker_context_.get();
+}
+
+SharedWorkerServiceImpl* StoragePartitionImpl::GetSharedWorkerService() {
+  return shared_worker_service_.get();
 }
 
 #if !defined(OS_ANDROID)

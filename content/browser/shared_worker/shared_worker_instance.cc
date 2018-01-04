@@ -15,8 +15,6 @@ SharedWorkerInstance::SharedWorkerInstance(
     const std::string& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
     blink::WebAddressSpace creation_address_space,
-    ResourceContext* resource_context,
-    const WorkerStoragePartitionId& partition_id,
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
     : url_(url),
       name_(name),
@@ -24,10 +22,7 @@ SharedWorkerInstance::SharedWorkerInstance(
       content_security_policy_(content_security_policy),
       content_security_policy_type_(security_policy_type),
       creation_address_space_(creation_address_space),
-      resource_context_(resource_context),
-      partition_id_(partition_id),
       creation_context_type_(creation_context_type) {
-  DCHECK(resource_context_);
 }
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
@@ -35,25 +30,14 @@ SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
 
 SharedWorkerInstance::~SharedWorkerInstance() = default;
 
-bool SharedWorkerInstance::Matches(const GURL& url,
-                                   const std::string& name,
-                                   const url::Origin& constructor_origin,
-                                   const WorkerStoragePartitionId& partition_id,
-                                   ResourceContext* resource_context) const {
+bool SharedWorkerInstance::Matches(
+    const GURL& url,
+    const std::string& name,
+    const url::Origin& constructor_origin) const {
   // |url| and |constructor_origin| should be in the same origin, or |url|
   // should be a data: URL.
   DCHECK(url::Origin::Create(url).IsSameOriginWith(constructor_origin) ||
          url.SchemeIs(url::kDataScheme));
-
-  // ResourceContext equivalence is being used as a proxy to ensure we only
-  // matched shared workers within the same BrowserContext.
-  if (resource_context_ != resource_context)
-    return false;
-
-  // We must be in the same storage partition otherwise sharing will violate
-  // isolation.
-  if (!partition_id_.Equals(partition_id))
-    return false;
 
   // Step 11.2: "If there exists a SharedWorkerGlobalScope object whose closing
   // flag is false, constructor origin is same origin with outside settings's
@@ -67,8 +51,7 @@ bool SharedWorkerInstance::Matches(const GURL& url,
 }
 
 bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {
-  return Matches(other.url(), other.name(), other.constructor_origin(),
-                 other.partition_id(), other.resource_context());
+  return Matches(other.url(), other.name(), other.constructor_origin());
 }
 
 }  // namespace content

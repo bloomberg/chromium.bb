@@ -12,6 +12,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "content/public/browser/storage_partition.h"
 
 BrowsingDataSharedWorkerHelper::SharedWorkerInfo::SharedWorkerInfo(
     const GURL& worker,
@@ -53,8 +54,8 @@ void BrowsingDataSharedWorkerHelper::DeleteSharedWorker(
     const std::string& name,
     const url::Origin& constructor_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::SharedWorkerService::GetInstance()->TerminateWorker(
-      worker, name, constructor_origin, storage_partition_, resource_context_);
+  storage_partition_->GetSharedWorkerService()->TerminateWorker(
+      worker, name, constructor_origin);
 }
 
 CannedBrowsingDataSharedWorkerHelper::CannedBrowsingDataSharedWorkerHelper(

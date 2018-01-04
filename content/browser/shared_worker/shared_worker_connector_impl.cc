@@ -20,62 +20,27 @@ void SharedWorkerConnectorImpl::Create(
     int process_id,
     int frame_id,
     mojom::SharedWorkerConnectorRequest request) {
-  RenderProcessHost* host = RenderProcessHost::FromID(process_id);
-  ResourceContext* resource_context =
-      host->GetBrowserContext()->GetResourceContext();
-  StoragePartitionImpl* storage_partition_impl =
-      static_cast<StoragePartitionImpl*>(host->GetStoragePartition());
-
-  // TODO(darin): Surely there can be a better way to extract a comparable
-  // identifier from a StoragePartition instance.
-  WorkerStoragePartition worker_storage_partition(
-      storage_partition_impl->GetURLRequestContext(),
-      storage_partition_impl->GetMediaURLRequestContext(),
-      storage_partition_impl->GetAppCacheService(),
-      storage_partition_impl->GetQuotaManager(),
-      storage_partition_impl->GetFileSystemContext(),
-      storage_partition_impl->GetDatabaseTracker(),
-      storage_partition_impl->GetIndexedDBContext(),
-      storage_partition_impl->GetServiceWorkerContext());
-
-  CreateInternal(process_id, frame_id, resource_context,
-                 worker_storage_partition, std::move(request));
-}
-
-// static
-void SharedWorkerConnectorImpl::CreateInternal(
-    int process_id,
-    int frame_id,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& worker_storage_partition,
-    mojom::SharedWorkerConnectorRequest request) {
   mojo::MakeStrongBinding(
-      base::WrapUnique(new SharedWorkerConnectorImpl(
-          process_id, frame_id, resource_context, worker_storage_partition)),
+      base::WrapUnique(new SharedWorkerConnectorImpl(process_id, frame_id)),
       std::move(request));
 }
 
-SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(
-    int process_id,
-    int frame_id,
-    ResourceContext* resource_context,
-    const WorkerStoragePartition& worker_storage_partition)
-    : process_id_(process_id),
-      frame_id_(frame_id),
-      resource_context_(resource_context),
-      worker_storage_partition_(worker_storage_partition) {}
+SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int process_id,
+                                                     int frame_id)
+    : process_id_(process_id), frame_id_(frame_id) {}
 
 void SharedWorkerConnectorImpl::Connect(
     mojom::SharedWorkerInfoPtr info,
     mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port) {
-  static_cast<SharedWorkerServiceImpl*>(SharedWorkerService::GetInstance())
-      ->ConnectToWorker(process_id_, frame_id_, std::move(info),
-                        std::move(client), creation_context_type,
-                        blink::MessagePortChannel(std::move(message_port)),
-                        resource_context_,
-                        WorkerStoragePartitionId(worker_storage_partition_));
+  SharedWorkerServiceImpl* service =
+      static_cast<StoragePartitionImpl*>(
+          RenderProcessHost::FromID(process_id_)->GetStoragePartition())
+          ->GetSharedWorkerService();
+  service->ConnectToWorker(process_id_, frame_id_, std::move(info),
+                           std::move(client), creation_context_type,
+                           blink::MessagePortChannel(std::move(message_port)));
 }
 
 }  // namespace content

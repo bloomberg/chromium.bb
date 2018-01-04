@@ -105,6 +105,11 @@ class TestStoragePartition : public StoragePartition {
   }
   ServiceWorkerContext* GetServiceWorkerContext() override;
 
+  void set_shared_worker_service(SharedWorkerService* service) {
+    shared_worker_service_ = service;
+  }
+  SharedWorkerService* GetSharedWorkerService() override;
+
   void set_cache_storage_context(CacheStorageContext* context) {
     cache_storage_context_ = context;
   }
@@ -175,6 +180,7 @@ class TestStoragePartition : public StoragePartition {
   DOMStorageContext* dom_storage_context_ = nullptr;
   IndexedDBContext* indexed_db_context_ = nullptr;
   ServiceWorkerContext* service_worker_context_ = nullptr;
+  SharedWorkerService* shared_worker_service_ = nullptr;
   CacheStorageContext* cache_storage_context_ = nullptr;
   PlatformNotificationContext* platform_notification_context_ = nullptr;
 #if !defined(OS_ANDROID)
