@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/platform_thread.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/http/http_status_code.h"
@@ -53,6 +54,18 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
         features::kDataReductionProxyRobustConnection, params);
   }
 
+  base::TimeDelta GetFetchWaitTime(
+      size_t previous_attempt_counts) const override {
+    if (!fetch_wait_time_)
+      return WarmupURLFetcher::GetFetchWaitTime(previous_attempt_counts);
+
+    return fetch_wait_time_.value();
+  }
+
+  void SetFetchWaitTime(base::Optional<base::TimeDelta> fetch_wait_time) {
+    fetch_wait_time_ = fetch_wait_time;
+  }
+
   using WarmupURLFetcher::FetchWarmupURL;
   using WarmupURLFetcher::GetWarmupURLWithQueryParam;
 
@@ -64,6 +77,7 @@ class WarmupURLFetcherTest : public WarmupURLFetcher {
     success_response_last_ = success_response;
   }
 
+  base::Optional<base::TimeDelta> fetch_wait_time_;
   size_t callback_received_count_ = 0;
   net::ProxyServer proxy_server_last_;
   bool success_response_last_ = false;
@@ -132,7 +146,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
-  warmup_url_fetcher.FetchWarmupURL();
+  warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -191,7 +205,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
-  warmup_url_fetcher.FetchWarmupURL();
+  warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -247,7 +261,7 @@ TEST(WarmupURLFetcherTest,
                                            std::move(test_request_context));
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
-  warmup_url_fetcher.FetchWarmupURL();
+  warmup_url_fetcher.FetchWarmupURL(0);
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
@@ -297,7 +311,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
-  warmup_url_fetcher.FetchWarmupURL();
+  warmup_url_fetcher.FetchWarmupURL(0);
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -319,6 +333,67 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   EXPECT_EQ(net::ProxyServer::SCHEME_INVALID,
             warmup_url_fetcher.proxy_server_last().scheme());
   EXPECT_FALSE(warmup_url_fetcher.success_response_last());
+}
+
+TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  WarmupURLFetcherTest::InitExperiment(&scoped_feature_list);
+
+  base::HistogramTester histogram_tester;
+  base::MessageLoopForIO message_loop;
+  const std::string config = "foobarbaz";
+  std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
+  net::MockClientSocketFactory mock_socket_factory;
+  net::MockRead success_reads[3];
+  success_reads[0] = net::MockRead(
+      "HTTP/1.1 204 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n");
+  success_reads[1] = net::MockRead(net::ASYNC, config.c_str(), config.length());
+  success_reads[2] = net::MockRead(net::SYNCHRONOUS, net::OK);
+
+  socket_data_providers.push_back(
+      (base::MakeUnique<net::StaticSocketDataProvider>(
+          success_reads, arraysize(success_reads), nullptr, 0)));
+  mock_socket_factory.AddSocketDataProvider(socket_data_providers.back().get());
+
+  std::unique_ptr<net::TestURLRequestContext> test_request_context(
+      new net::TestURLRequestContext(true));
+
+  test_request_context->set_client_socket_factory(&mock_socket_factory);
+  test_request_context->Init();
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter =
+      new net::TestURLRequestContextGetter(message_loop.task_runner(),
+                                           std::move(test_request_context));
+
+  WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
+  EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
+  warmup_url_fetcher.SetFetchWaitTime(base::TimeDelta::FromMilliseconds(1));
+  warmup_url_fetcher.FetchWarmupURL(1);
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(2));
+  EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
+
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 1);
+  histogram_tester.ExpectUniqueSample("DataReductionProxy.WarmupURL.NetError",
+                                      net::OK, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.WarmupURL.HttpResponseCode", net::HTTP_NO_CONTENT, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.WarmupURL.HasViaHeader", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.WarmupURL.ProxySchemeUsed",
+      util::ConvertNetProxySchemeToProxyScheme(net::ProxyServer::SCHEME_DIRECT),
+      1);
+
+  EXPECT_EQ(1u, warmup_url_fetcher.callback_received_count());
+  EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT,
+            warmup_url_fetcher.proxy_server_last().scheme());
+  // success_response_last() should be true since the response contains the via
+  // header.
+  EXPECT_TRUE(warmup_url_fetcher.success_response_last());
 }
 
 }  // namespace

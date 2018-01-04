@@ -159,7 +159,7 @@ void DataReductionProxyConfig::InitializeOnIOThread(
     NetworkPropertiesManager* manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   network_properties_manager_ = manager;
-  DCHECK(network_properties_manager_);
+  network_properties_manager_->ResetWarmupURLFetchMetrics();
 
   secure_proxy_checker_.reset(
       new SecureProxyChecker(basic_url_request_context_getter));
@@ -182,6 +182,9 @@ bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
 void DataReductionProxyConfig::OnNewClientConfigFetched() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ReloadConfig();
+  // Call ResetWarmupURLFetchMetrics to reset the counts since the list of
+  // proxies may have changed.
+  network_properties_manager_->ResetWarmupURLFetchMetrics();
   FetchWarmupProbeURL();
 }
 
@@ -394,6 +397,7 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
+  network_properties_manager_->ResetWarmupURLFetchMetrics();
   FetchWarmupProbeURL();
 }
 
@@ -423,6 +427,7 @@ void DataReductionProxyConfig::UpdateConfigForTesting(
     bool secure_proxies_allowed,
     bool insecure_proxies_allowed) {
   enabled_by_user_ = enabled;
+  network_properties_manager_->ResetWarmupURLFetchMetrics();
   network_properties_manager_->SetIsSecureProxyDisallowedByCarrier(
       !secure_proxies_allowed);
   if (!insecure_proxies_allowed !=
@@ -690,14 +695,22 @@ void DataReductionProxyConfig::FetchWarmupProbeURL() {
   warmup_url_fetch_in_flight_secure_proxy_ = warmup_config->first;
   warmup_url_fetch_in_flight_core_proxy_ = warmup_config->second;
 
+  size_t previous_attempt_counts = GetWarmupURLFetchAttemptCounts();
+
   network_properties_manager_->OnWarmupFetchInitiated(
       warmup_url_fetch_in_flight_secure_proxy_,
       warmup_url_fetch_in_flight_core_proxy_);
 
   RecordWarmupURLFetchAttemptEvent(WarmupURLFetchAttemptEvent::kFetchInitiated);
 
-  // TODO(tbansal): https://crbug.com/760294. Use exponential backoffs.
-  warmup_url_fetcher_->FetchWarmupURL();
+  warmup_url_fetcher_->FetchWarmupURL(previous_attempt_counts);
+}
+
+size_t DataReductionProxyConfig::GetWarmupURLFetchAttemptCounts() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return network_properties_manager_->GetWarmupURLFetchAttemptCounts(
+      warmup_url_fetch_in_flight_secure_proxy_,
+      warmup_url_fetch_in_flight_core_proxy_);
 }
 
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {

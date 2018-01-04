@@ -238,6 +238,10 @@ class DataReductionProxyConfig
   // Returns true if a warmup URL probe is in-flight. Virtualized for testing.
   virtual bool IsFetchInFlight() const;
 
+  // Returns the number of previous attempt counts for the proxy that is going
+  // to be probed. Virtualized for testing.
+  virtual size_t GetWarmupURLFetchAttemptCounts() const;
+
  private:
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;

@@ -29,6 +29,7 @@ class DataReductionProxyConfiguratorTest : public testing::Test {
     test_prefs.registry()->RegisterDictionaryPref(prefs::kNetworkProperties);
     manager_.reset(new NetworkPropertiesManager(
         &test_prefs, base::ThreadTaskRunnerHandle::Get()));
+    manager_->OnChangeInNetworkID("test");
 
     test_context_ = DataReductionProxyTestContext::Builder().Build();
     config_.reset(new DataReductionProxyConfigurator(

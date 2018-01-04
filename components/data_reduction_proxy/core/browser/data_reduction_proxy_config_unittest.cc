@@ -1164,6 +1164,7 @@ TEST_F(DataReductionProxyConfigTest, HandleWarmupFetcherRetry) {
   ResetSettings();
 
   // Enable the proxy.
+  test_config()->SetWarmupURLFetchAttemptCounts(0);
   test_config()->UpdateConfigForTesting(true, true, true);
 
   test_config()->SetIsFetchInFlight(true);
@@ -1299,6 +1300,7 @@ TEST_F(DataReductionProxyConfigTest,
   ResetSettings();
 
   // Enable the proxy.
+  test_config()->SetWarmupURLFetchAttemptCounts(0);
   test_config()->UpdateConfigForTesting(true, true, true);
 
   test_config()->SetIsFetchInFlight(true);
@@ -1353,6 +1355,7 @@ TEST_F(DataReductionProxyConfigTest,
 
   // A change in the connection type should reset the probe fetch attempt count,
   // and trigger fetching of the probe URL.
+  test_config()->SetCurrentNetworkID("wifi,test");
   net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_WIFI);
   base::RunLoop().RunUntilIdle();
