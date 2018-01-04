@@ -31,6 +31,7 @@ class OpenVRDevice : public VRDeviceBase {
       VRDisplayImpl* display,
       mojom::VRSubmitFrameClientPtr submit_client,
       mojom::VRPresentationProviderRequest request,
+      mojom::VRRequestPresentOptionsPtr present_options,
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
 
@@ -38,7 +39,8 @@ class OpenVRDevice : public VRDeviceBase {
 
   void OnRequestPresentResult(
       mojom::VRDisplayHost::RequestPresentCallback callback,
-      bool result);
+      bool result,
+      mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
  private:
   // VRDeviceBase

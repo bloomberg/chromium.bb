@@ -114,7 +114,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
       device::mojom::VRPresentationProviderRequest request,
-      device::mojom::VRDisplayInfoPtr display_info);
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::VRRequestPresentOptionsPtr present_options);
 
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
@@ -125,6 +126,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
  private:
   void GvrInit(gvr_context* gvr_api);
+  device::mojom::VRDisplayFrameTransportOptionsPtr
+  GetWebVrFrameTransportOptions();
   void InitializeRenderer();
   // Returns true if successfully resized.
   bool ResizeForWebVR(int16_t frame_index);
@@ -160,6 +163,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void OnWebVrFrameTimedOut();
 
   base::TimeDelta GetPredictedFrameTime();
+  void AddWebVrRenderTimeEstimate(int16_t frame_index,
+                                  base::TimeTicks submit_start,
+                                  base::TimeTicks submit_done);
 
   void OnVSync(base::TimeTicks frame_time);
 
@@ -177,6 +183,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ForceExitVr();
 
+  bool ShouldSkipVSync();
   void SendVSync(base::TimeTicks time, GetVSyncCallback callback);
 
   void ClosePresentationBindings();
@@ -184,8 +191,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
 
-  // Set from feature flag.
+  // Set from feature flags.
   bool webvr_vsync_align_;
+  bool webvr_experimental_rendering_;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
@@ -212,6 +220,15 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   gfx::Size render_size_default_;
   gfx::Size render_size_webvr_ui_;
 
+  // WebVR currently supports multiple render path choices, with runtime
+  // selection based on underlying support being available and feature flags.
+  // The webvr_use_* booleans choose among the implementations. Please don't
+  // check webvr_experimental_rendering_ or other feature flags in individual
+  // code paths directly to avoid inconsistent logic.
+  bool webvr_use_gpu_fence_ = false;
+
+  int webvr_unstuff_ratelimit_frames_ = 0;
+
   bool cardboard_ = false;
   gfx::Quaternion controller_quat_;
 
@@ -236,9 +253,18 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // Attributes tracking WebVR rAF/VSync animation loop state. Blink schedules
+  // a callback using the GetVSync mojo call, and the callback is either passed
+  // to SendVSync immediately, or deferred until the next OnVSync call.
+  //
+  // pending_vsync_ is set to true in OnVSync if there is no current
+  // outstanding callback, and this means that a future GetVSync is permitted
+  // to execute SendVSync immediately. If it is false, GetVSync must store the
+  // pending callback in callback_ for later execution.
   base::TimeTicks pending_time_;
   bool pending_vsync_ = false;
   GetVSyncCallback callback_;
+
   mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 

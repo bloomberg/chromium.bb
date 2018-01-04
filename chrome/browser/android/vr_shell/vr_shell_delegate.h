@@ -68,26 +68,30 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   // device::GvrDelegateProvider implementation.
   bool ShouldDisableGvrDevice() override;
   void SetDeviceId(unsigned int device_id) override;
-  void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
-                           device::mojom::VRPresentationProviderRequest request,
-                           device::mojom::VRDisplayInfoPtr display_info,
-                           base::Callback<void(bool)> callback) override;
+  void RequestWebVRPresent(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request,
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::VRRequestPresentOptionsPtr present_options,
+      device::mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void OnListeningForActivateChanged(bool listening) override;
 
   void OnActivateDisplayHandled(bool will_not_present);
   void SetListeningForActivate(bool listening);
-  void OnPresentResult(device::mojom::VRSubmitFrameClientPtr submit_client,
-                       device::mojom::VRPresentationProviderRequest request,
-                       device::mojom::VRDisplayInfoPtr display_info,
-                       base::Callback<void(bool)> callback,
-                       bool success);
+  void OnPresentResult(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request,
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::VRRequestPresentOptionsPtr present_options,
+      device::mojom::VRDisplayHost::RequestPresentCallback callback,
+      bool success);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   unsigned int device_id_ = 0;
   VrShell* vr_shell_ = nullptr;
-  base::Callback<void(bool)> present_callback_;
+  base::OnceCallback<void(bool)> on_present_result_callback_;
   bool pending_successful_present_request_ = false;
 
   base::CancelableClosure clear_activate_task_;

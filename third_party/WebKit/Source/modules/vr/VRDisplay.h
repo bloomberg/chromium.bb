@@ -20,6 +20,10 @@
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 
+namespace gfx {
+class GpuFence;
+}
+
 namespace gpu {
 namespace gles2 {
 class GLES2Interface;
@@ -125,41 +129,13 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRController* Controller();
 
  private:
-  // Specifies how submitFrame should transport frame data for the presenting
-  // VR device, set by ConfigurePresentationPathForDisplay().
-  enum class FrameTransport {
-    // Invalid default value. Must be changed to a valid choice before starting
-    // presentation.
-    kUninitialized,
-
-    // Command buffer CHROMIUM_texture_mailbox. Used by the Android Surface
-    // rendering path.
-    kMailbox,
-
-    // A TextureHandle as extracted from a GpuMemoryBufferHandle. Used with
-    // DXGI texture handles for OpenVR on Windows.
-    kTextureHandle,
-  };
-
-  // Some implementations need to synchronize submitting with the completion of
-  // the previous frame, i.e. the Android surface path needs to wait to avoid
-  // lost frames in the transfer surface and to avoid overstuffed buffers. The
-  // strategy choice here indicates at which point in the submission process
-  // it should wait. NO_WAIT means to skip this wait entirely. For example,
-  // the OpenVR render pipeline doesn't overlap frames, so the previous
-  // frame is already guaranteed complete.
-  enum class WaitPrevStrategy {
-    kUninitialized,
-    kNoWait,
-    kBeforeBitmap,
-    kAfterBitmap,
-  };
-
-  bool ConfigurePresentationPathForDisplay();
   void WaitForPreviousTransfer();
   WTF::TimeDelta WaitForPreviousRenderToFinish();
+  WTF::TimeDelta WaitForGpuFenceReceived();
 
-  void OnPresentComplete(bool);
+  void OnPresentComplete(
+      bool success,
+      device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
 
   void OnConnected();
   void OnDisconnected();
@@ -171,6 +147,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   // VRSubmitFrameClient
   void OnSubmitFrameTransferred(bool success) override;
   void OnSubmitFrameRendered() override;
+  void OnSubmitFrameGpuFence(const gfx::GpuFenceHandle&) override;
 
   // VRDisplayClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -239,8 +216,11 @@ class VRDisplay final : public EventTargetWithInlineData,
   // waitForPreviousTransferToFinish.
   scoped_refptr<Image> previous_image_;
 
-  FrameTransport frame_transport_method_ = FrameTransport::kUninitialized;
-  WaitPrevStrategy wait_for_previous_render_ = WaitPrevStrategy::kUninitialized;
+  // If using GpuFence to separate frames, need to wait for the previous
+  // frame's fence, but not if this is the first frame. Separately track
+  // if we're expecting a fence and the received fence itself.
+  bool waiting_for_previous_frame_fence_ = false;
+  std::unique_ptr<gfx::GpuFence> previous_frame_fence_;
 
   TraceWrapperMember<ScriptedAnimationController>
       scripted_animation_controller_;
@@ -254,13 +234,14 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;
-  bool pending_previous_frame_render_ = false;
-  bool pending_submit_frame_ = false;
+  bool waiting_for_previous_frame_render_ = false;
+  bool waiting_for_previous_frame_transfer_ = false;
   bool pending_present_request_ = false;
   bool last_transfer_succeeded_ = false;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
+  device::mojom::blink::VRDisplayFrameTransportOptionsPtr transport_options_;
 
   bool present_image_needs_copy_ = false;
 

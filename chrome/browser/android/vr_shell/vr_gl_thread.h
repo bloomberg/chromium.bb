@@ -49,7 +49,9 @@ class VrGLThread : public base::android::JavaHandlerThread,
 
   // GlBrowserInterface implementation (GL calling to VrShell).
   void ContentSurfaceChanged(jobject surface) override;
-  void GvrDelegateReady(gvr::ViewerType viewer_type) override;
+  void GvrDelegateReady(
+      gvr::ViewerType viewer_type,
+      device::mojom::VRDisplayFrameTransportOptionsPtr) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;

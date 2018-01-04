@@ -51,17 +51,18 @@ VRDisplayHost::~VRDisplayHost() = default;
 void VRDisplayHost::RequestPresent(
     device::mojom::VRSubmitFrameClientPtr client,
     device::mojom::VRPresentationProviderRequest request,
+    device::mojom::VRRequestPresentOptionsPtr options,
     RequestPresentCallback callback) {
   bool requires_secure_context =
       !kAllowHTTPWebVRWithFlag ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebVR);
   if (requires_secure_context && !IsSecureContext(render_frame_host_)) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(false, nullptr);
     return;
   }
   display_->RequestPresent(std::move(client), std::move(request),
-                           std::move(callback));
+                           std::move(options), std::move(callback));
 }
 
 void VRDisplayHost::ExitPresent() {

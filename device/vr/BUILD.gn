@@ -42,6 +42,7 @@ if (enable_vr) {
       "//services/service_manager/public/cpp",
       "//ui/display",
       "//ui/gfx",
+      "//ui/gfx/mojo:mojo",
     ]
 
     if (enable_gvr_services) {
@@ -227,5 +228,6 @@ mojom_component("mojo_bindings") {
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo:mojo",
   ]
 }
