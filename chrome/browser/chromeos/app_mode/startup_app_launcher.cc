@@ -13,11 +13,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_diagnosis_runner.h"
+#include "chrome/browser/chromeos/app_mode/startup_app_launcher_update_checker.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -168,60 +168,41 @@ void StartupAppLauncher::MaybeLaunchApp() {
 
 void StartupAppLauncher::MaybeCheckExtensionUpdate() {
   SYSLOG(INFO) << "MaybeCheckExtensionUpdate";
-  extensions::ExtensionUpdater* updater =
-      extensions::ExtensionSystem::Get(profile_)
-          ->extension_service()
-          ->updater();
-  if (!delegate_->IsNetworkReady() || !updater ||
-      PrimaryAppHasPendingUpdate()) {
+  if (!delegate_->IsNetworkReady() || PrimaryAppHasPendingUpdate()) {
     MaybeLaunchApp();
     return;
   }
-
-  extension_update_found_ = false;
-  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-                 content::NotificationService::AllSources());
 
   // Enforce an immediate version update check for all extensions before
   // launching the primary app. After the chromeos is updated, the shared
   // module(e.g. ARC runtime) may need to be updated to a newer version
   // compatible with the new chromeos. See crbug.com/555083.
-  extensions::ExtensionUpdater::CheckParams params;
-  params.install_immediately = true;
-  params.callback =
-      base::Bind(&StartupAppLauncher::OnExtensionUpdateCheckFinished,
-                 weak_ptr_factory_.GetWeakPtr());
-  updater->CheckNow(params);
+  update_checker_ = std::make_unique<StartupAppLauncherUpdateChecker>(profile_);
+  if (!update_checker_->Run(
+          base::BindOnce(&StartupAppLauncher::OnExtensionUpdateCheckFinished,
+                         weak_ptr_factory_.GetWeakPtr()))) {
+    update_checker_.reset();
+    MaybeLaunchApp();
+    return;
+  }
+
+  SYSLOG(INFO) << "Extension update check run.";
 }
 
-void StartupAppLauncher::OnExtensionUpdateCheckFinished() {
+void StartupAppLauncher::OnExtensionUpdateCheckFinished(bool update_found) {
+  update_checker_.reset();
+
   SYSLOG(INFO) << "OnExtensionUpdateCheckFinished";
-  if (extension_update_found_) {
+  if (update_found) {
     // Reload the primary app to make sure any reference to the previous version
     // of the shared module, extension, etc will be cleaned up andthe new
     // version will be loaded.
     extensions::ExtensionSystem::Get(profile_)
             ->extension_service()
             ->ReloadExtension(app_id_);
-    extension_update_found_ = false;
   }
-  registrar_.Remove(this, extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
-                    content::NotificationService::AllSources());
 
   MaybeLaunchApp();
-}
-
-void StartupAppLauncher::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND, type);
-  using UpdateDetails = const std::pair<std::string, base::Version>;
-  const std::string& id = content::Details<UpdateDetails>(details)->first;
-  const base::Version& version =
-      content::Details<UpdateDetails>(details)->second;
-  SYSLOG(INFO) << "Found extension update id=" << id
-               << " version=" << version.GetString();
-  extension_update_found_ = true;
 }
 
 void StartupAppLauncher::OnFinishCrxInstall(const std::string& extension_id,
