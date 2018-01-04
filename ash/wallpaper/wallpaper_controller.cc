@@ -37,7 +37,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/user_manager/user_image/user_image.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
 #include "components/wallpaper/wallpaper_files_id.h"
@@ -533,9 +532,7 @@ void WallpaperController::DecodeWallpaperIfApplicable(
   if (!data_is_ready || !Shell::Get()->shell_delegate()->GetShellConnector()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            std::move(callback),
-            base::Passed(std::make_unique<user_manager::UserImage>())));
+        base::BindOnce(std::move(callback), base::Passed(gfx::ImageSkia())));
   } else {
     DecodeWallpaper(std::move(data), std::move(callback));
   }
@@ -684,15 +681,14 @@ void WallpaperController::SetDefaultWallpaperImpl(
     file_path = command_line->GetSwitchValuePath(switch_string);
   }
 
-  // We need to decode the image if the cached default wallpaper doesn't exist,
-  // or if the two file paths don't match; otherwise, directly run the callback
-  // with the cached decoded image.
-  if (default_wallpaper_image_.get() &&
-      default_wallpaper_image_->file_path() == file_path) {
+  // We need to decode the image if there's no cache, or if the file path
+  // doesn't match the cached value (i.e. the cache is outdated). Otherwise,
+  // directly run the callback with the cached image.
+  if (!cached_default_wallpaper_.image.isNull() &&
+      cached_default_wallpaper_.file_path == file_path) {
     OnDefaultWallpaperDecoded(file_path, layout, show_wallpaper,
-                              std::move(default_wallpaper_image_));
+                              cached_default_wallpaper_.image);
   } else {
-    default_wallpaper_image_.reset();
     ReadAndDecodeWallpaper(
         base::Bind(&WallpaperController::OnDefaultWallpaperDecoded,
                    weak_factory_.GetWeakPtr(), file_path, layout,
@@ -1330,9 +1326,9 @@ void WallpaperController::InitializePathsForTesting() {
 }
 
 void WallpaperController::ShowDefaultWallpaperForTesting() {
-  default_wallpaper_image_.reset(
-      new user_manager::UserImage(CreateSolidColorWallpaper()));
-  SetWallpaperImage(default_wallpaper_image_->image(),
+  cached_default_wallpaper_.image = CreateSolidColorWallpaper();
+  cached_default_wallpaper_.file_path.clear();
+  SetWallpaperImage(cached_default_wallpaper_.image,
                     wallpaper::WallpaperInfo(
                         "", wallpaper::WALLPAPER_LAYOUT_STRETCH,
                         wallpaper::DEFAULT, base::Time::Now().LocalMidnight()));
@@ -1553,28 +1549,25 @@ void WallpaperController::OnDefaultWallpaperDecoded(
     const base::FilePath& path,
     wallpaper::WallpaperLayout layout,
     bool show_wallpaper,
-    std::unique_ptr<user_manager::UserImage> user_image) {
-  if (user_image->image().isNull()) {
+    const gfx::ImageSkia& image) {
+  if (image.isNull()) {
     // Create a solid color wallpaper if the default wallpaper decoding fails.
-    default_wallpaper_image_.reset(
-        new user_manager::UserImage(CreateSolidColorWallpaper()));
+    cached_default_wallpaper_.image = CreateSolidColorWallpaper();
+    cached_default_wallpaper_.file_path.clear();
   } else {
-    default_wallpaper_image_ = std::move(user_image);
-    // Make sure the file path is updated.
-    // TODO(crbug.com/776464): Use |ImageSkia| and |FilePath| directly to cache
-    // the decoded image and file path. Nothing else in |UserImage| is relevant.
-    default_wallpaper_image_->set_file_path(path);
+    cached_default_wallpaper_.image = image;
+    cached_default_wallpaper_.file_path = path;
   }
 
   if (show_wallpaper) {
     // 1x1 wallpaper is actually solid color, so it should be stretched.
-    if (default_wallpaper_image_->image().width() == 1 &&
-        default_wallpaper_image_->image().height() == 1) {
+    if (cached_default_wallpaper_.image.width() == 1 &&
+        cached_default_wallpaper_.image.height() == 1) {
       layout = wallpaper::WALLPAPER_LAYOUT_STRETCH;
     }
-    WallpaperInfo info(default_wallpaper_image_->file_path().value(), layout,
+    WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
-    SetWallpaperImage(default_wallpaper_image_->image(), info);
+    SetWallpaperImage(cached_default_wallpaper_.image, info);
   }
 }
 
@@ -1651,19 +1644,18 @@ void WallpaperController::OnWallpaperDecoded(
     const base::FilePath& path,
     const wallpaper::WallpaperInfo& info,
     bool show_wallpaper,
-    std::unique_ptr<user_manager::UserImage> user_image) {
+    const gfx::ImageSkia& image) {
   // Empty image indicates decode failure. Use default wallpaper in this case.
-  if (user_image->image().isNull()) {
+  if (image.isNull()) {
     LOG(ERROR) << "Failed to decode user wallpaper at " << path.value()
                << " Falls back to default wallpaper. ";
     SetDefaultWallpaperImpl(account_id, user_type, show_wallpaper);
     return;
   }
 
-  wallpaper_cache_map_[account_id] =
-      CustomWallpaperElement(path, user_image->image());
+  wallpaper_cache_map_[account_id] = CustomWallpaperElement(path, image);
   if (show_wallpaper)
-    SetWallpaperImage(user_image->image(), info);
+    SetWallpaperImage(image, info);
 }
 
 void WallpaperController::ReloadWallpaper(bool clear_cache) {
@@ -1779,13 +1771,13 @@ void WallpaperController::SetDevicePolicyWallpaper() {
 }
 
 void WallpaperController::OnDevicePolicyWallpaperDecoded(
-    std::unique_ptr<user_manager::UserImage> device_wallpaper_image) {
+    const gfx::ImageSkia& image) {
   // It might be possible that the device policy controlled wallpaper finishes
   // decoding after the user logs in. In this case do nothing.
   if (!ShouldSetDevicePolicyWallpaper())
     return;
 
-  if (device_wallpaper_image->image().isNull()) {
+  if (image.isNull()) {
     // If device policy wallpaper failed decoding, fall back to the default
     // wallpaper.
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
@@ -1794,7 +1786,7 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     WallpaperInfo info(GetDevicePolicyWallpaperFilePath().value(),
                        wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
                        wallpaper::DEVICE, base::Time::Now().LocalMidnight());
-    SetWallpaperImage(device_wallpaper_image->image(), info);
+    SetWallpaperImage(image, info);
   }
 }
 

@@ -9,14 +9,14 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 
-namespace user_manager {
-class UserImage;
+namespace gfx {
+class ImageSkia;
 }
 
 namespace ash {
 
-using OnWallpaperDecoded = base::OnceCallback<void(
-    std::unique_ptr<user_manager::UserImage> user_image)>;
+using OnWallpaperDecoded =
+    base::OnceCallback<void(const gfx::ImageSkia& image)>;
 
 // Do an async wallpaper decode; |on_decoded| is run on the calling thread when
 // the decode has finished.
