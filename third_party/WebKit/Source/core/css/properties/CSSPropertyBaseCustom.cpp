@@ -76,29 +76,6 @@ const CSSProperty& CSSProperty::ResolveStartToPhysicalProperty(
   return *shorthand_properties[kBottomSide];
 }
 
-WTF::String CSSProperty::GetJSPropertyName() const {
-  char result[maxCSSPropertyNameLength + 1];
-  const char* cssPropertyName = GetPropertyName();
-  const char* propertyNamePointer = cssPropertyName;
-  if (!propertyNamePointer)
-    return g_empty_string;
-
-  char* resultPointer = result;
-  while (char character = *propertyNamePointer++) {
-    if (character == '-') {
-      char nextCharacter = *propertyNamePointer++;
-      if (!nextCharacter)
-        break;
-      character = (propertyNamePointer - 2 != cssPropertyName)
-                      ? ToASCIIUpper(nextCharacter)
-                      : nextCharacter;
-    }
-    *resultPointer++ = character;
-  }
-  *resultPointer = '\0';
-  return String(result);
-}
-
 const CSSValue* CSSProperty::CSSValueFromComputedStyle(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
