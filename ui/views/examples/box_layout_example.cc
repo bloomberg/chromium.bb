@@ -422,8 +422,8 @@ void BoxLayoutExample::UpdateLayoutManager() {
       main_axis_alignment_->selected_index()));
   layout->SetDefaultFlex(default_flex);
   layout->set_minimum_cross_axis_size(min_cross_size);
-  UpdateBorderInsets();
   layout_ = box_layout_panel_->SetLayoutManager(std::move(layout));
+  UpdateBorderInsets();
   for (int i = 0; i < box_layout_panel_->child_count(); ++i) {
     ChildPanel* panel =
         static_cast<ChildPanel*>(box_layout_panel_->child_at(i));
