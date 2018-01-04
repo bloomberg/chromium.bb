@@ -39,7 +39,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
   // Tries to add a mapping. (Takes ownership of the mapping in all cases; on
   // failure, it will be destroyed.)
   MojoResult AddMapping(std::unique_ptr<PlatformSharedBufferMapping> mapping);
-  MojoResult RemoveMapping(void* address);
+  MojoResult RemoveMapping(
+      void* address,
+      std::unique_ptr<PlatformSharedBufferMapping>* mapping);
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);

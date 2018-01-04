@@ -1005,8 +1005,14 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
 
 MojoResult Core::UnmapBuffer(void* buffer) {
   RequestContext request_context;
-  base::AutoLock lock(mapping_table_lock_);
-  return mapping_table_.RemoveMapping(buffer);
+  std::unique_ptr<PlatformSharedBufferMapping> mapping;
+  MojoResult result;
+  // Destroy |mapping| while not holding the lock.
+  {
+    base::AutoLock lock(mapping_table_lock_);
+    result = mapping_table_.RemoveMapping(buffer, &mapping);
+  }
+  return result;
 }
 
 MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
