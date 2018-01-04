@@ -57,17 +57,27 @@ def split_footers(message):
   """Returns (non_footer_lines, footer_lines, parsed footers).
 
   Guarantees that:
-    (non_footer_lines + footer_lines) == message.splitlines().
+    (non_footer_lines + footer_lines) ~= message.splitlines(), with at
+      most one new newline, if the last paragraph is text followed by footers.
     parsed_footers is parse_footer applied on each line of footer_lines.
       There could be fewer parsed_footers than footer lines if some lines in
       last paragraph are malformed.
   """
   message_lines = list(message.splitlines())
   footer_lines = []
+  maybe_footer_lines = []
   for line in reversed(message_lines):
     if line == '' or line.isspace():
       break
-    footer_lines.append(line)
+    elif parse_footer(line):
+      footer_lines.extend(maybe_footer_lines)
+      maybe_footer_lines = []
+      footer_lines.append(line)
+    else:
+      # We only want to include malformed lines if they are preceeded by
+      # well-formed lines. So keep them in holding until we see a well-formed
+      # line (case above).
+      maybe_footer_lines.append(line)
   else:
     # The whole description was consisting of footers,
     # which means those aren't footers.
@@ -77,6 +87,10 @@ def split_footers(message):
   footers = filter(None, map(parse_footer, footer_lines))
   if not footers:
     return message_lines, [], []
+  if maybe_footer_lines:
+    # If some malformed lines were left over, add a newline to split them
+    # from the well-formed ones.
+    return message_lines[:-len(footer_lines)] + [''], footer_lines, footers
   return message_lines[:-len(footer_lines)], footer_lines, footers
 
 

@@ -107,6 +107,27 @@ My commit message is my best friend. It is my life. I must master it.
                      {'Followed': ['by'],
                       'Some': ['footers']})
 
+  def testSplittingLastParagraph(self):
+    message = ('Title.\n'
+               '\n'
+               'The final paragraph has some normal text first.\n'
+               'Followed: by\n'
+               'nonsense trailers and\n'
+               'Some: footers')
+    self.assertEqual(git_footers.split_footers(message),
+                     (['Title.',
+                       '',
+                       'The final paragraph has some normal text first.',
+                       ''],
+                      ['Followed: by',
+                       'nonsense trailers and',
+                       'Some: footers'],
+                      [('Followed', 'by'),
+                       ('Some', 'footers')]))
+    self.assertEqual(git_footers.parse_footers(message),
+                     {'Followed': ['by'],
+                      'Some': ['footers']})
+
   def testGetFooterChangeId(self):
     msg = '\n'.join(['whatever',
                      '',
