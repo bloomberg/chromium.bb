@@ -86,7 +86,6 @@ class MenuButtonTest : public ViewsTestBase {
     return gfx::Point(button_->x() - 1, button_->y() - 1);
   }
 
- private:
   void CreateMenuButton(MenuButtonListener* menu_button_listener) {
     CreateWidget();
     generator_.reset(new ui::test::EventGenerator(widget_->GetNativeWindow()));
@@ -687,6 +686,40 @@ TEST_F(MenuButtonTest,
   menu_button_listener.ReleasePressedLock();
 
   EXPECT_FALSE(ink_drop()->is_hovered());
+}
+
+class DestroyButtonInGestureListener : public MenuButtonListener {
+ public:
+  DestroyButtonInGestureListener() {
+    menu_button_ = std::make_unique<MenuButton>(base::string16(), this, true);
+  }
+
+  ~DestroyButtonInGestureListener() override = default;
+
+  MenuButton* menu_button() { return menu_button_.get(); }
+
+ private:
+  // MenuButtonListener:
+  void OnMenuButtonClicked(MenuButton* source,
+                           const gfx::Point& point,
+                           const ui::Event* event) override {
+    menu_button_.reset();
+  }
+
+  std::unique_ptr<MenuButton> menu_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(DestroyButtonInGestureListener);
+};
+
+// This test ensures there isn't a UAF in MenuButton::OnGestureEvent() if
+// the MenuButtonListener::OnMenuButtonClicked() deletes the MenuButton.
+TEST_F(MenuButtonTest, DestroyButtonInGesture) {
+  DestroyButtonInGestureListener listener;
+  ui::GestureEvent gesture_event(0, 0, 0, base::TimeTicks::Now(),
+                                 ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  CreateWidget();
+  widget_->SetContentsView(listener.menu_button());
+  listener.menu_button()->OnGestureEvent(&gesture_event);
 }
 
 }  // namespace views
