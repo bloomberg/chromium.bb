@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // https://rawgit.com/w3c/keyboard-lock/gh-pages/index.html.
-// TODO(zijiehe, garykac): Update the spec to match the implementation.
+// TODO(joedow, garykac): Update the spec to match the implementation.
 // 1. "System" should be removed from both the function names: these functions
 //    are not for system keys or key combinations only.
 //    See https://github.com/w3c/keyboard-lock/issues/6

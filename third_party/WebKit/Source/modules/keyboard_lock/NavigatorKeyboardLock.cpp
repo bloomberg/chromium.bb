@@ -42,7 +42,7 @@ ScriptPromise NavigatorKeyboardLock::requestKeyboardLock(
     const Vector<String>& keycodes) {
   DCHECK(state);
   if (request_keylock_resolver_) {
-    // TODO(zijiehe): Reject with a DOMException once it has been defined in the
+    // TODO(joedow): Reject with a DOMException once it has been defined in the
     // spec. See https://github.com/w3c/keyboard-lock/issues/18.
     return ScriptPromise::Reject(
         state, V8String(state->GetIsolate(),
@@ -91,12 +91,13 @@ bool NavigatorKeyboardLock::EnsureServiceConnected() {
 void NavigatorKeyboardLock::LockRequestFinished(
     mojom::KeyboardLockRequestResult result) {
   DCHECK(request_keylock_resolver_);
-  // TODO(zijiehe): Reject with a DOMException once it has been defined in the
+  // TODO(joedow): Reject with a DOMException once it has been defined in the
   // spec.
-  if (result == mojom::KeyboardLockRequestResult::SUCCESS)
+  if (result == mojom::KeyboardLockRequestResult::SUCCESS) {
     request_keylock_resolver_->Resolve();
-  else
+  } else {
     request_keylock_resolver_->Reject();
+  }
   request_keylock_resolver_ = nullptr;
 }
 
