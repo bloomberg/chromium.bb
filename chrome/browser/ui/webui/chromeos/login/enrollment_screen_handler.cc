@@ -707,13 +707,16 @@ void EnrollmentScreenHandler::DoShow() {
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
-  signin_partition_manager->StartSigninSession(web_ui()->GetWebContents());
+  signin_partition_manager->StartSigninSession(
+      web_ui()->GetWebContents(),
+      base::BindOnce(&EnrollmentScreenHandler::DoShowWithPartition,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
-  // Then leave it running forever.
+void EnrollmentScreenHandler::DoShowWithPartition(
+    const std::string& partition_name) {
   base::DictionaryValue screen_data;
-  screen_data.SetString(
-      "webviewPartitionName",
-      signin_partition_manager->GetCurrentStoragePartitionName());
+  screen_data.SetString("webviewPartitionName", partition_name);
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetString("clientId",
                         GaiaUrls::GetInstance()->oauth2_chrome_client_id());

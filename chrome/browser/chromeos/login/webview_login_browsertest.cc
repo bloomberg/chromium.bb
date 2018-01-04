@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -17,8 +18,12 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/test/local_policy_test_server.h"
+#include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -27,9 +32,15 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/onc/onc_constants.h"
 #include "components/onc/onc_pref_names.h"
+#include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/core/common/policy_switches.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -96,6 +107,12 @@ std::string GetAllCookies(content::StoragePartition* storage_partition) {
       base::BindOnce(&GetAllCookiesCallback, &cookies, run_loop.QuitClosure()));
   run_loop.Run();
   return cookies;
+}
+
+void PolicyChangedCallback(base::RepeatingClosure callback,
+                           const base::Value* old_value,
+                           const base::Value* new_value) {
+  callback.Run();
 }
 
 // Spins the loop until a notification is received from |prefs| that the value
@@ -396,6 +413,9 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
         std::move(fake_session_manager_client));
     device_policy_test_helper_.InstallOwnerKey();
     device_policy_test_helper_.MarkAsEnterpriseOwned();
+
+    fake_session_manager_client_->set_device_policy(
+        device_policy_test_helper_.device_policy()->GetBlob());
 
     WebviewLoginTest::SetUpInProcessBrowserTestFixture();
   }
@@ -721,4 +741,191 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   EXPECT_EQ("got no client cert", https_reply_content);
 }
 
+class WebviewProxyAuthLoginTest : public WebviewLoginTest {
+ public:
+  WebviewProxyAuthLoginTest()
+      : auth_proxy_server_(std::make_unique<net::SpawnedTestServer>(
+            net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
+            base::FilePath())) {}
+
+ protected:
+  void SetUp() override {
+    // Start proxy server
+    auth_proxy_server_->set_redirect_connect_to_localhost(true);
+    ASSERT_TRUE(auth_proxy_server_->Start());
+
+    // Prepare device policy which will be used for two purposes:
+    // - given to |fake_session_manager_client_|, so the device appears to have
+    //   registered for policy.
+    // - the payload is given to |policy_test_server_|, so we can download fresh
+    //   policy.
+    device_policy_test_helper_.device_policy()
+        ->policy_data()
+        .set_public_key_version(1);
+    device_policy_test_helper_.device_policy()->Build();
+
+    // Start policy server. Use the DMToken and DeviceId from PolicyBuilder.
+    // These also used in |device_policy_test_helper_| and was passed to
+    // |fake_session_manager_client_| above, so the device will request policy
+    // with these identifiers.
+    policy_test_server_.RegisterClient(policy::PolicyBuilder::kFakeToken,
+                                       policy::PolicyBuilder::kFakeDeviceId);
+    UpdateServedPolicyFromDevicePolicyTestHelper();
+    ASSERT_TRUE(policy_test_server_.Start());
+
+    WebviewLoginTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        ::switches::kProxyServer,
+        auth_proxy_server_->host_port_pair().ToString());
+    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
+                                    policy_test_server_.GetServiceURL().spec());
+    WebviewLoginTest::SetUpCommandLine(command_line);
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    WebviewLoginTest::SetUpInProcessBrowserTestFixture();
+
+    // Use a fake SessionManagerClient to be able to pretend that the device has
+    // been enrolled and registered for policy (and has a device DMToken).
+    auto fake_session_manager_client =
+        std::make_unique<FakeSessionManagerClient>();
+    fake_session_manager_client_ = fake_session_manager_client.get();
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::move(fake_session_manager_client));
+    device_policy_test_helper_.InstallOwnerKey();
+    device_policy_test_helper_.MarkAsEnterpriseOwned();
+
+    fake_session_manager_client_->set_device_policy(
+        device_policy_builder()->GetBlob());
+
+    // Set some fake state keys to make sure they are not empty.
+    std::vector<std::string> state_keys;
+    state_keys.push_back("1");
+    fake_session_manager_client_->set_server_backed_state_keys(state_keys);
+  }
+
+  void SetUpOnMainThread() override {
+    // Setup the observer reacting on NOTIFICATION_AUTH_NEEDED before the test
+    // runs because there is no action we actively trigger to request proxy
+    // authentication. Instead, the sign-in screen automatically shows the gaia
+    // webview, which will request the gaia URL, which leads to a login prompt.
+    auth_needed_wait_loop_ = std::make_unique<base::RunLoop>();
+    auth_needed_observer_ =
+        std::make_unique<content::WindowedNotificationObserver>(
+            chrome::NOTIFICATION_AUTH_NEEDED,
+            base::BindRepeating(&WebviewProxyAuthLoginTest::OnAuthRequested,
+                                base::Unretained(this)));
+
+    WebviewLoginTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    WebviewLoginTest::TearDownOnMainThread();
+
+    auth_needed_observer_.reset();
+    auth_needed_wait_loop_.reset();
+  }
+
+  bool OnAuthRequested(const content::NotificationSource& source,
+                       const content::NotificationDetails& details) {
+    // Only care for notifications originating from the frame which is
+    // displaying gaia.
+    content::WebContents* main_web_contents = GetLoginUI()->GetWebContents();
+    content::WebContents* gaia_frame_web_contents =
+        signin::GetAuthFrameWebContents(main_web_contents, gaia_frame_parent_);
+    LoginHandler* login_handler =
+        content::Details<LoginNotificationDetails>(details)->handler();
+    if (login_handler->GetWebContentsForLogin() != gaia_frame_web_contents)
+      return false;
+
+    gaia_frame_login_handler_ = login_handler;
+    auth_needed_wait_loop_->Quit();
+    return true;
+  }
+
+  // Waits until proxy authentication has been requested by the frame displaying
+  // gaia. Returns the LoginHandler handling this authentication request.
+  LoginHandler* WaitForAuthRequested() {
+    auth_needed_wait_loop_->Run();
+    return gaia_frame_login_handler_;
+  }
+
+  void UpdateServedPolicyFromDevicePolicyTestHelper() {
+    policy_test_server_.UpdatePolicy(
+        policy::dm_protocol::kChromeDevicePolicyType,
+        std::string() /* entity_id */,
+        device_policy_builder()->payload().SerializeAsString());
+  }
+
+  policy::DevicePolicyBuilder* device_policy_builder() {
+    return device_policy_test_helper_.device_policy();
+  }
+
+  content::WindowedNotificationObserver* auth_needed_observer() {
+    return auth_needed_observer_.get();
+  }
+
+ private:
+  std::unique_ptr<content::WindowedNotificationObserver> auth_needed_observer_;
+  std::unique_ptr<base::RunLoop> auth_needed_wait_loop_;
+  // Unowned pointer - set to the LoginHandler of the frame displaying gaia.
+  LoginHandler* gaia_frame_login_handler_ = nullptr;
+
+  // A proxy server which requires authentication using the 'Basic'
+  // authentication method.
+  std::unique_ptr<net::SpawnedTestServer> auth_proxy_server_;
+  policy::LocalPolicyTestServer policy_test_server_;
+  policy::DevicePolicyCrosTestHelper device_policy_test_helper_;
+
+  // FakeDBusThreadManager uses FakeSessionManagerClient.
+  std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
+  // Unowned pointer - owned by DBusThreadManager.
+  chromeos::FakeSessionManagerClient* fake_session_manager_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebviewProxyAuthLoginTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
+  WaitForSigninScreen();
+
+  LoginHandler* login_handler = WaitForAuthRequested();
+
+  // Before entering auth data, make |policy_test_server_| serve a policy that
+  // we can use to detect if policies have been fetched.
+  em::ChromeDeviceSettingsProto& device_policy =
+      device_policy_builder()->payload();
+  device_policy.mutable_device_login_screen_auto_select_certificate_for_urls()
+      ->add_login_screen_auto_select_certificate_rules("test_pattern");
+  UpdateServedPolicyFromDevicePolicyTestHelper();
+
+  policy::PolicyChangeRegistrar policy_change_registrar(
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetPolicyService(),
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                              std::string() /* component_id */));
+
+  // Now enter auth data
+  login_handler->SetAuth(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar"));
+  WaitForGaiaPageLoad();
+
+  base::RunLoop run_loop;
+  policy_change_registrar.Observe(
+      policy::key::kDeviceLoginScreenAutoSelectCertificateForUrls,
+      base::BindRepeating(&PolicyChangedCallback, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // Press the back button at a sign-in screen without pre-existing users to
+  // start a new sign-in attempt.
+  // This will re-load gaia, rotating the StoragePartition. The new
+  // StoragePartition must also have the proxy auth details.
+  JS().Evaluate("$('signin-back-button').fire('tap')");
+  WaitForGaiaPageReload();
+  // Expect that we got back to the identifier page, as there are no known users
+  // so the sign-in screen will not display user pods.
+  ExpectIdentifierPage();
+}
 }  // namespace chromeos

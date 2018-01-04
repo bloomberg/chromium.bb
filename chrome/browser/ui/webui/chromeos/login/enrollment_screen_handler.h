@@ -118,6 +118,9 @@ class EnrollmentScreenHandler
   // Shows the screen.
   void DoShow();
 
+  // Shows the screen.
+  void DoShowWithPartition(const std::string& partition_name);
+
   // Returns true if current visible screen is the enrollment sign-in page.
   bool IsOnEnrollmentScreen() const;
 
