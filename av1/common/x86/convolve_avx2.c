@@ -462,26 +462,21 @@ void av1_convolve_y_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
         const __m256i res_lo_shift = _mm256_sll_epi32(res_lo, left_shift);
         const __m256i res_hi_shift = _mm256_sll_epi32(res_hi, left_shift);
 
+        const __m256i res_01_shift =
+            _mm256_permute2x128_si256(res_lo_shift, res_hi_shift, 0x20);
+        const __m256i res_23_shift =
+            _mm256_permute2x128_si256(res_lo_shift, res_hi_shift, 0x31);
+
         // Accumulate values into the destination buffer
-        __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
+        __m256i *const p = (__m256i *)&dst[i * dst_stride + j];
         if (do_average) {
-          _mm_storeu_si128(p + 0,
-                           _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                         _mm256_castsi256_si128(res_lo_shift)));
-          _mm_storeu_si128(p + 1,
-                           _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                         _mm256_castsi256_si128(res_hi_shift)));
-          _mm_storeu_si128(
-              p + 2, _mm_add_epi32(_mm_loadu_si128(p + 2),
-                                   _mm256_extractf128_si256(res_lo_shift, 1)));
-          _mm_storeu_si128(
-              p + 3, _mm_add_epi32(_mm_loadu_si128(p + 3),
-                                   _mm256_extractf128_si256(res_hi_shift, 1)));
+          _mm256_storeu_si256(
+              p + 0, _mm256_add_epi32(_mm256_load_si256(p + 0), res_01_shift));
+          _mm256_storeu_si256(
+              p + 1, _mm256_add_epi32(_mm256_load_si256(p + 1), res_23_shift));
         } else {
-          _mm_storeu_si128(p + 0, _mm256_castsi256_si128(res_lo_shift));
-          _mm_storeu_si128(p + 1, _mm256_castsi256_si128(res_hi_shift));
-          _mm_storeu_si128(p + 2, _mm256_extractf128_si256(res_lo_shift, 1));
-          _mm_storeu_si128(p + 3, _mm256_extractf128_si256(res_hi_shift, 1));
+          _mm256_storeu_si256(p + 0, res_01_shift);
+          _mm256_storeu_si256(p + 1, res_23_shift);
         }
       }
     }
@@ -593,26 +588,21 @@ void av1_convolve_x_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
         const __m256i res_lo_shift = _mm256_sll_epi32(res_lo_round, left_shift);
         const __m256i res_hi_shift = _mm256_sll_epi32(res_hi_round, left_shift);
 
+        const __m256i res_01_shift =
+            _mm256_permute2x128_si256(res_lo_shift, res_hi_shift, 0x20);
+        const __m256i res_23_shift =
+            _mm256_permute2x128_si256(res_lo_shift, res_hi_shift, 0x31);
+
         // Accumulate values into the destination buffer
-        __m128i *const p = (__m128i *)&dst[i * dst_stride + j];
+        __m256i *const p = (__m256i *)&dst[i * dst_stride + j];
         if (do_average) {
-          _mm_storeu_si128(p + 0,
-                           _mm_add_epi32(_mm_loadu_si128(p + 0),
-                                         _mm256_castsi256_si128(res_lo_shift)));
-          _mm_storeu_si128(p + 1,
-                           _mm_add_epi32(_mm_loadu_si128(p + 1),
-                                         _mm256_castsi256_si128(res_hi_shift)));
-          _mm_storeu_si128(
-              p + 2, _mm_add_epi32(_mm_loadu_si128(p + 2),
-                                   _mm256_extractf128_si256(res_lo_shift, 1)));
-          _mm_storeu_si128(
-              p + 3, _mm_add_epi32(_mm_loadu_si128(p + 3),
-                                   _mm256_extractf128_si256(res_hi_shift, 1)));
+          _mm256_storeu_si256(
+              p + 0, _mm256_add_epi32(_mm256_load_si256(p + 0), res_01_shift));
+          _mm256_storeu_si256(
+              p + 1, _mm256_add_epi32(_mm256_load_si256(p + 1), res_23_shift));
         } else {
-          _mm_storeu_si128(p + 0, _mm256_castsi256_si128(res_lo_shift));
-          _mm_storeu_si128(p + 1, _mm256_castsi256_si128(res_hi_shift));
-          _mm_storeu_si128(p + 2, _mm256_extractf128_si256(res_lo_shift, 1));
-          _mm_storeu_si128(p + 3, _mm256_extractf128_si256(res_hi_shift, 1));
+          _mm256_storeu_si256(p + 0, res_01_shift);
+          _mm256_storeu_si256(p + 1, res_23_shift);
         }
       }
     }
