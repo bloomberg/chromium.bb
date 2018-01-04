@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -19,10 +18,6 @@ class BrowserContext;
 class StoragePartition;
 class WebContents;
 }  // namespace content
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace chromeos {
 namespace login {
@@ -35,12 +30,6 @@ class SigninPartitionManager : public KeyedService {
       base::RepeatingCallback<void(content::StoragePartition* storage_partition,
                                    base::OnceClosure data_cleared)>;
 
-  using GetSystemURLRequestContextGetterTask =
-      base::RepeatingCallback<net::URLRequestContextGetter*()>;
-
-  using StartSigninSessionDoneCallback =
-      base::OnceCallback<void(const std::string& partition_name)>;
-
   explicit SigninPartitionManager(content::BrowserContext* browser_context);
   ~SigninPartitionManager() override;
 
@@ -49,11 +38,7 @@ class SigninPartitionManager : public KeyedService {
   // closed (and cleared).
   // |embedder_web_contents| is the WebContents instance embedding the webview
   // which will display the sign-in pages.
-  // |signin_session_started| will be invoked with the partition name of the
-  // started signin session on completition.
-  void StartSigninSession(
-      const content::WebContents* embedder_web_contents,
-      StartSigninSessionDoneCallback signin_session_started);
+  void StartSigninSession(const content::WebContents* embedder_web_contents);
 
   // Closes the current StoragePartition. All cached data in the
   // StoragePartition is cleared. |partition_data_cleared| will be called when
@@ -81,9 +66,6 @@ class SigninPartitionManager : public KeyedService {
 
   void SetClearStoragePartitionTaskForTesting(
       ClearStoragePartitionTask clear_storage_partition_task);
-  void SetGetSystemURLRequestContextGetterTaskForTesting(
-      GetSystemURLRequestContextGetterTask
-          get_system_url_request_context_getter_task);
 
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
@@ -111,8 +93,6 @@ class SigninPartitionManager : public KeyedService {
   content::BrowserContext* const browser_context_;
 
   ClearStoragePartitionTask clear_storage_partition_task_;
-  GetSystemURLRequestContextGetterTask
-      get_system_url_request_context_getter_task_;
 
   // GuestView StoragePartitions use the host of the embedder site's URL as the
   // domain of their StoragePartition.
