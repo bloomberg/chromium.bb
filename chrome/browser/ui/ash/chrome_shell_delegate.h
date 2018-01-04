@@ -16,6 +16,7 @@
 
 namespace chromeos {
 class DisplayConfigurationObserver;
+class DisplayPrefs;
 }
 
 namespace keyboard {
@@ -54,6 +55,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
   content::NotificationRegistrar registrar_;
 
+  std::unique_ptr<chromeos::DisplayPrefs> display_prefs_;
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;
 

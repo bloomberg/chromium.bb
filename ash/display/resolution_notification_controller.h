@@ -17,7 +17,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace chromeos {
-FORWARD_DECLARE_TEST(DisplayPreferencesTest, PreventStore);
+FORWARD_DECLARE_TEST(DisplayPrefsTest, PreventStore);
 }  // namespace chromeos
 
 namespace ash {
@@ -76,7 +76,7 @@ class ASH_EXPORT ResolutionNotificationController
  private:
   friend class ResolutionNotificationControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ResolutionNotificationControllerTest, Timeout);
-  FRIEND_TEST_ALL_PREFIXES(chromeos::DisplayPreferencesTest, PreventStore);
+  FRIEND_TEST_ALL_PREFIXES(chromeos::DisplayPrefsTest, PreventStore);
 
   // A struct to bundle the data for a single resolution change.
   struct ResolutionChangeInfo;
