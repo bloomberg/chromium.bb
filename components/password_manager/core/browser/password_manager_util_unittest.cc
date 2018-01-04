@@ -59,25 +59,3 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
 
   EXPECT_THAT(forms, UnorderedPasswordFormElementsAre(&expected_forms));
 }
-
-TEST(PasswordManagerUtil, CalculateSyncPasswordHash) {
-  const char* kPlainText[] = {"", "password", "password", "secret"};
-  const char* kSalt[] = {"", "salt", "123", "456"};
-
-  constexpr uint64_t kExpectedHash[] = {
-      UINT64_C(0x1c610a7950), UINT64_C(0x1927dc525e), UINT64_C(0xf72f81aa6),
-      UINT64_C(0x3645af77f),
-  };
-
-  static_assert(arraysize(kPlainText) == arraysize(kSalt),
-                "Arrays must have the same size");
-  static_assert(arraysize(kPlainText) == arraysize(kExpectedHash),
-                "Arrays must have the same size");
-
-  for (size_t i = 0; i < arraysize(kPlainText); ++i) {
-    SCOPED_TRACE(i);
-    base::string16 text = base::UTF8ToUTF16(kPlainText[i]);
-    EXPECT_EQ(kExpectedHash[i],
-              password_manager_util::CalculateSyncPasswordHash(text, kSalt[i]));
-  }
-}

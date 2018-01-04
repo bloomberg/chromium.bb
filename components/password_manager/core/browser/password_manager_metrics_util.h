@@ -10,6 +10,7 @@
 #include <string>
 
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 
 namespace password_manager {
@@ -227,8 +228,7 @@ enum class CredentialSourceType {
   kCredentialManagementAPI
 };
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 enum class SyncPasswordHashChange {
   SAVED_ON_CHROME_SIGNIN,
   SAVED_IN_CONTENT_AREA,
@@ -361,8 +361,7 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Log a save sync password change event.
 void LogSyncPasswordHashChange(SyncPasswordHashChange event);
 

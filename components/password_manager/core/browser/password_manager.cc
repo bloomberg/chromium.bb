@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -824,8 +825,7 @@ void PasswordManager::OnLoginSuccessful() {
   DCHECK(provisional_save_manager_->submitted_form());
   if (!client_->GetStoreResultFilter()->ShouldSave(
           *provisional_save_manager_->submitted_form())) {
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
     // When |username_value| is empty, it's not clear whether the submitted
     // credentials are really sync credentials. Don't save sync password hash
     // in that case.

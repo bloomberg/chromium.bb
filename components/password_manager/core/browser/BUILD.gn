@@ -160,11 +160,8 @@ static_library("browser") {
       "password_reuse_detector_consumer.cc",
       "password_reuse_detector_consumer.h",
     ]
-
-    if (is_win || is_mac || (is_linux && !is_chromeos)) {
+    if (is_win || is_mac || is_linux || is_chromeos) {
       sources += [
-        "hash_password_manager.cc",
-        "hash_password_manager.h",
         "password_store_signin_notifier.cc",
         "password_store_signin_notifier.h",
       ]
@@ -176,6 +173,7 @@ static_library("browser") {
     "//components/sync",
   ]
   deps = [
+    ":hash_password_manager",
     ":proto",
     "//base",
     "//base:i18n",
@@ -193,7 +191,6 @@ static_library("browser") {
     "//components/url_formatter",
     "//components/variations",
     "//components/webdata/common",
-    "//crypto",
     "//google_apis",
     "//net",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -226,6 +223,20 @@ static_library("browser") {
 proto_library("proto") {
   sources = [
     "android_affiliation/affiliation_api.proto",
+  ]
+}
+
+static_library("hash_password_manager") {
+  sources = [
+    "hash_password_manager.cc",
+    "hash_password_manager.h",
+  ]
+  deps = [
+    "//base:base",
+    "//components/os_crypt",
+    "//components/password_manager/core/common",
+    "//components/prefs",
+    "//crypto",
   ]
 }
 
@@ -376,10 +387,13 @@ source_set("unit_tests") {
       "password_reuse_detector_unittest.cc",
     ]
   }
-  if (is_win || is_mac || (is_linux && !is_chromeos)) {
+
+  if (is_win || is_mac || is_linux || is_chromeos) {
     sources += [ "hash_password_manager_unittest.cc" ]
   }
+
   deps = [
+    ":hash_password_manager",
     ":test_support",
     ":unit_tests_bundle_data",
     "//base/test:test_support",

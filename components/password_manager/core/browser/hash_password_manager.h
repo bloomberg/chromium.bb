@@ -14,9 +14,16 @@ class PrefService;
 namespace password_manager {
 
 struct SyncPasswordData {
-  uint64_t hash;
-  std::string salt;
+  SyncPasswordData() = default;
+  SyncPasswordData(const base::string16& password, bool force_update);
+  bool MatchesPassword(const base::string16& password);
+
   size_t length;
+  std::string salt;
+  uint64_t hash;
+  // Signal that we need to update password hash, salt, and length in profile
+  // prefs.
+  bool force_update;
 };
 
 // Responsible for saving, clearing, retrieving and encryption of a sync
@@ -25,21 +32,29 @@ struct SyncPasswordData {
 class HashPasswordManager {
  public:
   HashPasswordManager() = default;
+  explicit HashPasswordManager(PrefService* prefs);
   ~HashPasswordManager() = default;
 
   bool SavePasswordHash(const base::string16& password);
+  bool SavePasswordHash(const SyncPasswordData& sync_password_data);
   void ClearSavedPasswordHash();
 
   // Returns empty if no hash is available.
   base::Optional<SyncPasswordData> RetrievePasswordHash();
 
-  void ReportIsSyncPasswordHashSavedMetric();
+  // Whether |prefs_| has |kSyncPasswordHash| pref path.
+  bool HasPasswordHash();
 
   void set_prefs(PrefService* prefs) { prefs_ = prefs; }
 
- private:
-  std::string CreateRandomSalt();
+  static std::string CreateRandomSalt();
 
+  // Calculates 37 bits hash for a sync password. The calculation is based on a
+  // slow hash function. The running time is ~10^{-4} seconds on Desktop.
+  static uint64_t CalculateSyncPasswordHash(const base::StringPiece16& text,
+                                            const std::string& salt);
+
+ private:
   // Packs |salt| and |password_length| to a string.
   std::string LengthAndSaltToString(const std::string& salt,
                                     size_t password_length);

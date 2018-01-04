@@ -111,6 +111,11 @@ const std::string& UserContext::GetGAPSCookie() const {
   return gaps_cookie_;
 }
 
+const base::Optional<password_manager::SyncPasswordData>&
+UserContext::GetSyncPasswordData() const {
+  return sync_password_data_;
+}
+
 bool UserContext::HasCredentials() const {
   return (account_id_.is_valid() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -174,6 +179,11 @@ void UserContext::SetDeviceId(const std::string& device_id) {
 
 void UserContext::SetGAPSCookie(const std::string& gaps_cookie) {
   gaps_cookie_ = gaps_cookie;
+}
+
+void UserContext::SetSyncPasswordData(
+    const password_manager::SyncPasswordData& sync_password_data) {
+  sync_password_data_ = {sync_password_data};
 }
 
 void UserContext::ClearSecrets() {

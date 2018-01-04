@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -103,7 +103,7 @@ size_t PasswordReuseDetector::CheckSyncPasswordReuse(
   size_t offset = input.size() - sync_password_data_->length;
   base::string16 reuse_candidate = input.substr(offset);
 
-  if (password_manager_util::CalculateSyncPasswordHash(
+  if (HashPasswordManager::CalculateSyncPasswordHash(
           reuse_candidate, sync_password_data_->salt) ==
       sync_password_data_->hash) {
     return reuse_candidate.size();

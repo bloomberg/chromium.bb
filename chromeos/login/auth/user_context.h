@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/auth/key.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_type.h"
 
@@ -63,6 +65,8 @@ class CHROMEOS_EXPORT UserContext {
   const std::string& GetPublicSessionInputMethod() const;
   const std::string& GetDeviceId() const;
   const std::string& GetGAPSCookie() const;
+  const base::Optional<password_manager::SyncPasswordData>&
+  GetSyncPasswordData() const;
 
   bool HasCredentials() const;
 
@@ -81,6 +85,8 @@ class CHROMEOS_EXPORT UserContext {
   void SetPublicSessionInputMethod(const std::string& input_method);
   void SetDeviceId(const std::string& device_id);
   void SetGAPSCookie(const std::string& gaps_cookie);
+  void SetSyncPasswordData(
+      const password_manager::SyncPasswordData& sync_password_data);
 
   void ClearSecrets();
 
@@ -100,6 +106,9 @@ class CHROMEOS_EXPORT UserContext {
   std::string public_session_input_method_;
   std::string device_id_;
   std::string gaps_cookie_;
+
+  // For password reuse detection use.
+  base::Optional<password_manager::SyncPasswordData> sync_password_data_;
 };
 
 }  // namespace chromeos

@@ -3474,9 +3474,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(background_tab_navigation_throttle));
 #endif
 
-// TODO(764520): Remove the OS_CHROMEOS part of the condition once Gaia password
-// reuse feature is enabled on Chrome OS.
-#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_CHROMEOS)
+#if defined(SAFE_BROWSING_DB_LOCAL)
   std::unique_ptr<content::NavigationThrottle>
       password_protection_navigation_throttle =
           safe_browsing::MaybeCreateNavigationThrottle(handle);

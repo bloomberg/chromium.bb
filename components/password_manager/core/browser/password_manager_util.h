@@ -54,11 +54,6 @@ void TrimUsernameOnlyCredentials(
 // and required to always return non-null.
 bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
 
-// Calculates 37 bits hash for a sync password. The calculation is based on a
-// slow hash function. The running time is ~10^{-4} seconds on Desktop.
-uint64_t CalculateSyncPasswordHash(const base::StringPiece16& text,
-                                   const std::string& salt);
-
 // True iff the manual password generation is enabled and the user is sync user
 // without custom passphrase.
 bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service);

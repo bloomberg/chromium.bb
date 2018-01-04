@@ -71,6 +71,7 @@
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -99,6 +100,8 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -1303,6 +1306,25 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   }
 
   UpdateEasyUnlockKeys(user_context_);
+
+  // Save sync password hash and salt to profile prefs if they are available.
+  // These will be used to detect Gaia password reuses.
+  password_manager::metrics_util::IsSyncPasswordHashSaved hash_password_state(
+      password_manager::metrics_util::IsSyncPasswordHashSaved::NOT_SAVED);
+  if (user_context_.GetSyncPasswordData().has_value()) {
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        PasswordStoreFactory::GetForProfile(profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS);
+    if (password_store) {
+      password_store->SaveSyncPasswordHash(
+          user_context_.GetSyncPasswordData().value());
+      hash_password_state =
+          password_manager::metrics_util::IsSyncPasswordHashSaved::SAVED;
+    }
+  }
+  password_manager::metrics_util::LogIsSyncPasswordHashSaved(
+      hash_password_state);
+
   user_context_.ClearSecrets();
   if (TokenHandlesEnabled()) {
     CreateTokenUtilIfMissing();
