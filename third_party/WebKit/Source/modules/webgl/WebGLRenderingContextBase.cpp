@@ -4982,7 +4982,7 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
       scoped_refptr<StaticBitmapImage> image =
           canvas->Canvas2DBuffer()->NewImageSnapshot(
               kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
-      if (!!image && image->CopyImageToPlatformTexture(
+      if (!!image && image->CopyToTexture(
                          ContextGL(), target, target_texture,
                          unpack_premultiply_alpha_, unpack_flip_y_,
                          IntPoint(xoffset, yoffset), source_sub_rectangle)) {
@@ -5059,8 +5059,8 @@ void WebGLRenderingContextBase::TexImageByGPU(
                           copy_y_offset, source_sub_rectangle);
     } else {
       TexImageBitmapByGPU(static_cast<ImageBitmap*>(image), copy_target,
-                          target_texture, !unpack_flip_y_, copy_x_offset,
-                          copy_y_offset, source_sub_rectangle);
+                          target_texture, copy_x_offset, copy_y_offset,
+                          source_sub_rectangle);
     }
   }
 
@@ -5351,7 +5351,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
         scoped_refptr<StaticBitmapImage> image = surface->NewImageSnapshot(
             kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
         if (!!image &&
-            image->CopyImageToPlatformTexture(
+            image->CopyToTexture(
                 ContextGL(), target, texture->Object(),
                 unpack_premultiply_alpha_, unpack_flip_y_, IntPoint(0, 0),
                 IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
@@ -5378,12 +5378,12 @@ void WebGLRenderingContextBase::TexImageBitmapByGPU(
     ImageBitmap* bitmap,
     GLenum target,
     GLuint target_texture,
-    bool flip_y,
     GLint xoffset,
     GLint yoffset,
     const IntRect& source_sub_rect) {
   bitmap->BitmapImage()->CopyToTexture(
-      GetDrawingBuffer()->ContextProvider(), target, target_texture, flip_y,
+      GetDrawingBuffer()->ContextProvider()->ContextGL(), target,
+      target_texture, true /* unpack_premultiply_alpha */, unpack_flip_y_,
       IntPoint(xoffset, yoffset), source_sub_rect);
 }
 
