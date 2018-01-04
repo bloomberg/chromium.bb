@@ -88,30 +88,16 @@ void MessagePort::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
-  channel_.PostMojoMessage(
-      mojom::blink::TransferableMessage::WrapAsMessage(std::move(msg)));
+  mojo::Message mojo_message =
+      mojom::blink::TransferableMessage::WrapAsMessage(std::move(msg));
+  connector_->Accept(&mojo_message);
 }
 
 MessagePortChannel MessagePort::Disentangle() {
   DCHECK(!IsNeutered());
-  channel_.ClearCallback();
-  auto result = std::move(channel_);
-  channel_ = MessagePortChannel();
+  auto result = MessagePortChannel(connector_->PassMessagePipe());
+  connector_ = nullptr;
   return result;
-}
-
-// Invoked to notify us that there are messages available for this port.
-// This code may be called from another thread, and so should not call any
-// non-threadsafe APIs (i.e. should not call into the entangled channel or
-// access mutable variables).
-void MessagePort::MessageAvailable() {
-  // Don't post another task if there's an identical one pending.
-  if (AtomicTestAndSetToOne(&pending_dispatch_task_))
-    return;
-
-  PostCrossThreadTask(*task_runner_, FROM_HERE,
-                      CrossThreadBind(&MessagePort::DispatchMessages,
-                                      WrapCrossThreadPersistent(this)));
 }
 
 void MessagePort::start() {
@@ -123,96 +109,37 @@ void MessagePort::start() {
   if (started_)
     return;
 
-  // Note that MessagePortChannel may call this callback on any thread.
-  channel_.SetCallback(
-      ConvertToBaseCallback(CrossThreadBind(
-          &MessagePort::MessageAvailable, WrapCrossThreadWeakPersistent(this))),
-      task_runner_);
   started_ = true;
-  MessageAvailable();
+  connector_->ResumeIncomingMethodCallProcessing();
 }
 
 void MessagePort::close() {
   // A closed port should not be neutered, so rather than merely disconnecting
   // from the mojo message pipe, also entangle with a new dangling message pipe.
-  channel_.ClearCallback();
-  if (IsEntangled())
-    channel_ = MessagePortChannel(mojo::MessagePipe().handle0);
+  if (!IsNeutered()) {
+    connector_ = nullptr;
+    Entangle(mojo::MessagePipe().handle0);
+  }
   closed_ = true;
 }
 
 void MessagePort::Entangle(mojo::ScopedMessagePipeHandle handle) {
-  Entangle(MessagePortChannel(std::move(handle)));
+  // Only invoked to set our initial entanglement.
+  DCHECK(handle.is_valid());
+  DCHECK(!connector_);
+  DCHECK(GetExecutionContext());
+  connector_ = std::make_unique<mojo::Connector>(
+      std::move(handle), mojo::Connector::SINGLE_THREADED_SEND, task_runner_);
+  connector_->PauseIncomingMethodCallProcessing();
+  connector_->set_incoming_receiver(this);
 }
 
 void MessagePort::Entangle(MessagePortChannel channel) {
-  // Only invoked to set our initial entanglement.
-  DCHECK(!channel_.GetHandle().is_valid());
-  DCHECK(channel.GetHandle().is_valid());
-  DCHECK(GetExecutionContext());
-
-  channel_ = std::move(channel);
+  Entangle(channel.ReleaseHandle());
 }
 
 const AtomicString& MessagePort::InterfaceName() const {
   return EventTargetNames::MessagePort;
-}
-
-bool MessagePort::TryGetMessage(BlinkTransferableMessage& message) {
-  if (IsNeutered())
-    return false;
-
-  mojo::Message mojo_message;
-  if (!channel_.GetMojoMessage(&mojo_message))
-    return false;
-
-  if (!mojom::blink::TransferableMessage::DeserializeFromMessage(
-          std::move(mojo_message), &message)) {
-    return false;
-  }
-
-  return true;
-}
-
-void MessagePort::DispatchMessages() {
-  // Signal to |MessageAvailable()| that there are no ongoing
-  // dispatches of messages. This can cause redundantly posted
-  // tasks, but safely avoids messages languishing.
-  ReleaseStore(&pending_dispatch_task_, 0);
-
-  // Messages for contexts that are not fully active get dispatched too, but
-  // JSAbstractEventListener::handleEvent() doesn't call handlers for these.
-  // The HTML5 spec specifies that any messages sent to a document that is not
-  // fully active should be dropped, so this behavior is OK.
-  if (!Started())
-    return;
-
-  // There's an upper bound on the loop iterations in one DispatchMessages call,
-  // otherwise page JS could make it loop forever or starve other work.
-  for (int i = 0; i < kMaximumMessagesPerTask; ++i) {
-    // Because close() doesn't cancel any in flight calls to dispatchMessages(),
-    // and can be triggered by the onmessage event handler, we need to check if
-    // the port is still open before each dispatch.
-    if (closed_)
-      break;
-
-    // WorkerGlobalScope::close() in Worker onmessage handler should prevent
-    // the next message from dispatching.
-    if (GetExecutionContext()->IsWorkerGlobalScope() &&
-        ToWorkerGlobalScope(GetExecutionContext())->IsClosing()) {
-      break;
-    }
-
-    BlinkTransferableMessage message;
-    if (!TryGetMessage(message))
-      break;
-
-    MessagePortArray* ports = MessagePort::EntanglePorts(
-        *GetExecutionContext(), std::move(message.ports));
-    Event* evt = MessageEvent::Create(ports, std::move(message.message));
-
-    DispatchEvent(evt);
-  }
 }
 
 bool MessagePort::HasPendingActivity() const {
@@ -285,12 +212,55 @@ MessagePortArray* MessagePort::EntanglePorts(
 }
 
 MojoHandle MessagePort::EntangledHandleForTesting() const {
-  return channel_.GetHandle().get().value();
+  return connector_->handle().value();
 }
 
 void MessagePort::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
+}
+
+bool MessagePort::Accept(mojo::Message* mojo_message) {
+  // Connector repeatedly calls Accept as long as any messages are available. To
+  // avoid completely starving the event loop and give some time for other tasks
+  // the connector is temporarily paused after |kMaximumMessagesPerTask| have
+  // been received without other tasks having had a chance to run (in particular
+  // the ResetMessageCount task posted here).
+  if (messages_in_current_task_ == 0) {
+    task_runner_->PostTask(FROM_HERE, WTF::Bind(&MessagePort::ResetMessageCount,
+                                                WrapWeakPersistent(this)));
+  }
+  ++messages_in_current_task_;
+  if (messages_in_current_task_ > kMaximumMessagesPerTask) {
+    connector_->PauseIncomingMethodCallProcessing();
+  }
+
+  BlinkTransferableMessage message;
+  if (!mojom::blink::TransferableMessage::DeserializeFromMessage(
+          std::move(*mojo_message), &message)) {
+    return false;
+  }
+
+  // WorkerGlobalScope::close() in Worker onmessage handler should prevent
+  // the next message from dispatching.
+  if (GetExecutionContext()->IsWorkerGlobalScope() &&
+      ToWorkerGlobalScope(GetExecutionContext())->IsClosing()) {
+    return true;
+  }
+
+  MessagePortArray* ports = MessagePort::EntanglePorts(
+      *GetExecutionContext(), std::move(message.ports));
+  Event* evt = MessageEvent::Create(ports, std::move(message.message));
+  DispatchEvent(evt);
+  return true;
+}
+
+void MessagePort::ResetMessageCount() {
+  DCHECK_GT(messages_in_current_task_, 0);
+  messages_in_current_task_ = 0;
+  // No-op if not paused already.
+  if (connector_)
+    connector_->ResumeIncomingMethodCallProcessing();
 }
 
 }  // namespace blink

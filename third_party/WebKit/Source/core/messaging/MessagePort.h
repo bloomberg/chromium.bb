@@ -42,13 +42,13 @@
 
 namespace blink {
 
-struct BlinkTransferableMessage;
 class ExceptionState;
 class ExecutionContext;
 class ScriptState;
 class SerializedScriptValue;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
+                                public mojo::MessageReceiver,
                                 public ActiveScriptWrappable<MessagePort>,
                                 public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
@@ -119,7 +119,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   // A port gets neutered when it is transferred to a new owner via
   // postMessage().
-  bool IsNeutered() const { return !channel_.GetHandle().is_valid(); }
+  bool IsNeutered() const { return !connector_ || !connector_->is_valid(); }
 
   // For testing only: allows inspection of the entangled channel.
   MojoHandle EntangledHandleForTesting() const;
@@ -128,15 +128,15 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
  protected:
   explicit MessagePort(ExecutionContext&);
-  bool TryGetMessage(BlinkTransferableMessage&);
 
  private:
-  void MessageAvailable();
-  void DispatchMessages();
+  // mojo::MessageReceiver implementation.
+  bool Accept(mojo::Message*) override;
+  void ResetMessageCount();
 
-  MessagePortChannel channel_;
+  std::unique_ptr<mojo::Connector> connector_;
+  int messages_in_current_task_ = 0;
 
-  int pending_dispatch_task_ = 0;
   bool started_ = false;
   bool closed_ = false;
 
