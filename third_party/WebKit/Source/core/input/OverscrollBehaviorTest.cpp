@@ -19,12 +19,12 @@ class OverscrollBehaviorTest : public SimTest {
   void SetUp() override;
 
   void SetInnerOverscrollBehavior(EOverscrollBehavior, EOverscrollBehavior);
-  void Scroll(double x, double y);
 
- private:
-  WebGestureEvent ScrollBegin(double hint_x, double hint_y);
-  WebGestureEvent ScrollUpdate(double delta_x, double delta_y);
-  WebGestureEvent ScrollEnd();
+  void ScrollBegin(double hint_x, double hint_y);
+  void ScrollUpdate(double x, double y);
+  void ScrollEnd();
+
+  void Scroll(double x, double y);
 };
 
 void OverscrollBehaviorTest::SetUp() {
@@ -66,17 +66,7 @@ void OverscrollBehaviorTest::SetInnerOverscrollBehavior(EOverscrollBehavior x,
   inner->MutableComputedStyle()->SetOverscrollBehaviorY(y);
 }
 
-void OverscrollBehaviorTest::Scroll(double x, double y) {
-  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(
-      ScrollBegin(x, y));
-  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(
-      ScrollUpdate(x, y));
-  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(
-      ScrollEnd());
-}
-
-WebGestureEvent OverscrollBehaviorTest::ScrollBegin(double hint_x,
-                                                    double hint_y) {
+void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollBegin,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks().InSeconds());
@@ -87,11 +77,10 @@ WebGestureEvent OverscrollBehaviorTest::ScrollBegin(double hint_x,
   event.data.scroll_begin.delta_y_hint = -hint_y;
   event.data.scroll_begin.pointer_count = 1;
   event.SetFrameScale(1);
-  return event;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(event);
 }
 
-WebGestureEvent OverscrollBehaviorTest::ScrollUpdate(double delta_x,
-                                                     double delta_y) {
+void OverscrollBehaviorTest::ScrollUpdate(double delta_x, double delta_y) {
   WebGestureEvent event(WebInputEvent::kGestureScrollUpdate,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks().InSeconds());
@@ -101,17 +90,23 @@ WebGestureEvent OverscrollBehaviorTest::ScrollUpdate(double delta_x,
   event.data.scroll_update.delta_x = -delta_x;
   event.data.scroll_update.delta_y = -delta_y;
   event.SetFrameScale(1);
-  return event;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(event);
 }
 
-WebGestureEvent OverscrollBehaviorTest::ScrollEnd() {
+void OverscrollBehaviorTest::ScrollEnd() {
   WebGestureEvent event(WebInputEvent::kGestureScrollEnd,
                         WebInputEvent::kNoModifiers,
                         CurrentTimeTicks().InSeconds());
   event.x = event.global_x = 20;
   event.y = event.global_y = 20;
   event.source_device = WebGestureDevice::kWebGestureDeviceTouchscreen;
-  return event;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureScrollEvent(event);
+}
+
+void OverscrollBehaviorTest::Scroll(double x, double y) {
+  ScrollBegin(x, y);
+  ScrollUpdate(x, y);
+  ScrollEnd();
 }
 
 TEST_F(OverscrollBehaviorTest, AutoAllowsPropagation) {
@@ -175,6 +170,21 @@ TEST_F(OverscrollBehaviorTest, ContainOnYPreventsDiagonalPropagations) {
   Element* outer = GetDocument().getElementById("outer");
   ASSERT_EQ(outer->scrollLeft(), 200);
   ASSERT_EQ(outer->scrollTop(), 200);
+}
+
+TEST_F(OverscrollBehaviorTest, LatchToTheElementPreventedByOverscrollBehavior) {
+  SetInnerOverscrollBehavior(EOverscrollBehavior::kNone,
+                             EOverscrollBehavior::kNone);
+  ScrollBegin(-100, 0);
+  ScrollUpdate(-100, 0);
+  ScrollUpdate(100, 0);
+  ScrollUpdate(0, -100);
+  ScrollUpdate(0, 100);
+  ScrollEnd();
+
+  Element* inner = GetDocument().getElementById("inner");
+  ASSERT_EQ(inner->scrollLeft(), 100);
+  ASSERT_EQ(inner->scrollTop(), 100);
 }
 
 }  // namespace blink
