@@ -1,0 +1,21 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+import "components/sync/mojo/syncer.mojom";
+
+// A structure holding the common information of AppListItem and
+// ChromeAppListItem, which is sent between ash and chrome representing
+// an app list item.
+// This structure should be kept as small as possible so that minimum data
+// is sent via mojo calls when an item is moved or reparented.
+struct AppListItemMetadata {
+  string id;        // The id of the app list item.
+  string name;      // The app name of the item.
+  string folder_id; // The id of the item's folder.
+  syncer.mojom.StringOrdinal position; // The position of the item.
+  bool is_folder;   // Whether this item is a folder.
+};
+

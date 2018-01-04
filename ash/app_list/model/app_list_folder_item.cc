@@ -18,6 +18,7 @@ AppListFolderItem::AppListFolderItem(const std::string& id,
       item_list_(new AppListItemList),
       folder_image_(item_list_.get()) {
   folder_image_.AddObserver(this);
+  set_is_folder(true);
 }
 
 AppListFolderItem::~AppListFolderItem() {
