@@ -86,8 +86,89 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize column_size = CalculateColumnSize(content_box_size);
 
-  scoped_refptr<NGConstraintSpace> child_space =
-      CreateConstraintSpaceForColumns(column_size);
+  WritingMode writing_mode = ConstraintSpace().GetWritingMode();
+  LayoutUnit column_block_offset(border_scrollbar_padding.block_start);
+  LayoutUnit column_inline_progression =
+      column_size.inline_size + ResolveUsedColumnGap(Style());
+  int used_column_count =
+      ResolveUsedColumnCount(content_box_size.inline_size, Style());
+
+  do {
+    scoped_refptr<NGConstraintSpace> child_space =
+        CreateConstraintSpaceForColumns(column_size);
+    scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
+    LayoutUnit intrinsic_block_size;
+    LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
+    int actual_column_count = 0;
+    int forced_break_count = 0;
+
+    // Each column should calculate their own minimal space shortage. Find the
+    // lowest value of those. This will serve as the column stretch amount, if
+    // we determine that stretching them is necessary and possible (column
+    // balancing).
+    LayoutUnit minimal_space_shortage(LayoutUnit::Max());
+
+    do {
+      // Lay out one column. Each column will become a fragment.
+      NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
+                                             break_token.get());
+      scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
+      scoped_refptr<NGPhysicalBoxFragment> column(
+          ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
+
+      NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
+      container_builder_.AddChild(result, logical_offset);
+
+      LayoutUnit space_shortage = result->MinimalSpaceShortage();
+      if (space_shortage > LayoutUnit()) {
+        minimal_space_shortage =
+            std::min(minimal_space_shortage, space_shortage);
+      }
+      actual_column_count++;
+      if (result->HasForcedBreak())
+        forced_break_count++;
+
+      LayoutUnit block_size = NGBoxFragment(writing_mode, *column).BlockSize();
+      intrinsic_block_size =
+          std::max(intrinsic_block_size, column_block_offset + block_size);
+
+      column_inline_offset += column_inline_progression;
+      break_token = ToNGBlockBreakToken(column->BreakToken());
+    } while (break_token && !break_token->IsFinished());
+
+    // If we overflowed (actual column count larger than what we have room for),
+    // and we're supposed to calculate the column lengths automatically (column
+    // balancing), see if we're able to stretch them.
+    //
+    // We can only stretch the columns if we have at least one column that could
+    // take more content, and we also need to know the stretch amount (minimal
+    // space shortage). We need at least one soft break opportunity to do
+    // this. If forced breaks cause too many breaks, there's no stretch amount
+    // that could prevent the actual column count from overflowing.
+    if (actual_column_count > used_column_count &&
+        actual_column_count > forced_break_count + 1 &&
+        minimal_space_shortage != LayoutUnit::Max()) {
+      LayoutUnit new_column_block_size =
+          StretchColumnBlockSize(minimal_space_shortage, column_size.block_size,
+                                 content_box_size.block_size);
+
+      DCHECK_GE(new_column_block_size, column_size.block_size);
+      if (new_column_block_size > column_size.block_size) {
+        // Re-attempt layout with taller columns.
+        column_size.block_size = new_column_block_size;
+        container_builder_.RemoveChildren();
+        continue;
+      }
+    }
+    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
+    break;
+  } while (true);
+
+  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
+      .Run();
+
+  // TODO(mstensho): Propagate baselines.
+
   if (border_box_size.block_size == NGSizeIndefinite) {
     // Get the block size from the columns if it's auto.
     border_box_size.block_size =
@@ -95,40 +176,6 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   }
   container_builder_.SetInlineSize(border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
-
-  WritingMode writing_mode = ConstraintSpace().GetWritingMode();
-  scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
-  LayoutUnit intrinsic_block_size;
-  LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
-  LayoutUnit column_block_offset(border_scrollbar_padding.block_start);
-  LayoutUnit column_inline_progression =
-      child_space->AvailableSize().inline_size + ResolveUsedColumnGap(Style());
-
-  do {
-    // Lay out one column. Each column will become a fragment.
-    NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
-                                           break_token.get());
-    scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
-    scoped_refptr<NGPhysicalBoxFragment> column(
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
-
-    NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
-    container_builder_.AddChild(result, logical_offset);
-
-    intrinsic_block_size = std::max(
-        intrinsic_block_size,
-        column_block_offset + NGBoxFragment(writing_mode, *column).BlockSize());
-
-    column_inline_offset += column_inline_progression;
-    break_token = ToNGBlockBreakToken(column->BreakToken());
-  } while (break_token && !break_token->IsFinished());
-
-  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
-
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), Style(), &container_builder_)
-      .Run();
-
-  // TODO(mstensho): Propagate baselines.
 
   return container_builder_.ToBoxFragment();
 }
@@ -209,6 +256,17 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // Finally, honor {,min-,max-}{height,width} properties.
   return ConstrainColumnBlockSize(block_size, Node(), ConstraintSpace(),
                                   Style());
+}
+
+LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
+    LayoutUnit minimal_space_shortage,
+    LayoutUnit current_column_size,
+    LayoutUnit container_content_box_block_size) const {
+  if (!NeedsColumnBalancing(container_content_box_block_size, Style()))
+    return current_column_size;
+  LayoutUnit length = current_column_size + minimal_space_shortage;
+  // Honor {,min-,max-}{height,width} properties.
+  return ConstrainColumnBlockSize(length, Node(), ConstraintSpace(), Style());
 }
 
 scoped_refptr<NGConstraintSpace>

@@ -2294,5 +2294,201 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmptyBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLines) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br><br><br><br><br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:320x40
+      offset:0,0 size:100x40
+        offset:0,0 size:0x20
+          offset:0,9 size:0x1
+        offset:0,20 size:0x20
+          offset:0,9 size:0x1
+      offset:110,0 size:100x40
+        offset:0,0 size:0x20
+          offset:0,9 size:0x1
+        offset:0,20 size:0x20
+          offset:0,9 size:0x1
+      offset:220,0 size:100x20
+        offset:0,0 size:0x20
+          offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesOrphans) {
+  // We have 6 lines and 3 columns. If we make the columns tall enough to hold 2
+  // lines each, it should all fit. But then there's an orphans request that 3
+  // lines be placed together in the same column...
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br>
+        <div style="orphans:3;">
+           <br><br><br>
+        </div>
+        <br><br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:320x60
+      offset:0,0 size:100x60
+        offset:0,0 size:100x20
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+      offset:220,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesForcedBreak) {
+  // We have 6 lines and 3 columns. If we make the columns tall enough to hold 2
+  // lines each, it should all fit. But then there's a forced break after the
+  // first line, so that the remaining 5 lines have to be distributed into the 2
+  // remaining columns...
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br>
+        <div style="break-before:column;">
+           <br><br><br><br><br>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:320x60
+      offset:0,0 size:100x60
+        offset:0,0 size:100x20
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+      offset:220,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingLinesAvoidBreakInside) {
+  // We have 6 lines and 3 columns. If we make the columns tall enough to hold 2
+  // lines each, it should all fit. But then there's a block with 3 lines and
+  // break-inside:avoid...
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 1;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <br>
+        <div style="break-inside:avoid;">
+           <br><br><br>
+        </div>
+        <br><br>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x60
+    offset:0,0 size:320x60
+      offset:0,0 size:100x60
+        offset:0,0 size:100x20
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+      offset:220,0 size:100x40
+        offset:0,0 size:100x40
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 }  // anonymous namespace
 }  // namespace blink
