@@ -114,10 +114,8 @@ void FullCardRequest::OnUnmaskResponse(const UnmaskResponse& response) {
   }
 
   request_->user_response = response;
-  if (!request_->risk_data.empty()) {
-    real_pan_request_timestamp_ = AutofillClock::Now();
-    payments_client_->UnmaskCard(*request_);
-  }
+  if (!request_->risk_data.empty())
+    SendUnmaskCardRequest();
 }
 
 void FullCardRequest::OnUnmaskPromptClosed() {
@@ -129,10 +127,13 @@ void FullCardRequest::OnUnmaskPromptClosed() {
 
 void FullCardRequest::OnDidGetUnmaskRiskData(const std::string& risk_data) {
   request_->risk_data = risk_data;
-  if (!request_->user_response.cvc.empty()) {
-    real_pan_request_timestamp_ = AutofillClock::Now();
-    payments_client_->UnmaskCard(*request_);
-  }
+  if (!request_->user_response.cvc.empty())
+    SendUnmaskCardRequest();
+}
+
+void FullCardRequest::SendUnmaskCardRequest() {
+  real_pan_request_timestamp_ = AutofillClock::Now();
+  payments_client_->UnmaskCard(*request_);
 }
 
 void FullCardRequest::OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
