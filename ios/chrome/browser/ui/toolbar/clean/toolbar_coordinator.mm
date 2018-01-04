@@ -532,12 +532,20 @@
   UIViewPropertyAnimator* animator = [[UIViewPropertyAnimator alloc]
       initWithDuration:ios::material::kDuration1
                  curve:UIViewAnimationCurveEaseInOut
-            animations:^{
-            }];
+            animations:nil];
+  UIViewPropertyAnimator* completionAnimator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:ios::material::kDuration1
+                 curve:UIViewAnimationCurveEaseOut
+            animations:nil];
+  [animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+    [completionAnimator startAnimationAfterDelay:ios::material::kDuration4];
+  }];
 
   [self.locationBarCoordinator.locationBarView
-      addExpandOmniboxAnimations:animator];
-  [self.toolbarViewController addToolbarExpansionAnimations:animator];
+      addExpandOmniboxAnimations:animator
+              completionAnimator:completionAnimator];
+  [self.toolbarViewController addToolbarExpansionAnimations:animator
+                                         completionAnimator:completionAnimator];
   [animator startAnimation];
 
   if (!animated) {

@@ -54,7 +54,9 @@
 // Perform animations for expanding the omnibox. This animation can be seen on
 // an iPhone when the omnibox is focused. It involves sliding the leading button
 // out and fading its alpha.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator;
+// The trailing button is faded-in in the |completionAnimator| animations.
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
 
 // Perform animations for expanding the omnibox. This animation can be seen on
 // an iPhone when the omnibox is defocused. It involves sliding the leading

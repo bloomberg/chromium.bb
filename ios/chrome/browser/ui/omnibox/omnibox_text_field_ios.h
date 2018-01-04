@@ -82,7 +82,8 @@ typedef enum {
 
 // New animations API, currently behind clean-toolbar flag.
 // They replace all animations above.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator;
+- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
+                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
 - (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
 
 // Initial touch on the Omnibox triggers a "pre-edit" state. The current
