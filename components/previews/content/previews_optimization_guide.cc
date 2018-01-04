@@ -48,6 +48,9 @@ std::unique_ptr<PreviewsOptimizationGuide::Hints>
 PreviewsOptimizationGuide::Hints::CreateFromConfig(
     const optimization_guide::proto::Configuration& config) {
   std::unique_ptr<Hints> hints(new Hints());
+  // The condition set ID is a simple increasing counter that matches the
+  // order of hints in the config (where earlier hints in the config take
+  // precendence over later hints in the config if there are multiple matches).
   url_matcher::URLMatcherConditionSet::ID id = 0;
   url_matcher::URLMatcherConditionFactory* condition_factory =
       hints->url_matcher_.condition_factory();
@@ -75,18 +78,19 @@ PreviewsOptimizationGuide::Hints::CreateFromConfig(
 
     // Create whitelist condition set out of the optimizations that are
     // whitelisted for the host suffix.
+    std::set<PreviewsType> whitelisted_optimizations;
     for (const auto optimization : hint.whitelisted_optimizations()) {
       if (optimization.optimization_type() ==
           optimization_guide::proto::NOSCRIPT) {
-        url_matcher::URLMatcherCondition condition =
-            condition_factory->CreateHostSuffixCondition(hint.key());
-        all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
-            id, std::set<url_matcher::URLMatcherCondition>{condition}));
-        hints->whitelist_[id] = std::set<PreviewsType>{PreviewsType::NOSCRIPT};
-        id++;
-        break;
+        whitelisted_optimizations.insert(PreviewsType::NOSCRIPT);
       }
     }
+    url_matcher::URLMatcherCondition condition =
+        condition_factory->CreateHostSuffixCondition(hint.key());
+    all_conditions.push_back(new url_matcher::URLMatcherConditionSet(
+        id, std::set<url_matcher::URLMatcherCondition>{condition}));
+    hints->whitelist_[id] = whitelisted_optimizations;
+    id++;
   }
   hints->url_matcher_.AddConditionSets(all_conditions);
   return hints;
@@ -96,18 +100,21 @@ bool PreviewsOptimizationGuide::Hints::IsWhitelisted(const GURL& url,
                                                      PreviewsType type) {
   std::set<url_matcher::URLMatcherConditionSet::ID> matches =
       url_matcher_.MatchURL(url);
-  for (const auto& match : matches) {
-    const auto whitelist_iter = whitelist_.find(match);
-    if (whitelist_iter == whitelist_.end()) {
-      continue;
-    }
-    const auto& whitelisted_previews = whitelist_iter->second;
-    std::set<PreviewsType>::iterator found = whitelisted_previews.find(type);
-    // TODO(crbug.com/783237): Make sure this checks for granularity of matched
-    // condition when more than one host suffix is matched.
-    return found != whitelisted_previews.end();
+
+  // Only consider the first match in iteration order as it takes precendence
+  // if there are multiple matches.
+  const auto& first_match = matches.begin();
+  if (first_match == matches.end()) {
+    return false;
   }
-  return false;
+
+  const auto whitelist_iter = whitelist_.find(*first_match);
+  if (whitelist_iter == whitelist_.end()) {
+    return false;
+  }
+
+  const auto& whitelisted_previews = whitelist_iter->second;
+  return whitelisted_previews.find(type) != whitelisted_previews.end();
 }
 
 PreviewsOptimizationGuide::PreviewsOptimizationGuide(
