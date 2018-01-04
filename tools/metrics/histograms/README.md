@@ -81,7 +81,7 @@ To add a new entry:
 
 1. Edit [enums.xml](./enums.xml), adding the feature to the `LoginCustomFlags`
    enum section, with any unique value (just make one up, although whatever it
-   is needs to appear in sorted order; `pretty-print.py` will do this for you).
+   is needs to appear in sorted order; `pretty_print.py` will do this for you).
 2. Build `unit_tests`, then run `unit_tests
    --gtest_filter='AboutFlagsHistogramTest.*'` to compute the correct value.
 3. Update the entry in [enums.xml](./enums.xml) with the correct value, and move
