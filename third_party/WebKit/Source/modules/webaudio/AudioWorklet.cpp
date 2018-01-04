@@ -15,9 +15,7 @@
 namespace blink {
 
 AudioWorklet* AudioWorklet::Create(BaseAudioContext* context) {
-  return RuntimeEnabledFeatures::AudioWorkletEnabled()
-      ? new AudioWorklet(context)
-      : nullptr;
+  return new AudioWorklet(context);
 }
 
 AudioWorklet::AudioWorklet(BaseAudioContext* context)
