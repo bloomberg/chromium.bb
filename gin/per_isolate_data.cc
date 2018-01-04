@@ -31,7 +31,7 @@ PerIsolateData::PerIsolateData(
     : isolate_(isolate), allocator_(allocator) {
   isolate_->SetData(kEmbedderNativeGin, this);
 
-  task_runner = task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
+  DCHECK(task_runner);
   if (access_mode == IsolateHolder::kUseLocker) {
     task_runner_ = std::make_shared<V8ForegroundTaskRunnerWithLocker>(
         isolate, task_runner);
