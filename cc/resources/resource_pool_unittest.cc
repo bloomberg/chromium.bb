@@ -22,8 +22,8 @@ class ResourcePoolTest : public testing::Test {
   void SetUp() override {
     context_provider_ = TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
-    resource_provider_ =
-        FakeResourceProvider::Create(context_provider_.get(), nullptr);
+    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+        context_provider_.get(), nullptr);
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ =
         ResourcePool::Create(resource_provider_.get(), true, task_runner_.get(),
@@ -39,7 +39,7 @@ class ResourcePoolTest : public testing::Test {
   }
 
   scoped_refptr<TestContextProvider> context_provider_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<ResourcePool> resource_pool_;
 };

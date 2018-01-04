@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
+#include "cc/resources/resource_util.h"
 #include "cc/tiles/tile_manager.h"
 #include "components/viz/common/traced_value.h"
 

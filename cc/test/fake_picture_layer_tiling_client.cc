@@ -22,7 +22,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient()
       has_valid_tile_priorities_(true) {}
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
-    ResourceProvider* resource_provider)
+    LayerTreeResourceProvider* resource_provider)
     : resource_pool_(
           ResourcePool::Create(resource_provider,
                                true,

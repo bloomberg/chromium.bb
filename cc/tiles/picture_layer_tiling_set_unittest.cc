@@ -250,7 +250,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     ASSERT_EQ(context_provider->BindToCurrentThread(),
               gpu::ContextResult::kSuccess);
     auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
-    std::unique_ptr<ResourceProvider> resource_provider =
+    std::unique_ptr<LayerTreeResourceProvider> resource_provider =
         FakeResourceProvider::CreateLayerTreeResourceProvider(
             context_provider.get(), shared_bitmap_manager.get());
 

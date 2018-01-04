@@ -17,7 +17,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_util.h"
 #include "cc/resources/scoped_resource.h"
 
@@ -42,8 +42,8 @@ bool ResourceMeetsSizeRequirements(const gfx::Size& requested_size,
     return false;
 
   // GetArea will crash on overflow, however all sizes in use are tile sizes.
-  // These are capped at ResourceProvider::max_texture_size(), and will not
-  // overflow.
+  // These are capped at LayerTreeResourceProvider::max_texture_size(), and will
+  // not overflow.
   float actual_area = actual_size.GetArea();
   float requested_area = requested_size.GetArea();
   // Don't use a resource that is more than |kReuseThreshold| times the
@@ -60,10 +60,10 @@ constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
 
 void ResourcePool::PoolResource::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd,
-    const ResourceProvider* resource_provider,
+    const LayerTreeResourceProvider* resource_provider,
     bool is_free) const {
-  // Resource IDs are not process-unique, so log with the ResourceProvider's
-  // unique id.
+  // Resource IDs are not process-unique, so log with the
+  // LayerTreeResourceProvider's unique id.
   std::string parent_node =
       base::StringPrintf("cc/resource_memory/provider_%d/resource_%d",
                          resource_provider->tracing_id(), id());
@@ -84,7 +84,7 @@ void ResourcePool::PoolResource::OnMemoryDump(
   }
 }
 
-ResourcePool::ResourcePool(ResourceProvider* resource_provider,
+ResourcePool::ResourcePool(LayerTreeResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
                            gfx::BufferUsage usage,
                            const base::TimeDelta& expiration_delay,
@@ -109,7 +109,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
-ResourcePool::ResourcePool(ResourceProvider* resource_provider,
+ResourcePool::ResourcePool(LayerTreeResourceProvider* resource_provider,
                            bool gpu_resources,
                            base::SingleThreadTaskRunner* task_runner,
                            viz::ResourceTextureHint hint,
