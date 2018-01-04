@@ -62,9 +62,16 @@ views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
   return tray_view;
 }
 
+void TraySupervisedUser::OnActiveUserSessionChanged(
+    const AccountId& account_id) {
+  OnUserSessionUpdated(account_id);
+}
+
+void TraySupervisedUser::OnUserSessionAdded(const AccountId& account_id) {
+  OnUserSessionUpdated(account_id);
+}
+
 void TraySupervisedUser::OnUserSessionUpdated(const AccountId& account_id) {
-  // NOTE: This doesn't use OnUserSessionAdded() because the custodian info
-  // isn't available until after the session starts.
   SessionController* session_controller = Shell::Get()->session_controller();
   if (!session_controller->IsUserSupervised())
     return;

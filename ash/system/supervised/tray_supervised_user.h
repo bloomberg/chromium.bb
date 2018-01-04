@@ -28,6 +28,8 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
   views::View* CreateDefaultView(LoginStatus status) override;
 
   // SessionObserver:
+  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  void OnUserSessionAdded(const AccountId& account_id) override;
   void OnUserSessionUpdated(const AccountId& account_id) override;
 
  private:
