@@ -1359,11 +1359,7 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
 using AcceleratorControllerGuestModeTest = NoSessionAshTestBase;
 
 TEST_F(AcceleratorControllerGuestModeTest, IncognitoWindowDisabled) {
-  // Simulate a guest mode login.
-  TestSessionControllerClient* session = GetSessionControllerClient();
-  session->Reset();
-  session->AddUserSession("user1@test.com", user_manager::USER_TYPE_GUEST);
-  session->SetSessionState(session_manager::SessionState::ACTIVE);
+  SimulateGuestLogin();
 
   // New incognito window is disabled.
   EXPECT_FALSE(Shell::Get()->accelerator_controller()->PerformActionIfEnabled(

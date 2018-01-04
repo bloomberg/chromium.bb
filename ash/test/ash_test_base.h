@@ -185,6 +185,9 @@ class AshTestBase : public testing::Test,
   // existing user sessions and makes it the active user session.
   void SimulateUserLogin(const std::string& user_email);
 
+  // Similar to SimulateUserLogin but for a guest user.
+  void SimulateGuestLogin();
+
   // Clears all user sessions and resets to the primary login screen state.
   void ClearLogin();
 

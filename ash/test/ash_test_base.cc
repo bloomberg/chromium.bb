@@ -30,6 +30,7 @@
 #include "ash/wm/window_positioner.h"
 #include "base/memory/ptr_util.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/user_names.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -396,6 +397,14 @@ void AshTestBase::SimulateUserLogin(const std::string& user_email) {
   session_controller_client->SwitchActiveUser(
       AccountId::FromUserEmail(user_email));
   session_controller_client->SetSessionState(SessionState::ACTIVE);
+}
+
+void AshTestBase::SimulateGuestLogin() {
+  const std::string guest = user_manager::kGuestUserName;
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->AddUserSession(guest, user_manager::USER_TYPE_GUEST);
+  session->SwitchActiveUser(AccountId::FromUserEmail(guest));
+  session->SetSessionState(SessionState::ACTIVE);
 }
 
 void AshTestBase::ClearLogin() {
