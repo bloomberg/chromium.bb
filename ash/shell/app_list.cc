@@ -244,10 +244,9 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
-  void StartSearch() override {
+  void StartSearch(const base::string16& raw_query) override {
     base::string16 query;
-    base::TrimWhitespace(search_model_->search_box()->text(), base::TRIM_ALL,
-                         &query);
+    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
     query = base::i18n::ToLower(query);
 
     search_model_->results()->DeleteAll();

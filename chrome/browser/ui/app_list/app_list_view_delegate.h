@@ -69,7 +69,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   app_list::AppListModel* GetModel() override;
   app_list::SearchModel* GetSearchModel() override;
   app_list::SpeechUIModel* GetSpeechUI() override;
-  void StartSearch() override;
+  void StartSearch(const base::string16& raw_query) override;
   void OpenSearchResult(app_list::SearchResult* result,
                         int event_flags) override;
   void InvokeSearchResultAction(app_list::SearchResult* result,

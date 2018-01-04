@@ -52,7 +52,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
   SpeechUIModel* GetSpeechUI() override;
-  void StartSearch() override {}
+  void StartSearch(const base::string16& raw_query) override {}
   void OpenSearchResult(SearchResult* result,
                         int event_flags) override;
   void InvokeSearchResultAction(SearchResult* result,

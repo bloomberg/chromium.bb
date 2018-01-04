@@ -75,7 +75,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(
-          search_model->search_box(), search_model->results(),
+          search_model->results(),
           HistoryFactory::GetForBrowserContext(profile));
 
   // Add mixer groups. There are four main groups: answer card, apps, webstore

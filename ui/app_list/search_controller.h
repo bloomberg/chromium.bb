@@ -19,7 +19,6 @@
 namespace app_list {
 
 class History;
-class SearchBoxModel;
 class SearchProvider;
 class SearchResult;
 
@@ -28,12 +27,11 @@ class SearchResult;
 // results to the given SearchResults UI model.
 class APP_LIST_EXPORT SearchController {
  public:
-  SearchController(SearchBoxModel* search_box,
-                   SearchModel::SearchResults* results,
-                   History* history);
+  SearchController(SearchModel::SearchResults* results, History* history);
   virtual ~SearchController();
 
-  void Start();
+  // TODO(hejq): can we accept a trimmed query here?
+  void Start(const base::string16& raw_query);
 
   void OpenResult(SearchResult* result, int event_flags);
   void InvokeResultAction(SearchResult* result,
@@ -50,7 +48,7 @@ class APP_LIST_EXPORT SearchController {
   // Invoked when the search results are changed.
   void OnResultsChanged();
 
-  SearchBoxModel* search_box_;
+  base::string16 last_raw_query_;
 
   bool dispatching_query_ = false;
 
