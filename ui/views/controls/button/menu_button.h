@@ -138,20 +138,16 @@ class VIEWS_EXPORT MenuButton : public LabelButton {
   // The down arrow used to differentiate the menu button from normal buttons.
   const gfx::ImageSkia* menu_marker_;
 
-  // If non-null the destructor sets this to true. This is set while the menu is
-  // showing and used to detect if the menu was deleted while running.
-  bool* destroyed_flag_;
-
   // The current number of "pressed" locks this button has.
-  int pressed_lock_count_;
+  int pressed_lock_count_ = 0;
 
   // Used to let Activate() know if IncrementPressedLocked() was called.
-  bool* increment_pressed_lock_called_;
+  bool* increment_pressed_lock_called_ = nullptr;
 
   // True if the button was in a disabled state when a menu was run, and should
   // return to it once the press is complete. This can happen if, e.g., we
   // programmatically show a menu on a disabled button.
-  bool should_disable_after_press_;
+  bool should_disable_after_press_ = false;
 
   base::WeakPtrFactory<MenuButton> weak_factory_;
 

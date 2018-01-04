@@ -53,7 +53,7 @@ MenuButton::PressedLock::PressedLock(MenuButton* menu_button,
 }
 
 MenuButton::PressedLock::~PressedLock() {
-  if (menu_button_.get())
+  if (menu_button_)
     menu_button_->DecrementPressedLocked();
 }
 
@@ -73,18 +73,11 @@ MenuButton::MenuButton(const base::string16& text,
       menu_marker_(ui::ResourceBundle::GetSharedInstance()
                        .GetImageNamed(IDR_MENU_DROPARROW)
                        .ToImageSkia()),
-      destroyed_flag_(nullptr),
-      pressed_lock_count_(0),
-      increment_pressed_lock_called_(nullptr),
-      should_disable_after_press_(false),
       weak_factory_(this) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
 }
 
-MenuButton::~MenuButton() {
-  if (destroyed_flag_)
-    *destroyed_flag_ = true;
-}
+MenuButton::~MenuButton() = default;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -122,26 +115,25 @@ bool MenuButton::Activate(const ui::Event* event) {
     static_cast<internal::RootView*>(GetWidget()->GetRootView())
         ->SetMouseHandler(nullptr);
 
-    bool destroyed = false;
-    destroyed_flag_ = &destroyed;
-
     DCHECK(increment_pressed_lock_called_ == nullptr);
     // Observe if IncrementPressedLocked() was called so we can trigger the
     // correct ink drop animations.
     bool increment_pressed_lock_called = false;
     increment_pressed_lock_called_ = &increment_pressed_lock_called;
 
+    // Allow for OnMenuButtonClicked() to delete this.
+    auto ref = weak_factory_.GetWeakPtr();
+
     // We don't set our state here. It's handled in the MenuController code or
     // by our click listener.
     listener_->OnMenuButtonClicked(this, menu_position, event);
 
-    if (destroyed) {
+    if (!ref) {
       // The menu was deleted while showing. Don't attempt any processing.
       return false;
     }
 
     increment_pressed_lock_called_ = nullptr;
-    destroyed_flag_ = nullptr;
 
     if (!increment_pressed_lock_called && pressed_lock_count_ == 0) {
       AnimateInkDrop(InkDropState::ACTION_TRIGGERED,
@@ -235,7 +227,10 @@ void MenuButton::OnMouseMoved(const ui::MouseEvent& event) {
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
   if (state() != STATE_DISABLED) {
+    auto ref = weak_factory_.GetWeakPtr();
     if (IsTriggerableEvent(*event) && !Activate(event)) {
+      if (!ref)
+        return;
       // When |Activate()| returns |false|, it means the click was handled by
       // a button listener and has handled the gesture event. So, there is no
       // need to further process the gesture event here. However, if the
