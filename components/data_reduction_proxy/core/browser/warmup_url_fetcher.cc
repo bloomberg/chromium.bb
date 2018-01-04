@@ -35,7 +35,32 @@ WarmupURLFetcher::WarmupURLFetcher(
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
 
-void WarmupURLFetcher::FetchWarmupURL() {
+void WarmupURLFetcher::FetchWarmupURL(size_t previous_attempt_counts) {
+  DCHECK_GE(2u, previous_attempt_counts);
+
+  // There can be at most one pending fetch at any time.
+  fetch_delay_timer_.Stop();
+
+  if (previous_attempt_counts == 0) {
+    FetchWarmupURLNow();
+    return;
+  }
+  fetch_delay_timer_.Start(FROM_HERE, GetFetchWaitTime(previous_attempt_counts),
+                           this, &WarmupURLFetcher::FetchWarmupURLNow);
+}
+
+base::TimeDelta WarmupURLFetcher::GetFetchWaitTime(
+    size_t previous_attempt_counts) const {
+  DCHECK_LT(0u, previous_attempt_counts);
+  DCHECK_GE(2u, previous_attempt_counts);
+
+  if (previous_attempt_counts == 1)
+    return base::TimeDelta::FromSeconds(30);
+
+  return base::TimeDelta::FromSeconds(60);
+}
+
+void WarmupURLFetcher::FetchWarmupURLNow() {
   UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
                              2);
   net::NetworkTrafficAnnotationTag traffic_annotation =
