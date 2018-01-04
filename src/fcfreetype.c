@@ -1767,7 +1767,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	{
 	    weight = FcIsWeight ((FcChar8 *) psfontinfo.weight);
     	    if (FcDebug() & FC_DBG_SCANV)
-    		printf ("\tType1 weight %s maps to %d\n",
+		printf ("\tType1 weight %s maps to %g\n",
 			psfontinfo.weight, weight);
 	}
 
@@ -1845,7 +1845,7 @@ FcFreeTypeQueryFaceInternal (const FT_Face  face,
 	{
 	    weight = FcContainsWeight (style);
 	    if (FcDebug() & FC_DBG_SCANV)
-		printf ("\tStyle %s maps to weight %d\n", style, weight);
+		printf ("\tStyle %s maps to weight %g\n", style, weight);
 	}
 	if (width == -1)
 	{

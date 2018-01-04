@@ -47,7 +47,7 @@ retry_locale:
     {
 	is_locale_initialized = FcTrue;
 	if (!fc_atomic_ptr_cmpexch (&static_is_locale_initialized, NULL,
-				    (void *)(long) is_locale_initialized))
+				    (void *)(intptr_t) is_locale_initialized))
 	    goto retry_locale;
 	setlocale (LC_ALL, "");
     }
