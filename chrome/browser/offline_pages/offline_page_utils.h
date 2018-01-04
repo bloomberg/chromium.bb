@@ -13,11 +13,13 @@
 #include "url/gurl.h"
 
 namespace base {
+class FilePath;
 class Time;
 }
 
 namespace content {
 class BrowserContext;
+class NavigationEntry;
 class WebContents;
 }
 
@@ -149,6 +151,23 @@ class OfflinePageUtils {
       const SizeInBytesCallback& callback,
       const base::Time& begin_time,
       const base::Time& end_time);
+
+  // Computes a SHA256 digest of the specified file. Empty string will be
+  // returned if the digest cannot be computed.
+  static std::string ComputeDigest(const base::FilePath& file_path);
+
+  // Returns true if the specified file has |expected_file_size| and
+  // |expected_digest|.
+  static bool ValidateFile(const base::FilePath& file_path,
+                           int64_t expected_file_size,
+                           const std::string& expected_digest);
+
+  // Extracts and returns the value of the custom offline header from a
+  // navigation entry. Empty string is returned if it is not found.
+  // Note that the offline header is assumed to be the onlt extra header if it
+  // exists.
+  static std::string ExtractOfflineHeaderValueFromNavigationEntry(
+      const content::NavigationEntry& entry);
 };
 
 }  // namespace offline_pages
