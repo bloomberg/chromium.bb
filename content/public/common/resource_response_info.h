@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
@@ -145,7 +144,9 @@ struct CONTENT_EXPORT ResourceResponseInfo {
 
   // A bitmask of potentially several Previews optimizations that the resource
   // could have requested.
-  PreviewsState previews_state;
+  // TODO(rdsmith, reillyg): Only used by DRP; should be removed as part of DRP
+  // servicification.
+  int previews_state;
 
   // Effective connection type when the resource was fetched. This is populated
   // only for responses that correspond to main frame requests.

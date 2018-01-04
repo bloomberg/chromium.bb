@@ -5,7 +5,6 @@
 #include "content/public/common/resource_response_info.h"
 
 #include "content/public/common/appcache_info.h"
-#include "content/public/common/previews_state.h"
 #include "net/http/http_response_headers.h"
 
 namespace content {
@@ -24,7 +23,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       was_fallback_required_by_service_worker(false),
       response_type_via_service_worker(
           network::mojom::FetchResponseType::kDefault),
-      previews_state(PREVIEWS_OFF),
+      previews_state(0),
       effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cert_status(0),
       ssl_connection_status(0),

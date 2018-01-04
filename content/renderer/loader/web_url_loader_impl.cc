@@ -29,6 +29,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_request_body.h"
@@ -216,6 +217,7 @@ int GetInfoFromDataURL(const GURL& url,
   info->content_length = data->length();
   info->encoded_data_length = 0;
   info->encoded_body_length = 0;
+  info->previews_state = PREVIEWS_OFF;
 
   return net::OK;
 }
@@ -1167,7 +1169,8 @@ void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
   extra_data->set_was_alpn_negotiated(info.was_alpn_negotiated);
   extra_data->set_was_alternate_protocol_available(
       info.was_alternate_protocol_available);
-  extra_data->set_previews_state(info.previews_state);
+  extra_data->set_previews_state(
+      static_cast<PreviewsState>(info.previews_state));
   extra_data->set_effective_connection_type(info.effective_connection_type);
 
   // If there's no received headers end time, don't set load timing.  This is

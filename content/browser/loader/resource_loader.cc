@@ -71,8 +71,10 @@ void PopulateResourceResponse(
   response->head.socket_address = response_info.socket_address;
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (request_info)
-    response->head.previews_state = request_info->GetPreviewsState();
+  if (request_info) {
+    response->head.previews_state =
+        static_cast<int>(request_info->GetPreviewsState());
+  }
   if (info->ShouldReportRawHeaders()) {
     response->head.raw_request_response_info = BuildRawRequestResponseInfo(
         *request, raw_request_headers, raw_response_headers);
