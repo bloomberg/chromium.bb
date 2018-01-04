@@ -104,7 +104,7 @@ class BASE_EXPORT JSONReader {
   // an error code and a formatted error message (including error location if
   // appropriate). Otherwise, they will be unmodified.
   static std::unique_ptr<Value> ReadAndReturnError(
-      const StringPiece& json,
+      StringPiece json,
       int options,  // JSONParserOptions
       int* error_code_out,
       std::string* error_msg_out,

@@ -75,7 +75,7 @@ base::FilePath GetTestFilePath(const std::string& relative_path) {
 }
 
 // Maps the given string to EntryType. Returns true on success.
-bool MapStringToEntryType(const base::StringPiece& value, EntryType* output) {
+bool MapStringToEntryType(base::StringPiece value, EntryType* output) {
   if (value == "file")
     *output = FILE;
   else if (value == "directory")
@@ -86,8 +86,7 @@ bool MapStringToEntryType(const base::StringPiece& value, EntryType* output) {
 }
 
 // Maps the given string to SharedOption. Returns true on success.
-bool MapStringToSharedOption(const base::StringPiece& value,
-                             SharedOption* output) {
+bool MapStringToSharedOption(base::StringPiece value, SharedOption* output) {
   if (value == "shared")
     *output = SHARED;
   else if (value == "none")
@@ -98,8 +97,7 @@ bool MapStringToSharedOption(const base::StringPiece& value,
 }
 
 // Maps the given string to TargetVolume. Returns true on success.
-bool MapStringToTargetVolume(const base::StringPiece& value,
-                             TargetVolume* output) {
+bool MapStringToTargetVolume(base::StringPiece value, TargetVolume* output) {
   if (value == "drive")
     *output = DRIVE_VOLUME;
   else if (value == "local")
@@ -112,7 +110,7 @@ bool MapStringToTargetVolume(const base::StringPiece& value,
 }
 
 // Maps the given string to base::Time. Returns true on success.
-bool MapStringToTime(const base::StringPiece& value, base::Time* time) {
+bool MapStringToTime(base::StringPiece value, base::Time* time) {
   return base::Time::FromString(value.as_string().c_str(), time);
 }
 

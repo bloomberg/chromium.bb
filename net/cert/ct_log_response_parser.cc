@@ -33,7 +33,7 @@ struct JsonSignedTreeHead {
       base::JSONValueConverter<JsonSignedTreeHead>* converted);
 };
 
-bool ConvertSHA256RootHash(const base::StringPiece& s, std::string* result) {
+bool ConvertSHA256RootHash(base::StringPiece s, std::string* result) {
   if (!base::Base64Decode(s, result)) {
     DVLOG(1) << "Failed decoding sha256_root_hash";
     return false;
@@ -48,8 +48,7 @@ bool ConvertSHA256RootHash(const base::StringPiece& s, std::string* result) {
   return true;
 }
 
-bool ConvertTreeHeadSignature(const base::StringPiece& s,
-                              DigitallySigned* result) {
+bool ConvertTreeHeadSignature(base::StringPiece s, DigitallySigned* result) {
   std::string tree_head_signature;
   if (!base::Base64Decode(s, &tree_head_signature)) {
     DVLOG(1) << "Failed decoding tree_head_signature";

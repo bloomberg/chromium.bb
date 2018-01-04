@@ -20,7 +20,7 @@ namespace {
 
 const char kNullTimeString[] = "null";
 
-bool ParseTimezone(const base::StringPiece& timezone,
+bool ParseTimezone(base::StringPiece timezone,
                    bool ahead,
                    int* out_offset_to_utc_in_minutes) {
   DCHECK(out_offset_to_utc_in_minutes);
@@ -42,8 +42,7 @@ bool ParseTimezone(const base::StringPiece& timezone,
 
 }  // namespace
 
-bool GetTimeFromString(const base::StringPiece& raw_value,
-                       base::Time* parsed_time) {
+bool GetTimeFromString(base::StringPiece raw_value, base::Time* parsed_time) {
   base::StringPiece date;
   base::StringPiece time_and_tz;
   base::StringPiece time;
