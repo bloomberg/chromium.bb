@@ -102,6 +102,11 @@ void WebRtcEventLogManager::SetLocalLogsObserver(
                      base::Unretained(this), observer, std::move(reply)));
 }
 
+void WebRtcEventLogManager::SetTaskRunnerForTesting(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+  task_runner_ = task_runner;
+}
+
 void WebRtcEventLogManager::OnLocalLogStarted(PeerConnectionKey peer_connection,
                                               base::FilePath file_path) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

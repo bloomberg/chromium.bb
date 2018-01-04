@@ -115,6 +115,9 @@ class CONTENT_EXPORT WebRtcEventLogManager
   WebRtcEventLogManager();
   ~WebRtcEventLogManager() override;
 
+  void SetTaskRunnerForTesting(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+
  private:
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
 
