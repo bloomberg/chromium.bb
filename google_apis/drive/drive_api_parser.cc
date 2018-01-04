@@ -35,6 +35,12 @@ bool CreateTeamDriveResourceFromValue(
   return !!*file;
 }
 
+// Wrapper around base::StrintToInt64 that is compatible with
+// JSONValueConverter::RegisterCustomField.
+bool GetInt64FromString(const base::StringPiece& int_string, int64_t* result) {
+  return base::StringToInt64(int_string, result);
+}
+
 // Converts |url_string| to |result|.  Always returns true to be used
 // for JSONValueConverter::RegisterCustomField method.
 // TODO(mukai): make it return false in case of invalid |url_string|.
@@ -275,13 +281,13 @@ void AboutResource::RegisterJSONConverter(
     base::JSONValueConverter<AboutResource>* converter) {
   converter->RegisterCustomField<int64_t>(kLargestChangeId,
                                           &AboutResource::largest_change_id_,
-                                          &base::StringToInt64);
+                                          &GetInt64FromString);
   converter->RegisterCustomField<int64_t>(kQuotaBytesTotal,
                                           &AboutResource::quota_bytes_total_,
-                                          &base::StringToInt64);
+                                          &GetInt64FromString);
   converter->RegisterCustomField<int64_t>(
       kQuotaBytesUsedAggregate, &AboutResource::quota_bytes_used_aggregate_,
-      &base::StringToInt64);
+      &GetInt64FromString);
   converter->RegisterStringField(kRootFolderId,
                                  &AboutResource::root_folder_id_);
 }
@@ -638,7 +644,7 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterBoolField(kShared, &FileResource::shared_);
   converter->RegisterStringField(kMd5Checksum, &FileResource::md5_checksum_);
   converter->RegisterCustomField<int64_t>(kFileSize, &FileResource::file_size_,
-                                          &base::StringToInt64);
+                                          &GetInt64FromString);
   converter->RegisterCustomField<GURL>(kAlternateLink,
                                        &FileResource::alternate_link_,
                                        GetGURLFromString);
@@ -738,7 +744,7 @@ ChangeResource::~ChangeResource() {}
 void ChangeResource::RegisterJSONConverter(
     base::JSONValueConverter<ChangeResource>* converter) {
   converter->RegisterCustomField<int64_t>(kId, &ChangeResource::change_id_,
-                                          &base::StringToInt64);
+                                          &GetInt64FromString);
   converter->RegisterCustomField<ChangeType>(kType, &ChangeResource::type_,
                                              &ChangeResource::GetType);
   converter->RegisterStringField(kFileId, &ChangeResource::file_id_);
@@ -800,7 +806,7 @@ void ChangeList::RegisterJSONConverter(
                                        &ChangeList::next_link_,
                                        GetGURLFromString);
   converter->RegisterCustomField<int64_t>(
-      kLargestChangeId, &ChangeList::largest_change_id_, &base::StringToInt64);
+      kLargestChangeId, &ChangeList::largest_change_id_, &GetInt64FromString);
   converter->RegisterRepeatedMessage<ChangeResource>(kItems,
                                                      &ChangeList::items_);
 }

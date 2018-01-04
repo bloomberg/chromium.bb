@@ -50,9 +50,10 @@ size_t GetSamplerFrequencyDenominator() {
       base::GetFieldTrialParamValueByFeature(
           kAdSamplerTriggerFeature, kAdSamplerFrequencyDenominatorParam);
   int result;
-  return base::StringToInt(sampler_frequency_denominator, &result)
-             ? result
-             : kSamplerFrequencyDisabled;
+  if (!base::StringToInt(sampler_frequency_denominator, &result))
+    return kSamplerFrequencyDisabled;
+
+  return result;
 }
 
 bool DetectGoogleAd(content::RenderFrameHost* render_frame_host,

@@ -252,7 +252,7 @@ bool ReplaceCharsT(const StringType& input,
                    StringType* output);
 
 bool ReplaceChars(const string16& input,
-                  const StringPiece16& replace_chars,
+                  StringPiece16 replace_chars,
                   const string16& replace_with,
                   string16* output) {
   return ReplaceCharsT(input, replace_chars, StringPiece16(replace_with),
@@ -260,20 +260,20 @@ bool ReplaceChars(const string16& input,
 }
 
 bool ReplaceChars(const std::string& input,
-                  const StringPiece& replace_chars,
+                  StringPiece replace_chars,
                   const std::string& replace_with,
                   std::string* output) {
   return ReplaceCharsT(input, replace_chars, StringPiece(replace_with), output);
 }
 
 bool RemoveChars(const string16& input,
-                 const StringPiece16& remove_chars,
+                 StringPiece16 remove_chars,
                  string16* output) {
   return ReplaceCharsT(input, remove_chars, StringPiece16(), output);
 }
 
 bool RemoveChars(const std::string& input,
-                 const StringPiece& remove_chars,
+                 StringPiece remove_chars,
                  std::string* output) {
   return ReplaceCharsT(input, remove_chars, StringPiece(), output);
 }
@@ -338,13 +338,13 @@ BasicStringPiece<Str> TrimStringPieceT(BasicStringPiece<Str> input,
 }
 
 StringPiece16 TrimString(StringPiece16 input,
-                         const StringPiece16& trim_chars,
+                         StringPiece16 trim_chars,
                          TrimPositions positions) {
   return TrimStringPieceT(input, trim_chars, positions);
 }
 
 StringPiece TrimString(StringPiece input,
-                       const StringPiece& trim_chars,
+                       StringPiece trim_chars,
                        TrimPositions positions) {
   return TrimStringPieceT(input, trim_chars, positions);
 }
@@ -459,13 +459,11 @@ std::string CollapseWhitespaceASCII(const std::string& text,
   return CollapseWhitespaceT(text, trim_sequences_with_line_breaks);
 }
 
-bool ContainsOnlyChars(const StringPiece& input,
-                       const StringPiece& characters) {
+bool ContainsOnlyChars(StringPiece input, StringPiece characters) {
   return input.find_first_not_of(characters) == StringPiece::npos;
 }
 
-bool ContainsOnlyChars(const StringPiece16& input,
-                       const StringPiece16& characters) {
+bool ContainsOnlyChars(StringPiece16 input, StringPiece16 characters) {
   return input.find_first_not_of(characters) == StringPiece16::npos;
 }
 
@@ -499,11 +497,11 @@ inline bool DoIsStringASCII(const Char* characters, size_t length) {
   return !(all_char_bits & non_ascii_bit_mask);
 }
 
-bool IsStringASCII(const StringPiece& str) {
+bool IsStringASCII(StringPiece str) {
   return DoIsStringASCII(str.data(), str.length());
 }
 
-bool IsStringASCII(const StringPiece16& str) {
+bool IsStringASCII(StringPiece16 str) {
   return DoIsStringASCII(str.data(), str.length());
 }
 
@@ -517,7 +515,7 @@ bool IsStringASCII(const std::wstring& str) {
 }
 #endif
 
-bool IsStringUTF8(const StringPiece& str) {
+bool IsStringUTF8(StringPiece str) {
   const char *src = str.data();
   int32_t src_len = static_cast<int32_t>(str.length());
   int32_t char_index = 0;
@@ -1066,7 +1064,7 @@ string16 ReplaceStringPlaceholders(const string16& format_string,
   return DoReplaceStringPlaceholders(format_string, subst, offsets);
 }
 
-std::string ReplaceStringPlaceholders(const StringPiece& format_string,
+std::string ReplaceStringPlaceholders(StringPiece format_string,
                                       const std::vector<std::string>& subst,
                                       std::vector<size_t>* offsets) {
   return DoReplaceStringPlaceholders(format_string, subst, offsets);

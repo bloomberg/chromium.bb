@@ -16,10 +16,8 @@ namespace base {
 // The backslash character (\) is an escape character for * and ?
 // We limit the patterns to having a max of 16 * or ? characters.
 // ? matches 0 or 1 character, while * matches 0 or more characters.
-BASE_EXPORT bool MatchPattern(const StringPiece& string,
-                              const StringPiece& pattern);
-BASE_EXPORT bool MatchPattern(const StringPiece16& string,
-                              const StringPiece16& pattern);
+BASE_EXPORT bool MatchPattern(StringPiece string, StringPiece pattern);
+BASE_EXPORT bool MatchPattern(StringPiece16 string, StringPiece16 pattern);
 
 }  // namespace base
 
