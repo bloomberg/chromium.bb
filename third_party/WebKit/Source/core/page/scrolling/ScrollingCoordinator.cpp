@@ -1008,9 +1008,9 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
       IntRect corner =
           scrollable_area->ResizerCornerRect(bounds, kResizerForTouch);
       // Map corner to top-frame coords.
-      corner = scrollable_area->Box()
-                   .LocalToAbsoluteQuad(FloatRect(corner),
-                                        kTraverseDocumentBoundaries)
+      corner = scrollable_area->GetLayoutBox()
+                   ->LocalToAbsoluteQuad(FloatRect(corner),
+                                         kTraverseDocumentBoundaries)
                    .EnclosingBoundingBox();
       should_handle_scroll_gesture_on_main_thread_region.Unite(corner);
     }
