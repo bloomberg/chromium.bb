@@ -32,7 +32,6 @@
 #include "cc/debug/debug_colors.h"
 #include "cc/paint/render_surface_filters.h"
 #include "cc/raster/scoped_gpu_raster.h"
-#include "cc/resources/resource.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -43,9 +42,9 @@
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/resource.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
@@ -190,10 +189,18 @@ struct DrawRenderPassDrawQuadParams {
     DCHECK(!background_texture);
   }
 
-  // Required Inputs.
+  // Required inputs below.
   const RenderPassDrawQuad* quad = nullptr;
-  const cc::Resource* bypass_quad_texture = nullptr;
+
+  // Either |contents_texture| or |bypass_quad_texture| is populated. The
+  // |contents_texture| will be valid if non-null, and when null the
+  // bypass_quad_texture will be valid instead.
   ScopedRenderPassTexture* contents_texture = nullptr;
+  struct {
+    ResourceId resource_id = 0;
+    gfx::Size size;
+  } bypass_quad_texture;
+
   const gfx::QuadF* clip_region = nullptr;
   bool flip_texture = false;
   gfx::Transform window_matrix;
@@ -1094,15 +1101,12 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.tex_coord_rect = quad->tex_coord_rect;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
-    // RGBA_8888 and the gfx::ColorSpace() here are arbitrary and unused.
-    cc::Resource tile_resource(tile_quad->resource_id(),
-                               tile_quad->texture_size,
-                               ResourceFormat::RGBA_8888, gfx::ColorSpace());
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
     params.flip_texture = false;
-    params.bypass_quad_texture = &tile_resource;
+    params.bypass_quad_texture.resource_id = tile_quad->resource_id();
+    params.bypass_quad_texture.size = tile_quad->texture_size;
     DrawRenderPassQuadInternal(&params);
   } else {
     auto contents_texture_it = render_pass_textures_.find(quad->render_pass_id);
@@ -1285,7 +1289,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DCHECK(!params->filters->IsEmpty());
     gfx::Size size = params->contents_texture
                          ? params->contents_texture->size()
-                         : params->bypass_quad_texture->size();
+                         : params->bypass_quad_texture.size;
     auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
         *params->filters, gfx::SizeF(size));
     auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
@@ -1330,7 +1334,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         } else {
           cc::DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
-                  resource_provider_, params->bypass_quad_texture->id());
+                  resource_provider_, params->bypass_quad_texture.resource_id);
           params->contents_and_bypass_color_space =
               prefilter_bypass_quad_texture_lock.color_space();
           params->filter_image = ApplyImageFilter(
@@ -1388,7 +1392,8 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
   } else {
     params->bypass_quad_resource_lock =
         std::make_unique<cc::DisplayResourceProvider::ScopedSamplerGL>(
-            resource_provider_, params->bypass_quad_texture->id(), GL_LINEAR);
+            resource_provider_, params->bypass_quad_texture.resource_id,
+            GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               params->bypass_quad_resource_lock->target());
     params->contents_and_bypass_color_space =
@@ -1446,7 +1451,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
   } else if (params->contents_texture) {
     texture_size = params->contents_texture->size();
   } else {
-    texture_size = params->bypass_quad_texture->size();
+    texture_size = params->bypass_quad_texture.size;
   }
 
   tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
