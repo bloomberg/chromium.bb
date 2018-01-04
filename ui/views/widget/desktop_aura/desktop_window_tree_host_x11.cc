@@ -1768,11 +1768,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   } else {
     // Another DesktopWindowTreeHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
-    DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
-              ui::GetScaleFactorForNativeView(g_current_capture->window()));
-    ConvertEventLocationToTargetWindowLocation(
-        g_current_capture->GetLocationOnScreenInPixels(),
-        GetLocationOnScreenInPixels(), event->AsLocatedEvent());
+    ConvertEventToDifferentHost(event, g_current_capture);
     g_current_capture->SendEventToSink(event);
   }
 }
@@ -1780,11 +1776,7 @@ void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
 void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
   if (g_current_capture && g_current_capture != this &&
       event->type() == ui::ET_TOUCH_PRESSED) {
-    DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
-              ui::GetScaleFactorForNativeView(g_current_capture->window()));
-    ConvertEventLocationToTargetWindowLocation(
-        g_current_capture->GetLocationOnScreenInPixels(),
-        GetLocationOnScreenInPixels(), event->AsLocatedEvent());
+    ConvertEventToDifferentHost(event, g_current_capture);
     g_current_capture->SendEventToSink(event);
   } else {
     SendEventToSink(event);
@@ -1794,6 +1786,20 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
 void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
   if (native_widget_delegate_->AsWidget()->IsActive())
     SendEventToSink(event);
+}
+
+void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
+    ui::LocatedEvent* located_event,
+    DesktopWindowTreeHostX11* host) {
+  DCHECK_NE(this, host);
+  DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
+            ui::GetScaleFactorForNativeView(host->window()));
+  gfx::Vector2d offset =
+      GetLocationOnScreenInPixels() - host->GetLocationOnScreenInPixels();
+  gfx::PointF location_in_pixel_in_host =
+      located_event->location_f() + gfx::Vector2dF(offset);
+  located_event->set_location_f(location_in_pixel_in_host);
+  located_event->set_root_location_f(location_in_pixel_in_host);
 }
 
 void DesktopWindowTreeHostX11::ResetWindowRegion() {
