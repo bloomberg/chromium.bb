@@ -279,8 +279,9 @@ VrShell::~VrShell() {
 }
 
 void VrShell::PostToGlThread(const base::Location& from_here,
-                             const base::Closure& task) {
-  gl_thread_->message_loop()->task_runner()->PostTask(from_here, task);
+                             base::OnceClosure task) {
+  gl_thread_->message_loop()->task_runner()->PostTask(from_here,
+                                                      std::move(task));
 }
 
 void VrShell::OnContentPaused(bool paused) {
@@ -492,13 +493,14 @@ void VrShell::OnTabRemoved(JNIEnv* env,
 void VrShell::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtr submit_client,
     device::mojom::VRPresentationProviderRequest request,
-    device::mojom::VRDisplayInfoPtr display_info) {
+    device::mojom::VRDisplayInfoPtr display_info,
+    device::mojom::VRRequestPresentOptionsPtr present_options) {
   PostToGlThread(
       FROM_HERE,
-      base::Bind(&VrShellGl::ConnectPresentingService,
-                 gl_thread_->GetVrShellGl(),
-                 base::Passed(submit_client.PassInterface()),
-                 base::Passed(&request), base::Passed(&display_info)));
+      base::BindOnce(&VrShellGl::ConnectPresentingService,
+                     gl_thread_->GetVrShellGl(), submit_client.PassInterface(),
+                     std::move(request), std::move(display_info),
+                     std::move(present_options)));
 }
 
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
@@ -544,8 +546,18 @@ void VrShell::ContentSurfaceChanged(jobject surface) {
   compositor_->SurfaceChanged(content_surface_);
 }
 
-void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
+void VrShell::GvrDelegateReady(
+    gvr::ViewerType viewer_type,
+    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+  frame_transport_options_ = std::move(transport_options);
   delegate_provider_->SetDelegate(this, viewer_type);
+}
+
+device::mojom::VRDisplayFrameTransportOptionsPtr
+VrShell::GetVRDisplayFrameTransportOptions() {
+  // Caller takes ownership. Must return a copy to support having this called
+  // multiple times during the lifetime of this instance.
+  return frame_transport_options_.Clone();
 }
 
 void VrShell::OnPhysicalBackingSizeChanged(

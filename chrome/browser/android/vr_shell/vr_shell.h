@@ -156,7 +156,11 @@ class VrShell : device::GvrGamepadDataProvider,
   void ContentWasShown();
 
   void ContentSurfaceChanged(jobject surface);
-  void GvrDelegateReady(gvr::ViewerType viewer_type);
+  void GvrDelegateReady(gvr::ViewerType viewer_type,
+                        device::mojom::VRDisplayFrameTransportOptionsPtr);
+
+  device::mojom::VRDisplayFrameTransportOptionsPtr
+  GetVRDisplayFrameTransportOptions();
 
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
@@ -199,7 +203,8 @@ class VrShell : device::GvrGamepadDataProvider,
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtr submit_client,
       device::mojom::VRPresentationProviderRequest request,
-      device::mojom::VRDisplayInfoPtr display_info);
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::VRRequestPresentOptionsPtr present_options);
 
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;
@@ -220,8 +225,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
  private:
   ~VrShell() override;
-  void PostToGlThread(const base::Location& from_here,
-                      const base::Closure& task);
+  void PostToGlThread(const base::Location& from_here, base::OnceClosure task);
   void SetUiState();
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
@@ -290,6 +294,9 @@ class VrShell : device::GvrGamepadDataProvider,
   device::CardboardGamepadDataFetcher* cardboard_gamepad_data_fetcher_ =
       nullptr;
   int64_t cardboard_gamepad_timer_ = 0;
+
+  // For GetVRDisplayFrameTransportOptions()
+  device::mojom::VRDisplayFrameTransportOptionsPtr frame_transport_options_;
 
   // Content id
   int content_id_ = 0;

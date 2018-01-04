@@ -36,6 +36,7 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
 
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
+                      device::mojom::VRRequestPresentOptionsPtr options,
                       RequestPresentCallback callback) override;
   void ExitPresent() override;
   void SetListeningForActivate(bool listening);

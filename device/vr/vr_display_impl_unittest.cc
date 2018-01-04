@@ -21,7 +21,9 @@ class VRDisplayImplTest : public testing::Test {
   VRDisplayImplTest() {}
   ~VRDisplayImplTest() override {}
   void onDisplaySynced() {}
-  void onPresentComplete(bool success) {
+  void onPresentComplete(
+      bool success,
+      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
     is_request_presenting_success_ = success;
   }
 
@@ -44,7 +46,7 @@ class VRDisplayImplTest : public testing::Test {
     device::mojom::VRSubmitFrameClientPtr submit_client = nullptr;
     device::mojom::VRPresentationProviderRequest request = nullptr;
     display_impl->RequestPresent(
-        std::move(submit_client), std::move(request),
+        std::move(submit_client), std::move(request), nullptr,
         base::Bind(&VRDisplayImplTest::onPresentComplete,
                    base::Unretained(this)));
   }

@@ -103,13 +103,15 @@ void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
 void OpenVRRenderLoop::RequestPresent(
     mojom::VRSubmitFrameClientPtrInfo submit_client_info,
     mojom::VRPresentationProviderRequest request,
-    base::Callback<void(bool)> callback) {
+    device::mojom::VRRequestPresentOptionsPtr present_options,
+    device::mojom::VRDisplayHost::RequestPresentCallback callback) {
 #if defined(OS_WIN)
   int32_t adapter_index;
   vr::VRSystem()->GetDXGIOutputInfo(&adapter_index);
   if (!texture_helper_.SetAdapterIndex(adapter_index) ||
       !texture_helper_.EnsureInitialized()) {
-    main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
 #endif
@@ -118,7 +120,17 @@ void OpenVRRenderLoop::RequestPresent(
   binding_.Close();
   binding_.Bind(std::move(request));
 
-  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
+      device::mojom::VRDisplayFrameTransportOptions::New();
+  transport_options->transport_method =
+      device::mojom::VRDisplayFrameTransportMethod::SUBMIT_AS_TEXTURE_HANDLE;
+  // Only set boolean options that we need. Default is false, and we should be
+  // able to safely ignore ones that our implementation doesn't care about.
+  transport_options->wait_for_transfer_notification = true;
+
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true, std::move(transport_options)));
   is_presenting_ = true;
   vr_compositor_->SuspendRendering(false);
 }
