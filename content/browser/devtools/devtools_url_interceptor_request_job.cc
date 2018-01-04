@@ -71,7 +71,7 @@ class DevToolsURLInterceptorRequestJob::SubRequest
       devtools_interceptor_request_job_;  // NOT OWNED.
 
   DevToolsURLRequestInterceptor* const interceptor_;
-  bool fetch_in_progress_;
+  bool was_cancelled_;
 };
 
 DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
@@ -80,7 +80,7 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
     DevToolsURLRequestInterceptor* interceptor)
     : devtools_interceptor_request_job_(devtools_interceptor_request_job),
       interceptor_(interceptor),
-      fetch_in_progress_(true) {
+      was_cancelled_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("devtools_interceptor", R"(
@@ -155,16 +155,15 @@ DevToolsURLInterceptorRequestJob::SubRequest::SubRequest(
 
 DevToolsURLInterceptorRequestJob::SubRequest::~SubRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  fetch_in_progress_ = false;
   interceptor_->UnregisterSubRequest(request_.get());
 }
 
 void DevToolsURLInterceptorRequestJob::SubRequest::Cancel() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!fetch_in_progress_)
+  if (was_cancelled_)
     return;
 
-  fetch_in_progress_ = false;
+  was_cancelled_ = true;
   request_->Cancel();
 }
 
@@ -204,7 +203,7 @@ void DevToolsURLInterceptorRequestJob::SubRequest::OnReadCompleted(
   DCHECK_NE(bytes_read, net::ERR_IO_PENDING);
   // OnReadCompleted may get called while canceling the subrequest, in that
   // event theres no need to call ReadRawDataComplete.
-  if (fetch_in_progress_)
+  if (!was_cancelled_)
     devtools_interceptor_request_job_->ReadRawDataComplete(bytes_read);
 }
 
@@ -243,8 +242,8 @@ class DevToolsURLInterceptorRequestJob::InterceptedRequest
   void FetchResponseBody();
 
  private:
-  void OnDataChunkRead(int result);
-  bool ShouldContinueRead();
+  // |this| may be deleted if this method returns false.
+  bool ProcessChunkRead(int result);
   void ReadIntoBuffer();
 
   scoped_refptr<net::GrowableIOBuffer> response_buffer_;
@@ -288,17 +287,11 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::OnReadCompleted(
   // OnReadComplete may be called while request is being cancelled, in this
   // event the result should be |net::ERR_ABORTED| which should complete any
   // |pending_body_requests_|.
-  OnDataChunkRead(result);
-  if (ShouldContinueRead())
+  if (ProcessChunkRead(result))
     ReadIntoBuffer();
 }
 
-bool DevToolsURLInterceptorRequestJob::InterceptedRequest::
-    ShouldContinueRead() {
-  return fetch_in_progress_ && read_response_result_ == net::ERR_IO_PENDING;
-}
-
-void DevToolsURLInterceptorRequestJob::InterceptedRequest::OnDataChunkRead(
+bool DevToolsURLInterceptorRequestJob::InterceptedRequest::ProcessChunkRead(
     int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(result, net::ERR_IO_PENDING);
@@ -320,8 +313,9 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::OnDataChunkRead(
   if (read_response_result_ != net::ERR_IO_PENDING) {
     devtools_interceptor_request_job_->OnInterceptedRequestResponseReady(
         *response_buffer_.get(), read_response_result_);
-    return;
+    return false;
   }
+  return true;
 }
 
 int DevToolsURLInterceptorRequestJob::InterceptedRequest::Read(
@@ -346,7 +340,7 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::FetchResponseBody() {
     }
     return;
   }
-  if (!fetch_in_progress_) {
+  if (was_cancelled_) {
     // Cannot request body on cancelled request.
     devtools_interceptor_request_job_->OnInterceptedRequestResponseReady(
         *response_buffer_.get(), net::ERR_ABORTED);
@@ -360,16 +354,14 @@ void DevToolsURLInterceptorRequestJob::InterceptedRequest::FetchResponseBody() {
 void DevToolsURLInterceptorRequestJob::InterceptedRequest::ReadIntoBuffer() {
   // OnReadCompleted may get called while canceling the subrequest, in that
   // event we cannot call URLRequest::Read().
-  DCHECK(fetch_in_progress_);
-  while (ShouldContinueRead()) {
+  DCHECK(!was_cancelled_);
+  int result;
+  do {
     if (response_buffer_->RemainingCapacity() == 0)
       response_buffer_->SetCapacity(response_buffer_->capacity() * 2);
-    int result = request_->Read(response_buffer_.get(),
-                                response_buffer_->RemainingCapacity());
-    if (result == net::ERR_IO_PENDING)
-      return;
-    OnDataChunkRead(result);
-  }
+    result = request_->Read(response_buffer_.get(),
+                            response_buffer_->RemainingCapacity());
+  } while (result != net::ERR_IO_PENDING && ProcessChunkRead(result));
 }
 
 class DevToolsURLInterceptorRequestJob::MockResponseDetails {
