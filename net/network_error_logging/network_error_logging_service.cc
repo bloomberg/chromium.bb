@@ -197,6 +197,28 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
                                   CreateReportBody(type_string, details));
 }
 
+void NetworkErrorLoggingService::RemoveBrowsingData(
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
+  if (origin_filter.is_null()) {
+    wildcard_policies_.clear();
+    policies_.clear();
+    return;
+  }
+
+  std::vector<url::Origin> origins_to_remove;
+
+  for (auto it = policies_.begin(); it != policies_.end(); ++it) {
+    if (origin_filter.Run(it->first.GetURL()))
+      origins_to_remove.push_back(it->first);
+  }
+
+  for (auto it = origins_to_remove.begin(); it != origins_to_remove.end();
+       ++it) {
+    MaybeRemoveWildcardPolicy(*it, &policies_[*it]);
+    policies_.erase(*it);
+  }
+}
+
 void NetworkErrorLoggingService::SetTickClockForTesting(
     base::TickClock* tick_clock) {
   DCHECK(tick_clock);

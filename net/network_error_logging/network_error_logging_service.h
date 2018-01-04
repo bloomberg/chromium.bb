@@ -67,6 +67,9 @@ class NET_EXPORT NetworkErrorLoggingService
 
   void OnNetworkError(const ErrorDetails& details) override;
 
+  void RemoveBrowsingData(
+      const base::RepeatingCallback<bool(const GURL&)>& origin_filter) override;
+
   void SetTickClockForTesting(base::TickClock* tick_clock);
 
  private:
