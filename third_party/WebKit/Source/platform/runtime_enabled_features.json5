@@ -968,6 +968,10 @@
       status: "experimental",
     },
     {
+      name: "SharedArrayBuffer",
+      status: "stable",
+    },
+    {
       name: "SharedWorker",
       status: "stable",
     },

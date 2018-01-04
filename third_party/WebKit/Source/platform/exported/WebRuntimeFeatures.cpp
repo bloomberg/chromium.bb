@@ -322,6 +322,10 @@ void WebRuntimeFeatures::ForceOverlayFullscreenVideo(bool enable) {
   RuntimeEnabledFeatures::SetForceOverlayFullscreenVideoEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableSharedArrayBuffer(bool enable) {
+  RuntimeEnabledFeatures::SetSharedArrayBufferEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableSharedWorker(bool enable) {
   RuntimeEnabledFeatures::SetSharedWorkerEnabled(enable);
 }
