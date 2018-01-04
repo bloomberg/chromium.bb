@@ -205,6 +205,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                      base::OnceCallback<void(const base::UnguessableToken&)>
                          callback) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
+  void ResizeDueToAutoResize(const gfx::Size& new_size,
+                             uint64_t sequence_number) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -422,6 +424,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void CreateDelegatedFrameHostClient();
 
   void UpdateCursorIfOverSelf();
+
+  void WasResized();
 
   // Tracks whether SnapToPhysicalPixelBoundary() has been called.
   bool has_snapped_to_boundary() { return has_snapped_to_boundary_; }
