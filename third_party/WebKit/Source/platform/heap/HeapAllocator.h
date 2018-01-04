@@ -245,8 +245,12 @@ class PLATFORM_EXPORT HeapAllocator {
       // children but rather push all blink::GarbageCollected objects and only
       // eagerly trace non-managed objects.
       DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
-      HeapAllocator::template Trace<Visitor*, T, Traits>(
-          thread_state->CurrentVisitor(), *object);
+      TraceCollectionIfEnabled<
+          WTF::IsTraceableInCollectionTrait<Traits>::value,
+          // No weak handling for write barriers. The weak references will be
+          // updated in the atomic pause.
+          WTF::kNoWeakHandlingInCollections, WTF::kWeakPointersActWeak, T,
+          Traits>::Trace(thread_state->CurrentVisitor(), *object);
     }
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }
@@ -263,8 +267,12 @@ class PLATFORM_EXPORT HeapAllocator {
       DCHECK(thread_state->CurrentVisitor());
       DCHECK(!thread_state->Heap().GetStackFrameDepth().IsEnabled());
       while (len-- > 0) {
-        HeapAllocator::template Trace<Visitor*, T, Traits>(
-            thread_state->CurrentVisitor(), *array);
+        TraceCollectionIfEnabled<
+            WTF::IsTraceableInCollectionTrait<Traits>::value,
+            // No weak handling for write barriers. The weak references will be
+            // updated in the atomic pause.
+            WTF::kNoWeakHandlingInCollections, WTF::kWeakPointersActWeak, T,
+            Traits>::Trace(thread_state->CurrentVisitor(), *array);
         array++;
       }
     }
