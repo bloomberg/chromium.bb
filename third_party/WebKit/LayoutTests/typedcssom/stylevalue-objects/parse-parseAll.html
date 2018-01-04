@@ -23,8 +23,8 @@ for (const parseMethod of ['parse', 'parseAll']) {
   }, 'Calling CSSStyleValue.' + parseMethod + ' with a CSS shorthand throws a TypeError');
 
   test(() => {
-    assert_throws(new SyntaxError(), () => CSSStyleValue[parseMethod]('width', '10deg'));
-  }, 'Calling CSSStyleValue.' + parseMethod + ' with an invalid cssText for the given property throws a SyntaxError');
+    assert_throws(new TypeError(), () => CSSStyleValue[parseMethod]('width', '10deg'));
+  }, 'Calling CSSStyleValue.' + parseMethod + ' with an invalid cssText for the given property throws a TypeError');
 }
 
 const gValidNonListTests = [
