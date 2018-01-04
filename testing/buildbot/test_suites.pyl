@@ -981,6 +981,17 @@
         'shards': 12,
       },
     },
+    'telemetry_perf_unittests_viz': {
+      'isolate_name': 'telemetry_perf_unittests',
+      'args': [
+        "--xvfb",
+        "--extra-browser-args=--enable-viz",
+      ],
+      'swarming': {
+        'hard_timeout': 960,
+        'shards': 12,
+      },
+    },
     'telemetry_unittests': {
       'args': [
         '--extra-browser-args=--enable-viz',
