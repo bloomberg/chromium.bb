@@ -26,8 +26,8 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit
+    g_worker_thread_dispatcher_instance = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
     DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
 
@@ -43,7 +43,7 @@ WorkerThreadDispatcher::WorkerThreadDispatcher() {}
 WorkerThreadDispatcher::~WorkerThreadDispatcher() {}
 
 WorkerThreadDispatcher* WorkerThreadDispatcher::Get() {
-  return g_instance.Pointer();
+  return g_worker_thread_dispatcher_instance.Pointer();
 }
 
 void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
