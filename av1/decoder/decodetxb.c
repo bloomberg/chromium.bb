@@ -89,7 +89,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   uint8_t levels_buf[TX_PAD_2D];
   uint8_t *const levels = set_levels(levels_buf, width);
   DECLARE_ALIGNED(16, uint8_t, level_counts[MAX_TX_SQUARE]);
-  int8_t signs[MAX_TX_SQUARE];
+  int8_t signs[MAX_TX_SQUARE] = { 0 };
   uint16_t update_pos[MAX_TX_SQUARE];
 
   const int all_zero = av1_read_record_bin(

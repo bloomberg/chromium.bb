@@ -329,11 +329,9 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   stats->rd = RDCOST(txb_info->rdmult, stats->rate, stats->dist);
 
   stats->low_qc = get_lower_coeff(qc);
-  int low_qc_cost;
 
 #if CONFIG_LV_MAP_MULTI
   if (is_eob && stats->low_qc == 0) {
-    low_qc_cost = qc_cost;
     stats->rd_low = stats->rd;  // disable selection of low_qc in this case.
   } else {
 #else
@@ -346,11 +344,11 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
                                        dqv, txb_info->shift);
     const int64_t low_dqc_dist =
         get_coeff_dist(tqc, stats->low_dqc, txb_info->shift);
-    low_qc_cost = get_coeff_cost(stats->low_qc, scan_idx,
+    const int low_qc_cost = get_coeff_cost(stats->low_qc, scan_idx,
 #if CONFIG_LV_MAP_MULTI
-                                 is_eob,
+                                           is_eob,
 #endif
-                                 txb_info, txb_costs, coeff_ctx);
+                                           txb_info, txb_costs, coeff_ctx);
     stats->dist_low = low_dqc_dist - stats->dist0;
     stats->rate_low = low_qc_cost;
     stats->rd_low = RDCOST(txb_info->rdmult, stats->rate_low, stats->dist_low);
