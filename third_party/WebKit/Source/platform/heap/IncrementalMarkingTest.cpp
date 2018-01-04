@@ -937,6 +937,32 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyMember) {
   }
 }
 
+TEST(IncrementalMarkingTest, HeapHashMapInsertStrongWeakPairMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<StrongWeakPair, Member<Object>> map;
+  {
+    // Tests that the write barrier also fires for entities such as
+    // StrongWeakPair that don't overload assignment operators in translators.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj3});
+    map.insert(StrongWeakPair(obj1, obj2), obj3);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapInsertMemberStrongWeakPair) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<Member<Object>, StrongWeakPair> map;
+  {
+    // Tests that the write barrier also fires for entities such as
+    // StrongWeakPair that don't overload assignment operators in translators.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    map.insert(obj1, StrongWeakPair(obj2, obj3));
+  }
+}
+
 }  // namespace incremental_marking_test
 }  // namespace blink
 

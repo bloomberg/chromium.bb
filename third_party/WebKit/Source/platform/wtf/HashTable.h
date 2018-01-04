@@ -564,7 +564,6 @@ class IdentityHashTranslator {
   template <typename T, typename U, typename V>
   static void Translate(T& location, U&&, V&& value) {
     location = std::forward<V>(value);
-    ConstructTraits<T, Traits, Allocator>::NotifyNewElements(&location, 1);
   }
 };
 
@@ -1305,6 +1304,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   HashTranslator::Translate(*entry, std::forward<T>(key),
                             std::forward<Extra>(extra));
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
+  // Translate constructs an element so we need to notify using the trait. Avoid
+  // doing that in the translator so that they can be easily customized.
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
 
   ++key_count_;
 
@@ -1371,6 +1373,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   HashTranslator::Translate(*entry, std::forward<T>(key),
                             std::forward<Extra>(extra), h);
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
+  // Translate constructs an element so we need to notify using the trait. Avoid
+  // doing that in the translator so that they can be easily customized.
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
 
   ++key_count_;
   if (ShouldExpand())
