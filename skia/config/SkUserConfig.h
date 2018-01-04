@@ -241,6 +241,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_CONTAINED_IN_CLIP
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_2PT_CONICAL
+#define SK_SUPPORT_LEGACY_2PT_CONICAL
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
