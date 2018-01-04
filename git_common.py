@@ -435,25 +435,25 @@ def freeze():
     if limit_mb > 0:
       if s.lstat == '?':
         untracked_bytes += os.stat(os.path.join(root_path, f)).st_size
-      if untracked_bytes > limit_mb * MB:
-        die("""\
-          You appear to have too much untracked+unignored data in your git
-          checkout: %.1f / %d MB.
+  if limit_mb > 0 and untracked_bytes > limit_mb * MB:
+    die("""\
+      You appear to have too much untracked+unignored data in your git
+      checkout: %.1f / %d MB.
 
-          Run `git status` to see what it is.
+      Run `git status` to see what it is.
 
-          In addition to making many git commands slower, this will prevent
-          depot_tools from freezing your in-progress changes.
+      In addition to making many git commands slower, this will prevent
+      depot_tools from freezing your in-progress changes.
 
-          You should add untracked data that you want to ignore to your repo's
-            .git/info/exclude
-          file. See `git help ignore` for the format of this file.
+      You should add untracked data that you want to ignore to your repo's
+        .git/info/exclude
+      file. See `git help ignore` for the format of this file.
 
-          If this data is indended as part of your commit, you may adjust the
-          freeze limit by running:
-            git config %s <new_limit>
-          Where <new_limit> is an integer threshold in megabytes.""",
-          untracked_bytes / (MB * 1.0), limit_mb, key)
+      If this data is indended as part of your commit, you may adjust the
+      freeze limit by running:
+        git config %s <new_limit>
+      Where <new_limit> is an integer threshold in megabytes.""",
+      untracked_bytes / (MB * 1.0), limit_mb, key)
 
   try:
     run('commit', '--no-verify', '-m', FREEZE + '.indexed')
