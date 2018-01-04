@@ -29,7 +29,7 @@ namespace {
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: cjfkbpdpjpdldhclahpfgnlhpodlpnba
-const uint8_t kPublicKeySHA256[32] = {
+const uint8_t kVrAssetsPublicKeySHA256[32] = {
     0x29, 0x5a, 0x1f, 0x3f, 0x9f, 0x3b, 0x37, 0x2b, 0x07, 0xf5, 0x6d,
     0xb7, 0xfe, 0x3b, 0xfd, 0x10, 0xb6, 0x80, 0xf3, 0x66, 0x0d, 0xc3,
     0xe2, 0x07, 0x25, 0x8d, 0x37, 0x85, 0x39, 0x51, 0x58, 0xcf};
@@ -112,8 +112,8 @@ base::FilePath VrAssetsComponentInstallerTraits::GetRelativeInstallDir() const {
 
 void VrAssetsComponentInstallerTraits::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(kPublicKeySHA256,
-               kPublicKeySHA256 + arraysize(kPublicKeySHA256));
+  hash->assign(kVrAssetsPublicKeySHA256,
+               kVrAssetsPublicKeySHA256 + arraysize(kVrAssetsPublicKeySHA256));
 }
 
 std::string VrAssetsComponentInstallerTraits::GetName() const {

@@ -30,7 +30,7 @@ constexpr base::FilePath::CharType kMediaEngagementPreloadBinaryPbFileName[] =
     FILE_PATH_LITERAL("preloaded_data.pb");
 
 // The extension id is: aemomkdncapdnfajjbbcbdebjljbpmpj
-constexpr uint8_t kPublicKeySHA256[32] = {
+constexpr uint8_t kMeiPreloadPublicKeySHA256[32] = {
     0x04, 0xce, 0xca, 0x3d, 0x20, 0xf3, 0xd5, 0x09, 0x91, 0x12, 0x13,
     0x41, 0x9b, 0x91, 0xfc, 0xf9, 0x19, 0xc4, 0x94, 0x6a, 0xb9, 0x9a,
     0xe1, 0xaf, 0x3b, 0x9a, 0x95, 0x85, 0x5b, 0x9e, 0x99, 0xed};
@@ -112,8 +112,9 @@ MediaEngagementPreloadComponentInstallerPolicy::GetRelativeInstallDir() const {
 
 void MediaEngagementPreloadComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(kPublicKeySHA256,
-               kPublicKeySHA256 + arraysize(kPublicKeySHA256));
+  hash->assign(
+      kMeiPreloadPublicKeySHA256,
+      kMeiPreloadPublicKeySHA256 + arraysize(kMeiPreloadPublicKeySHA256));
 }
 
 std::string MediaEngagementPreloadComponentInstallerPolicy::GetName() const {

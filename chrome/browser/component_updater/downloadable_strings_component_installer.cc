@@ -101,7 +101,7 @@ const base::FilePath::CharType kDownloadableStringsBinaryTestFileName[] =
     FILE_PATH_LITERAL("dummy-locale.pak");
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
-const uint8_t kPublicKeySHA256[32] = {
+const uint8_t kDownloadableStringsPublicKeySHA256[32] = {
     0x5e, 0xea, 0xe8, 0x4b, 0xba, 0xe2, 0x2b, 0x8f, 0xeb, 0x60, 0x24,
     0x01, 0x09, 0x49, 0x92, 0xdf, 0x7b, 0xe9, 0x41, 0x50, 0xba, 0x97,
     0x39, 0x7e, 0x72, 0xdd, 0x7b, 0xc0, 0xd3, 0xb7, 0x04, 0xe6,
@@ -410,8 +410,9 @@ DownloadableStringsComponentInstallerPolicy::GetRelativeInstallDir() const {
 
 void DownloadableStringsComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(kPublicKeySHA256,
-               kPublicKeySHA256 + arraysize(kPublicKeySHA256));
+  hash->assign(kDownloadableStringsPublicKeySHA256,
+               kDownloadableStringsPublicKeySHA256 +
+                   arraysize(kDownloadableStringsPublicKeySHA256));
 }
 
 std::string DownloadableStringsComponentInstallerPolicy::GetName() const {
@@ -448,7 +449,8 @@ static void OnUpdateResult(update_client::Error error) {
 void DownloadableStringsComponentInstallerPolicy::TriggerComponentUpdate(
     OnDemandUpdater* updater) {
   const std::string crx_id = crx_file::id_util::GenerateIdFromHash(
-      kPublicKeySHA256, sizeof(kPublicKeySHA256));
+      kDownloadableStringsPublicKeySHA256,
+      sizeof(kDownloadableStringsPublicKeySHA256));
   DCHECK_EQ(crx_id, "fookoiellkocclipolgaceabajejjcnp");
   VLOG(1) << "Triggering component update";
   updater->OnDemandUpdate(crx_id, base::Bind(&OnUpdateResult));

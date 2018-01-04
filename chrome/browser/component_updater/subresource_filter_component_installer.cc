@@ -23,7 +23,7 @@ using component_updater::ComponentUpdateService;
 namespace component_updater {
 
 // The extension id is: gcmjkmgdlgnkkcocmoeiminaijmmjnii
-const uint8_t kPublicKeySHA256[32] = {
+const uint8_t kSubresourceFilterPublicKeySHA256[32] = {
     0x62, 0xc9, 0xac, 0x63, 0xb6, 0xda, 0xa2, 0xe2, 0xce, 0x48, 0xc8,
     0xd0, 0x89, 0xcc, 0x9d, 0x88, 0x02, 0x7c, 0x3e, 0x71, 0xcf, 0x5d,
     0x6b, 0xb5, 0xdf, 0x21, 0x65, 0x82, 0x08, 0x97, 0x6a, 0x26};
@@ -106,7 +106,8 @@ SubresourceFilterComponentInstallerPolicy::GetRelativeInstallDir() const {
 
 void SubresourceFilterComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(std::begin(kPublicKeySHA256), std::end(kPublicKeySHA256));
+  hash->assign(std::begin(kSubresourceFilterPublicKeySHA256),
+               std::end(kSubresourceFilterPublicKeySHA256));
 }
 
 std::string SubresourceFilterComponentInstallerPolicy::GetName() const {
