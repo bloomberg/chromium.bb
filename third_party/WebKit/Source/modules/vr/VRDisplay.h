@@ -14,15 +14,12 @@
 #include "modules/vr/VRLayerInit.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
+#include "platform/graphics/gpu/XRFrameTransport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
-
-namespace gfx {
-class GpuFence;
-}
 
 namespace gpu {
 namespace gles2 {
@@ -32,13 +29,12 @@ class GLES2Interface;
 
 namespace blink {
 
+class PLATFORM_EXPORT Image;
 class NavigatorVR;
 class VRController;
 class VREyeParameters;
 class VRFrameData;
 class VRStageParameters;
-
-class PLATFORM_EXPORT GpuMemoryBufferImageCopy;
 
 class WebGLRenderingContextBase;
 
@@ -47,8 +43,7 @@ enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
 class VRDisplay final : public EventTargetWithInlineData,
                         public ActiveScriptWrappable<VRDisplay>,
                         public PausableObject,
-                        public device::mojom::blink::VRDisplayClient,
-                        public device::mojom::blink::VRSubmitFrameClient {
+                        public device::mojom::blink::VRDisplayClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(VRDisplay);
   USING_PRE_FINALIZER(VRDisplay, Dispose);
@@ -129,10 +124,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRController* Controller();
 
  private:
-  void WaitForPreviousTransfer();
-  WTF::TimeDelta WaitForPreviousRenderToFinish();
-  WTF::TimeDelta WaitForGpuFenceReceived();
-
   void OnPresentComplete(
       bool success,
       device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
@@ -143,11 +134,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   void StopPresenting();
 
   void OnPresentChange();
-
-  // VRSubmitFrameClient
-  void OnSubmitFrameTransferred(bool success) override;
-  void OnSubmitFrameRendered() override;
-  void OnSubmitFrameGpuFence(const gfx::GpuFenceHandle&) override;
 
   // VRDisplayClient
   void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
@@ -179,6 +165,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   // Does nothing if the web application hasn't requested a rAF callback.
   void RequestVSync();
 
+  scoped_refptr<Image> GetFrameImage();
+
   Member<NavigatorVR> navigator_vr_;
   unsigned display_id_ = 0;
   String display_name_;
@@ -192,7 +180,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   device::mojom::blink::VRPosePtr frame_pose_;
   device::mojom::blink::VRPosePtr pending_pose_;
 
-  std::unique_ptr<GpuMemoryBufferImageCopy> frame_copier_;
 
   // This frame ID is vr-specific and is used to track when frames arrive at the
   // VR compositor so that it knows which poses to use, when to apply bounds
@@ -211,16 +198,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   gpu::gles2::GLES2Interface* context_gl_ = nullptr;
   Member<WebGLRenderingContextBase> rendering_context_;
-
-  // Used to keep the image alive until the next frame if using
-  // waitForPreviousTransferToFinish.
-  scoped_refptr<Image> previous_image_;
-
-  // If using GpuFence to separate frames, need to wait for the previous
-  // frame's fence, but not if this is the first frame. Separately track
-  // if we're expecting a fence and the received fence itself.
-  bool waiting_for_previous_frame_fence_ = false;
-  std::unique_ptr<gfx::GpuFence> previous_frame_fence_;
+  Member<XRFrameTransport> frame_transport_;
 
   TraceWrapperMember<ScriptedAnimationController>
       scripted_animation_controller_;
@@ -234,19 +212,13 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool in_animation_frame_ = false;
   bool did_submit_this_frame_ = false;
   bool display_blurred_ = false;
-  bool waiting_for_previous_frame_render_ = false;
-  bool waiting_for_previous_frame_transfer_ = false;
   bool pending_present_request_ = false;
-  bool last_transfer_succeeded_ = false;
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
-  device::mojom::blink::VRDisplayFrameTransportOptionsPtr transport_options_;
 
   bool present_image_needs_copy_ = false;
 
-  mojo::Binding<device::mojom::blink::VRSubmitFrameClient>
-      submit_frame_client_binding_;
   mojo::Binding<device::mojom::blink::VRDisplayClient> display_client_binding_;
   device::mojom::blink::VRPresentationProviderPtr vr_presentation_provider_;
 

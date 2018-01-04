@@ -1133,6 +1133,8 @@ jumbo_component("platform") {
     "graphics/gpu/SharedGpuContext.h",
     "graphics/gpu/WebGLImageConversion.cpp",
     "graphics/gpu/WebGLImageConversion.h",
+    "graphics/gpu/XRFrameTransport.cpp",
+    "graphics/gpu/XRFrameTransport.h",
     "graphics/highcontrast/highcontrast_classifier.cc",
     "graphics/highcontrast/highcontrast_classifier.h",
     "graphics/paint/ClipDisplayItem.cpp",
@@ -1525,6 +1527,7 @@ jumbo_component("platform") {
   deps = [
     "//components/viz/service",
     "//device/base/synchronization",
+    "//device/vr:mojo_bindings_blink",
     "//gin",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",

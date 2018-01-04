@@ -132,14 +132,9 @@ _CONFIG = [
             'third_party/WebKit/Source/modules/webgl/',
             'third_party/WebKit/Source/modules/xr/',
         ],
-        # These modules need access to GL drawing, cross-process image
-        # transport, and related interfaces.
+        # These modules need access to GL drawing.
         'allowed': [
-            'gfx::GpuFence',
-            'gfx::GpuFenceHandle',
-            'gfx::GpuMemoryBufferHandle',
             'gpu::gles2::GLES2Interface',
-            'gpu::MailboxHolder',
         ],
     },
     {
