@@ -13,7 +13,6 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offliner_helper.h"
@@ -64,35 +63,30 @@ void RecordErrorCauseUMA(const ClientId& client_id, int error_code) {
       error_code);
 }
 
-bool IsPreviewsEnabled(const base::Value& value_navigation_data) {
-  if (value_navigation_data.is_none())
-    return false;
-
-  ChromeNavigationData chrome_navigation_data(value_navigation_data);
-
-  data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
-      chrome_navigation_data.GetDataReductionProxyData();
-  if (data_reduction_proxy_data &&
-      data_reduction_proxy_data->lite_page_received()) {
-    return true;
-  }
-
-  content::PreviewsState previews_state =
-      chrome_navigation_data.previews_state();
-  if (previews_state != content::PreviewsTypes::PREVIEWS_OFF &&
-      previews_state != content::PreviewsTypes::PREVIEWS_NO_TRANSFORM) {
-    return true;
-  }
-
-  return false;
-}
-
 void RecordOffliningPreviewsUMA(const ClientId& client_id,
-                                const base::Value& navigation_data) {
+                                ChromeNavigationData* navigation_data) {
+  content::PreviewsState previews_state = content::PreviewsTypes::PREVIEWS_OFF;
+  if (navigation_data)
+    previews_state = navigation_data->previews_state();
+
+  int is_previews_enabled = 0;
+  bool lite_page_received = false;
+  data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
+      nullptr;
+  if (navigation_data)
+    data_reduction_proxy_data = navigation_data->GetDataReductionProxyData();
+  if (data_reduction_proxy_data)
+    lite_page_received = data_reduction_proxy_data->lite_page_received();
+
+  if ((previews_state != content::PreviewsTypes::PREVIEWS_OFF &&
+       previews_state != content::PreviewsTypes::PREVIEWS_NO_TRANSFORM) ||
+      lite_page_received)
+    is_previews_enabled = 1;
+
   base::UmaHistogramBoolean(
       AddHistogramSuffix(client_id,
                          "OfflinePages.Background.OffliningPreviewStatus"),
-      IsPreviewsEnabled(navigation_data));
+      is_previews_enabled);
 }
 
 void HandleLoadTerminationCancel(
@@ -373,8 +367,10 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   // ResourceDispatcherHostDelegate::GetNavigationData during commit.
   // Because ChromeResourceDispatcherHostDelegate always returns a
   // ChromeNavigationData, it is safe to static_cast here.
-  RecordOffliningPreviewsUMA(pending_request_->client_id(),
-                             navigation_handle->GetNavigationData());
+  ChromeNavigationData* navigation_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+
+  RecordOffliningPreviewsUMA(pending_request_->client_id(), navigation_data);
 }
 
 void BackgroundLoaderOffliner::SetSnapshotControllerForTest(

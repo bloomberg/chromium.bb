@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -65,6 +64,7 @@
 #include "components/previews/core/previews_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -952,33 +952,29 @@ void ChromeResourceDispatcherHostDelegate::
   g_external_protocol_handler_delegate = delegate;
 }
 
-base::Value ChromeResourceDispatcherHostDelegate::GetNavigationData(
-    net::URLRequest* request) {
-  if (!request)
-    return base::Value();
-
-  ChromeNavigationData* chrome_navigation_data =
+content::NavigationData*
+ChromeResourceDispatcherHostDelegate::GetNavigationData(
+    net::URLRequest* request) const {
+  ChromeNavigationData* data =
       ChromeNavigationData::GetDataAndCreateIfNecessary(request);
+  if (!request)
+    return data;
 
   data_reduction_proxy::DataReductionProxyData* data_reduction_proxy_data =
       data_reduction_proxy::DataReductionProxyData::GetData(*request);
   // DeepCopy the DataReductionProxyData from the URLRequest to prevent the
   // URLRequest and DataReductionProxyData from both having ownership of the
-  // same object. This copy will be shortlived as it will be deleted at the end
-  // of this function in ChromeNavigationData's destructor.
-  if (data_reduction_proxy_data) {
-    chrome_navigation_data->SetDataReductionProxyData(
-        data_reduction_proxy_data->DeepCopy());
-  }
+  // same object. This copy will be shortlived as it will be deep copied again
+  // when content makes a clone of NavigationData for the UI thread.
+  if (data_reduction_proxy_data)
+    data->SetDataReductionProxyData(data_reduction_proxy_data->DeepCopy());
 
   previews::PreviewsUserData* previews_user_data =
       previews::PreviewsUserData::GetData(*request);
-  if (previews_user_data) {
-    chrome_navigation_data->set_previews_user_data(
-        previews_user_data->DeepCopy());
-  }
+  if (previews_user_data)
+    data->set_previews_user_data(previews_user_data->DeepCopy());
 
-  return chrome_navigation_data->ToValue();
+  return data;
 }
 
 std::unique_ptr<net::ClientCertStore>

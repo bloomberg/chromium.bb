@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
-#include "base/values.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
@@ -842,7 +842,7 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
 
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints), nullptr,
-      std::move(ssl_info), base::Value() /* navigation_data */,
+      std::move(ssl_info), std::unique_ptr<NavigationData>(),
       GlobalRequestID(-1, g_next_request_id), is_download,
       false /* is_stream */,
       request_controller_->TakeSubresourceLoaderParams());

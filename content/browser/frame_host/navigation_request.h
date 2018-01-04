@@ -22,10 +22,6 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/previews_state.h"
 
-namespace base {
-class Value;
-}
-
 namespace content {
 
 class FrameNavigationEntry;
@@ -33,6 +29,7 @@ class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationHandleImpl;
 class NavigationURLLoader;
+class NavigationData;
 class ResourceRequestBody;
 class SiteInstanceImpl;
 class StreamHandle;
@@ -229,7 +226,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       std::unique_ptr<StreamHandle> body,
       const net::SSLInfo& ssl_info,
-      base::Value navigation_data,
+      std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& request_id,
       bool is_download,
       bool is_stream,

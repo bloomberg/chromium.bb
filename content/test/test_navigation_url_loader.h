@@ -12,16 +12,13 @@
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/common/navigation_params.h"
 
-namespace base {
-class Value;
-}
-
 namespace net {
 struct RedirectInfo;
 }
 
 namespace content {
 
+class NavigationData;
 class NavigationURLLoaderDelegate;
 class StreamHandle;
 struct ResourceResponse;
@@ -50,7 +47,7 @@ class TestNavigationURLLoader
                                const scoped_refptr<ResourceResponse>& response);
   void CallOnResponseStarted(const scoped_refptr<ResourceResponse>& response,
                              std::unique_ptr<StreamHandle> body,
-                             base::Value navigation_data);
+                             std::unique_ptr<NavigationData> navigation_data);
 
   int redirect_count() { return redirect_count_; }
 

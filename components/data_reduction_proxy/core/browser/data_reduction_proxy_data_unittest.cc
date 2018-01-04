@@ -11,7 +11,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/values.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -154,121 +153,6 @@ TEST_F(DataReductionProxyDataTest, ClearData) {
   DataReductionProxyData::ClearData(fake_request.get());
   data = DataReductionProxyData::GetData(*fake_request.get());
   EXPECT_FALSE(data);
-}
-
-TEST_F(DataReductionProxyDataTest, Serialization) {
-  // used_data_reduction_proxy.
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_used_data_reduction_proxy(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.used_data_reduction_proxy());
-    EXPECT_TRUE(clone_b.used_data_reduction_proxy());
-  }
-
-  // lofi_requested
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_lofi_requested(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.lofi_requested());
-    EXPECT_TRUE(clone_b.lofi_requested());
-  }
-
-  // client_lofi_requested
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_client_lofi_requested(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.client_lofi_requested());
-    EXPECT_TRUE(clone_b.client_lofi_requested());
-  }
-
-  // lite_page_received
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_lite_page_received(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.lite_page_received());
-    EXPECT_TRUE(clone_b.lite_page_received());
-  }
-
-  // lofi_policy_received
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_lofi_policy_received(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.lofi_policy_received());
-    EXPECT_TRUE(clone_b.lofi_policy_received());
-  }
-
-  // lofi_received
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_lofi_received(true);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.lofi_received());
-    EXPECT_TRUE(clone_b.lofi_received());
-  }
-
-  // session_key
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_session_key("the_session_key");
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_EQ("", clone_a.session_key());
-    EXPECT_EQ("the_session_key", clone_b.session_key());
-  }
-
-  // request_url
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_request_url(GURL("http://example.com"));
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_EQ(GURL(), clone_a.request_url());
-    EXPECT_EQ(GURL("http://example.com"), clone_b.request_url());
-  }
-
-  // effective_connection_type
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_4G);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
-              clone_a.effective_connection_type());
-    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_4G,
-              clone_b.effective_connection_type());
-  }
-
-  // page_id
-  {
-    DataReductionProxyData data;
-    DataReductionProxyData clone_a(data.ToValue());
-    data.set_page_id(1ull << 60);
-    DataReductionProxyData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.page_id());
-    EXPECT_TRUE(clone_b.page_id());
-    EXPECT_EQ(1ull << 60, clone_b.page_id().value());
-  }
 }
 
 }  // namespace

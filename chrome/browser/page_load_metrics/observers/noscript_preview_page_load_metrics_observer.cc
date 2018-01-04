@@ -6,7 +6,6 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -64,13 +63,13 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 NoScriptPreviewPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
-  const base::Value& navigation_data = navigation_handle->GetNavigationData();
-  if (navigation_data.is_none())
+  ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
+      navigation_handle->GetNavigationData());
+  if (!nav_data)
     return STOP_OBSERVING;
-  ChromeNavigationData chrome_navigation_data(navigation_data);
 
-  previews::PreviewsType preview_type = previews::GetMainFramePreviewsType(
-      chrome_navigation_data.previews_state());
+  previews::PreviewsType preview_type =
+      previews::GetMainFramePreviewsType(nav_data->previews_state());
   if (preview_type == previews::PreviewsType::NOSCRIPT)
     return CONTINUE_OBSERVING;
 

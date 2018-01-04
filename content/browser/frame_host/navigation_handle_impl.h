@@ -18,11 +18,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "base/values.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_type.h"
 #include "content/public/browser/restore_type.h"
@@ -163,7 +163,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void CancelDeferredNavigation(NavigationThrottle* cancelling_throttle,
                                 NavigationThrottle::ThrottleCheckResult result);
 
-  const base::Value& GetNavigationData() override;
+  NavigationData* GetNavigationData() override;
 
   // Used in tests.
   State state_for_testing() const { return state_; }
@@ -318,7 +318,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
   // here.
-  void set_navigation_data(base::Value navigation_data) {
+  void set_navigation_data(std::unique_ptr<NavigationData> navigation_data) {
     navigation_data_ = std::move(navigation_data);
   }
 
@@ -513,7 +513,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
 
   // Embedder data from the IO thread tied to this navigation.
-  base::Value navigation_data_;
+  std::unique_ptr<NavigationData> navigation_data_;
 
   // Embedder data from the UI thread tied to this navigation.
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
