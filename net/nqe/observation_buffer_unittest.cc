@@ -45,10 +45,6 @@ TEST(NetworkQualityObservationBufferTest, BoundedBuffer) {
   }
 }
 
-// Test disabled on OS_WIN to avoid linking errors when calling
-// SetTickClockForTesting.
-// TODO(tbansal): crbug.com/651963. Pass the clock through NQE's constructor.
-#if !defined(OS_WIN)
 // Verify that the percentiles are monotonically non-decreasing when a weight is
 // applied.
 TEST(NetworkQualityObservationBufferTest, GetPercentileWithWeights) {
@@ -90,7 +86,6 @@ TEST(NetworkQualityObservationBufferTest, GetPercentileWithWeights) {
   }
   EXPECT_LT(result_lowest, result_highest);
 }
-#endif
 
 // Verifies that the percentiles are correctly computed. All observations have
 // the same timestamp.
