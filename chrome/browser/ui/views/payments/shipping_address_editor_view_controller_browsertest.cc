@@ -239,8 +239,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
                                /*accept_empty_phone_number=*/false);
 }
 
+// Disabled for flakyness: crbug.com/799028
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       EnterAcceleratorSyncData) {
+                       DISABLED_EnterAcceleratorSyncData) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
