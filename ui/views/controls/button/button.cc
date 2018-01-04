@@ -425,7 +425,7 @@ void Button::VisibilityChanged(View* starting_from, bool visible) {
 }
 
 void Button::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
-  if (!details.is_add && state_ != STATE_DISABLED)
+  if (!details.is_add && state_ != STATE_DISABLED && details.child == this)
     SetState(STATE_NORMAL);
 }
 
