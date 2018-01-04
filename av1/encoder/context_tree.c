@@ -212,3 +212,37 @@ void av1_free_pc_tree(ThreadData *td, const int num_planes) {
   aom_free(td->pc_tree);
   td->pc_tree = NULL;
 }
+
+#if CONFIG_EXT_PARTITION_TYPES
+void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
+                           PICK_MODE_CONTEXT *src_ctx) {
+  dst_ctx->mic = src_ctx->mic;
+  dst_ctx->mbmi_ext = src_ctx->mbmi_ext;
+
+  dst_ctx->num_4x4_blk = src_ctx->num_4x4_blk;
+  dst_ctx->skip = src_ctx->skip;
+  dst_ctx->skippable = src_ctx->skippable;
+  dst_ctx->best_mode_index = src_ctx->best_mode_index;
+
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    memcpy(dst_ctx->blk_skip[i], src_ctx->blk_skip[i],
+           sizeof(uint8_t) * src_ctx->num_4x4_blk);
+  }
+
+  dst_ctx->hybrid_pred_diff = src_ctx->hybrid_pred_diff;
+  dst_ctx->comp_pred_diff = src_ctx->comp_pred_diff;
+  dst_ctx->single_pred_diff = src_ctx->single_pred_diff;
+
+  dst_ctx->rate = src_ctx->rate;
+  dst_ctx->dist = src_ctx->dist;
+  dst_ctx->rdcost = src_ctx->rdcost;
+  dst_ctx->rd_mode_is_ready = src_ctx->rd_mode_is_ready;
+
+  memcpy(dst_ctx->pred_mv, src_ctx->pred_mv, sizeof(MV) * TOTAL_REFS_PER_FRAME);
+  dst_ctx->pred_interp_filter = src_ctx->pred_interp_filter;
+
+#if CONFIG_EXT_PARTITION
+  dst_ctx->partition = src_ctx->partition;
+#endif  // CONFIG_EXT_PARTITION
+}
+#endif  // CONFIG_EXT_PARTITION_TYPES
