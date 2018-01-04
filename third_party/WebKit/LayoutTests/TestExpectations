@@ -3556,5 +3556,6 @@ crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-
 # Sheriff failures 2018-01-03
 crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
 crbug.com/799127 [ Mac ] external/wpt/resource-timing/test_resource_timing.html [ Failure ]
+crbug.com/799127 [ Mac ] external/wpt/dom/events/Event-timestamp-high-resolution.html [ Failure ]
 crbug.com/799137 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
 crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
