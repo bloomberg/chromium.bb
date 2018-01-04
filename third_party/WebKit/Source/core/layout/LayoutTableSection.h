@@ -303,8 +303,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     return type == kLayoutObjectTableSection || LayoutBox::IsOfType(type);
   }
 
-  void WillBeRemovedFromTree() final;
-  void RemoveChild(LayoutObject*) final;
+  void WillBeRemovedFromTree() override;
 
   int BorderSpacingForRow(unsigned row) const {
     return grid_[row].row ? Table()->VBorderSpacing() : 0;
