@@ -435,6 +435,8 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void AbsoluteQuads(Vector<FloatQuad>& quads,
                      MapCoordinatesFlags mode = 0) const override;
 
+  void RemoveChild(LayoutObject*) override;
+
  protected:
   // Compute absolute quads for |this|, but not any continuations. May only be
   // called for objects which can be or have continuations, i.e. LayoutInline or
@@ -493,6 +495,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void InvalidateStickyConstraints();
+
+  void MergeAnonymousTablePartsIfNeeded(LayoutBoxModelObject* prev,
+                                        LayoutBoxModelObject* next);
 
  public:
   // These functions are only used internally to manipulate the layout tree
@@ -566,6 +571,8 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
         &LayoutBoxModelObject::BorderTop, &LayoutBoxModelObject::BorderRight,
         &LayoutBoxModelObject::BorderBottom, &LayoutBoxModelObject::BorderLeft);
   }
+
+  void MoveNonAnonymousTableDescendantsTo(LayoutBoxModelObject*);
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, IsBoxModelObject());

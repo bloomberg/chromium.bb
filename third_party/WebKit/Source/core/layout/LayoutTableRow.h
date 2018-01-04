@@ -154,6 +154,7 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 
   void NextSibling() const = delete;
   void PreviousSibling() const = delete;
+  void RemoveChild(LayoutObject*) final;
 
   // This field should never be read directly. It should be read through
   // rowIndex() above instead. This is to ensure that we never read this

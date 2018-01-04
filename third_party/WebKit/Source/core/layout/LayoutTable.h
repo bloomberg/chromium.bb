@@ -500,6 +500,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   void SetIsAnyColumnEverCollapsed() { is_any_column_ever_collapsed_ = true; }
 
+  void RemoveChild(LayoutObject*) final;
+
   // TODO(layout-dev): All mutables in this class are lazily updated by
   // recalcSections() which is called by various getter methods (e.g.
   // borderBefore(), borderAfter()).

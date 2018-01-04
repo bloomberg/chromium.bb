@@ -1409,10 +1409,7 @@ void LayoutBoxModelObject::MoveChildTo(
   if (full_remove_insert && IsLayoutBlock() && child->IsBox())
     ToLayoutBox(child)->RemoveFromPercentHeightContainer();
 
-  if (full_remove_insert && (to_box_model_object->IsLayoutBlock() ||
-                             to_box_model_object->IsLayoutInline())) {
-    // Takes care of adding the new child correctly if toBlock and fromBlock
-    // have different kind of children (block vs inline).
+  if (full_remove_insert) {
     to_box_model_object->AddChild(
         VirtualChildren()->RemoveChildNode(this, child), before_child);
   } else {
@@ -1471,6 +1468,59 @@ bool LayoutBoxModelObject::BackgroundStolenForBeingBody(
     return false;
 
   return true;
+}
+
+void LayoutBoxModelObject::MoveNonAnonymousTableDescendantsTo(
+    LayoutBoxModelObject* to_box_model_object) {
+  LayoutObject* child = SlowFirstChild();
+  DCHECK(IsAnonymous());
+  // Append non-anonymous descendants' sub-trees of one anonymous table part to
+  // another. We walk down past anonymous descendants to make sure existing
+  // anonymous table part chains in to_box_model_object are used.
+  while (child) {
+    LayoutObject* next_child = child->NextSibling();
+    if (child->IsAnonymous() && child->IsTablePart()) {
+      ToLayoutBoxModelObject(child)->MoveNonAnonymousTableDescendantsTo(
+          to_box_model_object);
+      child->Destroy();
+    } else {
+      MoveChildTo(to_box_model_object, child, true);
+      // If we move a subtree rooted at a table section or row, we need to mark
+      // the section for cell recalc in case there is a cell descendant.
+      // Normally, boxes in a subtree will be added one by one, and AddChild in
+      // LayoutTableRow will make sure cells are added with AddCell or the table
+      // section marked for cell recalc. Since the cell is just moved along with
+      // its subtree here, we need to mark the section for recalc.
+      if (child->IsTableSection())
+        ToLayoutTableSection(child)->SetNeedsCellRecalc();
+      else if (child->IsTableRow())
+        ToLayoutTableRow(child)->Section()->SetNeedsCellRecalc();
+    }
+    child = next_child;
+  }
+}
+
+void LayoutBoxModelObject::MergeAnonymousTablePartsIfNeeded(
+    LayoutBoxModelObject* prev,
+    LayoutBoxModelObject* next) {
+  if (!prev || !next || !prev->IsAnonymous() || !next->IsAnonymous())
+    return;
+  DCHECK(prev->IsInline() == next->IsInline());
+  next->MoveNonAnonymousTableDescendantsTo(prev);
+  next->Destroy();
+}
+
+void LayoutBoxModelObject::RemoveChild(LayoutObject* old_child) {
+  LayoutObject* prev = old_child->PreviousSibling();
+  LayoutObject* next = old_child->NextSibling();
+
+  LayoutObject::RemoveChild(old_child);
+
+  if (DocumentBeingDestroyed())
+    return;
+
+  if (prev && next && prev->IsTable() && next->IsTable())
+    MergeAnonymousTablePartsIfNeeded(ToLayoutTable(prev), ToLayoutTable(next));
 }
 
 }  // namespace blink
