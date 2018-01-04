@@ -421,6 +421,14 @@ const CGFloat kMDCloseButtonSize = 24;
   [self cancelAutoClose];
   shouldCloseOnMouseExit_ = NO;
 
+  // Announce the new download.
+  NSAccessibilityPostNotificationWithUserInfo(
+      self.view.window, NSAccessibilityAnnouncementRequestedNotification, @{
+        NSAccessibilityAnnouncementKey :
+            l10n_util::GetNSString(IDS_DOWNLOAD_STARTED),
+        NSAccessibilityPriorityKey : @(NSAccessibilityPriorityMedium),
+      });
+
   // Insert new item at the left.
   // Adding at index 0 in NSMutableArrays is O(1).
   [downloadItemControllers_ insertObject:controller atIndex:0];
