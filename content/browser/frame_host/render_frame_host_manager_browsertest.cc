@@ -1171,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Ensure that the original renderer process exited cleanly without crashing.
   exit_observer.Wait();
-  EXPECT_EQ(true, exit_observer.did_exit_normally());
+  EXPECT_TRUE(exit_observer.did_exit_normally());
 }
 
 // Test that opening a new window in the same SiteInstance and then navigating

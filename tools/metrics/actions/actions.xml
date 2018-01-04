@@ -2599,6 +2599,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="BindingsMismatchTerminate_RVH_WebUI">
+  <obsolete>
+    Replaced in 1/2018 with bad_message::RVH_WEB_UI_BINDINGS_MISMATCH.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -18710,6 +18713,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Terminate_ProcessMismatch_CreateNewWidget">
+  <obsolete>
+    Replaced in 1/2018 with bad_message::WCI_NEW_WIDGET_PROCESS_MISMATCH.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

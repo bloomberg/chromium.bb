@@ -658,13 +658,10 @@ void RenderViewHostImpl::SetWebUIProperty(const std::string& name,
   // It could lie and send the corresponding IPC messages anyway, but we will
   // not act on them if enabled_bindings_ doesn't agree. If we get here without
   // WebUI bindings, kill the renderer process.
-  if (GetMainFrame()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI) {
+  if (GetMainFrame()->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI)
     Send(new ViewMsg_SetWebUIProperty(GetRoutingID(), name, value));
-  } else {
-    RecordAction(
-        base::UserMetricsAction("BindingsMismatchTerminate_RVH_WebUI"));
-    GetProcess()->Shutdown(content::RESULT_CODE_KILLED, false);
-  }
+  else
+    ReceivedBadMessage(GetProcess(), bad_message::RVH_WEB_UI_BINDINGS_MISMATCH);
 }
 
 void RenderViewHostImpl::RenderWidgetGotFocus() {

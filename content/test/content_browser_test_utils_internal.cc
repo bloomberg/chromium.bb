@@ -425,4 +425,36 @@ bool UpdateResizeParamsMessageFilter::OnMessageReceived(
   return false;
 }
 
+RenderProcessHostKillWaiter::RenderProcessHostKillWaiter(
+    RenderProcessHost* render_process_host)
+    : exit_watcher_(render_process_host,
+                    RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT) {}
+
+base::Optional<bad_message::BadMessageReason>
+RenderProcessHostKillWaiter::Wait() {
+  base::Optional<bad_message::BadMessageReason> result;
+
+  // Wait for the renderer kill.
+  exit_watcher_.Wait();
+  if (exit_watcher_.did_exit_normally())
+    return result;
+
+  // Find the logged Stability.BadMessageTerminated.Content data (if present).
+  std::vector<base::Bucket> uma_samples =
+      histogram_tester_.GetAllSamples("Stability.BadMessageTerminated.Content");
+  // No UMA will be present if the kill was not trigerred by the //content layer
+  // (e.g. if it was trigerred by bad_message::ReceivedBadMessage from //chrome
+  // layer or from somewhere in the //components layer).
+  if (uma_samples.empty())
+    return result;
+  const base::Bucket& bucket = uma_samples.back();
+  // Assumming that user of RenderProcessHostKillWatcher makes sure that only
+  // one kill can happen while using the class.
+  DCHECK_EQ(1u, uma_samples.size())
+      << "Multiple renderer kills are unsupported";
+
+  // Translate contents of the bucket into bad_message::BadMessageReason.
+  return static_cast<bad_message::BadMessageReason>(bucket.min);
+}
+
 }  // namespace content

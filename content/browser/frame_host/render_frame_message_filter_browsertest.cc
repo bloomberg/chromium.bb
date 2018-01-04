@@ -200,24 +200,27 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   EXPECT_NE(iframe->GetProcess(), main_frame->GetProcess());
 
-  RenderProcessHostWatcher iframe_killed(
-      iframe->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-
   // Try to get cross-site cookies from the subframe's process and wait for it
   // to be killed.
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(
-                     [](RenderFrameHost* frame) {
-                       GetFilterForProcess(frame->GetProcess())
-                           ->GetCookies(
-                               frame->GetRoutingID(), GURL("http://127.0.0.1/"),
-                               GURL("http://127.0.0.1/"),
-                               base::BindOnce([](const std::string&) {}));
-                     },
-                     iframe));
+  {
+    RenderProcessHostKillWaiter iframe_kill_waiter(iframe->GetProcess());
 
-  iframe_killed.Wait();
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       [](RenderFrameHost* frame) {
+                         GetFilterForProcess(frame->GetProcess())
+                             ->GetCookies(
+                                 frame->GetRoutingID(),
+                                 GURL("http://127.0.0.1/"),
+                                 GURL("http://127.0.0.1/"),
+                                 base::BindOnce([](const std::string&) {}));
+                       },
+                       iframe));
+
+    EXPECT_EQ(bad_message::RFMF_GET_COOKIES_BAD_ORIGIN,
+              iframe_kill_waiter.Wait());
+  }
 
   EXPECT_EQ(
       " Site A ------------ proxies for B\n"
@@ -228,23 +231,25 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest,
 
   // Now set a cross-site cookie from the main frame's process and wait for it
   // to be killed.
-  RenderProcessHostWatcher main_frame_killed(
-      tab->GetMainFrame()->GetProcess(),
-      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  {
+    RenderProcessHostKillWaiter main_frame_kill_waiter(
+        tab->GetMainFrame()->GetProcess());
 
-  BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-      ->PostTask(FROM_HERE, base::BindOnce(
-                                [](RenderFrameHost* frame) {
-                                  GetFilterForProcess(frame->GetProcess())
-                                      ->SetCookie(
-                                          frame->GetRoutingID(),
-                                          GURL("https://baz.com/"),
-                                          GURL("https://baz.com/"), "pwn=ed",
-                                          base::BindOnce(&base::DoNothing));
-                                },
-                                main_frame));
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
+        ->PostTask(FROM_HERE, base::BindOnce(
+                                  [](RenderFrameHost* frame) {
+                                    GetFilterForProcess(frame->GetProcess())
+                                        ->SetCookie(
+                                            frame->GetRoutingID(),
+                                            GURL("https://baz.com/"),
+                                            GURL("https://baz.com/"), "pwn=ed",
+                                            base::BindOnce(&base::DoNothing));
+                                  },
+                                  main_frame));
 
-  main_frame_killed.Wait();
+    EXPECT_EQ(bad_message::RFMF_SET_COOKIE_BAD_ORIGIN,
+              main_frame_kill_waiter.Wait());
+  }
 
   EXPECT_EQ(
       " Site A\n"
@@ -260,28 +265,20 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, RenderProcessGone) {
   NavigateToURL(shell(), web_url);
   RenderFrameHost* web_rfh = shell()->web_contents()->GetMainFrame();
 
-  base::HistogramTester uma;
-
   ASSERT_TRUE(web_rfh->IsRenderFrameLive());
-  RenderProcessHostWatcher web_process_killed(
-      web_rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  RenderProcessHostKillWaiter kill_waiter(web_rfh->GetProcess());
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       web_rfh->GetProcess()->GetChannel(),
       FrameHostMsg_RenderProcessGone(
           web_rfh->GetRoutingID(), base::TERMINATION_STATUS_NORMAL_TERMINATION,
           0));
 
-  EXPECT_THAT(uma.GetAllSamples("Stability.BadMessageTerminated.Content"),
-              testing::ElementsAre(base::Bucket(
-                  bad_message::RFMF_RENDERER_FAKED_ITS_OWN_DEATH, 1)));
-
   // If the message had gone through, we'd have marked the RFH as dead but
   // left the RPH and its connection alive, and the Wait below would hang.
-  web_process_killed.Wait();
+  EXPECT_EQ(bad_message::RFMF_RENDERER_FAKED_ITS_OWN_DEATH, kill_waiter.Wait());
 
   ASSERT_FALSE(web_rfh->GetProcess()->HasConnection());
   ASSERT_FALSE(web_rfh->IsRenderFrameLive());
-  ASSERT_FALSE(web_process_killed.did_exit_normally());
 }
 
 }  // namespace content

@@ -2721,13 +2721,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RestrictFrameDetach) {
   // should kill foo_site_instance's process.
   RenderFrameProxyHost* foo_mainframe_rfph =
       root->render_manager()->GetRenderFrameProxyHost(foo_site_instance);
-  content::RenderProcessHostWatcher foo_terminated(
-      foo_mainframe_rfph->GetProcess(),
-      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  content::RenderProcessHostKillWaiter kill_waiter(
+      foo_mainframe_rfph->GetProcess());
   FrameHostMsg_Detach evil_msg2(foo_mainframe_rfph->GetRoutingID());
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       foo_mainframe_rfph->GetProcess()->GetChannel(), evil_msg2);
-  foo_terminated.Wait();
+  EXPECT_EQ(bad_message::RFPH_DETACH, kill_waiter.Wait());
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
