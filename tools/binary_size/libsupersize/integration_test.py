@@ -215,7 +215,10 @@ class IntegrationTest(unittest.TestCase):
           'ExpandRegex("_foo_")',
           'canned_queries.CategorizeGenerated()',
           'canned_queries.CategorizeByChromeComponent()',
+          'canned_queries.LargeFiles()',
           'canned_queries.TemplatesByName()',
+          'canned_queries.StaticInitializers()',
+          'canned_queries.PakByPath()',
           'Print(ReadStringLiterals(elf_path={}))'.format(repr(_TEST_ELF_PATH)),
           'Print(size_info, to_file=%r)' % output_file.name,
       ]

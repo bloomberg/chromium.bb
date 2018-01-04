@@ -24,7 +24,7 @@ body {
 var treemap;
 var filterChanging = false;
 var savedSettings = {};
-var NUM_SYMBOL_TYPES = 6
+var NUM_SYMBOL_TYPES = 9;
 
 function init() {
     if (window.metadata !== undefined && window.metadata.subtitle) {
@@ -36,6 +36,7 @@ function init() {
         savedSettings.height,
         savedSettings.maxLevels);
     treemap.init();
+    applyFilter();  // Required to make .other hidden by default.
 }
 
 function getIdealSizes() {
@@ -209,7 +210,12 @@ function updateFilterText() {
 }
 
 function initFilterOptions() {
-    updateFilterText();
+    var filterFromUrl = new URL(window.location).searchParams.get('sections');
+    if (filterFromUrl) {
+        document.getElementById('symbol_types_filter').value = filterFromUrl;
+    } else {
+        updateFilterText();
+    }
     for (var x=0; x<NUM_SYMBOL_TYPES; x++) {
         var checkBox = document.getElementById('check_' + x);
         checkBox.onchange=updateFilterText;
@@ -256,6 +262,67 @@ function hideOptions() {
     container.style.visibility = 'hidden';
 }
 
+function applyFilter() {
+  // Type filters
+  var typeFilter = function(datum) {
+      if (datum.depth === 0) return true; // root node
+      if (datum.t === undefined) return true;
+      return savedSettings.symbolTypes !== undefined &&
+          savedSettings.symbolTypes.indexOf(datum.t) !== -1;
+  }
+
+  // Regex filter
+  var regexFilter;
+  if (savedSettings.regex !== undefined && savedSettings.regex.length > 0) {
+      console.log('filter: regex is "' + savedSettings.regex + '"');
+      var regex = new RegExp(savedSettings.regex);
+      regexFilter = function(datum) {
+          if (datum.depth === 0) return true; // root node
+          var fullName = this.pathFor(datum);
+          if (datum.children === undefined) { // it is a leaf node (symbol)
+              fullName += ':' + datum.n;
+          }
+          return regex.test(fullName);
+      }
+  }
+
+  // Exclude regex filter
+  var excludeRegexFilter = undefined;
+  if (savedSettings.excludeRegex !== undefined && savedSettings.excludeRegex.length > 0) {
+      console.log('filter: exclude-regex is "' + savedSettings.excludeRegex + '"');
+      var excludeRegex = new RegExp(savedSettings.excludeRegex);
+      excludeRegexFilter = function(datum) {
+          if (datum.depth === 0) return true; // root node
+          var fullName = this.pathFor(datum);
+          if (datum.children === undefined) { // it is a leaf node (symbol)
+              fullName += ':' + datum.n;
+          }
+          return !excludeRegex.test(fullName);
+      }
+  }
+
+  // Size filter
+  var sizeFilter = undefined;
+  if (savedSettings.gte !== undefined) {
+      console.log('filter: minimum size is ' + savedSettings.gte + ' bytes');
+      sizeFilter = function(datum) {
+          if (datum.children !== undefined) return true; // non-leaf
+          if (datum.value === undefined) console.log('whoops');
+          return datum.value >= savedSettings.gte;
+      }
+  }
+
+  // Make a filter to apply to the tree
+  var filter = function(datum) {
+      if (!typeFilter.call(this, datum)) return false;
+      if (regexFilter && !regexFilter.call(this, datum)) return false;
+      if (excludeRegexFilter && !excludeRegexFilter.call(this, datum)) return false;
+      if (sizeFilter && !sizeFilter.call(this, datum)) return false;
+      return true;
+  };
+  treemap.filter(filter);
+}
+
 function applySettings() {
     hideOptions();
     var oldWidth = savedSettings.width;
@@ -275,64 +342,7 @@ function applySettings() {
     var maxLevelsChanged = oldMaxLevels !== savedSettings.maxLevels;
 
     if (filterChanged) {
-        // Type filters
-        typeFilter = function(datum) {
-            if (datum.depth === 0) return true; // root node
-            if (datum.t === undefined) return true;
-            return savedSettings.symbolTypes !== undefined &&
-                savedSettings.symbolTypes.indexOf(datum.t) !== -1;
-        }
-
-        // Regex filter
-        var regexFilter = undefined;
-        if (savedSettings.regex !== undefined && savedSettings.regex.length > 0) {
-            console.log('filter: regex is "' + savedSettings.regex + '"');
-            var regex = new RegExp(savedSettings.regex);
-            regexFilter = function(datum) {
-                if (datum.depth === 0) return true; // root node
-                var fullName = this.pathFor(datum);
-                if (datum.children === undefined) { // it is a leaf node (symbol)
-                    fullName += ':' + datum.n;
-                }
-                return regex.test(fullName);
-            }
-        }
-
-        // Exclude regex filter
-        var excludeRegexFilter = undefined;
-        if (savedSettings.excludeRegex !== undefined && savedSettings.excludeRegex.length > 0) {
-            console.log('filter: exclude-regex is "' + savedSettings.excludeRegex + '"');
-            var excludeRegex = new RegExp(savedSettings.excludeRegex);
-            excludeRegexFilter = function(datum) {
-                if (datum.depth === 0) return true; // root node
-                var fullName = this.pathFor(datum);
-                if (datum.children === undefined) { // it is a leaf node (symbol)
-                    fullName += ':' + datum.n;
-                }
-                return !excludeRegex.test(fullName);
-            }
-        }
-
-        // Size filter
-        var sizeFilter = undefined;
-        if (savedSettings.gte !== undefined) {
-            console.log('filter: minimum size is ' + savedSettings.gte + ' bytes');
-            sizeFilter = function(datum) {
-                if (datum.children !== undefined) return true; // non-leaf
-                if (datum.value === undefined) console.log('whoops');
-                return datum.value >= savedSettings.gte;
-            }
-        }
-
-        // Make a filter to apply to the tree
-        var filter = function(datum) {
-            if (typeFilter && !typeFilter.call(this, datum)) return false;
-            if (regexFilter && !regexFilter.call(this, datum)) return false;
-            if (excludeRegexFilter && !excludeRegexFilter.call(this, datum)) return false;
-            if (sizeFilter && !sizeFilter.call(this, datum)) return false;
-            return true;
-        };
-        treemap.filter(filter);
+      applyFilter();
     }
 
     // Adjust levels if needed.
@@ -433,6 +443,9 @@ function escape(str) {
                 <br><span class='swatch' id='swatch_3'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_3' value='t'>Code (.text)
                 <br><span class='swatch' id='swatch_4'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_4' value='v'>Vtable entries
                 <br><span class='swatch' id='swatch_5'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_5' value='!'>Generated Symbols (typeinfo, thunks, etc)
+                <br><span class='swatch' id='swatch_6'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_6' value='p'>Locale Pak Entries
+                <br><span class='swatch' id='swatch_7'>&nbsp;&nbsp;&nbsp;</span><input checked type='checkbox' id='check_7' value='P'>Non-Locale Pak Entries
+                <br><span class='swatch' id='swatch_8'>&nbsp;&nbsp;&nbsp;</span><input type='checkbox' id='check_8' value='o'>Other Entries
             </td>
         </tr>
         <tr><td style='text-align: center; white-space: nowrap; padding-top: 1em;'>

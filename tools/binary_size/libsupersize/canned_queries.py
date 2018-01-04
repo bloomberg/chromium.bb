@@ -152,10 +152,15 @@ class CannedQueries(object):
   def __init__(self, size_infos):
     self._size_infos = size_infos
 
-  def _SymbolsArg(self, arg):
+  def _SymbolsArg(self, arg, native_only=False, pak_only=False):
     arg = arg if arg is not None else self._size_infos[-1]
-    if isinstance(arg, (models.SizeInfo, models.DeltaSizeInfo)):
-      arg = arg.symbols
+    if isinstance(arg, models.BaseSizeInfo):
+      if native_only:
+        arg = arg.native_symbols
+      elif pak_only:
+        arg = arg.pak_symbols
+      else:
+        arg = arg.symbols
     return arg
 
   def CategorizeGenerated(self, symbols=None):
@@ -168,20 +173,24 @@ class CannedQueries(object):
 
   def TemplatesByName(self, symbols=None, depth=0):
     """Lists C++ templates grouped by name."""
-    symbols = self._SymbolsArg(symbols)
+    symbols = self._SymbolsArg(symbols, native_only=True)
     # Call Sorted() twice so that subgroups will be sorted.
     # TODO(agrieve): Might be nice to recursively GroupedByName() on these.
     return symbols.WhereIsTemplate().Sorted().GroupedByName(depth).Sorted()
 
   def StaticInitializers(self, symbols=None):
     """Lists Static Initializers."""
-    symbols = self._SymbolsArg(symbols)
+    symbols = self._SymbolsArg(symbols, native_only=True)
     # GCC generates "_GLOBAL__" symbols. Clang generates "startup".
     return symbols.WhereNameMatches('^startup$|^_GLOBAL__')
 
   def LargeFiles(self, symbols=None, min_size=50 * 1024):
     """Lists source files that are larger than a certain size (default 50kb)."""
     symbols = self._SymbolsArg(symbols)
-    # GCC generates "_GLOBAL__" symbols. Clang generates "startup".
     return symbols.GroupedByPath(fallback=None).WherePssBiggerThan(
         min_size).Sorted()
+
+  def PakByPath(self, symbols=None):
+    """Groups .pak.* symbols by path."""
+    symbols = self._SymbolsArg(symbols, pak_only=True)
+    return symbols.WhereIsPak().Sorted().GroupedByPath().Sorted()

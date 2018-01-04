@@ -78,6 +78,9 @@ D3SymbolTreeMap._NM_SYMBOL_TYPE_DESCRIPTIONS = {
   't': '.text',
   'v': 'Vtable entry',
   '!': 'Generated Symbols (typeinfo, thunks, etc)',
+  'p': 'Locale Pak Entries',
+  'P': 'Non-Locale Pak Entries',
+  'o': 'Other Entries',
 };
 D3SymbolTreeMap._NM_SYMBOL_TYPES = '';
 for (var symbol_type in D3SymbolTreeMap._NM_SYMBOL_TYPE_DESCRIPTIONS) {
@@ -105,6 +108,9 @@ D3SymbolTreeMap._colorArray = [
   'rgb(128,177,211)',
   'rgb(255,237,111)',
   'rgb(204,235,197)',
+  'rgb(93,156,110)',
+  'rgb(61,109,55)',
+  'rgb(255,111,111)',
 ]
 
 D3SymbolTreeMap._initColorMap = function() {

@@ -92,16 +92,16 @@ def _MakeChildrenDictsIntoLists(node):
 
 
 def _AddSymbolIntoFileNode(node, symbol_type, symbol_name, symbol_size,
-                           include_symbols):
+                           min_symbol_size):
   """Puts symbol into the file path node |node|."""
   node[_NODE_LAST_PATH_ELEMENT_KEY] = True
   # Don't bother with buckets when not including symbols.
-  if include_symbols:
+  if min_symbol_size == 0:
     node = _GetOrMakeChildNode(node, _NODE_TYPE_BUCKET, symbol_type)
     node[_NODE_SYMBOL_TYPE_KEY] = symbol_type
 
   # 'node' is now the symbol-type bucket. Make the child entry.
-  if include_symbols or not symbol_name:
+  if not symbol_name or symbol_size >= min_symbol_size:
     node_name = symbol_name or '[Anonymous]'
   elif symbol_name.startswith('*'):
     node_name = symbol_name
@@ -112,7 +112,7 @@ def _AddSymbolIntoFileNode(node, symbol_type, symbol_name, symbol_size,
   node[_NODE_SYMBOL_TYPE_KEY] = symbol_type
 
 
-def _MakeCompactTree(symbols, include_symbols):
+def _MakeCompactTree(symbols, min_symbol_size):
   result = {
       _NODE_NAME_KEY: '/',
       _NODE_CHILDREN_KEY: {},
@@ -135,14 +135,14 @@ def _MakeCompactTree(symbols, include_symbols):
     elif symbol.name.endswith(']'):
       symbol_type = _NODE_SYMBOL_TYPE_GENERATED
     _AddSymbolIntoFileNode(node, symbol_type, symbol.template_name, symbol.pss,
-                           include_symbols)
+                           min_symbol_size)
     depth += 2
     result[_NODE_MAX_DEPTH_KEY] = max(result[_NODE_MAX_DEPTH_KEY], depth)
 
   # The (no path) bucket can be extremely large if we failed to get
   # path information. Split it into subgroups if needed.
   no_path_bucket = result[_NODE_CHILDREN_KEY].get(_NAME_NO_PATH_BUCKET)
-  if no_path_bucket and include_symbols:
+  if no_path_bucket and min_symbol_size == 0:
     _SplitLargeBucket(no_path_bucket)
 
   _MakeChildrenDictsIntoLists(result)
@@ -171,8 +171,9 @@ def AddArguments(parser):
   parser.add_argument('--include-bss', action='store_true',
                       help='Include symbols from .bss (which consume no real '
                            'space)')
-  parser.add_argument('--include-symbols', action='store_true',
-                      help='Use per-symbol granularity rather than per-file.')
+  parser.add_argument('--min-symbol-size', type=float, default=1024,
+                      help='Minimum size (PSS) for a symbol to be included as '
+                           'an independent node.')
 
 
 def Run(args, parser):
@@ -181,7 +182,7 @@ def Run(args, parser):
 
   logging.info('Reading .size file')
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
-  symbols = size_info.symbols
+  symbols = size_info.raw_symbols
   if not args.include_bss:
     symbols = symbols.WhereInSection('b').Inverted()
   symbols = symbols.WherePssBiggerThan(0)
@@ -192,7 +193,7 @@ def Run(args, parser):
   _CopyTemplateFiles(args.report_dir)
 
   logging.info('Creating JSON objects')
-  tree_root = _MakeCompactTree(symbols, args.include_symbols)
+  tree_root = _MakeCompactTree(symbols, args.min_symbol_size)
 
   logging.info('Serializing JSON')
   with open(os.path.join(args.report_dir, 'data.js'), 'w') as out_file:
