@@ -1186,7 +1186,12 @@ void SigninScreenHandler::HandleAuthenticateUser(const AccountId& account_id,
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
-  user_context.SetUserType(user->GetType());
+  if (!user) {
+    LOG(ERROR) << "HandleAuthenticateUser: User not found! account type="
+               << AccountId::AccountTypeToString(account_id.GetAccountType());
+  } else {
+    user_context.SetUserType(user->GetType());
+  }
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
     user_context.SetUserType(user_manager::USER_TYPE_ACTIVE_DIRECTORY);
   delegate_->Login(user_context, SigninSpecifics());
