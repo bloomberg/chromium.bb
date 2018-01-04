@@ -69,7 +69,7 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   return std::unique_ptr<FileMappedForLaunch>();
 }
 
-void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
+bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     const PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
@@ -78,6 +78,8 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       mojo_client_handle(), command_line(), &options->handles_to_transfer);
 
   UpdateLaunchOptionsForSandbox(delegate_->GetSandboxType(), options);
+
+  return true;
 }
 
 ChildProcessLauncherHelper::Process

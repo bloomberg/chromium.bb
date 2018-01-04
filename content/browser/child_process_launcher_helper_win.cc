@@ -43,10 +43,11 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   return std::unique_ptr<FileMappedForLaunch>();
 }
 
-void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
+bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     const FileMappedForLaunch& files_to_register,
     base::LaunchOptions* options) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  return true;
 }
 
 ChildProcessLauncherHelper::Process

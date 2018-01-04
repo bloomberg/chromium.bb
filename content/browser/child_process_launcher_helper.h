@@ -108,8 +108,11 @@ class ChildProcessLauncherHelper :
   // Platform specific.
   std::unique_ptr<FileMappedForLaunch> GetFilesToMap();
 
-  // Platform specific.
-  void BeforeLaunchOnLauncherThread(
+  // Platform specific, returns success or failure. If failure is returned,
+  // LaunchOnLauncherThread will not call LaunchProcessOnLauncherThread and
+  // AfterLaunchOnLauncherThread, and the launch_result will be reported as
+  // LAUNCH_RESULT_FAILURE.
+  bool BeforeLaunchOnLauncherThread(
       const FileMappedForLaunch& files_to_register,
       base::LaunchOptions* options);
 
