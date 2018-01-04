@@ -1393,7 +1393,7 @@ using ios::material::TimingFunction;
     [_voiceSearchButton setHidden:isCompactTabletView];
     [_starButton setHidden:isCompactTabletView];
     [_reloadButton setHidden:isCompactTabletView];
-    [_stopButton setHidden:isCompactTabletView];
+    [_stopButton setHidden:YES];
     [self updateToolbarState];
 
     if ([_locationBarView.textField isFirstResponder]) {
