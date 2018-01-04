@@ -64,6 +64,8 @@ enum HalPixelFormat {
   // in "system/core/include/system/graphics.h"
   HAL_PIXEL_FORMAT_BGRA_8888 = 5,
   HAL_PIXEL_FORMAT_YCbCr_420_888 = 0x23,
+  HAL_PIXEL_FORMAT_YV12 = 0x32315659,
+  HAL_PIXEL_FORMAT_NV12 = 0x3231564e,
 };
 
 // The offset and stride of a video frame plane. Both offset and stride must
