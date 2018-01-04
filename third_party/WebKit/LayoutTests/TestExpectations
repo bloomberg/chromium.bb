@@ -180,6 +180,9 @@ crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translat
 crbug.com/736052 virtual/spv175/compositing/overflow/composited-scroll-with-fractional-translation.html [ Skip ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
+# Will be fixed in slimming-paint-v175.
+crbug.com/798638 fragmentation/repeating-thead-tfoot-different-fragment-height.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
