@@ -54,11 +54,16 @@ def GetNormalizedPlatform():
 # Common utilities
 class Gsutil(object):
   """Call gsutil with some predefined settings.  This is a convenience object,
-  and is also immutable."""
+  and is also immutable.
+
+  HACK: This object is used directly by the external script
+    `<depot_tools>/win_toolchain/get_toolchain_if_necessary.py`
+  """
 
   MAX_TRIES = 5
   RETRY_BASE_DELAY = 5.0
   RETRY_DELAY_MULTIPLE = 1.3
+  VPYTHON = 'vpython.bat' if GetNormalizedPlatform() == 'win32' else 'vpython'
 
   def __init__(self, path, boto_path=None, timeout=None, version='4.28'):
     if not os.path.exists(path):
@@ -80,12 +85,12 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    cmd = [sys.executable, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
     cmd.extend(args)
     return subprocess2.call(cmd, env=self.get_sub_env(), timeout=self.timeout)
 
   def check_call(self, *args):
-    cmd = [sys.executable, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
     cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
         cmd,
@@ -215,7 +220,7 @@ def _validate_tar_file(tar, prefix):
   return all(map(_validate, tar.getmembers()))
 
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes, verbose, extract,
+                              gsutil, out_q, ret_codes, _verbose, extract,
                               delete=True):
   while True:
     input_sha1_sum, output_filename = q.get()
