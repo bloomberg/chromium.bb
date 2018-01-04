@@ -7,6 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gin/v8_initializer.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -22,6 +23,10 @@ class SnapshotThread : public blink::WebThread {
   bool IsCurrentThread() const override { return true; }
   blink::WebScheduler* Scheduler() const override { return nullptr; }
   blink::WebTaskRunner* GetWebTaskRunner() const override { return nullptr; }
+  scoped_refptr<base::SingleThreadTaskRunner> GetSingleThreadTaskRunner()
+      const override {
+    return base::ThreadTaskRunnerHandle::Get();
+  }
 };
 
 class SnapshotPlatform final : public blink::Platform {

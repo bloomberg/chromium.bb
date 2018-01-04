@@ -70,12 +70,12 @@ IsolateHolder::IsolateHolder(
   }
   isolate_ = v8::Isolate::New(params);
 
-  // TODO(ssid): Make sure the task runner is never null here, crbug.com/762723.
-  SetUp(task_runner ? std::move(task_runner)
-                    : base::ThreadTaskRunnerHandle::Get());
+  SetUp(task_runner);
 }
 
-IsolateHolder::IsolateHolder(v8::StartupData* existing_blob)
+IsolateHolder::IsolateHolder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    v8::StartupData* existing_blob)
     : access_mode_(AccessMode::kSingleThread) {
   CHECK(existing_blob);
 
@@ -89,7 +89,8 @@ IsolateHolder::IsolateHolder(v8::StartupData* existing_blob)
       new v8::SnapshotCreator(g_reference_table, existing_blob));
   isolate_ = snapshot_creator_->GetIsolate();
 
-  SetUp(base::ThreadTaskRunnerHandle::Get());
+  DCHECK(task_runner->BelongsToCurrentThread());
+  SetUp(task_runner);
 }
 
 IsolateHolder::~IsolateHolder() {

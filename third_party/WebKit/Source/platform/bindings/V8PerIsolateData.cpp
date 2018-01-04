@@ -96,7 +96,9 @@ V8PerIsolateData::V8PerIsolateData(
 // main thread.
 V8PerIsolateData::V8PerIsolateData()
     : v8_context_snapshot_mode_(V8ContextSnapshotMode::kTakeSnapshot),
-      isolate_holder_(&startup_data_),
+      isolate_holder_(
+          Platform::Current()->MainThread()->GetSingleThreadTaskRunner(),
+          &startup_data_),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
       private_property_(V8PrivateProperty::Create()),
