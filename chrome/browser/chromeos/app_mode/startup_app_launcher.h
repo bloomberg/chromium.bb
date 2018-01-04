@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -26,6 +24,7 @@ class InstallTracker;
 namespace chromeos {
 
 class KioskAppManager;
+class StartupAppLauncherUpdateChecker;
 
 // Launches the app at startup. The flow roughly looks like this:
 // First call Initialize():
@@ -35,8 +34,7 @@ class KioskAppManager;
 // Report OnLauncherInitialized() or OnLaunchFailed() to observers:
 // - If all goes good, launches the app and finish the flow;
 class StartupAppLauncher : public extensions::InstallObserver,
-                           public KioskAppManagerObserver,
-                           public content::NotificationObserver {
+                           public KioskAppManagerObserver {
  public:
   class Delegate {
    public:
@@ -93,7 +91,7 @@ class StartupAppLauncher : public extensions::InstallObserver,
   void MaybeLaunchApp();
 
   void MaybeCheckExtensionUpdate();
-  void OnExtensionUpdateCheckFinished();
+  void OnExtensionUpdateCheckFinished(bool update_found);
 
   void OnKioskAppDataLoadStatusChanged(const std::string& app_id);
 
@@ -124,11 +122,6 @@ class StartupAppLauncher : public extensions::InstallObserver,
   void OnKioskExtensionLoadedInCache(const std::string& app_id) override;
   void OnKioskExtensionDownloadFailed(const std::string& app_id) override;
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   Profile* const profile_;
   const std::string app_id_;
   const bool diagnostic_mode_;
@@ -138,9 +131,10 @@ class StartupAppLauncher : public extensions::InstallObserver,
   bool ready_to_launch_ = false;
   bool wait_for_crx_update_ = false;
   bool secondary_apps_installed_ = false;
-  bool extension_update_found_ = false;
 
-  content::NotificationRegistrar registrar_;
+  // Used to run extension update checks for primary app's imports and
+  // secondary extensions.
+  std::unique_ptr<StartupAppLauncherUpdateChecker> update_checker_;
 
   ScopedObserver<KioskAppManager, KioskAppManagerObserver>
       kiosk_app_manager_observer_;
