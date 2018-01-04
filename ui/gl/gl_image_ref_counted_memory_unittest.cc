@@ -17,7 +17,7 @@ namespace {
 const uint8_t kGreen[] = {0x0, 0xFF, 0x0, 0xFF};
 
 template <gfx::BufferFormat format>
-class GLImageRefCountedMemoryTestDelegate {
+class GLImageRefCountedMemoryTestDelegate : public GLImageTestDelegateBase {
  public:
   scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
                                                const uint8_t color[4]) const {

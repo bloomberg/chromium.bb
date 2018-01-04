@@ -18,7 +18,7 @@ namespace {
 const uint8_t kRGBImageColor[] = {0x30, 0x40, 0x10, 0xFF};
 
 template <gfx::BufferFormat format>
-class GLImageDXGITestDelegate {
+class GLImageDXGITestDelegate : public GLImageTestDelegateBase {
  public:
   scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
                                                const uint8_t color[4]) const {

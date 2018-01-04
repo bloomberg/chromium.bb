@@ -41,7 +41,7 @@ TEST(GLContextGLXTest, DoNotDestroyOnFailedMakeCurrent) {
          xevent.xmap.window != xwindow) {
   }
 
-  GLImageTestSupport::InitializeGL();
+  GLImageTestSupport::InitializeGL(base::nullopt);
   auto surface =
       gl::InitializeGLSurface(base::MakeRefCounted<GLSurfaceGLXX11>(xwindow));
   scoped_refptr<GLContext> context =

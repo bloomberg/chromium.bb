@@ -22,7 +22,7 @@ const uint8_t kRed[] = {0xF0, 0x0, 0x0, 0xFF};
 const uint8_t kYellow[] = {0xF0, 0xFF, 0x00, 0xFF};
 
 template <gfx::BufferUsage usage, gfx::BufferFormat format>
-class GLImageNativePixmapTestDelegate {
+class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
  public:
   GLImageNativePixmapTestDelegate() {
     client_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();

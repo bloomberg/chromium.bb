@@ -365,6 +365,7 @@ static_library("test_support") {
   sources = [
     "test/gl_image_test_support.cc",
     "test/gl_image_test_support.h",
+    "test/gl_image_test_template.cc",
     "test/gl_image_test_template.h",
     "test/gl_surface_test_support.cc",
     "test/gl_surface_test_support.h",

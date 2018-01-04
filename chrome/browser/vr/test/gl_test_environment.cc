@@ -12,7 +12,7 @@ namespace vr {
 
 GlTestEnvironment::GlTestEnvironment(const gfx::Size frame_buffer_size) {
   // Setup offscreen GL context.
-  gl::GLImageTestSupport::InitializeGL();
+  gl::GLImageTestSupport::InitializeGL(base::nullopt);
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                        gl::GLContextAttribs());

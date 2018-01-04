@@ -17,7 +17,7 @@ namespace {
 const uint8_t kImageColor[] = {0x30, 0x40, 0x10, 0xFF};
 
 template <gfx::BufferFormat format>
-class GLImageIOSurfaceTestDelegate {
+class GLImageIOSurfaceTestDelegate : public GLImageTestDelegateBase {
  public:
   scoped_refptr<GLImage> CreateImage(const gfx::Size& size) const {
     scoped_refptr<GLImageIOSurface> image(GLImageIOSurface::Create(
