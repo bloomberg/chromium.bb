@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "components/version_info/version_info.h"
-#import "ios/chrome/browser/open_url_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -78,12 +77,16 @@ UIAlertController* CameraPermissionDeniedDialog(
   UIAlertController* dialog =
       AlertWithCancelButton(dialogTitle, dialogBody, cancelBlock);
 
+  void (^handler)(UIAlertAction*) = ^(UIAlertAction* action) {
+    [[UIApplication sharedApplication] openURL:settingsURL
+                                       options:@{}
+                             completionHandler:nil];
+  };
+
   UIAlertAction* settingsAction =
       [UIAlertAction actionWithTitle:settingsButton
                                style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* action) {
-                               OpenUrlWithCompletionHandler(settingsURL, nil);
-                             }];
+                             handler:handler];
   [dialog addAction:settingsAction];
   [dialog setPreferredAction:settingsAction];
   return dialog;

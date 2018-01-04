@@ -14,7 +14,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -205,7 +204,9 @@
       addItemWithTitle:l10n_util::GetNSString(
                            IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_GO_TO_SETTINGS)
                 action:^{
-                  OpenUrlWithCompletionHandler(settingURL, nil);
+                  [[UIApplication sharedApplication] openURL:settingURL
+                                                     options:@{}
+                                           completionHandler:nil];
                 }
                  style:UIAlertActionStyleDefault];
 

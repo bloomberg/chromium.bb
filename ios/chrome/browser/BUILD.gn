@@ -64,8 +64,6 @@ source_set("browser") {
     "ios_chrome_io_thread.mm",
     "notification_promo.cc",
     "notification_promo.h",
-    "open_url_util.h",
-    "open_url_util.mm",
     "pref_names.cc",
     "pref_names.h",
     "procedural_block_types.h",
