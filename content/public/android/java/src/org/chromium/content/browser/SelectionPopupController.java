@@ -272,11 +272,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @VisibleForTesting
     @CalledByNative
-    public void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
-            boolean isPasswordType, String selectionText, int selectionStartOffset,
-            boolean canSelectAll, boolean canRichlyEdit, boolean shouldSuggest,
-            @MenuSourceType int sourceType) {
-        mSelectionRect.set(left, top, right, bottom);
+    public void showSelectionMenu(int left, int top, int right, int bottom, int handleHeight,
+            boolean isEditable, boolean isPasswordType, String selectionText,
+            int selectionStartOffset, boolean canSelectAll, boolean canRichlyEdit,
+            boolean shouldSuggest, @MenuSourceType int sourceType) {
+        int offsetBottom = bottom;
+        // Legacy action mode expects the selection rectangle not to include touch handle.
+        if (supportsFloatingActionMode()) offsetBottom += handleHeight;
+        mSelectionRect.set(left, top, right, offsetBottom);
         mEditable = isEditable;
         mLastSelectedText = selectionText;
         mLastSelectionOffset = selectionStartOffset;

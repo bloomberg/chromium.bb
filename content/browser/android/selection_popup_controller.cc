@@ -160,10 +160,10 @@ bool SelectionPopupController::ShowSelectionMenu(
 
   Java_SelectionPopupController_showSelectionMenu(
       env, obj, params.selection_rect.x(), params.selection_rect.y(),
-      params.selection_rect.right(),
-      params.selection_rect.bottom() + handle_height, params.is_editable,
-      is_password_type, jselected_text, params.selection_start_offset,
-      can_select_all, can_edit_richly, should_suggest, params.source_type);
+      params.selection_rect.right(), params.selection_rect.bottom(),
+      handle_height, params.is_editable, is_password_type, jselected_text,
+      params.selection_start_offset, can_select_all, can_edit_richly,
+      should_suggest, params.source_type);
   return true;
 }
 
