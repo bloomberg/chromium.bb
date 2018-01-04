@@ -258,10 +258,6 @@ CONSOLE MESSAGE: line 147:     method getReader
 CONSOLE MESSAGE: line 147:     method pipeThrough
 CONSOLE MESSAGE: line 147:     method pipeTo
 CONSOLE MESSAGE: line 147:     method tee
-CONSOLE MESSAGE: line 147: interface SharedArrayBuffer
-CONSOLE MESSAGE: line 147:     getter byteLength
-CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147:     method slice
 CONSOLE MESSAGE: line 147: interface StylePropertyMap : StylePropertyMapReadOnly
 CONSOLE MESSAGE: line 147:     method append
 CONSOLE MESSAGE: line 147:     method constructor
@@ -290,7 +286,6 @@ CONSOLE MESSAGE: line 147:     method abort
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method getWriter
 CONSOLE MESSAGE: line 147: global object
-CONSOLE MESSAGE: line 147:     attribute Atomics
 CONSOLE MESSAGE: line 147:     attribute console
 CONSOLE MESSAGE: line 147:     getter devicePixelRatio
 CONSOLE MESSAGE: line 147:     method gc
@@ -554,10 +549,6 @@ CONSOLE MESSAGE: line 147:     method getReader
 CONSOLE MESSAGE: line 147:     method pipeThrough
 CONSOLE MESSAGE: line 147:     method pipeTo
 CONSOLE MESSAGE: line 147:     method tee
-CONSOLE MESSAGE: line 147: interface SharedArrayBuffer
-CONSOLE MESSAGE: line 147:     getter byteLength
-CONSOLE MESSAGE: line 147:     method constructor
-CONSOLE MESSAGE: line 147:     method slice
 CONSOLE MESSAGE: line 147: interface StylePropertyMap : StylePropertyMapReadOnly
 CONSOLE MESSAGE: line 147:     method append
 CONSOLE MESSAGE: line 147:     method constructor
@@ -586,7 +577,6 @@ CONSOLE MESSAGE: line 147:     method abort
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method getWriter
 CONSOLE MESSAGE: line 147: global object
-CONSOLE MESSAGE: line 147:     attribute Atomics
 CONSOLE MESSAGE: line 147:     attribute console
 CONSOLE MESSAGE: line 147:     getter devicePixelRatio
 CONSOLE MESSAGE: line 147:     method gc

@@ -1054,11 +1054,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method unregister
 [Worker]     method update
 [Worker]     setter onupdatefound
-[Worker] interface SharedArrayBuffer
-[Worker]     attribute @@toStringTag
-[Worker]     getter byteLength
-[Worker]     method constructor
-[Worker]     method slice
 [Worker] interface StorageManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
@@ -2533,7 +2528,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
 [Worker] [GLOBAL OBJECT]
-[Worker]     attribute Atomics
 [Worker]     attribute console
 [Worker]     attribute internals
 [Worker]     getter onmessage
