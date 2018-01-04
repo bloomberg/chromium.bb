@@ -864,24 +864,6 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
   return false;
 }
 
-SupportsType MimeUtil::IsSimpleCodecSupported(
-    const std::string& mime_type_lower_case,
-    Codec codec,
-    bool is_encrypted) const {
-  // Video codecs are not "simple" because they require a profile and level to
-  // be specified. There is no "default" video codec for a given container.
-  DCHECK_EQ(MimeUtilToVideoCodec(codec), kUnknownVideoCodec);
-
-  SupportsType result = IsCodecSupported(
-      mime_type_lower_case, codec, VIDEO_CODEC_PROFILE_UNKNOWN,
-      0 /* video_level */, VideoColorSpace::REC709(), is_encrypted);
-
-  // Platform support should never be ambiguous for simple codecs (no range of
-  // profiles to consider).
-  DCHECK_NE(result, MayBeSupported);
-  return result;
-}
-
 SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
                                         Codec codec,
                                         VideoCodecProfile video_profile,
