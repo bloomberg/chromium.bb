@@ -8,8 +8,10 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/bind.h"
+#include "base/bit_cast.h"
 #include "base/debug/stack_trace.h"
 #include "base/location.h"
+#include "base/rand_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -98,6 +100,57 @@ class EnabledStateObserverImpl final
 };
 
 base::LazyInstance<EnabledStateObserverImpl>::Leaky g_trace_state_dispatcher =
+    LAZY_INSTANCE_INITIALIZER;
+
+// TODO(skyostil): Deduplicate this with the clamper in Blink.
+class TimeClamper {
+ public:
+  static constexpr double kResolutionSeconds = 0.001;
+
+  TimeClamper() : secret_(base::RandUint64()) {}
+
+  double ClampTimeResolution(double time_seconds) const {
+    DCHECK_GE(time_seconds, 0);
+    // For each clamped time interval, compute a pseudorandom transition
+    // threshold. The reported time will either be the start of that interval or
+    // the next one depending on which side of the threshold |time_seconds| is.
+    double clamped_time =
+        floor(time_seconds / kResolutionSeconds) * kResolutionSeconds;
+    double tick_threshold = ThresholdFor(clamped_time);
+
+    if (time_seconds >= tick_threshold)
+      return clamped_time + kResolutionSeconds;
+    return clamped_time;
+  }
+
+ private:
+  inline double ThresholdFor(double clamped_time) const {
+    uint64_t time_hash = MurmurHash3(bit_cast<int64_t>(clamped_time) ^ secret_);
+    return clamped_time + kResolutionSeconds * ToDouble(time_hash);
+  }
+
+  static inline double ToDouble(uint64_t value) {
+    // Exponent for double values for [1.0 .. 2.0]
+    static const uint64_t kExponentBits = uint64_t{0x3FF0000000000000};
+    static const uint64_t kMantissaMask = uint64_t{0x000FFFFFFFFFFFFF};
+    uint64_t random = (value & kMantissaMask) | kExponentBits;
+    return bit_cast<double>(random) - 1;
+  }
+
+  static inline uint64_t MurmurHash3(uint64_t value) {
+    value ^= value >> 33;
+    value *= uint64_t{0xFF51AFD7ED558CCD};
+    value ^= value >> 33;
+    value *= uint64_t{0xC4CEB9FE1A85EC53};
+    value ^= value >> 33;
+    return value;
+  }
+
+  const uint64_t secret_;
+  DISALLOW_COPY_AND_ASSIGN(TimeClamper);
+};
+
+base::LazyInstance<TimeClamper>::Leaky g_time_clamper =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -228,7 +281,8 @@ double V8Platform::MonotonicallyIncreasingTime() {
 }
 
 double V8Platform::CurrentClockTimeMillis() {
-  return base::Time::Now().ToJsTime();
+  double now_seconds = base::Time::Now().ToJsTime() / 1000;
+  return g_time_clamper.Get().ClampTimeResolution(now_seconds) * 1000;
 }
 
 v8::TracingController* V8Platform::GetTracingController() {
