@@ -2218,7 +2218,7 @@ FcConfigRealFilename (FcConfig		*config,
 
     if (n)
     {
-	char buf[PATH_MAX];
+	FcChar8 buf[PATH_MAX];
 	ssize_t len;
 
 	if (sysroot)
@@ -2227,7 +2227,7 @@ FcConfigRealFilename (FcConfig		*config,
 	    nn = FcStrdup (n);
 	FcStrFree (n);
 
-	if ((len = readlink ((const char *) nn, buf, sizeof (buf) - 1)) != -1)
+	if ((len = FcReadLink (nn, buf, sizeof (buf) - 1)) != -1)
 	{
 	    buf[len] = 0;
 	    FcStrFree (nn);
