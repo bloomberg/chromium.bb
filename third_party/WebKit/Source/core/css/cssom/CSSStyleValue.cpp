@@ -37,10 +37,9 @@ CSSStyleValueVector ParseCSSStyleValue(
   const auto style_values = StyleValueFactory::FromString(
       property_id, value, CSSParserContext::Create(*execution_context));
   if (style_values.IsEmpty()) {
-    exception_state.ThrowDOMException(
-        kSyntaxError, "The value provided ('" + value +
-                          "') could not be parsed as a '" + property_name +
-                          "'.");
+    exception_state.ThrowTypeError("The value provided ('" + value +
+                                   "') could not be parsed as a '" +
+                                   property_name + "'.");
     return CSSStyleValueVector();
   }
 
