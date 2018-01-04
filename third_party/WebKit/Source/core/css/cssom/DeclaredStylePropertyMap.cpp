@@ -55,6 +55,8 @@ void DeclaredStylePropertyMap::RemoveCustomProperty(
 
 void DeclaredStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
+  if (!GetStyleRule())
+    return;
   const CSSPropertyValueSet& declared_style_set = GetStyleRule()->Properties();
   for (unsigned i = 0; i < declared_style_set.PropertyCount(); i++) {
     const auto& property_reference = declared_style_set.PropertyAt(i);
