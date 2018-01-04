@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_snapshot_providing.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
-@protocol ActivityServicePositioner;
 @class CommandDispatcher;
 @protocol ToolsMenuConfigurationProvider;
 
@@ -39,10 +38,6 @@
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
-
-// Returns the different protocols and superclass now implemented by the
-// internal ViewController.
-- (id<ActivityServicePositioner>)activityServicePositioner;
 
 // Sets the toolbarController for this coordinator.
 - (void)setToolbarController:(id<Toolbar>)toolbarController;
