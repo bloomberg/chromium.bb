@@ -88,6 +88,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
       std::unique_ptr<OmniboxSuggestions> suggestions) override;
+  void OnAssetsComponentReady() override;
 
   bool ShouldRenderWebVr();
   void OnGlInitialized(unsigned int content_texture_id,

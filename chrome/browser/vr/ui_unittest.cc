@@ -77,7 +77,9 @@ const std::set<UiElementName> kHitTestableElements = {
     kSpeechRecognitionResultBackplane,
 };
 const std::set<UiElementType> kHitTestableElementTypes = {
-    kTypeButtonHitTarget, kTypeTextInputText, kTypeOmniboxSuggestionSpacer,
+    kTypeButtonHitTarget,         kTypeTextInputText,
+    kTypeOmniboxSuggestionSpacer, kTypeSnackbarButton,
+    kTypeSnackbarDescription,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarningBackground, kExitWarningText};

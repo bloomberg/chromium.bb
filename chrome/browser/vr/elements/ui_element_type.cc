@@ -32,6 +32,8 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeToastContainer",
     "kTypeToastIcon",
     "kTypeToastText",
+    "kTypeSnackbarButton",
+    "kTypeSnackbarDescription",
 };
 
 static_assert(

@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_
 #define CHROME_BROWSER_VR_UI_SCENE_CONSTANTS_H_
 
-#include "base/numerics/math_constants.h"
+#include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
 
 static constexpr int kWarningTimeoutSeconds = 30;
 static constexpr float kWarningDistance = 1.0;
-static constexpr float kWarningAngleRadians = 16.3f * base::kPiFloat / 180;
+static constexpr float kWarningAngleRadians = gfx::DegToRad(16.3f);
 static constexpr float kPermanentWarningHeightDMM = 0.049f;
 static constexpr float kPermanentWarningWidthDMM = 0.1568f;
 static constexpr float kTransientWarningHeightDMM = 0.160f;
@@ -85,7 +85,7 @@ static constexpr float kWebVrUrlToastHeight =
     kWebVrUrlToastHeightDMM * kWebVrUrlToastDistance;
 static constexpr int kWebVrUrlToastTimeoutSeconds = 6;
 static constexpr float kWebVrUrlToastOpacity = 0.8f;
-static constexpr float kWebVrUrlToastRotationRad = 14 * base::kPiFloat / 180;
+static constexpr float kWebVrUrlToastRotationRad = gfx::DegToRad(14.0f);
 
 static constexpr float kWebVrToastDistance = 1.0;
 static constexpr float kFullscreenToastDistance = kFullscreenDistance;
@@ -101,7 +101,7 @@ static constexpr float kExclusiveScreenToastCornerRadiusDMM = 0.004f;
 static constexpr float kExclusiveScreenToastTextFontHeightDMM = 0.023f;
 // When changing the value here, make sure it doesn't collide with
 // kWarningAngleRadians.
-static constexpr float kWebVrAngleRadians = 9.88f * base::kPiFloat / 180;
+static constexpr float kWebVrAngleRadians = gfx::DegToRad(9.88f);
 static constexpr int kToastTimeoutSeconds = kWebVrUrlToastTimeoutSeconds;
 
 static constexpr float kSplashScreenTextDistance = 2.5f;
@@ -243,6 +243,15 @@ static constexpr float kModalPromptFadeOpacity = 0.5f;
 static constexpr float kKeyboardDistance = 2.2f;
 static constexpr float kKeyboardVerticalOffsetDMM = -0.45f;
 static constexpr float kKeyboardRotationRadians = -0.14f;
+
+static constexpr float kSnackbarDistance = 1.5f;
+static constexpr float kSnackbarAngle = -gfx::DegToRad(34.0f);
+static constexpr float kSnackbarPaddingDMM = 0.032f;
+static constexpr float kSnackbarIconWidthDMM = 0.034f;
+static constexpr float kSnackbarFontHeightDMM = 0.024f;
+static constexpr float kSnackbarHeightDMM = 0.08f;
+static constexpr float kSnackbarMoveInAngle = -base::kPiFloat / 10;
+static constexpr int kSnackbarTransitionDurationMs = 300;
 
 }  // namespace vr
 

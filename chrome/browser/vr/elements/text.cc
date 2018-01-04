@@ -52,7 +52,7 @@ class TextTexture : public UiTexture {
     SetAndDirty(&alignment_, alignment);
   }
 
-  void SetTextLayoutMode(TextLayoutMode mode) {
+  void SetLayoutMode(TextLayoutMode mode) {
     SetAndDirty(&text_layout_mode_, mode);
   }
 
@@ -123,13 +123,13 @@ void Text::SetColor(SkColor color) {
   texture_->SetColor(color);
 }
 
-void Text::SetTextAlignment(UiTexture::TextAlignment alignment) {
+void Text::SetAlignment(UiTexture::TextAlignment alignment) {
   texture_->SetAlignment(alignment);
 }
 
-void Text::SetTextLayoutMode(TextLayoutMode mode) {
+void Text::SetLayoutMode(TextLayoutMode mode) {
   text_layout_mode_ = mode;
-  texture_->SetTextLayoutMode(mode);
+  texture_->SetLayoutMode(mode);
 }
 
 void Text::SetCursorEnabled(bool enabled) {

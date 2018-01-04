@@ -51,6 +51,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void StartAutocomplete(const base::string16& string) override;
   void StopAutocomplete() override;
   void Navigate(GURL gurl) override;
+  void LoadAssets() override;
 
   void set_window_size(const gfx::Size& size) { window_size_ = size; }
 

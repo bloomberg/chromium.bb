@@ -430,14 +430,14 @@ class UiElement : public cc::AnimationTarget {
                      bool include_bindings) const;
   virtual void DumpGeometry(std::ostringstream* os) const;
 
+  // This is to be used only during the texture / size updated phase (i.e., to
+  // change your size based on your old size).
+  gfx::SizeF stale_size() const;
+
  protected:
   AnimationPlayer& animation_player() { return animation_player_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
-
-  // This is to be used only during the texture / size updated phase (i.e., to
-  // change your size based on your old size).
-  gfx::SizeF stale_size() const;
 
  private:
   virtual void OnUpdatedWorldSpaceTransform();

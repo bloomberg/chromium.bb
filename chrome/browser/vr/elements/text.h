@@ -33,10 +33,12 @@ class Text : public TexturedElement {
 
   void SetFontHeightInDmm(float font_height_dmms);
   void SetText(const base::string16& text);
+
+  // TODO(vollick): should use TexturedElement::SetForegroundColor
   void SetColor(SkColor color);
 
-  void SetTextAlignment(UiTexture::TextAlignment alignment);
-  void SetTextLayoutMode(TextLayoutMode mode);
+  void SetAlignment(UiTexture::TextAlignment alignment);
+  void SetLayoutMode(TextLayoutMode mode);
 
   // This text element does not typically feature a cursor, but since the cursor
   // position is deterined while laying out text, a parent may wish to supply

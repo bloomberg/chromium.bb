@@ -166,6 +166,8 @@ VrShell::VrShell(JNIEnv* env,
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !ui_initial_state.in_web_vr);
   }
 
+  vr::Assets::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
+      &VrShell::OnAssetsComponentReady, weak_ptr_factory_.GetWeakPtr()));
   vr::Assets::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kVr);
 }
 
@@ -956,6 +958,10 @@ void VrShell::OnAssetsLoaded(vr::AssetsLoadStatus status,
                              const base::Version& component_version) {
   vr::Assets::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
       status, component_version);
+}
+
+void VrShell::OnAssetsComponentReady() {
+  ui_->OnAssetsComponentReady();
 }
 
 // ----------------------------------------------------------------------------

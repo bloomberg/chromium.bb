@@ -180,6 +180,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_O:
         CycleOrigin();
         break;
+      case ui::DomCode::US_C:
+        model_->can_apply_new_background = true;
+        break;
       default:
         break;
     }
@@ -493,6 +496,11 @@ void VrTestContext::CycleOrigin() {
   static int state = 0;
   ui_->SetToolbarState(states[state]);
   state = (state + 1) % states.size();
+}
+
+void VrTestContext::LoadAssets() {
+  // TODO(793380): Load asset files once they are available for development.
+  model_->can_apply_new_background = false;
 }
 
 }  // namespace vr

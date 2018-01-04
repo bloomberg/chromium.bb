@@ -11043,6 +11043,12 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_VR_NO_SPEECH_RECOGNITION_RESULT" desc="Text to be shown if speech recognition failed to recognize a speech due to either no sound or noise.">
         Sorry, didn't catch that.
       </message>
+      <message name="IDS_VR_COMPONENT_UPDATE_READY" desc="Text to be shown to indicate a VR component update is ready to be applied.">
+        Update ready
+      </message>
+      <message name="IDS_VR_COMPONENT_APPLY" desc="Text to be shown on the button to apply a new component update.">
+        Apply
+      </message>
     </if>
   </messages>
  </release>

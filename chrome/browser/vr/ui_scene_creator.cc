@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/i18n/case_conversion.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/math_constants.h"
 #include "chrome/browser/vr/databinding/binding.h"
@@ -140,9 +141,9 @@ void OnSuggestionModelAdded(UiScene* scene,
   content_text->SetDrawPhase(kPhaseForeground);
   content_text->SetType(kTypeOmniboxSuggestionContentText);
   content_text->set_hit_testable(false);
-  content_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
+  content_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
-  content_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  content_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   VR_BIND_COLOR(model, content_text.get(),
                 &ColorScheme::omnibox_suggestion_content, &Text::SetColor);
   Text* p_content_text = content_text.get();
@@ -152,9 +153,9 @@ void OnSuggestionModelAdded(UiScene* scene,
   description_text->SetDrawPhase(kPhaseForeground);
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
   description_text->set_hit_testable(false);
-  description_text->SetTextLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
+  description_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
-  description_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  description_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   VR_BIND_COLOR(model, description_text.get(),
                 &ColorScheme::omnibox_suggestion_description, &Text::SetColor);
   Text* p_description_text = description_text.get();
@@ -277,6 +278,111 @@ std::unique_ptr<Rect> CreateOmniboxSpacer(Model* model) {
                         const bool& value) { control->SetVisible(value); }, \
                      base::Unretained(control_element))))
 
+std::unique_ptr<UiElement> CreateSpacer(float width, float height) {
+  auto spacer = Create<UiElement>(kNone, kPhaseNone);
+  spacer->SetSize(width, height);
+  spacer->set_hit_testable(false);
+  return spacer;
+}
+
+std::unique_ptr<UiElement> CreateSnackbar(
+    UiElementName name,
+    Model* model,
+    const gfx::VectorIcon& vector_icon,
+    const base::string16& label,
+    const base::string16& button_label,
+    base::RepeatingCallback<void()> callback) {
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kSnackbarDistance);
+  scaler->set_hit_testable(false);
+
+  auto snackbar_layout =
+      Create<LinearLayout>(name, kPhaseNone, LinearLayout::kRight);
+  snackbar_layout->SetTranslate(0, kSnackbarDistance * sin(kSnackbarAngle), 0);
+  snackbar_layout->SetRotate(1, 0, 0, kSnackbarAngle);
+  snackbar_layout->set_hit_testable(false);
+
+  float radius = 0.5f * kSnackbarHeightDMM;
+  auto snackbar_oval_left = Create<Rect>(kNone, kPhaseForeground);
+  snackbar_oval_left->SetType(kTypeSnackbarDescription);
+  snackbar_oval_left->SetSize(0, kSnackbarHeightDMM);
+  snackbar_oval_left->SetCornerRadii({radius, 0, radius, 0});
+  snackbar_oval_left->set_owner_name_for_test(name);
+  VR_BIND_COLOR(model, snackbar_oval_left.get(),
+                &ColorScheme::snackbar_background, &Rect::SetColor);
+
+  auto snackbar_inner_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  snackbar_inner_layout->set_margin(kSnackbarPaddingDMM * 0.5f);
+  snackbar_inner_layout->set_hit_testable(false);
+  snackbar_oval_left->AddBinding(
+      VR_BIND(float, UiElement, snackbar_inner_layout.get(),
+              stale_size().width() + kSnackbarPaddingDMM, UiElement,
+              snackbar_oval_left.get(), SetSize(value, kSnackbarHeightDMM)));
+
+  auto icon = Create<VectorIcon>(kNone, kPhaseForeground, 256);
+  icon->SetSize(kSnackbarIconWidthDMM, kSnackbarIconWidthDMM);
+  icon->SetBackgroundColor(SK_ColorTRANSPARENT);
+  icon->SetIcon(vector_icon);
+  icon->set_hit_testable(false);
+  VR_BIND_COLOR(model, icon.get(), &ColorScheme::snackbar_foreground,
+                &VectorIcon::SetColor);
+
+  auto text = Create<Text>(kNone, kPhaseForeground, kSnackbarFontHeightDMM);
+  text->SetText(label);
+  text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+  text->set_hit_testable(false);
+  VR_BIND_COLOR(model, text.get(), &ColorScheme::snackbar_foreground,
+                &Text::SetColor);
+
+  auto button = Create<Button>(kNone, kPhaseForeground, callback);
+  button->SetType(kTypeSnackbarButton);
+  VR_BIND_BUTTON_COLORS(model, button.get(),
+                        &ColorScheme::snackbar_button_colors,
+                        &Button::SetButtonColors);
+  button->set_hover_offset(0.0f);
+  button->SetCornerRadii({0, radius, 0, radius});
+  button->SetSize(0, kSnackbarHeightDMM);
+  button->set_owner_name_for_test(name);
+  button->set_hit_testable(true);
+
+  auto button_layout =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  button_layout->set_hit_testable(false);
+
+  auto button_text =
+      Create<Text>(kNone, kPhaseForeground, kSnackbarFontHeightDMM);
+  button_text->SetText(button_label);
+  button_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+  button_text->set_hit_testable(false);
+  button_text->AddBinding(VR_BIND_FUNC(
+      SkColor, Model, model, color_scheme().snackbar_button_colors.foreground,
+      Text, button_text.get(), SetColor));
+
+  button->AddBinding(VR_BIND(float, UiElement, button_layout.get(),
+                             stale_size().width() + kSnackbarPaddingDMM,
+                             UiElement, button.get(),
+                             SetSize(value, kSnackbarHeightDMM)));
+
+  button_layout->AddChild(std::move(button_text));
+  button_layout->AddChild(CreateSpacer(0.5f * kSnackbarPaddingDMM, 0.0f));
+
+  button->AddChild(std::move(button_layout));
+
+  snackbar_inner_layout->AddChild(CreateSpacer(0.0f, 0.0f));
+  snackbar_inner_layout->AddChild(std::move(icon));
+  snackbar_inner_layout->AddChild(std::move(text));
+  snackbar_oval_left->AddChild(std::move(snackbar_inner_layout));
+
+  snackbar_layout->AddChild(std::move(snackbar_oval_left));
+  snackbar_layout->AddChild(std::move(button));
+
+  scaler->AddChild(std::move(snackbar_layout));
+  auto snackbar_root = Create<UiElement>(kNone, kPhaseNone);
+  snackbar_root->set_hit_testable(false);
+  snackbar_root->AddChild(std::move(scaler));
+  return snackbar_root;
+}
+
 }  // namespace
 
 UiSceneCreator::UiSceneCreator(UiBrowserInterface* browser,
@@ -306,6 +412,7 @@ void UiSceneCreator::CreateScene() {
   CreateAudioPermissionPrompt();
   CreateSystemIndicators();
   CreateUrlBar();
+  CreateSnackbars();
   CreateOmnibox();
   CreateCloseButton();
   CreateFullscreenToast();
@@ -677,7 +784,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_TIMEOUT_MESSAGE));
   timeout_text->SetColor(
       model_->color_scheme().web_vr_timeout_message_foreground);
-  timeout_text->SetTextAlignment(UiTexture::kTextAlignmentLeft);
+  timeout_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   timeout_text->SetSize(kTimeoutMessageTextWidthDMM,
                         kTimeoutMessageTextHeightDMM);
 
@@ -747,11 +854,8 @@ void UiSceneCreator::CreateBackground() {
       Create<Background>(k2dBrowsingTexturedBackground, kPhaseBackground);
   background->SetVisible(false);
   background->AddBinding(base::MakeUnique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) {
-            return m->background_available && m->background_loaded;
-          },
-          base::Unretained(model_)),
+      VR_BIND_LAMBDA([](Model* m) { return m->background_loaded; },
+                     base::Unretained(model_)),
       VR_BIND_LAMBDA([](UiElement* e, const bool& v) { e->SetVisible(v); },
                      base::Unretained(background.get()))));
   scene_->AddUiElement(k2dBrowsingBackground, std::move(background));
@@ -759,7 +863,7 @@ void UiSceneCreator::CreateBackground() {
   auto element = Create<UiElement>(k2dBrowsingDefaultBackground, kPhaseNone);
   element->set_hit_testable(false);
   element->AddBinding(VR_BIND_FUNC(bool, Model, model_,
-                                   background_available == false, UiElement,
+                                   background_loaded == false, UiElement,
                                    element.get(), SetVisible));
   scene_->AddUiElement(k2dBrowsingBackground, std::move(element));
 
@@ -923,7 +1027,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
   speech_result->set_hit_testable(false);
   speech_result->SetSize(kVoiceSearchRecognitionResultTextWidth, 0);
-  speech_result->SetTextAlignment(UiTexture::kTextAlignmentCenter);
+  speech_result->SetAlignment(UiTexture::kTextAlignmentCenter);
   VR_BIND_COLOR(model_, speech_result.get(), &ColorScheme::prompt_foreground,
                 &Text::SetColor);
   speech_result->AddBinding(VR_BIND_FUNC(base::string16, Model, model_,
@@ -1211,6 +1315,31 @@ void UiSceneCreator::CreateUrlBar() {
           },
           base::Unretained(indicator_fg.get()))));
   scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
+}
+
+void UiSceneCreator::CreateSnackbars() {
+  auto snackbar = CreateSnackbar(
+      kDownloadedSnackbar, model_, kFileDownloadDoneIcon,
+      l10n_util::GetStringUTF16(IDS_VR_COMPONENT_UPDATE_READY),
+      base::i18n::ToUpper(l10n_util::GetStringUTF16(IDS_VR_COMPONENT_APPLY)),
+      base::BindRepeating(
+          [](UiBrowserInterface* browser) { browser->LoadAssets(); },
+          base::Unretained(browser_)));
+  snackbar->AddBinding(base::MakeUnique<Binding<bool>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->can_apply_new_background; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](UiElement* s, const bool& value) {
+            s->SetVisible(value);
+            s->SetRotate(1, 0, 0, value ? 0 : kSnackbarMoveInAngle);
+          },
+          base::Unretained(snackbar.get()))));
+  snackbar->SetVisible(false);
+  snackbar->SetRotate(1, 0, 0, kSnackbarMoveInAngle);
+  snackbar->SetTransitionedProperties({OPACITY, TRANSFORM});
+  snackbar->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kSnackbarTransitionDurationMs));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(snackbar));
 }
 
 void UiSceneCreator::CreateOmnibox() {

@@ -72,6 +72,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetVoiceSearchActive(bool active) override;
   void StartAutocomplete(const base::string16& string) override;
   void StopAutocomplete() override;
+  void LoadAssets() override;
 
   // vr::BrowserUiInterface implementation (Browser calling to UI).
   void SetWebVrMode(bool enabled, bool show_toast) override;
@@ -94,6 +95,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void OnSpeechRecognitionStateChanged(int new_state) override;
   void SetOmniboxSuggestions(
       std::unique_ptr<vr::OmniboxSuggestions> result) override;
+  void OnAssetsComponentReady() override;
 
  protected:
   void Init() override;
