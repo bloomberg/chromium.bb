@@ -770,32 +770,6 @@ void VaapiWrapper::DestroySurfaces() {
   DestroySurfaces_Locked();
 }
 
-scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
-    unsigned int va_format,
-    const gfx::Size& size,
-    const std::vector<VASurfaceAttrib>& va_attribs) {
-  base::AutoLock auto_lock(*va_lock_);
-
-  std::vector<VASurfaceAttrib> attribs(va_attribs);
-  VASurfaceID va_surface_id;
-  VAStatus va_res =
-      vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
-                       &va_surface_id, 1, &attribs[0], attribs.size());
-
-  scoped_refptr<VASurface> va_surface;
-  VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface",
-                       va_surface);
-
-  // This is safe to use Unretained() here, because the VDA takes care
-  // of the destruction order. All the surfaces will be destroyed
-  // before VaapiWrapper.
-  va_surface = new VASurface(
-      va_surface_id, size, va_format,
-      base::Bind(&VaapiWrapper::DestroyUnownedSurface, base::Unretained(this)));
-
-  return va_surface;
-}
-
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     const scoped_refptr<gfx::NativePixmap>& pixmap) {
   // Create a VASurface for a NativePixmap by importing the underlying dmabufs.
@@ -1274,6 +1248,32 @@ void VaapiWrapper::DestroySurfaces_Locked() {
   va_surface_ids_.clear();
   va_context_id_ = VA_INVALID_ID;
   va_surface_format_ = 0;
+}
+
+scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
+    unsigned int va_format,
+    const gfx::Size& size,
+    const std::vector<VASurfaceAttrib>& va_attribs) {
+  base::AutoLock auto_lock(*va_lock_);
+
+  std::vector<VASurfaceAttrib> attribs(va_attribs);
+  VASurfaceID va_surface_id;
+  VAStatus va_res =
+      vaCreateSurfaces(va_display_, va_format, size.width(), size.height(),
+                       &va_surface_id, 1, &attribs[0], attribs.size());
+
+  scoped_refptr<VASurface> va_surface;
+  VA_SUCCESS_OR_RETURN(va_res, "Failed to create unowned VASurface",
+                       va_surface);
+
+  // This is safe to use Unretained() here, because the VDA takes care
+  // of the destruction order. All the surfaces will be destroyed
+  // before VaapiWrapper.
+  va_surface = new VASurface(
+      va_surface_id, size, va_format,
+      base::Bind(&VaapiWrapper::DestroyUnownedSurface, base::Unretained(this)));
+
+  return va_surface;
 }
 
 void VaapiWrapper::DestroyUnownedSurface(VASurfaceID va_surface_id) {
