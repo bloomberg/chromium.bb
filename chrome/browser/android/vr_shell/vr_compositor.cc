@@ -56,10 +56,6 @@ void VrCompositor::SetWindowBounds(gfx::Size size) {
   compositor_->SetWindowBounds(size);
 }
 
-void VrCompositor::SetDeferCommits(bool defer_commits) {
-  compositor_->SetDeferCommits(defer_commits);
-}
-
 void VrCompositor::SurfaceChanged(jobject surface) {
   compositor_->SetSurface(surface);
 }
