@@ -19152,6 +19152,36 @@
         ],
         "vm_tests": []
     },
+    "fizz-moblab-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "fizz-moblab-chrome-pfq-tryjob": {
+        "_template": "chrome_pfq",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": null,
+        "important": false,
+        "manifest": "official.xml",
+        "uprev": true,
+        "vm_tests": []
+    },
     "fizz-moblab-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
@@ -19191,7 +19221,50 @@
         "boards": [
             "fizz-moblab"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "fizz-moblab-factory": {
+        "_template": "factory",
+        "boards": [
+            "fizz-moblab"
+        ]
+    },
+    "fizz-moblab-factory-tryjob": {
+        "_template": "factory",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "push_image": false
+    },
+    "fizz-moblab-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "manifest": "official.xml"
+    },
+    "fizz-moblab-firmware-tryjob": {
+        "_template": "firmware",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "manifest": "official.xml",
+        "push_image": false
     },
     "fizz-moblab-full": {
         "_template": "full",
@@ -19199,6 +19272,7 @@
             "fizz-moblab"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
@@ -19209,7 +19283,8 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "fizz-moblab"
-        ]
+        ],
+        "image_test": false
     },
     "fizz-moblab-llvm-next-toolchain-tryjob": {
         "_template": "llvm_next_toolchain",
@@ -19219,13 +19294,15 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "fizz-moblab-llvm-toolchain": {
         "_template": "llvm_toolchain",
         "boards": [
             "fizz-moblab"
-        ]
+        ],
+        "image_test": false
     },
     "fizz-moblab-llvm-toolchain-tryjob": {
         "_template": "llvm_toolchain",
@@ -19235,21 +19312,40 @@
         ],
         "debug": true,
         "display_label": "tryjob",
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false
     },
     "fizz-moblab-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
             "fizz-moblab"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "fizz-moblab-paladin": {
         "_template": "paladin",
         "boards": [
             "fizz-moblab"
         ],
+        "description": "Commit Queue (internal)",
+        "image_test": false,
         "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -19261,6 +19357,7 @@
         ],
         "chroot_replace": true,
         "debug": true,
+        "description": "Commit Queue (internal)",
         "display_label": "tryjob",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"provision\",\n    \"suite_args\": {\n        \"num_required\": 1\n    },\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -19269,9 +19366,25 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
+        "image_test": false,
         "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "fizz-moblab-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "hw_tests_override": null
     },
     "fizz-moblab-pre-cq": {
         "_template": "pre_cq",
@@ -19279,19 +19392,150 @@
             "fizz-moblab"
         ],
         "hw_tests_override": null,
+        "image_test": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "fizz-moblab-release": {
         "_template": "release",
         "active_waterfall": "chromeos",
+        "afdo_use": false,
         "boards": [
             "fizz-moblab"
         ],
+        "description": "Moblab release builders",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"moblab\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 7200,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": true\n}"
+        ],
+        "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
+        "paygen_skip_delta_payloads": true,
+        "paygen_skip_testing": true,
+        "signer_tests": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "fizz-moblab-release-tryjob": {
-        "_template": "release",
+    "fizz-moblab-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "fizz-moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "fizz-moblab-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "fizz-moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "fizz-moblab-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "image_test": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "image_test": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-release-afdo-generate-tryjob": {
+        "_template": "release_afdo_generate",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-release-afdo-tryjob": {
+        "_template": "release_afdo_generate",
+        "active_waterfall": "chromiumos.tryserver",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "fizz-moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "fizz-moblab-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "fizz-moblab"
+                ],
+                "grouped": true,
+                "image_test": false,
+                "name": "fizz-moblab-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "image_test": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-release-afdo-use-tryjob": {
+        "_template": "release_afdo_use",
         "active_waterfall": "chromiumos.tryserver",
         "boards": [
             "fizz-moblab"
@@ -19306,10 +19550,50 @@
             "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "hw_tests_override": null,
-        "paygen": false,
-        "push_image": false,
+        "image_test": false,
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "fizz-moblab-release-tryjob": {
+        "_template": "release",
+        "active_waterfall": "chromiumos.tryserver",
+        "afdo_use": false,
+        "boards": [
+            "fizz-moblab"
+        ],
+        "debug": true,
+        "description": "Moblab release builders",
+        "display_label": "tryjob",
+        "hw_tests": [
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
+            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
+        ],
+        "hw_tests_override": null,
+        "image_test": false,
+        "images": [
+            "base",
+            "recovery",
+            "test"
+        ],
+        "paygen": false,
+        "paygen_skip_delta_payloads": true,
+        "paygen_skip_testing": true,
+        "push_image": false,
+        "signer_tests": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "fizz-moblab-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "fizz-moblab"
+        ],
+        "hw_tests_override": null,
+        "manifest": "official.xml",
+        "vm_tests": []
     },
     "fizz-moblab-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -19327,7 +19611,14 @@
         "boards": [
             "fizz-moblab"
         ],
-        "hw_tests_override": null
+        "hw_tests_override": null,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
     },
     "fizz-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",

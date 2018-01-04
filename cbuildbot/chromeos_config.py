@@ -540,6 +540,7 @@ _x86_internal_release_boards = frozenset([
     'falco_li',
     'fizz',
     'fizz-accelerator',
+    'fizz-moblab',
     'gandof',
     'glados',
     'glimmer',
@@ -715,6 +716,7 @@ _loonix_boards = frozenset([
 ])
 
 _moblab_boards = frozenset([
+    'fizz-moblab',
     'guado_moblab',
     'moblab-generic-vm',
 ])
