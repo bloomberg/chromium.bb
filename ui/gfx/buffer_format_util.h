@@ -44,6 +44,9 @@ GFX_EXPORT size_t BufferOffsetForBufferFormat(const Size& size,
                                            BufferFormat format,
                                            size_t plane);
 
+// Returns the name of |format| as a string.
+GFX_EXPORT const char* BufferFormatToString(BufferFormat format);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_BUFFER_FORMAT_UTIL_H_

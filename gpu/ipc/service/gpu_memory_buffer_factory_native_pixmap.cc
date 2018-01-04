@@ -4,6 +4,7 @@
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_native_pixmap.h"
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
@@ -35,8 +36,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(surface_handle, size, format, usage);
   if (!pixmap.get()) {
-    DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << " format "
-                << static_cast<int>(format) << ", usage "
+    DLOG(ERROR) << "Failed to create pixmap " << size.ToString() << ",  "
+                << gfx::BufferFormatToString(format) << ", usage "
                 << static_cast<int>(usage);
     return gfx::GpuMemoryBufferHandle();
   }
@@ -122,8 +123,8 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
   scoped_refptr<gl::GLImageNativePixmap> image(
       new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
-    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
-               << static_cast<int>(format);
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   return image;
@@ -146,15 +147,15 @@ GpuMemoryBufferFactoryNativePixmap::CreateAnonymousImage(
   NOTIMPLEMENTED();
 #endif
   if (!pixmap.get()) {
-    LOG(ERROR) << "Failed to create pixmap " << size.ToString() << " format "
-               << static_cast<int>(format);
+    LOG(ERROR) << "Failed to create pixmap " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   scoped_refptr<gl::GLImageNativePixmap> image(
       new gl::GLImageNativePixmap(size, internalformat));
   if (!image->Initialize(pixmap.get(), format)) {
-    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << " format "
-               << static_cast<int>(format);
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format);
     return nullptr;
   }
   *is_cleared = true;
