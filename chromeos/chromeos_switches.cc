@@ -101,6 +101,9 @@ const char kArtifactsDir[] = "artifacts-dir";
 // Possible values: parallel|postpone. Default: parallel.
 const char kAshWebUIInit[] = "ash-webui-init";
 
+// Determines which Google Privacy CA to use for attestation.
+const char kAttestationServer[] = "attestation-server";
+
 // If this flag is set, it indicates that this device is a "Cellular First"
 // device. Cellular First devices use cellular telephone data networks as
 // their primary means of connecting to the internet.
@@ -120,17 +123,20 @@ const char kChildWallpaperSmall[] = "child-wallpaper-small";
 
 const char kConservativeThreshold[] = "conservative";
 
+// Forces use of Chrome OS Gaia API v1.
+const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
+
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
 // Control regions data load ("" is default).
 const char kCrosRegionsMode[] = "cros-regions-mode";
 
-// "Override" value for kCrosRegionsMode (region's data is read first).
-const char kCrosRegionsModeOverride[] = "override";
-
 // "Hide" value for kCrosRegionsMode (VPD values are hidden).
 const char kCrosRegionsModeHide[] = "hide";
+
+// "Override" value for kCrosRegionsMode (region's data is read first).
+const char kCrosRegionsModeOverride[] = "override";
 
 // Optional value for Data Saver prompt on cellular networks.
 const char kDataSaverPromptDemoMode[] = "demo";
@@ -188,6 +194,13 @@ const char kDisableEncryptionMigration[] = "disable-encryption-migration";
 // Disables notification when device is in end of life status.
 const char kDisableEolNotification[] = "disable-eol-notification";
 
+// Touchscreen-specific interactions of the Files app.
+const char kDisableFileManagerTouchMode[] = "disable-file-manager-touch-mode";
+
+// Disables fine grained time zone detection.
+const char kDisableFineGrainedTimeZoneDetection[] =
+    "disable-fine-grained-time-zone-detection";
+
 // Disables GAIA services such as enrollment and OAuth session restore. Used by
 // 'fake' telemetry login.
 const char kDisableGaiaServices[] = "disable-gaia-services";
@@ -195,11 +208,20 @@ const char kDisableGaiaServices[] = "disable-gaia-services";
 // Disables HID-detection OOBE screen.
 const char kDisableHIDDetectionOnOOBE[] = "disable-hid-detection-on-oobe";
 
+// Enables action handler apps (e.g. creating new notes) on lock screen.
+const char kDisableLockScreenApps[] = "disable-lock-screen-apps";
+
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
 
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
+
+// Disables material design Error screen.
+const char kDisableMdErrorScreen[] = "disable-md-error-screen";
+
+// Disables material design OOBE UI.
+const char kDisableMdOobe[] = "disable-md-oobe";
 
 // Disables mtp write support.
 const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
@@ -210,6 +232,9 @@ const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 // Disables notifications about captive portals in session.
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
+
+// Disables Settings based network configuration dialogs.
+const char kDisableNetworkSettingsConfig[] = "disable-network-settings-config";
 
 // Disables the new Korean IME in chrome://settings/languages.
 const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
@@ -223,12 +248,31 @@ const char kDisableNewZIPUnpacker[] = "disable-new-zip-unpacker";
 const char kDisableOfficeEditingComponentApp[] =
     "disable-office-editing-component-extension";
 
+// Disables per-user timezone.
+const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
+
 // Disables suggestions while typing on a physical keyboard.
 const char kDisablePhysicalKeyboardAutocorrect[] =
     "disable-physical-keyboard-autocorrect";
 
 // Disables rollback option on reset screen.
 const char kDisableRollbackOption[] = "disable-rollback-option";
+
+// Disables client certificate authentication on the sign-in frame on the Chrome
+// OS sign-in profile.
+// TODO(pmarko): Remove this flag in M-66 if no issues are found
+// (https://crbug.com/723849).
+const char kDisableSigninFrameClientCerts[] =
+    "disable-signin-frame-client-certs";
+
+// Disables user selection of client certificate on the sign-in frame on the
+// Chrome OS sign-in profile.
+// TODO(pmarko): Remove this flag in M-65 when the
+// DeviceLoginScreenAutoSelectCertificateForUrls policy is enabled on the server
+// side (https://crbug.com/723849) and completely disable user selection of
+// certificates on the sign-in frame.
+const char kDisableSigninFrameClientCertUserSelection[] =
+    "disable-signin-frame-client-cert-user-selection";
 
 // Disables SystemTimezoneAutomaticDetection policy.
 const char kDisableSystemTimezoneAutomaticDetectionPolicy[] =
@@ -240,6 +284,9 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 // Disables wake on wifi features.
 const char kDisableWakeOnWifi[] = "disable-wake-on-wifi";
 
+// Disables zip archiver - unpacker.
+const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
+
 // Enables the Android Wallpapers App as the default app on Chrome OS.
 const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
 
@@ -249,6 +296,9 @@ const char kEnableArc[] = "enable-arc";
 
 // Enables ARC OptIn flow in OOBE.
 const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
+
+// Enables using a random url for captive portal detection.
+const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 
 // Enables the Cast Receiver.
 const char kEnableCastReceiver[] = "enable-cast-receiver";
@@ -274,30 +324,10 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
 
 // Touchscreen-specific interactions of the Files app.
-const char kDisableFileManagerTouchMode[] = "disable-file-manager-touch-mode";
 const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
 
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
-
-// Enables action handler apps (e.g. creating new notes) on lock screen.
-const char kDisableLockScreenApps[] = "disable-lock-screen-apps";
-
-// Overrides Tether with stub service. Provide integer arguments for the number
-// of fake networks desired, e.g. 'tether-stub=2'.
-const char kTetherStub[] = "tether-stub";
-
-// Disables material design OOBE UI.
-const char kDisableMdOobe[] = "disable-md-oobe";
-
-// Disables material design Error screen.
-const char kDisableMdErrorScreen[] = "disable-md-error-screen";
-
-// Disables Settings based network configuration dialogs.
-const char kDisableNetworkSettingsConfig[] = "disable-network-settings-config";
-
-// Enables using a random url for captive portal detection.
-const char kEnableCaptivePortalRandomUrl[] = "enable-captive-portal-random-url";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
@@ -336,11 +366,12 @@ const char kEnableZipArchiverPacker[] = "enable-zip-archiver-packer";
 // Enables zip archiver - unpacker.
 const char kEnableZipArchiverUnpacker[] = "enable-zip-archiver-unpacker";
 
-// Disables zip archiver - unpacker.
-const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
-
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
+
+// Disable license type selection by user during enrollment.
+const char kEnterpriseDisableLicenseTypeSelection[] =
+    "enterprise-disable-license-type-selection";
 
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
@@ -367,9 +398,17 @@ const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 
+// Force enables the Happiness Tracking System for the device. This ignores
+// user profile check and time limits and shows the notification every time
+// for any type of user. Should be used only for testing.
+const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
+
 // Usually in browser tests the usual login manager bringup is skipped so that
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";
+
+// Force system compositor mode when set.
+const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
 
 // Screenshot testing: specifies the directory where the golden screenshots are
 // stored.
@@ -387,10 +426,8 @@ const char kGuestWallpaperLarge[] = "guest-wallpaper-large";
 // JPEG file).
 const char kGuestWallpaperSmall[] = "guest-wallpaper-small";
 
-// Force enables the Happiness Tracking System for the device. This ignores
-// user profile check and time limits and shows the notification every time
-// for any type of user. Should be used only for testing.
-const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
+// If true, the Chromebook has a keyboard with a diamond key.
+const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 
 // If set, the system is a Chromebook with a "standard Chrome OS keyboard",
 // which generally means one with a Search key in the standard Caps Lock
@@ -398,9 +435,6 @@ const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
 // both Search and Caps Lock keys (e.g. stout) and for devices like Chromeboxes
 // that only use external keyboards.
 const char kHasChromeOSKeyboard[] = "has-chromeos-keyboard";
-
-// If true, the Chromebook has a keyboard with a diamond key.
-const char kHasChromeOSDiamondKey[] = "has-chromeos-diamond-key";
 
 // Defines user homedir. This defaults to primary user homedir.
 const char kHomedir[] = "homedir";
@@ -506,51 +540,19 @@ const char kSystemDevMode[] = "system-developer-mode";
 // Enables testing for auto update UI.
 const char kTestAutoUpdateUI[] = "test-auto-update-ui";
 
-// Determines which Google Privacy CA to use for attestation.
-const char kAttestationServer[] = "attestation-server";
-
-// Enables wake on wifi packet feature, which wakes the device on the receipt
-// of network packets from whitelisted sources.
-const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
-
-// Force system compositor mode when set.
-const char kForceSystemCompositorMode[] = "force-system-compositor-mode";
-
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 
-// Forces use of Chrome OS Gaia API v1.
-const char kCrosGaiaApiV1[] = "cros-gaia-api-v1";
+// Overrides Tether with stub service. Provide integer arguments for the number
+// of fake networks desired, e.g. 'tether-stub=2'.
+const char kTetherStub[] = "tether-stub";
 
 // List of locales supported by voice interaction.
 const char kVoiceInteractionLocales[] = "voice-interaction-supported-locales";
 
-// Disable license type selection by user during enrollment.
-const char kEnterpriseDisableLicenseTypeSelection[] =
-    "enterprise-disable-license-type-selection";
-
-// Disables per-user timezone.
-const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
-
-// Disables fine grained time zone detection.
-const char kDisableFineGrainedTimeZoneDetection[] =
-    "disable-fine-grained-time-zone-detection";
-
-// Disables client certificate authentication on the sign-in frame on the Chrome
-// OS sign-in profile.
-// TODO(pmarko): Remove this flag in M-66 if no issues are found
-// (crbug.com/723849).
-const char kDisableSigninFrameClientCerts[] =
-    "disable-signin-frame-client-certs";
-
-// Disables user selection of client certificate on the sign-in frame on the
-// Chrome OS sign-in profile.
-// TODO(pmarko): Remove this flag in M-65 when the
-// DeviceLoginScreenAutoSelectCertificateForUrls policy is enabled on the server
-// side (crbug.com/723849) and completely disable user selection of certificates
-// on the sign-in frame.
-const char kDisableSigninFrameClientCertUserSelection[] =
-    "disable-signin-frame-client-cert-user-selection";
+// Enables wake on wifi packet feature, which wakes the device on the receipt
+// of network packets from whitelisted sources.
+const char kWakeOnWifiPacket[] = "wake-on-wifi-packet";
 
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
