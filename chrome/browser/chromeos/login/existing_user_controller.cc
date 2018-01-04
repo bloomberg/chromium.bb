@@ -600,14 +600,24 @@ void ExistingUserController::PerformLogin(
         user_context.GetKey()->GetSecret());
   }
 
+  // If plain text password is available, computes its salt, hash, and length,
+  // and saves them in |user_context|. They will be saved to prefs when user
+  // profile is ready.
+  UserContext new_user_context = user_context;
+  if (user_context.GetKey()->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN) {
+    base::string16 password(
+        base::UTF8ToUTF16(new_user_context.GetKey()->GetSecret()));
+    new_user_context.SetSyncPasswordData(password_manager::SyncPasswordData(
+        password, auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
+  }
+
   if (user_manager::UserManager::Get()->IsSupervisedAccountId(
           user_context.GetAccountId())) {
-    login_performer_->LoginAsSupervisedUser(user_context);
+    login_performer_->LoginAsSupervisedUser(new_user_context);
   } else {
     // If a regular user log in to a device which supports ARC, we should make
     // sure that the user's cryptohome is encrypted in ext4 dircrypto to run the
     // latest Android runtime.
-    UserContext new_user_context = user_context;
     new_user_context.SetIsForcingDircrypto(
         ShouldForceDircrypto(new_user_context.GetAccountId()));
     login_performer_->PerformLogin(new_user_context, auth_mode);

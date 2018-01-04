@@ -11,6 +11,7 @@ include_rules = [
   "+components/constrained_window",
   "+components/drive/drive_pref_names.h",
   "+components/pairing",
+  "+components/password_manager/core/browser/hash_password_manager.h",
   "+components/onc",
   "+components/ownership",
   "+components/session_manager/core",

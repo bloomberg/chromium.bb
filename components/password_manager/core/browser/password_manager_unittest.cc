@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
@@ -757,8 +758,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   // User should not be prompted and password should not be saved.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   EXPECT_CALL(*store_, SaveSyncPasswordHash(form.password_value));
 #endif
   // Prefs are needed for failure logging about sync credentials.
@@ -836,8 +836,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotDroppedIfUpToDate) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   EXPECT_CALL(*store_, SaveSyncPasswordHash(form.password_value));
 #endif
   manager()->ProvisionallySavePassword(form, nullptr);
@@ -873,8 +872,7 @@ TEST_F(PasswordManagerTest, SyncCredentialsDroppedWhenObsolete) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   EXPECT_CALL(*store_, SaveSyncPasswordHash(ASCIIToUTF16("n3w passw0rd")));
 #endif
   manager()->ProvisionallySavePassword(updated_form, nullptr);
@@ -1928,8 +1926,7 @@ TEST_F(PasswordManagerTest, ClearedFieldsSuccessCriteria) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 // Check that no sync password hash is saved when no username is available,
 // because we it's not clear whether the submitted credentials are sync
 // credentials.
@@ -2202,8 +2199,7 @@ TEST_F(PasswordManagerTest, SaveSyncPasswordHashOnChangePasswordPage) {
   EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   EXPECT_CALL(*store_, SaveSyncPasswordHash(form.new_password_value));
 #endif
   client_.FilterAllResultsForSaving();

@@ -24,7 +24,7 @@
 #include "components/sync/model/syncable_service.h"
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_reuse_detector_consumer.h"
@@ -248,7 +248,7 @@ class PasswordStore : protected PasswordStoreSync,
   base::WeakPtr<syncer::SyncableService> GetPasswordSyncableService();
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Checks that some suffix of |input| equals to a password saved on another
   // registry controlled domain than |domain|.
   // If such suffix is found, |consumer|->OnReuseFound() is called on the same
@@ -258,9 +258,11 @@ class PasswordStore : protected PasswordStoreSync,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
-#if !defined(OS_CHROMEOS)
   // Saves a hash of |password| for password reuse checking.
   virtual void SaveSyncPasswordHash(const base::string16& password);
+
+  // Saves |sync_password_data| for password reuse checking.
+  virtual void SaveSyncPasswordHash(const SyncPasswordData& sync_password_data);
 
   // Clears the saved sync password hash.
   virtual void ClearSyncPasswordHash();
@@ -268,7 +270,6 @@ class PasswordStore : protected PasswordStoreSync,
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(
       std::unique_ptr<PasswordStoreSigninNotifier> notifier);
-#endif
 #endif
 
  protected:
@@ -307,7 +308,7 @@ class PasswordStore : protected PasswordStoreSync,
   };
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Represents a single CheckReuse() request. Implements functionality to
   // listen to reuse events and propagate them to |consumer| on the sequence on
   // which CheckReuseRequest is created.
@@ -434,7 +435,7 @@ class PasswordStore : protected PasswordStoreSync,
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Synchronous implementation of CheckReuse().
   void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
                       const base::string16& input,
@@ -601,13 +602,11 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<PasswordSyncableService> syncable_service_;
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // PasswordReuseDetector can be only destroyed on the background sequence. It
   // can't be owned by PasswordStore because PasswordStore can be destroyed on
   // the UI thread and DestroyOnBackgroundThread isn't guaranteed to be called.
   PasswordReuseDetector* reuse_detector_ = nullptr;
-#endif
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   std::unique_ptr<PasswordStoreSigninNotifier> notifier_;
   HashPasswordManager hash_password_manager_;
 #endif

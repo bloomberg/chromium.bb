@@ -212,8 +212,7 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
                             SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.SyncPasswordHashChange", event,

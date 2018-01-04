@@ -13,7 +13,6 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/password_manager_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,7 +79,7 @@ SyncPasswordData GetSyncPasswordData(const std::string& sync_password) {
   SyncPasswordData sync_password_data;
   sync_password_data.salt = "1234567890123456";
   sync_password_data.length = sync_password.size();
-  sync_password_data.hash = password_manager_util::CalculateSyncPasswordHash(
+  sync_password_data.hash = HashPasswordManager::CalculateSyncPasswordHash(
       base::ASCIIToUTF16(sync_password), sync_password_data.salt);
   return sync_password_data;
 }

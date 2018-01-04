@@ -76,10 +76,8 @@ class MockPasswordStore : public PasswordStore {
                void(const base::string16&,
                     const std::string&,
                     PasswordReuseDetectorConsumer*));
-#if !defined(OS_CHROMEOS)
   MOCK_METHOD1(SaveSyncPasswordHash, void(const base::string16&));
   MOCK_METHOD0(ClearSyncPasswordHash, void());
-#endif
 #endif
 
   PasswordStoreSync* GetSyncInterface() { return this; }
