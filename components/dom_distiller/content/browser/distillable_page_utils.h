@@ -29,7 +29,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
                                   const DistillablePageDetector* detector,
                                   base::Callback<void(bool)> callback);
 
-typedef base::Callback<void(bool, bool)> DistillabilityDelegate;
+typedef base::RepeatingCallback<void(bool, bool, bool)> DistillabilityDelegate;
 
 // Set the delegate to receive the result of whether the page is distillable.
 void setDelegate(content::WebContents* web_contents,

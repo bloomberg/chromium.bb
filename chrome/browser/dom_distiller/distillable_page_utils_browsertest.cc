@@ -42,15 +42,15 @@ const char* kAllPaths[] = {
 class Holder {
  public:
   virtual ~Holder() {}
-  virtual void OnResult(bool, bool) = 0;
+  virtual void OnResult(bool, bool, bool) = 0;
 };
 
 class MockDelegate : public Holder {
  public:
-  MOCK_METHOD2(OnResult, void(bool, bool));
+  MOCK_METHOD3(OnResult, void(bool, bool, bool));
 
-  base::Callback<void(bool, bool)> GetDelegate() {
-    return base::Bind(&MockDelegate::OnResult, base::Unretained(this));
+  base::RepeatingCallback<void(bool, bool, bool)> GetDelegate() {
+    return base::BindRepeating(&MockDelegate::OnResult, base::Unretained(this));
   }
 };
 
@@ -137,14 +137,14 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        TestDelegate) {
   for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, true))
+    EXPECT_CALL(holder_, OnResult(true, true, _))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(kAllPaths[i], 0);
   }
   // Test pages that we don't care about its distillability.
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(_, _)).Times(0);
+    EXPECT_CALL(holder_, OnResult(_, _, _)).Times(0);
     NavigateAndWait("about:blank", kWaitNoExpectedCallMs);
   }
 }
@@ -155,7 +155,7 @@ using DistillablePageUtilsBrowserTestNone =
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone,
                        TestDelegate) {
-  EXPECT_CALL(holder_, OnResult(_, _)).Times(0);
+  EXPECT_CALL(holder_, OnResult(_, _, _)).Times(0);
   NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCallMs);
 }
 
@@ -167,13 +167,13 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOG,
                        TestDelegate) {
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, true))
+    EXPECT_CALL(holder_, OnResult(true, true, _))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(kArticlePath, 0);
   }
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(false, true))
+    EXPECT_CALL(holder_, OnResult(false, true, _))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(kNonArticlePath, 0);
   }
@@ -188,15 +188,15 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
   const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
   for (unsigned i = 0; i < sizeof(paths)/sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(true, true))
+    EXPECT_CALL(holder_, OnResult(true, false, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(true, true, false))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(paths[i], 0);
   }
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(false, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(false, true))
+    EXPECT_CALL(holder_, OnResult(false, false, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(false, true, false))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(kNonArticlePath, 0);
   }
@@ -210,15 +210,15 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
   const char* paths[] = {kSimpleArticlePath, kSimpleArticleIFramePath};
   for (unsigned i = 0; i < sizeof(paths) / sizeof(paths[0]); ++i) {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(true, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(true, true))
+    EXPECT_CALL(holder_, OnResult(true, false, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(true, true, false))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(paths[i], 0);
   }
   {
     testing::InSequence dummy;
-    EXPECT_CALL(holder_, OnResult(false, false)).Times(1);
-    EXPECT_CALL(holder_, OnResult(false, true))
+    EXPECT_CALL(holder_, OnResult(false, false, false)).Times(1);
+    EXPECT_CALL(holder_, OnResult(false, true, false))
         .WillOnce(testing::InvokeWithoutArgs(QuitSoon));
     NavigateAndWait(kNonArticlePath, 0);
   }

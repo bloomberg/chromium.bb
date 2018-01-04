@@ -70,22 +70,10 @@ JNI_DomDistillerTabUtils_GetFormattedUrlFromOriginalDistillerUrl(
                                     nullptr));
 }
 
-// Returns true if the distiller experiment is set to use any heuristic other
-// than "NONE". This is used to prevent the Reader Mode panel from loading
-// when it would otherwise never be shown.
-jboolean JNI_DomDistillerTabUtils_IsDistillerHeuristicsEnabled(
+jint JNI_DomDistillerTabUtils_GetDistillerHeuristics(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  return dom_distiller::GetDistillerHeuristicsType()
-      != dom_distiller::DistillerHeuristicsType::NONE;
-}
-
-// Returns true if distiller is reporting every page as distillable.
-jboolean JNI_DomDistillerTabUtils_IsHeuristicAlwaysTrue(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-  return dom_distiller::GetDistillerHeuristicsType()
-      == dom_distiller::DistillerHeuristicsType::ALWAYS_TRUE;
+  return static_cast<jint>(dom_distiller::GetDistillerHeuristicsType());
 }
 
 void JNI_DomDistillerTabUtils_SetInterceptNavigationDelegate(
