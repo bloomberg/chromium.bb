@@ -30,8 +30,8 @@ wchar_t g_kRegPathHKLM[] = L"\\Registry\\Machine\\";
 wchar_t g_kRegPathHKCU[nt::g_kRegMaxPathLen + 1] = L"";
 wchar_t g_current_user_sid_string[nt::g_kRegMaxPathLen + 1] = L"";
 
-// Max number of tries for system API calls when STATUS_BUFFER_TOO_SMALL can be
-// returned.
+// Max number of tries for system API calls when STATUS_BUFFER_OVERFLOW or
+// STATUS_BUFFER_TOO_SMALL can be returned.
 enum { kMaxTries = 5 };
 
 // For testing only.
@@ -808,16 +808,18 @@ bool QueryRegKeyValue(HANDLE key,
   // changes.
   NTSTATUS ntstatus = STATUS_UNSUCCESSFUL;
   int tries = 0;
-  DWORD size_needed = 1;
-  std::vector<BYTE> buffer;
   KEY_VALUE_FULL_INFORMATION* value_info = nullptr;
+  DWORD size_needed = sizeof(*value_info);
+  std::vector<BYTE> buffer(size_needed);
   do {
     buffer.resize(size_needed);
     value_info = reinterpret_cast<KEY_VALUE_FULL_INFORMATION*>(buffer.data());
 
     ntstatus = g_nt_query_value_key(key, &value_uni, KeyValueFullInformation,
                                     value_info, size_needed, &size_needed);
-  } while (ntstatus == STATUS_BUFFER_TOO_SMALL && ++tries < kMaxTries);
+  } while ((ntstatus == STATUS_BUFFER_OVERFLOW ||
+            ntstatus == STATUS_BUFFER_TOO_SMALL) &&
+           ++tries < kMaxTries);
 
   if (!NT_SUCCESS(ntstatus))
     return false;
@@ -1113,16 +1115,18 @@ bool QueryRegEnumerationInfo(HANDLE key, ULONG* out_subkey_count) {
   int tries = 0;
   // Start with sizeof the structure.  It's very common for the variable sized
   // "Class" element to be of length 0.
-  DWORD size_needed = sizeof(KEY_FULL_INFORMATION);
-  std::vector<BYTE> buffer;
   KEY_FULL_INFORMATION* key_info = nullptr;
+  DWORD size_needed = sizeof(*key_info);
+  std::vector<BYTE> buffer(size_needed);
   do {
     buffer.resize(size_needed);
     key_info = reinterpret_cast<KEY_FULL_INFORMATION*>(buffer.data());
 
     ntstatus = g_nt_query_key(key, KeyFullInformation, key_info, size_needed,
                               &size_needed);
-  } while (ntstatus == STATUS_BUFFER_TOO_SMALL && ++tries < kMaxTries);
+  } while ((ntstatus == STATUS_BUFFER_OVERFLOW ||
+            ntstatus == STATUS_BUFFER_TOO_SMALL) &&
+           ++tries < kMaxTries);
 
   if (!NT_SUCCESS(ntstatus))
     return false;
@@ -1146,16 +1150,18 @@ bool QueryRegSubkey(HANDLE key,
   // Start with sizeof the structure, plus 12 characters.  It's very common for
   // key names to be < 12 characters (without being inefficient as an initial
   // allocation).
-  DWORD size_needed = sizeof(KEY_BASIC_INFORMATION) + (12 * sizeof(wchar_t));
-  std::vector<BYTE> buffer;
   KEY_BASIC_INFORMATION* subkey_info = nullptr;
+  DWORD size_needed = sizeof(*subkey_info) + (12 * sizeof(wchar_t));
+  std::vector<BYTE> buffer(size_needed);
   do {
     buffer.resize(size_needed);
     subkey_info = reinterpret_cast<KEY_BASIC_INFORMATION*>(buffer.data());
 
     ntstatus = g_nt_enumerate_key(key, subkey_index, KeyBasicInformation,
                                   subkey_info, size_needed, &size_needed);
-  } while (ntstatus == STATUS_BUFFER_TOO_SMALL && ++tries < kMaxTries);
+  } while ((ntstatus == STATUS_BUFFER_OVERFLOW ||
+            ntstatus == STATUS_BUFFER_TOO_SMALL) &&
+           ++tries < kMaxTries);
 
   if (!NT_SUCCESS(ntstatus))
     return false;
