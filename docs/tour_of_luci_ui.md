@@ -165,14 +165,21 @@ layout of builder pages.
 #### Build Results page
 
 **Buildbot Build URL:** `
-ci.chromium.org/buildbot/<group_id>/<builder_name>/<build_id>`
+ci.chromium.org/buildbot/<group_id>/<builder_name>/<build_#>`
 
 **LUCI Build URL:**
-`ci.chromium.org/p/<project_id>/builders/<bucket>/<builder_name>/<build_id>`
+`ci.chromium.org/p/<project_id>/builders/<bucket>/<builder_name>/<build_#>`
+
+*Alternate LUCI Build URL: `ci.chromium.org/p/<project_id>/builds/b<buildbucket_build_id>`*
 
 This is the page describing the build and results. Contains build info,
 properties, result status, blame-list, steps and links to log files. The layout
-is equivalent to Buildbot layout of build result pages 
+is equivalent to Buildbot layout of build result pages.
+
+Builds can also have an alternate LUCI build URL under
+`ci.chromium.org/p/<project_id>/builds/b<buildbucket_build_id>` if the build does
+not have a “buildnumber” property. This does not apply to Chromium builds since
+all Chromium builds have a buildnumber property.
 
 ![An example build result page](images/LUCI-Build.png "LUCI Build Page")
 
