@@ -461,7 +461,8 @@ void DOMStorageContextImpl::SetSaveSessionStorageOnDisk() {
   DCHECK(namespaces_.empty());
   if (!sessionstorage_directory_.empty()) {
     session_storage_database_ = new SessionStorageDatabase(
-        sessionstorage_directory_);
+        sessionstorage_directory_, task_runner_->GetSequencedTaskRunner(
+                                       DOMStorageTaskRunner::COMMIT_SEQUENCE));
   }
 }
 
