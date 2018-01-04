@@ -125,6 +125,24 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   return ToLocalFrame(parent)->TextZoomFactor();
 }
 
+bool ShouldUseClientLoFiForRequest(
+    const ResourceRequest& request,
+    WebURLRequest::PreviewsState frame_previews_state) {
+  if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)
+    return request.GetPreviewsState() & WebURLRequest::kClientLoFiOn;
+
+  if (!(frame_previews_state & WebURLRequest::kClientLoFiOn))
+    return false;
+
+  // Even if this frame is using Server Lo-Fi, https:// images won't be
+  // handled by Server Lo-Fi since their requests won't be sent to the Data
+  // Saver proxy, so use Client Lo-Fi instead.
+  if (frame_previews_state & WebURLRequest::kServerLoFiOn)
+    return request.Url().ProtocolIs("https");
+
+  return true;
+}
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -1127,7 +1145,8 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
   }
 
   if (Client() &&
-      Client()->ShouldUseClientLoFiForRequest(params.GetResourceRequest())) {
+      ShouldUseClientLoFiForRequest(params.GetResourceRequest(),
+                                    Client()->GetPreviewsStateForFrame())) {
     params.MutableResourceRequest().SetPreviewsState(
         params.GetResourceRequest().GetPreviewsState() |
         WebURLRequest::kClientLoFiOn);

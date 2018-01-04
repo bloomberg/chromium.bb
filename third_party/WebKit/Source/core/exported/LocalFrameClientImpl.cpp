@@ -1040,19 +1040,11 @@ void LocalFrameClientImpl::SetEffectiveConnectionTypeForTesting(
     return web_frame_->Client()->SetEffectiveConnectionTypeForTesting(type);
 }
 
-bool LocalFrameClientImpl::IsClientLoFiActiveForFrame() {
+WebURLRequest::PreviewsState LocalFrameClientImpl::GetPreviewsStateForFrame()
+    const {
   if (web_frame_->Client())
-    return web_frame_->Client()->IsClientLoFiActiveForFrame();
-  return false;
-}
-
-bool LocalFrameClientImpl::ShouldUseClientLoFiForRequest(
-    const ResourceRequest& request) {
-  if (web_frame_->Client()) {
-    return web_frame_->Client()->ShouldUseClientLoFiForRequest(
-        WrappedResourceRequest(request));
-  }
-  return false;
+    return web_frame_->Client()->GetPreviewsStateForFrame();
+  return WebURLRequest::kPreviewsUnspecified;
 }
 
 WebDevToolsAgentImpl* LocalFrameClientImpl::DevToolsAgent() {

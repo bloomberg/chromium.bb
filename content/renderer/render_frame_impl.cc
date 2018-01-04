@@ -309,6 +309,9 @@ const base::Feature kConsumeGestureOnNavigation = {
 
 const int kExtraCharsBeforeAndAfterSelection = 100;
 
+const PreviewsState kDisabledPreviewsBits =
+    PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM;
+
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
 static base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit
     g_routing_id_frame_map = LAZY_INSTANCE_INITIALIZER;
@@ -4602,29 +4605,15 @@ void RenderFrameImpl::SetEffectiveConnectionTypeForTesting(
   effective_connection_type_ = type;
 }
 
-bool RenderFrameImpl::ShouldUseClientLoFiForRequest(
-    const WebURLRequest& request) {
-  if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)
-    return request.GetPreviewsState() & WebURLRequest::kClientLoFiOn;
-
-  if (!IsClientLoFiActiveForFrame())
-    return false;
-
-  // Even if this frame is using Server Lo-Fi, https:// images won't be handled
-  // by Server Lo-Fi since their requests won't be sent to the Data Saver proxy,
-  // so use Client Lo-Fi instead.
-  if (previews_state_ & SERVER_LOFI_ON)
-    return request.Url().ProtocolIs("https");
-  return true;
-}
-
-bool RenderFrameImpl::IsClientLoFiActiveForFrame() {
-  if (!(previews_state_ & CLIENT_LOFI_ON))
-    return false;
-  if (previews_state_ & (PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
-    return false;
+blink::WebURLRequest::PreviewsState RenderFrameImpl::GetPreviewsStateForFrame()
+    const {
+  PreviewsState disabled_state = previews_state_ & kDisabledPreviewsBits;
+  if (disabled_state) {
+    // Sanity check disabled vs. enabled bits here before passing on.
+    DCHECK(!(previews_state_ & ~kDisabledPreviewsBits)) << previews_state_;
+    return disabled_state;
   }
-  return true;
+  return static_cast<WebURLRequest::PreviewsState>(previews_state_);
 }
 
 void RenderFrameImpl::DidBlockFramebust(const WebURL& url) {
@@ -4914,8 +4903,8 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
           static_cast<WebURLRequest::PreviewsState>(previews_state_);
 
       // The decision of whether or not to enable Client Lo-Fi is made earlier
-      // in the request lifetime, using ShouldUseClientLoFiForRequest(), so
-      // don't add the Client Lo-Fi bit to the request here.
+      // in the request lifetime, in LocalFrame::MaybeAllowImagePlaceholder(),
+      // so don't add the Client Lo-Fi bit to the request here.
       request_previews_state &= ~(WebURLRequest::kClientLoFiOn);
       if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
         request_previews_state = WebURLRequest::kPreviewsOff;
