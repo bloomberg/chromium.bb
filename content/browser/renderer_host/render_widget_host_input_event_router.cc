@@ -237,6 +237,43 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindMouseEventTarget(
   return {target, false, transformed_point};
 }
 
+RenderWidgetHostViewBase*
+RenderWidgetHostInputEventRouter::FindMouseWheelEventTarget(
+    RenderWidgetHostViewBase* root_view,
+    const blink::WebMouseWheelEvent& event,
+    gfx::PointF* transformed_point) const {
+  RenderWidgetHostViewBase* target = nullptr;
+  if (root_view->IsMouseLocked()) {
+    target = root_view->GetRenderWidgetHostImpl()
+                 ->delegate()
+                 ->GetMouseLockWidget()
+                 ->GetView();
+    if (!root_view->TransformPointToCoordSpaceForView(
+            event.PositionInWidget(), target, transformed_point)) {
+      return nullptr;
+    }
+  } else if (root_view->wheel_scroll_latching_enabled()) {
+    if (event.phase == blink::WebMouseWheelEvent::kPhaseBegan) {
+      auto result = FindViewAtLocation(
+          root_view, event.PositionInWidget(), event.PositionInScreen(),
+          viz::EventSource::MOUSE, transformed_point);
+      // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
+      target = result.view;
+    } else if (wheel_target_.target) {
+      target = wheel_target_.target;
+      *transformed_point = event.PositionInWidget() + wheel_target_.delta;
+    }
+  } else {  // !root_view->IsMouseLocked() &&
+    // !root_view->wheel_scroll_latching_enabled()
+    auto result = FindViewAtLocation(
+        root_view, event.PositionInWidget(), event.PositionInScreen(),
+        viz::EventSource::MOUSE, transformed_point);
+    // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
+    target = result.view;
+  }
+  return target;
+}
+
 RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
     RenderWidgetHostViewBase* root_view,
     const gfx::PointF& point,
@@ -330,57 +367,30 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebMouseWheelEvent* event,
     const ui::LatencyInfo& latency) {
-  RenderWidgetHostViewBase* target = nullptr;
   gfx::PointF transformed_point;
+  RenderWidgetHostViewBase* const target =
+      FindMouseWheelEventTarget(root_view, *event, &transformed_point);
 
-  if (root_view->IsMouseLocked()) {
-    target = root_view->GetRenderWidgetHostImpl()
-                 ->delegate()
-                 ->GetMouseLockWidget()
-                 ->GetView();
-    if (!root_view->TransformPointToCoordSpaceForView(
-            event->PositionInWidget(), target, &transformed_point)) {
-      root_view->WheelEventAck(*event,
-                               INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-      return;
-    }
-  } else if (root_view->wheel_scroll_latching_enabled()) {
+  if (root_view->wheel_scroll_latching_enabled()) {
     if (event->phase == blink::WebMouseWheelEvent::kPhaseBegan) {
-      auto result = FindViewAtLocation(
-          root_view, event->PositionInWidget(), event->PositionInScreen(),
-          viz::EventSource::MOUSE, &transformed_point);
-      // TOOD(crbug.com/796656): Do not ignore |result.should_query_view|.
-      wheel_target_.target = result.view;
+      wheel_target_.target = target;
       wheel_target_.delta = transformed_point - event->PositionInWidget();
-      target = wheel_target_.target;
-    } else {
-      if (wheel_target_.target) {
-        target = wheel_target_.target;
-        transformed_point = event->PositionInWidget() + wheel_target_.delta;
-      } else if ((event->phase == blink::WebMouseWheelEvent::kPhaseEnded ||
-                  event->momentum_phase ==
-                      blink::WebMouseWheelEvent::kPhaseEnded) &&
-                 bubbling_gesture_scroll_target_.target) {
-        // Send a GSE to the bubbling target and cancel scroll bubbling since
-        // the wheel target view is destroyed and the wheel end event won't get
-        // processed.
-        blink::WebGestureEvent fake_scroll_update =
-            DummyGestureScrollUpdate(event->TimeStampSeconds());
-        fake_scroll_update.source_device = blink::kWebGestureDeviceTouchpad;
-        SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                             fake_scroll_update);
-        bubbling_gesture_scroll_target_.target = nullptr;
-        first_bubbling_scroll_target_.target = nullptr;
-      }
+    } else if (!wheel_target_.target &&
+               (event->phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+                event->momentum_phase ==
+                    blink::WebMouseWheelEvent::kPhaseEnded) &&
+               bubbling_gesture_scroll_target_.target) {
+      // Send a GSE to the bubbling target and cancel scroll bubbling since
+      // the wheel target view is destroyed and the wheel end event won't get
+      // processed.
+      blink::WebGestureEvent fake_scroll_update =
+          DummyGestureScrollUpdate(event->TimeStampSeconds());
+      fake_scroll_update.source_device = blink::kWebGestureDeviceTouchpad;
+      SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
+                           fake_scroll_update);
+      bubbling_gesture_scroll_target_.target = nullptr;
+      first_bubbling_scroll_target_.target = nullptr;
     }
-
-  } else {  // !root_view->IsMouseLocked() &&
-    // !root_view->wheel_scroll_latching_enabled()
-    auto result = FindViewAtLocation(
-        root_view, event->PositionInWidget(), event->PositionInScreen(),
-        viz::EventSource::MOUSE, &transformed_point);
-    // TOOD(crbug.com/796656): Do not ignore |result.should_query_view|.
-    target = result.view;
   }
 
   if (!target) {
@@ -490,7 +500,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
         auto result = FindViewAtLocation(
             root_view, original_point, original_point_in_screen,
             viz::EventSource::TOUCH, &transformed_point);
-        // TOOD(crbug.com/796656): Do not ignore |result.should_query_view|.
+        // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
         touch_target_.target = result.view;
 
         // TODO(wjmaclean): Instead of just computing a delta, we should extract
@@ -1013,7 +1023,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     auto result =
         FindViewAtLocation(root_view, original_point, original_point_in_screen,
                            viz::EventSource::TOUCH, &transformed_point);
-    // TOOD(crbug.com/796656): Do not ignore |result.should_query_view|.
+    // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
     touchscreen_gesture_target_.target = result.view;
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
@@ -1056,7 +1066,7 @@ void RenderWidgetHostInputEventRouter::RouteTouchpadGestureEvent(
     auto result =
         FindViewAtLocation(root_view, original_point, original_point_in_screen,
                            viz::EventSource::TOUCH, &transformed_point);
-    // TOOD(crbug.com/796656): Do not ignore |result.should_query_view|.
+    // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
     touchpad_gesture_target_.target = result.view;
     // TODO(mohsen): Instead of just computing a delta, we should extract the
     // complete transform. We assume it doesn't change for the duration of the
