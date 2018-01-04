@@ -179,7 +179,7 @@ class CORE_EXPORT FillLayer {
     size_length_ = f.size;
   }
   void SetMaskSourceType(EMaskSourceType m) {
-    mask_source_type_ = m;
+    mask_source_type_ = static_cast<unsigned>(m);
     mask_source_type_set_ = true;
   }
 
@@ -294,7 +294,7 @@ class CORE_EXPORT FillLayer {
   }
   static StyleImage* InitialFillImage(EFillLayerType) { return nullptr; }
   static EMaskSourceType InitialFillMaskSourceType(EFillLayerType) {
-    return kMaskAlpha;
+    return EMaskSourceType::kAlpha;
   }
 
  private:

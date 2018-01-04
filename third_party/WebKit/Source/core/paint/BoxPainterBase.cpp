@@ -549,7 +549,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     interpolation_quality_context.emplace(
         context, geometry.ImageStyle().GetInterpolationQuality());
 
-    if (bg_layer.MaskSourceType() == kMaskLuminance)
+    if (bg_layer.MaskSourceType() == EMaskSourceType::kLuminance)
       context.SetColorFilter(kColorFilterLuminanceToAlpha);
 
     // If op != SkBlendMode::kSrcOver, a mask is being painted.
