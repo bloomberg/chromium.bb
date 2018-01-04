@@ -52,13 +52,13 @@ class TraceableState {
         object_(object),
         converter_(converter),
         state_(initial_state),
-        started_(false) {
+        slice_is_open_(false) {
     internal::ValidateTracingCategory(category);
     Trace();
   }
 
   ~TraceableState() {
-    if (started_)
+    if (slice_is_open_)
       TRACE_EVENT_ASYNC_END0(category, name_, object_);
   }
 
@@ -91,18 +91,24 @@ class TraceableState {
   }
 
   void Trace() {
-    if (started_)
+    if (slice_is_open_) {
       TRACE_EVENT_ASYNC_END0(category, name_, object_);
-
-    started_ = is_enabled();
-    if (started_) {
-      // Trace viewer logic relies on subslice starting at the exact same time
-      // as the async event.
-      base::TimeTicks now = base::TimeTicks::Now();
-      TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
-      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
-                                                  converter_(state_), now);
+      slice_is_open_ = false;
     }
+    if (!is_enabled())
+      return;
+    // Converter returns nullptr to indicate the absence of state.
+    const char* state_str = converter_(state_);
+    if (!state_str)
+      return;
+
+    // Trace viewer logic relies on subslice starting at the exact same time
+    // as the async event.
+    base::TimeTicks now = base::TimeTicks::Now();
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(category, name_, object_, now);
+    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(category, name_, object_,
+                                                state_str, now);
+    slice_is_open_ = true;
   }
 
   bool is_enabled() const {
@@ -116,9 +122,9 @@ class TraceableState {
   const ConverterFuncPtr converter_;
 
   T state_;
-  // We have to track |started_| state to avoid race condition since SetState
-  // might be called before OnTraceLogEnabled notification.
-  bool started_;
+  // We have to track whether slice is open to avoid confusion since assignment,
+  // "absent" state and OnTraceLogEnabled can happen anytime.
+  bool slice_is_open_;
 
   DISALLOW_COPY(TraceableState);
 };

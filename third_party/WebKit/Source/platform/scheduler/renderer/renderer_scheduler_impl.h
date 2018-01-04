@@ -90,6 +90,18 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     kUseCaseCount,
     kFirstUseCase = kNone,
   };
+
+  // Don't use except for tracing.
+  struct TaskDescriptionForTracing {
+    base::Optional<TaskType> task_type;
+    MainThreadTaskQueue::QueueType queue_type;
+
+    // Required in order to wrap in TraceableState.
+    constexpr bool operator!=(const TaskDescriptionForTracing& rhs) const {
+      return task_type != rhs.task_type || queue_type != rhs.queue_type;
+    }
+  };
+
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(v8::RAILMode rail_mode);
   static const char* VirtualTimePolicyToString(
@@ -682,6 +694,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     RendererMetricsHelper metrics_helper;
     TraceableState<RendererProcessType, kTracingCategoryNameDefault>
         process_type;
+    TraceableState<base::Optional<TaskDescriptionForTracing>,
+                   kTracingCategoryNameInfo>
+        task_description_for_tracing;  // Don't use except for tracing.
     base::ObserverList<VirtualTimeObserver> virtual_time_observers;
     base::TimeTicks initial_virtual_time;
     VirtualTimePolicy virtual_time_policy;
