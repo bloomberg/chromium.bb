@@ -5,4 +5,7 @@
 mojom = "//components/sync/mojo/syncer.mojom"
 public_headers = [ "//components/sync/model/string_ordinal.h" ]
 traits_headers = [ "//components/sync/mojo/syncer_struct_traits.h" ]
+deps = [
+  "//components/sync:sync",
+]
 type_mappings = [ "syncer.mojom.StringOrdinal=syncer::StringOrdinal" ]
