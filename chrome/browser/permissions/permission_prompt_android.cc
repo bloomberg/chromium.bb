@@ -105,7 +105,7 @@ base::string16 PermissionPromptAndroid::GetMessageText() const {
     return requests[0]->GetMessageText();
   CheckValidRequestGroup(requests);
   return l10n_util::GetStringFUTF16(
-      IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO,
+      IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_INFOBAR_TEXT,
       url_formatter::FormatUrlForSecurityDisplay(
           requests[0]->GetOrigin(),
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
