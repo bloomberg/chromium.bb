@@ -54,6 +54,8 @@ enum class WebRTCBundlePolicy { kBalanced, kMaxCompat, kMaxBundle };
 
 enum class WebRTCRtcpMuxPolicy { kNegotiate, kRequire };
 
+enum class WebRTCSdpSemantics { kDefault, kPlanB, kUnifiedPlan };
+
 struct WebRTCConfiguration {
   WebVector<WebRTCIceServer> ice_servers;
   WebRTCIceTransportPolicy ice_transport_policy =
@@ -62,6 +64,7 @@ struct WebRTCConfiguration {
   WebRTCRtcpMuxPolicy rtcp_mux_policy = WebRTCRtcpMuxPolicy::kRequire;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
   int ice_candidate_pool_size = 0;
+  WebRTCSdpSemantics sdp_semantics = WebRTCSdpSemantics::kDefault;
 };
 
 }  // namespace blink
