@@ -5,16 +5,25 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_select_file_policy.h"
+#include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
+#include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
+#include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
+#include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +39,16 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/startup/default_browser_infobar_delegate.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
+#endif
+
+#if !defined(USE_AURA)
+#include "chrome/browser/translate/chrome_translate_client.h"
+#include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "components/translate/core/browser/translate_manager.h"
 #endif
 
 class InfoBarsTest : public InProcessBrowserTest {
@@ -145,6 +164,9 @@ class InfoBarUiTest : public UiBrowserTest {
   void WaitForUserDismissal() override;
 
  private:
+  // Returns the active tab.
+  content::WebContents* GetWebContents();
+
   // Returns the InfoBarService associated with the active tab.
   InfoBarService* GetInfoBarService();
 
@@ -153,6 +175,7 @@ class InfoBarUiTest : public UiBrowserTest {
   void UpdateInfoBars();
 
   infobars::InfoBarManager::InfoBars infobars_;
+  infobars::InfoBarDelegate::InfoBarIdentifier desired_infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(InfoBarUiTest);
 };
@@ -162,14 +185,86 @@ void InfoBarUiTest::PreShow() {
 }
 
 void InfoBarUiTest::ShowUi(const std::string& name) {
-  // TODO(pkasting): Add other infobars, and check in VerifyUi() that the
-  // correct one was shown.
+  using IBD = infobars::InfoBarDelegate;
+  const base::flat_map<std::string, IBD::InfoBarIdentifier> kIdentifiers = {
+      {"app_banner", IBD::APP_BANNER_INFOBAR_DELEGATE},
+      {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
+      {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
+      {"alternate_nav", IBD::ALTERNATE_NAV_INFOBAR_DELEGATE},
+      {"default_browser", IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE},
+      {"session_crashed", IBD::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS},
+      {"page_info", IBD::PAGE_INFO_INFOBAR_DELEGATE},
+      {"translate", IBD::TRANSLATE_INFOBAR_DELEGATE_NON_AURA},
+      {"data_reduction_proxy_preview",
+       IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
+      {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
+  };
+  auto id = kIdentifiers.find(name);
+  desired_infobar_ = (id == kIdentifiers.end()) ? IBD::INVALID : id->second;
+
+  switch (desired_infobar_) {
+    case IBD::APP_BANNER_INFOBAR_DELEGATE:
+      banners::AppBannerInfoBarDelegateDesktop::Create(
+          GetWebContents(), nullptr, nullptr, content::Manifest());
+      break;
+    case IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE:
+      ChromeSelectFilePolicy(GetWebContents()).SelectFileDenied();
+      break;
+    case IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE:
+      CollectedCookiesInfoBarDelegate::Create(GetInfoBarService());
+      break;
+    case IBD::ALTERNATE_NAV_INFOBAR_DELEGATE: {
+      AutocompleteMatch match;
+      match.destination_url = GURL("http://intranetsite/");
+      AlternateNavInfoBarDelegate::Create(GetWebContents(), base::string16(),
+                                          match, GURL("http://example.com/"));
+      break;
+    }
+    case IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE:
 #if defined(OS_CHROMEOS)
-  ADD_FAILURE() << "This infobar is not supported on this OS.";
+      ADD_FAILURE() << "This infobar is not supported on this OS.";
 #else
-  chrome::DefaultBrowserInfoBarDelegate::Create(GetInfoBarService(),
-                                                browser()->profile());
+      chrome::DefaultBrowserInfoBarDelegate::Create(GetInfoBarService(),
+                                                    browser()->profile());
 #endif
+      break;
+    case IBD::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS:
+#if defined(OS_MACOSX)
+      SessionCrashedInfoBarDelegate::Create(browser());
+#else
+      ADD_FAILURE() << "This infobar is not supported on this OS.";
+#endif
+      break;
+    case IBD::PAGE_INFO_INFOBAR_DELEGATE:
+      PageInfoInfoBarDelegate::Create(GetInfoBarService());
+      break;
+    case IBD::TRANSLATE_INFOBAR_DELEGATE_NON_AURA: {
+#if defined(USE_AURA)
+      ADD_FAILURE() << "This infobar is not supported on this toolkit.";
+#else
+      ChromeTranslateClient::CreateForWebContents(GetWebContents());
+      ChromeTranslateClient* translate_client =
+          ChromeTranslateClient::FromWebContents(GetWebContents());
+      translate::TranslateInfoBarDelegate::Create(
+          false, translate_client->GetTranslateManager()->GetWeakPtr(),
+          GetInfoBarService(), false,
+          translate::TRANSLATE_STEP_BEFORE_TRANSLATE, "ja", "en",
+          translate::TranslateErrors::NONE, false);
+#endif
+      break;
+    }
+    case IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE:
+      PreviewsInfoBarDelegate::Create(
+          GetWebContents(), previews::PreviewsType::LOFI, base::Time(), true,
+          false, PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
+          nullptr);
+      break;
+    case IBD::AUTOMATION_INFOBAR_DELEGATE:
+      AutomationInfoBarDelegate::Create();
+      break;
+    default:
+      break;
+  }
 }
 
 bool InfoBarUiTest::VerifyUi() {
@@ -178,8 +273,7 @@ bool InfoBarUiTest::VerifyUi() {
   auto added = base::STLSetDifference<infobars::InfoBarManager::InfoBars>(
       infobars_, old_infobars);
   return (added.size() == 1) &&
-         (added[0]->delegate()->GetIdentifier() ==
-          infobars::InfoBarDelegate::DEFAULT_BROWSER_INFOBAR_DELEGATE);
+         (added[0]->delegate()->GetIdentifier() == desired_infobar_);
 }
 
 void InfoBarUiTest::WaitForUserDismissal() {
@@ -187,9 +281,12 @@ void InfoBarUiTest::WaitForUserDismissal() {
   observer.WaitForRemoval();
 }
 
+content::WebContents* InfoBarUiTest::GetWebContents() {
+  return browser()->tab_strip_model()->GetActiveWebContents();
+}
+
 InfoBarService* InfoBarUiTest::GetInfoBarService() {
-  return InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  return InfoBarService::FromWebContents(GetWebContents());
 }
 
 void InfoBarUiTest::UpdateInfoBars() {
@@ -197,8 +294,48 @@ void InfoBarUiTest::UpdateInfoBars() {
   std::sort(infobars_.begin(), infobars_.end());
 }
 
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_app_banner) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_file_access_disabled) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_collected_cookies) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_alternate_nav) {
+  ShowAndVerifyUi();
+}
+
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_default_browser) {
   ShowAndVerifyUi();
 }
 #endif
+
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_session_crashed) {
+  ShowAndVerifyUi();
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_info) {
+  ShowAndVerifyUi();
+}
+
+#if !defined(USE_AURA)
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_translate) {
+  ShowAndVerifyUi();
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_data_reduction_proxy_preview) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
+  ShowAndVerifyUi();
+}
