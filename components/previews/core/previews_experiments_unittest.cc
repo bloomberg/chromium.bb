@@ -51,7 +51,7 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
   EXPECT_EQ(2, params::PerHostBlackListOptOutThreshold());
   EXPECT_EQ(6, params::HostIndifferentBlackListOptOutThreshold());
   EXPECT_EQ(base::TimeDelta::FromDays(30), params::PerHostBlackListDuration());
-  EXPECT_EQ(base::TimeDelta::FromDays(365 * 100),
+  EXPECT_EQ(base::TimeDelta::FromDays(30),
             params::HostIndifferentBlackListPerHostDuration());
   EXPECT_EQ(base::TimeDelta::FromSeconds(60 * 5),
             params::SingleOptOutDuration());

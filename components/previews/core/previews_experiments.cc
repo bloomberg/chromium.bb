@@ -107,9 +107,9 @@ base::TimeDelta PerHostBlackListDuration() {
 }
 
 base::TimeDelta HostIndifferentBlackListPerHostDuration() {
-  return base::TimeDelta::FromDays(GetParamValueAsInt(
-      kClientSidePreviewsFieldTrial,
-      "host_indifferent_black_list_duration_in_days", 365 * 100));
+  return base::TimeDelta::FromDays(
+      GetParamValueAsInt(kClientSidePreviewsFieldTrial,
+                         "host_indifferent_black_list_duration_in_days", 30));
 }
 
 base::TimeDelta SingleOptOutDuration() {
