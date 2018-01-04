@@ -2,11 +2,16 @@
 <script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/text-based-repaint.js"></script>
 <script>
+// Disable implicit root scroller since the iframe full screen and would
+// otherwise be promoted to rootScroller which changes painting and
+// invalidation.
+if (window.internals)
+  window.internals.runtimeFlags.implicitRootScrollerEnabled = false;
 if (window.testRunner)
   testRunner.useUnfortunateSynchronousResizeMode();
 onload = function() {
   runAfterLayoutAndPaint(function() {
-    // Use smaller size because window.resizeTo/By() will fail if the sizae is
+    // Use smaller size because window.resizeTo/By() will fail if the size is
     // bigger than the screen size.
     window.resizeTo(500, 200);
     runRepaintAndPixelTest();
