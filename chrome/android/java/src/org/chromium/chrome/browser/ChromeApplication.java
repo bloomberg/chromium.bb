@@ -48,6 +48,7 @@ public class ChromeApplication extends ContentApplication {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
         BuildHooksAndroid.initCustomResources(this);
+        ApplicationStatus.initialize(this);
         Boolean isIsolatedProcess = PureJavaExceptionReporter.detectIsIsolatedProcess();
         if (isIsolatedProcess != null && !isIsolatedProcess.booleanValue()) {
             PureJavaExceptionHandler.installHandler();
