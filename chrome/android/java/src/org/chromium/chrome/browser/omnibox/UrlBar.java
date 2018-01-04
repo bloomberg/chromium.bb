@@ -36,11 +36,9 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxLivenessListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ContentViewCore;
@@ -113,8 +111,6 @@ public class UrlBar extends AutocompleteEditText {
     private final int mLightHighlightColor;
 
     private Boolean mUseDarkColors;
-
-    private OmniboxLivenessListener mOmniboxLivenessListener;
 
     private long mFirstFocusTimeMs;
 
@@ -308,7 +304,6 @@ public class UrlBar extends AutocompleteEditText {
 
         if (focused && mFirstFocusTimeMs == 0) {
             mFirstFocusTimeMs = SystemClock.elapsedRealtime();
-            if (mOmniboxLivenessListener != null) mOmniboxLivenessListener.onOmniboxFocused();
         }
 
         if (focused) {
@@ -453,11 +448,6 @@ public class UrlBar extends AutocompleteEditText {
             // touches etc. activate it.
             setFocusable(mAllowFocus);
             setFocusableInTouchMode(mAllowFocus);
-
-            // The URL bar will now react correctly to a focus change event
-            if (mOmniboxLivenessListener != null) {
-                mOmniboxLivenessListener.onOmniboxInteractive();
-            }
         }
 
         // Notify listeners if the URL's direction has changed.
@@ -516,20 +506,6 @@ public class UrlBar extends AutocompleteEditText {
      */
     public void setDelegate(UrlBarDelegate delegate) {
         mUrlBarDelegate = delegate;
-    }
-
-    /**
-     * Set {@link OmniboxLivenessListener} to be used for receiving interaction related messages
-     * during startup.
-     * @param listener The listener to use for sending the messages.
-     */
-    @VisibleForTesting
-    public void setOmniboxLivenessListener(OmniboxLivenessListener listener) {
-        mOmniboxLivenessListener = listener;
-    }
-
-    public void onNativeLibraryReady() {
-        if (mOmniboxLivenessListener != null) mOmniboxLivenessListener.onOmniboxFullyFunctional();
     }
 
     @Override
