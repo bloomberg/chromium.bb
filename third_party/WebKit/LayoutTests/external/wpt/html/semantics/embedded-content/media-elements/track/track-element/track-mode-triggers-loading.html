@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<title>Tests that a "metadata" track does not load automatically, but does load when the mode is changed.</title>
-<script src="../media-file.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>A "metadata" track does not load automatically, but it does load when the mode is changed</title>
+<script src="/common/media.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-    <track kind="metadata" src="captions-webvtt/metadata.vtt">
+    <track kind="metadata" src="resources/metadata.vtt">
 </video>
 <script>
 async_test(function(t) {
@@ -15,7 +15,7 @@ async_test(function(t) {
     assert_equals(track.readyState, HTMLTrackElement.NONE);
     assert_equals(video.textTracks[0].mode, "disabled");
 
-    video.src = findMediaFile("video", "../content/test");
+    video.src = getVideoURI("/media/test");
     video.oncanplaythrough = t.step_func(canplaythrough);
     track.onload = t.step_func_done(trackLoaded);
 

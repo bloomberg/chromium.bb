@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<title>Tests that a track appended after the initial track configuration does not change other tracks.</title>
-<script src="../media-file.js"></script>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>A track appended after the initial track configuration does not change other tracks</title>
+<script src="/common/media.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-    <track kind="metadata" src="captions-webvtt/metadata.vtt">
+    <track kind="metadata" src="resources/metadata.vtt">
 </video>
 <script>
 async_test(function(t) {
@@ -14,7 +14,7 @@ async_test(function(t) {
     assert_equals(track1.readyState, HTMLTrackElement.NONE);
     assert_equals(track1.track.mode, 'disabled');
 
-    video.src = findMediaFile('video', '../content/test');
+    video.src = getVideoURI('/media/test');
     video.oncanplaythrough = t.step_func(canplaythrough);
     track1.onload = t.step_func(metadataTrackLoaded);
 
@@ -37,7 +37,7 @@ async_test(function(t) {
         track2 = document.createElement('track');
         track2.setAttribute('kind', 'captions');
         track2.setAttribute('default', 'default');
-        track2.setAttribute('src', 'captions-webvtt/tc004-webvtt-file.vtt');
+        track2.setAttribute('src', 'resources/webvtt-file.vtt');
         track2.onload = t.step_func(captionsTrackLoaded);
         video.appendChild(track2);
     }
