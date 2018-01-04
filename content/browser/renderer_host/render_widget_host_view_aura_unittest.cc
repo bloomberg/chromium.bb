@@ -2227,6 +2227,9 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
       gfx::Rect());
   sink_->ClearMessages();
+  viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
+  EXPECT_TRUE(local_surface_id1.is_valid());
+
   widget_host_->SetAutoResize(true, gfx::Size(50, 50), gfx::Size(100, 100));
   ViewHostMsg_ResizeOrRepaint_ACK_Params params;
   params.view_size = gfx::Size(75, 75);
@@ -2240,6 +2243,7 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
                                                 run_loop.QuitClosure());
   run_loop.Run();
 
+  viz::LocalSurfaceId local_surface_id2;
   ASSERT_EQ(1u, sink_->message_count());
   {
     const IPC::Message* msg = sink_->GetMessageAt(0);
@@ -2251,6 +2255,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(1, std::get<3>(params).device_scale_factor);
+    local_surface_id2 = std::get<4>(params);
+    EXPECT_NE(local_surface_id1, local_surface_id2);
   }
 
   sink_->ClearMessages();
@@ -2268,6 +2274,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ("50x50", std::get<1>(params).ToString());
     EXPECT_EQ("100x100", std::get<2>(params).ToString());
     EXPECT_EQ(2, std::get<3>(params).device_scale_factor);
+    EXPECT_NE(local_surface_id1, std::get<4>(params));
+    EXPECT_NE(local_surface_id2, std::get<4>(params));
   }
 }
 

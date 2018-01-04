@@ -2039,6 +2039,16 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   }
 }
 
+void RenderWidgetHostViewAura::WasResized() {
+  window_->AllocateLocalSurfaceId();
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasResized();
+  if (host_->auto_resize_enabled()) {
+    host_->DidAllocateLocalSurfaceIdForAutoResize(
+        host_->last_auto_resize_request_number());
+  }
+}
+
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   if (!window_)
     return nullptr;
@@ -2468,13 +2478,12 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
 }
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
-  window_->AllocateLocalSurfaceId();
-  if (delegated_frame_host_)
-    delegated_frame_host_->WasResized();
-  if (host_->auto_resize_enabled()) {
-    host_->DidAllocateLocalSurfaceIdForAutoResize(
-        host_->last_auto_resize_request_number());
-  }
+  WasResized();
+}
+
+void RenderWidgetHostViewAura::ResizeDueToAutoResize(const gfx::Size& new_size,
+                                                     uint64_t sequence_number) {
+  WasResized();
 }
 
 }  // namespace content
