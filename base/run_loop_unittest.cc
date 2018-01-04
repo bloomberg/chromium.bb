@@ -570,21 +570,37 @@ TEST_P(RunLoopTest, IsNestedOnCurrentThread) {
   run_loop_.Run();
 }
 
+namespace {
+
 class MockNestingObserver : public RunLoop::NestingObserver {
  public:
   MockNestingObserver() = default;
 
   // RunLoop::NestingObserver:
   MOCK_METHOD0(OnBeginNestedRunLoop, void());
+  MOCK_METHOD0(OnExitNestedRunLoop, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNestingObserver);
 };
 
+class MockTask {
+ public:
+  MockTask() = default;
+  MOCK_METHOD0(Task, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTask);
+};
+
+}  // namespace
+
 TEST_P(RunLoopTest, NestingObservers) {
   EXPECT_TRUE(RunLoop::IsNestingAllowedOnCurrentThread());
 
   testing::StrictMock<MockNestingObserver> nesting_observer;
+  testing::StrictMock<MockTask> mock_task_a;
+  testing::StrictMock<MockTask> mock_task_b;
 
   RunLoop::AddNestingObserverOnCurrentThread(&nesting_observer);
 
@@ -599,14 +615,27 @@ TEST_P(RunLoopTest, NestingObservers) {
     nested_run_loop.Run();
   });
 
-  // Generate a stack of nested RunLoops, an OnBeginNestedRunLoop() is
-  // expected when beginning each nesting depth.
+  // Generate a stack of nested RunLoops. OnBeginNestedRunLoop() is expected
+  // when beginning each nesting depth and OnExitNestedRunLoop() is expected
+  // when exiting each nesting depth.
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, run_nested_loop);
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MockTask::Task, base::Unretained(&mock_task_a)));
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, run_nested_loop);
-  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MockTask::Task, base::Unretained(&mock_task_b)));
 
-  EXPECT_CALL(nesting_observer, OnBeginNestedRunLoop()).Times(2);
-  run_loop_.Run();
+  {
+    testing::InSequence in_sequence;
+    EXPECT_CALL(nesting_observer, OnBeginNestedRunLoop());
+    EXPECT_CALL(mock_task_a, Task());
+    EXPECT_CALL(nesting_observer, OnBeginNestedRunLoop());
+    EXPECT_CALL(mock_task_b, Task());
+    EXPECT_CALL(nesting_observer, OnExitNestedRunLoop()).Times(2);
+  }
+  run_loop_.RunUntilIdle();
 
   RunLoop::RemoveNestingObserverOnCurrentThread(&nesting_observer);
 }
