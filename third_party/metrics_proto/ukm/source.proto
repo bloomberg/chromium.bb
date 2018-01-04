@@ -9,10 +9,26 @@ option optimize_for = LITE_RUNTIME;
 package ukm;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 8
+// Next tag: 9
 message Source {
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
+
+  // Holds data about a URL seen by the client.
+  message UrlInfo {
+    // The URL seen by the client.
+    optional string url = 1;
+
+    // Number of URLs seen for this source before the current URL.
+    // If unset, it’s equivalent to the count of the UrlInfo before it + 1,
+    // or 0 if it’s the first UrlInfo.
+    optional int32 previous_url_count = 2;
+  }
+
+  // Data about each URL associated with the source_id within the record's
+  // scope, in the order that the URLs were encountered. Data may include full
+  // or partial redirect chains for main frame navigations.
+  repeated UrlInfo urls = 8;
 
   // The URL of the source, as recorded in history. If this URL has not been
   // discovered by Google's crawler, it should not be recorded.
