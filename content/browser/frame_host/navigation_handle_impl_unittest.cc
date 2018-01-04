@@ -262,7 +262,8 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         base::TimeTicks::Now(), 0,
         false,                  // started_from_context_menu
         CSPDisposition::CHECK,  // should_check_main_world_csp
-        false);                 // is_form_submission
+        false,                  // is_form_submission
+        base::nullopt);         // suggested_filename
   }
 
  private:

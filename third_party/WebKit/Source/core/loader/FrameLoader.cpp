@@ -744,6 +744,7 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
       !request.GetResourceRequest().IsSameDocumentNavigation() &&
       !frame_->Client()->AllowContentInitiatedDataUrlNavigations(
           request.OriginDocument()->Url()) &&
+      !request.GetResourceRequest().GetSuggestedFilename().has_value() &&
       url.ProtocolIsData() && NetworkUtils::IsDataURLMimeTypeSupported(url)) {
     frame_->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
         kSecurityMessageSource, kErrorMessageLevel,

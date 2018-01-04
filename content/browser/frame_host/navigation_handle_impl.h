@@ -66,7 +66,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       int pending_nav_entry_id,
       bool started_from_context_menu,
       CSPDisposition should_check_main_world_csp,
-      bool is_form_submission);
+      bool is_form_submission,
+      const base::Optional<std::string>& suggested_filename);
   ~NavigationHandleImpl() override;
 
   // Used to track the state the navigation is currently in.
@@ -362,6 +363,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
 
+  const base::Optional<std::string>& suggested_filename() const {
+    return suggested_filename_;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -374,7 +379,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        int pending_nav_entry_id,
                        bool started_from_context_menu,
                        CSPDisposition should_check_main_world_csp,
-                       bool is_form_submission);
+                       bool is_form_submission,
+                       const base::Optional<std::string>& suggested_filename);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -557,6 +563,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Used in tests. Called when the navigation is deferred by one of the
   // NavigationThrottles.
   base::Closure on_defer_callback_for_testing_;
+
+  // If this navigation was triggered by an anchor element with a download
+  // attribute, the |suggested_filename_| contains the attribute's (possibly
+  // empty) value.
+  base::Optional<std::string> suggested_filename_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
