@@ -241,8 +241,8 @@ TEST_P(DOMStorageAreaParamTest, ShallowCopyWithBacking) {
   base::ScopedTempDir temp_dir;
   const std::string kNamespaceId = "id1";
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  scoped_refptr<SessionStorageDatabase> db =
-      new SessionStorageDatabase(temp_dir.GetPath());
+  scoped_refptr<SessionStorageDatabase> db = new SessionStorageDatabase(
+      temp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<DOMStorageArea> area(new DOMStorageArea(
       1, kNamespaceId, nullptr, kOrigin, db.get(),
       new MockDOMStorageTaskRunner(base::ThreadTaskRunnerHandle::Get().get())));
