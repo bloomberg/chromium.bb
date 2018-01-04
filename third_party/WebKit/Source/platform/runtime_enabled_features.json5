@@ -219,7 +219,7 @@
     },
     {
       name: "CSSDisplayContents",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSFontSizeAdjust",
