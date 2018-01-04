@@ -51,8 +51,6 @@
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_ipc_support.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -225,39 +223,6 @@ class MockImageCaptureClient
 
   mojom::PhotoStatePtr state_;
 };
-
-#if defined(OS_CHROMEOS)
-
-class MojoEnabledTestEnvironment final : public testing::Environment {
- public:
-  MojoEnabledTestEnvironment() : mojo_ipc_thread_("MojoIpcThread") {}
-
-  ~MojoEnabledTestEnvironment() final = default;
-
-  void SetUp() final {
-    mojo::edk::Init();
-    mojo_ipc_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
-        mojo_ipc_thread_.task_runner(),
-        mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
-    VLOG(1) << "Mojo initialized";
-  }
-
-  void TearDown() final {
-    mojo_ipc_support_.reset();
-    VLOG(1) << "Mojo IPC tear down";
-  }
-
- private:
-  base::Thread mojo_ipc_thread_;
-  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
-};
-
-testing::Environment* const mojo_test_env =
-    testing::AddGlobalTestEnvironment(new MojoEnabledTestEnvironment());
-
-#endif
 
 }  // namespace
 
