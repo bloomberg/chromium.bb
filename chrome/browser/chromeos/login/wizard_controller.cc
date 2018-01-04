@@ -370,6 +370,11 @@ void WizardController::Init(OobeScreen first_screen) {
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
       first_screen_ == OobeScreen::SCREEN_UNKNOWN)
     ShowWrongHWIDScreen();
+
+  if (is_out_of_box_ && base::CommandLine::ForCurrentProcess()->HasSwitch(
+                            chromeos::switches::kOobeSkipToLogin)) {
+    SkipToLoginForTesting(LoginScreenContext());
+  }
 }
 
 ErrorScreen* WizardController::GetErrorScreen() {

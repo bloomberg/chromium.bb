@@ -459,6 +459,9 @@ const char kOobeGuestSession[] = "oobe-guest-session";
 // Skips all other OOBE pages after user login.
 const char kOobeSkipPostLogin[] = "oobe-skip-postlogin";
 
+// Skip to login screen.
+const char kOobeSkipToLogin[] = "oobe-skip-to-login";
+
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[] = "oobe-timer-interval";
 
