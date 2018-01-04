@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_provider.h"
+#include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -22,7 +23,8 @@ scoped_refptr<PpdProvider> CreatePpdProvider(Profile* profile) {
 
   return PpdProvider::Create(g_browser_process->GetApplicationLocale(),
                              g_browser_process->system_request_context(),
-                             PpdCache::Create(ppd_cache_path));
+                             PpdCache::Create(ppd_cache_path),
+                             base::Version(version_info::GetVersionNumber()));
 }
 
 }  // namespace chromeos
