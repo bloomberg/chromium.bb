@@ -19,13 +19,13 @@
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/values.h"
 #include "content/browser/loader/mock_resource_loader.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/public/browser/appcache_service.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
@@ -183,9 +183,9 @@ class TestResourceDispatcherHostDelegate final
     return PREVIEWS_UNSPECIFIED;
   }
 
-  base::Value GetNavigationData(net::URLRequest* request) override {
+  NavigationData* GetNavigationData(net::URLRequest* request) const override {
     ADD_FAILURE() << "GetNavigationData should not be called.";
-    return base::Value();
+    return nullptr;
   }
 
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

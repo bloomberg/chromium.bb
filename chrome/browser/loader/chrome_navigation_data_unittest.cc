@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/core/previews_user_data.h"
+#include "content/public/browser/navigation_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ChromeNavigationDataTest : public testing::Test {
@@ -32,39 +33,24 @@ TEST_F(ChromeNavigationDataTest, AddingPreviewsUserData) {
   EXPECT_TRUE(data.previews_user_data());
 }
 
-TEST_F(ChromeNavigationDataTest, Serialization) {
-  // data_reduction_proxy
-  {
-    ChromeNavigationData chrome_navigation_data;
-    ChromeNavigationData clone_a(chrome_navigation_data.ToValue());
-    chrome_navigation_data.SetDataReductionProxyData(
-        std::make_unique<data_reduction_proxy::DataReductionProxyData>());
-    ChromeNavigationData clone_b(chrome_navigation_data.ToValue());
+TEST_F(ChromeNavigationDataTest, Clone) {
+  ChromeNavigationData data;
+  EXPECT_FALSE(data.GetDataReductionProxyData());
+  data.SetDataReductionProxyData(
+      std::make_unique<data_reduction_proxy::DataReductionProxyData>());
+  EXPECT_FALSE(data.previews_user_data());
+  data.set_previews_user_data(std::make_unique<previews::PreviewsUserData>(1u));
 
-    EXPECT_FALSE(clone_a.GetDataReductionProxyData());
-    EXPECT_TRUE(clone_b.GetDataReductionProxyData());
-  }
-
-  // preview_user_data
-  {
-    ChromeNavigationData chrome_navigation_data;
-    ChromeNavigationData clone_a(chrome_navigation_data.ToValue());
-    chrome_navigation_data.set_previews_user_data(
-        std::make_unique<previews::PreviewsUserData>(1u));
-    ChromeNavigationData clone_b(chrome_navigation_data.ToValue());
-
-    EXPECT_FALSE(clone_a.previews_user_data());
-    EXPECT_TRUE(clone_b.previews_user_data());
-  }
-
-  // preview_state
-  {
-    ChromeNavigationData chrome_navigation_data;
-    ChromeNavigationData clone_a(chrome_navigation_data.ToValue());
-    chrome_navigation_data.set_previews_state(content::PREVIEWS_OFF);
-    ChromeNavigationData clone_b(chrome_navigation_data.ToValue());
-
-    EXPECT_EQ(content::PREVIEWS_UNSPECIFIED, clone_a.previews_state());
-    EXPECT_EQ(content::PREVIEWS_OFF, clone_b.previews_state());
-  }
+  std::unique_ptr<content::NavigationData> clone_data = data.Clone();
+  ChromeNavigationData* clone_chrome_data =
+      static_cast<ChromeNavigationData*>(clone_data.get());
+  EXPECT_NE(&data, clone_data.get());
+  EXPECT_NE(&data, clone_chrome_data);
+  EXPECT_NE(data.GetDataReductionProxyData(),
+            clone_chrome_data->GetDataReductionProxyData());
+  EXPECT_NE(data.previews_user_data(), clone_chrome_data->previews_user_data());
+  EXPECT_TRUE(data.GetDataReductionProxyData());
+  EXPECT_TRUE(data.previews_user_data());
+  EXPECT_TRUE(clone_chrome_data->GetDataReductionProxyData());
+  EXPECT_TRUE(clone_chrome_data->previews_user_data());
 }

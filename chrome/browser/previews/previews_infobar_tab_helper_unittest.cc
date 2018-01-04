@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/values.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -90,22 +89,20 @@ class PreviewsInfoBarTabHelperUnitTest
   }
 
   void SetCommittedPreviewsType(previews::PreviewsType previews_type) {
-    const base::Value& navigation_data = test_handle_->GetNavigationData();
-    ChromeNavigationData chrome_navigation_data(navigation_data);
-
-    // Add a PreviewsUserData if it didn't exist.
-    if (!chrome_navigation_data.previews_user_data()) {
-      auto previews_user_data = std::make_unique<previews::PreviewsUserData>(1);
-      chrome_navigation_data.set_previews_user_data(
-          std::move(previews_user_data));
+    ChromeNavigationData* nav_data =
+        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
+    if (nav_data && nav_data->previews_user_data()) {
+      nav_data->previews_user_data()->SetCommittedPreviewsType(previews_type);
+      return;
     }
-
-    chrome_navigation_data.previews_user_data()->SetCommittedPreviewsType(
-        previews_type);
-
+    std::unique_ptr<ChromeNavigationData> chrome_nav_data(
+        new ChromeNavigationData());
+    std::unique_ptr<previews::PreviewsUserData> previews_user_data(
+        new previews::PreviewsUserData(1));
+    previews_user_data->SetCommittedPreviewsType(previews_type);
+    chrome_nav_data->set_previews_user_data(std::move(previews_user_data));
     content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(test_handle_.get(),
-                            chrome_navigation_data.ToValue());
+        ->SetNavigationData(test_handle_.get(), std::move(chrome_nav_data));
   }
 
   void SimulateWillProcessResponse() {
@@ -127,13 +124,17 @@ class PreviewsInfoBarTabHelperUnitTest
     EXPECT_TRUE(test_handle_);
     EXPECT_TRUE(previews_user_data);
     // Store Previews information for this navigation.
-    const base::Value& navigation_data = test_handle_->GetNavigationData();
-    ChromeNavigationData chrome_navigation_data(navigation_data);
-    chrome_navigation_data.set_previews_user_data(
-        std::move(previews_user_data));
+    ChromeNavigationData* nav_data =
+        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
+    if (nav_data) {
+      nav_data->set_previews_user_data(std::move(previews_user_data));
+      return;
+    }
+    std::unique_ptr<ChromeNavigationData> navigation_data =
+        base::MakeUnique<ChromeNavigationData>();
+    navigation_data->set_previews_user_data(std::move(previews_user_data));
     content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(test_handle_.get(),
-                            chrome_navigation_data.ToValue());
+        ->SetNavigationData(test_handle_.get(), std::move(navigation_data));
   }
 
  protected:

@@ -12,10 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 
-namespace base {
-class Value;
-}
-
 namespace net {
 class URLRequestContextGetter;
 struct RedirectInfo;
@@ -29,6 +25,7 @@ namespace content {
 
 class AppCacheNavigationHandleCore;
 class NavigationResourceHandler;
+class NavigationData;
 class ResourceContext;
 class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
@@ -79,7 +76,7 @@ class NavigationURLLoaderImplCore
   void NotifyResponseStarted(ResourceResponse* response,
                              std::unique_ptr<StreamHandle> body,
                              const net::SSLInfo& ssl_info,
-                             base::Value navigation_data,
+                             std::unique_ptr<NavigationData> navigation_data,
                              const GlobalRequestID& request_id,
                              bool is_download,
                              bool is_stream);

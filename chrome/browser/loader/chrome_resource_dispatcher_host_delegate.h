@@ -20,6 +20,10 @@
 
 class DownloadRequestLimiter;
 
+namespace content {
+class NavigationData;
+}
+
 namespace extensions {
 class UserScriptListener;
 }
@@ -84,7 +88,8 @@ class ChromeResourceDispatcherHostDelegate
       net::URLRequest* url_request,
       content::ResourceContext* resource_context,
       content::PreviewsState previews_to_allow) override;
-  base::Value GetNavigationData(net::URLRequest* request) override;
+  content::NavigationData* GetNavigationData(
+      net::URLRequest* request) const override;
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
 

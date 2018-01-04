@@ -6,7 +6,6 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
@@ -37,18 +36,18 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   // ResourceDispatcherHostDelegate::GetNavigationData during commit.
   // Because ChromeResourceDispatcherHostDelegate always returns a
   // ChromeNavigationData, it is safe to static_cast here.
-  const base::Value& navigation_data = navigation_handle->GetNavigationData();
-  if (navigation_data.is_none())
-    return STOP_OBSERVING;
-
-  ChromeNavigationData chrome_navigation_data(navigation_data);
+  ChromeNavigationData* chrome_navigation_data =
+      static_cast<ChromeNavigationData*>(
+          navigation_handle->GetNavigationData());
+  if (!chrome_navigation_data)
+    return CONTINUE_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
-      chrome_navigation_data.GetDataReductionProxyData();
+      chrome_navigation_data->GetDataReductionProxyData();
   if (data && data->used_data_reduction_proxy() && data->lite_page_received()) {
     lite_page_seen_ = true;
   }
   content::PreviewsState previews_state =
-      chrome_navigation_data.previews_state();
+      chrome_navigation_data->previews_state();
   if (previews_state && previews::GetMainFramePreviewsType(previews_state) ==
                             previews::PreviewsType::NOSCRIPT) {
     noscript_seen_ = true;

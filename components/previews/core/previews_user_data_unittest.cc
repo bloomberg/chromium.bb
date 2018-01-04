@@ -10,7 +10,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/values.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -59,29 +58,6 @@ TEST_F(PreviewsUserDataTest, DeepCopy) {
   EXPECT_EQ(id, data->page_id());
 
   EXPECT_EQ(id, data->DeepCopy()->page_id());
-}
-
-TEST_F(PreviewsUserDataTest, Serialization) {
-  // page_id
-  {
-    PreviewsUserData data(1ull << 60);
-    PreviewsUserData clone(data.ToValue());
-
-    EXPECT_EQ(1ull << 60, data.page_id());
-    EXPECT_EQ(1ull << 60, clone.page_id());
-  }
-
-  // page_id
-  {
-    PreviewsUserData data(0ull);
-    PreviewsUserData clone_a(data.ToValue());
-    data.SetCommittedPreviewsType(PreviewsType::OFFLINE);
-    PreviewsUserData clone_b(data.ToValue());
-
-    EXPECT_FALSE(clone_a.HasCommittedPreviewsType());
-    EXPECT_TRUE(clone_b.HasCommittedPreviewsType());
-    EXPECT_EQ(PreviewsType::OFFLINE, clone_b.GetCommittedPreviewsType());
-  }
 }
 
 }  // namespace

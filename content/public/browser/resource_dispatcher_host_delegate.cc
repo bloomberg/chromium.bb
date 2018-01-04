@@ -4,7 +4,7 @@
 
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
-#include "base/values.h"
+#include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_info.h"
 #include "net/ssl/client_cert_store.h"
@@ -87,9 +87,9 @@ PreviewsState ResourceDispatcherHostDelegate::DetermineEnabledPreviews(
   return PREVIEWS_UNSPECIFIED;
 }
 
-base::Value ResourceDispatcherHostDelegate::GetNavigationData(
-    net::URLRequest* request) {
-  return base::Value();
+NavigationData* ResourceDispatcherHostDelegate::GetNavigationData(
+    net::URLRequest* request) const {
+  return nullptr;
 }
 
 std::unique_ptr<net::ClientCertStore>
