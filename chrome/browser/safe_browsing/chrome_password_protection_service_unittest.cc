@@ -232,9 +232,7 @@ class ChromePasswordProtectionServiceTest
     if (throttle)
       test_handle->RegisterThrottleForTesting(std::move(throttle));
 
-    return test_handle->CallWillStartRequestForTesting(
-        /*is_post=*/false, content::Referrer(), /*has_user_gesture=*/false,
-        ui::PAGE_TRANSITION_LINK, /*is_external_protocol=*/false);
+    return test_handle->CallWillStartRequestForTesting();
   }
 
   int GetSizeofUnhandledSyncPasswordReuses() {

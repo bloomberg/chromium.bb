@@ -67,7 +67,19 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool started_from_context_menu,
       CSPDisposition should_check_main_world_csp,
       bool is_form_submission,
-      const base::Optional<std::string>& suggested_filename);
+      const base::Optional<std::string>& suggested_filename,
+      const std::string& method = std::string(),
+      scoped_refptr<content::ResourceRequestBody> resource_request_body =
+          nullptr,
+      const Referrer& sanitized_referrer = content::Referrer(),
+      bool has_user_gesture = false,
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK,
+      bool is_external_protocol = false,
+      RequestContextType request_context_type =
+          REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+      blink::WebMixedContentContextType mixed_content_context_type =
+          blink::WebMixedContentContextType::kBlockable);
+
   ~NavigationHandleImpl() override;
 
   // Used to track the state the navigation is currently in.
@@ -120,12 +132,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const net::SSLInfo& GetSSLInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
-  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
-      bool is_post,
-      const Referrer& sanitized_referrer,
-      bool has_user_gesture,
-      ui::PageTransition transition,
-      bool is_external_protocol) override;
+  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting()
+      override;
   NavigationThrottle::ThrottleCheckResult CallWillRedirectRequestForTesting(
       const GURL& new_url,
       bool new_method_is_post,
@@ -227,16 +235,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the URLRequest will start in the network stack.  |callback|
   // will be called when all throttle checks have completed. This will allow
   // the caller to cancel the navigation or let it proceed.
-  void WillStartRequest(
-      const std::string& method,
-      scoped_refptr<content::ResourceRequestBody> resource_request_body,
-      const Referrer& sanitized_referrer,
-      bool has_user_gesture,
-      ui::PageTransition transition,
-      bool is_external_protocol,
-      RequestContextType request_context_type,
-      blink::WebMixedContentContextType mixed_content_context_type,
-      const ThrottleChecksFinishedCallback& callback);
+  void WillStartRequest(const ThrottleChecksFinishedCallback& callback);
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.
@@ -370,17 +369,26 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  private:
   friend class NavigationHandleImplTest;
 
-  NavigationHandleImpl(const GURL& url,
-                       const std::vector<GURL>& redirect_chain,
-                       FrameTreeNode* frame_tree_node,
-                       bool is_renderer_initiated,
-                       bool is_same_document,
-                       const base::TimeTicks& navigation_start,
-                       int pending_nav_entry_id,
-                       bool started_from_context_menu,
-                       CSPDisposition should_check_main_world_csp,
-                       bool is_form_submission,
-                       const base::Optional<std::string>& suggested_filename);
+  NavigationHandleImpl(
+      const GURL& url,
+      const std::vector<GURL>& redirect_chain,
+      FrameTreeNode* frame_tree_node,
+      bool is_renderer_initiated,
+      bool is_same_document,
+      const base::TimeTicks& navigation_start,
+      int pending_nav_entry_id,
+      bool started_from_context_menu,
+      CSPDisposition should_check_main_world_csp,
+      bool is_form_submission,
+      const base::Optional<std::string>& suggested_filename,
+      const std::string& method,
+      scoped_refptr<content::ResourceRequestBody> resource_request_body,
+      const Referrer& sanitized_referrer,
+      bool has_user_gesture,
+      ui::PageTransition transition,
+      bool is_external_protocol,
+      RequestContextType request_context_type,
+      blink::WebMixedContentContextType mixed_content_context_type);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();

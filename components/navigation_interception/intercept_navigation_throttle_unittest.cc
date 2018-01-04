@@ -62,28 +62,26 @@ class InterceptNavigationThrottleTest
   NavigationThrottle::ThrottleCheckResult
   SimulateWillStart(const GURL& url, const GURL& sanitized_url, bool is_post) {
     std::unique_ptr<content::NavigationHandle> test_handle =
-        content::NavigationHandle::CreateNavigationHandleForTesting(url,
-                                                                    main_rfh());
+        content::NavigationHandle::CreateNavigationHandleForTesting(
+            url, main_rfh(), false, net::OK, false, is_post);
     test_handle->RegisterThrottleForTesting(
         base::MakeUnique<InterceptNavigationThrottle>(
             test_handle.get(),
             base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
                        base::Unretained(mock_callback_receiver_.get()))));
-    return test_handle->CallWillStartRequestForTesting(
-        is_post, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
+    return test_handle->CallWillStartRequestForTesting();
   }
 
   NavigationThrottle::ThrottleCheckResult Simulate302() {
     std::unique_ptr<content::NavigationHandle> test_handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(
-            GURL(kTestUrl), main_rfh());
+            GURL(kTestUrl), main_rfh(), false, net::OK, false, true);
     test_handle->RegisterThrottleForTesting(
         base::MakeUnique<InterceptNavigationThrottle>(
             test_handle.get(),
             base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
                        base::Unretained(mock_callback_receiver_.get()))));
-    test_handle->CallWillStartRequestForTesting(
-        true, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
+    test_handle->CallWillStartRequestForTesting();
     return test_handle->CallWillRedirectRequestForTesting(GURL(kTestUrl), false,
                                                           GURL(), false);
   }

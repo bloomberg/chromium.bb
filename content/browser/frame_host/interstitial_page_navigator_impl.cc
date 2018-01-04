@@ -41,15 +41,20 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
   DCHECK(!render_frame_host->navigation_handle());
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       url, redirect_chain, render_frame_host->frame_tree_node(),
-      false,                 /* is_renderer_initiated */
-      false,                 /* is_same_document */
-      navigation_start,      /* navigation_state */
-      0,                     /* pending_nav_entry_id */
-      false,                 /* started_in_context_menu */
-      CSPDisposition::CHECK, /* should_check_main_world_csp */
-      false,                 /* is_form_submission */
-      base::nullopt          /* suggested_filename */
-      ));
+      false,                           /* is_renderer_initiated */
+      false,                           /* is_same_document */
+      navigation_start,                /* navigation_state */
+      0,                               /* pending_nav_entry_id */
+      false,                           /* started_in_context_menu */
+      CSPDisposition::CHECK,           /* should_check_main_world_csp */
+      false,                           /* is_form_submission */
+      base::nullopt,                   /* suggested_filename */
+      std::string(),                   /* method */
+      nullptr,                         /* resource_request_body */
+      content::Referrer(), false,      /* has_user_gesture */
+      ui::PAGE_TRANSITION_LINK, false, /* is_external_protocol */
+      REQUEST_CONTEXT_TYPE_UNSPECIFIED,
+      blink::WebMixedContentContextType::kBlockable));
 }
 
 void InterstitialPageNavigatorImpl::DidNavigate(

@@ -121,13 +121,6 @@ class CONTENT_EXPORT NavigationHandle {
   // Used for specifying a base URL for pages loaded via data URLs.
   virtual const GURL& GetBaseURLForDataURL() = 0;
 
-  // Parameters available at network request start time ------------------------
-  //
-  // The following parameters are only available when the network request is
-  // made for the navigation (or at commit time if no network request is made).
-  // This corresponds to NavigationThrottle::WillSendRequest. They should not
-  // be queried before that.
-
   // Whether the navigation is done using HTTP POST method. This may change
   // during the navigation (e.g. after encountering a server redirect).
   //
@@ -269,7 +262,9 @@ class CONTENT_EXPORT NavigationHandle {
       RenderFrameHost* render_frame_host,
       bool committed = false,
       net::Error error = net::OK,
-      bool is_same_document = false);
+      bool is_same_document = false,
+      bool is_post = false,
+      ui::PageTransition transition = ui::PAGE_TRANSITION_LINK);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will
@@ -283,11 +278,7 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Simulates the network request starting.
   virtual NavigationThrottle::ThrottleCheckResult
-  CallWillStartRequestForTesting(bool is_post,
-                                 const Referrer& sanitized_referrer,
-                                 bool has_user_gesture,
-                                 ui::PageTransition transition,
-                                 bool is_external_protocol) = 0;
+  CallWillStartRequestForTesting() = 0;
 
   // Simulates the network request being redirected.
   virtual NavigationThrottle::ThrottleCheckResult
