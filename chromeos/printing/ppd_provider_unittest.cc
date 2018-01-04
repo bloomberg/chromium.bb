@@ -20,6 +20,7 @@
 #include "base/test/test_message_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/version.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/ppd_provider.h"
@@ -80,7 +81,7 @@ class PpdProviderTest : public ::testing::Test {
 
     return PpdProvider::Create(locale, request_context_getter_.get(),
                                PpdCache::Create(ppd_cache_temp_dir_.GetPath()),
-                               provider_options);
+                               base::Version("40.8.6753.09"), provider_options);
   }
 
   // Create an interceptor that serves a small fileset of ppd server files.
@@ -92,44 +93,72 @@ class PpdProviderTest : public ::testing::Test {
     // Use brace initialization to express the desired server contents as "url",
     // "contents" pairs.
     std::vector<std::pair<std::string, std::string>> server_contents = {
-        {"metadata/locales.json",
+        {"metadata_v2/locales.json",
          R"(["en",
              "es-mx",
              "en-gb"])"},
-        {"metadata/index.json",
+        {"metadata_v2/index-01.json",
          R"([
-             ["printer_a_ref", "printer_a.ppd"],
-             ["printer_b_ref", "printer_b.ppd"],
+             ["printer_a_ref", "printer_a.ppd"]
+            ])"},
+        {"metadata_v2/index-02.json",
+         R"([
+             ["printer_b_ref", "printer_b.ppd"]
+            ])"},
+        {"metadata_v2/index-03.json",
+         R"([
              ["printer_c_ref", "printer_c.ppd"]
             ])"},
-        {"metadata/usb-031f.json",
+        {"metadata_v2/index-04.json",
+         R"([
+             ["printer_d_ref", "printer_d.ppd"]
+            ])"},
+        {"metadata_v2/index-05.json",
+         R"([
+             ["printer_e_ref", "printer_e.ppd"]
+            ])"},
+        {"metadata_v2/index-13.json",
+         R"([
+            ])"},
+        {"metadata_v2/usb-031f.json",
          R"([
              [1592, "Some canonical reference"],
              [6535, "Some other canonical reference"]
             ])"},
-        {"metadata/manufacturers-en.json",
+        {"metadata_v2/manufacturers-en.json",
          R"([
             ["manufacturer_a_en", "manufacturer_a.json"],
             ["manufacturer_b_en", "manufacturer_b.json"]
             ])"},
-        {"metadata/manufacturers-en-gb.json",
+        {"metadata_v2/manufacturers-en-gb.json",
          R"([
             ["manufacturer_a_en-gb", "manufacturer_a.json"],
             ["manufacturer_b_en-gb", "manufacturer_b.json"]
             ])"},
-        {"metadata/manufacturers-es-mx.json",
+        {"metadata_v2/manufacturers-es-mx.json",
          R"([
             ["manufacturer_a_es-mx", "manufacturer_a.json"],
             ["manufacturer_b_es-mx", "manufacturer_b.json"]
             ])"},
-        {"metadata/manufacturer_a.json",
+        {"metadata_v2/manufacturer_a.json",
          R"([
             ["printer_a", "printer_a_ref"],
-            ["printer_b", "printer_b_ref"]
+            ["printer_b", "printer_b_ref"],
+            ["printer_d", "printer_d_ref"]
             ])"},
-        {"metadata/manufacturer_b.json",
+        {"metadata_v2/manufacturer_a.json",
          R"([
-            ["printer_c", "printer_c_ref"]
+            ["printer_a", "printer_a_ref",
+              {"min_milestone":25.0000}],
+            ["printer_b", "printer_b_ref",
+              {"min_milestone":30.0000, "max_milestone":45.0000}],
+            ["printer_d", "printer_d_ref",
+              {"min_milestone":60.0000, "max_milestone":75.0000}]
+            ])"},
+        {"metadata_v2/manufacturer_b.json",
+         R"([
+            ["printer_c", "printer_c_ref"],
+            ["printer_e", "printer_e_ref"]
             ])"},
         {"metadata_v2/reverse_index-en-01.json",
          R"([
@@ -138,9 +167,18 @@ class PpdProviderTest : public ::testing::Test {
         {"metadata_v2/reverse_index-en-19.json",
          R"([
              ])"},
+        {"metadata_v2/manufacturer_b.json",
+         R"([
+            ["printer_c", "printer_c_ref",
+              {"max_milestone":55.0000}],
+            ["printer_e", "printer_e_ref",
+              {"min_milestone":17.0000, "max_milestone":33.0000}]
+            ])"},
         {"ppds/printer_a.ppd", kCupsFilterPpdContents},
         {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
         {"ppds/printer_c.ppd", "c"},
+        {"ppds/printer_d.ppd", "d"},
+        {"ppds/printer_e.ppd", "e"},
         {"user_supplied_ppd_directory/user_supplied.ppd", "u"}};
     int next_file_num = 0;
     for (const auto& entry : server_contents) {
@@ -434,6 +472,7 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
   provider->ResolvePrinters("manufacturer_b_en",
                             base::Bind(&PpdProviderTest::CaptureResolvePrinters,
                                        base::Unretained(this)));
+
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_printers_.size());
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_printers_[0].first);
@@ -444,18 +483,19 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
   // reference effective make and models of printer_a_ref and printer_b_ref.
   const auto& capture0 = captured_resolve_printers_[0].second;
   ASSERT_EQ(2UL, capture0.size());
-  EXPECT_EQ("printer_a", capture0[0].first);
-  EXPECT_EQ("printer_a_ref", capture0[0].second.effective_make_and_model);
+  EXPECT_EQ("printer_a", capture0[0].name);
+  EXPECT_EQ("printer_a_ref", capture0[0].ppd_ref.effective_make_and_model);
 
-  EXPECT_EQ("printer_b", capture0[1].first);
-  EXPECT_EQ("printer_b_ref", capture0[1].second.effective_make_and_model);
+  EXPECT_EQ("printer_b", capture0[1].name);
+  EXPECT_EQ("printer_b_ref", capture0[1].ppd_ref.effective_make_and_model);
 
   // Second capture should get back printer_c with effective make and model of
   // printer_c_ref
   const auto& capture1 = captured_resolve_printers_[1].second;
   ASSERT_EQ(1UL, capture1.size());
-  EXPECT_EQ("printer_c", capture1[0].first);
-  EXPECT_EQ("printer_c_ref", capture1[0].second.effective_make_and_model);
+  EXPECT_EQ("printer_c", capture1[0].name);
+  EXPECT_EQ("printer_c_ref", capture1[0].ppd_ref.effective_make_and_model);
+  // EXPECT_EQ(base::Version("55"), capture1[0].restrictions.max_milestone);
 }
 
 // Test that if we give a bad reference to ResolvePrinters(), we get an
