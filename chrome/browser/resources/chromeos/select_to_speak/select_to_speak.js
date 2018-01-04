@@ -296,6 +296,9 @@ var SelectToSpeak = function() {
   /** @private {number} */
   this.speechRate_ = 1.0;
 
+  /** @private {number} */
+  this.speechPitch_ = 1.0;
+
   /** @private {boolean} */
   this.wordHighlight_ = false;
 
@@ -572,6 +575,7 @@ SelectToSpeak.prototype = {
 
       let options = {
         rate: this.speechRate_,
+        pitch: this.speechPitch_,
         'enqueue': true,
         onEvent:
             (function(nodeGroup, isLast, event) {
@@ -714,7 +718,7 @@ SelectToSpeak.prototype = {
     var updatePrefs =
         (function() {
           chrome.storage.sync.get(
-              ['voice', 'rate', 'wordHighlight', 'highlightColor'],
+              ['voice', 'rate', 'pitch', 'wordHighlight', 'highlightColor'],
               (function(prefs) {
                 if (prefs['voice']) {
                   this.voiceNameFromPrefs_ = prefs['voice'];
@@ -723,6 +727,11 @@ SelectToSpeak.prototype = {
                   this.speechRate_ = parseFloat(prefs['rate']);
                 } else {
                   chrome.storage.sync.set({'rate': this.speechRate_});
+                }
+                if (prefs['pitch']) {
+                  this.speechPitch_ = parseFloat(prefs['pitch']);
+                } else {
+                  chrome.storage.sync.set({'pitch': this.speechPitch_});
                 }
                 if (prefs['wordHighlight'] !== undefined) {
                   this.wordHighlight_ = prefs['wordHighlight'];
