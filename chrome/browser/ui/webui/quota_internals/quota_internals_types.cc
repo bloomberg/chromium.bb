@@ -12,17 +12,17 @@
 
 namespace {
 
-std::string StorageTypeToString(blink::StorageType type) {
+std::string StorageTypeToString(blink::mojom::StorageType type) {
   switch (type) {
-    case blink::StorageType::kTemporary:
+    case blink::mojom::StorageType::kTemporary:
       return "temporary";
-    case blink::StorageType::kPersistent:
+    case blink::mojom::StorageType::kPersistent:
       return "persistent";
-    case blink::StorageType::kSyncable:
+    case blink::mojom::StorageType::kSyncable:
       return "syncable";
-    case blink::StorageType::kQuotaNotManaged:
+    case blink::mojom::StorageType::kQuotaNotManaged:
       return "quota not managed";
-    case blink::StorageType::kUnknown:
+    case blink::mojom::StorageType::kUnknown:
       return "unknown";
   }
   return "unknown";
@@ -32,7 +32,7 @@ std::string StorageTypeToString(blink::StorageType type) {
 
 namespace quota_internals {
 
-GlobalStorageInfo::GlobalStorageInfo(blink::StorageType type)
+GlobalStorageInfo::GlobalStorageInfo(blink::mojom::StorageType type)
     : type_(type), usage_(-1), unlimited_usage_(-1), quota_(-1) {}
 
 GlobalStorageInfo::~GlobalStorageInfo() {}
@@ -52,7 +52,7 @@ std::unique_ptr<base::Value> GlobalStorageInfo::NewValue() const {
 }
 
 PerHostStorageInfo::PerHostStorageInfo(const std::string& host,
-                                       blink::StorageType type)
+                                       blink::mojom::StorageType type)
     : host_(host), type_(type), usage_(-1), quota_(-1) {}
 
 PerHostStorageInfo::~PerHostStorageInfo() {}
@@ -70,7 +70,7 @@ std::unique_ptr<base::Value> PerHostStorageInfo::NewValue() const {
 }
 
 PerOriginStorageInfo::PerOriginStorageInfo(const GURL& origin,
-                                           blink::StorageType type)
+                                           blink::mojom::StorageType type)
     : origin_(origin),
       type_(type),
       host_(net::GetHostOrSpecFromURL(origin)),

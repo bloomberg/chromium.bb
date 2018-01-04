@@ -18,10 +18,10 @@
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace storage {
 
@@ -59,18 +59,19 @@ void DidGetOrigins(const storage::QuotaClient::GetOriginsCallback& callback,
   callback.Run(*origins_ptr);
 }
 
-blink::QuotaStatusCode DeleteOriginOnFileTaskRunner(FileSystemContext* context,
-                                                    const GURL& origin,
-                                                    FileSystemType type) {
+blink::mojom::QuotaStatusCode DeleteOriginOnFileTaskRunner(
+    FileSystemContext* context,
+    const GURL& origin,
+    FileSystemType type) {
   FileSystemBackend* provider = context->GetFileSystemBackend(type);
   if (!provider || !provider->GetQuotaUtil())
-    return blink::QuotaStatusCode::kErrorNotSupported;
+    return blink::mojom::QuotaStatusCode::kErrorNotSupported;
   base::File::Error result =
       provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
           context, context->quota_manager_proxy(), origin, type);
   if (result == base::File::FILE_OK)
-    return blink::QuotaStatusCode::kOk;
-  return blink::QuotaStatusCode::kErrorInvalidModification;
+    return blink::mojom::QuotaStatusCode::kOk;
+  return blink::mojom::QuotaStatusCode::kErrorInvalidModification;
 }
 
 }  // namespace

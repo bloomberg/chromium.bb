@@ -21,7 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using storage::QuotaTemporaryStorageEvictor;
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace content {
 
@@ -40,26 +40,26 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
                        StorageType type,
                        const storage::StatusCallback& callback) override {
     if (error_on_evict_origin_data_) {
-      callback.Run(blink::QuotaStatusCode::kErrorInvalidModification);
+      callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
       return;
     }
     int64_t origin_usage = EnsureOriginRemoved(origin);
     if (origin_usage >= 0)
       available_space_ += origin_usage;
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
   }
 
   void GetEvictionRoundInfo(
       const EvictionRoundInfoCallback& callback) override {
     if (error_on_get_usage_and_quota_) {
-      callback.Run(blink::QuotaStatusCode::kErrorAbort,
+      callback.Run(blink::mojom::QuotaStatusCode::kErrorAbort,
                    storage::QuotaSettings(), 0, 0, 0, false);
       return;
     }
     if (!task_for_get_usage_and_quota_.is_null())
       task_for_get_usage_and_quota_.Run();
-    callback.Run(blink::QuotaStatusCode::kOk, settings_, available_space_,
-                 available_space_ * 2, GetUsage(), true);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk, settings_,
+                 available_space_, available_space_ * 2, GetUsage(), true);
   }
 
   void GetEvictionOrigin(StorageType type,

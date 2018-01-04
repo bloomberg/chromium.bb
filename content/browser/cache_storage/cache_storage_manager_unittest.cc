@@ -60,7 +60,7 @@ using network::mojom::FetchResponseType;
 namespace content {
 namespace cache_storage_manager_unittest {
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 bool IsIndexFileCurrent(const base::FilePath& cache_dir) {
   base::File::Info info;
@@ -553,10 +553,10 @@ class CacheStorageManagerTest : public testing::Test {
 
   void DidGetQuotaOriginUsage(int64_t* out_usage,
                               base::RunLoop* run_loop,
-                              blink::QuotaStatusCode status_code,
+                              blink::mojom::QuotaStatusCode status_code,
                               int64_t usage,
                               int64_t quota) {
-    if (status_code == blink::QuotaStatusCode::kOk)
+    if (status_code == blink::mojom::QuotaStatusCode::kOk)
       *out_usage = usage;
     run_loop->Quit();
   }
@@ -1671,7 +1671,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   }
 
   void DeleteOriginCallback(base::RunLoop* run_loop,
-                            blink::QuotaStatusCode status) {
+                            blink::mojom::QuotaStatusCode status) {
     callback_status_ = status;
     run_loop->Quit();
   }
@@ -1713,7 +1713,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
         base::Bind(&CacheStorageQuotaClientTest::DeleteOriginCallback,
                    base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
-    return callback_status_ == blink::QuotaStatusCode::kOk;
+    return callback_status_ == blink::mojom::QuotaStatusCode::kOk;
   }
 
   bool QuotaDoesSupport(StorageType type) {
@@ -1722,7 +1722,7 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
 
   std::unique_ptr<CacheStorageQuotaClient> quota_client_;
 
-  blink::QuotaStatusCode callback_status_;
+  blink::mojom::QuotaStatusCode callback_status_;
   int64_t callback_quota_usage_ = 0;
   std::set<GURL> callback_origins_;
 

@@ -36,25 +36,25 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
   // blink::mojom::QuotaDispatcherHost:
   void QueryStorageUsageAndQuota(
       const url::Origin& origin,
-      blink::StorageType storage_type,
+      blink::mojom::StorageType storage_type,
       QueryStorageUsageAndQuotaCallback callback) override;
   void RequestStorageQuota(int64_t render_frame_id,
                            const url::Origin& origin,
-                           blink::StorageType storage_type,
+                           blink::mojom::StorageType storage_type,
                            uint64_t requested_size,
                            RequestStorageQuotaCallback callback) override;
 
  private:
   void DidQueryStorageUsageAndQuota(RequestStorageQuotaCallback callback,
-                                    blink::QuotaStatusCode status,
+                                    blink::mojom::QuotaStatusCode status,
                                     int64_t usage,
                                     int64_t quota);
   void DidGetPersistentUsageAndQuota(int64_t render_frame_id,
                                      const url::Origin& origin,
-                                     blink::StorageType storage_type,
+                                     blink::mojom::StorageType storage_type,
                                      uint64_t requested_quota,
                                      RequestStorageQuotaCallback callback,
-                                     blink::QuotaStatusCode status,
+                                     blink::mojom::QuotaStatusCode status,
                                      int64_t usage,
                                      int64_t quota);
   void DidGetPermissionResponse(
@@ -66,11 +66,11 @@ class QuotaDispatcherHost : public blink::mojom::QuotaDispatcherHost {
       QuotaPermissionContext::QuotaPermissionResponse response);
   void DidSetHostQuota(int64_t current_usage,
                        RequestStorageQuotaCallback callback,
-                       blink::QuotaStatusCode status,
+                       blink::mojom::QuotaStatusCode status,
                        int64_t new_quota);
   void DidGetTemporaryUsageAndQuota(int64_t requested_quota,
                                     RequestStorageQuotaCallback callback,
-                                    blink::QuotaStatusCode status,
+                                    blink::mojom::QuotaStatusCode status,
                                     int64_t usage,
                                     int64_t quota);
 

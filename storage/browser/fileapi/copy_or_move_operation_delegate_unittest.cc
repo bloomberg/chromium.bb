@@ -387,9 +387,10 @@ class CopyOrMoveOperationTestHelper {
   void GetUsageAndQuota(storage::FileSystemType type,
                         int64_t* usage,
                         int64_t* quota) {
-    blink::QuotaStatusCode status = AsyncFileTestHelper::GetUsageAndQuota(
-        quota_manager_.get(), origin_, type, usage, quota);
-    ASSERT_EQ(blink::QuotaStatusCode::kOk, status);
+    blink::mojom::QuotaStatusCode status =
+        AsyncFileTestHelper::GetUsageAndQuota(quota_manager_.get(), origin_,
+                                              type, usage, quota);
+    ASSERT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }
 
  private:

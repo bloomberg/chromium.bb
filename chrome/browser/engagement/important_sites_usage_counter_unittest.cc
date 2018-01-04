@@ -99,10 +99,10 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
   important_sites.push_back(i2);
 
   const std::vector<content::MockOriginData> origins = {
-      {"http://example.com/", blink::StorageType::kTemporary, 1},
-      {"https://example.com/", blink::StorageType::kTemporary, 2},
-      {"https://maps.example.com/", blink::StorageType::kTemporary, 4},
-      {"http://google.com/", blink::StorageType::kPersistent, 8},
+      {"http://example.com/", blink::mojom::StorageType::kTemporary, 1},
+      {"https://example.com/", blink::mojom::StorageType::kTemporary, 2},
+      {"https://maps.example.com/", blink::mojom::StorageType::kTemporary, 4},
+      {"http://google.com/", blink::mojom::StorageType::kPersistent, 8},
   };
 
   QuotaManager* quota_manager = CreateQuotaManager();

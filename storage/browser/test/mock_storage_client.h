@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -27,7 +27,7 @@ class QuotaManagerProxy;
 
 using storage::QuotaClient;
 using storage::QuotaManagerProxy;
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace content {
 

@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 #define UMA_HISTOGRAM_MBYTES(name, sample)          \
@@ -165,7 +165,7 @@ void QuotaTemporaryStorageEvictor::ConsiderEviction() {
 }
 
 void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     const QuotaSettings& settings,
     int64_t available_space,
     int64_t total_space,
@@ -176,7 +176,7 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
   // Note: if there is no storage pressure, |current_usage|
   // may not be fully calculated and may be 0.
 
-  if (status != blink::QuotaStatusCode::kOk)
+  if (status != blink::mojom::QuotaStatusCode::kOk)
     ++statistics_.num_errors_on_getting_usage_and_quota;
 
   int64_t usage_overage = std::max(
@@ -204,12 +204,12 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionRoundInfo(
   round_statistics_.usage_on_end_of_round = current_usage;
 
   int64_t amount_to_evict = std::max(usage_overage, diskspace_shortage);
-  if (status == blink::QuotaStatusCode::kOk && amount_to_evict > 0) {
+  if (status == blink::mojom::QuotaStatusCode::kOk && amount_to_evict > 0) {
     // Space is getting tight. Get the least recently used origin and continue.
     // TODO(michaeln): if the reason for eviction is low physical disk space,
     // make 'unlimited' origins subject to eviction too.
     quota_eviction_handler_->GetEvictionOrigin(
-        blink::StorageType::kTemporary, in_progress_eviction_origins_,
+        blink::mojom::StorageType::kTemporary, in_progress_eviction_origins_,
         settings.pool_size,
         base::Bind(&QuotaTemporaryStorageEvictor::OnGotEvictionOrigin,
                    weak_factory_.GetWeakPtr()));
@@ -241,13 +241,13 @@ void QuotaTemporaryStorageEvictor::OnGotEvictionOrigin(const GURL& origin) {
   in_progress_eviction_origins_.insert(origin);
 
   quota_eviction_handler_->EvictOriginData(
-      origin, blink::StorageType::kTemporary,
+      origin, blink::mojom::StorageType::kTemporary,
       base::Bind(&QuotaTemporaryStorageEvictor::OnEvictionComplete,
                  weak_factory_.GetWeakPtr()));
 }
 
 void QuotaTemporaryStorageEvictor::OnEvictionComplete(
-    blink::QuotaStatusCode status) {
+    blink::mojom::QuotaStatusCode status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Just calling ConsiderEviction() or StartEvictionTimerWithDelay() here is
@@ -256,7 +256,7 @@ void QuotaTemporaryStorageEvictor::OnEvictionComplete(
   // origin permanently.  The evictor skips origins which had deletion errors
   // a few times.
 
-  if (status == blink::QuotaStatusCode::kOk) {
+  if (status == blink::mojom::QuotaStatusCode::kOk) {
     ++statistics_.num_evicted_origins;
     ++round_statistics_.num_evicted_origins_in_round;
     // We many need to get rid of more space so reconsider immediately.

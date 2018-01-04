@@ -56,12 +56,12 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
   void NotifyOriginNoLongerInUse(const GURL& origin) override {}
   void SetUsageCacheEnabled(storage::QuotaClient::ID client_id,
                             const GURL& origin,
-                            blink::StorageType type,
+                            blink::mojom::StorageType type,
                             bool enabled) override {}
 
   void NotifyStorageModified(storage::QuotaClient::ID client_id,
                              const GURL& origin,
-                             blink::StorageType type,
+                             blink::mojom::StorageType type,
                              int64_t delta) override {
     ++storage_modified_count_;
     usage_ += delta;
@@ -70,9 +70,9 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const GURL& origin,
-                        blink::StorageType type,
+                        blink::mojom::StorageType type,
                         const UsageAndQuotaCallback& callback) override {
-    callback.Run(blink::QuotaStatusCode::kOk, usage_, quota_);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk, usage_, quota_);
   }
 
   int storage_modified_count() { return storage_modified_count_; }

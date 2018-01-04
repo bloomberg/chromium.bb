@@ -70,7 +70,8 @@ void DeprecatedStorageQuotaCallbacksImpl::DidGrantStorageQuota(
     quota_callback_->InvokeAndReportException(nullptr, granted_quota_in_bytes);
 }
 
-void DeprecatedStorageQuotaCallbacksImpl::DidFail(QuotaStatusCode error) {
+void DeprecatedStorageQuotaCallbacksImpl::DidFail(
+    mojom::QuotaStatusCode error) {
   if (error_callback_) {
     error_callback_->InvokeAndReportException(
         nullptr, DOMError::Create(static_cast<ExceptionCode>(error)));

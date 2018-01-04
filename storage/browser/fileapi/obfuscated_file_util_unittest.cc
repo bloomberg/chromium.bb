@@ -158,7 +158,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
         origin_(GURL("http://www.example.com")),
         type_(storage::kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
-        quota_status_(blink::QuotaStatusCode::kUnknown),
+        quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
         usage_(-1),
         weak_factory_(this) {}
 
@@ -281,7 +281,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
                                               sandbox_file_system_.type(),
                                               &usage_,
                                               &quota);
-    EXPECT_EQ(blink::QuotaStatusCode::kOk, quota_status_);
+    EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, quota_status_);
   }
 
   void RevokeUsageCache() {
@@ -822,7 +822,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
   GURL origin_;
   storage::FileSystemType type_;
   SandboxFileSystemTestHelper sandbox_file_system_;
-  blink::QuotaStatusCode quota_status_;
+  blink::mojom::QuotaStatusCode quota_status_;
   int64_t usage_;
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;

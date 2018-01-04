@@ -18,8 +18,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-blink.h"
 
 namespace blink {
 
@@ -50,7 +49,7 @@ class EstimateCallbacks final : public StorageQuotaCallbacks {
     resolver_->Resolve(estimate);
   }
 
-  void DidFail(QuotaStatusCode error) override {
+  void DidFail(mojom::QuotaStatusCode error) override {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
     resolver_->Reject(DOMException::Create(static_cast<ExceptionCode>(error)));
@@ -127,7 +126,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
   }
 
   Platform::Current()->QueryStorageUsageAndQuota(
-      WrapRefCounted(security_origin), StorageType::kTemporary,
+      WrapRefCounted(security_origin), mojom::StorageType::kTemporary,
       new EstimateCallbacks(resolver));
   return promise;
 }
@@ -156,10 +155,12 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
   resolver->Resolve(status == PermissionStatus::GRANTED);
 }
 
-STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorNotSupported, kNotSupportedError);
-STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorInvalidModification,
+STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorNotSupported,
+                   kNotSupportedError);
+STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidModification,
                    kInvalidModificationError);
-STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorInvalidAccess, kInvalidAccessError);
-STATIC_ASSERT_ENUM(QuotaStatusCode::kErrorAbort, kAbortError);
+STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorInvalidAccess,
+                   kInvalidAccessError);
+STATIC_ASSERT_ENUM(mojom::QuotaStatusCode::kErrorAbort, kAbortError);
 
 }  // namespace blink

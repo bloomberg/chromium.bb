@@ -18,7 +18,7 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace content {
 
@@ -77,9 +77,9 @@ class MockQuotaManagerTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void DeletedOriginData(blink::QuotaStatusCode status) {
+  void DeletedOriginData(blink::mojom::QuotaStatusCode status) {
     ++deletion_callback_count_;
-    EXPECT_EQ(blink::QuotaStatusCode::kOk, status);
+    EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }
 
   int deletion_callback_count() const {

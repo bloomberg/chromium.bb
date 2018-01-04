@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
 #include "net/base/url_util.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using content::BrowserThread;
 
 namespace quota_internals {

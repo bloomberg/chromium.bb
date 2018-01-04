@@ -33,8 +33,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using blink::QuotaStatusCode;
-using blink::StorageType;
+using blink::mojom::QuotaStatusCode;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 using storage::QuotaManager;
 using storage::UsageInfo;

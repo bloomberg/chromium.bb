@@ -30,8 +30,10 @@ using storage::OriginInfo;
 namespace content {
 
 // Declared to shorten the line lengths.
-static const blink::StorageType kTemp = blink::StorageType::kTemporary;
-static const blink::StorageType kPerm = blink::StorageType::kPersistent;
+static const blink::mojom::StorageType kTemp =
+    blink::mojom::StorageType::kTemporary;
+static const blink::mojom::StorageType kPerm =
+    blink::mojom::StorageType::kPersistent;
 
 // Mock tracker class the mocks up those methods of the tracker
 // that are used by the QuotaClient.
@@ -140,7 +142,7 @@ class DatabaseQuotaClientTest : public testing::Test {
 
   int64_t GetOriginUsage(storage::QuotaClient* client,
                          const GURL& origin,
-                         blink::StorageType type) {
+                         blink::mojom::StorageType type) {
     usage_ = 0;
     client->GetOriginUsage(
         origin, type,
@@ -152,7 +154,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForType(storage::QuotaClient* client,
-                                          blink::StorageType type) {
+                                          blink::mojom::StorageType type) {
     origins_.clear();
     client->GetOriginsForType(
         type, base::AdaptCallbackForRepeating(
@@ -163,7 +165,7 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   const std::set<GURL>& GetOriginsForHost(storage::QuotaClient* client,
-                                          blink::StorageType type,
+                                          blink::mojom::StorageType type,
                                           const std::string& host) {
     origins_.clear();
     client->GetOriginsForHost(
@@ -176,16 +178,16 @@ class DatabaseQuotaClientTest : public testing::Test {
   }
 
   bool DeleteOriginData(storage::QuotaClient* client,
-                        blink::StorageType type,
+                        blink::mojom::StorageType type,
                         const GURL& origin) {
-    delete_status_ = blink::QuotaStatusCode::kUnknown;
+    delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     client->DeleteOriginData(
         origin, type,
         base::AdaptCallbackForRepeating(
             base::BindOnce(&DatabaseQuotaClientTest::OnDeleteOriginDataComplete,
                            weak_factory_.GetWeakPtr())));
     base::RunLoop().RunUntilIdle();
-    return delete_status_ == blink::QuotaStatusCode::kOk;
+    return delete_status_ == blink::mojom::QuotaStatusCode::kOk;
   }
 
   MockDatabaseTracker* mock_tracker() { return mock_tracker_.get(); }
@@ -197,14 +199,14 @@ class DatabaseQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
-  void OnDeleteOriginDataComplete(blink::QuotaStatusCode status) {
+  void OnDeleteOriginDataComplete(blink::mojom::QuotaStatusCode status) {
     delete_status_ = status;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   int64_t usage_;
   std::set<GURL> origins_;
-  blink::QuotaStatusCode delete_status_;
+  blink::mojom::QuotaStatusCode delete_status_;
   scoped_refptr<MockDatabaseTracker> mock_tracker_;
   base::WeakPtrFactory<DatabaseQuotaClientTest> weak_factory_;
 };

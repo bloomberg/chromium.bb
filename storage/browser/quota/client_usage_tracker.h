@@ -21,7 +21,7 @@
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -42,7 +42,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
-                     blink::StorageType type,
+                     blink::mojom::StorageType type,
                      SpecialStoragePolicy* special_storage_policy,
                      StorageMonitor* storage_monitor);
   ~ClientUsageTracker() override;
@@ -117,7 +117,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   UsageTracker* tracker_;
   QuotaClient* client_;
-  const blink::StorageType type_;
+  const blink::mojom::StorageType type_;
   StorageMonitor* storage_monitor_;
 
   int64_t global_limited_usage_;

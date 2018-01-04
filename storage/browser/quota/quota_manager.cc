@@ -38,7 +38,7 @@
 #include "storage/browser/quota/storage_monitor.h"
 #include "storage/browser/quota/usage_tracker.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace storage {
 
@@ -210,7 +210,7 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
 
 void DidGetUsageAndQuotaForWebApps(
     const QuotaManager::UsageAndQuotaCallback& callback,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota,
     base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
@@ -261,9 +261,10 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
 
     // Determine host_quota differently depending on type.
     if (is_unlimited_) {
-      SetDesiredHostQuota(barrier, blink::QuotaStatusCode::kOk, kNoLimit);
+      SetDesiredHostQuota(barrier, blink::mojom::QuotaStatusCode::kOk,
+                          kNoLimit);
     } else if (type_ == StorageType::kSyncable) {
-      SetDesiredHostQuota(barrier, blink::QuotaStatusCode::kOk,
+      SetDesiredHostQuota(barrier, blink::mojom::QuotaStatusCode::kOk,
                           kSyncableStorageDefaultHostQuota);
     } else if (type_ == StorageType::kPersistent) {
       manager()->GetPersistentHostQuota(
@@ -277,7 +278,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
 
   void Aborted() override {
     weak_factory_.InvalidateWeakPtrs();
-    callback_.Run(blink::QuotaStatusCode::kErrorAbort, 0, 0,
+    callback_.Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0,
                   base::flat_map<QuotaClient::ID, int64_t>());
     DeleteSoon();
   }
@@ -293,7 +294,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
                  host_usage_ +
                      std::max(INT64_C(0), available_space_ -
                                               settings_.must_remain_available));
-    callback_.Run(blink::QuotaStatusCode::kOk, host_usage_, host_quota,
+    callback_.Run(blink::mojom::QuotaStatusCode::kOk, host_usage_, host_quota,
                   std::move(host_usage_breakdown_));
     if (type_ == StorageType::kTemporary && !is_incognito_ && !is_unlimited_) {
       UMA_HISTOGRAM_MBYTES("Quota.QuotaForOrigin", host_quota);
@@ -318,7 +319,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
       int64_t host_quota = is_session_only_
                                ? settings.session_only_per_host_quota
                                : settings.per_host_quota;
-      SetDesiredHostQuota(barrier_closure, blink::QuotaStatusCode::kOk,
+      SetDesiredHostQuota(barrier_closure, blink::mojom::QuotaStatusCode::kOk,
                           host_quota);
     }
   }
@@ -341,7 +342,7 @@ class QuotaManager::UsageAndQuotaHelper : public QuotaTask {
   }
 
   void SetDesiredHostQuota(const base::Closure& barrier_closure,
-                           blink::QuotaStatusCode status,
+                           blink::mojom::QuotaStatusCode status,
                            int64_t quota) {
     desired_host_quota_ = quota;
     barrier_closure.Run();
@@ -391,15 +392,16 @@ class QuotaManager::EvictionRoundInfoHelper : public QuotaTask {
 
   void Aborted() override {
     weak_factory_.InvalidateWeakPtrs();
-    callback_.Run(blink::QuotaStatusCode::kErrorAbort, QuotaSettings(), 0, 0, 0,
-                  false);
+    callback_.Run(blink::mojom::QuotaStatusCode::kErrorAbort, QuotaSettings(),
+                  0, 0, 0, false);
     DeleteSoon();
   }
 
   void Completed() override {
     weak_factory_.InvalidateWeakPtrs();
-    callback_.Run(blink::QuotaStatusCode::kOk, settings_, available_space_,
-                  total_space_, global_usage_, global_usage_is_complete_);
+    callback_.Run(blink::mojom::QuotaStatusCode::kOk, settings_,
+                  available_space_, total_space_, global_usage_,
+                  global_usage_is_complete_);
     DeleteSoon();
   }
 
@@ -583,26 +585,26 @@ class QuotaManager::OriginDataDeleter : public QuotaTask {
       // Only remove the entire origin if we didn't skip any client types.
       if (skipped_clients_ == 0)
         manager()->DeleteOriginFromDatabase(origin_, type_, is_eviction_);
-      callback_.Run(blink::QuotaStatusCode::kOk);
+      callback_.Run(blink::mojom::QuotaStatusCode::kOk);
     } else {
       // crbug.com/349708
       TRACE_EVENT0("io", "QuotaManager::OriginDataDeleter::Completed Error");
 
-      callback_.Run(blink::QuotaStatusCode::kErrorInvalidModification);
+      callback_.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     }
     DeleteSoon();
   }
 
   void Aborted() override {
-    callback_.Run(blink::QuotaStatusCode::kErrorAbort);
+    callback_.Run(blink::mojom::QuotaStatusCode::kErrorAbort);
     DeleteSoon();
   }
 
  private:
-  void DidDeleteOriginData(blink::QuotaStatusCode status) {
+  void DidDeleteOriginData(blink::mojom::QuotaStatusCode status) {
     DCHECK_GT(remaining_clients_, 0);
 
-    if (status != blink::QuotaStatusCode::kOk)
+    if (status != blink::mojom::QuotaStatusCode::kOk)
       ++error_count_;
 
     if (--remaining_clients_ == 0)
@@ -661,18 +663,18 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
       // crbug.com/349708
       TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Ok");
 
-      callback_.Run(blink::QuotaStatusCode::kOk);
+      callback_.Run(blink::mojom::QuotaStatusCode::kOk);
     } else {
       // crbug.com/349708
       TRACE_EVENT0("io", "QuotaManager::HostDataDeleter::Completed Error");
 
-      callback_.Run(blink::QuotaStatusCode::kErrorInvalidModification);
+      callback_.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification);
     }
     DeleteSoon();
   }
 
   void Aborted() override {
-    callback_.Run(blink::QuotaStatusCode::kErrorAbort);
+    callback_.Run(blink::mojom::QuotaStatusCode::kErrorAbort);
     DeleteSoon();
   }
 
@@ -703,10 +705,10 @@ class QuotaManager::HostDataDeleter : public QuotaTask {
     }
   }
 
-  void DidDeleteOriginData(blink::QuotaStatusCode status) {
+  void DidDeleteOriginData(blink::mojom::QuotaStatusCode status) {
     DCHECK_GT(remaining_deleters_, 0);
 
-    if (status != blink::QuotaStatusCode::kOk)
+    if (status != blink::mojom::QuotaStatusCode::kOk)
       ++error_count_;
 
     if (--remaining_deleters_ == 0)
@@ -873,7 +875,7 @@ void QuotaManager::GetUsageAndQuotaWithBreakdown(
   DCHECK(origin == origin.GetOrigin());
   if (!IsSupportedType(type) ||
       (is_incognito_ && !IsSupportedIncognitoType(type))) {
-    callback.Run(blink::QuotaStatusCode::kErrorNotSupported, 0, 0,
+    callback.Run(blink::mojom::QuotaStatusCode::kErrorNotSupported, 0, 0,
                  base::flat_map<QuotaClient::ID, int64_t>());
     return;
   }
@@ -896,7 +898,7 @@ void QuotaManager::GetUsageAndQuota(const GURL& origin,
   if (IsStorageUnlimited(origin, type)) {
     // TODO(michaeln): This seems like a non-obvious odd behavior, probably for
     // apps/extensions, but it would be good to eliminate this special case.
-    callback.Run(blink::QuotaStatusCode::kOk, 0, kNoLimit);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk, 0, kNoLimit);
     return;
   }
 
@@ -954,7 +956,7 @@ void QuotaManager::DeleteHostData(const std::string& host,
                                   const StatusCallback& callback) {
   LazyInitialize();
   if (host.empty() || clients_.empty()) {
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 
@@ -970,7 +972,7 @@ void QuotaManager::GetPersistentHostQuota(const std::string& host,
     // This could happen if we are called on file:///.
     // TODO(kinuko) We may want to respect --allow-file-access-from-files
     // command line switch.
-    callback.Run(blink::QuotaStatusCode::kOk, 0);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk, 0);
     return;
   }
 
@@ -995,12 +997,12 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
   LazyInitialize();
   if (host.empty()) {
     // This could happen if we are called on file:///.
-    callback.Run(blink::QuotaStatusCode::kErrorNotSupported, 0);
+    callback.Run(blink::mojom::QuotaStatusCode::kErrorNotSupported, 0);
     return;
   }
 
   if (new_quota < 0) {
-    callback.Run(blink::QuotaStatusCode::kErrorInvalidModification, -1);
+    callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidModification, -1);
     return;
   }
 
@@ -1008,7 +1010,7 @@ void QuotaManager::SetPersistentHostQuota(const std::string& host,
   new_quota = std::min(new_quota, kPerHostPersistentQuotaLimit);
 
   if (db_disabled_) {
-    callback.Run(blink::QuotaStatusCode::kErrorInvalidAccess, -1);
+    callback.Run(blink::mojom::QuotaStatusCode::kErrorInvalidAccess, -1);
     return;
   }
 
@@ -1337,14 +1339,14 @@ void QuotaManager::DeleteOriginFromDatabase(const GURL& origin,
       base::Bind(&QuotaManager::DidDatabaseWork, weak_factory_.GetWeakPtr()));
 }
 
-void QuotaManager::DidOriginDataEvicted(blink::QuotaStatusCode status) {
+void QuotaManager::DidOriginDataEvicted(blink::mojom::QuotaStatusCode status) {
   DCHECK(io_thread_->BelongsToCurrentThread());
 
   // We only try evict origins that are not in use, so basically
   // deletion attempt for eviction should not fail.  Let's record
   // the origin if we get error and exclude it from future eviction
   // if the error happens consistently (> kThresholdOfErrorsToBeBlacklisted).
-  if (status != blink::QuotaStatusCode::kOk)
+  if (status != blink::mojom::QuotaStatusCode::kOk)
     origins_in_error_[eviction_context_.evicted_origin]++;
 
   eviction_context_.evict_origin_data_callback.Run(status);
@@ -1359,7 +1361,7 @@ void QuotaManager::DeleteOriginDataInternal(const GURL& origin,
   LazyInitialize();
 
   if (origin.is_empty() || clients_.empty()) {
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 
@@ -1567,7 +1569,7 @@ void QuotaManager::DidGetPersistentHostQuota(const std::string& host,
                                              bool success) {
   DidDatabaseWork(success);
   persistent_host_quota_callbacks_.Run(
-      host, blink::QuotaStatusCode::kOk,
+      host, blink::mojom::QuotaStatusCode::kOk,
       std::min(*quota, kPerHostPersistentQuotaLimit));
 }
 
@@ -1576,8 +1578,8 @@ void QuotaManager::DidSetPersistentHostQuota(const std::string& host,
                                              const int64_t* new_quota,
                                              bool success) {
   DidDatabaseWork(success);
-  callback.Run(success ? blink::QuotaStatusCode::kOk
-                       : blink::QuotaStatusCode::kErrorInvalidAccess,
+  callback.Run(success ? blink::mojom::QuotaStatusCode::kOk
+                       : blink::mojom::QuotaStatusCode::kErrorInvalidAccess,
                *new_quota);
 }
 

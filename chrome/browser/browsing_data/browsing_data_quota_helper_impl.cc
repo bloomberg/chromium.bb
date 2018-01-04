@@ -20,7 +20,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_manager.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using content::BrowserThread;
 using content::BrowserContext;
 
@@ -171,5 +171,5 @@ void BrowsingDataQuotaHelperImpl::RevokeHostQuotaOnIOThread(
 }
 
 void BrowsingDataQuotaHelperImpl::DidRevokeHostQuota(
-    blink::QuotaStatusCode /*status*/,
+    blink::mojom::QuotaStatusCode /*status*/,
     int64_t /*quota*/) {}

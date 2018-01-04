@@ -45,8 +45,7 @@
 #include "jni/WebsitePreferenceBridge_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -680,7 +679,7 @@ void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
 }
 
 void OnStorageInfoCleared(const ScopedJavaGlobalRef<jobject>& java_callback,
-                          blink::QuotaStatusCode code) {
+                          blink::mojom::QuotaStatusCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Java_StorageInfoClearedCallback_onStorageInfoCleared(
@@ -801,7 +800,7 @@ static void JNI_WebsitePreferenceBridge_ClearStorageData(
 
   auto storage_info_fetcher = base::MakeRefCounted<StorageInfoFetcher>(profile);
   storage_info_fetcher->ClearStorage(
-      host, static_cast<blink::StorageType>(type),
+      host, static_cast<blink::mojom::StorageType>(type),
       base::Bind(&OnStorageInfoCleared,
                  ScopedJavaGlobalRef<jobject>(java_callback)));
 }

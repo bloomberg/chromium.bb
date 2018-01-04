@@ -37,8 +37,10 @@ const char kDBFileName[] = "quota_manager.db";
 }  // namespace
 
 // Declared to shorten the line lengths.
-static const blink::StorageType kTemporary = blink::StorageType::kTemporary;
-static const blink::StorageType kPersistent = blink::StorageType::kPersistent;
+static const blink::mojom::StorageType kTemporary =
+    blink::mojom::StorageType::kTemporary;
+static const blink::mojom::StorageType kPersistent =
+    blink::mojom::StorageType::kPersistent;
 
 class QuotaDatabaseTest : public testing::Test {
  protected:

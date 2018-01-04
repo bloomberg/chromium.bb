@@ -135,7 +135,7 @@ TEST_F(SandboxFileSystemBackendDelegateTest, OpenFileSystemAccessesStorage) {
   EXPECT_EQ(quota_manager_proxy()->notify_storage_accessed_count(), 1);
   EXPECT_EQ(quota_manager_proxy()->last_notified_origin(), origin);
   EXPECT_EQ(quota_manager_proxy()->last_notified_type(),
-            blink::StorageType::kTemporary);
+            blink::mojom::StorageType::kTemporary);
 }
 
 }  // namespace content

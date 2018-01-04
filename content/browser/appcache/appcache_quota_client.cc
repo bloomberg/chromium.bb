@@ -11,19 +11,19 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 
 namespace {
-blink::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
+blink::mojom::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
   if (code == net::OK)
-    return blink::QuotaStatusCode::kOk;
+    return blink::mojom::QuotaStatusCode::kOk;
   else if (code == net::ERR_ABORTED)
-    return blink::QuotaStatusCode::kErrorAbort;
+    return blink::mojom::QuotaStatusCode::kErrorAbort;
   else
-    return blink::QuotaStatusCode::kUnknown;
+    return blink::mojom::QuotaStatusCode::kUnknown;
 }
 
 void RunFront(content::AppCacheQuotaClient::RequestQueue* queue) {
@@ -119,7 +119,7 @@ void AppCacheQuotaClient::DeleteOriginData(const GURL& origin,
   DCHECK(!quota_manager_is_destroyed_);
 
   if (!service_) {
-    callback.Run(blink::QuotaStatusCode::kErrorAbort);
+    callback.Run(blink::mojom::QuotaStatusCode::kErrorAbort);
     return;
   }
 
@@ -241,7 +241,8 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
     RunFront(&pending_serial_requests_);
 
   if (!current_delete_request_callback_.is_null()) {
-    current_delete_request_callback_.Run(blink::QuotaStatusCode::kErrorAbort);
+    current_delete_request_callback_.Run(
+        blink::mojom::QuotaStatusCode::kErrorAbort);
     current_delete_request_callback_.Reset();
     GetServiceDeleteCallback()->Cancel();
   }

@@ -98,7 +98,7 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -1368,7 +1368,7 @@ void RendererBlinkPlatformImpl::StopListening(
 
 void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
     const blink::WebSecurityOrigin& storage_partition,
-    blink::StorageType type,
+    blink::mojom::StorageType type,
     blink::WebStorageQuotaCallbacks callbacks) {
   QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
       ->QueryStorageUsageAndQuota(

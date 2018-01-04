@@ -17,7 +17,7 @@
 #include "net/base/completion_callback.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_task.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace content {
 class AppCacheQuotaClientTest;
@@ -39,17 +39,17 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   ID id() const override;
   void OnQuotaManagerDestroyed() override;
   void GetOriginUsage(const GURL& origin,
-                      blink::StorageType type,
+                      blink::mojom::StorageType type,
                       const GetUsageCallback& callback) override;
-  void GetOriginsForType(blink::StorageType type,
+  void GetOriginsForType(blink::mojom::StorageType type,
                          const GetOriginsCallback& callback) override;
-  void GetOriginsForHost(blink::StorageType type,
+  void GetOriginsForHost(blink::mojom::StorageType type,
                          const std::string& host,
                          const GetOriginsCallback& callback) override;
   void DeleteOriginData(const GURL& origin,
-                        blink::StorageType type,
+                        blink::mojom::StorageType type,
                         const DeletionCallback& callback) override;
-  bool DoesSupport(blink::StorageType type) const override;
+  bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
   friend class content::AppCacheQuotaClientTest;
@@ -60,7 +60,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
       explicit AppCacheQuotaClient(AppCacheServiceImpl* service);
 
   void DidDeleteAppCachesForOrigin(int rv);
-  void GetOriginsHelper(blink::StorageType type,
+  void GetOriginsHelper(blink::mojom::StorageType type,
                         const std::string& opt_host,
                         const GetOriginsCallback& callback);
   void ProcessPendingRequests();

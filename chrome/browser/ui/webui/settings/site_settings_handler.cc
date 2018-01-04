@@ -45,7 +45,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -248,8 +248,9 @@ void SiteSettingsHandler::OnGetUsageInfo(
   }
 }
 
-void SiteSettingsHandler::OnUsageInfoCleared(blink::QuotaStatusCode code) {
-  if (code == blink::QuotaStatusCode::kOk) {
+void SiteSettingsHandler::OnUsageInfoCleared(
+    blink::mojom::QuotaStatusCode code) {
+  if (code == blink::mojom::QuotaStatusCode::kOk) {
     CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
                            base::Value(clearing_origin_));
   }
@@ -359,7 +360,7 @@ void SiteSettingsHandler::HandleClearUsage(
         = new StorageInfoFetcher(profile_);
     storage_info_fetcher->ClearStorage(
         url.host(),
-        static_cast<blink::StorageType>(static_cast<int>(storage_type)),
+        static_cast<blink::mojom::StorageType>(static_cast<int>(storage_type)),
         base::Bind(&SiteSettingsHandler::OnUsageInfoCleared,
                    base::Unretained(this)));
 

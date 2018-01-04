@@ -16,7 +16,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 using storage::QuotaManager;
 
@@ -66,7 +66,8 @@ void QuotaDispatcherHost::RequestStorageQuota(
   if (storage_type != StorageType::kTemporary &&
       storage_type != StorageType::kPersistent) {
     // Unsupported storage types.
-    std::move(callback).Run(blink::QuotaStatusCode::kErrorNotSupported, 0, 0);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorNotSupported,
+                            0, 0);
     return;
   }
 
@@ -90,7 +91,7 @@ void QuotaDispatcherHost::RequestStorageQuota(
 
 void QuotaDispatcherHost::DidQueryStorageUsageAndQuota(
     RequestStorageQuotaCallback callback,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   std::move(callback).Run(status, usage, quota);
@@ -102,10 +103,10 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
     StorageType storage_type,
     uint64_t requested_quota,
     RequestStorageQuotaCallback callback,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t current_usage,
     int64_t current_quota) {
-  if (status != blink::QuotaStatusCode::kOk) {
+  if (status != blink::mojom::QuotaStatusCode::kOk) {
     std::move(callback).Run(status, 0, 0);
     return;
   }
@@ -118,7 +119,7 @@ void QuotaDispatcherHost::DidGetPersistentUsageAndQuota(
       base::saturated_cast<int64_t>(requested_quota);
   if (quota_manager_->IsStorageUnlimited(origin.GetURL(), storage_type) ||
       requested_quota_signed <= current_quota) {
-    std::move(callback).Run(blink::QuotaStatusCode::kOk, current_usage,
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, current_usage,
                             requested_quota);
     return;
   }
@@ -149,7 +150,7 @@ void QuotaDispatcherHost::DidGetPermissionResponse(
     QuotaPermissionContext::QuotaPermissionResponse response) {
   // If user didn't allow the new quota, just return the current quota.
   if (response != QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_ALLOW) {
-    std::move(callback).Run(blink::QuotaStatusCode::kOk, current_usage,
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk, current_usage,
                             current_quota);
     return;
   }
@@ -167,7 +168,7 @@ void QuotaDispatcherHost::DidGetPermissionResponse(
 
 void QuotaDispatcherHost::DidSetHostQuota(int64_t current_usage,
                                           RequestStorageQuotaCallback callback,
-                                          blink::QuotaStatusCode status,
+                                          blink::mojom::QuotaStatusCode status,
                                           int64_t new_quota) {
   std::move(callback).Run(status, current_usage, new_quota);
 }
@@ -175,7 +176,7 @@ void QuotaDispatcherHost::DidSetHostQuota(int64_t current_usage,
 void QuotaDispatcherHost::DidGetTemporaryUsageAndQuota(
     int64_t requested_quota,
     RequestStorageQuotaCallback callback,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   std::move(callback).Run(status, usage, std::min(requested_quota, quota));

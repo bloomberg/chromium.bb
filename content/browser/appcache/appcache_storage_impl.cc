@@ -37,8 +37,7 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace content {
 
@@ -603,7 +602,7 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
                          AppCache* newest_cache);
 
   void GetQuotaThenSchedule();
-  void OnQuotaCallback(blink::QuotaStatusCode status,
+  void OnQuotaCallback(blink::mojom::QuotaStatusCode status,
                        int64_t usage,
                        int64_t quota);
 
@@ -669,16 +668,16 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
-      group_record_.origin, blink::StorageType::kTemporary,
+      group_record_.origin, blink::mojom::StorageType::kTemporary,
       base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::OnQuotaCallback(
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   if (storage_) {
-    if (status == blink::QuotaStatusCode::kOk)
+    if (status == blink::mojom::QuotaStatusCode::kOk)
       space_available_ = std::max(static_cast<int64_t>(0), quota - usage);
     else
       space_available_ = 0;

@@ -17,8 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 class GURL;
 
@@ -35,7 +34,8 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void RevokeHostQuota(const std::string& host) override;
 
  private:
-  using PendingHosts = std::set<std::pair<std::string, blink::StorageType>>;
+  using PendingHosts =
+      std::set<std::pair<std::string, blink::mojom::StorageType>>;
   using QuotaInfoMap = std::map<std::string, QuotaInfo>;
 
   explicit BrowsingDataQuotaHelperImpl(storage::QuotaManager* quota_manager);
@@ -48,7 +48,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void GotOrigins(PendingHosts* pending_hosts,
                   const base::Closure& completion,
                   const std::set<GURL>& origins,
-                  blink::StorageType type);
+                  blink::mojom::StorageType type);
 
   // Calls QuotaManager::GetHostUsage for each (origin, type) pair.
   void OnGetOriginsComplete(const FetchResultCallback& callback,
@@ -58,7 +58,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   void GotHostUsage(QuotaInfoMap* quota_info,
                     const base::Closure& completion,
                     const std::string& host,
-                    blink::StorageType type,
+                    blink::mojom::StorageType type,
                     int64_t usage);
 
   // Called when all QuotaManager::GetHostUsage requests are complete.
@@ -66,7 +66,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
                                QuotaInfoMap* quota_info);
 
   void RevokeHostQuotaOnIOThread(const std::string& host);
-  void DidRevokeHostQuota(blink::QuotaStatusCode status, int64_t quota);
+  void DidRevokeHostQuota(blink::mojom::QuotaStatusCode status, int64_t quota);
 
   scoped_refptr<storage::QuotaManager> quota_manager_;
 

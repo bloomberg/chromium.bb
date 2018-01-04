@@ -48,7 +48,7 @@ void MockQuotaManager::GetUsageAndQuota(const GURL& origin,
                                         StorageType type,
                                         const UsageAndQuotaCallback& callback) {
   StorageInfo& info = usage_and_quota_map_[std::make_pair(origin, type)];
-  callback.Run(blink::QuotaStatusCode::kOk, info.usage, info.quota);
+  callback.Run(blink::mojom::QuotaStatusCode::kOk, info.usage, info.quota);
 }
 
 void MockQuotaManager::SetQuota(const GURL& origin,
@@ -119,7 +119,7 @@ void MockQuotaManager::DeleteOriginData(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MockQuotaManager::DidDeleteOriginData,
                             weak_factory_.GetWeakPtr(), callback,
-                            blink::QuotaStatusCode::kOk));
+                            blink::mojom::QuotaStatusCode::kOk));
 }
 
 MockQuotaManager::~MockQuotaManager() = default;
@@ -137,8 +137,9 @@ void MockQuotaManager::DidGetModifiedSince(
   callback.Run(*origins, storage_type);
 }
 
-void MockQuotaManager::DidDeleteOriginData(const StatusCallback& callback,
-                                           blink::QuotaStatusCode status) {
+void MockQuotaManager::DidDeleteOriginData(
+    const StatusCallback& callback,
+    blink::mojom::QuotaStatusCode status) {
   callback.Run(status);
 }
 
