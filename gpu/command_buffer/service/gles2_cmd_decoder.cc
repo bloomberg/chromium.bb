@@ -17911,7 +17911,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     for (int ii = 0; ii < levels; ++ii) {
       uint32_t size;
       if (is_compressed_format) {
-	GLsizei level_size;
+        GLsizei level_size;
         if (!GetCompressedTexSizeInBytes(function_name,
                                          level_width, level_height, level_depth,
                                          internal_format, &level_size)) {
