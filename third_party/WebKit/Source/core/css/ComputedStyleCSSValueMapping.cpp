@@ -166,9 +166,9 @@ static CSSValue* ValueForFillRepeat(EFillRepeat x_repeat,
 
 static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
   switch (type) {
-    case kMaskAlpha:
+    case EMaskSourceType::kAlpha:
       return CSSIdentifierValue::Create(CSSValueAlpha);
-    case kMaskLuminance:
+    case EMaskSourceType::kLuminance:
       return CSSIdentifierValue::Create(CSSValueLuminance);
   }
 

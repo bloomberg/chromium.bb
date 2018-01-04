@@ -143,7 +143,7 @@ enum class EFillSizeType : unsigned {
 enum class BackgroundEdgeOrigin : unsigned { kTop, kRight, kBottom, kLeft };
 
 // CSS Mask Source Types
-enum EMaskSourceType { kMaskAlpha, kMaskLuminance };
+enum class EMaskSourceType : unsigned { kAlpha, kLuminance };
 
 // CSS3 Image Values
 enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };

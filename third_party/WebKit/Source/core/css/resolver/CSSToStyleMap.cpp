@@ -299,10 +299,10 @@ void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
 
   switch (ToCSSIdentifierValue(value).GetValueID()) {
     case CSSValueAlpha:
-      type = kMaskAlpha;
+      type = EMaskSourceType::kAlpha;
       break;
     case CSSValueLuminance:
-      type = kMaskLuminance;
+      type = EMaskSourceType::kLuminance;
       break;
     case CSSValueAuto:
       break;
