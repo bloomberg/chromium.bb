@@ -100,18 +100,18 @@ public abstract class BaseMediaRouteProvider
             return;
         }
 
-        MediaRouteSelector routeSelector = source.buildRouteSelector();
-        if (routeSelector == null) {
-            // If the application invalid, report no devices available.
-            onSinksReceived(sourceId, NO_SINKS);
-            return;
-        }
-
         // No-op, if already monitoring the application for this source.
         String applicationId = source.getApplicationId();
         DiscoveryCallback callback = mDiscoveryCallbacks.get(applicationId);
         if (callback != null) {
             callback.addSourceUrn(sourceId);
+            return;
+        }
+
+        MediaRouteSelector routeSelector = source.buildRouteSelector();
+        if (routeSelector == null) {
+            // If the application invalid, report no devices available.
+            onSinksReceived(sourceId, NO_SINKS);
             return;
         }
 
