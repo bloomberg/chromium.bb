@@ -1645,6 +1645,31 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  // Gesture scroll should latch to the first scroller that has non-auto
+  // overscroll-behavior.
+  overflow->test_properties()->overscroll_behavior =
+      OverscrollBehavior(OverscrollBehavior::kOverscrollBehaviorTypeContain,
+                         OverscrollBehavior::kOverscrollBehaviorTypeContain);
+  host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+  DrawFrame();
+
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          .thread);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(scroll_position, -x_delta).get());
+  host_impl_->ScrollBy(UpdateState(scroll_position, y_delta).get());
+  host_impl_->ScrollBy(UpdateState(scroll_position, -y_delta).get());
+  host_impl_->ScrollEnd(EndState().get());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), overflow->CurrentScrollOffset());
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {

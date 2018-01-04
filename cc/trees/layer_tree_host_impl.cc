@@ -3615,6 +3615,12 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
                           : scroll_state->delta_y();
 
       if (!CanPropagate(scroll_node, delta_x, delta_y)) {
+        // We should add the first node with non-auto overscroll-behavior to
+        // the scroll chain regardlessly, as it's the only node we can latch to.
+        if (current_scroll_chain.empty() ||
+            current_scroll_chain.front() != scroll_node) {
+          current_scroll_chain.push_front(scroll_node);
+        }
         scroll_state->set_is_scroll_chain_cut(true);
         break;
       }
