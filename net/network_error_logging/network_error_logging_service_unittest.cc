@@ -137,11 +137,14 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const GURL kUrl_ = GURL("https://example.com/path");
   const GURL kUrlDifferentPort_ = GURL("https://example.com:4433/path");
   const GURL kUrlSubdomain_ = GURL("https://subdomain.example.com/path");
+  const GURL kUrlDifferentHost_ = GURL("https://example2.com/path");
 
   const url::Origin kOrigin_ = url::Origin::Create(kUrl_);
   const url::Origin kOriginDifferentPort_ =
       url::Origin::Create(kUrlDifferentPort_);
   const url::Origin kOriginSubdomain_ = url::Origin::Create(kUrlSubdomain_);
+  const url::Origin kOriginDifferentHost_ =
+      url::Origin::Create(kUrlDifferentHost_);
 
   const std::string kHeader_ = "{\"report-to\":\"group\",\"max-age\":86400}";
   const std::string kHeaderIncludeSubdomains_ =
@@ -284,6 +287,35 @@ TEST_F(NetworkErrorLoggingServiceTest,
   service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, RemoveAllBrowsingData) {
+  service()->OnHeader(kOrigin_, kHeader_);
+
+  service()->RemoveBrowsingData(base::RepeatingCallback<bool(const GURL&)>());
+
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_F(NetworkErrorLoggingServiceTest, RemoveSomeBrowsingData) {
+  service()->OnHeader(kOrigin_, kHeader_);
+  service()->OnHeader(kOriginDifferentHost_, kHeader_);
+
+  service()->RemoveBrowsingData(
+      base::BindRepeating([](const GURL& origin) -> bool {
+        return origin.host() == "example.com";
+      }));
+
+  service()->OnNetworkError(MakeErrorDetails(kUrl_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+
+  service()->OnNetworkError(
+      MakeErrorDetails(kUrlDifferentHost_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_EQ(1u, reports().size());
 }
 
 }  // namespace

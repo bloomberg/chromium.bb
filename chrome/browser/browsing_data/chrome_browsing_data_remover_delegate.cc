@@ -84,6 +84,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_service.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_util.h"
@@ -260,6 +261,17 @@ void ClearReportingCacheOnIOThread(
     service->RemoveBrowsingData(data_type_mask, origin_filter);
 }
 
+void ClearNetworkErrorLoggingOnIOThread(
+    net::URLRequestContextGetter* context,
+    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  net::NetworkErrorLoggingDelegate* delegate =
+      context->GetURLRequestContext()->network_error_logging_delegate();
+  if (delegate)
+    delegate->RemoveBrowsingData(origin_filter);
+}
+
 #if defined(OS_ANDROID)
 void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
   // Precache code was removed in M61 but the sqlite database file could be
@@ -361,6 +373,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
 #endif
       clear_auto_sign_in_(sub_task_forward_callback_),
       clear_reporting_cache_(sub_task_forward_callback_),
+      clear_network_error_logging_(sub_task_forward_callback_),
       clear_video_perf_history_(sub_task_forward_callback_),
 #if BUILDFLAG(ENABLE_PLUGINS)
       flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
@@ -1109,6 +1122,19 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         UIThreadTrampoline(clear_reporting_cache_.GetCompletionCallback()));
   }
 
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
+      (remove_mask & DATA_TYPE_HISTORY)) {
+    scoped_refptr<net::URLRequestContextGetter> context =
+        profile_->GetRequestContext();
+
+    clear_network_error_logging_.Start();
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ClearNetworkErrorLoggingOnIOThread,
+                       base::RetainedRef(std::move(context)), filter),
+        UIThreadTrampoline(
+            clear_network_error_logging_.GetCompletionCallback()));
+  }
 //////////////////////////////////////////////////////////////////////////////
 // DATA_TYPE_WEB_APP_DATA
 #if defined(OS_ANDROID)
@@ -1159,6 +1185,7 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
 #endif
          !clear_auto_sign_in_.is_pending() &&
          !clear_reporting_cache_.is_pending() &&
+         !clear_network_error_logging_.is_pending() &&
          !clear_video_perf_history_.is_pending() && !clear_plugin_data_count_;
 }
 
