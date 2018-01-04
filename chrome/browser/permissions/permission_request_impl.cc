@@ -93,28 +93,28 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
   int message_id;
   switch (content_settings_type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      message_id = IDS_GEOLOCATION_INFOBAR_QUESTION;
+      message_id = IDS_GEOLOCATION_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      message_id = IDS_NOTIFICATION_PERMISSIONS;
+      message_id = IDS_NOTIFICATIONS_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      message_id = IDS_MIDI_SYSEX_INFOBAR_QUESTION;
+      message_id = IDS_MIDI_SYSEX_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION;
+      message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
+      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS:
-      message_id = IDS_ACCESSIBILITY_EVENTS_INFOBAR_QUESTION;
+      message_id = IDS_ACCESSIBILITY_EVENTS_INFOBAR_TEXT;
       break;
     case CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
-      message_id = IDS_CLIPBOARD_INFOBAR_QUESTION;
+      message_id = IDS_CLIPBOARD_INFOBAR_TEXT;
       break;
     default:
       NOTREACHED();

@@ -54,7 +54,7 @@ ScreenCaptureInfoBarDelegateAndroid::GetIdentifier() const {
 
 base::string16 ScreenCaptureInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
-      IDS_MEDIA_CAPTURE_SCREEN,
+      IDS_MEDIA_CAPTURE_SCREEN_INFOBAR_TEXT,
       url_formatter::FormatUrlForSecurityDisplay(request_.security_origin));
 }
 

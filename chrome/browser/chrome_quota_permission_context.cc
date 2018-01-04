@@ -101,8 +101,8 @@ base::string16 QuotaPermissionRequest::GetMessageText() const {
   // If the site requested larger quota than this threshold, show a different
   // message to the user.
   return l10n_util::GetStringFUTF16(
-      (is_large_quota_request_ ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
-                               : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
+      (is_large_quota_request_ ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_TEXT
+                               : IDS_REQUEST_QUOTA_INFOBAR_TEXT),
       url_formatter::FormatUrlForSecurityDisplay(origin_url_));
 }
 #endif

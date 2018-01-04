@@ -3323,7 +3323,7 @@ are declared in build/common.gypi.
           Patch Service
       </message>
 
-      <!-- Theme preview info bar -->
+      <!-- Theme preview infobar -->
       <message name="IDS_THEME_INSTALL_INFOBAR_LABEL" desc="Text displayed on an infobar when a theme has been installed.">
         Installed theme "<ph name="THEME_NAME">$1<ex>Snowflake Theme</ex></ph>".
       </message>
@@ -4959,7 +4959,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Click to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
       </message>
 
-      <!-- Session Crashed Info Bar/Bubble-->
+      <!-- Session Crashed Infobar/Bubble-->
       <message name="IDS_SESSION_CRASHED_BUBBLE_TITLE" desc="Title of the session crashed bubble view.">
         Restore pages?
       </message>
@@ -4967,25 +4967,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
         usage statistics
       </message>
 
-      <!-- Unimplemented Flags Info Bar-->
+      <!-- Unimplemented Flags Infobar-->
       <message name="IDS_UNIMPLEMENTED_FLAGS_WARNING_MESSAGE" desc="Message shown when a command-line flag is used that is not implemented by this build. [Keep it short so it fits in the infobar.]">
         <ph name="BAD_FLAG">$1<ex>--enable-heap-profiling</ex></ph> is not implemented in this build.
       </message>
 
-      <!-- Bad Flags Info Bar-->
+      <!-- Bad Flags Infobar-->
       <message name="IDS_BAD_FLAGS_WARNING_MESSAGE" desc="Message shown when an unsupported command-line flag is used. [Keep it short so it fits in the infobar.]">
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
-      <!-- Pepper Broker Info bar -->
+      <!-- Pepper Broker Infobar -->
       <if expr="is_android">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Mobile: Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your device.
+          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your device.
         </message>
       </if>
       <if expr="not is_android">
         <message name="IDS_PEPPER_BROKER_MESSAGE" desc="Message shown when a pepper plugin wants to launch its broker. This message is followed by a 'Learn more' link.">
-          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer.
+          <ph name="PEPPER_PLUGIN_NAME">$1<ex>Flash</ex></ph> on <ph name="PEPPER_PLUGIN_DOMAIN">$2<ex>example.com</ex></ph> wants to access your computer.
         </message>
       </if>
       <message name="IDS_PEPPER_BROKER_ALLOW_BUTTON" desc="Text for the allow button on the pepper broker launch prompt">
@@ -5032,7 +5032,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Manage unsandboxed plugin blocking...
       </message>
 
-      <!-- Blocked Displaying/Running Insecure Content info bar -->
+      <!-- Blocked Displaying/Running Insecure Content bubble -->
       <if expr="use_titlecase">
         <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
           Insecure Content Blocked
@@ -5314,10 +5314,8 @@ the Bookmarks menu.">
         Respond to Accessibility Events
       </message>
       <if expr="is_android">
-        <message name="IDS_ACCESSIBILITY_EVENTS_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to listen to accessibility events, for example if the user has a screen reader or braille device enabled">
-          <ph name="URL">
-            $1<ex>maps.google.com</ex>
-          </ph> wants to respond to accessibility events.
+        <message name="IDS_ACCESSIBILITY_EVENTS_INFOBAR_TEXT" desc="Text requesting permission for a site to listen to accessibility events, for example if the user has a screen reader or braille device enabled">
+          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to respond to accessibility events.
         </message>
       </if>
 
@@ -5326,10 +5324,8 @@ the Bookmarks menu.">
         See text and images you copy to the clipboard
       </message>
       <if expr="is_android">
-        <message name="IDS_CLIPBOARD_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to read data from the system clipboard">
-          <ph name="URL">
-            $1<ex>maps.google.com</ex>
-          </ph> wants to see text and images you copy to the clipboard.
+        <message name="IDS_CLIPBOARD_INFOBAR_TEXT" desc="Text requesting permission for a site to read data from the system clipboard">
+          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images you copy to the clipboard.
         </message>
       </if>
 
@@ -5827,13 +5823,13 @@ I don't think this site should be blocked!
 
       <!-- Automatic updates -->
       <if expr="is_macosx">
-        <message name="IDS_PROMOTE_INFOBAR_TEXT" desc="The text to show in the automatic update setup info bar.  Mac-only.">
+        <message name="IDS_PROMOTE_INFOBAR_TEXT" desc="The text to show in the automatic update setup infobar.  Mac-only.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not be able to keep itself updated.
         </message>
-        <message name="IDS_PROMOTE_INFOBAR_PROMOTE_BUTTON" desc="The 'Set up automatic updates' button in the automatic update setup info bar.  Mac-only.">
+        <message name="IDS_PROMOTE_INFOBAR_PROMOTE_BUTTON" desc="The 'Set up automatic updates' button in the automatic update setup infobar.  Mac-only.">
           Set up automatic updates
         </message>
-        <message name="IDS_PROMOTE_INFOBAR_DONT_ASK_BUTTON" desc="The 'Don't ask again' button in the automatic update setup info bar.  Mac-only.">
+        <message name="IDS_PROMOTE_INFOBAR_DONT_ASK_BUTTON" desc="The 'Don't ask again' button in the automatic update setup infobar.  Mac-only.">
           Don't ask again
         </message>
         <message name="IDS_PROMOTE_AUTHENTICATION_PROMPT" desc="The prompt displayed in the authentication dialog when setting up automatic updates for all users.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
@@ -7920,25 +7916,25 @@ I don't think this site should be blocked!
         Continue
       </message>
 
-      <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Info Bar message when an outdated plugin was disabled">
+      <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Infobar message when an outdated plugin was disabled">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date.
       </message>
-      <message name="IDS_PLUGIN_ENABLE_TEMPORARILY" desc="Info Bar button to run a blocked outdated plugin">
+      <message name="IDS_PLUGIN_ENABLE_TEMPORARILY" desc="Infobar button to run a blocked outdated plugin">
         Run this time
       </message>
-      <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
-       <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has crashed.</ph>
+      <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Infobar message to notify about a crashed plugin">
+       <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> has crashed.
       </message>
       <if expr="is_win">
-        <message name="IDS_PLUGIN_DISCONNECTED_PROMPT" desc="Info Bar message to notify that the channel connecting to a plugin has encountered an error.">
-          <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has encountered an error.</ph>
+        <message name="IDS_PLUGIN_DISCONNECTED_PROMPT" desc="Infobar message to notify that the channel connecting to a plugin has encountered an error.">
+          <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> has encountered an error.
         </message>
       </if>
-      <message name="IDS_RELOAD_PAGE_WITH_PLUGIN" desc="Info Bar button to reload the page where a plugin crashed or disconnected.">
+      <message name="IDS_RELOAD_PAGE_WITH_PLUGIN" desc="Infobar button to reload the page where a plugin crashed or disconnected.">
         Reload
       </message>
-      <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Info Bar message to notify that we couldn't load a plugin">
-        Could not load <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex>.</ph>
+      <message name="IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT" desc="Infobar message to notify that we couldn't load a plugin">
+        Could not load <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
       </message>
 
       <!-- External Protocol Dialog -->
@@ -8655,7 +8651,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Web and message center notifications -->
-      <message name="IDS_NOTIFICATION_PERMISSIONS" desc="Text requesting permission for Web Notifications.">
+      <message name="IDS_NOTIFICATIONS_INFOBAR_TEXT" desc="Text requesting permission for Web Notifications.">
         <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications.
       </message>
       <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
@@ -9089,17 +9085,13 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Geolocation messages -->
       <if expr="not is_android">
-        <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user's physical location">
-          <ph name="URL">
-            $1<ex>maps.google.com</ex>
-          </ph> wants to use your computer's location.
+        <message name="IDS_GEOLOCATION_INFOBAR_TEXT" desc="Text requesting permission for a site to access the user's physical location">
+          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to use your computer's location.
         </message>
       </if>
       <if expr="is_android">
-        <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Mobile: Question asked on the info bar whenever URL wants to access the user's physical location">
-          <ph name="URL">
-            $1<ex>maps.google.com</ex>
-          </ph> wants to use your device's location.
+        <message name="IDS_GEOLOCATION_INFOBAR_TEXT" desc="Mobile: Text requesting permission for a site to access the user's physical location">
+          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to use your device's location.
         </message>
       </if>
       <message name="IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT" desc="Permission fragment used in the permission bubble, after 'This site wants to:' asking for permission to access the user's physical location.">
@@ -9128,10 +9120,8 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Web MIDI messages -->
-      <message name="IDS_MIDI_SYSEX_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access MIDI devices with system exclusive messages.">
-        <ph name="URL">
-          $1<ex>www.google.com</ex>
-        </ph> wants to get full control of your MIDI devices.
+      <message name="IDS_MIDI_SYSEX_INFOBAR_TEXT" desc="Text requesting permission for a site to access MIDI devices with system exclusive messages.">
+        <ph name="URL">$1<ex>www.google.com</ex></ph> wants to get full control of your MIDI devices.
       </message>
       <message name="IDS_MIDI_SYSEX_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to access MIDI devices with system exclusive messages, along with other permissions requests. Preceded by the prompt 'This site would like to:'">
         Use your MIDI devices
@@ -9220,7 +9210,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
           Know your unique device identifier
         </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_QUESTION" desc="Question asked on the infobar whenever URL wants to access protected media identifier. It shows the origin of the URL.">
+        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_TEXT" desc="Text requesting permission for a site to access protected media identifier. It shows the origin of the URL.">
           <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> wants to uniquely identify your device to play protected content.
         </message>
       </if>
@@ -9447,16 +9437,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Media Capture messages -->
-      <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone and camera.">
+      <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone and camera.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone.
       </message>
-      <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone.">
+      <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your microphone.
       </message>
-      <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's camera.">
+      <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's camera.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
       </message>
-      <message name="IDS_MEDIA_CAPTURE_SCREEN" desc="Question asked on the info bar whenever a web page requests access to the device's screen.">
+      <message name="IDS_MEDIA_CAPTURE_SCREEN_INFOBAR_TEXT" desc="Text requesting permission for a site to access the device's screen.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to share your screen.
       </message>
       <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone and camera.">
@@ -9477,27 +9467,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!-- Quota messages -->
       <if expr="is_android">
-        <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Mobile: For Android device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the device (e.g. for persistent-type filesystem).">
-          <ph name="URL">
-            $1<ex>html5rocks.com</ex>
-          </ph> wants to permanently store data on your device.
+        <message name="IDS_REQUEST_QUOTA_INFOBAR_TEXT" desc="Mobile: For Android device. Text requesting permission for a site to use a new (larger) quota to persistently store data on the device (e.g. for persistent-type filesystem).">
+          <ph name="URL">$1<ex>html5rocks.com</ex></ph> wants to permanently store data on your device.
         </message>
-        <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Mobile: For Android device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's device (e.g. for persistent-type filesystem).">
-          <ph name="URL">
-            $1<ex>html5rocks.com</ex>
-          </ph> wants to permanently store large data on your device.
+        <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_TEXT" desc="Mobile: For Android device. Text requesting permission for a site to use a new (larger) quota to persistently store large data on the user's device (e.g. for persistent-type filesystem).">
+          <ph name="URL">$1<ex>html5rocks.com</ex></ph> wants to permanently store large data on your device.
         </message>
       </if>
       <if expr="not is_android">
-        <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the user's local computer (e.g. for persistent-type filesystem).">
-          <ph name="URL">
-            $1<ex>html5rocks.com</ex>
-          </ph> wants to permanently store data on your local computer.
+        <message name="IDS_REQUEST_QUOTA_INFOBAR_TEXT" desc="Text requesting permission for a site to use a new (larger) quota to persistently store data on the user's local computer (e.g. for persistent-type filesystem).">
+          <ph name="URL">$1<ex>html5rocks.com</ex></ph> wants to permanently store data on your local computer.
         </message>
-        <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION" desc="Question asked on the info bar whenever webapp requests new (larger) quota to persistently store large data on the user's local computer (e.g. for persistent-type filesystem).">
-          <ph name="URL">
-            $1<ex>html5rocks.com</ex>
-          </ph> wants to permanently store large data on your local computer.
+        <message name="IDS_REQUEST_LARGE_QUOTA_INFOBAR_TEXT" desc="Text requesting permission for a site to use a new (larger) quota to persistently store large data on the user's local computer (e.g. for persistent-type filesystem).">
+          <ph name="URL">$1<ex>html5rocks.com</ex></ph> wants to permanently store large data on your local computer.
         </message>
       </if>
       <message name="IDS_REQUEST_QUOTA_PERMISSION_FRAGMENT" desc="Permission fragment presented in the permission bubble when the webapp requests new larger quota to persistently store data on the device. Follows a 'This site would like to:' prompt.">
@@ -9888,7 +9870,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
           Next
         </message>
         <message name="IDS_METRO_MISSING_PLUGIN_PROMPT"
-                 desc="Info Bar message to let user do something about the missing plugin">
+                 desc="Infobar message to let user do something about the missing plugin">
           <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
         </message>
         <message name="IDS_METRO_NPAPI_PLUGIN_PROMPT"
@@ -10995,7 +10977,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       Your downloads appear here
     </message>
 
-    <!-- Automation info bar -->
+    <!-- Automation infobar -->
     <message name="IDS_CONTROLLED_BY_AUTOMATION" desc="Message shown when the browser session is being controlled by an automated test.">
       Chrome is being controlled by automated test software.
     </message>

@@ -403,7 +403,7 @@ Google Chrome is unable to recover your settings.
           Uninstall
         </message>
       </if>
-      <message name="IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT" desc="More compact text to show in the default browser query infobar.">
+      <message name="IDS_DEFAULT_BROWSER_INFOBAR_TEXT" desc="Text to show in an infobar when Google Chrome is not the current default browser.">
         Google Chrome isn't your default browser.
       </message>
       <if expr="chromeos">
