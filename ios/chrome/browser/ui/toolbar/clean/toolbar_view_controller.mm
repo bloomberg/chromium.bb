@@ -92,13 +92,20 @@
                                 forViews:self.view.trailingStackViewButtons];
     [self setAllToolbarButtonsOpacity:0];
   };
+  void (^completion)(UIViewAnimatingPosition finalPosition) = ^(
+      UIViewAnimatingPosition finalPosition) {
+    [self setHorizontalTranslationOffset:0
+                                forViews:self.view.leadingStackViewButtons];
+    [self setHorizontalTranslationOffset:0
+                                forViews:self.view.trailingStackViewButtons];
+  };
 
   [UIViewPropertyAnimator
       runningPropertyAnimatorWithDuration:ios::material::kDuration2
                                     delay:0
                                   options:UIViewAnimationOptionCurveEaseIn
                                animations:animations
-                               completion:nil];
+                               completion:completion];
 
   [animator addAnimations:^{
     [self.view layoutIfNeeded];
