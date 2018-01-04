@@ -15,5 +15,11 @@ void HideImageFromAccessibilityOrder(NSImageView* view) {
                                 forAttribute:NSAccessibilityRoleAttribute];
 }
 
+void PlayElementUpdatedSound(id source) {
+  NSAccessibilityPostNotificationWithUserInfo(
+      source, @"AXPlaySound",
+      @{@"AXSoundIdentifier" : @"AXElementUpdatedSound"});
+}
+
 }  // namespace a11y_util
 }  // namespace ui

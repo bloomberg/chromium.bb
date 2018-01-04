@@ -17,6 +17,11 @@ namespace a11y_util {
 // voice over (i.e., an icon next to a written description of the icon).
 UI_BASE_EXPORT void HideImageFromAccessibilityOrder(NSImageView* view);
 
+// Ask VoiceOver to play a sound for |object|, generally a view or window
+// (undocumented). Built-in apps seem to use this to indicate that something
+// interesting has happened, like a failed download or available completions.
+UI_BASE_EXPORT void PlayElementUpdatedSound(id source);
+
 }  // namespace a11y_util
 }  // namespace ui
 
