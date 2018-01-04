@@ -17,7 +17,6 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/version_info/version_info.h"
-#import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -356,20 +355,22 @@ class UpgradeInfoBarDismissObserver
     if (!urlString)
       return;  // Missing URL, no upgrade possible.
 
-    GURL url = GURL(base::SysNSStringToUTF8(urlString));
-    if (!url.is_valid())
+    GURL URL = GURL(base::SysNSStringToUTF8(urlString));
+    if (!URL.is_valid())
       return;
 
-    if (web::UrlHasWebScheme(url)) {
+    if (web::UrlHasWebScheme(URL)) {
       // This URL can be opened in the application, just open in a new tab.
       OpenUrlCommand* command =
-          [[OpenUrlCommand alloc] initWithURLFromChrome:url];
+          [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
       [self.dispatcher openURL:command];
     } else {
       // This URL scheme is not understood, ask the system to open it.
-      NSURL* nsurl = [NSURL URLWithString:urlString];
-      if (nsurl) {
-        OpenUrlWithCompletionHandler(nsurl, nil);
+      NSURL* launchURL = [NSURL URLWithString:urlString];
+      if (launchURL) {
+        [[UIApplication sharedApplication] openURL:launchURL
+                                           options:@{}
+                                 completionHandler:nil];
       }
     }
   }

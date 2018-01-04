@@ -15,7 +15,6 @@ source_set("image_util") {
     "//components/image_fetcher/ios",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//net",
     "//ui/base",

@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/open_url_util.h"
 #import "ios/chrome/browser/ui/external_app/open_mail_handler_view_controller.h"
 #import "ios/chrome/browser/web/external_app_launcher_util.h"
 #import "ios/chrome/browser/web/external_apps_launch_policy_decider.h"
@@ -102,8 +101,11 @@ void ShowExternalAppLauncherPrompt(NSString* prompt,
 // Launches external app identified by |url| if |accept| is true.
 void LaunchExternalApp(NSURL* url, bool accept) {
   UMA_HISTOGRAM_BOOLEAN("Tab.ExternalApplicationOpened", accept);
-  if (accept)
-    OpenUrlWithCompletionHandler(url, nil);
+  if (accept) {
+    [[UIApplication sharedApplication] openURL:url
+                                       options:@{}
+                             completionHandler:nil];
+  }
 }
 
 // Presents an alert controller with |prompt| and |open_label| as button label

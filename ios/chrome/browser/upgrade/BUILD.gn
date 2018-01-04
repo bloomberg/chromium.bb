@@ -15,7 +15,6 @@ source_set("upgrade") {
     "//components/infobars/core",
     "//components/version_info",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
     "//ios/chrome/browser/ui/commands",
     "//ios/web",
     "//net",
