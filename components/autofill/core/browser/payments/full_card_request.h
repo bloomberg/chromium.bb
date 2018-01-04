@@ -91,6 +91,10 @@ class FullCardRequest final : public CardUnmaskDelegate {
   // Called by autofill client when the risk data has been loaded.
   void OnDidGetUnmaskRiskData(const std::string& risk_data);
 
+  // Makes final preparations for the unmask request and calls
+  // PaymentsClient::UnmaskCard().
+  void SendUnmaskCardRequest();
+
   // Resets the state of the request.
   void Reset();
 
