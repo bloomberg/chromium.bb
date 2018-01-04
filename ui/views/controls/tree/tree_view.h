@@ -429,6 +429,9 @@ class VIEWS_EXPORT TreeView : public View,
   // control, icon and offsets.
   int text_offset_;
 
+  // Horizontal padding around the text on both sides.
+  int text_horizontal_padding_ = 0;
+
   std::unique_ptr<PrefixSelector> selector_;
 
   // The current drawing provider for this TreeView.
