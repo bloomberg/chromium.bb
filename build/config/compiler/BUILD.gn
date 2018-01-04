@@ -625,6 +625,7 @@ config("compiler") {
 config("compiler_cpu_abi") {
   cflags = []
   ldflags = []
+  defines = []
 
   if (is_posix && !(is_mac || is_ios)) {
     # CPU architecture. We may or may not be doing a cross compile now, so for
@@ -743,6 +744,7 @@ config("compiler_cpu_abi") {
           ]
         }
       } else if (mips_arch_variant == "loongson3") {
+        defines += [ "_MIPS_ARCH_LOONGSON" ]
         cflags += [
           "-march=loongson3a",
           "-mno-branch-likely",
@@ -849,6 +851,7 @@ config("compiler_cpu_abi") {
         ]
         ldflags += [ "-mips64r2" ]
       } else if (mips_arch_variant == "loongson3") {
+        defines += [ "_MIPS_ARCH_LOONGSON" ]
         cflags += [
           "-march=loongson3a",
           "-mno-branch-likely",
