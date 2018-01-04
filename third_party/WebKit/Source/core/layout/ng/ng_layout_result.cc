@@ -20,16 +20,20 @@ NGLayoutResult::NGLayoutResult(
     const WTF::Optional<NGBfcOffset> bfc_offset,
     const NGMarginStrut end_margin_strut,
     const LayoutUnit intrinsic_block_size,
+    LayoutUnit minimal_space_shortage,
     EBreakBetween initial_break_before,
     EBreakBetween final_break_after,
+    bool has_forced_break,
     NGLayoutResultStatus status)
     : physical_fragment_(std::move(physical_fragment)),
       exclusion_space_(std::move(exclusion_space)),
       bfc_offset_(bfc_offset),
       end_margin_strut_(end_margin_strut),
       intrinsic_block_size_(intrinsic_block_size),
+      minimal_space_shortage_(minimal_space_shortage),
       initial_break_before_(initial_break_before),
       final_break_after_(final_break_after),
+      has_forced_break_(has_forced_break),
       status_(status) {
   oof_positioned_descendants_.swap(oof_positioned_descendants);
   positioned_floats_.swap(positioned_floats);
@@ -52,7 +56,8 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
       positioned_floats, unpositioned_floats, std::move(exclusion_space),
       bfc_offset_, end_margin_strut_, intrinsic_block_size_,
-      initial_break_before_, final_break_after_, Status()));
+      minimal_space_shortage_, initial_break_before_, final_break_after_,
+      has_forced_break_, Status()));
 }
 
 }  // namespace blink

@@ -87,6 +87,8 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return intrinsic_block_size_;
   }
 
+  LayoutUnit MinimalSpaceShortage() const { return minimal_space_shortage_; }
+
   // The break-before value on the first child needs to be propagated to the
   // container, in search of a valid class A break point.
   EBreakBetween InitialBreakBefore() const { return initial_break_before_; }
@@ -94,6 +96,9 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // The break-after value on the last child needs to be propagated to the
   // container, in search of a valid class A break point.
   EBreakBetween FinalBreakAfter() const { return final_break_after_; }
+
+  // Return true if the fragment broke because a forced break before a child.
+  bool HasForcedBreak() const { return has_forced_break_; }
 
   scoped_refptr<NGLayoutResult> CloneWithoutOffset() const;
 
@@ -111,8 +116,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
       const WTF::Optional<NGBfcOffset> bfc_offset,
       const NGMarginStrut end_margin_strut,
       const LayoutUnit intrinsic_block_size,
+      LayoutUnit minimal_space_shortage,
       EBreakBetween initial_break_before,
       EBreakBetween final_break_after,
+      bool has_forced_break,
       NGLayoutResultStatus status);
 
   scoped_refptr<NGPhysicalFragment> physical_fragment_;
@@ -125,9 +132,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   const WTF::Optional<NGBfcOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
   const LayoutUnit intrinsic_block_size_;
+  const LayoutUnit minimal_space_shortage_;
 
   EBreakBetween initial_break_before_;
   EBreakBetween final_break_after_;
+
+  unsigned has_forced_break_ : 1;
 
   unsigned status_ : 1;
 };

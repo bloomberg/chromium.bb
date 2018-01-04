@@ -78,6 +78,13 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
   return NGContainerFragmentBuilder::AddChild(std::move(child), child_offset);
 }
 
+void NGFragmentBuilder::RemoveChildren() {
+  child_break_tokens_.clear();
+  inline_break_tokens_.clear();
+  children_.clear();
+  offsets_.clear();
+}
+
 NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     NGLayoutInputNode child) {
   if (children_.IsEmpty()) {
@@ -149,7 +156,11 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeLine(int line_number) {
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
     scoped_refptr<NGLayoutResult> child_layout_result) {
   if (!did_break_)
-    return PropagateBreak(child_layout_result->PhysicalFragment());
+    PropagateBreak(child_layout_result->PhysicalFragment());
+  if (child_layout_result->HasForcedBreak())
+    SetHasForcedBreak();
+  else
+    PropagateSpaceShortage(child_layout_result->MinimalSpaceShortage());
   return *this;
 }
 
@@ -281,8 +292,9 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats,
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
-      end_margin_strut_, intrinsic_block_size_, initial_break_before_,
-      previous_break_after_, NGLayoutResult::kSuccess));
+      end_margin_strut_, intrinsic_block_size_, minimal_space_shortage_,
+      initial_break_before_, previous_break_after_, has_forced_break_,
+      NGLayoutResult::kSuccess));
 }
 
 scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
@@ -292,7 +304,8 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
   return base::AdoptRef(new NGLayoutResult(
       nullptr, oof_positioned_descendants, positioned_floats,
       unpositioned_floats_, nullptr, bfc_offset_, end_margin_strut_,
-      LayoutUnit(), EBreakBetween::kAuto, EBreakBetween::kAuto, status));
+      LayoutUnit(), LayoutUnit(), EBreakBetween::kAuto, EBreakBetween::kAuto,
+      false, status));
 }
 
 // Finds FragmentPairs that define inline containing blocks.

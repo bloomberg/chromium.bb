@@ -159,11 +159,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                         const NGLayoutResult&,
                         LayoutUnit block_offset);
 
-  // Given a child fragment and the corresponding node's style, return true if
-  // we need to insert a fragmentainer break in front of it.
-  bool ShouldBreakBeforeChild(NGLayoutInputNode child,
-                              const NGLayoutResult&,
-                              LayoutUnit block_offset) const;
+  enum BreakType { NoBreak, SoftBreak, ForcedBreak };
+
+  // Given a child fragment and the corresponding node's style, determine the
+  // type of break we should insert in front of it, if any.
+  BreakType BreakTypeBeforeChild(NGLayoutInputNode child,
+                                 const NGLayoutResult&,
+                                 LayoutUnit block_offset) const;
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
