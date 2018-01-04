@@ -130,12 +130,13 @@ class BASE_EXPORT RunLoop {
   // Safe to call before RegisterDelegateForCurrentThread().
   static bool IsNestedOnCurrentThread();
 
-  // A NestingObserver is notified when a nested RunLoop begins. The observers
-  // are notified before the current thread's RunLoop::Delegate::Run() is
-  // invoked and nested work begins.
+  // A NestingObserver is notified when a nested RunLoop begins and ends.
   class BASE_EXPORT NestingObserver {
    public:
+    // Notified before a nested loop starts running work on the current thread.
     virtual void OnBeginNestedRunLoop() = 0;
+    // Notified after a nested loop is done running work on the current thread.
+    virtual void OnExitNestedRunLoop() {}
 
    protected:
     virtual ~NestingObserver() = default;

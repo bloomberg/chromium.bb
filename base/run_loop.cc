@@ -321,6 +321,11 @@ void RunLoop::AfterRun() {
   RunLoop* previous_run_loop =
       active_run_loops_.empty() ? nullptr : active_run_loops_.top();
 
+  if (previous_run_loop) {
+    for (auto& observer : delegate_->nesting_observers_)
+      observer.OnExitNestedRunLoop();
+  }
+
   // Execute deferred Quit, if any:
   if (previous_run_loop && previous_run_loop->quit_called_)
     delegate_->Quit();
