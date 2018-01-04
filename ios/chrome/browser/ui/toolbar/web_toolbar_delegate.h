@@ -13,6 +13,8 @@ namespace web {
 class WebState;
 }
 
+// TODO(crbug.com/788705): Replace uses of this protocol by
+// ToolbarCoordinatorDelegate.
 // Delegate interface, to be implemented by the WebToolbarController's delegate.
 @protocol WebToolbarDelegate<ToolbarCoordinatorDelegate>
 // Returns the WebState.

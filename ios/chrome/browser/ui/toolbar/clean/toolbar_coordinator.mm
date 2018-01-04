@@ -186,6 +186,7 @@
 
 - (void)stop {
   self.started = NO;
+  self.delegate = nil;
   [self.mediator disconnect];
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];

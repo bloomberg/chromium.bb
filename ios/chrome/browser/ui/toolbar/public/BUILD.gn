@@ -7,6 +7,9 @@ source_set("public") {
   sources = [
     "abstract_toolbar.h",
     "abstract_web_toolbar.h",
+    "omnibox_focuser.h",
+    "primary_toolbar_coordinator.h",
+    "side_swipe_toolbar_interacting.h",
     "toolbar_controller_constants.h",
     "toolbar_controller_constants.mm",
     "toolbar_utils.h",
