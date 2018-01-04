@@ -1021,12 +1021,7 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
       wallpaper::DEFAULT, base::Time::Now().LocalMidnight());
   EXPECT_NE(wallpaper_info.type, default_wallpaper_info.type);
 
-  // Simulate guest login.
-  const std::string guest = "guest@test.com";
-  TestSessionControllerClient* session = GetSessionControllerClient();
-  session->AddUserSession(guest, user_manager::USER_TYPE_GUEST);
-  session->SwitchActiveUser(AccountId::FromUserEmail(guest));
-  session->SetSessionState(SessionState::ACTIVE);
+  SimulateGuestLogin();
 
   // Verify that during a guest session, |SetDefaultWallpaper| removes the user
   // custom wallpaper info, but a guest specific wallpaper should be set,
