@@ -208,38 +208,43 @@ void* AllocPages(void* address,
   DCHECK(!(reinterpret_cast<uintptr_t>(address) & align_offset_mask));
 
   // If the client passed null as the address, choose a good one.
-  if (!address) {
+  if (address == nullptr) {
     address = GetRandomPageBase();
     address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) &
                                       align_base_mask);
   }
 
   // First try to force an exact-size, aligned allocation from our random base.
-  for (int count = 0; count < 3; ++count) {
+#if defined(ARCH_CPU_32_BITS)
+  // On 32 bit systems, first try one random aligned address, and then try an
+  // aligned address derived from the value of |ret|.
+  constexpr int kExactSizeTries = 2;
+#else
+  // On 64 bit systems, try 3 random aligned addresses.
+  constexpr int kExactSizeTries = 3;
+#endif
+  for (int i = 0; i < kExactSizeTries; ++i) {
     void* ret = AllocPagesIncludingReserved(address, length, page_accessibility,
                                             commit);
-    if (ret) {
+    if (ret != nullptr) {
       // If the alignment is to our liking, we're done.
       if (!(reinterpret_cast<uintptr_t>(ret) & align_offset_mask))
         return ret;
       // Free the memory and try again.
       FreePages(ret, length);
-#if defined(ARCH_CPU_32_BITS)
-      // For small address spaces, try an aligned hint in the free range.
-      address = reinterpret_cast<void*>(
-          (reinterpret_cast<uintptr_t>(ret) + align) & align_base_mask);
-#endif
     } else {
-      // |ret| is null; we're OOM when an unhinted allocation fails.
+      // |ret| is null; if this try was unhinted, we're OOM.
       if (kHintIsAdvisory || address == nullptr)
         return nullptr;
-#if defined(ARCH_CPU_32_BITS)
-      // On 32-bit systems, let the OS choose the base.
-      address = nullptr;
-#endif
     }
 
-#if !defined(ARCH_CPU_32_BITS)
+#if defined(ARCH_CPU_32_BITS)
+    // For small address spaces, try the first aligned address >= |ret|. Note
+    // |ret| may be null, in which case |address| becomes null.
+    address = reinterpret_cast<void*>(
+        (reinterpret_cast<uintptr_t>(ret) + align_offset_mask) &
+        align_base_mask);
+#else  // defined(ARCH_CPU_64_BITS)
     // Keep trying random addresses on systems that have a large address space.
     address = GetRandomPageBase();
     address = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(address) &
@@ -259,8 +264,9 @@ void* AllocPages(void* address,
                                       commit);
     // The retries are for Windows, where a race can steal our mapping on
     // resize.
-  } while (ret && (ret = TrimMapping(ret, try_length, length, align,
-                                     page_accessibility, commit)) == nullptr);
+  } while (ret != nullptr &&
+           (ret = TrimMapping(ret, try_length, length, align,
+                              page_accessibility, commit)) == nullptr);
 
   return ret;
 }
