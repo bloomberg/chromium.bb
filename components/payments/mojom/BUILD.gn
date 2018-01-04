@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/rules.gni")
+
 java_group("mojom_java") {
   # This is a temporary empty target. It is needed to enable prerequisite
   # downstream changes to be landed without breaking the Android build. It will
