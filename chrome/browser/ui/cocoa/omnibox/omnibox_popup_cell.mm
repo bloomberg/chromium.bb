@@ -373,7 +373,8 @@ NSAttributedString* CreateClassifiedAttributedString(
                withFrame:(NSRect)cellFrame
                   origin:(NSPoint)origin
             withMaxWidth:(int)maxWidth
-            forDarkTheme:(BOOL)isDarkTheme;
+            forDarkTheme:(BOOL)isDarkTheme
+           withHeightCap:(BOOL)hasHeightCap;
 - (void)drawMatchWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 @end
 
@@ -530,7 +531,8 @@ NSAttributedString* CreateClassifiedAttributedString(
                         withFrame:cellFrame
                            origin:origin
                      withMaxWidth:contentsMaxWidth
-                     forDarkTheme:isDarkTheme];
+                     forDarkTheme:isDarkTheme
+                    withHeightCap:true];
 
   if (descriptionMaxWidth > 0) {
     if ([cellData isAnswer]) {
@@ -563,14 +565,16 @@ NSAttributedString* CreateClassifiedAttributedString(
                               withFrame:cellFrame
                                  origin:origin
                            withMaxWidth:separatorWidth
-                           forDarkTheme:isDarkTheme];
+                           forDarkTheme:isDarkTheme
+                          withHeightCap:true];
       }
     }
     [self drawMatchPart:[cellData description]
               withFrame:cellFrame
                  origin:origin
            withMaxWidth:descriptionMaxWidth
-           forDarkTheme:isDarkTheme];
+           forDarkTheme:isDarkTheme
+          withHeightCap:false];
   }
 }
 
@@ -578,13 +582,15 @@ NSAttributedString* CreateClassifiedAttributedString(
                withFrame:(NSRect)cellFrame
                   origin:(NSPoint)origin
             withMaxWidth:(int)maxWidth
-            forDarkTheme:(BOOL)isDarkTheme {
+            forDarkTheme:(BOOL)isDarkTheme
+           withHeightCap:(BOOL)hasHeightCap {
   NSRect renderRect = NSIntersectionRect(
       cellFrame, NSOffsetRect(cellFrame, origin.x, origin.y));
   renderRect.size.width =
       std::min(NSWidth(renderRect), static_cast<CGFloat>(maxWidth));
-  renderRect.size.height =
-      std::min(NSHeight(renderRect), [attributedString size].height);
+  if (hasHeightCap)
+    renderRect.size.height =
+        std::min(NSHeight(renderRect), [attributedString size].height);
   if (!NSIsEmptyRect(renderRect)) {
     [attributedString drawWithRect:FlipIfRTL(renderRect, cellFrame)
                            options:NSStringDrawingUsesLineFragmentOrigin |
