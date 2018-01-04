@@ -247,6 +247,19 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 #endif  // !defined(OS_MACOSX) || defined(USE_AURA)
 }
 
+// Tests that the hover state is preserved during a view hierarchy update of a
+// button's child View.
+TEST_F(ButtonTest, HoverStatePreservedOnDescendantViewHierarchyChange) {
+  ui::test::EventGenerator generator(widget()->GetNativeWindow());
+  generator.MoveMouseTo(button()->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+  Label* child = new Label(base::string16());
+  button()->AddChildView(child);
+  delete child;
+  EXPECT_EQ(Button::STATE_HOVERED, button()->state());
+}
+
 // Tests the different types of NotifyActions.
 TEST_F(ButtonTest, NotifyAction) {
   gfx::Point center(10, 10);
