@@ -7,11 +7,9 @@
 
 #include <stddef.h>
 
-#include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -21,6 +19,7 @@
 
 class OmniboxPopupModelObserver;
 class OmniboxPopupView;
+class GURL;
 
 namespace gfx {
 class Image;
@@ -147,11 +146,6 @@ class OmniboxPopupModel {
   void OnFaviconFetched(const GURL& page_url, const gfx::Image& icon);
 
   SkBitmap answer_bitmap_;
-
-  // We cache a very small number of favicons so we can synchronously deliver
-  // them to prevent flicker as the user types.
-  base::MRUCache<GURL, gfx::Image> favicons_cache_;
-  base::CancelableTaskTracker favicon_task_tracker_;
 
   OmniboxPopupView* view_;
 
