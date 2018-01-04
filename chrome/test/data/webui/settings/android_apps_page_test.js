@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 /** @type {?SettingsAndroidAppsPageElement} */
-var androidAppsPage = null;
+let androidAppsPage = null;
 
 /** @type {?TestAndroidAppsBrowserProxy} */
-var androidAppsBrowserProxy = null;
+let androidAppsBrowserProxy = null;
 
-var setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
-  var appsInfo = {
+const setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
+  const appsInfo = {
     playStoreEnabled: playStoreEnabled,
     settingsAppAvailable: settingsAppAvailable,
   };
@@ -43,7 +43,7 @@ suite('AndroidAppsPageTests', function() {
     });
 
     test('Enable', function() {
-      var button = androidAppsPage.$$('#enable');
+      const button = androidAppsPage.$$('#enable');
       assertTrue(!!button);
       assertFalse(!!androidAppsPage.$$('.subpage-arrow'));
 
@@ -57,7 +57,7 @@ suite('AndroidAppsPageTests', function() {
   });
 
   suite('SubPage', function() {
-    var subpage;
+    let subpage;
 
     function flushAsync() {
       Polymer.dom.flush();
@@ -108,10 +108,10 @@ suite('AndroidAppsPageTests', function() {
 
     test('ManageAppsOpenRequest', function() {
       setAndroidAppsState(true, true);
-      var button = subpage.$$('settings-android-settings-element').
+      const button = subpage.$$('settings-android-settings-element').
           $$('#manageApps');
       assertTrue(!!button);
-      var promise = androidAppsBrowserProxy.whenCalled(
+      const promise = androidAppsBrowserProxy.whenCalled(
           'showAndroidAppsSettings');
       // MockInteractions.tap does not work here due style is not updated.
       button.click();
@@ -120,11 +120,11 @@ suite('AndroidAppsPageTests', function() {
     });
 
     test('Disable', function() {
-      var dialog = subpage.$$('#confirmDisableDialog');
+      const dialog = subpage.$$('#confirmDisableDialog');
       assertTrue(!!dialog);
       assertFalse(dialog.open);
 
-      var remove = subpage.$$('#remove');
+      const remove = subpage.$$('#remove');
       assertTrue(!!remove);
 
       subpage.onRemoveTap_();
@@ -144,7 +144,7 @@ suite('AndroidAppsPageTests', function() {
   });
 
   suite('Enforced', function() {
-    var subpage;
+    let subpage;
 
     setup(function() {
       androidAppsPage.havePlayStoreApp = true;
@@ -186,10 +186,10 @@ suite('AndroidAppsPageTests', function() {
     });
 
     test('ManageAppsOpenRequest', function() {
-      var button = androidAppsPage.$$('settings-android-settings-element').
+      const button = androidAppsPage.$$('settings-android-settings-element').
           $$('#manageApps');
       assertTrue(!!button);
-      var promise = androidAppsBrowserProxy.whenCalled(
+      const promise = androidAppsBrowserProxy.whenCalled(
           'showAndroidAppsSettings');
       // MockInteractions.tap does not work here due style is not updated.
       button.click();

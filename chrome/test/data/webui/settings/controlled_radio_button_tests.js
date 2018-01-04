@@ -4,10 +4,10 @@
 
 suite('controlled radio button', function() {
   /** @type {ControlledRadioButtonElement} */
-  var radioButton;
+  let radioButton;
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  var pref = {
+  const pref = {
     key: 'test',
     type: chrome.settingsPrivate.PrefType.BOOLEAN,
     value: true

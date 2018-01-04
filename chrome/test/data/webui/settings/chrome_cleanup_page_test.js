@@ -72,20 +72,20 @@ class TestChromeCleanupProxy extends TestBrowserProxy {
   }
 }
 
-var chromeCleanupPage = null;
+let chromeCleanupPage = null;
 
 /** @type {?TestDownloadsBrowserProxy} */
-var chromeCleanupProxy = null;
+let chromeCleanupProxy = null;
 
-var shortFileList = ['file 1', 'file 2', 'file 3'];
-var exactSizeFileList = ['file 1', 'file 2', 'file 3', 'file 4'];
-var longFileList = ['file 1', 'file 2', 'file 3', 'file 4', 'file 5'];
-var shortRegistryKeysList = ['key 1', 'key 2'];
-var exactSizeRegistryKeysList = ['key 1', 'key 2', 'key 3', 'key 4'];
-var longRegistryKeysList =
+const shortFileList = ['file 1', 'file 2', 'file 3'];
+const exactSizeFileList = ['file 1', 'file 2', 'file 3', 'file 4'];
+const longFileList = ['file 1', 'file 2', 'file 3', 'file 4', 'file 5'];
+const shortRegistryKeysList = ['key 1', 'key 2'];
+const exactSizeRegistryKeysList = ['key 1', 'key 2', 'key 3', 'key 4'];
+const longRegistryKeysList =
     ['key 1', 'key 2', 'key 3', 'key 4', 'key 5', 'key 6'];
 
-var defaultScannerResults = {
+const defaultScannerResults = {
   'files': shortFileList,
   'registryKeys': shortRegistryKeysList,
 };
@@ -115,8 +115,8 @@ function initParametrizedTest(userInitiatedCleanupsEnabled) {
  */
 function validateVisibleItemsList(
     originalItems, visibleItems, listCanBeShortened) {
-  var visibleItemsList = visibleItems.querySelectorAll('.visible-item');
-  var moreItemsLInk = visibleItems.querySelector('#more-items-link');
+  let visibleItemsList = visibleItems.querySelectorAll('.visible-item');
+  const moreItemsLInk = visibleItems.querySelector('#more-items-link');
 
   if (!listCanBeShortened ||
       originalItems.length <= settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW) {
@@ -146,28 +146,28 @@ function validateVisibleItemsList(
  */
 function startCleanupFromInfected(
     userInitiatedCleanupsEnabled, files, registryKeys) {
-  var scannerResults = {'files': files, 'registryKeys': registryKeys};
+  const scannerResults = {'files': files, 'registryKeys': registryKeys};
 
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', false);
   cr.webUIListenerCallback('chrome-cleanup-on-infected', scannerResults);
   Polymer.dom.flush();
 
-  var showItemsButton = chromeCleanupPage.$$('#show-items-button');
+  const showItemsButton = chromeCleanupPage.$$('#show-items-button');
   assertTrue(!!showItemsButton);
   MockInteractions.tap(showItemsButton);
 
-  var filesToRemoveList =
+  const filesToRemoveList =
       chromeCleanupPage.$$('#files-to-remove-list').$$('#list');
   assertTrue(!!filesToRemoveList);
   validateVisibleItemsList(
       files, filesToRemoveList,
       userInitiatedCleanupsEnabled /* listCanBeShortened */);
 
-  var registryKeysListContainer = chromeCleanupPage.$$('#registry-keys-list');
+  const registryKeysListContainer = chromeCleanupPage.$$('#registry-keys-list');
   assertTrue(!!registryKeysListContainer);
   if (userInitiatedCleanupsEnabled && registryKeys.length > 0) {
     assertFalse(registryKeysListContainer.hidden);
-    var registryKeysList = registryKeysListContainer.$$('#list');
+    const registryKeysList = registryKeysListContainer.$$('#list');
     assertTrue(!!registryKeysList);
     validateVisibleItemsList(
         registryKeys, registryKeysList,
@@ -176,7 +176,7 @@ function startCleanupFromInfected(
     assertTrue(registryKeysListContainer.hidden);
   }
 
-  var actionButton = chromeCleanupPage.$$('#action-button');
+  const actionButton = chromeCleanupPage.$$('#action-button');
   assertTrue(!!actionButton);
   MockInteractions.tap(actionButton);
   return chromeCleanupProxy.whenCalled('startCleanup')
@@ -186,7 +186,7 @@ function startCleanupFromInfected(
             'chrome-cleanup-on-cleaning', defaultScannerResults);
         Polymer.dom.flush();
 
-        var spinner = chromeCleanupPage.$$('#waiting-spinner');
+        const spinner = chromeCleanupPage.$$('#waiting-spinner');
         assertTrue(spinner.active);
       });
 }
@@ -195,7 +195,7 @@ function rebootFromRebootRequired() {
   cr.webUIListenerCallback('chrome-cleanup-on-reboot-required');
   Polymer.dom.flush();
 
-  var actionButton = chromeCleanupPage.$$('#action-button');
+  const actionButton = chromeCleanupPage.$$('#action-button');
   assertTrue(!!actionButton);
   MockInteractions.tap(actionButton);
   return chromeCleanupProxy.whenCalled('restartComputer');
@@ -213,7 +213,7 @@ function cleanupFailure(userInitiatedCleanupsEnabled) {
       settings.ChromeCleanupIdleReason.CLEANING_FAILED);
   Polymer.dom.flush();
 
-  var actionButton = chromeCleanupPage.$$('#action-button');
+  const actionButton = chromeCleanupPage.$$('#action-button');
   if (userInitiatedCleanupsEnabled) {
     assertFalse(!!actionButton);
   } else {
@@ -234,7 +234,7 @@ function cleanupSuccess(userInitiatedCleanupsEnabled) {
       settings.ChromeCleanupIdleReason.CLEANING_SUCCEEDED);
   Polymer.dom.flush();
 
-  var actionButton = chromeCleanupPage.$$('#action-button');
+  const actionButton = chromeCleanupPage.$$('#action-button');
   if (userInitiatedCleanupsEnabled) {
     assertFalse(!!actionButton);
   } else {
@@ -258,7 +258,7 @@ function testLogsUploading(testingScanOffered) {
   }
   Polymer.dom.flush();
 
-  var logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
+  const logsControl = chromeCleanupPage.$$('#chromeCleanupLogsUploadControl');
   assertTrue(!!logsControl);
 
   cr.webUIListenerCallback('chrome-cleanup-upload-permission-change', true);
@@ -378,7 +378,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
     cr.webUIListenerCallback('chrome-cleanup-on-idle', idleReason);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
   }
 
@@ -434,7 +434,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.CLEANER_DOWNLOAD_FAILED);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
     return chromeCleanupProxy.whenCalled('startScanning');
@@ -447,7 +447,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.REPORTER_FOUND_NOTHING);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertFalse(!!actionButton);
   });
 
@@ -458,7 +458,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.REPORTER_FOUND_NOTHING);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertFalse(!!actionButton);
   });
 
@@ -468,7 +468,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         'chrome-cleanup-on-idle', settings.ChromeCleanupIdleReason.INITIAL);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertTrue(!!actionButton);
     MockInteractions.tap(actionButton);
     return chromeCleanupProxy.whenCalled('startScanning')
@@ -477,7 +477,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
           cr.webUIListenerCallback('chrome-cleanup-on-scanning', false);
           Polymer.dom.flush();
 
-          var spinner = chromeCleanupPage.$$('#waiting-spinner');
+          const spinner = chromeCleanupPage.$$('#waiting-spinner');
           assertTrue(spinner.active);
         });
   });
@@ -489,7 +489,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.SCANNING_FOUND_NOTHING);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertFalse(!!actionButton);
   });
 
@@ -500,7 +500,7 @@ suite('ChromeCleanupHandler_UserInitiatedCleanupsEnabled', function() {
         settings.ChromeCleanupIdleReason.SCANNING_FAILED);
     Polymer.dom.flush();
 
-    var actionButton = chromeCleanupPage.$$('#action-button');
+    const actionButton = chromeCleanupPage.$$('#action-button');
     assertFalse(!!actionButton);
   });
 

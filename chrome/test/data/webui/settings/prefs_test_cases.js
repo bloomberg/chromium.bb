@@ -10,7 +10,7 @@
  * for a given pref, not every "next" value is different from the previous
  * value; this tests what happens when stale changes are reported.
  */
-var prefsTestCases = [{
+const prefsTestCases = [{
   pref: {
     key: 'top_level_pref',
     type: chrome.settingsPrivate.PrefType.BOOLEAN,

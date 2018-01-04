@@ -8,7 +8,7 @@ suite('CategorySettingExceptions', function() {
    * A site settings exceptions created before each test.
    * @type {SiteSettingsExceptionsElement}
    */
-  var testElement;
+  let testElement;
 
   // Initialize a category-setting-exceptions before each test.
   setup(function() {

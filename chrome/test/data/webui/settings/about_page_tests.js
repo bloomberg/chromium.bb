@@ -6,7 +6,7 @@ cr.define('settings_about_page', function() {
   /** @implements {settings.AboutPageBrowserProxy} */
   class TestAboutPageBrowserProxy extends TestBrowserProxy {
     constructor() {
-      var methodNames = [
+      const methodNames = [
         'pageReady',
         'refreshUpdateStatus',
         'openHelpPage',
@@ -178,7 +178,7 @@ cr.define('settings_about_page', function() {
      * }} opt_options
      */
     function fireStatusChanged(status, opt_options) {
-      var options = opt_options || {};
+      const options = opt_options || {};
       cr.webUIListenerCallback('update-status-changed', {
         progress: options.progress === undefined ? 1 : options.progress,
         message: options.message,
@@ -187,15 +187,15 @@ cr.define('settings_about_page', function() {
     }
 
     suite('AboutPageTest', function() {
-      var page = null;
+      let page = null;
 
       /** @type {?settings.TestAboutPageBrowserProxy} */
-      var aboutBrowserProxy = null;
+      let aboutBrowserProxy = null;
 
       /** @type {?settings.TestLifetimeBrowserProxy} */
-      var lifetimeBrowserProxy = null;
+      let lifetimeBrowserProxy = null;
 
-      var SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
+      const SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
 
       setup(function() {
         lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
@@ -239,10 +239,10 @@ cr.define('settings_about_page', function() {
        * incoming 'update-status-changed' events.
        */
       test('IconAndMessageUpdates', function() {
-        var icon = page.$$('iron-icon');
+        const icon = page.$$('iron-icon');
         assertTrue(!!icon);
-        var statusMessageEl = page.$$('#updateStatusMessage div');
-        var previousMessageText = statusMessageEl.textContent;
+        const statusMessageEl = page.$$('#updateStatusMessage div');
+        let previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.CHECKING);
         assertEquals(SPINNER_ICON, icon.src);
@@ -285,10 +285,10 @@ cr.define('settings_about_page', function() {
       });
 
       test('ErrorMessageWithHtml', function() {
-        var htmlError = 'hello<br>there<br>was<pre>an</pre>error';
+        const htmlError = 'hello<br>there<br>was<pre>an</pre>error';
         fireStatusChanged(
             UpdateStatus.FAILED, {message: htmlError});
-        var statusMessageEl = page.$$('#updateStatusMessage div');
+        const statusMessageEl = page.$$('#updateStatusMessage div');
         assertEquals(htmlError, statusMessageEl.innerHTML);
       });
 
@@ -314,7 +314,7 @@ cr.define('settings_about_page', function() {
         });
 
         return initNewPage().then(function() {
-          var icon = page.$$('iron-icon');
+          const icon = page.$$('iron-icon');
           assertTrue(!!icon);
           assertTrue(!!page.$.updateStatusMessage);
           assertTrue(!!page.$.deprecationWarning);
@@ -354,7 +354,7 @@ cr.define('settings_about_page', function() {
           aboutObsoleteEndOfTheLine: true,
         });
         return initNewPage().then(function() {
-          var icon = page.$$('iron-icon');
+          const icon = page.$$('iron-icon');
           assertTrue(!!icon);
           assertTrue(!!page.$.deprecationWarning);
           assertTrue(!!page.$.updateStatusMessage);
@@ -383,14 +383,14 @@ cr.define('settings_about_page', function() {
       });
 
       test('Relaunch', function() {
-        var relaunch = page.$.relaunch;
+        let relaunch = page.$.relaunch;
         assertTrue(!!relaunch);
         assertTrue(relaunch.hidden);
 
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
         assertFalse(relaunch.hidden);
 
-        var relaunch = page.$.relaunch;
+        relaunch = page.$.relaunch;
         assertTrue(!!relaunch);
         MockInteractions.tap(relaunch);
         return lifetimeBrowserProxy.whenCalled('relaunch');
@@ -412,9 +412,9 @@ cr.define('settings_about_page', function() {
          * channel are the same.
          */
         test('ButtonsUpdate_SameChannel', function() {
-          var relaunch = page.$.relaunch;
-          var checkForUpdates = page.$.checkForUpdates;
-          var relaunchAndPowerwash = page.$.relaunchAndPowerwash;
+          const relaunch = page.$.relaunch;
+          const checkForUpdates = page.$.checkForUpdates;
+          const relaunchAndPowerwash = page.$.relaunchAndPowerwash;
 
           assertTrue(!!relaunch);
           assertTrue(!!relaunchAndPowerwash);
@@ -542,7 +542,7 @@ cr.define('settings_about_page', function() {
         });
 
         test('RegulatoryInfo', function() {
-          var regulatoryInfo = null;
+          let regulatoryInfo = null;
 
           /**
            * Checks the visibility of the "regulatory info" section.
@@ -553,12 +553,12 @@ cr.define('settings_about_page', function() {
           function checkRegulatoryInfo(isShowing) {
             return aboutBrowserProxy.whenCalled('getRegulatoryInfo').then(
                 function() {
-                  var regulatoryInfoEl = page.$.regulatoryInfo;
+                  const regulatoryInfoEl = page.$.regulatoryInfo;
                   assertTrue(!!regulatoryInfoEl);
                   assertEquals(isShowing, !regulatoryInfoEl.hidden);
 
                   if (isShowing) {
-                    var img = regulatoryInfoEl.querySelector('img');
+                    const img = regulatoryInfoEl.querySelector('img');
                     assertTrue(!!img);
                     assertEquals(regulatoryInfo.text, img.getAttribute('alt'));
                     assertEquals(regulatoryInfo.url, img.getAttribute('src'));
@@ -585,7 +585,7 @@ cr.define('settings_about_page', function() {
             assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
             MockInteractions.tap(page.$.aboutTPMFirmwareUpdate);
           }).then(function() {
-            var dialog = page.$$('settings-powerwash-dialog');
+            const dialog = page.$$('settings-powerwash-dialog');
             assertTrue(!!dialog);
             assertTrue(dialog.$.dialog.open);
             MockInteractions.tap(dialog.$$('#powerwash'));
@@ -603,7 +603,7 @@ cr.define('settings_about_page', function() {
          * 'update-status-changed' events.
          */
         test('ButtonsUpdate', function() {
-          var relaunch = page.$.relaunch;
+          const relaunch = page.$.relaunch;
           assertTrue(!!relaunch);
 
           fireStatusChanged(UpdateStatus.CHECKING);
@@ -639,8 +639,8 @@ cr.define('settings_about_page', function() {
 
   function registerOfficialBuildTests() {
     suite('AboutPageTest_OfficialBuild', function() {
-      var page = null;
-      var browserProxy = null;
+      let page = null;
+      let browserProxy = null;
 
       setup(function() {
         browserProxy = new TestAboutPageBrowserProxy();
@@ -661,7 +661,7 @@ cr.define('settings_about_page', function() {
          * A list of possible scenarios for the promoteUpdater.
          * @enum {!PromoteUpdaterStatus}
          */
-        var PromoStatusScenarios = {
+        const PromoStatusScenarios = {
           CANT_PROMOTE: {
             hidden: true,
             disabled: true,
@@ -695,8 +695,8 @@ cr.define('settings_about_page', function() {
          * Tests that the button's states are wired up to the status correctly.
          */
         test('PromoteUpdaterButtonCorrectStates', function() {
-          var item = page.$$('#promoteUpdater');
-          var arrow = page.$$('#promoteUpdater button');
+          let item = page.$$('#promoteUpdater');
+          let arrow = page.$$('#promoteUpdater button');
           assertFalse(!!item);
           assertFalse(!!arrow);
 
@@ -748,7 +748,7 @@ cr.define('settings_about_page', function() {
         test('PromoteUpdaterButtonWorksWhenEnabled', function() {
           firePromoteUpdaterStatusChanged(PromoStatusScenarios.CAN_PROMOTE);
           Polymer.dom.flush();
-          var item = page.$$('#promoteUpdater');
+          const item = page.$$('#promoteUpdater');
           assertTrue(!!item);
 
           MockInteractions.tap(item);
@@ -762,8 +762,8 @@ cr.define('settings_about_page', function() {
   if (cr.isChromeOS) {
     function registerDetailedBuildInfoTests() {
       suite('DetailedBuildInfoTest', function() {
-        var page = null;
-        var browserProxy = null;
+        let page = null;
+        let browserProxy = null;
 
         setup(function() {
           browserProxy = new TestAboutPageBrowserProxy();
@@ -777,7 +777,7 @@ cr.define('settings_about_page', function() {
         });
 
         test('Initialization', function() {
-          var versionInfo = {
+          const versionInfo = {
             arcVersion: 'dummyArcVersion',
             osFirmware: 'dummyOsFirmware',
             osVersion: 'dummyOsVersion',
@@ -811,7 +811,7 @@ cr.define('settings_about_page', function() {
           page = document.createElement('settings-detailed-build-info');
           document.body.appendChild(page);
           return browserProxy.whenCalled('getChannelInfo').then(function() {
-            var changeChannelButton = page.$$('paper-button');
+            const changeChannelButton = page.$$('paper-button');
             assertTrue(!!changeChannelButton);
             assertEquals(canChangeChannel, !changeChannelButton.disabled);
           });
@@ -829,10 +829,10 @@ cr.define('settings_about_page', function() {
 
     function registerChannelSwitcherDialogTests() {
       suite('ChannelSwitcherDialogTest', function() {
-        var dialog = null;
-        var radioButtons = null;
-        var browserProxy = null;
-        var currentChannel = BrowserChannel.BETA;
+        let dialog = null;
+        let radioButtons = null;
+        let browserProxy = null;
+        const currentChannel = BrowserChannel.BETA;
 
         setup(function() {
           browserProxy = new TestAboutPageBrowserProxy();
@@ -851,7 +851,7 @@ cr.define('settings_about_page', function() {
         teardown(function() { dialog.remove(); });
 
         test('Initialization', function() {
-          var radioGroup = dialog.$$('paper-radio-group');
+          const radioGroup = dialog.$$('paper-radio-group');
           assertTrue(!!radioGroup);
           assertTrue(!!dialog.$.warning);
           assertTrue(!!dialog.$.changeChannel);
@@ -880,7 +880,7 @@ cr.define('settings_about_page', function() {
             assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
             assertFalse(dialog.$.changeChannel.hidden);
 
-            var whenTargetChannelChangedFired = test_util.eventToPromise(
+            const whenTargetChannelChangedFired = test_util.eventToPromise(
                 'target-channel-changed', dialog);
 
             MockInteractions.tap(dialog.$.changeChannel);
@@ -907,7 +907,7 @@ cr.define('settings_about_page', function() {
             assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
             assertTrue(dialog.$.changeChannel.hidden);
 
-            var whenTargetChannelChangedFired = test_util.eventToPromise(
+            const whenTargetChannelChangedFired = test_util.eventToPromise(
                 'target-channel-changed', dialog);
 
             MockInteractions.tap(dialog.$.changeChannelAndPowerwash);

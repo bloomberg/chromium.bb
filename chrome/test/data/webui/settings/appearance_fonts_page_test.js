@@ -35,10 +35,10 @@ class TestFontsBrowserProxy extends TestBrowserProxy {
   }
 }
 
-var fontsPage = null;
+let fontsPage = null;
 
 /** @type {?TestFontsBrowserProxy} */
-var fontsBrowserProxy = null;
+let fontsBrowserProxy = null;
 
 suite('AppearanceFontHandler', function() {
   setup(function() {
@@ -60,7 +60,7 @@ suite('AppearanceFontHandler', function() {
   test('openAdvancedFontSettings', function() {
     cr.webUIListenerCallback('advanced-font-settings-installed', [true]);
     Polymer.dom.flush();
-    var button = fontsPage.$$('#advancedButton');
+    const button = fontsPage.$$('#advancedButton');
     assert(!!button);
     MockInteractions.tap(button);
     return fontsBrowserProxy.whenCalled('openAdvancedFontSettings');

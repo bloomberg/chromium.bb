@@ -9,7 +9,7 @@ cr.define('settings_toggle_button', () => {
      * Toggle button created before each test.
      * @type {SettingsCheckbox}
      */
-    var testElement;
+    let testElement;
 
     // Initialize a checked control before each test.
     setup(() => {
@@ -19,7 +19,7 @@ cr.define('settings_toggle_button', () => {
        * dependencies between tests.
        * @type {chrome.settingsPrivate.PrefObject}
        */
-      var pref = {
+      const pref = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: true
@@ -115,7 +115,7 @@ cr.define('settings_toggle_button', () => {
     });
 
     test('numerical pref', () => {
-      var prefNum = {
+      const prefNum = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 1
@@ -134,7 +134,7 @@ cr.define('settings_toggle_button', () => {
     });
 
     test('numerical pref with custom values', () => {
-      var prefNum = {
+      const prefNum = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 5
@@ -155,7 +155,7 @@ cr.define('settings_toggle_button', () => {
     });
 
     test('numerical pref with unknown initial value', () => {
-      var prefNum = {
+      const prefNum = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 3
@@ -185,7 +185,7 @@ cr.define('settings_toggle_button', () => {
     test('shows controlled indicator when pref is controlled', () => {
       assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
 
-      var pref = {
+      const pref = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 3,
@@ -203,7 +203,7 @@ cr.define('settings_toggle_button', () => {
       assertFalse(!!testElement.$$('cr-policy-pref-indicator'));
 
       testElement.noExtensionIndicator = true;
-      var pref = {
+      const pref = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 3,

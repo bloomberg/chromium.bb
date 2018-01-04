@@ -23,8 +23,8 @@ SettingsUIBrowserTest.prototype = {
 
 TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
   suite('settings-ui', function() {
-    var toolbar;
-    var ui;
+    let toolbar;
+    let ui;
 
     suiteSetup(function() {
       ui = assert(document.querySelector('settings-ui'));
@@ -43,7 +43,7 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
 
     test('app drawer', function(done) {
       assertEquals(null, ui.$$('settings-menu'));
-      var drawer = ui.$.drawer;
+      const drawer = ui.$.drawer;
       assertFalse(!!drawer.open);
 
       drawer.openDrawer();
@@ -58,7 +58,7 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
         if (drawer.classList.contains('opening')) {
           // Click away from the drawer. MockInteractions don't expose a way to
           // click at a specific location.
-          var midScreen = MockInteractions.middleOfNode(ui);
+          const midScreen = MockInteractions.middleOfNode(ui);
           drawer.dispatchEvent(new MouseEvent('click', {
             'bubbles': true,
             'cancelable': true,
@@ -78,7 +78,7 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
     });
 
     test('advanced UIs stay in sync', function() {
-      var main = ui.$$('settings-main');
+      const main = ui.$$('settings-main');
       assertTrue(!!main);
 
       assertFalse(!!ui.$$('settings-menu'));
@@ -95,7 +95,7 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
       ui.$.drawerTemplate.if = true;
       Polymer.dom.flush();
 
-      var menu = ui.$$('settings-menu');
+      const menu = ui.$$('settings-menu');
       assertTrue(!!menu);
       assertTrue(menu.advancedOpened);
 
@@ -110,18 +110,18 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
 
     test('URL initiated search propagates to search box', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
           toolbar.getSearchField());
       assertEquals('', searchField.getSearchInput().value);
 
-      var query = 'foo';
+      const query = 'foo';
       settings.navigateTo(
           settings.routes.BASIC, new URLSearchParams(`search=${query}`));
       assertEquals(query, searchField.getSearchInput().value);
     });
 
     test('search box initiated search propagates to URL', function() {
-      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
           toolbar.getSearchField());
 
       settings.navigateTo(
@@ -130,7 +130,7 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
       assertEquals('', searchField.getSearchInput().value);
       assertFalse(settings.getQueryParameters().has('search'));
 
-      var value = 'GOOG';
+      let value = 'GOOG';
       searchField.setValue(value);
       assertEquals(value, settings.getQueryParameters().get('search'));
 
@@ -142,10 +142,10 @@ TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
 
      test('whitespace only search query is ignored', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
-      var searchField = /** @type {CrToolbarSearchFieldElement} */ (
+      const searchField = /** @type {CrToolbarSearchFieldElement} */ (
           toolbar.getSearchField());
       searchField.setValue('    ');
-      var urlParams = settings.getQueryParameters();
+      let urlParams = settings.getQueryParameters();
       assertFalse(urlParams.has('search'));
 
       searchField.setValue('   foo');

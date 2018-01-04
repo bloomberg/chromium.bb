@@ -9,12 +9,12 @@ cr.define('settings_subpage', function() {
     });
 
     test('clear search', function() {
-      var subpage = document.createElement('settings-subpage');
+      const subpage = document.createElement('settings-subpage');
       // Having a searchLabel will create the settings-subpage-search.
       subpage.searchLabel = 'test';
       document.body.appendChild(subpage);
       Polymer.dom.flush();
-      var search = subpage.$$('settings-subpage-search');
+      const search = subpage.$$('settings-subpage-search');
       assertTrue(!!search);
       search.setValue('Hello');
       subpage.fire('clear-subpage-search');
@@ -29,7 +29,7 @@ cr.define('settings_subpage', function() {
       settings.initializeRouteFromUrl();
       assertEquals(settings.routes.CERTIFICATES, settings.getCurrentRoute());
 
-      var subpage = document.createElement('settings-subpage');
+      const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
       MockInteractions.tap(subpage.$$('button'));
@@ -41,7 +41,7 @@ cr.define('settings_subpage', function() {
       settings.navigateTo(settings.routes.SYNC);
       assertEquals(settings.routes.SYNC, settings.getCurrentRoute());
 
-      var subpage = document.createElement('settings-subpage');
+      const subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
       MockInteractions.tap(subpage.$$('button'));
@@ -56,7 +56,7 @@ cr.define('settings_subpage', function() {
   suite('SettingsSubpageSearch', function() {
     test('host autofocus propagates to <input>', function() {
       PolymerTest.clearBody();
-      var element = document.createElement('settings-subpage-search');
+      const element = document.createElement('settings-subpage-search');
       element.setAttribute('autofocus', true);
       document.body.appendChild(element);
 

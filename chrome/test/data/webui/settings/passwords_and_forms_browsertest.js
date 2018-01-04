@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Passwords and Forms tests. */
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
@@ -48,15 +48,15 @@ PasswordsAndFormsBrowserTest.prototype = {
 
 /** This test will validate that the section is loaded with data. */
 TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
-  var passwordManager;
-  var autofillManager;
+  let passwordManager;
+  let autofillManager;
 
   /**
    * Creates a new passwords and forms element.
    * @return {!Object}
    */
   function createPasswordsAndFormsElement(prefsElement) {
-    var element = document.createElement('settings-passwords-and-forms-page');
+    const element = document.createElement('settings-passwords-and-forms-page');
     element.prefs = prefsElement.prefs;
     document.body.appendChild(element);
     element.$$('template[route-path="/passwords"]').if = true;
@@ -73,7 +73,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
   function createPrefs(autofill, passwords) {
     return new Promise(function(resolve) {
       CrSettingsPrefs.deferInitialization = true;
-      var prefs = document.createElement('settings-prefs');
+      const prefs = document.createElement('settings-prefs');
       prefs.initialize(new settings.FakeSettingsPrivate([
         {
           key: 'autofill.enabled',
@@ -119,7 +119,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
    * @return {!PasswordManagerExpectations}
    */
   function basePasswordExpectations() {
-    var expected = new PasswordManagerExpectations();
+    const expected = new PasswordManagerExpectations();
     expected.requested.passwords = 1;
     expected.requested.exceptions = 1;
     expected.listening.passwords = 1;
@@ -133,7 +133,7 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
    * @return {!AutofillManagerExpectations}
    */
   function baseAutofillExpectations() {
-    var expected = new AutofillManagerExpectations();
+    const expected = new AutofillManagerExpectations();
     expected.requested.addresses = 1;
     expected.requested.creditCards = 1;
     expected.listening.addresses = 1;
@@ -156,12 +156,12 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
   suite('PasswordsAndForms', function() {
     test('baseLoadAndRemove', function() {
       return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
+        const element = createPasswordsAndFormsElement(prefs);
 
-        var passwordsExpectations = basePasswordExpectations();
+        const passwordsExpectations = basePasswordExpectations();
         passwordManager.assertExpectations(passwordsExpectations);
 
-        var autofillExpectations = baseAutofillExpectations();
+        const autofillExpectations = baseAutofillExpectations();
         autofillManager.assertExpectations(autofillExpectations);
 
         element.remove();
@@ -181,9 +181,9 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadPasswordsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
+        const element = createPasswordsAndFormsElement(prefs);
 
-        var list = [
+        const list = [
           FakeDataMaker.passwordEntry(),
           FakeDataMaker.passwordEntry()
         ];
@@ -207,9 +207,9 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadExceptionsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
+        const element = createPasswordsAndFormsElement(prefs);
 
-        var list = [FakeDataMaker.exceptionEntry(),
+        const list = [FakeDataMaker.exceptionEntry(),
         FakeDataMaker.exceptionEntry()];
         passwordManager.lastCallback.addExceptionListChangedListener(list);
         Polymer.dom.flush();
@@ -227,9 +227,10 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadAddressesAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
+        const element = createPasswordsAndFormsElement(prefs);
 
-        var list = [FakeDataMaker.addressEntry(), FakeDataMaker.addressEntry()];
+        const list = [
+            FakeDataMaker.addressEntry(), FakeDataMaker.addressEntry()];
         autofillManager.lastCallback.addAddressListChangedListener(list);
         Polymer.dom.flush();
 
@@ -246,9 +247,9 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
 
     test('loadCreditCardsAsync', function() {
       return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
+        const element = createPasswordsAndFormsElement(prefs);
 
-        var list = [FakeDataMaker.creditCardEntry(),
+        const list = [FakeDataMaker.creditCardEntry(),
         FakeDataMaker.creditCardEntry()];
         autofillManager.lastCallback.addCreditCardListChangedListener(list);
         Polymer.dom.flush();

@@ -23,7 +23,7 @@ cr.define('settings_people_page_change_picture', function() {
                                'fake-profile-image-url',
                                false /* selected */);
 
-      var fakeDefaultImages = [
+      const fakeDefaultImages = [
         {
           author: 'Author_Old',
           index: 1,
@@ -94,10 +94,10 @@ cr.define('settings_people_page_change_picture', function() {
   }
 
   suite('ChangePictureTests', function() {
-    var changePicture = null;
-    var browserProxy = null;
-    var crPicturePane = null;
-    var crPictureList = null;
+    let changePicture = null;
+    let browserProxy = null;
+    let crPicturePane = null;
+    let crPictureList = null;
 
     suiteSetup(function() {
       loadTimeData.overrideValues({
@@ -135,7 +135,7 @@ cr.define('settings_people_page_change_picture', function() {
       return new Promise(function(resolve) {
         changePicture.async(resolve);
       }).then(function() {
-        var camera = crPicturePane.$$('#camera');
+        const camera = crPicturePane.$$('#camera');
         expectFalse(crPicturePane.cameraPresent);
         expectFalse(crPicturePane.cameraActive_);
         expectFalse(!!camera && camera.hidden);
@@ -146,24 +146,24 @@ cr.define('settings_people_page_change_picture', function() {
           changePicture.async(resolve);
         });
       }).then(function() {
-        var camera = crPicturePane.$$('#camera');
+        const camera = crPicturePane.$$('#camera');
         expectTrue(crPicturePane.cameraPresent);
         expectFalse(crPicturePane.cameraActive_);
         expectFalse(!!camera && camera.hidden);
 
-        var cameraImage = crPictureList.$.cameraImage;
+        const cameraImage = crPictureList.$.cameraImage;
         MockInteractions.tap(cameraImage);
         Polymer.dom.flush();
         return new Promise(function(resolve) {
           changePicture.async(resolve);
         });
       }).then(function() {
-        var camera = crPicturePane.$$('#camera');
+        const camera = crPicturePane.$$('#camera');
         expectTrue(crPicturePane.cameraActive_);
         assertTrue(!!camera && !camera.hidden);
         expectEquals(CrPicture.SelectionTypes.CAMERA,
                      changePicture.selectedItem_.dataset.type);
-        var discard = crPicturePane.$$('#discard');
+        const discard = crPicturePane.$$('#discard');
         expectTrue(!discard || discard.hidden);
 
         // Ensure that the camera is deactivated if user navigates away.
@@ -177,7 +177,7 @@ cr.define('settings_people_page_change_picture', function() {
     });
 
     test('ChangePictureProfileImage', function() {
-      var profileImage = crPictureList.$.profileImage;
+      const profileImage = crPictureList.$.profileImage;
       assertTrue(!!profileImage);
 
       expectEquals(null, changePicture.selectedItem_);
@@ -189,7 +189,7 @@ cr.define('settings_people_page_change_picture', function() {
         expectEquals(CrPicture.SelectionTypes.PROFILE,
                      changePicture.selectedItem_.dataset.type);
         expectFalse(crPicturePane.cameraActive_);
-        var discard = crPicturePane.$$('#discard');
+        const discard = crPicturePane.$$('#discard');
         expectTrue(!discard || discard.hidden);
 
         // Ensure that the selection is restored after navigating away and
@@ -204,7 +204,7 @@ cr.define('settings_people_page_change_picture', function() {
       assertFalse(!!changePicture.selectedItem_);
 
       // By default there is no old image and the element is hidden.
-      var oldImage = crPictureList.$.oldImage;
+      const oldImage = crPictureList.$.oldImage;
       assertTrue(!!oldImage);
       assertTrue(oldImage.hidden);
 
@@ -224,11 +224,11 @@ cr.define('settings_people_page_change_picture', function() {
                      changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
         expectFalse(crPicturePane.cameraActive_);
-        var discard = crPicturePane.$$('#discard');
+        const discard = crPicturePane.$$('#discard');
         assertTrue(!!discard);
         expectFalse(discard.hidden);
         // Ensure the old image shows the author credit.
-        var credit = changePicture.$$('#authorCredit');
+        const credit = changePicture.$$('#authorCredit');
         assertTrue(!!credit);
         expectFalse(credit.hidden);
       });
@@ -238,7 +238,7 @@ cr.define('settings_people_page_change_picture', function() {
       assertFalse(!!changePicture.selectedItem_);
 
       // By default there is no old image and the element is hidden.
-      var oldImage = crPictureList.$.oldImage;
+      const oldImage = crPictureList.$.oldImage;
       assertTrue(!!oldImage);
       assertTrue(oldImage.hidden);
 
@@ -258,17 +258,17 @@ cr.define('settings_people_page_change_picture', function() {
                      changePicture.selectedItem_.dataset.type);
         expectFalse(oldImage.hidden);
         expectFalse(crPicturePane.cameraActive_);
-        var discard = crPicturePane.$$('#discard');
+        const discard = crPicturePane.$$('#discard');
         assertTrue(!!discard);
         expectFalse(discard.hidden);
         // Ensure the file image does not show the author credit.
-        var credit = changePicture.$$('#authorCredit');
+        const credit = changePicture.$$('#authorCredit');
         assertTrue(!credit || credit.hidden);
       });
     });
 
     test('ChangePictureSelectFirstDefaultImage', function() {
-      var firstDefaultImage = crPictureList.$$('img[data-type="default"]');
+      const firstDefaultImage = crPictureList.$$('img[data-type="default"]');
       assertTrue(!!firstDefaultImage);
 
       MockInteractions.tap(firstDefaultImage);
@@ -282,7 +282,7 @@ cr.define('settings_people_page_change_picture', function() {
                          changePicture.selectedItem_.dataset.type);
             expectEquals(firstDefaultImage, changePicture.selectedItem_);
             expectFalse(crPicturePane.cameraActive_);
-            var discard = crPicturePane.$$('#discard');
+            const discard = crPicturePane.$$('#discard');
             expectTrue(!discard || discard.hidden);
 
             // Now verify that arrow keys actually select the new image.
@@ -296,7 +296,7 @@ cr.define('settings_people_page_change_picture', function() {
     });
 
     test('ChangePictureRestoreImageAfterDiscard', function() {
-      var firstDefaultImage = crPictureList.$$('img[data-type="default"]');
+      const firstDefaultImage = crPictureList.$$('img[data-type="default"]');
       assertTrue(!!firstDefaultImage);
 
       MockInteractions.tap(firstDefaultImage);
@@ -314,12 +314,12 @@ cr.define('settings_people_page_change_picture', function() {
         expectEquals(CrPicture.SelectionTypes.OLD,
                      changePicture.selectedItem_.dataset.type);
 
-        var discardButton = crPicturePane.$$('#discard button');
+        const discardButton = crPicturePane.$$('#discard button');
         assertTrue(!!discardButton);
         MockInteractions.tap(discardButton);
 
         Polymer.dom.flush();
-        var profileImage = crPictureList.$.profileImage;
+        const profileImage = crPictureList.$.profileImage;
         assertTrue(!!profileImage);
         expectEquals(profileImage, changePicture.selectedItem_);
       });

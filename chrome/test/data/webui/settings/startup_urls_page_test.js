@@ -60,9 +60,9 @@ cr.define('settings_startup_urls_page', function() {
 
   suite('StartupUrlDialog', function() {
     /** @type {?SettingsStartupUrlDialogElement} */
-    var dialog = null;
+    let dialog = null;
 
-    var browserProxy = null;
+    let browserProxy = null;
 
     /**
      * Triggers an 'input' event on the given text input field, which triggers
@@ -88,12 +88,12 @@ cr.define('settings_startup_urls_page', function() {
       assertTrue(dialog.$.dialog.open);
 
       // Assert that the "Add" button is disabled.
-      var actionButton = dialog.$.actionButton;
+      const actionButton = dialog.$.actionButton;
       assertTrue(!!actionButton);
       assertTrue(actionButton.disabled);
 
       // Assert that the text field is empty.
-      var inputElement = dialog.$.url;
+      const inputElement = dialog.$.url;
       assertTrue(!!inputElement);
       assertEquals('', inputElement.value);
     });
@@ -104,11 +104,11 @@ cr.define('settings_startup_urls_page', function() {
       assertTrue(dialog.$.dialog.open);
 
       // Assert that the "Edit" button is enabled.
-      var actionButton = dialog.$.actionButton;
+      const actionButton = dialog.$.actionButton;
       assertTrue(!!actionButton);
       assertFalse(actionButton.disabled);
       // Assert that the text field is pre-populated.
-      var inputElement = dialog.$.url;
+      const inputElement = dialog.$.url;
       assertTrue(!!inputElement);
       assertEquals(dialog.model.url, inputElement.value);
     });
@@ -118,11 +118,11 @@ cr.define('settings_startup_urls_page', function() {
     test('Validation', function() {
       document.body.appendChild(dialog);
 
-      var actionButton = dialog.$.actionButton;
+      const actionButton = dialog.$.actionButton;
       assertTrue(actionButton.disabled);
-      var inputElement = dialog.$.url;
+      const inputElement = dialog.$.url;
 
-      var expectedUrl = "dummy-foo.com";
+      const expectedUrl = "dummy-foo.com";
       inputElement.value = expectedUrl;
       browserProxy.setUrlValidity(false);
       pressSpace(inputElement);
@@ -147,7 +147,7 @@ cr.define('settings_startup_urls_page', function() {
      * @param {string} proxyMethodName
      */
     function testProxyCalled(proxyMethodName) {
-      var actionButton = dialog.$.actionButton;
+      const actionButton = dialog.$.actionButton;
       actionButton.disabled = false;
 
       // Test that the dialog remains open if the user somehow manages to submit
@@ -182,7 +182,7 @@ cr.define('settings_startup_urls_page', function() {
       document.body.appendChild(dialog);
 
       // Input a URL and force validation.
-      var inputElement = dialog.$.url;
+      const inputElement = dialog.$.url;
       inputElement.value = 'foo.com';
       pressSpace(inputElement);
 
@@ -197,9 +197,9 @@ cr.define('settings_startup_urls_page', function() {
 
   suite('StartupUrlsPage', function() {
     /** @type {?SettingsStartupUrlsPageElement} */
-    var page = null;
+    let page = null;
 
-    var browserProxy = null;
+    let browserProxy = null;
 
     setup(function() {
       browserProxy = new TestStartupUrlsPageBrowserProxy();
@@ -226,14 +226,14 @@ cr.define('settings_startup_urls_page', function() {
     });
 
     test('UseCurrentPages', function() {
-      var useCurrentPagesButton = page.$$('#useCurrentPages > a');
+      const useCurrentPagesButton = page.$$('#useCurrentPages > a');
       assertTrue(!!useCurrentPagesButton);
       MockInteractions.tap(useCurrentPagesButton);
       return browserProxy.whenCalled('useCurrentPages');
     });
 
     test('AddPage_OpensDialog', function() {
-      var addPageButton = page.$$('#addPage > a');
+      const addPageButton = page.$$('#addPage > a');
       assertTrue(!!addPageButton);
       assertFalse(!!page.$$('settings-startup-url-dialog'));
 
@@ -252,14 +252,14 @@ cr.define('settings_startup_urls_page', function() {
     });
 
     test('StartupPagesChanges_CloseOpenEditDialog', function() {
-      var entry1 = {
+      const entry1 = {
         modelIndex: 2,
         title: 'Test page 1',
         tooltip: 'test tooltip',
         url: 'chrome://bar',
       };
 
-      var entry2 = {
+      const entry2 = {
         modelIndex: 2,
         title: 'Test page 2',
         tooltip: 'test tooltip',
@@ -312,9 +312,9 @@ cr.define('settings_startup_urls_page', function() {
 
   suite('StartupUrlEntry', function() {
     /** @type {?SettingsStartupUrlEntryElement} */
-    var element = null;
+    let element = null;
 
-    var browserProxy = null;
+    let browserProxy = null;
 
     setup(function() {
       browserProxy = new TestStartupUrlsPageBrowserProxy();
@@ -338,7 +338,7 @@ cr.define('settings_startup_urls_page', function() {
       Polymer.dom.flush();
       assertTrue(!!element.$$('dialog[is=cr-action-menu]'));
 
-      var removeButton = element.shadowRoot.querySelector('#remove');
+      const removeButton = element.shadowRoot.querySelector('#remove');
       MockInteractions.tap(removeButton);
       return browserProxy.whenCalled('removeStartupPage').then(
           function(modelIndex) {

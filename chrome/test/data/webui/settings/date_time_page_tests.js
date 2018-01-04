@@ -56,7 +56,7 @@
   }
 
   function updatePrefsWithPolicy(prefs, managed, valueFromPolicy) {
-    var prefsCopy = JSON.parse(JSON.stringify(prefs));
+    const prefsCopy = JSON.parse(JSON.stringify(prefs));
     if (managed) {
       prefsCopy.settings.resolve_timezone_by_geolocation_method.controlledBy =
           chrome.settingsPrivate.ControlledBy.USER_POLICY;
@@ -103,11 +103,11 @@
    */
   function initializeDateTime(prefs, hasPolicy, opt_autoDetectPolicyValue) {
     // Find the desired initial time zone by ID.
-    var timeZone = assert(fakeTimeZones.find(function(timeZonePair) {
+    const timeZone = assert(fakeTimeZones.find(function(timeZonePair) {
       return timeZonePair[0] == prefs.cros.system.timezone.value;
     }));
 
-    var data = {
+    const data = {
       timeZoneID: timeZone[0],
       timeZoneName: timeZone[1],
       controlledSettingPolicy: 'This setting is enforced by your administrator',
@@ -133,7 +133,7 @@
     window.loadTimeData = new LoadTimeData;
     loadTimeData.data = data;
 
-    var dateTime = document.createElement('settings-date-time-page');
+    const dateTime = document.createElement('settings-date-time-page');
     dateTime.prefs =
         updatePrefsWithPolicy(prefs, hasPolicy, opt_autoDetectPolicyValue);
     CrSettingsPrefs.setInitialized();
@@ -146,7 +146,7 @@
   }
 
   // CrOS sends time zones as [id, friendly name] pairs.
-  var fakeTimeZones = [
+  const fakeTimeZones = [
     ['Westeros/Highgarden', '(KNG-2:00) The Reach Time (Highgarden)'],
     ['Westeros/Winterfell', '(KNG-1:00) The North Time (Winterfell)'],
     ['Westeros/Kings_Landing',
@@ -159,11 +159,11 @@
   ];
 
   suite('settings-date-time-page', function() {
-    var dateTime;
+    let dateTime;
 
     // Track whether handler functions have been called.
-    var dateTimePageReadyCalled;
-    var getTimeZonesCalled;
+    let dateTimePageReadyCalled;
+    let getTimeZonesCalled;
 
     setup(function() {
       PolymerTest.clearBody();
@@ -192,7 +192,7 @@
     });
 
     function popuateSubpage() {
-      var timeZoneSettingsSubmenuButton =
+      const timeZoneSettingsSubmenuButton =
           dateTime.$$('#timeZoneSettingsTrigger');
       MockInteractions.tap(timeZoneSettingsSubmenuButton);
       Polymer.dom.flush();
@@ -203,18 +203,18 @@
     }
 
     function verifyAutoDetectSetting(autoDetect, managed) {
-      var selector = getTimeZoneSelector('#userTimeZoneSelector');
-      var selectorHidden = selector ? selector.hidden : true;
+      const selector = getTimeZoneSelector('#userTimeZoneSelector');
+      const selectorHidden = selector ? selector.hidden : true;
       assertEquals(managed || autoDetect, selectorHidden);
 
-      var checkButton = dateTime.$$('#timeZoneAutoDetect');
-      var checkButtonChecked = checkButton ? checkButton.checked : false;
+      const checkButton = dateTime.$$('#timeZoneAutoDetect');
+      const checkButtonChecked = checkButton ? checkButton.checked : false;
       if (!managed)
         assertEquals(autoDetect, checkButtonChecked);
     }
 
     function verifyPolicy(policy) {
-      var indicator = dateTime.$$('cr-policy-indicator');
+      let indicator = dateTime.$$('cr-policy-indicator');
       if (indicator && indicator.style.display == 'none')
         indicator = null;
 
@@ -231,11 +231,11 @@
     }
 
     function verifyTimeZonesPopulated(populated) {
-      var userTimezoneDropdown = getTimeZoneSelector('#userTimeZoneSelector');
-      var systemTimezoneDropdown =
+      const userTimezoneDropdown = getTimeZoneSelector('#userTimeZoneSelector');
+      const systemTimezoneDropdown =
           getTimeZoneSelector('#systemTimezoneSelector');
 
-      var dropdown =
+      const dropdown =
           userTimezoneDropdown ? userTimezoneDropdown : systemTimezoneDropdown;
       if (populated)
         assertEquals(fakeTimeZones.length, dropdown.menuOptions.length);
@@ -251,7 +251,7 @@
     }
 
     test('auto-detect on', function(done) {
-      var prefs = getFakePrefs();
+      const prefs = getFakePrefs();
       dateTime = initializeDateTime(prefs, false);
 
       assertTrue(dateTimePageReadyCalled);
@@ -302,7 +302,7 @@
     });
 
     test('auto-detect forced on', function(done) {
-      var prefs = getFakePrefs();
+      const prefs = getFakePrefs();
       dateTime = initializeDateTime(prefs, true, true);
       setTimeout(function() {
         dateTime.set(
@@ -340,7 +340,7 @@
     });
 
     test('auto-detect forced off', function(done) {
-      var prefs = getFakePrefs();
+      const prefs = getFakePrefs();
       dateTime = initializeDateTime(prefs, true, false);
 
       setTimeout(function() {
@@ -370,14 +370,14 @@
     test('set date and time button', function() {
       dateTime = initializeDateTime(getFakePrefs(), false);
 
-      var showSetDateTimeUICalled = false;
+      let showSetDateTimeUICalled = false;
       registerMessageCallback('showSetDateTimeUI', null, function() {
         assertFalse(showSetDateTimeUICalled);
         showSetDateTimeUICalled = true;
       });
 
       setTimeout(function() {
-        var setDateTimeButton = dateTime.$$('#setDateTime');
+        const setDateTimeButton = dateTime.$$('#setDateTime');
         assertEquals(0, setDateTimeButton.offsetHeight);
 
         // Make the date and time editable.

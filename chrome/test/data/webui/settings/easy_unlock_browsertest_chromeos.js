@@ -86,10 +86,10 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
   }
 
   /** @type {?SettingsLockScreenElement} */
-  var lockScreen = null;
+  let lockScreen = null;
 
   /** @type {?TestEasyUnlockBrowserProxy} */
-  var browserProxy = null;
+  let browserProxy = null;
 
   suite('SettingsEasyUnlock', function() {
     suiteSetup(function() {
@@ -129,7 +129,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
 
         Polymer.dom.flush();
 
-        var setupButton = lockScreen.$$('#easyUnlockSetup');
+        const setupButton = lockScreen.$$('#easyUnlockSetup');
         assertTrue(!!setupButton);
         expectFalse(setupButton.hidden);
 
@@ -142,7 +142,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
       browserProxy.setEnabledStatus(true);
       document.body.appendChild(lockScreen);
 
-      var turnOffDialog = null;
+      let turnOffDialog = null;
 
       return browserProxy.whenCalled('getEnabledStatus')
           .then(function() {
@@ -151,7 +151,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
 
             Polymer.dom.flush();
 
-            var turnOffButton = lockScreen.$$('#easyUnlockTurnOff');
+            const turnOffButton = lockScreen.$$('#easyUnlockTurnOff');
             assertTrue(!!turnOffButton);
             expectFalse(turnOffButton.hidden);
 
@@ -166,12 +166,13 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
 
             // Verify that elements on the turn off dialog are hidden or active
             // according to the easy unlock turn off status.
-            var turnOffDialogButtonContainer =
+            const turnOffDialogButtonContainer =
                 turnOffDialog.$$('[slot=button-container]');
-            var turnOffDialogButtonSpinner =
+            const turnOffDialogButtonSpinner =
                 turnOffDialog.$$('paper-spinner-lite');
-            var turnOffDialogConfirmButton = turnOffDialog.$$('#turnOff');
-            var turnOffDialogCancelButton = turnOffDialog.$$('.cancel-button');
+            const turnOffDialogConfirmButton = turnOffDialog.$$('#turnOff');
+            const turnOffDialogCancelButton =
+                turnOffDialog.$$('.cancel-button');
             assertTrue(!!turnOffDialogButtonContainer);
             assertTrue(!!turnOffDialogButtonSpinner);
             assertTrue(!!turnOffDialogConfirmButton);

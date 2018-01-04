@@ -12,7 +12,7 @@ cr.define('settings', function() {
    */
   function FakeQuickUnlockUma() {
     this.histogram = {};
-    for (var key in LockScreenProgress)
+    for (const key in LockScreenProgress)
       this.histogram[LockScreenProgress[key]] = 0;
   }
 

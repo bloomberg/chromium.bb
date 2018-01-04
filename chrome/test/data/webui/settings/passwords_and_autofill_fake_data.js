@@ -68,7 +68,7 @@ FakeDataMaker.emptyAddressEntry = function() {
  * @return {!chrome.autofillPrivate.AddressEntry}
  */
 FakeDataMaker.addressEntry = function() {
-  var ret = {};
+  const ret = {};
   ret.guid = FakeDataMaker.makeGuid_();
   ret.fullNames = ['John Doe'];
   ret.companyName = 'Google';
@@ -91,9 +91,9 @@ FakeDataMaker.addressEntry = function() {
  * @return {!chrome.autofillPrivate.CreditCardEntry}
  */
 FakeDataMaker.emptyCreditCardEntry = function() {
-  var now = new Date();
-  var expirationMonth = now.getMonth() + 1;
-  var ret = {};
+  const now = new Date();
+  const expirationMonth = now.getMonth() + 1;
+  const ret = {};
   ret.expirationMonth = expirationMonth.toString();
   ret.expirationYear = now.getFullYear().toString();
   return ret;
@@ -104,15 +104,15 @@ FakeDataMaker.emptyCreditCardEntry = function() {
  * @return {!chrome.autofillPrivate.CreditCardEntry}
  */
 FakeDataMaker.creditCardEntry = function() {
-  var ret = {};
+  const ret = {};
   ret.guid = FakeDataMaker.makeGuid_();
   ret.name = 'Jane Doe';
   ret.cardNumber = FakeDataMaker.patternMaker_('xxxx xxxx xxxx xxxx', 10);
   ret.expirationMonth = Math.ceil(Math.random() * 11).toString();
   ret.expirationYear = (2016 + Math.floor(Math.random() * 5)).toString();
   ret.metadata = {isLocal: true};
-  var cards = ['Visa', 'Mastercard', 'Discover', 'Card'];
-  var card = cards[Math.floor(Math.random() * cards.length)];
+  const cards = ['Visa', 'Mastercard', 'Discover', 'Card'];
+  const card = cards[Math.floor(Math.random() * cards.length)];
   ret.metadata.summaryLabel = card + ' ' + '****' + ret.cardNumber.substr(-4);
   return ret;
 };
@@ -243,7 +243,7 @@ TestPasswordManager.prototype = {
    * @param {!PasswordManagerExpectations} expected
    */
   assertExpectations: function(expected) {
-    var actual = this.actual_;
+    const actual = this.actual_;
 
     assertEquals(expected.requested.passwords, actual.requested.passwords);
     assertEquals(expected.requested.exceptions, actual.requested.exceptions);
@@ -332,7 +332,7 @@ TestAutofillManager.prototype = {
    * @param {!AutofillManagerExpectations} expected
    */
   assertExpectations: function(expected) {
-    var actual = this.actual_;
+    const actual = this.actual_;
 
     assertEquals(expected.requested.addresses, actual.requested.addresses);
     assertEquals(expected.requested.creditCards, actual.requested.creditCards);

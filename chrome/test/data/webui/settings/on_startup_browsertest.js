@@ -10,7 +10,7 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
  * Radio button enum values for restore on startup.
  * @enum
  */
-var RestoreOnStartupEnum = {
+const RestoreOnStartupEnum = {
   CONTINUE: 1,
   OPEN_NEW_TAB: 5,
   OPEN_SPECIFIC: 4,
@@ -28,11 +28,11 @@ OnStartupSettingsBrowserTest.prototype = {
 
   /** @return {Element} */
   getPageElement: function(selector) {
-    var section = this.getSection(this.basicPage, 'onStartup');
+    const section = this.getSection(this.basicPage, 'onStartup');
     assertTrue(!!section);
-    var module = section.querySelector('settings-on-startup-page');
+    const module = section.querySelector('settings-on-startup-page');
     assertTrue(!!module);
-    var result = module.$$(selector);
+    const result = module.$$(selector);
     assertTrue(!!result);
     return result;
   },
@@ -43,10 +43,10 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
    * The prefs API that will get a fake implementation.
    * @type {!SettingsPrivate}
    */
-  var settingsPrefs;
-  var self = this;
+  let settingsPrefs;
+  const self = this;
 
-  var restoreOnStartup = function() {
+  const restoreOnStartup = function() {
     return self.getPageElement('#onStartupRadioGroup')
         .querySelector('.iron-selected')
         .label;

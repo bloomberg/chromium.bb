@@ -8,19 +8,19 @@ suite('UsbDevices', function() {
    * A dummy usb-devices element created before each test.
    * @type {UsbDevices}
    */
-  var testElement;
+  let testElement;
 
   /**
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
-  var browserProxy = null;
+  let browserProxy = null;
 
   /**
    * An example USB device entry list.
    * @type {!Array<UsbDeviceEntry>}
    */
-  var deviceList = [
+  const deviceList = [
     {
       embeddingOrigin: 'device-1-embedding-origin',
       object: {
@@ -72,7 +72,7 @@ suite('UsbDevices', function() {
 
   test('empty devices list', function() {
     return initPage().then(function() {
-      var listItems = testElement.root.querySelectorAll('.list-item');
+      const listItems = testElement.root.querySelectorAll('.list-item');
       assertEquals(0, listItems.length);
     });
   });
@@ -81,7 +81,7 @@ suite('UsbDevices', function() {
     browserProxy.setUsbDevices(deviceList);
 
     return initPage().then(function() {
-      var listItems = testElement.root.querySelectorAll('.list-item');
+      const listItems = testElement.root.querySelectorAll('.list-item');
       assertEquals(deviceList.length, listItems.length);
     });
   });
@@ -90,10 +90,10 @@ suite('UsbDevices', function() {
     browserProxy.setUsbDevices(deviceList);
 
     return initPage().then(function() {
-      var menuButton = testElement.$$('button.icon-more-vert');
+      const menuButton = testElement.$$('button.icon-more-vert');
       assertTrue(!!menuButton);
       MockInteractions.tap(menuButton);
-      var dialog = testElement.$$('dialog[is=cr-action-menu]');
+      const dialog = testElement.$$('dialog[is=cr-action-menu]');
       assertTrue(dialog.open);
     });
   });
@@ -108,9 +108,9 @@ suite('UsbDevices', function() {
      * Test whether or not clicking remove-button sends the correct
      * parameters to the browserProxy.removeUsbDevice() function.
      */
-    var menuButton = testElement.root.querySelectorAll(
+    const menuButton = testElement.root.querySelectorAll(
         'button.icon-more-vert')[indexToRemove];
-    var removeButton = testElement.$.removeButton;
+    const removeButton = testElement.$.removeButton;
     MockInteractions.tap(menuButton);
     MockInteractions.tap(removeButton);
     return browserProxy.whenCalled('removeUsbDevice').then(function(args) {
@@ -122,7 +122,7 @@ suite('UsbDevices', function() {
       assertEquals(deviceList[indexToRemove].embeddingOrigin, args[1]);
       assertEquals(deviceList[indexToRemove].object, args[2]);
 
-      var dialog = testElement.$$('dialog[is=cr-action-menu]');
+      const dialog = testElement.$$('dialog[is=cr-action-menu]');
       assertFalse(dialog.open);
     });
   }
@@ -130,7 +130,7 @@ suite('UsbDevices', function() {
   test('try removing items using remove button', function() {
     browserProxy.setUsbDevices(deviceList);
 
-    var self = this;
+    const self = this;
 
     return initPage()
         .then(function() {

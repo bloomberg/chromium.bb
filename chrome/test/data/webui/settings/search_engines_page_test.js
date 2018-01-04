@@ -53,8 +53,8 @@ cr.define('settings_search_engines_page', function() {
   function registerDialogTests() {
     suite('AddSearchEngineDialogTests', function() {
       /** @type {?SettingsAddSearchEngineDialog} */
-      var dialog = null;
-      var browserProxy = null;
+      let dialog = null;
+      let browserProxy = null;
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
@@ -99,8 +99,8 @@ cr.define('settings_search_engines_page', function() {
          * @param {string} inputId
          * @return {!Promise}
          */
-        var inputAndValidate = function(inputId) {
-          var inputElement = dialog.$[inputId];
+        const inputAndValidate = function(inputId) {
+          const inputElement = dialog.$[inputId];
           browserProxy.resetResolver('validateSearchEngineInput');
           inputElement.fire('input');
           return inputElement.value != '' ?
@@ -112,7 +112,7 @@ cr.define('settings_search_engines_page', function() {
         assertEquals('', dialog.$.searchEngine.value);
         assertEquals('', dialog.$.keyword.value);
         assertEquals('', dialog.$.queryUrl.value);
-        var actionButton = dialog.$.actionButton;
+        const actionButton = dialog.$.actionButton;
         assertTrue(actionButton.disabled);
 
         return inputAndValidate('searchEngine').then(function() {
@@ -141,13 +141,13 @@ cr.define('settings_search_engines_page', function() {
   function registerSearchEngineEntryTests() {
     suite('SearchEngineEntryTests', function() {
       /** @type {?SettingsSearchEngineEntryElement} */
-      var entry = null;
+      let entry = null;
 
       /** @type {!settings_search.TestSearchEnginesBrowserProxy} */
-      var browserProxy = null;
+      let browserProxy = null;
 
       /** @type {!SearchEngine} */
-      var searchEngine = createSampleSearchEngine('G', true, true, true);
+      const searchEngine = createSampleSearchEngine('G', true, true, true);
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
@@ -177,10 +177,10 @@ cr.define('settings_search_engines_page', function() {
       test('Remove_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        var menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
-        var deleteButton = entry.$.delete;
+        const deleteButton = entry.$.delete;
         assertTrue(!!deleteButton);
         assertFalse(deleteButton.hidden);
         MockInteractions.tap(deleteButton);
@@ -194,10 +194,10 @@ cr.define('settings_search_engines_page', function() {
       test('MakeDefault_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        var menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
-        var makeDefaultButton = entry.$.makeDefault;
+        const makeDefaultButton = entry.$.makeDefault;
         assertTrue(!!makeDefaultButton);
         MockInteractions.tap(makeDefaultButton);
         return browserProxy.whenCalled('setDefaultSearchEngine').then(
@@ -211,18 +211,18 @@ cr.define('settings_search_engines_page', function() {
       test('Edit_Enabled', function() {
         // Open action menu.
         MockInteractions.tap(entry.$$('button'));
-        var menu = entry.$$('dialog[is=cr-action-menu]');
+        const menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
-        var engine = entry.engine;
-        var editButton = entry.$.edit;
+        const engine = entry.engine;
+        const editButton = entry.$.edit;
         assertTrue(!!editButton);
         assertFalse(editButton.hidden);
         MockInteractions.tap(editButton);
         return browserProxy.whenCalled('searchEngineEditStarted').then(
             function(modelIndex) {
               assertEquals(engine.modelIndex, modelIndex);
-              var dialog = entry.$$('settings-search-engine-dialog');
+              const dialog = entry.$$('settings-search-engine-dialog');
               assertTrue(!!dialog);
 
               // Check that the paper-input fields are pre-populated.
@@ -242,7 +242,7 @@ cr.define('settings_search_engines_page', function() {
        */
       function testButtonDisabled(searchEngine, buttonId) {
         entry.engine = searchEngine;
-        var button = entry.$[buttonId];
+        const button = entry.$[buttonId];
         assertTrue(!!button);
         assertTrue(button.hidden);
       }
@@ -277,12 +277,12 @@ cr.define('settings_search_engines_page', function() {
   function registerPageTests() {
     suite('SearchEnginePageTests', function() {
       /** @type {?SettingsSearchEnginesPageElement} */
-      var page = null;
+      let page = null;
 
-      var browserProxy = null;
+      let browserProxy = null;
 
       /** @type {!SearchEnginesInfo} */
-      var searchEnginesInfo = {
+      const searchEnginesInfo = {
         defaults: [createSampleSearchEngine(
             'search_engine_G', false, false, false)],
         others: [
@@ -314,21 +314,21 @@ cr.define('settings_search_engines_page', function() {
       // Tests that the page is querying and displaying search engine info on
       // startup.
       test('Initialization', function() {
-        var searchEnginesLists = page.shadowRoot.
+        const searchEnginesLists = page.shadowRoot.
             querySelectorAll('settings-search-engines-list');
         assertEquals(2, searchEnginesLists.length);
 
         // Note: iron-list may create hidden children, so test the length
         // if IronList.items instead of the child nodes.
         Polymer.dom.flush();
-        var defaultsList = searchEnginesLists[0];
-        var defaultsEntries = Polymer.dom(defaultsList.shadowRoot).
+        const defaultsList = searchEnginesLists[0];
+        const defaultsEntries = Polymer.dom(defaultsList.shadowRoot).
             querySelector('iron-list').items;
         assertEquals(
             searchEnginesInfo.defaults.length, defaultsEntries.length);
 
-        var othersList = searchEnginesLists[1];
-        var othersEntries = Polymer.dom(othersList.shadowRoot).
+        const othersList = searchEnginesLists[1];
+        const othersEntries = Polymer.dom(othersList.shadowRoot).
             querySelector('iron-list').items;
         assertEquals(
             searchEnginesInfo.others.length, othersEntries.length);
@@ -342,7 +342,7 @@ cr.define('settings_search_engines_page', function() {
         assertEquals(searchEnginesInfo.others[1].name, othersEntries[0].name);
         assertEquals(searchEnginesInfo.others[0].name, othersEntries[1].name);
 
-        var extensionEntries = Polymer.dom(page.shadowRoot).
+        const extensionEntries = Polymer.dom(page.shadowRoot).
             querySelector('iron-list').items;
         assertEquals(
             searchEnginesInfo.extensions.length, extensionEntries.length);
@@ -355,7 +355,7 @@ cr.define('settings_search_engines_page', function() {
           defaults: [], others: [], extensions: [],
         });
 
-        var message = page.root.querySelector('#noOtherEngines');
+        const message = page.root.querySelector('#noOtherEngines');
         assertTrue(!!message);
         assertFalse(message.hasAttribute('hidden'));
 
@@ -371,7 +371,7 @@ cr.define('settings_search_engines_page', function() {
       // button is tapped.
       test('AddSearchEngineDialog', function() {
         assertFalse(!!page.$$('settings-search-engine-dialog'));
-        var addSearchEngineButton = page.$.addSearchEngine;
+        const addSearchEngineButton = page.$.addSearchEngine;
         assertTrue(!!addSearchEngineButton);
 
         MockInteractions.tap(addSearchEngineButton);
@@ -385,7 +385,7 @@ cr.define('settings_search_engines_page', function() {
         Polymer.dom.flush();
 
         function getListItems(listIndex) {
-          var ironList = listIndex == 2 /* extensions */ ?
+          const ironList = listIndex == 2 /* extensions */ ?
               page.shadowRoot.querySelector('iron-list') :
               page.shadowRoot.querySelectorAll(
                   'settings-search-engines-list')[listIndex].shadowRoot.
@@ -403,7 +403,7 @@ cr.define('settings_search_engines_page', function() {
           assertEquals(othersCount, getListItems(1).length);
           assertEquals(extensionsCount, getListItems(2).length);
 
-          var noResultsElements = Array.from(
+          const noResultsElements = Array.from(
               page.shadowRoot.querySelectorAll('.no-search-results'));
           assertEquals(defaultsCount > 0, noResultsElements[0].hidden);
           assertEquals(othersCount > 0, noResultsElements[1].hidden);
@@ -448,9 +448,9 @@ cr.define('settings_search_engines_page', function() {
   function registerOmniboxExtensionEntryTests() {
     suite('OmniboxExtensionEntryTests', function() {
       /** @type {?SettingsOmniboxExtensionEntryElement} */
-      var entry = null;
+      let entry = null;
 
-      var browserProxy = null;
+      let browserProxy = null;
 
       setup(function() {
         browserProxy = new TestExtensionControlBrowserProxy();
@@ -467,7 +467,7 @@ cr.define('settings_search_engines_page', function() {
       teardown(function() { entry.remove(); });
 
       test('Manage', function() {
-        var manageButton = entry.$.manage;
+        const manageButton = entry.$.manage;
         assertTrue(!!manageButton);
         MockInteractions.tap(manageButton);
         return browserProxy.whenCalled('manageExtension').then(
@@ -477,7 +477,7 @@ cr.define('settings_search_engines_page', function() {
       });
 
       test('Disable', function() {
-        var disableButton = entry.$.disable;
+        const disableButton = entry.$.disable;
         assertTrue(!!disableButton);
         MockInteractions.tap(disableButton);
         return browserProxy.whenCalled('disableExtension').then(

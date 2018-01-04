@@ -18,7 +18,7 @@ cr.define('test_util', function() {
 
     return isDone() ? Promise.resolve() : new Promise(function(resolve) {
       new MutationObserver(function(mutations, observer) {
-        for (var mutation of mutations) {
+        for (const mutation of mutations) {
           assertEquals('attributes', mutation.type);
           if (mutation.attributeName == attributeName && isDone()) {
             observer.disconnect();
@@ -55,7 +55,7 @@ cr.define('test_util', function() {
    * @param {string} property
    */
   function fakeDataBind(el1, el2, property) {
-    var forwardChange = function(el, event) {
+    const forwardChange = function(el, event) {
       if (event.detail.hasOwnProperty('path'))
         el.notifyPath(event.detail.path, event.detail.value);
       else

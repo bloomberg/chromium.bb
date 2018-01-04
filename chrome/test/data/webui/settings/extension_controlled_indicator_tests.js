@@ -4,10 +4,10 @@
 
 suite('extension controlled indicator', function() {
   /** @type {TestExtensionControlBrowserProxy} */
-  var browserProxy;
+  let browserProxy;
 
   /** @type {ExtensionControlledIndicatorElement} */
-  var indicator;
+  let indicator;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -31,12 +31,12 @@ suite('extension controlled indicator', function() {
   });
 
   test('label text and href', function() {
-    var imgSrc = indicator.$$('img').src;
+    let imgSrc = indicator.$$('img').src;
     assertTrue(imgSrc.includes(indicator.extensionId));
 
-    var label = indicator.$$('span');
+    let label = indicator.$$('span');
     assertTrue(!!label);
-    var labelLink = label.querySelector('a');
+    let labelLink = label.querySelector('a');
     assertTrue(!!labelLink);
     assertEquals(labelLink.textContent, indicator.extensionName);
 
@@ -58,7 +58,7 @@ suite('extension controlled indicator', function() {
   });
 
   test('tapping disable button invokes browser proxy', function() {
-    var disableButton = indicator.$$('paper-button');
+    const disableButton = indicator.$$('paper-button');
     assertTrue(!!disableButton);
     MockInteractions.tap(disableButton);
     return browserProxy.whenCalled('disableExtension').then(

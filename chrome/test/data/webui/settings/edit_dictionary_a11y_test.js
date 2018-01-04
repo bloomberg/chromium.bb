@@ -10,7 +10,7 @@
 GEN('#if !defined(OS_MACOSX)');
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
@@ -36,11 +36,12 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
       Object.assign({}, SettingsAccessibilityTest.violationFilter, {
         // Excuse Polymer paper-input elements.
         'aria-valid-attr-value': function(nodeResult) {
-          var describerId = nodeResult.element.getAttribute('aria-describedby');
+          const describerId =
+              nodeResult.element.getAttribute('aria-describedby');
           return describerId === '' && nodeResult.element.id === 'input';
         },
         'button-name': function(nodeResult) {
-          var node = nodeResult.element;
+          const node = nodeResult.element;
           return node.classList.contains('icon-expand-more');
         },
       })

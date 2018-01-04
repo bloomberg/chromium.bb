@@ -18,10 +18,10 @@ cr.define('settings_prefs', function() {
      * Prefs instance created before each test.
      * @type {SettingsPrefsElement|undefined}
      */
-    var prefs;
+    let prefs;
 
     /** @type {settings.FakeSettingsPrivate} */
-    var fakeApi = null;
+    let fakeApi = null;
 
     /**
      * @param {!Object} prefStore Pref store from <settings-prefs>.
@@ -29,9 +29,9 @@ cr.define('settings_prefs', function() {
      * @return {chrome.settingsPrivate.PrefObject|undefined}
      */
     function getPrefFromKey(prefStore, key) {
-      var path = key.split('.');
-      var pref = prefStore;
-      for (var part of path) {
+      const path = key.split('.');
+      let pref = prefStore;
+      for (const part of path) {
         pref = pref[part];
         if (!pref)
           return undefined;
@@ -45,10 +45,10 @@ cr.define('settings_prefs', function() {
      *     from the test case to check.
      */
     function assertFakeApiPrefsSet(testCaseValueIndex) {
-      for (var testCase of prefsTestCases) {
-        var expectedValue = JSON.stringify(
+      for (const testCase of prefsTestCases) {
+        const expectedValue = JSON.stringify(
             testCase.nextValues[testCaseValueIndex]);
-        var actualValue = JSON.stringify(
+        const actualValue = JSON.stringify(
             fakeApi.prefs[testCase.pref.key].value);
         assertEquals(expectedValue, actualValue, testCase.pref.key);
       }
@@ -60,10 +60,10 @@ cr.define('settings_prefs', function() {
      *     from the test case to check.
      */
     function assertPrefsSet(testCaseValueIndex) {
-      for (var testCase of prefsTestCases) {
-        var expectedValue = JSON.stringify(
+      for (const testCase of prefsTestCases) {
+        const expectedValue = JSON.stringify(
             testCase.nextValues[testCaseValueIndex]);
-        var actualValue = JSON.stringify(
+        const actualValue = JSON.stringify(
             prefs.get('prefs.' + testCase.pref.key + '.value'));
         assertEquals(expectedValue, actualValue);
       }
@@ -98,9 +98,9 @@ cr.define('settings_prefs', function() {
     test('receives and caches prefs', function testGetPrefs() {
       // Test that each pref has been successfully copied to the Polymer
       // |prefs| property.
-      for (var key in fakeApi.prefs) {
-        var expectedPref = fakeApi.prefs[key];
-        var actualPref = getPrefFromKey(prefs.prefs, key);
+      for (const key in fakeApi.prefs) {
+        const expectedPref = fakeApi.prefs[key];
+        const actualPref = getPrefFromKey(prefs.prefs, key);
         if (!expectNotEquals(undefined, actualPref)) {
           // We've already registered an error, so skip the pref.
           continue;
@@ -113,7 +113,7 @@ cr.define('settings_prefs', function() {
 
     test('forwards pref changes to API', function testSetPrefs() {
       // Test that settings-prefs uses the setPref API.
-      for (var testCase of prefsTestCases) {
+      for (const testCase of prefsTestCases) {
         prefs.set('prefs.' + testCase.pref.key + '.value',
                   deepCopy(testCase.nextValues[0]));
       }
@@ -121,7 +121,7 @@ cr.define('settings_prefs', function() {
       assertFakeApiPrefsSet(0);
 
       // Test that when setPref fails, the pref is reverted locally.
-      for (var testCase of prefsTestCases) {
+      for (const testCase of prefsTestCases) {
         fakeApi.failNextSetPref();
         prefs.set('prefs.' + testCase.pref.key + '.value',
                   deepCopy(testCase.nextValues[1]));
@@ -131,7 +131,7 @@ cr.define('settings_prefs', function() {
 
       // Test that setPref is not called when the pref doesn't change.
       fakeApi.disallowSetPref();
-      for (var testCase of prefsTestCases) {
+      for (const testCase of prefsTestCases) {
         prefs.set('prefs.' + testCase.pref.key + '.value',
                   deepCopy(testCase.nextValues[0]));
       }
@@ -143,8 +143,8 @@ cr.define('settings_prefs', function() {
       // Changes from the API should not result in those changes being sent
       // back to the API, as this could trigger a race condition.
       fakeApi.disallowSetPref();
-      var prefChanges = [];
-      for (var testCase of prefsTestCases) {
+      let prefChanges = [];
+      for (const testCase of prefsTestCases) {
         prefChanges.push({key: testCase.pref.key,
                           value: testCase.nextValues[0]});
       }
@@ -154,7 +154,7 @@ cr.define('settings_prefs', function() {
       assertPrefsSet(0);
 
       prefChanges = [];
-      for (var testCase of prefsTestCases) {
+      for (const testCase of prefsTestCases) {
         prefChanges.push({key: testCase.pref.key,
                           value: testCase.nextValues[1]});
       }

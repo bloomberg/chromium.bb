@@ -8,13 +8,13 @@ suite('SiteDetails', function() {
    * A site list element created before each test.
    * @type {SiteDetails}
    */
-  var testElement;
+  let testElement;
 
   /**
    * An example pref with 1 pref in each category.
    * @type {SiteSettingsPref}
    */
-  var prefs;
+  let prefs;
 
   // Helper to create a mock permission preference.
   function createExceptionForTest(override) {
@@ -117,7 +117,7 @@ suite('SiteDetails', function() {
   });
 
   function createSiteDetails(origin) {
-    var siteDetailsElement = document.createElement('site-details');
+    const siteDetailsElement = document.createElement('site-details');
     document.body.appendChild(siteDetailsElement);
     siteDetailsElement.origin = origin;
     return siteDetailsElement;
@@ -126,7 +126,7 @@ suite('SiteDetails', function() {
   test('all site settings are shown', function() {
     // Add ContentsSettingsTypes which are not supposed to be shown on the Site
     // Details page here.
-    var nonSiteDetailsContentSettingsTypes = [
+    const nonSiteDetailsContentSettingsTypes = [
       settings.ContentSettingsTypes.ADS,
       settings.ContentSettingsTypes.COOKIES,
       settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
@@ -139,7 +139,7 @@ suite('SiteDetails', function() {
 
     // A list of optionally shown content settings mapped to their loadTimeData
     // flag string.
-    var optionalSiteDetailsContentSettingsTypes =
+    const optionalSiteDetailsContentSettingsTypes =
         /** @type {!settings.ContentSettingsType : string} */ ({});
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .SOUND] =
@@ -153,12 +153,12 @@ suite('SiteDetails', function() {
     // Iterate over each flag in on / off state, assuming that the on state
     // means the content setting will show, and off hides it.
     for (contentSetting in optionalSiteDetailsContentSettingsTypes) {
-      var numContentSettings =
+      const numContentSettings =
           Object.keys(settings.ContentSettingsTypes).length -
           nonSiteDetailsContentSettingsTypes.length -
           Object.keys(optionalSiteDetailsContentSettingsTypes).length;
 
-      var loadTimeDataOverride = {};
+      const loadTimeDataOverride = {};
       loadTimeDataOverride
           [optionalSiteDetailsContentSettingsTypes[contentSetting]] = true;
       loadTimeData.overrideValues(loadTimeDataOverride);
@@ -223,9 +223,9 @@ suite('SiteDetails', function() {
                   return;
 
                 // Verify settings match the values specified in |prefs|.
-                var expectedSetting = settings.ContentSetting.ALLOW;
-                var expectedSource = settings.SiteSettingSource.PREFERENCE;
-                var expectedMenuValue = settings.ContentSetting.ALLOW;
+                let expectedSetting = settings.ContentSetting.ALLOW;
+                let expectedSource = settings.SiteSettingSource.PREFERENCE;
+                let expectedMenuValue = settings.ContentSetting.ALLOW;
 
                 // For all the categories with non-user-set 'Allow' preferences,
                 // update expected values.
@@ -268,7 +268,7 @@ suite('SiteDetails', function() {
     ['cancel-button', 'action-button'].forEach(buttonType => {
       MockInteractions.tap(testElement.$.clearAndReset);
       assertTrue(testElement.$.confirmDeleteDialog.open);
-      var actionButtonList =
+      const actionButtonList =
           testElement.$.confirmDeleteDialog.getElementsByClassName(buttonType);
       assertEquals(1, actionButtonList.length);
       MockInteractions.tap(actionButtonList[0]);
@@ -287,7 +287,7 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     testElement = createSiteDetails('https://foo.com:443');
 
-    var siteDetailsPermission =
+    const siteDetailsPermission =
         testElement.root.querySelector('#notifications');
 
     // Wait for all the permissions to be populated initially.
@@ -307,7 +307,7 @@ suite('SiteDetails', function() {
               siteDetailsPermission.$.permission.value);
 
           // Set new prefs and make sure only that permission is updated.
-          var newException = {
+          const newException = {
             embeddingOrigin: testElement.origin,
             origin: testElement.origin,
             setting: settings.ContentSetting.BLOCK,
@@ -338,7 +338,7 @@ suite('SiteDetails', function() {
   });
 
   test('invalid origins navigate back', function() {
-    var invalid_url = 'invalid url';
+    const invalid_url = 'invalid url';
     browserProxy.setIsOriginValid(false);
 
     settings.navigateTo(settings.routes.SITE_SETTINGS);
@@ -369,7 +369,7 @@ suite('SiteDetails', function() {
     loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
     testElement = createSiteDetails('https://foo.com:443');
 
-    var siteDetailsPermission = testElement.root.querySelector('#ads');
+    const siteDetailsPermission = testElement.root.querySelector('#ads');
 
     return browserProxy.whenCalled('isOriginValid')
         .then(() => {
@@ -387,7 +387,7 @@ suite('SiteDetails', function() {
           // permissions.
           MockInteractions.tap(testElement.$.clearAndReset);
           assertTrue(testElement.$.confirmDeleteDialog.open);
-          var actionButtonList =
+          const actionButtonList =
               testElement.$.confirmDeleteDialog.getElementsByClassName(
                   'action-button');
           assertEquals(1, actionButtonList.length);

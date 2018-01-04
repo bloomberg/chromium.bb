@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @const {boolean} */
-var HARDWARE_ACCELERATION_AT_STARTUP = true;
+const HARDWARE_ACCELERATION_AT_STARTUP = true;
 
 /** @implements {settings.SystemPageBrowserProxy} */
 class TestSystemPageBrowserProxy extends TestBrowserProxy {
@@ -24,13 +24,13 @@ class TestSystemPageBrowserProxy extends TestBrowserProxy {
 
 suite('settings system page', function() {
   /** @type {TestSystemPageBrowserProxy} */
-  var systemBrowserProxy;
+  let systemBrowserProxy;
 
   /** @type {settings.TestLifetimeBrowserProxy} */
-  var lifetimeBrowserProxy;
+  let lifetimeBrowserProxy;
 
   /** @type {SettingsSystemPageElement} */
-  var systemPage;
+  let systemPage;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -69,7 +69,7 @@ suite('settings system page', function() {
   });
 
   test('restart button', function() {
-    var control = systemPage.$.hardwareAcceleration;
+    const control = systemPage.$.hardwareAcceleration;
     expectEquals(HARDWARE_ACCELERATION_AT_STARTUP, control.checked);
 
     // Restart button should be hidden by default.
@@ -81,7 +81,7 @@ suite('settings system page', function() {
     Polymer.dom.flush();
     expectNotEquals(HARDWARE_ACCELERATION_AT_STARTUP, control.checked);
 
-    var restart = control.querySelector('paper-button');
+    const restart = control.querySelector('paper-button');
     expectTrue(!!restart);  // The "RESTART" button should be showing now.
 
     MockInteractions.tap(restart);
@@ -94,8 +94,8 @@ suite('settings system page', function() {
   });
 
   test('proxy row enforcement', function() {
-    var control = systemPage.$.proxy;
-    var showProxyButton = control.querySelector('button');
+    const control = systemPage.$.proxy;
+    const showProxyButton = control.querySelector('button');
     assertTrue(control.hasAttribute('actionable'));
     assertEquals(null, control.querySelector('cr-policy-pref-indicator'));
     assertFalse(showProxyButton.hidden);

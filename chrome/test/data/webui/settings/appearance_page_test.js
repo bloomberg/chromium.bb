@@ -107,10 +107,10 @@ class TestAppearanceBrowserProxy extends TestBrowserProxy {
   }
 }
 
-var appearancePage = null;
+let appearancePage = null;
 
 /** @type {?TestAppearanceBrowserProxy} */
-var appearanceBrowserProxy = null;
+let appearanceBrowserProxy = null;
 
 function createAppearancePage() {
   appearanceBrowserProxy.reset();
@@ -155,7 +155,7 @@ suite('AppearanceHandler', function() {
       createAppearancePage();
       return appearanceBrowserProxy.whenCalled('isWallpaperPolicyControlled')
           .then(() => {
-            var button = appearancePage.$.wallpaperButton;
+            const button = appearancePage.$.wallpaperButton;
             assertTrue(!!button);
             assertFalse(button.disabled);
             MockInteractions.tap(button);
@@ -187,15 +187,15 @@ suite('AppearanceHandler', function() {
   } else {
     test('noWallpaperManager', function() {
       // The wallpaper button should not be present.
-      var button = appearancePage.$.wallpaperButton;
+      const button = appearancePage.$.wallpaperButton;
       assertFalse(!!button);
     });
   }
 
-  var THEME_ID_PREF = 'prefs.extensions.theme.id.value';
+  const THEME_ID_PREF = 'prefs.extensions.theme.id.value';
 
   if (cr.isLinux && !cr.isChromeOS) {
-    var USE_SYSTEM_PREF = 'prefs.extensions.theme.use_system.value';
+    const USE_SYSTEM_PREF = 'prefs.extensions.theme.use_system.value';
 
     test('useDefaultThemeLinux', function() {
       assertFalse(!!appearancePage.get(THEME_ID_PREF));
@@ -213,7 +213,7 @@ suite('AppearanceHandler', function() {
       Polymer.dom.flush();
 
       // With a custom theme installed, "USE CLASSIC" should show.
-      var button = appearancePage.$$('#useDefault');
+      const button = appearancePage.$$('#useDefault');
       assertTrue(!!button);
 
       MockInteractions.tap(button);
@@ -243,7 +243,7 @@ suite('AppearanceHandler', function() {
       assertTrue(!!appearancePage.$$('#useDefault'));
       assertFalse(appearancePage.$$('#themesSecondaryActions').hidden);
 
-      var button = appearancePage.$$('#useSystem');
+      const button = appearancePage.$$('#useSystem');
       assertTrue(!!button);
 
       MockInteractions.tap(button);
@@ -258,7 +258,7 @@ suite('AppearanceHandler', function() {
       Polymer.dom.flush();
 
       // With a custom theme installed, "RESET TO DEFAULT" should show.
-      var button = appearancePage.$$('#useDefault');
+      const button = appearancePage.$$('#useDefault');
       assertTrue(!!button);
 
       MockInteractions.tap(button);
@@ -268,7 +268,7 @@ suite('AppearanceHandler', function() {
 
   test('default zoom handling', function() {
     function getDefaultZoomText() {
-      var zoomLevel = appearancePage.$.zoomLevel;
+      const zoomLevel = appearancePage.$.zoomLevel;
       return zoomLevel.options[zoomLevel.selectedIndex].textContent.trim();
     }
 
@@ -306,7 +306,7 @@ suite('AppearanceHandler', function() {
 });
 
 suite('HomeUrlInput', function() {
-  var homeUrlInput;
+  let homeUrlInput;
 
   setup(function() {
     appearanceBrowserProxy = new TestAppearanceBrowserProxy();

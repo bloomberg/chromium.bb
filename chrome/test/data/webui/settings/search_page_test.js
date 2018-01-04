@@ -4,13 +4,13 @@
 
 cr.define('settings_search_page', function() {
   function generateSearchEngineInfo() {
-    var searchEngines0 = settings_search.createSampleSearchEngine(
+    const searchEngines0 = settings_search.createSampleSearchEngine(
         true, false, false);
     searchEngines0.default = true;
-    var searchEngines1 = settings_search.createSampleSearchEngine(
+    const searchEngines1 = settings_search.createSampleSearchEngine(
         true, false, false);
     searchEngines1.default = false;
-    var searchEngines2 = settings_search.createSampleSearchEngine(
+    const searchEngines2 = settings_search.createSampleSearchEngine(
         true, false, false);
     searchEngines2.default = false;
 
@@ -23,9 +23,9 @@ cr.define('settings_search_page', function() {
 
   suite('SearchPageTests', function() {
     /** @type {?SettingsSearchPageElement} */
-    var page = null;
+    let page = null;
 
-    var browserProxy = null;
+    let browserProxy = null;
 
     setup(function() {
       browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
@@ -46,7 +46,7 @@ cr.define('settings_search_page', function() {
     // Tests that the page is querying and displaying search engine info on
     // startup.
     test('Initialization', function() {
-      var selectElement = page.$$('select');
+      const selectElement = page.$$('select');
 
       return browserProxy.whenCalled('getSearchEnginesList').then(function() {
         Polymer.dom.flush();
@@ -60,7 +60,7 @@ cr.define('settings_search_page', function() {
         assertEquals(1, selectElement.selectedIndex);
 
         // Simulate a change that happened in a different tab.
-        var searchEnginesInfo = generateSearchEngineInfo();
+        const searchEnginesInfo = generateSearchEngineInfo();
         searchEnginesInfo.defaults[0].default = false;
         searchEnginesInfo.defaults[1].default = false;
         searchEnginesInfo.defaults[2].default = true;
@@ -80,7 +80,7 @@ cr.define('settings_search_page', function() {
 
     test('ControlledByExtension', function() {
       return browserProxy.whenCalled('getSearchEnginesList').then(function() {
-        var selectElement = page.$$('select');
+        const selectElement = page.$$('select');
         assertFalse(selectElement.disabled);
         assertFalse(!!page.$$('extension-controlled-indicator'));
 
@@ -102,7 +102,7 @@ cr.define('settings_search_page', function() {
 
     test('ControlledByPolicy', function() {
       return browserProxy.whenCalled('getSearchEnginesList').then(function() {
-        var selectElement = page.$$('select');
+        const selectElement = page.$$('select');
         assertFalse(selectElement.disabled);
         assertFalse(!!page.$$('extension-controlled-indicator'));
 

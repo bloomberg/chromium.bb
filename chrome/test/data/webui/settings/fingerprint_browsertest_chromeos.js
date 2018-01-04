@@ -43,7 +43,7 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
   getFingerprintsList() {
     this.methodCalled('getFingerprintsList');
     /** @type {settings.FingerprintInfo} */
-    var fingerprintInfo = {fingerprintsList: this.fingerprintsList_.slice(),
+    const fingerprintInfo = {fingerprintsList: this.fingerprintsList_.slice(),
         isMaxed: this.fingerprintsList_.length >= 5};
     return Promise.resolve(fingerprintInfo);
   }
@@ -97,14 +97,14 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
 
 suite('settings-fingerprint-list', function() {
   /** @type {?SettingsFingerprintListElement} */
-  var fingerprintList = null;
+  let fingerprintList = null;
 
   /** @type {?SettingsSetupFingerprintDialogElement} */
-  var dialog = null;
+  let dialog = null;
   /** @type {?HTMLButtonElement} */
-  var addAnotherButton= null;
+  let addAnotherButton= null;
   /** @type {?settings.TestFingerprintBrowserProxy} */
-  var browserProxy = null;
+  let browserProxy = null;
 
   /**
    * @param {number} index

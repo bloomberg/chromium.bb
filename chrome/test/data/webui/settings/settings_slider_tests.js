@@ -5,15 +5,15 @@
 /** @fileoverview Suite of tests for settings-slider. */
 suite('SettingsSlider', function() {
   /** @type {!CrSliderElement} */
-  var slider;
+  let slider;
 
   /**
    * paper-slider instance wrapped by settings-slider.
    * @type {!PaperSliderElement}
    */
-  var paperSlider;
+  let paperSlider;
 
-  var tickValues = [2, 4, 8, 16, 32, 64, 128];
+  const tickValues = [2, 4, 8, 16, 32, 64, 128];
 
   setup(function() {
     PolymerTest.clearBody();
@@ -86,9 +86,9 @@ suite('SettingsSlider', function() {
   });
 
   test('findNearestIndex_', function() {
-    var slider = document.createElement('settings-slider');
-    var testArray = [80, 20, 350, 1000, 200, 100];
-    var testFindNearestIndex = function(expectedIndex, value) {
+    const slider = document.createElement('settings-slider');
+    const testArray = [80, 20, 350, 1000, 200, 100];
+    const testFindNearestIndex = function(expectedIndex, value) {
       expectEquals(expectedIndex, slider.findNearestIndex_(testArray, value));
     };
     testFindNearestIndex(0, 51);

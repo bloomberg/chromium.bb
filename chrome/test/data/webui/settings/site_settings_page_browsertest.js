@@ -23,7 +23,7 @@ GEN('#define MAYBE_labels labels');
 GEN('#endif');
 TEST_F('SettingsSiteSettingsPageBrowserTest', 'MAYBE_labels', function() {
   suite('Site settings page', function() {
-    var ui;
+    let ui;
 
     suiteSetup(function() {
       ui = assert(document.createElement('settings-site-settings-page'));

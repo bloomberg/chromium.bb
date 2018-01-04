@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('sync-page-test', function() {
-  /** @type {SyncPageElement} */ var testElement;
+  /** @type {SyncPageElement} */ let testElement;
 
   setup(function() {
     PolymerTest.clearBody();
@@ -16,9 +16,9 @@ suite('sync-page-test', function() {
     cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: true});
     Polymer.dom.flush();
 
-    var input = testElement.$$('#existingPassphraseInput');
+    const input = testElement.$$('#existingPassphraseInput');
 
-    var focused = false;
+    let focused = false;
     input.addEventListener('focus', function() {
       focused = true;
     });
