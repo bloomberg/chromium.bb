@@ -35,6 +35,7 @@ class PrefRegistrySyncable;
 namespace omnibox {
 
 extern const base::Feature kOmniboxEntitySuggestions;
+extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const base::Feature kOmniboxTabSwitchSuggestions;
 extern const base::Feature kEnableClipboardProvider;
