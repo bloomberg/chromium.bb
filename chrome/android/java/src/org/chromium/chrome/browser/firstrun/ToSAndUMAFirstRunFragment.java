@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
@@ -148,7 +147,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
     }
 
     @Override
-    public boolean shouldSkipPageOnCreate(Context appContext) {
+    public boolean shouldSkipPageOnCreate() {
         return FirstRunStatus.shouldSkipWelcomePage();
     }
 
