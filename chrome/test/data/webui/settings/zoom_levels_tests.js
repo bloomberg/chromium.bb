@@ -8,19 +8,19 @@ suite('ZoomLevels', function() {
    * A zoom levels category created before each test.
    * @type {ZoomLevels}
    */
-  var testElement;
+  let testElement;
 
   /**
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
-  var browserProxy = null;
+  let browserProxy = null;
 
   /**
    * An example zoom list.
    * @type {!Array<ZoomLevelEntry>}
    */
-  var zoomList = [
+  const zoomList = [
     {
       origin: 'http://www.google.com',
       displayName: 'http://www.google.com',
@@ -70,7 +70,7 @@ suite('ZoomLevels', function() {
   }
 
   test('empty zoom state', function() {
-    var list = testElement.$.list;
+    const list = testElement.$.list;
     assertTrue(!!list);
     assertEquals(0, list.items.length);
     assertEquals(
@@ -83,14 +83,14 @@ suite('ZoomLevels', function() {
 
     return initPage()
         .then(function() {
-          var list = testElement.$.list;
+          const list = testElement.$.list;
           assertTrue(!!list);
           assertEquals(2, list.items.length);
           assertFalse(!!testElement.$$('#empty'));
           assertEquals(
               2, testElement.shadowRoot.querySelectorAll('.list-item').length);
 
-          var removeButton = getRemoveButton(testElement.$.listContainer, 0);
+          const removeButton = getRemoveButton(testElement.$.listContainer, 0);
           assert(!!removeButton);
           MockInteractions.tap(removeButton);
           return browserProxy.whenCalled('removeZoomLevel');

@@ -25,7 +25,7 @@ SettingsBasicPageBrowserTest.prototype = {
 TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
   // Assign |self| to |this| instead of binding since 'this' in suite()
   // and test() will be a Mocha 'Suite' or 'Test' instance.
-  var self = this;
+  const self = this;
 
   /**
    * This fake SearchManager just hides and re-displays the sections on search.
@@ -55,9 +55,9 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
         setTimeout(function() {
           // All the sections must be hidden by the TestSearchManager, just like
           // the real SearchManager. Otherwise, the bug doesn't manifest.
-          var sections =
+          const sections =
               Polymer.dom().querySelectorAll('* /deep/ settings-section');
-          for (var i = 0; i < sections.length; i++)
+          for (let i = 0; i < sections.length; i++)
             sections[i].hiddenBySearch = !!text;
 
           this.searchRequest_.resolver.resolve(this.searchRequest_);
@@ -75,30 +75,30 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     });
 
     test('basic pages', function() {
-      var page = self.basicPage;
-      var sections = ['appearance', 'onStartup', 'people', 'search'];
+      const page = self.basicPage;
+      let sections = ['appearance', 'onStartup', 'people', 'search'];
       expectTrue(!!self.getSection(page, 'appearance'));
       if (!cr.isChromeOS)
         sections.push('defaultBrowser');
       else
         sections = sections.concat(['internet', 'bluetooth', 'device']);
 
-      for (var i = 0; i < sections.length; i++) {
-        var section = self.getSection(page, sections[i]);
+      for (let i = 0; i < sections.length; i++) {
+        const section = self.getSection(page, sections[i]);
         expectTrue(!!section);
         self.verifySubpagesHidden(section);
       }
     });
 
     test('scroll to section', function() {
-      var page = self.basicPage;
+      const page = self.basicPage;
       // Setting the page and section will cause a scrollToSection_.
       settings.navigateTo(settings.routes.ON_STARTUP);
 
       return new Promise(function(resolve, reject) {
         // This test checks for a regression that occurred with scrollToSection_
         // failing to find its host element.
-        var intervalId = window.setInterval(function() {
+        const intervalId = window.setInterval(function() {
           if (self.getSection(page, settings.getCurrentRoute().section)) {
             window.clearInterval(intervalId);
             resolve();
@@ -127,8 +127,8 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     });
 
     test('scroll to section after exiting search', function() {
-      var page = self.basicPage;
-      var searchManager = new TestSearchManager();
+      const page = self.basicPage;
+      const searchManager = new TestSearchManager();
       settings.setSearchManagerForTesting(searchManager);
 
       settings.navigateTo(
@@ -144,7 +144,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
           assertTrue(!!page);
 
           // Should (after some time) be scrolled to the On Startup section.
-          var intervalId = window.setInterval(function() {
+          const intervalId = window.setInterval(function() {
             if (page.scroller.scrollTop != 0) {
               window.clearInterval(intervalId);
               resolve();
@@ -155,7 +155,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     });
 
     test('scroll to top before navigating to about', function() {
-      var page = self.basicPage;
+      const page = self.basicPage;
       // Set the viewport small to force the scrollbar to appear on ABOUT.
       Polymer.dom().querySelector('settings-ui').style.height = '200px';
 

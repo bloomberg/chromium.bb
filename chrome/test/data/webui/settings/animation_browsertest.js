@@ -5,7 +5,7 @@
 /** @fileoverview Tests for settings.animation. */
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 /**
  * @constructor
@@ -33,23 +33,23 @@ SettingsAnimationBrowserTest.prototype = {
 };
 
 TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
-  var self = this;
+  const self = this;
 
-  var Animation = settings.animation.Animation;
+  const Animation = settings.animation.Animation;
 
-  var onFinishBeforePromise = function() {
+  const onFinishBeforePromise = function() {
     assertNotReached('Animation fired finish event before resolving promise');
   };
 
-  var onCancelUnexpectedly = function() {
+  const onCancelUnexpectedly = function() {
     assertNotReached('Animation should have finished, but fired cancel event');
   };
 
   // Register mocha tests.
   suite('settings.animation.Animation', function() {
-    var div;
-    var keyframes;
-    var options;
+    let div;
+    let keyframes;
+    let options;
 
     setup(function() {
       keyframes = [{
@@ -74,7 +74,7 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
     });
 
     test('Animation plays', function(done) {
-      var animation = new Animation(div, keyframes, options);
+      const animation = new Animation(div, keyframes, options);
       animation.addEventListener('cancel', onCancelUnexpectedly);
       animation.addEventListener('finish', onFinishBeforePromise);
 
@@ -95,7 +95,7 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
       // Absurdly large finite value to ensure we call finish() before the
       // animation finishes automatically.
       options.duration = Number.MAX_VALUE;
-      var animation = new Animation(div, keyframes, options);
+      const animation = new Animation(div, keyframes, options);
       animation.addEventListener('cancel', onCancelUnexpectedly);
       animation.addEventListener('finish', onFinishBeforePromise);
 
@@ -120,7 +120,7 @@ TEST_F('SettingsAnimationBrowserTest', 'Animation', function() {
       // Absurdly large finite value to ensure we call cancel() before the
       // animation finishes automatically.
       options.duration = Number.MAX_VALUE;
-      var animation = new Animation(div, keyframes, options);
+      const animation = new Animation(div, keyframes, options);
       animation.addEventListener('cancel', onCancelUnexpectedly);
       animation.addEventListener('finish', onFinishBeforePromise);
 

@@ -28,7 +28,7 @@ GEN('#endif');
 TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
   // Assign |self| to |this| instead of binding since 'this' in suite()
   // and test() will be a Mocha 'Suite' or 'Test' instance.
-  var self = this;
+  const self = this;
 
   // Register mocha tests.
   suite('SettingsPage', function() {
@@ -41,14 +41,14 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('advanced pages', function() {
-      var page = self.basicPage;
-      var sections = ['privacy', 'passwordsAndForms', 'languages', 'downloads',
+      const page = self.basicPage;
+      let sections = ['privacy', 'passwordsAndForms', 'languages', 'downloads',
           'reset'];
       if (cr.isChromeOS)
         sections = sections.concat(['dateTime', 'a11y']);
 
-      for (var i = 0; i < sections.length; i++) {
-        var section = self.getSection(page, sections[i]);
+      for (let i = 0; i < sections.length; i++) {
+        const section = self.getSection(page, sections[i]);
         assertTrue(!!section);
         self.verifySubpagesHidden(section);
       }

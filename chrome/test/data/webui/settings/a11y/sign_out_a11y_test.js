@@ -52,7 +52,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
     this.browserProxy = new TestSyncBrowserProxy();
     settings.SyncBrowserProxyImpl.instance_ = this.browserProxy;
 
-    var settingsUi = document.createElement('settings-ui');
+    const settingsUi = document.createElement('settings-ui');
     document.body.appendChild(settingsUi);
     Polymer.dom.flush();
 
@@ -64,11 +64,10 @@ AccessibilityTest.define('SettingsA11ySignOut', {
   /** @override */
   tests: {
     'Accessible Dialog': function() {
-      var disconnectButton = null;
       return this.browserProxy.getSyncStatus().then((syncStatus) => {
         // Navigate to the sign out dialog.
         Polymer.dom.flush();
-        var disconnectButton = this.peoplePage.$$('#disconnectButton');
+        const disconnectButton = this.peoplePage.$$('#disconnectButton');
         assert(!!disconnectButton);
         MockInteractions.tap(disconnectButton);
         Polymer.dom.flush();

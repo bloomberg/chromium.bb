@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('settings_people_page_quick_unlock', function() {
-  var element = null;
-  var quickUnlockPrivateApi = null;
-  var QuickUnlockMode = chrome.quickUnlockPrivate.QuickUnlockMode;
-  var fakeUma = null;
+  let element = null;
+  let quickUnlockPrivateApi = null;
+  const QuickUnlockMode = chrome.quickUnlockPrivate.QuickUnlockMode;
+  let fakeUma = null;
 
   /**
    * Returns if the element is visible.
@@ -41,7 +41,7 @@ cr.define('settings_people_page_quick_unlock', function() {
    * @return {Element}
    */
   function getFromElement(selector) {
-    var childElement = element.$$(selector);
+    const childElement = element.$$(selector);
     assertTrue(!!childElement);
     return childElement;
   }
@@ -57,7 +57,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
   function registerAuthenticateTests() {
     suite('authenticate', function() {
-      var passwordElement = null;
+      let passwordElement = null;
 
       setup(function() {
         PolymerTest.clearBody();
@@ -91,7 +91,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       });
 
       test('EnterInvalidPasswordSelectsAllText', function() {
-        var confirmButton = getFromElement('#passwordInput');
+        const confirmButton = getFromElement('#passwordInput');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
         MockInteractions.tap(
@@ -104,7 +104,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       });
 
       test('TapConfirmButtonWithWrongPasswordRestoresFocus', function() {
-        var confirmButton = getFromElement('#passwordInput');
+        const confirmButton = getFromElement('#passwordInput');
         quickUnlockPrivateApi.accountPassword = 'bar';
         passwordElement.value = 'foo';
         MockInteractions.tap(
@@ -164,12 +164,12 @@ cr.define('settings_people_page_quick_unlock', function() {
 
   function registerLockScreenTests() {
     suite('lock-screen', function() {
-      /** @const */ var ENABLE_LOCK_SCREEN_PREF = 'settings.enable_screen_lock';
+      const ENABLE_LOCK_SCREEN_PREF = 'settings.enable_screen_lock';
 
-      var fakeSettings = null;
-      var passwordRadioButton = null;
-      var pinPasswordRadioButton = null;
-      var noneRadioButton = null;
+      let fakeSettings = null;
+      let passwordRadioButton = null;
+      let pinPasswordRadioButton = null;
+      const noneRadioButton = null;
 
       /**
        * Asserts that only the given radio button is active and all of the
@@ -193,7 +193,7 @@ cr.define('settings_people_page_quick_unlock', function() {
        * @return {boolean}
        */
       function getLockScreenPref() {
-        var result;
+        let result;
         fakeSettings.getPref(ENABLE_LOCK_SCREEN_PREF, function(value) {
           result = value;
         });
@@ -212,7 +212,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       function isSetupPinButtonVisible() {
         Polymer.dom.flush();
-        var setupPinButton = element.$$('#setupPinButton');
+        const setupPinButton = element.$$('#setupPinButton');
         return isVisible(setupPinButton);
       }
 
@@ -222,7 +222,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         CrSettingsPrefs.deferInitialization = true;
 
         // Build pref fakes.
-        var fakePrefs = [{
+        const fakePrefs = [{
           key: ENABLE_LOCK_SCREEN_PREF,
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: true
@@ -230,7 +230,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         fakeSettings = new settings.FakeSettingsPrivate(fakePrefs);
         fakeUma = new settings.FakeQuickUnlockUma();
         setLockScreenPref(true);
-        var prefElement = document.createElement('settings-prefs');
+        const prefElement = document.createElement('settings-prefs');
         prefElement.initialize(fakeSettings);
         document.body.appendChild(prefElement);
 
@@ -330,7 +330,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         Polymer.dom.flush();
         MockInteractions.tap(getFromElement('#setupPinButton'));
         Polymer.dom.flush();
-        var setupPinDialog = getFromElement('#setupPin');
+        const setupPinDialog = getFromElement('#setupPin');
         assertTrue(setupPinDialog.$$('#dialog').open);
         assertEquals(1, fakeUma.getHistogramValue(
             LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
@@ -340,11 +340,11 @@ cr.define('settings_people_page_quick_unlock', function() {
 
   function registerSetupPinDialogTests() {
     suite('setup-pin-dialog', function() {
-      var titleDiv = null;
-      var problemDiv = null;
-      var pinKeyboard = null;
-      var backButton = null;
-      var continueButton = null;
+      let titleDiv = null;
+      let problemDiv = null;
+      let pinKeyboard = null;
+      let backButton = null;
+      let continueButton = null;
 
       setup(function() {
         PolymerTest.clearBody();
@@ -375,8 +375,8 @@ cr.define('settings_people_page_quick_unlock', function() {
       // The continue button and title change text between the setup and confirm
       // steps.
       test('TextChangesBetweenSetupAndConfirmStep', function() {
-        var initialContinue = continueButton.textContent;
-        var initialTitle = titleDiv.textContent;
+        const initialContinue = continueButton.textContent;
+        const initialTitle = titleDiv.textContent;
 
         pinKeyboard.value = '1111';
         MockInteractions.tap(continueButton);

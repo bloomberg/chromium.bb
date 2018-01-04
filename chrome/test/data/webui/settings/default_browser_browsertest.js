@@ -47,10 +47,10 @@ cr.define('settings_default_browser', function() {
   }
 
   suite('DefaultBrowserPageTest', function() {
-    var page = null;
+    let page = null;
 
     /** @type {?settings.TestDefaultBrowserBrowserProxy} */
-    var browserProxy = null;
+    let browserProxy = null;
 
     setup(function() {
       browserProxy = new TestDefaultBrowserBrowserProxy();

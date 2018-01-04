@@ -7,7 +7,7 @@
  * different providers.
  * @type {SiteSettingsPref}
  */
-var prefsMixedProvider = {
+const prefsMixedProvider = {
   exceptions: {
     geolocation: [
       {
@@ -37,7 +37,7 @@ var prefsMixedProvider = {
  * An example pref with mixed origin and pattern.
  * @type {SiteSettingsPref}
  */
-var prefsMixedOriginAndPattern = {
+const prefsMixedOriginAndPattern = {
   exceptions: {
     ads: [],
     auto_downloads: [],
@@ -78,7 +78,7 @@ var prefsMixedOriginAndPattern = {
  * state.
  * @type {SiteSettingsPref}
  */
-var prefsVarious = {
+const prefsVarious = {
   exceptions: {
     ads: [],
     auto_downloads: [],
@@ -142,13 +142,13 @@ suite('AllSites', function() {
    * A site list element created before each test.
    * @type {SiteList}
    */
-  var testElement;
+  let testElement;
 
   /**
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
-  var browserProxy = null;
+  let browserProxy = null;
 
   suiteSetup(function() {
     CrSettingsPrefs.setInitialized();
@@ -194,11 +194,11 @@ suite('AllSites', function() {
     return browserProxy.whenCalled('getExceptionList')
         .then(function(contentType) {
           // Use resolver to ensure that the list container is populated.
-          var resolver = new PromiseResolver();
+          const resolver = new PromiseResolver();
           testElement.async(resolver.resolve);
           return resolver.promise.then(function() {
-            var item = testElement.$.listContainer.children[0];
-            var name = item.querySelector('#displayName');
+            const item = testElement.$.listContainer.children[0];
+            const name = item.querySelector('#displayName');
             assertTrue(!!name);
           });
         });
@@ -212,7 +212,7 @@ suite('AllSites', function() {
         .then(function(contentType) {
           // Use resolver to ensure asserts bubble up to the framework with
           // meaningful errors.
-          var resolver = new PromiseResolver();
+          const resolver = new PromiseResolver();
           testElement.async(resolver.resolve);
           return resolver.promise.then(function() {
             // All Sites calls getExceptionList for all categories, starting
@@ -239,8 +239,8 @@ suite('AllSites', function() {
             assertEquals(undefined, testElement.selectedOrigin);
 
             // Validate that the sites are shown in UI and can be selected.
-            var firstItem = testElement.$.listContainer.children[1];
-            var clickable = firstItem.querySelector('.middle');
+            const firstItem = testElement.$.listContainer.children[1];
+            const clickable = firstItem.querySelector('.middle');
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             assertEquals(
@@ -258,7 +258,7 @@ suite('AllSites', function() {
         .then(function(contentType) {
           // Use resolver to ensure asserts bubble up to the framework with
           // meaningful errors.
-          var resolver = new PromiseResolver();
+          const resolver = new PromiseResolver();
           testElement.async(resolver.resolve);
           return resolver.promise.then(function() {
             // All Sites calls getExceptionList for all categories, starting
@@ -284,8 +284,8 @@ suite('AllSites', function() {
 
             assertEquals(undefined, testElement.selectedOrigin);
             // Validate that the sites are shown in UI and can be selected.
-            var firstItem = testElement.$.listContainer.children[0];
-            var clickable = firstItem.querySelector('.middle');
+            const firstItem = testElement.$.listContainer.children[0];
+            const clickable = firstItem.querySelector('.middle');
             assertNotEquals(undefined, clickable);
             MockInteractions.tap(clickable);
             if (testElement.sites.length == 1) {

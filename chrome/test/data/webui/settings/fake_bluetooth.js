@@ -44,10 +44,10 @@ cr.define('settings', function() {
 
     /** @param {!Array<!chrome.bluetooth.Device>} devices */
     setDevicesForTest: function(devices) {
-      for (var d of this.devices)
+      for (const d of this.devices)
         this.onDeviceRemoved.callListeners(d);
       this.devices = devices.slice();
-      for (var d of this.devices)
+      for (const d of this.devices)
         this.onDeviceAdded.callListeners(d);
     },
 
@@ -63,7 +63,7 @@ cr.define('settings', function() {
 
     /** @param {!chrome.bluetooth.Device} device */
     updateDeviceForTest: function(device, opt_callback) {
-      var index = this.devices.findIndex(function(d) {
+      const index = this.devices.findIndex(function(d) {
         return d.address == device.address;
       });
       if (index == -1) {

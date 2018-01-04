@@ -4,7 +4,7 @@
 
 suite('settings-edit-dictionary-page', function() {
   function getFakePrefs() {
-    var fakePrefs = [{
+    const fakePrefs = [{
       key: 'intl.app_locale',
       type: chrome.settingsPrivate.PrefType.STRING,
       value: 'en-US',
@@ -43,11 +43,11 @@ suite('settings-edit-dictionary-page', function() {
   }
 
   /** @type {?SettingsEditDictionaryPageElement} */
-  var editDictPage;
+  let editDictPage;
   /** @type {?FakeLanguageSettingsPrivate} */
-  var languageSettingsPrivate;
+  let languageSettingsPrivate;
   /** @type {?FakeSettingsPrivate} */
-  var settingsPrefs;
+  let settingsPrefs;
 
   suiteSetup(function() {
     CrSettingsPrefs.deferInitialization = true;
@@ -56,7 +56,7 @@ suite('settings-edit-dictionary-page', function() {
   setup(function() {
     PolymerTest.clearBody();
     settingsPrefs = document.createElement('settings-prefs');
-    var settingsPrivate = new settings.FakeSettingsPrivate(getFakePrefs());
+    const settingsPrivate = new settings.FakeSettingsPrivate(getFakePrefs());
     settingsPrefs.initialize(settingsPrivate);
 
     languageSettingsPrivate = new settings.FakeLanguageSettingsPrivate();
@@ -75,7 +75,7 @@ suite('settings-edit-dictionary-page', function() {
 
   test('add word validation', function() {
     // Check addWord enable/disable logic
-    var addWordButton = editDictPage.$.addWord;
+    const addWordButton = editDictPage.$.addWord;
     assertTrue(!!addWordButton);
     editDictPage.$.newWord.value = '';
     assertTrue(addWordButton.disabled);
@@ -97,7 +97,7 @@ suite('settings-edit-dictionary-page', function() {
   });
 
   test('spellcheck edit dictionary page list has words', function() {
-    var addWordButton = editDictPage.$$('#addWord');
+    const addWordButton = editDictPage.$$('#addWord');
     editDictPage.$.newWord.value = "valid word";
     MockInteractions.tap(addWordButton);
     editDictPage.$.newWord.value = "valid word2";

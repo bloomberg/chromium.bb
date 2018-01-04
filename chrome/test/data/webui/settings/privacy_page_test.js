@@ -102,10 +102,10 @@ cr.define('settings_privacy_page', function() {
   function registerNativeCertificateManagerTests() {
     suite('NativeCertificateManager', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
-      var testBrowserProxy;
+      let testBrowserProxy;
 
       /** @type {SettingsPrivacyPageElement} */
-      var page;
+      let page;
 
       setup(function() {
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
@@ -127,7 +127,7 @@ cr.define('settings_privacy_page', function() {
   function registerPrivacyPageTests() {
     suite('PrivacyPage', function() {
       /** @type {SettingsPrivacyPageElement} */
-      var page;
+      let page;
 
       setup(function() {
         page = document.createElement('settings-privacy-page');
@@ -141,7 +141,7 @@ cr.define('settings_privacy_page', function() {
         MockInteractions.tap(page.$$('#clearBrowsingData'));
         Polymer.dom.flush();
 
-        var dialog = page.$$('settings-clear-browsing-data-dialog-tabs');
+        const dialog = page.$$('settings-clear-browsing-data-dialog-tabs');
         assertTrue(!!dialog);
 
         // Ensure that the dialog is fully opened before returning from this
@@ -156,10 +156,10 @@ cr.define('settings_privacy_page', function() {
   function registerClearBrowsingDataTests() {
     suite('ClearBrowsingData', function() {
       /** @type {settings.TestClearBrowsingDataBrowserProxy} */
-      var testBrowserProxy;
+      let testBrowserProxy;
 
       /** @type {SettingsClearBrowsingDataDialogElement} */
-      var element;
+      let element;
 
       setup(function() {
         testBrowserProxy = new TestClearBrowsingDataBrowserProxy();
@@ -178,18 +178,18 @@ cr.define('settings_privacy_page', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
         assertFalse(element.showImportantSitesDialog_);
 
-        var cancelButton = element.$$('.cancel-button');
+        const cancelButton = element.$$('.cancel-button');
         assertTrue(!!cancelButton);
-        var actionButton = element.$$('.action-button');
+        const actionButton = element.$$('.action-button');
         assertTrue(!!actionButton);
-        var spinner = element.$$('paper-spinner-lite');
+        const spinner = element.$$('paper-spinner-lite');
         assertTrue(!!spinner);
 
         assertFalse(cancelButton.disabled);
         assertFalse(actionButton.disabled);
         assertFalse(spinner.active);
 
-        var promiseResolver = new PromiseResolver();
+        const promiseResolver = new PromiseResolver();
         testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
         MockInteractions.tap(actionButton);
 
@@ -223,10 +223,10 @@ cr.define('settings_privacy_page', function() {
 
       test('showHistoryDeletionDialog', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
-        var actionButton = element.$$('.action-button');
+        const actionButton = element.$$('.action-button');
         assertTrue(!!actionButton);
 
-        var promiseResolver = new PromiseResolver();
+        const promiseResolver = new PromiseResolver();
         testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
         MockInteractions.tap(actionButton);
 
@@ -241,9 +241,9 @@ cr.define('settings_privacy_page', function() {
               // assertions.
             }).then(function() {
               Polymer.dom.flush();
-              var notice = element.$$('#notice');
+              const notice = element.$$('#notice');
               assertTrue(!!notice);
-              var noticeActionButton = notice.$$('.action-button');
+              const noticeActionButton = notice.$$('.action-button');
               assertTrue(!!noticeActionButton);
 
               assertTrue(element.$$('#clearBrowsingDataDialog').open);
@@ -257,7 +257,7 @@ cr.define('settings_privacy_page', function() {
                 // propagate to the parent dialog. The parent dialog should
                 // subsequently close as well.
                 setTimeout(function() {
-                  var notice = element.$$('#notice');
+                  const notice = element.$$('#notice');
                   assertFalse(!!notice);
                   assertFalse(element.$$('#clearBrowsingDataDialog').open);
                   resolve();
@@ -269,7 +269,7 @@ cr.define('settings_privacy_page', function() {
       test('Counters', function() {
         assertTrue(element.$$('#clearBrowsingDataDialog').open);
 
-        var checkbox = element.$$('#cacheCheckboxBasic');
+        const checkbox = element.$$('#cacheCheckboxBasic');
         assertEquals('browser.clear_data.cache_basic', checkbox.pref.key);
 
         // Simulate a browsing data counter result for history. This checkbox's
@@ -305,13 +305,13 @@ cr.define('settings_privacy_page', function() {
 
   suite('ImportantSites', function() {
     /** @type {settings.TestClearBrowsingDataBrowserProxy} */
-    var testBrowserProxy;
+    let testBrowserProxy;
 
     /** @type {SettingsClearBrowsingDataDialogElement} */
-    var element;
+    let element;
 
     /** @type {Array<ImportantSite>} */
-    var importantSites = [
+    const importantSites = [
       {registerableDomain: 'google.com', isChecked: true},
       {registerableDomain: 'yahoo.com', isChecked: true}
     ];
@@ -348,7 +348,7 @@ cr.define('settings_privacy_page', function() {
       return new Promise(function(resolve) { element.async(resolve); })
           .then(function() {
             assertTrue(element.$$('#importantSitesDialog').open);
-            var firstImportantSite = element.$$('important-site-checkbox');
+            const firstImportantSite = element.$$('important-site-checkbox');
             assertTrue(!!firstImportantSite);
             assertEquals(
                 'google.com', firstImportantSite.site.registerableDomain);
@@ -376,10 +376,10 @@ cr.define('settings_privacy_page', function() {
   function registerSafeBrowsingExtendedReportingTests() {
     suite('SafeBrowsingExtendedReporting', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
-      var testBrowserProxy;
+      let testBrowserProxy;
 
       /** @type {SettingsPrivacyPageElement} */
-      var page;
+      let page;
 
       setup(function() {
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
@@ -396,7 +396,7 @@ cr.define('settings_privacy_page', function() {
           Polymer.dom.flush();
 
           // Control starts checked by default
-          var control = page.$$('#safeBrowsingExtendedReportingControl');
+          const control = page.$$('#safeBrowsingExtendedReportingControl');
           assertEquals(true, control.checked);
 
           // Notification from browser can uncheck the box

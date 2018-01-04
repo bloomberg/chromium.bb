@@ -4,9 +4,9 @@
 
 cr.define('settings_people_page', function() {
   suite('ProfileInfoTests', function() {
-    var peoplePage = null;
-    var browserProxy = null;
-    var syncBrowserProxy = null;
+    let peoplePage = null;
+    let browserProxy = null;
+    let syncBrowserProxy = null;
 
     suiteSetup(function() {
       // Force easy unlock off. Those have their own ChromeOS-only tests.
@@ -36,10 +36,11 @@ cr.define('settings_people_page', function() {
         Polymer.dom.flush();
         assertEquals(browserProxy.fakeProfileInfo.name,
                      peoplePage.$$('#profile-name').textContent.trim());
-        var bg = peoplePage.$$('#profile-icon').style.backgroundImage;
+        const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
         assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
 
-        var iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
+        const iconDataUrl =
+            'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
             'LAAAAAABAAEAAAICTAEAOw==';
         cr.webUIListenerCallback(
           'profile-info-changed',
@@ -48,7 +49,7 @@ cr.define('settings_people_page', function() {
         Polymer.dom.flush();
         assertEquals('pushedName',
                      peoplePage.$$('#profile-name').textContent.trim());
-        var newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
+        const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
         assertTrue(newBg.includes(iconDataUrl));
       });
     });
@@ -71,9 +72,9 @@ cr.define('settings_people_page', function() {
 
   if (!cr.isChromeOS) {
     suite('SyncStatusTests', function() {
-      var peoplePage = null;
-      var browserProxy = null;
-      var profileInfoBrowserProxy = null;
+      let peoplePage = null;
+      let browserProxy = null;
+      let profileInfoBrowserProxy = null;
 
       suiteSetup(function() {
         // Force easy unlock off. Those have their own ChromeOS-only tests.
@@ -98,7 +99,7 @@ cr.define('settings_people_page', function() {
       teardown(function() { peoplePage.remove(); });
 
       test('GetProfileInfo', function() {
-        var disconnectButton = null;
+        let disconnectButton = null;
         return browserProxy.whenCalled('getSyncStatus').then(function() {
           Polymer.dom.flush();
           disconnectButton = peoplePage.$$('#disconnectButton');
@@ -111,15 +112,15 @@ cr.define('settings_people_page', function() {
           assertTrue(peoplePage.$$('#disconnectDialog').open);
           assertFalse(peoplePage.$$('#deleteProfile').hidden);
 
-          var deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
+          const deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
           assertTrue(!!deleteProfileCheckbox);
           assertLT(0, deleteProfileCheckbox.clientHeight);
 
-          var disconnectConfirm = peoplePage.$$('#disconnectConfirm');
+          const disconnectConfirm = peoplePage.$$('#disconnectConfirm');
           assertTrue(!!disconnectConfirm);
           assertFalse(disconnectConfirm.hidden);
 
-          var popstatePromise = new Promise(function(resolve) {
+          const popstatePromise = new Promise(function(resolve) {
             listenOnce(window, 'popstate', resolve);
           });
 
@@ -146,14 +147,14 @@ cr.define('settings_people_page', function() {
           assertTrue(peoplePage.$$('#disconnectDialog').open);
           assertFalse(!!peoplePage.$$('#deleteProfile'));
 
-          var disconnectManagedProfileConfirm =
+          const disconnectManagedProfileConfirm =
               peoplePage.$$('#disconnectManagedProfileConfirm');
           assertTrue(!!disconnectManagedProfileConfirm);
           assertFalse(disconnectManagedProfileConfirm.hidden);
 
           browserProxy.resetResolver('signOut');
 
-          var popstatePromise = new Promise(function(resolve) {
+          const popstatePromise = new Promise(function(resolve) {
             listenOnce(window, 'popstate', resolve);
           });
 
@@ -182,7 +183,7 @@ cr.define('settings_people_page', function() {
           assertTrue(peoplePage.$$('#disconnectDialog').open);
 
           // Assert the warning message is as expected.
-          var warningMessage = peoplePage.$$('.delete-profile-warning');
+          const warningMessage = peoplePage.$$('.delete-profile-warning');
 
           cr.webUIListenerCallback('profile-stats-count-ready', 0);
           assertEquals(
@@ -248,7 +249,7 @@ cr.define('settings_people_page', function() {
             .then(function() {
               assertTrue(peoplePage.$$('#disconnectDialog').open);
 
-              var popstatePromise = new Promise(function(resolve) {
+              const popstatePromise = new Promise(function(resolve) {
                 listenOnce(window, 'popstate', resolve);
               });
 
@@ -259,7 +260,7 @@ cr.define('settings_people_page', function() {
               return popstatePromise;
             })
             .then(function() {
-              var popstatePromise = new Promise(function(resolve) {
+              const popstatePromise = new Promise(function(resolve) {
                 listenOnce(window, 'popstate', resolve);
               });
 
@@ -279,7 +280,7 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          var syncStatusContainer = peoplePage.$$('#sync-status');
+          let syncStatusContainer = peoplePage.$$('#sync-status');
           assertTrue(!!syncStatusContainer);
           assertTrue(syncStatusContainer.hasAttribute('actionable'));
 
@@ -290,7 +291,7 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          var syncStatusContainer = peoplePage.$$('#sync-status');
+          syncStatusContainer = peoplePage.$$('#sync-status');
           assertTrue(!!syncStatusContainer);
           assertFalse(syncStatusContainer.hasAttribute('actionable'));
         });
@@ -308,7 +309,7 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          var syncStatusContainer = peoplePage.$$('#sync-status');
+          let syncStatusContainer = peoplePage.$$('#sync-status');
           assertTrue(!!syncStatusContainer);
           assertFalse(syncStatusContainer.hasAttribute('actionable'));
 
@@ -320,7 +321,7 @@ cr.define('settings_people_page', function() {
           });
           Polymer.dom.flush();
 
-          var syncStatusContainer = peoplePage.$$('#sync-status');
+          syncStatusContainer = peoplePage.$$('#sync-status');
           assertTrue(!!syncStatusContainer);
           assertTrue(syncStatusContainer.hasAttribute('actionable'));
         });

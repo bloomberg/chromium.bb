@@ -4,10 +4,10 @@
 
 suite('metrics reporting', function() {
   /** @type {settings.TestPrivacyPageBrowserProxy} */
-  var testBrowserProxy;
+  let testBrowserProxy;
 
   /** @type {SettingsPrivacyPageElement} */
-  var page;
+  let page;
 
   setup(function() {
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
@@ -22,12 +22,12 @@ suite('metrics reporting', function() {
     return testBrowserProxy.whenCalled('getMetricsReporting').then(function() {
       Polymer.dom.flush();
 
-      var control = page.$.metricsReportingControl;
+      const control = page.$.metricsReportingControl;
       assertEquals(testBrowserProxy.metricsReporting.enabled, control.checked);
       assertEquals(testBrowserProxy.metricsReporting.managed,
                    !!control.pref.controlledBy);
 
-      var changedMetrics = {
+      const changedMetrics = {
         enabled: !testBrowserProxy.metricsReporting.enabled,
         managed: !testBrowserProxy.metricsReporting.managed,
       };
@@ -37,7 +37,7 @@ suite('metrics reporting', function() {
       assertEquals(changedMetrics.enabled, control.checked);
       assertEquals(changedMetrics.managed, !!control.pref.controlledBy);
 
-      var toggled = !changedMetrics.enabled;
+      const toggled = !changedMetrics.enabled;
       control.checked = toggled;
       control.notifyChangedByUserInteraction();
 

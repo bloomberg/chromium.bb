@@ -31,11 +31,12 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
       Object.assign({}, SettingsAccessibilityTest.violationFilter, {
         // Excuse Polymer paper-input elements.
         'aria-valid-attr-value': function(nodeResult) {
-          var describerId = nodeResult.element.getAttribute('aria-describedby');
+          const describerId =
+              nodeResult.element.getAttribute('aria-describedby');
           return describerId === '' && nodeResult.element.id === 'input';
         },
         'button-name': function(nodeResult) {
-          var node = nodeResult.element;
+          const node = nodeResult.element;
           return node.classList.contains('icon-expand-more');
         },
       })

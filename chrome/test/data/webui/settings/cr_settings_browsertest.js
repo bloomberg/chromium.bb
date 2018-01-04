@@ -5,7 +5,7 @@
 /** @fileoverview Runs the Polymer Settings tests. */
 
 /** @const {string} Path to source root. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(
@@ -1426,7 +1426,7 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'All', function() {
       assertEquals('a/b', settings.getQueryParameters().get('guid'));
       assertEquals('42', settings.getQueryParameters().get('foo'));
 
-      var params = new URLSearchParams();
+      const params = new URLSearchParams();
       params.set('bar', 'b=z');
       params.set('biz', '3');
       settings.navigateTo(settings.routes.SEARCH_ENGINES, params);

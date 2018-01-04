@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('Multidevice', function() {
-  var multidevicePage = null;
+  let multidevicePage = null;
 
   suiteSetup(function() {
   });

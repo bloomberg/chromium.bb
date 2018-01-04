@@ -33,10 +33,10 @@ class TestGoogleAssistantBrowserProxy extends TestBrowserProxy {
 suite('GoogleAssistantHandler', function() {
 
   /** @type {SettingsGoogleAssistantPageElement} */
-  var page = null;
+  let page = null;
 
   /** @type {?TestGoogleAssistantBrowserProxy} */
-  var browserProxy = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestGoogleAssistantBrowserProxy();
@@ -44,7 +44,7 @@ suite('GoogleAssistantHandler', function() {
 
     PolymerTest.clearBody();
 
-    var prefElement = document.createElement('settings-prefs');
+    const prefElement = document.createElement('settings-prefs');
     document.body.appendChild(prefElement);
 
     return CrSettingsPrefs.initialized.then(function() {
@@ -60,7 +60,7 @@ suite('GoogleAssistantHandler', function() {
 
   test('toggleAssistant', function() {
     Polymer.dom.flush();
-    var button = page.$$('#googleAssistantEnable');
+    const button = page.$$('#googleAssistantEnable');
     assertTrue(!!button);
     assertFalse(button.disabled);
     assertFalse(button.checked);
@@ -74,7 +74,7 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('toggleAssistantContext', function() {
-    var button = page.$$('#googleAssistantContextEnable');
+    let button = page.$$('#googleAssistantContextEnable');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     Polymer.dom.flush();
@@ -91,7 +91,7 @@ suite('GoogleAssistantHandler', function() {
   });
 
   test('tapOnAssistantSettings', function() {
-    var button = page.$$('#googleAssistantSettings');
+    let button = page.$$('#googleAssistantSettings');
     assertFalse(!!button);
     page.setPrefValue('settings.voice_interaction.enabled', true);
     Polymer.dom.flush();

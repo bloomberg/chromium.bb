@@ -4,23 +4,23 @@
 
 suite('controlled button', function() {
   /** @type {ControlledButtonElement} */
-  var controlledButton;
+  let controlledButton;
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  var uncontrolledPref = {
+  const uncontrolledPref = {
     key: 'test',
     type: chrome.settingsPrivate.PrefType.BOOLEAN,
     value: true
   };
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  var extensionControlledPref = Object.assign({
+  const extensionControlledPref = Object.assign({
     controlledBy: chrome.settingsPrivate.ControlledBy.EXTENSION,
     enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
   }, uncontrolledPref);
 
   /** @type {!chrome.settingsPrivate.PrefObject} */
-  var policyControlledPref = Object.assign({
+  const policyControlledPref = Object.assign({
     controlledBy: chrome.settingsPrivate.ControlledBy.USER_POLICY,
     enforcement: chrome.settingsPrivate.Enforcement.ENFORCED,
   }, uncontrolledPref);
@@ -45,7 +45,7 @@ suite('controlled button', function() {
     controlledButton.pref = policyControlledPref;
     Polymer.dom.flush();
     assertTrue(controlledButton.$$('paper-button').disabled);
-    var indicator = controlledButton.$$('cr-policy-pref-indicator');
+    const indicator = controlledButton.$$('cr-policy-pref-indicator');
     assertTrue(!!indicator);
     assertGT(indicator.clientHeight, 0);
 

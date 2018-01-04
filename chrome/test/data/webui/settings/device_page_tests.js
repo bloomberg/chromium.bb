@@ -4,7 +4,7 @@
 
 cr.define('device_page_tests', function() {
   /** @enum {string} */
-  var TestNames = {
+  const TestNames = {
     DevicePage: 'device page',
     Display: 'display',
     Keyboard: 'keyboard',
@@ -99,7 +99,7 @@ cr.define('device_page_tests', function() {
     setPreferredNoteTakingApp: function(appId) {
       ++this.setPreferredAppCount_;
 
-      var changed = false;
+      let changed = false;
       this.noteTakingApps_.forEach(function(app) {
         changed = changed || app.preferred != (app.value == appId);
         app.preferred = app.value == appId;
@@ -154,7 +154,7 @@ cr.define('device_page_tests', function() {
      * @return {string} App id of the app currently selected as preferred.
      */
     getPreferredNoteTakingAppId: function() {
-      var app = this.noteTakingApps_.find(function(existing) {
+      const app = this.noteTakingApps_.find(function(existing) {
         return existing.preferred;
       });
 
@@ -166,7 +166,7 @@ cr.define('device_page_tests', function() {
      *     support state of the app currently selected as preferred.
      */
     getPreferredAppLockScreenState: function() {
-      var app = this.noteTakingApps_.find(function(existing) {
+      const app = this.noteTakingApps_.find(function(existing) {
         return existing.preferred;
       });
 
@@ -364,10 +364,10 @@ cr.define('device_page_tests', function() {
 
   suite('SettingsDevicePage', function() {
     /** @type {!SettingsDevicePage|undefined} */
-    var devicePage;
+    let devicePage;
 
     /** @type {!FakeSystemDisplay|undefined} */
-    var fakeSystemDisplay;
+    let fakeSystemDisplay;
 
     suiteSetup(function() {
       // Disable animations so sub-pages open within one event loop.
@@ -387,7 +387,7 @@ cr.define('device_page_tests', function() {
           new TestDevicePageBrowserProxy();
 
       // settings-animated-pages expects a parent with data-page set.
-      var basicPage = document.createElement('div');
+      const basicPage = document.createElement('div');
       basicPage.dataset.page = 'basic';
       basicPage.appendChild(devicePage);
       document.body.appendChild(basicPage);
@@ -399,13 +399,13 @@ cr.define('device_page_tests', function() {
     /** @return {!Promise<!HTMLElement>} */
     function showAndGetDeviceSubpage(subpage, expectedRoute) {
       return new Promise(function(resolve, reject) {
-        var row = assert(devicePage.$$('#main #' + subpage + 'Row'));
+        const row = assert(devicePage.$$('#main #' + subpage + 'Row'));
         devicePage.$$('#pages').addEventListener(
             'neon-animation-finish', resolve);
         MockInteractions.tap(row);
       }).then(function() {
         assertEquals(expectedRoute, settings.getCurrentRoute());
-        var page = devicePage.$$('settings-' + subpage);
+        const page = devicePage.$$('settings-' + subpage);
         return assert(page);
       });
     }
@@ -447,9 +447,9 @@ cr.define('device_page_tests', function() {
      * @param {boolean} expected
      */
     function expectNaturalScrollValue(pointersPage, expected) {
-      var naturalScrollOff =
+      const naturalScrollOff =
           pointersPage.$$('paper-radio-button[name="false"]');
-      var naturalScrollOn =
+      const naturalScrollOn =
           pointersPage.$$('paper-radio-button[name="true"]');
       assertTrue(!!naturalScrollOff);
       assertTrue(!!naturalScrollOn);
@@ -474,7 +474,7 @@ cr.define('device_page_tests', function() {
     });
 
     suite(assert(TestNames.Pointers), function() {
-      var pointersPage;
+      let pointersPage;
 
       setup(function() {
         return showAndGetDeviceSubpage('pointers', settings.routes.POINTERS)
@@ -534,7 +534,7 @@ cr.define('device_page_tests', function() {
 
         expectFalse(pointersPage.$$('#mouse settings-toggle-button').checked);
 
-        var slider = assert(pointersPage.$$('#mouse settings-slider'));
+        const slider = assert(pointersPage.$$('#mouse settings-slider'));
         expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
             slider.$$('#slider'), 37 /* left */);
@@ -550,7 +550,7 @@ cr.define('device_page_tests', function() {
         expectTrue(pointersPage.$$('#touchpad #enableTapToClick').checked);
         expectFalse(pointersPage.$$('#touchpad #enableTapDragging').checked);
 
-        var slider = assert(pointersPage.$$('#touchpad settings-slider'));
+        const slider = assert(pointersPage.$$('#touchpad settings-slider'));
         expectEquals(3, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(
             slider.$$('#slider'), 39 /* right */);
@@ -564,9 +564,9 @@ cr.define('device_page_tests', function() {
         expectNaturalScrollValue(pointersPage, false);
 
         // Tapping the link shouldn't enable the radio button.
-        var naturalScrollOn =
+        const naturalScrollOn =
             pointersPage.$$('paper-radio-button[name="true"]');
-        var a = naturalScrollOn.querySelector('a');
+        const a = naturalScrollOn.querySelector('a');
 
         MockInteractions.tap(a);
         expectNaturalScrollValue(pointersPage, false);
@@ -603,8 +603,8 @@ cr.define('device_page_tests', function() {
             expectFalse(!!keyboardPage.$$('#diamondKey'));
 
             // Pretend the diamond key is available.
-            var showCapsLock = false;
-            var showDiamondKey = true;
+            let showCapsLock = false;
+            const showDiamondKey = true;
             cr.webUIListenerCallback(
                 'show-keys-changed', showCapsLock, showDiamondKey);
             Polymer.dom.flush();
@@ -619,7 +619,7 @@ cr.define('device_page_tests', function() {
             expectTrue(!!keyboardPage.$$('#capsLockKey'));
             expectTrue(!!keyboardPage.$$('#diamondKey'));
 
-            var collapse = keyboardPage.$$('iron-collapse');
+            const collapse = keyboardPage.$$('iron-collapse');
             assertTrue(!!collapse);
             expectTrue(collapse.opened);
 
@@ -633,7 +633,7 @@ cr.define('device_page_tests', function() {
             MockInteractions.pressAndReleaseKeyOn(
                 keyboardPage.$$('#repeatRateSlider').$$('#slider'),
                 39 /* right */);
-            var language = devicePage.prefs.settings.language;
+            const language = devicePage.prefs.settings.language;
             expectEquals(1000, language.xkb_auto_repeat_delay_r2.value);
             expectEquals(300, language.xkb_auto_repeat_interval_r2.value);
 
@@ -670,8 +670,8 @@ cr.define('device_page_tests', function() {
     });
 
     test(assert(TestNames.Display), function() {
-      var addDisplay = function(n) {
-        var display = {
+      const addDisplay = function(n) {
+        const display = {
           id: 'fakeDisplayId' + n,
           name: 'fakeDisplayName' + n,
           mirroring: '',
@@ -688,7 +688,7 @@ cr.define('device_page_tests', function() {
         fakeSystemDisplay.addDisplayForTest(display);
       };
 
-      var displayPage;
+      let displayPage;
       return Promise
           .all([
             // Get the display sub-page.
@@ -745,9 +745,9 @@ cr.define('device_page_tests', function() {
 
             // Select the second display and make it primary. Also change the
             // orientation of the second display.
-            var displayLayout = displayPage.$$('#displayLayout');
+            const displayLayout = displayPage.$$('#displayLayout');
             assertTrue(!!displayLayout);
-            var displayDiv = displayLayout.$$('#_fakeDisplayId2');
+            const displayDiv = displayLayout.$$('#_fakeDisplayId2');
             assertTrue(!!displayDiv);
             MockInteractions.tap(displayDiv);
             expectEquals(
@@ -808,7 +808,7 @@ cr.define('device_page_tests', function() {
        * @param {bool} isLowPowerCharger
        */
       function setPowerSources(sources, powerSourceId, isLowPowerCharger) {
-        var sourcesCopy = sources.map(function(source) {
+        const sourcesCopy = sources.map(function(source) {
           return Object.assign({}, source);
         });
         cr.webUIListenerCallback('power-sources-changed',
@@ -832,12 +832,12 @@ cr.define('device_page_tests', function() {
       });
 
       suite('power settings', function() {
-        var powerPage;
-        var powerSourceRow;
-        var powerSourceWrapper;
-        var powerSourceSelect;
-        var idleSelect;
-        var lidClosedToggle;
+        let powerPage;
+        let powerSourceRow;
+        let powerSourceWrapper;
+        let powerSourceSelect;
+        let idleSelect;
+        let lidClosedToggle;
 
         suiteSetup(function() {
           // Always show power settings.
@@ -875,7 +875,7 @@ cr.define('device_page_tests', function() {
         });
 
         test('no battery', function() {
-          var batteryStatus = {
+          const batteryStatus = {
             present: false,
             charging: false,
             calculating: false,
@@ -891,7 +891,7 @@ cr.define('device_page_tests', function() {
         });
 
         test('power sources', function() {
-          var batteryStatus = {
+          const batteryStatus = {
             present: true,
             charging: false,
             calculating: false,
@@ -908,7 +908,7 @@ cr.define('device_page_tests', function() {
           assertTrue(powerSourceWrapper.hidden);
 
           // Attach a dual-role USB device.
-          var powerSource = {
+          const powerSource = {
             id: '2',
             type: settings.PowerDeviceType.DUAL_ROLE_USB,
             description: 'USB-C device',
@@ -927,7 +927,7 @@ cr.define('device_page_tests', function() {
           assertEquals(powerSource.id, powerSourceSelect.value);
 
           // Send another power source; the first should still be selected.
-          var otherPowerSource = Object.assign({}, powerSource);
+          const otherPowerSource = Object.assign({}, powerSource);
           otherPowerSource.id = '3';
           setPowerSources(
               [otherPowerSource, powerSource], powerSource.id, true);
@@ -937,7 +937,7 @@ cr.define('device_page_tests', function() {
         });
 
         test('choose power source', function() {
-          var batteryStatus = {
+          const batteryStatus = {
             present: true,
             charging: false,
             calculating: false,
@@ -948,7 +948,7 @@ cr.define('device_page_tests', function() {
               'battery-status-changed', Object.assign({}, batteryStatus));
 
           // Attach a dual-role USB device.
-          var powerSource = {
+          const powerSource = {
             id: '3',
             type: settings.PowerDeviceType.DUAL_ROLE_USB,
             description: 'USB-C device',
@@ -976,7 +976,7 @@ cr.define('device_page_tests', function() {
         });
 
         test('set lid behavior', function() {
-          var sendLid = function(lidBehavior) {
+          const sendLid = function(lidBehavior) {
             sendPowerManagementSettings(
                 settings.IdleBehavior.DISPLAY_OFF,
                 false /* idleControlled */, lidBehavior,
@@ -1093,15 +1093,15 @@ cr.define('device_page_tests', function() {
     });
 
     suite(assert(TestNames.Stylus), function() {
-      var stylusPage;
-      var appSelector;
-      var browserProxy;
-      var noAppsDiv;
-      var waitingDiv;
-      var selectAppDiv;
+      let stylusPage;
+      let appSelector;
+      let browserProxy;
+      let noAppsDiv;
+      let waitingDiv;
+      let selectAppDiv;
 
       // Shorthand for settings.NoteAppLockScreenSupport.
-      var LockScreenSupport;
+      let LockScreenSupport;
 
       suiteSetup(function() {
         // Always show stylus settings.

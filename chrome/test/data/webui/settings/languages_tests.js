@@ -9,16 +9,16 @@ cr.define('settings-languages', function() {
      */
     function assertLanguageOrder(expected) {
       assertEquals(expected.length, languageHelper.languages.enabled.length);
-      for (var i = 0; i < expected.length; i++) {
+      for (let i = 0; i < expected.length; i++) {
         assertEquals(
             expected[i], languageHelper.languages.enabled[i].language.code);
       }
     }
 
     /** @type {?settings.LanguagesBrowserProxy} */
-    var browserProxy = null;
+    let browserProxy = null;
 
-    var languageHelper;
+    let languageHelper;
 
     suiteSetup(function() {
       CrSettingsPrefs.deferInitialization = true;
@@ -26,8 +26,8 @@ cr.define('settings-languages', function() {
     });
 
     setup(function() {
-      var settingsPrefs = document.createElement('settings-prefs');
-      var settingsPrivate =
+      const settingsPrefs = document.createElement('settings-prefs');
+      const settingsPrivate =
           new settings.FakeSettingsPrivate(settings.getFakeLanguagePrefs());
       settingsPrefs.initialize(settingsPrivate);
       document.body.appendChild(settingsPrefs);
@@ -37,7 +37,7 @@ cr.define('settings-languages', function() {
       settings.LanguagesBrowserProxyImpl.instance_ = browserProxy;
 
       // Setup fake languageSettingsPrivate API.
-      var languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
+      const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
       languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
 
       languageHelper = document.createElement('settings-languages');
@@ -53,8 +53,8 @@ cr.define('settings-languages', function() {
     });
 
     test('languages model', function() {
-      var languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
-      for (var i = 0; i < languageSettingsPrivate.languages.length;
+      const languageSettingsPrivate = browserProxy.getLanguageSettingsPrivate();
+      for (let i = 0; i < languageSettingsPrivate.languages.length;
            i++) {
         assertEquals(languageSettingsPrivate.languages[i].code,
                      languageHelper.languages.supported[i].code);
@@ -93,7 +93,7 @@ cr.define('settings-languages', function() {
 
       // Can move a language to the front.
       languageHelper.moveLanguageToFront('sw');
-      var expectedOrder = ['sw', 'en-CA', 'en-US'];
+      const expectedOrder = ['sw', 'en-CA', 'en-US'];
       assertLanguageOrder(expectedOrder);
 
       // Moving the first language up has no effect.
@@ -112,11 +112,11 @@ cr.define('settings-languages', function() {
     if (cr.isChromeOS) {
       test('modifying input methods', function() {
         assertEquals(2, languageHelper.languages.inputMethods.enabled.length);
-        var inputMethods = languageHelper.getInputMethodsForLanguage('en-US');
+        const inputMethods = languageHelper.getInputMethodsForLanguage('en-US');
         assertEquals(3, inputMethods.length);
 
         // We can remove one input method.
-        var dvorak =
+        const dvorak =
             '_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us:dvorak:eng';
         languageHelper.removeInputMethod(dvorak);
         assertEquals(1, languageHelper.languages.inputMethods.enabled.length);
@@ -126,8 +126,8 @@ cr.define('settings-languages', function() {
         assertEquals(1, languageHelper.languages.inputMethods.enabled.length);
 
         // Add input methods for Swahili.
-        var sw = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw';
-        var swUS = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw';
+        const sw = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:sw:sw';
+        const swUS = '_comp_ime_abcdefghijklmnopqrstuvwxyzabcdefxkb:us:sw';
         languageHelper.addInputMethod(sw);
         languageHelper.addInputMethod(swUS);
         assertEquals(3, languageHelper.languages.inputMethods.enabled.length);

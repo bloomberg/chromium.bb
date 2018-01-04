@@ -39,7 +39,7 @@ class TestImportDataBrowserProxy extends TestBrowserProxy {
 
 suite('ImportDataDialog', function() {
   /** @type {!Array<!settings.BrowserProfile} */
-  var browserProfiles = [
+  const browserProfiles = [
     {
       autofillFormData: true,
       favorites: true,
@@ -68,7 +68,7 @@ suite('ImportDataDialog', function() {
     };
   }
 
-  var prefs = {};
+  const prefs = {};
   ['import_dialog_history', 'import_dialog_bookmarks',
    'import_dialog_saved_passwords', 'import_dialog_search_engine',
    'import_dialog_autofill_form_data',
@@ -76,7 +76,7 @@ suite('ImportDataDialog', function() {
     prefs[name] = createBooleanPref(name);
   });
 
-  var dialog = null;
+  let dialog = null;
 
   setup(function() {
     browserProxy = new TestImportDataBrowserProxy();
@@ -168,7 +168,7 @@ suite('ImportDataDialog', function() {
   test('ImportFromBrowserProfile', function() {
     dialog.set('prefs.import_dialog_bookmarks.value', false);
 
-    var expectedIndex = 0;
+    const expectedIndex = 0;
     simulateBrowserProfileChange(expectedIndex);
     MockInteractions.tap(dialog.$.import);
     return browserProxy.whenCalled('importData').then(function(actualIndex) {

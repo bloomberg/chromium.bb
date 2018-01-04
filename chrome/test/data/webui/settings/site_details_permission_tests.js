@@ -8,13 +8,13 @@ suite('SiteDetailsPermission', function() {
    * A site list element created before each test.
    * @type {SiteDetailsPermission}
    */
-  var testElement;
+  let testElement;
 
   /**
    * An example pref with only camera allowed.
    * @type {SiteSettingsPref}
    */
-  var prefs;
+  let prefs;
 
   // Initialize a site-details-permission before each test.
   setup(function() {
@@ -63,7 +63,7 @@ suite('SiteDetailsPermission', function() {
   }
 
   test('camera category', function() {
-    var origin = 'https://www.example.com';
+    const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
     testElement.category = settings.ContentSettingsTypes.CAMERA;
     testElement.label = 'Camera';
@@ -75,7 +75,7 @@ suite('SiteDetailsPermission', function() {
 
     assertFalse(testElement.$.details.hidden);
 
-    var header = testElement.$.details.querySelector('#permissionHeader');
+    const header = testElement.$.details.querySelector('#permissionHeader');
     assertEquals(
         'Camera', header.innerText.trim(),
         'Widget should be labelled correctly');
@@ -97,7 +97,7 @@ suite('SiteDetailsPermission', function() {
   });
 
   test('default string is correct', function() {
-    var origin = 'https://www.example.com';
+    const origin = 'https://www.example.com';
     browserProxy.setPrefs(prefs);
     testElement.category = settings.ContentSettingsTypes.CAMERA;
     testElement.label = 'Camera';
@@ -118,7 +118,7 @@ suite('SiteDetailsPermission', function() {
               'Allow (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          var defaultPrefs = {
+          const defaultPrefs = {
             camera: {
               setting: settings.ContentSetting.BLOCK,
             }
@@ -132,7 +132,7 @@ suite('SiteDetailsPermission', function() {
               'Block (default)', testElement.$.permission.options[0].text,
               'Default setting string should match prefs');
           browserProxy.resetResolver('getDefaultValueForContentType');
-          var defaultPrefs = {
+          const defaultPrefs = {
             camera: {
               setting: settings.ContentSetting.ASK,
             }
@@ -149,12 +149,12 @@ suite('SiteDetailsPermission', function() {
   });
 
   test('info string is correct', function() {
-    var origin = 'https://www.example.com';
+    const origin = 'https://www.example.com';
     testElement.category = settings.ContentSettingsTypes.CAMERA;
 
     // Strings that should be shown for the permission sources that don't depend
     // on the ContentSetting value.
-    var permissionSourcesNoSetting = {};
+    const permissionSourcesNoSetting = {};
     permissionSourcesNoSetting[settings.SiteSettingSource.DEFAULT] = '';
     permissionSourcesNoSetting[settings.SiteSettingSource.PREFERENCE] = '';
     permissionSourcesNoSetting[settings.SiteSettingSource.EMBARGO] =
@@ -188,7 +188,7 @@ suite('SiteDetailsPermission', function() {
     }
 
     // Permissions that have been set by extensions.
-    var extensionSourceStrings = {};
+    const extensionSourceStrings = {};
     extensionSourceStrings[settings.ContentSetting.ALLOW] =
         'Allowed by an extension';
     extensionSourceStrings[settings.ContentSetting.BLOCK] =
@@ -212,7 +212,7 @@ suite('SiteDetailsPermission', function() {
     }
 
     // Permissions that have been set by enterprise policy.
-    var policySourceStrings = {};
+    const policySourceStrings = {};
     policySourceStrings[settings.ContentSetting.ALLOW] =
         'Allowed by your administrator';
     policySourceStrings[settings.ContentSetting.BLOCK] =
@@ -249,7 +249,7 @@ suite('SiteDetailsPermission', function() {
   });
 
   test('info string correct for drm disabled source', function() {
-    var origin = 'https://www.example.com';
+    const origin = 'https://www.example.com';
     testElement.category = settings.ContentSettingsTypes.PROTECTED_CONTENT;
     testElement.site = {
       origin: origin,
@@ -265,7 +265,7 @@ suite('SiteDetailsPermission', function() {
   });
 
   test('info string correct for ads', function() {
-    var origin = 'https://www.example.com';
+    const origin = 'https://www.example.com';
     testElement.category = settings.ContentSettingsTypes.ADS;
     testElement.site = {
       origin: origin,

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('focus-row-behavior', function() {
-  /** @type {FocusableIronListItemElement} */ var testElement;
+  /** @type {FocusableIronListItemElement} */ let testElement;
 
   suiteSetup(function() {
     document.body.innerHTML = `
@@ -41,7 +41,7 @@ suite('focus-row-behavior', function() {
   });
 
   test('item passes focus to first focusable child', function() {
-    var focused = false;
+    let focused = false;
     testElement.$.control.addEventListener('focus', function() {
       focused = true;
     });
@@ -50,11 +50,11 @@ suite('focus-row-behavior', function() {
   });
 
   test('will focus a similar item that was last focused', function() {
-    var lastButton = document.createElement('button');
+    const lastButton = document.createElement('button');
     lastButton.setAttribute('focus-type', 'fake-btn-two');
     testElement.lastFocused = lastButton;
 
-    var focused = false;
+    let focused = false;
     testElement.$.controlTwo.addEventListener('focus', function() {
       focused = true;
     });
@@ -63,7 +63,7 @@ suite('focus-row-behavior', function() {
   });
 
   test('mouse clicks on the row does not focus the controls', function() {
-    var focused = false;
+    let focused = false;
     testElement.$.control.addEventListener('focus', function() {
       focused = true;
     });

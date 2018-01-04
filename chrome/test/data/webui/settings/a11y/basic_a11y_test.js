@@ -22,7 +22,7 @@ AccessibilityTest.define('SettingsAccessibilityTest', {
   violationFilter:
       Object.assign({}, SettingsAccessibilityTest.violationFilter, {
         'button-name': function(nodeResult) {
-          var node = nodeResult.element;
+          const node = nodeResult.element;
           return node.classList.contains('icon-expand-more');
         },
       }),

@@ -5,14 +5,14 @@
 /** @fileoverview Suite of tests for Settings.PrefUtil. */
 cr.define('settings_prefUtil', function() {
   suite('PrefUtil', function() {
-    var global = function() { return this; }();
-    var origTraceAssertionsForTesting = global.traceAssertionsForTesting;
+    const global = function() { return this; }();
+    const origTraceAssertionsForTesting = global.traceAssertionsForTesting;
 
     /**
      * @param {function()} fn Function that should throw.
      * @param {string} message Message to log if function does not throw.
      */
-    var expectThrows = function(fn, message) {
+    const expectThrows = function(fn, message) {
       // Temporarily disable printing of stack traces on assert failures.
       global.traceAssertionsForTesting = false;
 
@@ -27,8 +27,8 @@ cr.define('settings_prefUtil', function() {
 
     // Tests that the given value is converted to the expected value, for a
     // given prefType.
-    var expectStringToPrefValue = function(value, prefType, expectedValue) {
-      var pref = /** @type {PrefObject} */({type: prefType});
+    const expectStringToPrefValue = function(value, prefType, expectedValue) {
+      const pref = /** @type {PrefObject} */({type: prefType});
       expectEquals(expectedValue,
                    Settings.PrefUtil.stringToPrefValue(value, pref));
     };
@@ -46,7 +46,7 @@ cr.define('settings_prefUtil', function() {
       expectStringToPrefValue(
           'Foo Bar', chrome.settingsPrivate.PrefType.STRING, 'Foo Bar');
 
-      var url = 'http://example.com';
+      const url = 'http://example.com';
       expectStringToPrefValue(url, chrome.settingsPrivate.PrefType.URL, url);
 
       expectThrows(function() {
@@ -62,8 +62,8 @@ cr.define('settings_prefUtil', function() {
 
     // Tests that the pref value is converted to the expected string, for a
     // given prefType.
-    var expectPrefToString = function(prefType, prefValue, expectedValue) {
-      var pref = /** @type {PrefObject} */({
+    const expectPrefToString = function(prefType, prefValue, expectedValue) {
+      const pref = /** @type {PrefObject} */({
         type: prefType,
         value: prefValue,
       });
@@ -79,7 +79,7 @@ cr.define('settings_prefUtil', function() {
       expectPrefToString(chrome.settingsPrivate.PrefType.STRING,
                          'Foo Bar', 'Foo Bar');
 
-      var url = 'http://example.com';
+      const url = 'http://example.com';
       expectPrefToString(chrome.settingsPrivate.PrefType.URL, url, url);
 
       expectThrows(function() {

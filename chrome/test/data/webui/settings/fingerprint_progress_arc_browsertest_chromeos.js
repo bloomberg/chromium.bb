@@ -10,7 +10,7 @@ suite('settings-fingerprint-progress-arc', function() {
    *   y: number,
    * }}
    */
-  var Point;
+  let Point;
 
   /**
    * An object descrbing a color with r, g and b values.
@@ -20,20 +20,20 @@ suite('settings-fingerprint-progress-arc', function() {
    *   b: number,
    * }}
    */
-  var Color;
+  let Color;
 
   /** @type {?SettingsFingerprintProgressArcElement} */
-  var progressArc = null;
+  let progressArc = null;
 
   /** @type {?HTMLCanvasElement} */
-  var canvas = null;
+  let canvas = null;
 
   /** @type {Color} */
-  var black = {r: 0, g: 0, b: 0};
+  const black = {r: 0, g: 0, b: 0};
   /** @type {Color} */
-  var blue = {r: 0, g: 0, b: 255};
+  const blue = {r: 0, g: 0, b: 255};
   /** @type {Color} */
-  var white = {r: 255, g: 255, b: 255};
+  const white = {r: 255, g: 255, b: 255};
 
   /**
    * Helper function which gets the rgb values at |point| on the canvas.
@@ -41,8 +41,8 @@ suite('settings-fingerprint-progress-arc', function() {
    * @return {Color}
    */
   function getRGBData(point) {
-    var ctx = canvas.getContext('2d');
-    var pixel = ctx.getImageData(point.x, point.y, 1, 1).data;
+    const ctx = canvas.getContext('2d');
+    const pixel = ctx.getImageData(point.x, point.y, 1, 1).data;
     return {r: pixel[0], g: pixel[1], b: pixel[2]};
   }
 
@@ -64,7 +64,7 @@ suite('settings-fingerprint-progress-arc', function() {
    * @param {!Array<Point>} listOfPoints
    */
   function checkListOfNotWhiteData(listOfPoints) {
-    for (var i = 0; i < listOfPoints.length; ++i)
+    for (let i = 0; i < listOfPoints.length; ++i)
       checkColorNotWhite(getRGBData(listOfPoints[i]));
   }
 
@@ -87,7 +87,7 @@ suite('settings-fingerprint-progress-arc', function() {
    * @param {!Array<Point>} listOfPoints
    */
   function checkListOfRGBData(expectedColor, listOfPoints) {
-    for (var i = 0; i < listOfPoints.length; ++i)
+    for (let i = 0; i < listOfPoints.length; ++i)
       checkRGBData(expectedColor, getRGBData(listOfPoints[i]));
   }
 
@@ -103,7 +103,7 @@ suite('settings-fingerprint-progress-arc', function() {
     progressArc.canvasCircleProgressColor_ = 'rgba(0,0,255,1.0)';
     progressArc.canvasCircleShadowColor_= 'rgba(0,0,0,1.0)';
     progressArc.clearCanvas = function() {
-      var ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d');
       ctx.fillStyle = 'rgba(255,255,255,1.0)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
@@ -120,10 +120,10 @@ suite('settings-fingerprint-progress-arc', function() {
     progressArc.drawArc(0, Math.PI / 2,
         progressArc.canvasCircleProgressColor_);
     /** @type {Array<Point>} */
-    var expectedPointsOnArc = [{x:200, y:75} /* 0rad */,
+    let expectedPointsOnArc = [{x:200, y:75} /* 0rad */,
         {x:185, y:110} /* PI/4rad */, {x:150, y:125} /* PI/2rad */];
     /** @type {Array<Point>} */
-    var expectedPointsNotOnArc = [{x:115, y:110} /* 3PI/4rad */,
+    let expectedPointsNotOnArc = [{x:115, y:110} /* 3PI/4rad */,
         {x:100, y:75} /* PI */];
     checkListOfRGBData(blue, expectedPointsOnArc);
     checkListOfRGBData(white, expectedPointsNotOnArc);
@@ -152,11 +152,11 @@ suite('settings-fingerprint-progress-arc', function() {
     // remain white.
     progressArc.drawBackgroundCircle();
     /** @type {Array<Point>} */
-    var expectedPointsInCircle = [{x:200, y:75} /* 0rad */,
+    const expectedPointsInCircle = [{x:200, y:75} /* 0rad */,
         {x:150, y:125} /* PI/2rad */, {x:100, y:75} /* PIrad */,
         {x:150, y:25} /* 3PI/2rad */];
     /** @type {Array<Point>} */
-    var expectedPointsNotInCircle =
+    const expectedPointsNotInCircle =
         [{x:110, y:75} /* Too left, outside of stroke */,
          {x:90, y:75} /* Too right, inside of stroke */,
          {x:200, y:100} /* Outside of circle */,
@@ -175,11 +175,11 @@ suite('settings-fingerprint-progress-arc', function() {
     // should not be white.
     progressArc.drawShadow(20, 0, 0);
     /** @type {Array<Point>} */
-    var expectedPointsInShadowBlur10 = [{x:210, y:75} /* 0rad */,
+    const expectedPointsInShadowBlur10 = [{x:210, y:75} /* 0rad */,
         {x:150, y:135} /* PI/2rad */, {x:90, y:75} /* PIrad */,
         {x:150, y:15} /* 3PI/2rad */];
     /** @type {Array<Point>} */
-    var expectedPointsInShadowBlur20 = [{x:220, y:75} /* 0rad */,
+    const expectedPointsInShadowBlur20 = [{x:220, y:75} /* 0rad */,
         {x:150, y:145} /* PI/2rad */, {x:80, y:75} /* PIrad */,
         {x:150, y:5} /* 3PI/2rad */];
 

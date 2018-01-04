@@ -25,7 +25,7 @@ class TestAndroidAppsBrowserProxy extends TestBrowserProxy {
   setAndroidAppsState(playStoreEnabled, settingsAppAvailable) {
     // We need to make sure to pass a new object here, otherwise the property
     // change event may not get fired in the listener.
-    var appsInfo = {
+    const appsInfo = {
       playStoreEnabled: playStoreEnabled,
       settingsAppAvailable: settingsAppAvailable,
     };

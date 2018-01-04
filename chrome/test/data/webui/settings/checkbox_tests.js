@@ -9,13 +9,13 @@ cr.define('settings_checkbox', function() {
      * Checkbox created before each test.
      * @type {SettingsCheckbox}
      */
-    var testElement;
+    let testElement;
 
     /**
      * Pref value used in tests, should reflect checkbox 'checked' attribute.
      * @type {SettingsCheckbox}
      */
-    var pref = {
+    const pref = {
       key: 'test',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true
@@ -61,7 +61,7 @@ cr.define('settings_checkbox', function() {
     });
 
     test('numerical pref', function() {
-      var prefNum = {
+      const prefNum = {
         key: 'test',
         type: chrome.settingsPrivate.PrefType.NUMBER,
         value: 1

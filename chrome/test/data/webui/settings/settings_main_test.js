@@ -45,7 +45,7 @@ cr.define('settings_main_page', function() {
     }
   }
 
-  var settingsPrefs = null;
+  let settingsPrefs = null;
 
   suiteSetup(function() {
     settingsPrefs = document.createElement('settings-prefs');
@@ -54,10 +54,10 @@ cr.define('settings_main_page', function() {
 
   suite('MainPageTests', function() {
     /** @type {?TestSearchManager} */
-    var searchManager = null;
+    let searchManager = null;
 
     /** @type {?SettingsMainElement} */
-    var settingsMain = null;
+    let settingsMain = null;
 
     setup(function() {
       settings.navigateTo(settings.routes.BASIC);
@@ -76,9 +76,9 @@ cr.define('settings_main_page', function() {
     test('searchContents() triggers SearchManager', function() {
       Polymer.dom.flush();
 
-      var expectedQuery1 = 'foo';
-      var expectedQuery2 = 'bar';
-      var expectedQuery3 = '';
+      const expectedQuery1 = 'foo';
+      const expectedQuery2 = 'bar';
+      const expectedQuery3 = '';
 
       return settingsMain.searchContents(expectedQuery1).then(function() {
         return searchManager.whenCalled('search');
@@ -103,9 +103,9 @@ cr.define('settings_main_page', function() {
 
     /** @return {!HTMLElement} */
     function getToggleContainer() {
-      var page = settingsMain.$$('settings-basic-page');
+      const page = settingsMain.$$('settings-basic-page');
       assertTrue(!!page);
-      var toggleContainer = page.$$('#toggleContainer');
+      const toggleContainer = page.$$('#toggleContainer');
       assertTrue(!!toggleContainer);
       return toggleContainer;
     }
@@ -116,7 +116,7 @@ cr.define('settings_main_page', function() {
      * @param {boolean} expectedVisible
      */
     function assertToggleContainerVisible(expectedVisible) {
-      var toggleContainer = getToggleContainer();
+      const toggleContainer = getToggleContainer();
       if (expectedVisible)
         assertNotEquals('none', toggleContainer.style.display);
       else
@@ -125,7 +125,7 @@ cr.define('settings_main_page', function() {
 
     test('no results page shows and hides', function() {
       Polymer.dom.flush();
-      var noSearchResults = settingsMain.$.noSearchResults;
+      const noSearchResults = settingsMain.$.noSearchResults;
       assertTrue(!!noSearchResults);
       assertTrue(noSearchResults.hidden);
 
@@ -147,7 +147,7 @@ cr.define('settings_main_page', function() {
     // is hidden and the "advanced page toggle" is visible again.
     test('no results page hides on clear', function() {
       Polymer.dom.flush();
-      var noSearchResults = settingsMain.$.noSearchResults;
+      const noSearchResults = settingsMain.$.noSearchResults;
       assertTrue(!!noSearchResults);
       assertTrue(noSearchResults.hidden);
 
@@ -170,7 +170,7 @@ cr.define('settings_main_page', function() {
      */
     function assertPageVisibility(expectedBasic, expectedAdvanced) {
       Polymer.dom.flush();
-      var page = settingsMain.$$('settings-basic-page');
+      const page = settingsMain.$$('settings-basic-page');
       assertEquals(
           expectedBasic, getComputedStyle(page.$$('#basicPage')).display);
 
@@ -249,17 +249,17 @@ cr.define('settings_main_page', function() {
       settings.navigateTo(settings.routes.PRIVACY);
       Polymer.dom.flush();
 
-      var basicPage = settingsMain.$$('settings-basic-page');
-      var advancedPage = null;
+      const basicPage = settingsMain.$$('settings-basic-page');
+      let advancedPage = null;
       return basicPage.$$('#advancedPageTemplate').get().then(
           function(advanced) {
             advancedPage = advanced;
             return assertPageVisibility('block', 'block');
           }).then(function() {
-            var whenHidden = test_util.whenAttributeIs(
+            const whenHidden = test_util.whenAttributeIs(
                 advancedPage, 'hidden', '');
 
-            var advancedToggle =
+            const advancedToggle =
                 getToggleContainer().querySelector('#advancedToggle');
             assertTrue(!!advancedToggle);
             MockInteractions.tap(advancedToggle);
@@ -285,7 +285,7 @@ cr.define('settings_main_page', function() {
     test('verify showChangePassword value', function() {
       settings.navigateTo(settings.routes.BASIC);
       Polymer.dom.flush();
-      var basicPage = settingsMain.$$('settings-basic-page');
+      const basicPage = settingsMain.$$('settings-basic-page');
       assertTrue(!!basicPage);
       assertFalse(basicPage.showChangePassword);
       assertFalse(!!basicPage.$$('settings-change-password-page'));

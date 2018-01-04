@@ -5,7 +5,7 @@
 /** @fileoverview Tests for settings-idle-load. */
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 /**
  * @constructor
@@ -36,7 +36,7 @@ TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {
   // Register mocha tests.
   suite('Settings idle load tests', function() {
     setup(function() {
-      var template =
+      const template =
           '<template is="settings-idle-load" id="idleTemplate" '+
           '    url="chrome://resources/html/polymer.html">' +
           '  <div></div>' +

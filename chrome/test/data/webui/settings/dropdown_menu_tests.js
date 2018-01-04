@@ -6,19 +6,19 @@
 cr.define('settings_dropdown_menu', function() {
   suite('SettingsDropdownMenu', function() {
     /** @type {SettingsDropdownMenu} */
-    var dropdown;
+    let dropdown;
 
     /**
      * The <select> used internally by the dropdown menu.
      * @type {HTMLSelectElement}
      */
-    var selectElement;
+    let selectElement;
 
     /**
      * The "Custom" option in the <select> menu.
      * @type {HTMLOptionElement}
      */
-    var customOption;
+    let customOption;
 
     function waitUntilDropdownUpdated() {
       return new Promise(function(resolve) { dropdown.async(resolve); });
@@ -34,7 +34,7 @@ cr.define('settings_dropdown_menu', function() {
       PolymerTest.clearBody();
       dropdown = document.createElement('settings-dropdown-menu');
       selectElement = assert(dropdown.$$('select'));
-      var options = selectElement.options;
+      const options = selectElement.options;
       customOption = assert(options[options.length - 1]);
       document.body.appendChild(dropdown);
     });
@@ -92,7 +92,7 @@ cr.define('settings_dropdown_menu', function() {
         assertEquals('a', dropdown.pref.value);
 
         // Item remains selected after updating menu items.
-        var newMenuOptions = dropdown.menuOptions.slice().reverse();
+        const newMenuOptions = dropdown.menuOptions.slice().reverse();
         dropdown.menuOptions = newMenuOptions;
         return waitUntilDropdownUpdated();
       }).then(function() {

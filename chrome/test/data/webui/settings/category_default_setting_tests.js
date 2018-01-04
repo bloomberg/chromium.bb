@@ -8,13 +8,13 @@ suite('CategoryDefaultSetting', function() {
    * A site settings category created before each test.
    * @type {SiteSettingsCategory}
    */
-  var testElement;
+  let testElement;
 
   /**
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
-  var browserProxy = null;
+  let browserProxy = null;
 
   // Initialize a site-settings-category before each test.
   setup(function() {
@@ -53,7 +53,7 @@ suite('CategoryDefaultSetting', function() {
         })
         .then(function(args) {
           assertEquals(category, args[0]);
-          var oppositeSetting = expectedEnabled ?
+          const oppositeSetting = expectedEnabled ?
               settings.ContentSetting.BLOCK :
               expectedEnabledContentSetting;
           assertEquals(oppositeSetting, args[1]);
@@ -66,7 +66,7 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the location category is enabled.
      * @type {SiteSettingsPref}
      */
-    var prefsLocationEnabled = {
+    const prefsLocationEnabled = {
       defaults: {
         geolocation: {
           setting: 'allow',
@@ -84,7 +84,7 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the location category is disabled.
      * @type {SiteSettingsPref}
      */
-    var prefsLocationDisabled = {
+    const prefsLocationDisabled = {
       defaults: {
         geolocation: {
           setting: 'block',
@@ -98,7 +98,7 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in DETECT/ASK setting', function() {
-    var prefsFlash = {
+    const prefsFlash = {
       defaults: {
         plugins: {
           setting: 'detect_important_content',
@@ -112,7 +112,7 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in legacy ALLOW setting', function() {
-    var prefsFlash = {
+    const prefsFlash = {
       defaults: {
         plugins: {
           setting: 'allow',
@@ -126,7 +126,7 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test Flash content setting in BLOCK setting', function() {
-    var prefsFlash = {
+    const prefsFlash = {
       defaults: {
         plugins: {
           setting: 'block',
@@ -140,7 +140,7 @@ suite('CategoryDefaultSetting', function() {
   });
 
   test('test content setting from extension', function() {
-    var prefs = {
+    const prefs = {
       defaults: {
         mic: {
           setting: 'block',
@@ -166,7 +166,7 @@ suite('CategoryDefaultSetting', function() {
     browserProxy.setPrefs(prefs);
 
     testElement.category = category;
-    var secondaryToggle = null;
+    let secondaryToggle = null;
 
     return browserProxy.whenCalled('getDefaultValueForContentType')
         .then(function(contentType) {
@@ -270,7 +270,7 @@ suite('CategoryDefaultSetting', function() {
      * An example pref where the Cookies category is set to delete when
      * session ends.
      */
-    var prefsCookiesSessionOnly = {
+    const prefsCookiesSessionOnly = {
       defaults: {
         cookies: {
           setting: 'session_only',

@@ -6,7 +6,7 @@ cr.define('settings', function() {
   /** @implements {settings.LanguagesBrowserProxy} */
   class TestLanguagesBrowserProxy extends TestBrowserProxy {
     constructor() {
-      var methodNames = [];
+      const methodNames = [];
       if (cr.isChromeOS || cr.isWindows)
         methodNames.push('getProspectiveUILanguage');
 

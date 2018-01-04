@@ -69,8 +69,8 @@ cr.define('settings_people_page_manage_profile', function() {
   }
 
   suite('ManageProfileTests', function() {
-    var manageProfile = null;
-    var browserProxy = null;
+    let manageProfile = null;
+    let browserProxy = null;
 
     setup(function() {
       browserProxy = new TestManageProfileBrowserProxy();
@@ -90,7 +90,7 @@ cr.define('settings_people_page_manage_profile', function() {
     //  - gets and receives all the available icons
     //  - can select a new icon
     test('ManageProfileChangeIcon', function() {
-      var items = null;
+      let items = null;
       return browserProxy.whenCalled('getAvailableIcons')
           .then(function() {
             Polymer.dom.flush();
@@ -116,7 +116,7 @@ cr.define('settings_people_page_manage_profile', function() {
     });
 
     test('ManageProfileChangeName', function() {
-      var nameField = manageProfile.$.name;
+      const nameField = manageProfile.$.name;
       assertTrue(!!nameField);
       assertFalse(!!nameField.disabled);
 
@@ -134,7 +134,7 @@ cr.define('settings_people_page_manage_profile', function() {
     test('ProfileNameIsDisabledForSupervisedUser', function() {
       manageProfile.syncStatus = {supervisedUser: true, childUser: false};
 
-      var nameField = manageProfile.$.name;
+      const nameField = manageProfile.$.name;
       assertTrue(!!nameField);
 
       // Name field should be disabled for legacy supervised users.
@@ -143,7 +143,7 @@ cr.define('settings_people_page_manage_profile', function() {
 
     // Tests profile name updates pushed from the browser.
     test('ManageProfileNameUpdated', function() {
-      var nameField = manageProfile.$.name;
+      const nameField = manageProfile.$.name;
       assertTrue(!!nameField);
 
       return browserProxy.whenCalled('getAvailableIcons').then(function() {
@@ -158,14 +158,14 @@ cr.define('settings_people_page_manage_profile', function() {
     // Tests profile shortcut toggle is hidden if profile shortcuts feature is
     // disabled.
     test('ManageProfileShortcutToggleHidden', function() {
-      var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
+      const hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
       assertFalse(!!hasShortcutToggle);
     });
   });
 
   suite('ManageProfileTestsProfileShortcutsEnabled', function() {
-    var manageProfile = null;
-    var browserProxy = null;
+    let manageProfile = null;
+    let browserProxy = null;
 
     setup(function() {
       loadTimeData.overrideValues({
@@ -196,7 +196,7 @@ cr.define('settings_people_page_manage_profile', function() {
           .then(function() {
         Polymer.dom.flush();
 
-        var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
+        const hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
         assertTrue(!!hasShortcutToggle);
 
         // The profile shortcut toggle is checked.
@@ -233,7 +233,7 @@ cr.define('settings_people_page_manage_profile', function() {
           .then(function() {
         Polymer.dom.flush();
 
-        var hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
+        const hasShortcutToggle = manageProfile.$$('#hasShortcutToggle');
         assertTrue(!!hasShortcutToggle);
 
         assertFalse(hasShortcutToggle.checked);

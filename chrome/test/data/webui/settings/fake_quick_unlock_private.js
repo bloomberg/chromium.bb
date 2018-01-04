@@ -10,7 +10,7 @@
  * A couple weak pins to use for testing.
  * @const
  */
-var TEST_WEAK_PINS = ['1111', '1234', '1313', '2001', '1010'];
+const TEST_WEAK_PINS = ['1111', '1234', '1313', '2001', '1010'];
 
 cr.define('settings', function() {
   /**
@@ -73,9 +73,9 @@ cr.define('settings', function() {
      *     !chrome.quickUnlockPrivate.CredentialCheck):void} onComplete
      */
     checkCredential: function(mode, credential, onComplete) {
-      var message = {};
-      var errors = [];
-      var warnings = [];
+      const message = {};
+      const errors = [];
+      const warnings = [];
 
       if (!!credential &&
           credential.length < this.credentialRequirements.minLength) {

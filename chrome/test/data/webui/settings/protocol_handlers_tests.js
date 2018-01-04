@@ -8,13 +8,13 @@ suite('ProtocolHandlers', function() {
    * A dummy protocol handler element created before each test.
    * @type {ProtocolHandlers}
    */
-  var testElement;
+  let testElement;
 
   /**
    * A list of ProtocolEntry fixtures.
    * @type {!Array<!ProtocolEntry>}
    */
-  var protocols = [
+  const protocols = [
     {
       default_handler: 0,
       handlers: [{
@@ -50,7 +50,7 @@ suite('ProtocolHandlers', function() {
    * The mock proxy object to use during test.
    * @type {TestSiteSettingsPrefsBrowserProxy}
    */
-  var browserProxy = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -74,7 +74,7 @@ suite('ProtocolHandlers', function() {
 
   test('empty list', function() {
     return initPage().then(function() {
-      var listFrames = testElement.root.querySelectorAll('.list-frame');
+      const listFrames = testElement.root.querySelectorAll('.list-frame');
       assertEquals(0, listFrames.length);
     });
   });
@@ -83,21 +83,21 @@ suite('ProtocolHandlers', function() {
     browserProxy.setProtocolHandlers(protocols);
 
     return initPage().then(function() {
-      var listFrames = testElement.root.querySelectorAll('.list-frame');
-      var listItems = testElement.root.querySelectorAll('.list-item');
+      const listFrames = testElement.root.querySelectorAll('.list-frame');
+      const listItems = testElement.root.querySelectorAll('.list-item');
       // There are two protocols: ["mailto", "webcal"].
       assertEquals(2, listFrames.length);
       // There are three total handlers within the two protocols.
       assertEquals(3, listItems.length);
 
       // Check that item hosts are rendered correctly.
-      var hosts = testElement.root.querySelectorAll('.protocol-host');
+      const hosts = testElement.root.querySelectorAll('.protocol-host');
       assertEquals('www.google.com', hosts[0].textContent);
       assertEquals('www.google1.com', hosts[1].textContent);
       assertEquals('www.google2.com', hosts[2].textContent);
 
       // Check that item default subtexts are rendered correctly.
-      var defText = testElement.root.querySelectorAll('.protocol-default');
+      const defText = testElement.root.querySelectorAll('.protocol-default');
       assertFalse(defText[0].hidden);
       assertFalse(defText[1].hidden);
       assertTrue(defText[2].hidden);
@@ -111,7 +111,9 @@ suite('ProtocolHandlers', function() {
    * @return {!Promise}
    */
   function testButtonFlow(button, browserProxyHandler) {
-    var menuButtons, functionButton, dialog;
+    let menuButtons;
+    let functionButton;
+    let dialog;
 
     return initPage()
         .then(function() {
@@ -136,7 +138,7 @@ suite('ProtocolHandlers', function() {
           assertEquals(protocols[0].protocol, args[0]);
           assertEquals(protocols[0].handlers[0].spec, args[1]);
 
-          var dialog = testElement.$$('dialog[is=cr-action-menu]');
+          const dialog = testElement.$$('dialog[is=cr-action-menu]');
           assertFalse(dialog.open);
 
           // Test the button for the second protocol handler

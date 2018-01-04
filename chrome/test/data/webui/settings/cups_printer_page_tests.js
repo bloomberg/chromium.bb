@@ -69,8 +69,8 @@ class TestCupsPrintersBrowserProxy extends TestBrowserProxy {
 
 suite('CupsAddPrinterDialogTests', function() {
   function fillAddManuallyDialog(addDialog) {
-    var name = addDialog.$$('#printerNameInput');
-    var address = addDialog.$$('#printerAddressInput');
+    const name = addDialog.$$('#printerNameInput');
+    const address = addDialog.$$('#printerAddressInput');
 
     assertTrue(!!name);
     name.value = 'Test printer';
@@ -78,30 +78,30 @@ suite('CupsAddPrinterDialogTests', function() {
     assertTrue(!!address);
     address.value = '127.0.0.1';
 
-    var addButton = addDialog.$$('#addPrinterButton');
+    const addButton = addDialog.$$('#addPrinterButton');
     assertTrue(!!addButton);
     assertFalse(addButton.disabled);
   }
 
   function clickAddButton(dialog) {
     assertTrue(!!dialog, 'Dialog is null for add');
-    var addButton = dialog.$$('.action-button');
+    const addButton = dialog.$$('.action-button');
     assertTrue(!!addButton, 'Button is null');
     MockInteractions.tap(addButton);
   }
 
   function clickCancelButton(dialog) {
     assertTrue(!!dialog, 'Dialog is null for cancel');
-    var cancelButton = dialog.$$('.cancel-button');
+    const cancelButton = dialog.$$('.cancel-button');
     assertTrue(!!cancelButton, 'Button is null');
     MockInteractions.tap(cancelButton);
   }
 
-  var page = null;
-  var dialog = null;
+  let page = null;
+  let dialog = null;
 
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
-  var cupsPrintersBrowserProxy = null;
+  let cupsPrintersBrowserProxy = null;
 
   setup(function() {
     cupsPrintersBrowserProxy = new TestCupsPrintersBrowserProxy();
@@ -146,17 +146,17 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   test('ValidIPV4', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
     expectTrue(dialog.canAddPrinter_('Test printer', '127.0.0.1'));
   });
 
   test('ValidIPV4WithPort', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
     expectTrue(dialog.canAddPrinter_('Test printer', '127.0.1.183:1234'));
   });
 
   test('ValidIPV6', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
 
     // Test the full ipv6 address scheme.
     expectTrue(dialog.canAddPrinter_('Test printer', '1:2:a3:ff4:5:6:7:8'));
@@ -169,7 +169,7 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   test('ValidIPV6WithPort', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
 
     expectTrue(dialog.canAddPrinter_('Test printer', '[1:2:aa2:4]:12'));
     expectTrue(dialog.canAddPrinter_('Test printer', '[::255]:54'));
@@ -177,7 +177,7 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   test('InvalidIPV6', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
 
     expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:4:5:6:7:8:9'));
     expectFalse(dialog.canAddPrinter_('Test printer', '1:2:3:aa:a1245:2'));
@@ -187,14 +187,14 @@ suite('CupsAddPrinterDialogTests', function() {
   });
 
   test('ValidHostname', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
 
     expectTrue(dialog.canAddPrinter_('Test printer', 'hello-world.com'));
     expectTrue(dialog.canAddPrinter_('Test printer', 'hello.world.com:12345'));
   });
 
   test('InvalidHostname', function() {
-    var dialog = document.createElement('add-printer-manually-dialog');
+    const dialog = document.createElement('add-printer-manually-dialog');
 
     expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld!123.com'));
     expectFalse(dialog.canAddPrinter_('Test printer', 'helloworld123-.com'));
@@ -206,13 +206,13 @@ suite('CupsAddPrinterDialogTests', function() {
    */
   test('ValidAddOpensModelSelection', function() {
     // Starts in discovery dialog, select add manually button.
-    var discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
     MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
     Polymer.dom.flush();
 
     // Now we should be in the manually add dialog.
-    var addDialog = dialog.$$('add-printer-manually-dialog');
+    const addDialog = dialog.$$('add-printer-manually-dialog');
     assertTrue(!!addDialog);
     fillAddManuallyDialog(addDialog);
 
@@ -243,12 +243,12 @@ suite('CupsAddPrinterDialogTests', function() {
    * Test that getModels isn't called with a blank query.
    */
   test('NoBlankQueries', function() {
-    var discoveryDialog = dialog.$$('add-printer-discovery-dialog');
+    const discoveryDialog = dialog.$$('add-printer-discovery-dialog');
     assertTrue(!!discoveryDialog);
     MockInteractions.tap(discoveryDialog.$$('.secondary-button'));
     Polymer.dom.flush();
 
-    var addDialog = dialog.$$('add-printer-manually-dialog');
+    const addDialog = dialog.$$('add-printer-manually-dialog');
     assertTrue(!!addDialog);
     fillAddManuallyDialog(addDialog);
 
@@ -279,7 +279,7 @@ suite('CupsAddPrinterDialogTests', function() {
    * IPP printers.
    */
   test('LogDialogCancelledIpp', function() {
-    var makeAndModel = 'Printer Make And Model';
+    const makeAndModel = 'Printer Make And Model';
     // Start on add manually.
     dialog.fire('open-manually-add-printer-dialog');
     Polymer.dom.flush();
@@ -312,7 +312,7 @@ suite('CupsAddPrinterDialogTests', function() {
     };
 
     // Press the add button to advance dialog.
-    var addDialog = dialog.$$('add-printer-manually-dialog');
+    const addDialog = dialog.$$('add-printer-manually-dialog');
     assertTrue(!!addDialog);
     clickAddButton(addDialog);
 
@@ -337,21 +337,21 @@ suite('CupsAddPrinterDialogTests', function() {
    * USB printers.
    */
   test('LogDialogCancelledUSB', function() {
-    var vendorId = 0x1234;
-    var modelId = 0xDEAD;
-    var manufacturer = 'PrinterMFG';
-    var model = 'Printy Printerson';
+    const vendorId = 0x1234;
+    const modelId = 0xDEAD;
+    const manufacturer = 'PrinterMFG';
+    const model = 'Printy Printerson';
 
-    var usbInfo = {
+    const usbInfo = {
       usbVendorId: vendorId,
       usbProductId: modelId,
       usbVendorName: manufacturer,
       usbProductName: model,
     };
 
-    var expectedPrinter = 'PICK_ME!';
+    const expectedPrinter = 'PICK_ME!';
 
-    var newPrinter = {
+    const newPrinter = {
       ppdManufacturer: '',
       ppdModel: '',
       printerAddress: 'EEAADDAA',

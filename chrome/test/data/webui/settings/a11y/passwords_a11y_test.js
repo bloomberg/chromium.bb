@@ -61,7 +61,7 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       PasswordManagerImpl.instance_ = new TestPasswordManager();
       this.passwordManager = PasswordManagerImpl.instance_;
 
-      var settingsUi = document.createElement('settings-ui');
+      const settingsUi = document.createElement('settings-ui');
 
       // The settings section will expand to load the MANAGE_PASSWORDS route
       // (based on the URL set above) once the settings-ui element is attached
@@ -89,8 +89,8 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
       assertEquals(0, this.passwordsSection.savedPasswords.length);
     },
     'Accessible with 10 passwords': function() {
-      var fakePasswords = [];
-      for (var i = 0; i < 10; i++) {
+      const fakePasswords = [];
+      for (let i = 0; i < 10; i++) {
         fakePasswords.push(FakeDataMaker.passwordEntry());
       }
       // Set list of passwords.
@@ -105,7 +105,7 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
   violationFilter:
       Object.assign({}, SettingsAccessibilityTest.violationFilter, {
         'button-name': function(nodeResult) {
-          var node = nodeResult.element;
+          const node = nodeResult.element;
           return node.classList.contains('icon-expand-more');
         },
       }),

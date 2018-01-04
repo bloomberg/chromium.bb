@@ -5,7 +5,7 @@
 cr.define('settings_test', function() {
 
   suite('SearchSettingsTest', function() {
-    var searchManager;
+    let searchManager;
 
     // Don't import script if already imported (happens in Vulcanized mode).
     suiteSetup(function() {
@@ -24,29 +24,29 @@ cr.define('settings_test', function() {
      * occurs within that node.
      */
     test('normal highlighting', function() {
-      var optionText = 'FooSettingsFoo';
+      const optionText = 'FooSettingsFoo';
 
       document.body.innerHTML =
           `<settings-section hidden-by-search>
              <div id="mydiv">${optionText}</div>
            </settings-section>`;
 
-      var section = document.querySelector('settings-section');
-      var div = document.querySelector('#mydiv');
+      const section = document.querySelector('settings-section');
+      const div = document.querySelector('#mydiv');
 
       assertTrue(section.hiddenBySearch);
       return searchManager.search('settings', section).then(function() {
         assertFalse(section.hiddenBySearch);
 
-        var highlightWrapper = div.querySelector('.search-highlight-wrapper');
+        const highlightWrapper = div.querySelector('.search-highlight-wrapper');
         assertTrue(!!highlightWrapper);
 
-        var originalContent = highlightWrapper.querySelector(
+        const originalContent = highlightWrapper.querySelector(
             '.search-highlight-original-content');
         assertTrue(!!originalContent);
         assertEquals(optionText, originalContent.textContent);
 
-        var searchHits = highlightWrapper.querySelectorAll(
+        const searchHits = highlightWrapper.querySelectorAll(
             '.search-highlight-hit');
         assertEquals(1, searchHits.length);
         assertEquals('Settings', searchHits[0].textContent);
@@ -75,14 +75,14 @@ cr.define('settings_test', function() {
              </select>
            </settings-section>`;
 
-      var section = document.querySelector('settings-section');
-      var select = section.querySelector('select');
+      const section = document.querySelector('settings-section');
+      const select = section.querySelector('select');
 
       assertTrue(section.hiddenBySearch);
       return searchManager.search('settings', section).then(function() {
         assertFalse(section.hiddenBySearch);
 
-        var highlightWrapper = select.querySelector(
+        const highlightWrapper = select.querySelector(
             '.search-highlight-wrapper');
         assertFalse(!!highlightWrapper);
 
@@ -90,7 +90,7 @@ cr.define('settings_test', function() {
         // highlights are cleared.
         return searchManager.search('', section);
       }).then(function() {
-        var options = select.querySelectorAll('option');
+        const options = select.querySelectorAll('option');
         assertEquals(3, options.length);
         assertEquals('Foo', options[0].textContent);
         assertEquals('Settings', options[1].textContent);
@@ -99,7 +99,7 @@ cr.define('settings_test', function() {
     });
 
     test('ignored elements are ignored', function() {
-      var text = 'hello';
+      const text = 'hello';
       document.body.innerHTML =
           `<settings-section hidden-by-search>
              <cr-events>${text}</cr-events>
@@ -114,7 +114,7 @@ cr.define('settings_test', function() {
              <template>${text}</template>
            </settings-section>`;
 
-      var section = document.querySelector('settings-section');
+      const section = document.querySelector('settings-section');
       assertTrue(section.hiddenBySearch);
 
       return searchManager.search(text, section).then(function() {
@@ -136,7 +136,7 @@ cr.define('settings_test', function() {
              <div><span>Nothing</span></div>
            </settings-section>`;
 
-      var sections = Array.prototype.slice.call(
+      const sections = Array.prototype.slice.call(
           document.querySelectorAll('settings-section'));
 
       return Promise.all(sections.map(s => searchManager.search('there', s)))

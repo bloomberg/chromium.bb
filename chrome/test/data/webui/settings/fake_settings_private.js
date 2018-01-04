@@ -26,7 +26,7 @@ cr.define('settings', function() {
 
     if (!opt_initialPrefs)
       return;
-    for (var pref of opt_initialPrefs)
+    for (const pref of opt_initialPrefs)
       this.addPref_(pref.type, pref.key, pref.value);
   }
 
@@ -36,8 +36,8 @@ cr.define('settings', function() {
 
     getAllPrefs: function(callback) {
       // Send a copy of prefs to keep our internal state private.
-      var prefs = [];
-      for (var key in this.prefs)
+      const prefs = [];
+      for (const key in this.prefs)
         prefs.push(deepCopy(this.prefs[key]));
 
       // Run the callback asynchronously to test that the prefs aren't actually
@@ -46,7 +46,7 @@ cr.define('settings', function() {
     },
 
     setPref: function(key, value, pageId, callback) {
-      var pref = this.prefs[key];
+      const pref = this.prefs[key];
       assertNotEquals(undefined, pref);
       assertEquals(typeof value, typeof pref.value);
       assertEquals(Array.isArray(value), Array.isArray(pref.value));
@@ -58,7 +58,7 @@ cr.define('settings', function() {
       }
       assertNotEquals(true, this.disallowSetPref_);
 
-      var changed = JSON.stringify(pref.value) != JSON.stringify(value);
+      const changed = JSON.stringify(pref.value) != JSON.stringify(value);
       pref.value = deepCopy(value);
       callback(true);
 
@@ -68,7 +68,7 @@ cr.define('settings', function() {
     },
 
     getPref: function(key, callback) {
-      var pref = this.prefs[key];
+      const pref = this.prefs[key];
       assertNotEquals(undefined, pref);
       callback(deepCopy(pref));
     },
@@ -94,9 +94,9 @@ cr.define('settings', function() {
      * @param {!Object<{key: string, value: *}>} changes
      */
     sendPrefChanges: function(changes) {
-      var prefs = [];
-      for (var change of changes) {
-        var pref = this.prefs[change.key];
+      const prefs = [];
+      for (const change of changes) {
+        const pref = this.prefs[change.key];
         assertNotEquals(undefined, pref);
         pref.value = change.value;
         prefs.push(deepCopy(pref));

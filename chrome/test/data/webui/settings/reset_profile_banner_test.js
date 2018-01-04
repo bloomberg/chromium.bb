@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 suite('BannerTests', function() {
-  var resetBanner = null;
-  var browserProxy = null;
+  let resetBanner = null;
+  let browserProxy = null;
 
   setup(function() {
     browserProxy = new reset_page.TestResetBrowserProxy();
