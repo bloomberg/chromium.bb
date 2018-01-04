@@ -29,6 +29,7 @@
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -486,6 +487,7 @@
   // accessibility value will always be equal to |tabCount|.
   NSString* tabStripButtonValue = [NSString stringWithFormat:@"%d", tabCount];
   NSString* tabStripButtonTitle;
+  id<MDCTypographyFontLoading> fontLoader = [MDCTypography fontLoader];
   if (tabCount <= 0) {
     tabStripButtonTitle = @"";
   } else if (tabCount > kShowTabStripButtonMaxTabCount) {
@@ -493,15 +495,15 @@
     // more than 99 tabs open.
     tabStripButtonTitle = @":)";
     [[self.view.tabSwitchStripButton titleLabel]
-        setFont:[UIFont boldSystemFontOfSize:kFontSizeFewerThanTenTabs]];
+        setFont:[fontLoader boldFontOfSize:kFontSizeFewerThanTenTabs]];
   } else {
     tabStripButtonTitle = tabStripButtonValue;
     if (tabCount < 10) {
       [[self.view.tabSwitchStripButton titleLabel]
-          setFont:[UIFont boldSystemFontOfSize:kFontSizeFewerThanTenTabs]];
+          setFont:[fontLoader boldFontOfSize:kFontSizeFewerThanTenTabs]];
     } else {
       [[self.view.tabSwitchStripButton titleLabel]
-          setFont:[UIFont boldSystemFontOfSize:kFontSizeTenTabsOrMore]];
+          setFont:[fontLoader boldFontOfSize:kFontSizeTenTabsOrMore]];
     }
   }
 
