@@ -40,6 +40,7 @@ Benchmark timings are output by telemetry to stdout and written to
 
 """
 
+import logging
 import json
 import os
 import posixpath
@@ -61,6 +62,7 @@ sys.path.append(os.path.join(
     REPOSITORY_ROOT, 'third_party', 'catapult', 'devil'))
 
 import android_rndis_forwarder
+from chrome_telemetry_build import chromium_config
 from devil.android import device_utils
 from devil.android.sdk import intent
 import lighttpd_server
@@ -68,7 +70,6 @@ from pylib import constants
 from telemetry import android
 from telemetry import benchmark
 from telemetry import benchmark_runner
-from telemetry import project_config
 from telemetry import story
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
@@ -233,7 +234,7 @@ class QuicServer(object):
            '--certificate_file=%s' % QUIC_CERT,
            '--key_file=%s' % QUIC_KEY,
            '--port=%d' % QUIC_PORT]
-    print "Starting Quic Server", cmd
+    logging.info("Starting Quic Server: %s", cmd)
     self._process = subprocess.Popen(cmd)
     assert self._process != None
     # Wait for quic_server to start serving.
@@ -247,7 +248,7 @@ class QuicServer(object):
     # Push certificate to device.
     cert = open(QUIC_CERT, 'r').read()
     device_cert_path = posixpath.join(
-        device.GetExternalStoragePath(), CERT_PATH)
+        device.GetExternalStoragePath(), 'chromium_tests_root', CERT_PATH)
     device.RunShellCommand(['mkdir', '-p', device_cert_path], check_return=True)
     device.WriteFile(os.path.join(device_cert_path, QUIC_CERT_FILENAME), cert)
 
@@ -330,21 +331,14 @@ def main():
   # allow benchmark_runner to in turn open this file up and find the
   # CronetPerfTestBenchmark class to run the benchmark.
   top_level_dir = os.path.dirname(os.path.realpath(__file__))
-  # The perf config file is required to continue using dependencies on the
-  # Chromium checkout in Telemetry.
-  perf_config_file = os.path.join(REPOSITORY_ROOT, 'tools', 'perf', 'core',
-      'binary_dependencies.json')
   expectations_file = os.path.join(top_level_dir, 'expectations.config')
-  with open(perf_config_file, "w") as config_file:
-    config_file.write('{"config_type": "BaseConfig"}')
-  runner_config = project_config.ProjectConfig(
+  runner_config = chromium_config.ChromiumConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[top_level_dir],
-      client_configs=[perf_config_file],
-      default_chrome_root=REPOSITORY_ROOT,
       expectations_file=expectations_file)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
+  sys.argv.insert(3, '--browser=any')
   benchmark_runner.main(runner_config)
   # Shutdown.
   quic_server.ShutdownQuicServer()
