@@ -3552,3 +3552,6 @@ crbug.com/797138 external/wpt/credential-management/passwordcredential-framed-ge
 # Sheriff failures 2018-01-02
 crbug.com/798527 [ Linux ] virtual/spv175/compositing/gestures/gesture-tapHighlight-with-box-shadow.html [ Pass Failure ]
 crbug.com/798592 [ Win7 ] virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
+
+# Sheriff failures 2018-01-03
+crbug.com/798680 external/wpt/pointerevents/pointerlock/pointerevent_pointerlock_supercedes_capture-manual.html [ Pass Timeout ]
