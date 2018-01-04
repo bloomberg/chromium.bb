@@ -70,7 +70,7 @@ class SerialWorkerTest : public testing::Test {
  protected:
   void BreakCallback(const std::string& breakpoint) {
     breakpoint_ = breakpoint;
-    base::RunLoop::QuitCurrentDeprecated();
+    run_loop_->Quit();
   }
 
   void BreakNow(const std::string& b) {
@@ -80,7 +80,11 @@ class SerialWorkerTest : public testing::Test {
   }
 
   void RunUntilBreak(const std::string& b) {
-    base::RunLoop().Run();
+    base::RunLoop run_loop;
+    ASSERT_FALSE(run_loop_);
+    run_loop_ = &run_loop;
+    run_loop_->Run();
+    run_loop_ = nullptr;
     ASSERT_EQ(breakpoint_, b);
   }
 
@@ -140,6 +144,9 @@ class SerialWorkerTest : public testing::Test {
   scoped_refptr<TestSerialWorker> worker_;
 
   std::string breakpoint_;
+  base::RunLoop* run_loop_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(SerialWorkerTest);
 };
 
 TEST_F(SerialWorkerTest, ExecuteAndSerializeReads) {
