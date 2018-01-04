@@ -732,6 +732,10 @@ NET_ERROR(SPDY_RST_STREAM_NO_ERROR_RECEIVED, -372)
 // The pushed stream claimed by the request is no longer available.
 NET_ERROR(SPDY_PUSHED_STREAM_NOT_AVAILABLE, -373)
 
+// A pushed stream was claimed and later reset by the server. When this happens,
+// the request should be retried.
+NET_ERROR(SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, -374)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

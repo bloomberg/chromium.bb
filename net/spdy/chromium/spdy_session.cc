@@ -2639,9 +2639,13 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
     return;
   }
 
+  DCHECK(it->second);
   CHECK_EQ(it->second->stream_id(), stream_id);
 
-  if (error_code == ERROR_CODE_NO_ERROR) {
+  if (it->second->ShouldRetryRSTPushStream()) {
+    CloseActiveStreamIterator(it,
+                              ERR_SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER);
+  } else if (error_code == ERROR_CODE_NO_ERROR) {
     CloseActiveStreamIterator(it, ERR_SPDY_RST_STREAM_NO_ERROR_RECEIVED);
   } else if (error_code == ERROR_CODE_REFUSED_STREAM) {
     CloseActiveStreamIterator(it, ERR_SPDY_SERVER_REFUSED_STREAM);
