@@ -106,8 +106,8 @@
 //   void push_front(T&&);
 //   void push_back(const T&);
 //   void push_back(T&&);
-//   void emplace_front(Args&&...);
-//   void emplace_back(Args&&...);
+//   T& emplace_front(Args&&...);
+//   T& emplace_back(Args&&...);
 //   void pop_front();
 //   void pop_back();
 //
@@ -835,7 +835,7 @@ class circular_deque {
   void push_back(T&& value) { emplace_back(std::move(value)); }
 
   template <class... Args>
-  void emplace_front(Args&&... args) {
+  reference emplace_front(Args&&... args) {
     ExpandCapacityIfNecessary(1);
     if (begin_ == 0)
       begin_ = buffer_.capacity() - 1;
@@ -843,10 +843,11 @@ class circular_deque {
       begin_--;
     IncrementGeneration();
     new (&buffer_[begin_]) T(std::forward<Args>(args)...);
+    return front();
   }
 
   template <class... Args>
-  void emplace_back(Args&&... args) {
+  reference emplace_back(Args&&... args) {
     ExpandCapacityIfNecessary(1);
     new (&buffer_[end_]) T(std::forward<Args>(args)...);
     if (end_ == buffer_.capacity() - 1)
@@ -854,6 +855,7 @@ class circular_deque {
     else
       end_++;
     IncrementGeneration();
+    return back();
   }
 
   void pop_front() {
