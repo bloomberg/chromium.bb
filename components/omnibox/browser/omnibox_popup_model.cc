@@ -26,16 +26,6 @@
 #include "ui/gfx/vector_icon_types.h"
 #endif
 
-namespace {
-
-size_t GetFaviconCacheSize() {
-  // Set cache size to twice the number of maximum results to avoid favicon
-  // refetches as the user types. Favicon fetches are uncached and can hit disk.
-  return 2 * AutocompleteResult::GetMaxMatches();
-}
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel
 
@@ -43,8 +33,7 @@ const size_t OmniboxPopupModel::kNoMatch = static_cast<size_t>(-1);
 
 OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
                                      OmniboxEditModel* edit_model)
-    : favicons_cache_(GetFaviconCacheSize()),
-      view_(popup_view),
+    : view_(popup_view),
       edit_model_(edit_model),
       selected_line_(kNoMatch),
       selected_line_state_(NORMAL),
@@ -287,24 +276,13 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   if (base::FeatureList::IsEnabled(
           omnibox::kUIExperimentShowSuggestionFavicons) &&
       !AutocompleteMatch::IsSearchType(match.type)) {
-    const GURL& page_url = match.destination_url;
-    auto cache_iterator = favicons_cache_.Get(page_url);
-    if (cache_iterator != favicons_cache_.end() &&
-        !cache_iterator->second.IsEmpty()) {
-      return cache_iterator->second;
-    }
-
-    // We don't have the favicon in the cache. We kick off the request, but
-    // don't early return. We proceed to return the vector icon for the match
-    // type. If and when we ever get the favicon back, we send a notification.
-    //
-    // Note: We're relying on GetFaviconForPageUrl to call the callback
-    // asynchronously. If the callback is called synchronously, the fetched
-    // favicon may get clobbered by the vector icon once this method returns.
-    edit_model_->client()->GetFaviconForPageUrl(
-        &favicon_task_tracker_, match.destination_url,
+    gfx::Image favicon = edit_model_->client()->GetFaviconForPageUrl(
+        match.destination_url,
         base::Bind(&OmniboxPopupModel::OnFaviconFetched,
                    weak_factory_.GetWeakPtr(), match.destination_url));
+
+    if (!favicon.IsEmpty())
+      return favicon;
   }
 
   const auto& vector_icon_type =
@@ -319,8 +297,6 @@ void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
                                          const gfx::Image& icon) {
   if (icon.IsEmpty())
     return;
-
-  favicons_cache_.Put(page_url, icon);
 
   // Notify all affected matches.
   for (size_t i = 0; i < result().size(); ++i) {

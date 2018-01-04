@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service.h"
+#include "chrome/browser/ui/omnibox/favicon_cache.h"
 #include "chrome/common/search/instant_types.h"
 #include "components/omnibox/browser/omnibox_client.h"
 
@@ -56,10 +57,9 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnResultChanged(const AutocompleteResult& result,
                        bool default_match_changed,
                        const BitmapFetchedCallback& on_bitmap_fetched) override;
-  void GetFaviconForPageUrl(
-      base::CancelableTaskTracker* tracker,
+  gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
-      const FaviconFetchedCallback& on_favicon_fetched) override;
+      FaviconFetchedCallback on_favicon_fetched) override;
   void OnCurrentMatchChanged(const AutocompleteMatch& match) override;
   void OnTextChanged(const AutocompleteMatch& current_match,
                      bool user_input_in_progress,
@@ -86,6 +86,7 @@ class ChromeOmniboxClient : public OmniboxClient {
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   BitmapFetcherService::RequestId request_id_;
+  FaviconCache favicon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };

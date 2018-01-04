@@ -81,3 +81,9 @@ bool OmniboxClient::ProcessExtensionKeyword(
     OmniboxNavigationObserver* observer) {
   return false;
 }
+
+gfx::Image OmniboxClient::GetFaviconForPageUrl(
+    const GURL& page_url,
+    FaviconFetchedCallback on_favicon_fetched) {
+  return gfx::Image();
+}

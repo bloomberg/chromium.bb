@@ -20,10 +20,6 @@ class TemplateURLService;
 struct AutocompleteMatch;
 struct OmniboxLog;
 
-namespace base {
-class CancelableTaskTracker;
-}
-
 namespace bookmarks {
 class BookmarkModel;
 }
@@ -33,7 +29,8 @@ class Image;
 }
 
 typedef base::Callback<void(const SkBitmap& bitmap)> BitmapFetchedCallback;
-typedef base::Callback<void(const gfx::Image& favicon)> FaviconFetchedCallback;
+typedef base::OnceCallback<void(const gfx::Image& favicon)>
+    FaviconFetchedCallback;
 
 // Interface that allows the omnibox component to interact with its embedder
 // (e.g., getting information about the current page, retrieving objects
@@ -124,13 +121,14 @@ class OmniboxClient {
                                const BitmapFetchedCallback& on_bitmap_fetched) {
   }
 
-  // Fetchs the favicon for |page_url|. If the embedder supports fetching
-  // favicons (not all embedders do), |on_favicon_fetched| will be be called
-  // once the favicon has been fetched.
-  virtual void GetFaviconForPageUrl(
-      base::CancelableTaskTracker* tracker,
+  // Fetches the favicon for |page_url| if the embedder supports fetching
+  // favicons (not all embedders do). Returns the favicon if it is synchronously
+  // available. Otherwise, this method returns an empty gfx::Image and
+  // |on_favicon_fetched| may or may not be called asynchronously later.
+  // |on_favicon_fetched| will never be run synchronously.
+  virtual gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
-      const FaviconFetchedCallback& on_favicon_fetched) {}
+      FaviconFetchedCallback on_favicon_fetched);
 
   // Called when the current autocomplete match has changed.
   virtual void OnCurrentMatchChanged(const AutocompleteMatch& match) {}
