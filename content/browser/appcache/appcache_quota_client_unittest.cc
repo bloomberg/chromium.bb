@@ -17,7 +17,7 @@
 
 namespace content {
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 // Declared to shorten the line lengths.
 static const StorageType kTemp = StorageType::kTemporary;
@@ -35,7 +35,7 @@ class AppCacheQuotaClientTest : public testing::Test {
         kOriginB("http://host:8000"),
         kOriginOther("http://other"),
         usage_(0),
-        delete_status_(blink::QuotaStatusCode::kUnknown),
+        delete_status_(blink::mojom::QuotaStatusCode::kUnknown),
         num_get_origin_usage_completions_(0),
         num_get_origins_completions_(0),
         num_delete_origins_completions_(0),
@@ -67,10 +67,10 @@ class AppCacheQuotaClientTest : public testing::Test {
     return origins_;
   }
 
-  blink::QuotaStatusCode DeleteOriginData(storage::QuotaClient* client,
-                                          StorageType type,
-                                          const GURL& origin) {
-    delete_status_ = blink::QuotaStatusCode::kUnknown;
+  blink::mojom::QuotaStatusCode DeleteOriginData(storage::QuotaClient* client,
+                                                 StorageType type,
+                                                 const GURL& origin) {
+    delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     AsyncDeleteOriginData(client, type, origin);
     base::RunLoop().RunUntilIdle();
     return delete_status_;
@@ -141,7 +141,7 @@ class AppCacheQuotaClientTest : public testing::Test {
     origins_ = origins;
   }
 
-  void OnDeleteOriginDataComplete(blink::QuotaStatusCode status) {
+  void OnDeleteOriginDataComplete(blink::mojom::QuotaStatusCode status) {
     ++num_delete_origins_completions_;
     delete_status_ = status;
   }
@@ -149,7 +149,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   int64_t usage_;
   std::set<GURL> origins_;
-  blink::QuotaStatusCode delete_status_;
+  blink::mojom::QuotaStatusCode delete_status_;
   int num_get_origin_usage_completions_;
   int num_get_origins_completions_;
   int num_delete_origins_completions_;
@@ -175,9 +175,9 @@ TEST_F(AppCacheQuotaClientTest, EmptyService) {
   EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginA.host()).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kTemp, kOriginA));
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kPerm, kOriginA));
 
   Call_NotifyAppCacheDestroyed(client);
@@ -195,9 +195,9 @@ TEST_F(AppCacheQuotaClientTest, NoService) {
   EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginA.host()).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort,
             DeleteOriginData(client, kTemp, kOriginA));
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort,
             DeleteOriginData(client, kPerm, kOriginA));
 
   Call_OnQuotaManagerDestroyed(client);
@@ -272,17 +272,17 @@ TEST_F(AppCacheQuotaClientTest, DeleteOriginData) {
 
   // Perm deletions are short circuited in the Client and
   // should not reach the AppCacheServiceImpl.
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kPerm, kOriginA));
   EXPECT_EQ(0, mock_service_.delete_called_count());
 
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kTemp, kOriginA));
   EXPECT_EQ(1, mock_service_.delete_called_count());
 
   mock_service_.set_mock_delete_appcaches_for_origin_result(
       net::ERR_ABORTED);
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort,
             DeleteOriginData(client, kTemp, kOriginA));
   EXPECT_EQ(2, mock_service_.delete_called_count());
 
@@ -364,7 +364,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
   EXPECT_EQ(3, num_delete_origins_completions_);
   EXPECT_EQ(0, usage_);
   EXPECT_TRUE(origins_.empty());
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort, delete_status_);
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort, delete_status_);
 
   Call_OnQuotaManagerDestroyed(client);
 }
@@ -417,13 +417,13 @@ TEST_F(AppCacheQuotaClientTest, DestroyWithDeleteInProgress) {
 
   // Should have been aborted.
   EXPECT_EQ(1, num_delete_origins_completions_);
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort, delete_status_);
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort, delete_status_);
 
   // A real completion callback from the service should
   // be dropped if it comes in after NotifyAppCacheDestroyed.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, num_delete_origins_completions_);
-  EXPECT_EQ(blink::QuotaStatusCode::kErrorAbort, delete_status_);
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort, delete_status_);
 
   Call_OnQuotaManagerDestroyed(client);
 }

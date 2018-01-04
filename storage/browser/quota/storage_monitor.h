@@ -15,8 +15,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "storage/browser/quota/storage_observer.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace content {
 class StorageMonitorTestBase;
@@ -97,7 +96,7 @@ class STORAGE_EXPORT HostStorageObservers {
  private:
   void StartInitialization(const StorageObserver::Filter& filter);
   void GotHostUsageAndQuota(const StorageObserver::Filter& filter,
-                            blink::QuotaStatusCode status,
+                            blink::mojom::QuotaStatusCode status,
                             int64_t usage,
                             int64_t quota);
   void DispatchEvent(const StorageObserver::Filter& filter, bool is_update);
@@ -164,14 +163,14 @@ class STORAGE_EXPORT StorageMonitor {
 
   // Returns the observers of a specific storage type.
   const StorageTypeObservers* GetStorageTypeObservers(
-      blink::StorageType storage_type) const;
+      blink::mojom::StorageType storage_type) const;
 
   // Handles a usage change.
   void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
   QuotaManager* quota_manager_;
-  std::map<blink::StorageType, std::unique_ptr<StorageTypeObservers>>
+  std::map<blink::mojom::StorageType, std::unique_ptr<StorageTypeObservers>>
       storage_type_observers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitor);

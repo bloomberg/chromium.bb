@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -24,7 +24,7 @@ namespace quota_internals {
 // Represends global usage and quota information for specific type of storage.
 class GlobalStorageInfo {
  public:
-  explicit GlobalStorageInfo(blink::StorageType type);
+  explicit GlobalStorageInfo(blink::mojom::StorageType type);
   ~GlobalStorageInfo();
 
   void set_usage(int64_t usage) { usage_ = usage; }
@@ -39,7 +39,7 @@ class GlobalStorageInfo {
   std::unique_ptr<base::Value> NewValue() const;
 
  private:
-  blink::StorageType type_;
+  blink::mojom::StorageType type_;
 
   int64_t usage_;
   int64_t unlimited_usage_;
@@ -49,7 +49,7 @@ class GlobalStorageInfo {
 // Represents per host usage and quota information for the storage.
 class PerHostStorageInfo {
  public:
-  PerHostStorageInfo(const std::string& host, blink::StorageType type);
+  PerHostStorageInfo(const std::string& host, blink::mojom::StorageType type);
   ~PerHostStorageInfo();
 
   void set_usage(int64_t usage) { usage_ = usage; }
@@ -61,7 +61,7 @@ class PerHostStorageInfo {
 
  private:
   std::string host_;
-  blink::StorageType type_;
+  blink::mojom::StorageType type_;
 
   int64_t usage_;
   int64_t quota_;
@@ -70,7 +70,7 @@ class PerHostStorageInfo {
 // Represendts per origin usage and access time information.
 class PerOriginStorageInfo {
  public:
-  PerOriginStorageInfo(const GURL& origin, blink::StorageType type);
+  PerOriginStorageInfo(const GURL& origin, blink::mojom::StorageType type);
   PerOriginStorageInfo(const PerOriginStorageInfo& other);
   ~PerOriginStorageInfo();
 
@@ -95,7 +95,7 @@ class PerOriginStorageInfo {
 
  private:
   GURL origin_;
-  blink::StorageType type_;
+  blink::mojom::StorageType type_;
   std::string host_;
 
   int in_use_;

@@ -13,21 +13,21 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/url_util.h"
 #include "storage/browser/database/database_util.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 using storage::DatabaseUtil;
 
 namespace content {
 namespace {
 
-blink::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
+blink::mojom::QuotaStatusCode DeleteOriginDataOnIndexedDBThread(
     IndexedDBContextImpl* context,
     const GURL& origin) {
   context->DeleteForOrigin(origin);
-  return blink::QuotaStatusCode::kOk;
+  return blink::mojom::QuotaStatusCode::kOk;
 }
 
 int64_t GetOriginUsageOnIndexedDBThread(IndexedDBContextImpl* context,
@@ -140,7 +140,7 @@ void IndexedDBQuotaClient::DeleteOriginData(const GURL& origin,
                                             StorageType type,
                                             const DeletionCallback& callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 

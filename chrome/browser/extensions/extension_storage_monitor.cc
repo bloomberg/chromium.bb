@@ -36,7 +36,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/storage_observer.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_id.h"
@@ -124,12 +124,12 @@ class SingleExtensionStorageObserver : public storage::StorageObserver {
         should_uma_(should_uma) {
     // We always observe persistent storage usage.
     storage::StorageObserver::MonitorParams params(
-        blink::StorageType::kPersistent, origin, rate, false);
+        blink::mojom::StorageType::kPersistent, origin, rate, false);
     quota_manager_->AddStorageObserver(this, params);
     if (should_uma) {
       // And if this is for uma, we also observe temporary storage usage.
-      MonitorParams temporary_params(blink::StorageType::kTemporary, origin,
-                                     rate, false);
+      MonitorParams temporary_params(blink::mojom::StorageType::kTemporary,
+                                     origin, rate, false);
       quota_manager_->AddStorageObserver(this, temporary_params);
     }
   }
@@ -247,7 +247,7 @@ class ExtensionStorageMonitorIOHelper
 
 void SingleExtensionStorageObserver::OnStorageEvent(const Event& event) {
   if (should_uma_) {
-    if (event.filter.storage_type == blink::StorageType::kPersistent) {
+    if (event.filter.storage_type == blink::mojom::StorageType::kPersistent) {
       UMA_HISTOGRAM_MEMORY_KB(
           "Extensions.HostedAppUnlimitedStoragePersistentStorageUsage",
           event.usage);

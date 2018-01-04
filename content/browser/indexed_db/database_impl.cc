@@ -18,8 +18,7 @@
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 using std::swap;
@@ -132,7 +131,7 @@ class DatabaseImpl::IDBSequenceHelper {
                       const IndexedDBDatabaseError& error);
   void Commit(int64_t transaction_id);
   void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
-                                   blink::QuotaStatusCode status,
+                                   blink::mojom::QuotaStatusCode status,
                                    int64_t usage,
                                    int64_t quota);
   void AckReceivedBlobs(const std::vector<std::string>& uuids);
@@ -918,14 +917,14 @@ void DatabaseImpl::IDBSequenceHelper::Commit(int64_t transaction_id) {
 
   indexed_db_context_->quota_manager_proxy()->GetUsageAndQuota(
       indexed_db_context_->TaskRunner(), origin_.GetURL(),
-      blink::StorageType::kTemporary,
+      blink::mojom::StorageType::kTemporary,
       base::Bind(&IDBSequenceHelper::OnGotUsageAndQuotaForCommit,
                  weak_factory_.GetWeakPtr(), transaction_id));
 }
 
 void DatabaseImpl::IDBSequenceHelper::OnGotUsageAndQuotaForCommit(
     int64_t transaction_id,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -938,7 +937,7 @@ void DatabaseImpl::IDBSequenceHelper::OnGotUsageAndQuotaForCommit(
   if (!transaction)
     return;
 
-  if (status == blink::QuotaStatusCode::kOk &&
+  if (status == blink::mojom::QuotaStatusCode::kOk &&
       usage + transaction->size() <= quota) {
     connection_->database()->Commit(transaction);
   } else {

@@ -377,7 +377,8 @@ class CacheStorageCacheTest : public testing::Test {
     mock_quota_manager_ = new MockQuotaManager(
         is_incognito, temp_dir_path, base::ThreadTaskRunnerHandle::Get().get(),
         quota_policy_.get());
-    mock_quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
+    mock_quota_manager_->SetQuota(GURL(kOrigin),
+                                  blink::mojom::StorageType::kTemporary,
                                   1024 * 1024 * 100);
 
     quota_manager_proxy_ = new MockQuotaManagerProxy(
@@ -1507,7 +1508,8 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
+  mock_quota_manager_->SetQuota(GURL(kOrigin),
+                                blink::mojom::StorageType::kTemporary,
                                 expected_blob_data_.size() - 1);
   ServiceWorkerResponse response(body_response_);
   const std::string expected_side_data = "SideData";
@@ -1522,7 +1524,8 @@ TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceeded) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutWithSideData_QuotaExceededSkipSideData) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
+  mock_quota_manager_->SetQuota(GURL(kOrigin),
+                                blink::mojom::StorageType::kTemporary,
                                 expected_blob_data_.size());
   ServiceWorkerResponse response(body_response_);
   const std::string expected_side_data = "SideData";
@@ -1600,8 +1603,8 @@ TEST_P(CacheStorageCacheTestP, WriteSideData) {
 }
 
 TEST_P(CacheStorageCacheTestP, WriteSideData_QuotaExceeded) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
-                                1024 * 1023);
+  mock_quota_manager_->SetQuota(
+      GURL(kOrigin), blink::mojom::StorageType::kTemporary, 1024 * 1023);
   base::Time response_time(base::Time::Now());
   ServiceWorkerResponse response;
   response.response_time = response_time;
@@ -1721,8 +1724,8 @@ TEST_P(CacheStorageCacheTestP, QuotaManagerModified) {
 }
 
 TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimits) {
-  mock_quota_manager_->SetQuota(GURL(kOrigin), blink::StorageType::kTemporary,
-                                0);
+  mock_quota_manager_->SetQuota(GURL(kOrigin),
+                                blink::mojom::StorageType::kTemporary, 0);
   EXPECT_FALSE(Put(body_request_, body_response_));
   EXPECT_EQ(CacheStorageError::kErrorQuotaExceeded, callback_error_);
 }

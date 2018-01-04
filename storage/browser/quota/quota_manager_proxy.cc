@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace storage {
 
@@ -22,7 +22,7 @@ namespace {
 void DidGetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const QuotaManagerProxy::UsageAndQuotaCallback& callback,
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   if (!original_task_runner->RunsTasksInCurrentSequence()) {
@@ -56,7 +56,7 @@ void QuotaManagerProxy::RegisterClient(QuotaClient* client) {
 
 void QuotaManagerProxy::NotifyStorageAccessed(QuotaClient::ID client_id,
                                               const GURL& origin,
-                                              blink::StorageType type) {
+                                              blink::mojom::StorageType type) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
         FROM_HERE,
@@ -71,7 +71,7 @@ void QuotaManagerProxy::NotifyStorageAccessed(QuotaClient::ID client_id,
 
 void QuotaManagerProxy::NotifyStorageModified(QuotaClient::ID client_id,
                                               const GURL& origin,
-                                              blink::StorageType type,
+                                              blink::mojom::StorageType type,
                                               int64_t delta) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
@@ -113,7 +113,7 @@ void QuotaManagerProxy::NotifyOriginNoLongerInUse(
 
 void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
                                              const GURL& origin,
-                                             blink::StorageType type,
+                                             blink::mojom::StorageType type,
                                              bool enabled) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
@@ -129,7 +129,7 @@ void QuotaManagerProxy::SetUsageCacheEnabled(QuotaClient::ID client_id,
 void QuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const GURL& origin,
-    blink::StorageType type,
+    blink::mojom::StorageType type,
     const UsageAndQuotaCallback& callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
@@ -140,7 +140,7 @@ void QuotaManagerProxy::GetUsageAndQuota(
   }
   if (!manager_) {
     DidGetUsageAndQuota(original_task_runner, callback,
-                        blink::QuotaStatusCode::kErrorAbort, 0, 0);
+                        blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
     return;
   }
 

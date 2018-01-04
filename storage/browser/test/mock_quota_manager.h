@@ -17,10 +17,10 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_task.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::GetOriginsCallback;
 using storage::QuotaClient;
 using storage::QuotaManager;
@@ -137,7 +137,7 @@ class MockQuotaManager : public QuotaManager {
                            std::set<GURL>* origins,
                            StorageType storage_type);
   void DidDeleteOriginData(const StatusCallback& callback,
-                           blink::QuotaStatusCode status);
+                           blink::mojom::QuotaStatusCode status);
 
   // The list of stored origins that have been added via AddOrigin.
   std::vector<OriginInfo> origins_;

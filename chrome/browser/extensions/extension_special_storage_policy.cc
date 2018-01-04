@@ -32,8 +32,7 @@
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 using content::BrowserThread;
 using extensions::APIPermission;
@@ -42,10 +41,10 @@ using storage::SpecialStoragePolicy;
 
 namespace {
 
-void ReportQuotaUsage(blink::QuotaStatusCode code,
+void ReportQuotaUsage(blink::mojom::QuotaStatusCode code,
                       int64_t usage,
                       int64_t quota) {
-  if (code == blink::QuotaStatusCode::kOk) {
+  if (code == blink::mojom::QuotaStatusCode::kOk) {
     // We're interested in the amount of space hosted apps are using. Record it
     // when the extension is granted the unlimited storage permission (once per
     // extension load, so on average once per run).
@@ -72,7 +71,7 @@ void LogHostedAppUnlimitedStorageUsage(
         FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         base::BindOnce(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
                        partition->GetQuotaManager(), launch_url,
-                       blink::StorageType::kPersistent,
+                       blink::mojom::StorageType::kPersistent,
                        base::Bind(&ReportQuotaUsage)));
   }
 }

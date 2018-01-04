@@ -20,7 +20,7 @@
 #include "storage/browser/quota/quota_task.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -34,12 +34,12 @@ class StorageMonitor;
 class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
  public:
   UsageTracker(const QuotaClientList& clients,
-               blink::StorageType type,
+               blink::mojom::StorageType type,
                SpecialStoragePolicy* special_storage_policy,
                StorageMonitor* storage_monitor);
   ~UsageTracker() override;
 
-  blink::StorageType type() const { return type_; }
+  blink::mojom::StorageType type() const { return type_; }
   ClientUsageTracker* GetClientTracker(QuotaClient::ID client_id);
 
   void GetGlobalLimitedUsage(const UsageCallback& callback);
@@ -96,7 +96,7 @@ class STORAGE_EXPORT UsageTracker : public QuotaTaskObserver {
   void FinallySendHostUsageWithBreakdown(AccumulateInfo* info,
                                          const std::string& host);
 
-  const blink::StorageType type_;
+  const blink::mojom::StorageType type_;
   std::map<QuotaClient::ID, std::unique_ptr<ClientUsageTracker>>
       client_tracker_map_;
 

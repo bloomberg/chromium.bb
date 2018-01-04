@@ -35,7 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-blink.h"
 
 namespace blink {
 
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT StorageQuotaCallbacks
                                     unsigned long long granted_quota_in_bytes) {
     NOTREACHED();
   }
-  virtual void DidFail(QuotaStatusCode) { NOTREACHED(); }
+  virtual void DidFail(mojom::QuotaStatusCode) { NOTREACHED(); }
 };
 
 }  // namespace blink

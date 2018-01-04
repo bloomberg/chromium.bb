@@ -19,7 +19,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/file_writer_delegate.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace storage {
 
@@ -124,7 +124,7 @@ class STORAGE_EXPORT FileSystemOperationImpl : public FileSystemOperation {
   // |error_callback|.
   void DidGetUsageAndQuotaAndRunTask(const base::Closure& task,
                                      const base::Closure& error_callback,
-                                     blink::QuotaStatusCode status,
+                                     blink::mojom::QuotaStatusCode status,
                                      int64_t usage,
                                      int64_t quota);
 

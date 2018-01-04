@@ -7,7 +7,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 
 namespace content {
@@ -28,8 +28,8 @@ void ReportOrigins(const QuotaClient::GetOriginsCallback& callback,
 
 void ReportToQuotaStatus(const QuotaClient::DeletionCallback& callback,
                          bool status) {
-  callback.Run(status ? blink::QuotaStatusCode::kOk
-                      : blink::QuotaStatusCode::kUnknown);
+  callback.Run(status ? blink::mojom::QuotaStatusCode::kOk
+                      : blink::mojom::QuotaStatusCode::kUnknown);
 }
 
 void FindUsageForOrigin(const QuotaClient::GetUsageCallback& callback,
@@ -99,7 +99,7 @@ void ServiceWorkerQuotaClient::DeleteOriginData(
     StorageType type,
     const DeletionCallback& callback) {
   if (type != StorageType::kTemporary) {
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
   context_->DeleteForOrigin(origin, base::Bind(&ReportToQuotaStatus, callback));

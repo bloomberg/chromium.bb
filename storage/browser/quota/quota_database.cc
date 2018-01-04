@@ -21,7 +21,7 @@
 #include "sql/transaction.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace storage {
 namespace {

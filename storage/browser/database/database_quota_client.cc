@@ -20,9 +20,9 @@
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using storage::QuotaClient;
 
 namespace storage {
@@ -83,11 +83,11 @@ void DidDeleteOriginData(base::SequencedTaskRunner* original_task_runner,
     return;
   }
 
-  blink::QuotaStatusCode status;
+  blink::mojom::QuotaStatusCode status;
   if (result == net::OK)
-    status = blink::QuotaStatusCode::kOk;
+    status = blink::mojom::QuotaStatusCode::kOk;
   else
-    status = blink::QuotaStatusCode::kUnknown;
+    status = blink::mojom::QuotaStatusCode::kUnknown;
 
   original_task_runner->PostTask(FROM_HERE, base::BindOnce(callback, status));
 }
@@ -185,12 +185,12 @@ void DatabaseQuotaClient::DeleteOriginData(const GURL& origin,
 
   // All databases are in the temp namespace for now, so nothing to delete.
   if (type != StorageType::kTemporary) {
-    callback.Run(blink::QuotaStatusCode::kOk);
+    callback.Run(blink::mojom::QuotaStatusCode::kOk);
     return;
   }
 
   // DidDeleteOriginData() translates the net::Error response to a
-  // blink::QuotaStatusCode if necessary, and no-ops as appropriate if
+  // blink::mojom::QuotaStatusCode if necessary, and no-ops as appropriate if
   // DatabaseTracker::ScheduleDatabasesForDeletion will also invoke the
   // callback.
   auto delete_callback = base::BindRepeating(

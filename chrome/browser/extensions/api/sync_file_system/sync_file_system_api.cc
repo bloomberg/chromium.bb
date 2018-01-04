@@ -67,19 +67,19 @@ std::string ErrorToString(SyncStatusCode code) {
       static_cast<int>(code));
 }
 
-const char* QuotaStatusCodeToString(blink::QuotaStatusCode status) {
+const char* QuotaStatusCodeToString(blink::mojom::QuotaStatusCode status) {
   switch (status) {
-    case blink::QuotaStatusCode::kOk:
+    case blink::mojom::QuotaStatusCode::kOk:
       return "OK.";
-    case blink::QuotaStatusCode::kErrorNotSupported:
+    case blink::mojom::QuotaStatusCode::kErrorNotSupported:
       return "Operation not supported.";
-    case blink::QuotaStatusCode::kErrorInvalidModification:
+    case blink::mojom::QuotaStatusCode::kErrorInvalidModification:
       return "Invalid modification.";
-    case blink::QuotaStatusCode::kErrorInvalidAccess:
+    case blink::mojom::QuotaStatusCode::kErrorInvalidAccess:
       return "Invalid access.";
-    case blink::QuotaStatusCode::kErrorAbort:
+    case blink::mojom::QuotaStatusCode::kErrorAbort:
       return "Quota operation aborted.";
-    case blink::QuotaStatusCode::kUnknown:
+    case blink::mojom::QuotaStatusCode::kUnknown:
       return "Unknown error.";
   }
   NOTREACHED();
@@ -342,7 +342,7 @@ bool SyncFileSystemGetUsageAndQuotaFunction::RunAsync() {
 }
 
 void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
-    blink::QuotaStatusCode status,
+    blink::mojom::QuotaStatusCode status,
     int64_t usage,
     int64_t quota) {
   // Repost to switch from IO thread to UI thread for SendResponse().
@@ -356,7 +356,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
   }
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != blink::QuotaStatusCode::kOk) {
+  if (status != blink::mojom::QuotaStatusCode::kOk) {
     error_ = QuotaStatusCodeToString(status);
     SendResponse(false);
     return;

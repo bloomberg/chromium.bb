@@ -46,7 +46,7 @@ StorageQuotaClient::StorageQuotaClient() {}
 StorageQuotaClient::~StorageQuotaClient() {}
 
 void StorageQuotaClient::RequestQuota(ScriptState* script_state,
-                                      StorageType storage_type,
+                                      mojom::StorageType storage_type,
                                       unsigned long long new_quota_in_bytes,
                                       V8StorageQuotaCallback* success_callback,
                                       V8StorageErrorCallback* error_callback) {

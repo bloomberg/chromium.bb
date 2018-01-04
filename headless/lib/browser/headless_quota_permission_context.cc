@@ -4,7 +4,7 @@
 
 #include "headless/lib/browser/headless_quota_permission_context.h"
 
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace headless {
 
@@ -14,7 +14,7 @@ void HeadlessQuotaPermissionContext::RequestQuotaPermission(
     const content::StorageQuotaParams& params,
     int render_process_id,
     const PermissionCallback& callback) {
-  if (params.storage_type != blink::StorageType::kPersistent) {
+  if (params.storage_type != blink::mojom::StorageType::kPersistent) {
     // For now we only support requesting quota with this interface
     // for Persistent storage type.
     callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);

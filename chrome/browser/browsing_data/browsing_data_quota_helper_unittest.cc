@@ -19,7 +19,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_storage_client.h"
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 using content::BrowserThread;
 using content::MockOriginData;
 using content::MockStorageClient;
@@ -91,8 +91,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
                    weak_factory_.GetWeakPtr()));
   }
 
-  void GotPersistentHostQuota(blink::QuotaStatusCode status, int64_t quota) {
-    EXPECT_EQ(blink::QuotaStatusCode::kOk, status);
+  void GotPersistentHostQuota(blink::mojom::QuotaStatusCode status,
+                              int64_t quota) {
+    EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
     quota_ = quota;
   }
 

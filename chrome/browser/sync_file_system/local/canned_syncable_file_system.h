@@ -24,8 +24,7 @@
 #include "storage/browser/quota/quota_callbacks.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -110,7 +109,7 @@ class CannedSyncableFileSystem
   storage::QuotaManager* quota_manager() { return quota_manager_.get(); }
   GURL origin() const { return origin_; }
   storage::FileSystemType type() const { return type_; }
-  blink::StorageType storage_type() const {
+  blink::mojom::StorageType storage_type() const {
     return FileSystemTypeToQuotaStorageType(type_);
   }
 
@@ -152,7 +151,8 @@ class CannedSyncableFileSystem
   base::File::Error DeleteFileSystem();
 
   // Retrieves the quota and usage.
-  blink::QuotaStatusCode GetUsageAndQuota(int64_t* usage, int64_t* quota);
+  blink::mojom::QuotaStatusCode GetUsageAndQuota(int64_t* usage,
+                                                 int64_t* quota);
 
   // ChangeTracker related methods. They run on file task runner.
   void GetChangedURLsInTracker(storage::FileSystemURLSet* urls);

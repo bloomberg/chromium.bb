@@ -692,7 +692,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void ReportFindInPageSelection(int request_id,
                                  int active_match_ordinal,
                                  const blink::WebRect& sel) override;
-  void RequestStorageQuota(blink::StorageType type,
+  void RequestStorageQuota(blink::mojom::StorageType type,
                            unsigned long long requested_size,
                            blink::WebStorageQuotaCallbacks callbacks) override;
   blink::WebPushClient* PushClient() override;

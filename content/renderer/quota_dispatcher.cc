@@ -14,12 +14,12 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "url/origin.h"
 
-using blink::QuotaStatusCode;
-using blink::StorageType;
+using blink::mojom::QuotaStatusCode;
+using blink::mojom::StorageType;
 using blink::WebStorageQuotaCallbacks;
 
 namespace content {
@@ -61,7 +61,7 @@ QuotaDispatcher::~QuotaDispatcher() {
   base::IDMap<std::unique_ptr<WebStorageQuotaCallbacks>>::iterator iter(
       &pending_quota_callbacks_);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->DidFail(blink::QuotaStatusCode::kErrorAbort);
+    iter.GetCurrentValue()->DidFail(blink::mojom::QuotaStatusCode::kErrorAbort);
     iter.Advance();
   }
 
@@ -115,7 +115,7 @@ void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
                                            QuotaStatusCode status,
                                            int64_t current_usage,
                                            int64_t granted_quota) {
-  if (status != blink::QuotaStatusCode::kOk) {
+  if (status != blink::mojom::QuotaStatusCode::kOk) {
     DidFail(request_id, status);
     return;
   }
@@ -131,7 +131,7 @@ void QuotaDispatcher::DidQueryStorageUsageAndQuota(int64_t request_id,
                                                    QuotaStatusCode status,
                                                    int64_t current_usage,
                                                    int64_t current_quota) {
-  if (status != blink::QuotaStatusCode::kOk) {
+  if (status != blink::mojom::QuotaStatusCode::kOk) {
     DidFail(request_id, status);
     return;
   }

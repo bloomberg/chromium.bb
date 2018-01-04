@@ -9,7 +9,7 @@
 
 #include "base/time/time.h"
 #include "storage/browser/quota/quota_client.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -21,13 +21,13 @@ class STORAGE_EXPORT StorageObserver {
   struct STORAGE_EXPORT Filter {
     // The storage type to monitor. This must not be kUnknown or
     // kQuotaNotManaged.
-    blink::StorageType storage_type;
+    blink::mojom::StorageType storage_type;
 
     // The origin to monitor usage for. Must be specified.
     GURL origin;
 
     Filter();
-    Filter(blink::StorageType storage_type, const GURL& origin);
+    Filter(blink::mojom::StorageType storage_type, const GURL& origin);
     bool operator==(const Filter& other) const;
   };
 
@@ -44,7 +44,7 @@ class STORAGE_EXPORT StorageObserver {
     bool dispatch_initial_state;
 
     MonitorParams();
-    MonitorParams(blink::StorageType storage_type,
+    MonitorParams(blink::mojom::StorageType storage_type,
                   const GURL& origin,
                   const base::TimeDelta& rate,
                   bool get_initial_state);

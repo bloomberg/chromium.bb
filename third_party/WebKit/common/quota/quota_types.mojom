@@ -4,7 +4,6 @@
 
 module blink.mojom;
 
-// TODO(sashab): Remove duplicate definition blink::StorageType.
 enum StorageType {
   kTemporary,
   kPersistent,
@@ -13,12 +12,12 @@ enum StorageType {
   kUnknown,
 };
 
-// TODO(sashab): Remove duplicate definition blink::QuotaStatusCode.
+// These values need to match dom/ExceptionState.h.
 enum QuotaStatusCode {
   kOk = 0,
-  kErrorNotSupported,
-  kErrorInvalidModification,
-  kErrorInvalidAccess,
-  kErrorAbort,
-  kUnknown,
+  kErrorNotSupported = 7,
+  kErrorInvalidModification = 11,
+  kErrorInvalidAccess = 13,
+  kErrorAbort = 17,
+  kUnknown = -1,
 };

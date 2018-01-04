@@ -20,8 +20,8 @@
 #include "storage/browser/test/mock_storage_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::QuotaStatusCode;
-using blink::StorageType;
+using blink::mojom::QuotaStatusCode;
+using blink::mojom::StorageType;
 using storage::HostStorageObservers;
 using storage::QuotaClient;
 using storage::QuotaManager;

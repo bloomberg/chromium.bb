@@ -37,7 +37,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-blink.h"
 
 namespace blink {
 
@@ -58,7 +58,7 @@ class MODULES_EXPORT StorageQuotaClient
   virtual ~StorageQuotaClient();
 
   void RequestQuota(ScriptState*,
-                    StorageType,
+                    mojom::StorageType,
                     unsigned long long new_quota_in_bytes,
                     V8StorageQuotaCallback*,
                     V8StorageErrorCallback*);

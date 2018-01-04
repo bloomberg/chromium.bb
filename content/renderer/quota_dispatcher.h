@@ -45,26 +45,26 @@ class QuotaDispatcher : public WorkerThread::Observer {
 
   void QueryStorageUsageAndQuota(
       const url::Origin& origin,
-      blink::StorageType type,
+      blink::mojom::StorageType type,
       std::unique_ptr<blink::WebStorageQuotaCallbacks> callback);
   void RequestStorageQuota(
       int render_frame_id,
       const url::Origin& origin,
-      blink::StorageType type,
+      blink::mojom::StorageType type,
       int64_t requested_size,
       std::unique_ptr<blink::WebStorageQuotaCallbacks> callback);
 
  private:
   // Message handlers.
   void DidQueryStorageUsageAndQuota(int64_t request_id,
-                                    blink::QuotaStatusCode status,
+                                    blink::mojom::QuotaStatusCode status,
                                     int64_t current_usage,
                                     int64_t current_quota);
   void DidGrantStorageQuota(int64_t request_id,
-                            blink::QuotaStatusCode status,
+                            blink::mojom::QuotaStatusCode status,
                             int64_t current_usage,
                             int64_t granted_quota);
-  void DidFail(int request_id, blink::QuotaStatusCode error);
+  void DidFail(int request_id, blink::mojom::QuotaStatusCode error);
 
   blink::mojom::QuotaDispatcherHostPtr quota_host_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

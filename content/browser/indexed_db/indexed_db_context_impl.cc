@@ -36,7 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
 
@@ -445,7 +445,7 @@ void IndexedDBContextImpl::ConnectionOpened(const Origin& origin,
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   quota_manager_proxy()->NotifyStorageAccessed(
       storage::QuotaClient::kIndexedDatabase, origin.GetURL(),
-      blink::StorageType::kTemporary);
+      blink::mojom::StorageType::kTemporary);
   if (AddToOriginSet(origin)) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin);
@@ -459,7 +459,7 @@ void IndexedDBContextImpl::ConnectionClosed(const Origin& origin,
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   quota_manager_proxy()->NotifyStorageAccessed(
       storage::QuotaClient::kIndexedDatabase, origin.GetURL(),
-      blink::StorageType::kTemporary);
+      blink::mojom::StorageType::kTemporary);
   if (factory_.get() && factory_->GetConnectionCount(origin) == 0)
     QueryDiskAndUpdateQuotaUsage(origin);
 }
@@ -584,7 +584,7 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(const Origin& origin) {
     origin_size_map_[origin] = current_disk_usage;
     quota_manager_proxy()->NotifyStorageModified(
         storage::QuotaClient::kIndexedDatabase, origin.GetURL(),
-        blink::StorageType::kTemporary, difference);
+        blink::mojom::StorageType::kTemporary, difference);
     NotifyIndexedDBListChanged(origin);
   }
 }

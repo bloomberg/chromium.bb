@@ -62,7 +62,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-shared.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -702,7 +702,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // error code.
   virtual void QueryStorageUsageAndQuota(
       const WebSecurityOrigin& storage_partition,
-      StorageType,
+      mojom::StorageType,
       WebStorageQuotaCallbacks) {}
 
   // WebDatabase --------------------------------------------------------

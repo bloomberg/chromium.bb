@@ -72,7 +72,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom-shared.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-shared.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
 #include "v8/include/v8.h"
 
@@ -719,7 +719,7 @@ class BLINK_EXPORT WebFrameClient {
   // is called with an error code otherwise.
   // Note that the requesting quota size may not always be granted and
   // a smaller amount of quota than requested might be returned.
-  virtual void RequestStorageQuota(StorageType,
+  virtual void RequestStorageQuota(mojom::StorageType,
                                    unsigned long long new_quota_in_bytes,
                                    WebStorageQuotaCallbacks) {}
 

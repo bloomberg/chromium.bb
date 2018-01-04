@@ -34,7 +34,7 @@ void StripUsageWithBreakdownCallback(
 }  // namespace
 
 UsageTracker::UsageTracker(const QuotaClientList& clients,
-                           blink::StorageType type,
+                           blink::mojom::StorageType type,
                            SpecialStoragePolicy* special_storage_policy,
                            StorageMonitor* storage_monitor)
     : type_(type), storage_monitor_(storage_monitor), weak_factory_(this) {

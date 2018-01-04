@@ -18,8 +18,7 @@
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using storage::DatabaseUtil;
@@ -186,12 +185,14 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
 
   db_tracker_->quota_manager_proxy()->GetUsageAndQuota(
       db_tracker_->task_runner(), origin.GetURL(),
-      blink::StorageType::kTemporary,
+      blink::mojom::StorageType::kTemporary,
       base::Bind(
-          [](GetSpaceAvailableCallback callback, blink::QuotaStatusCode status,
-             int64_t usage, int64_t quota) {
+          [](GetSpaceAvailableCallback callback,
+             blink::mojom::QuotaStatusCode status, int64_t usage,
+             int64_t quota) {
             int64_t available = 0;
-            if ((status == blink::QuotaStatusCode::kOk) && (usage < quota)) {
+            if ((status == blink::mojom::QuotaStatusCode::kOk) &&
+                (usage < quota)) {
               available = quota - usage;
             }
             std::move(callback).Run(available);

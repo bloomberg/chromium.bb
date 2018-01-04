@@ -73,11 +73,11 @@ void ReadDirectoryCallback(base::RunLoop* run_loop,
     run_loop->Quit();
 }
 
-void DidGetUsageAndQuota(blink::QuotaStatusCode* status_out,
+void DidGetUsageAndQuota(blink::mojom::QuotaStatusCode* status_out,
                          int64_t* usage_out,
                          int64_t* quota_out,
                          base::OnceClosure done_callback,
-                         blink::QuotaStatusCode status,
+                         blink::mojom::QuotaStatusCode status,
                          int64_t usage,
                          int64_t quota) {
   if (status_out)
@@ -256,13 +256,14 @@ bool AsyncFileTestHelper::DirectoryExists(storage::FileSystemContext* context,
   return (result == base::File::FILE_OK) && file_info.is_directory;
 }
 
-blink::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
+blink::mojom::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
     storage::QuotaManager* quota_manager,
     const GURL& origin,
     storage::FileSystemType type,
     int64_t* usage,
     int64_t* quota) {
-  blink::QuotaStatusCode status = blink::QuotaStatusCode::kUnknown;
+  blink::mojom::QuotaStatusCode status =
+      blink::mojom::QuotaStatusCode::kUnknown;
   base::RunLoop run_loop;
   quota_manager->GetUsageAndQuota(
       origin, FileSystemTypeToQuotaStorageType(type),

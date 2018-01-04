@@ -47,7 +47,7 @@
 
 namespace content {
 
-using blink::StorageType;
+using blink::mojom::StorageType;
 
 namespace {
 
@@ -300,7 +300,7 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void CallCallback(const UsageAndQuotaCallback& callback) {
-      callback.Run(blink::QuotaStatusCode::kOk, 0, kMockQuota);
+      callback.Run(blink::mojom::QuotaStatusCode::kOk, 0, kMockQuota);
     }
 
     bool async_;

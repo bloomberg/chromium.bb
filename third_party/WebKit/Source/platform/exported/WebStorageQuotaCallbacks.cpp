@@ -36,7 +36,7 @@ void WebStorageQuotaCallbacks::DidGrantStorageQuota(
   private_.Reset();
 }
 
-void WebStorageQuotaCallbacks::DidFail(QuotaStatusCode error) {
+void WebStorageQuotaCallbacks::DidFail(mojom::QuotaStatusCode error) {
   DCHECK(!private_.IsNull());
   private_->DidFail(error);
   private_.Reset();

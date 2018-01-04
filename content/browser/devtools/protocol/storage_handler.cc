@@ -16,8 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
-#include "third_party/WebKit/common/quota/quota_status_code.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -46,12 +45,12 @@ Storage::StorageType GetTypeName(storage::QuotaClient::ID id) {
 
 void ReportUsageAndQuotaDataOnUIThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
-    blink::QuotaStatusCode code,
+    blink::mojom::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
     base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (code != blink::QuotaStatusCode::kOk) {
+  if (code != blink::mojom::QuotaStatusCode::kOk) {
     return callback->sendFailure(
         Response::Error("Quota information is not available"));
   }
@@ -71,7 +70,7 @@ void ReportUsageAndQuotaDataOnUIThread(
 
 void GotUsageAndQuotaDataCallback(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
-    blink::QuotaStatusCode code,
+    blink::mojom::QuotaStatusCode code,
     int64_t usage,
     int64_t quota,
     base::flat_map<storage::QuotaClient::ID, int64_t> usage_breakdown) {
@@ -89,7 +88,7 @@ void GetUsageAndQuotaOnIOThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   manager->GetUsageAndQuotaWithBreakdown(
-      url, blink::StorageType::kTemporary,
+      url, blink::mojom::StorageType::kTemporary,
       base::Bind(&GotUsageAndQuotaDataCallback,
                  base::Passed(std::move(callback))));
 }

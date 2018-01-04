@@ -45,9 +45,11 @@
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom-blink.h"
 
 namespace blink {
+
+using mojom::StorageType;
 
 namespace {
 

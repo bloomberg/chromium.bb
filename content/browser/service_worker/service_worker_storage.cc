@@ -29,7 +29,7 @@
 #include "net/base/net_errors.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "third_party/WebKit/common/quota/storage_type.h"
+#include "third_party/WebKit/common/quota/quota_types.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
@@ -1380,7 +1380,7 @@ void ServiceWorkerStorage::DidStoreRegistration(
     // Can be nullptr in tests.
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kServiceWorker, origin,
-        blink::StorageType::kTemporary,
+        blink::mojom::StorageType::kTemporary,
         new_version.resources_total_size_bytes -
             deleted_version.resources_total_size_bytes);
   }
@@ -1417,7 +1417,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
     // Can be nullptr in tests.
     quota_manager_proxy_->NotifyStorageModified(
         storage::QuotaClient::kServiceWorker, params->origin,
-        blink::StorageType::kTemporary,
+        blink::mojom::StorageType::kTemporary,
         -deleted_version.resources_total_size_bytes);
   }
   if (origin_state == OriginState::kDelete)

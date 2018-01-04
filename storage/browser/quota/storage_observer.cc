@@ -11,9 +11,9 @@ namespace storage {
 // StorageObserver::Filter
 
 StorageObserver::Filter::Filter()
-    : storage_type(blink::StorageType::kUnknown) {}
+    : storage_type(blink::mojom::StorageType::kUnknown) {}
 
-StorageObserver::Filter::Filter(blink::StorageType storage_type,
+StorageObserver::Filter::Filter(blink::mojom::StorageType storage_type,
                                 const GURL& origin)
     : storage_type(storage_type), origin(origin) {}
 
@@ -28,10 +28,11 @@ StorageObserver::MonitorParams::MonitorParams()
     : dispatch_initial_state(false) {
 }
 
-StorageObserver::MonitorParams::MonitorParams(blink::StorageType storage_type,
-                                              const GURL& origin,
-                                              const base::TimeDelta& rate,
-                                              bool get_initial_state)
+StorageObserver::MonitorParams::MonitorParams(
+    blink::mojom::StorageType storage_type,
+    const GURL& origin,
+    const base::TimeDelta& rate,
+    bool get_initial_state)
     : filter(storage_type, origin),
       rate(rate),
       dispatch_initial_state(get_initial_state) {}

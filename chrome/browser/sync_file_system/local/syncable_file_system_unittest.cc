@@ -127,7 +127,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
   const int64_t kQuota = 12345 * 1024;
   QuotaManager::kSyncableStorageDefaultHostQuota = kQuota;
   int64_t usage, quota;
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             file_system_.GetUsageAndQuota(&usage, &quota));
 
   // Returned quota must be what we overrode. Usage must be greater than 0
@@ -144,7 +144,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.TruncateFile(URL("dir/foo"), kFileSizeToExtend));
 
   int64_t new_usage;
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             file_system_.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(kFileSizeToExtend, new_usage - usage);
 
@@ -155,7 +155,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.TruncateFile(URL("dir/foo"), kFileSizeToExtend + 1));
 
   usage = new_usage;
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             file_system_.GetUsageAndQuota(&new_usage, &quota));
   EXPECT_EQ(usage, new_usage);
 
@@ -164,7 +164,7 @@ TEST_F(SyncableFileSystemTest, SyncableLocalSandboxCombined) {
             file_system_.DeleteFileSystem());
 
   // Now the usage must be zero.
-  EXPECT_EQ(blink::QuotaStatusCode::kOk,
+  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             file_system_.GetUsageAndQuota(&usage, &quota));
   EXPECT_EQ(0, usage);
 
