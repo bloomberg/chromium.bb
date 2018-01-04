@@ -79,6 +79,31 @@ static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
       { 0, 0, 0, 1 },
     };
 
+static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
+                                                      EXT_TX_SETS_INTER)] = {
+  {
+      // Intra
+      EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT,
+#if EXT_TX_16X16_SET == 0
+      EXT_TX_SET_DTT4_IDTX_1DDCT_16X16,
+#else
+      EXT_TX_SET_DTT4_IDTX,
+#endif  // EXT_TX_16X16_SET
+  },
+  {
+      // Inter
+      EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16,
+#if EXT_TX_16X16_SET == 0
+      EXT_TX_SET_ALL16_16X16,
+#elif EXT_TX_16X16_SET == 1
+      EXT_TX_SET_DTT9_IDTX_1DDCT,
+#else
+      EXT_TX_SET_DTT9_IDTX,
+#endif  // EXT_TX_16X16_SET
+      EXT_TX_SET_DCT_IDTX,
+  },
+};
+
 void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                          FRAME_CONTEXT *fc) {
   int i, j;

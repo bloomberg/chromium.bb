@@ -722,31 +722,6 @@ static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
   1, 2, 5, 7, 7, 10, 12, 16, 16,
 };
 
-static const int av1_ext_tx_set_idx_to_type[2][AOMMAX(EXT_TX_SETS_INTRA,
-                                                      EXT_TX_SETS_INTER)] = {
-  {
-      // Intra
-      EXT_TX_SET_DCTONLY, EXT_TX_SET_DTT4_IDTX_1DDCT,
-#if EXT_TX_16X16_SET == 0
-      EXT_TX_SET_DTT4_IDTX_1DDCT_16X16,
-#else
-      EXT_TX_SET_DTT4_IDTX,
-#endif  // EXT_TX_16X16_SET
-  },
-  {
-      // Inter
-      EXT_TX_SET_DCTONLY, EXT_TX_SET_ALL16,
-#if EXT_TX_16X16_SET == 0
-      EXT_TX_SET_ALL16_16X16,
-#elif EXT_TX_16X16_SET == 1
-      EXT_TX_SET_DTT9_IDTX_1DDCT,
-#else
-      EXT_TX_SET_DTT9_IDTX,
-#endif  // EXT_TX_16X16_SET
-      EXT_TX_SET_DCT_IDTX,
-  },
-};
-
 static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   {
       1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
