@@ -535,6 +535,11 @@ class SpdyNetworkTransactionTest : public ::testing::Test {
                url, session.get()) != kNoPushedStreamFound;
   }
 
+  static SpdyStreamId spdy_stream_hi_water_mark(
+      base::WeakPtr<SpdySession> session) {
+    return session->stream_hi_water_mark_;
+  }
+
   const GURL default_url_;
   const HostPortPair host_port_pair_;
   HttpRequestInfo request_;
@@ -6631,6 +6636,103 @@ TEST_F(SpdyNetworkTransactionTest, RequestHeadersCallback) {
   EXPECT_TRUE(raw_headers.FindHeaderForTest(":method", &value));
   EXPECT_EQ("GET", value);
   EXPECT_TRUE(raw_headers.request_line().empty());
+}
+
+// A request that has adopted a push promise and later got reset by the server
+// should be retried on a new stream.
+// Regression test for https://crbug.com/798508.
+TEST_F(SpdyNetworkTransactionTest, PushCanceledByServerAfterClaimed) {
+  const char pushed_url[] = "https://www.example.org/a.dat";
+  // Construct a request to the default URL on stream 1.
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame req2(spdy_util_.ConstructSpdyGet(pushed_url, 3, LOWEST));
+  // Construct a priority frame for stream 2.
+  SpdySerializedFrame priority(
+      spdy_util_.ConstructSpdyPriority(2, 1, IDLE, true));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(priority, 3),
+                        CreateMockWrite(req2, 6)};
+
+  // Construct a Push Promise frame, with no response.
+  SpdySerializedFrame push_promise(spdy_util_.ConstructInitialSpdyPushFrame(
+      spdy_util_.ConstructGetHeaderBlock(pushed_url), 2, 1));
+  // Construct a RST frame, canceling stream 2.
+  SpdySerializedFrame rst_server(
+      spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_CANCEL));
+  // Construct response headers and bodies.
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  MockRead reads[] = {
+      CreateMockRead(push_promise, 1), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(rst_server, 4),   MockRead(ASYNC, ERR_IO_PENDING, 5),
+      CreateMockRead(resp1, 7),        CreateMockRead(body1, 8),
+      CreateMockRead(resp2, 9),        CreateMockRead(body2, 10),
+      MockRead(ASYNC, 0, 11)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
+
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  HttpNetworkTransaction* trans = helper.trans();
+
+  // First request to start the connection.
+  TestCompletionCallback callback1;
+  int rv = trans->Start(&request_, callback1.callback(), log_);
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  data.RunUntilPaused();
+
+  // Get a SpdySession.
+  SpdySessionKey key(HostPortPair::FromURL(request_.url), ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  HttpNetworkSession* session = helper.session();
+  base::WeakPtr<SpdySession> spdy_session =
+      session->spdy_session_pool()->FindAvailableSession(
+          key, /* enable_ip_based_pooling = */ true, log_);
+
+  // Verify that there is one unclaimed push stream.
+  EXPECT_EQ(1u, num_unclaimed_pushed_streams(spdy_session));
+
+  // Claim the pushed stream.
+  HttpNetworkTransaction transaction2(DEFAULT_PRIORITY, session);
+  TestCompletionCallback callback2;
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL(pushed_url);
+  transaction2.Start(&request2, callback2.callback(), log_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(3u, spdy_stream_hi_water_mark(spdy_session));
+
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session));
+
+  // Continue reading and get the RST.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure we got the RST and retried the request.
+  EXPECT_EQ(2u, num_active_streams(spdy_session));
+  EXPECT_EQ(0u, num_unclaimed_pushed_streams(spdy_session));
+  EXPECT_EQ(5u, spdy_stream_hi_water_mark(spdy_session));
+
+  data.Resume();
+
+  // Test that transactions succeeded.
+  rv = callback1.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  rv = callback2.WaitForResult();
+  ASSERT_THAT(rv, IsOk());
+
+  // Read EOF.
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that all data was read and written.
+  helper.VerifyDataConsumed();
 }
 
 }  // namespace net

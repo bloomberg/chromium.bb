@@ -455,6 +455,12 @@ void SpdyStream::OnHeadersReceived(const SpdyHeaderBlock& response_headers,
   }
 }
 
+bool SpdyStream::ShouldRetryRSTPushStream() {
+  // Retry if the stream is a pushed stream, has been claimed, but did not yet
+  // receive response headers
+  return (response_headers_.empty() && type_ == SPDY_PUSH_STREAM && delegate_);
+}
+
 void SpdyStream::OnPushPromiseHeadersReceived(SpdyHeaderBlock headers) {
   CHECK(!request_headers_valid_);
   CHECK_EQ(io_state_, STATE_IDLE);
