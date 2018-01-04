@@ -151,4 +151,23 @@ TEST(WebVectorTest, EmplaceBackElementPlacement) {
     EXPECT_EQ(i, vector[i]);
 }
 
+namespace {
+
+// Used to ensure that WebVector supports types without a default constructor.
+struct NoDefaultConstructor {
+  NoDefaultConstructor(int data) : data(data) {}
+
+  int data;
+};
+
+}  // anonymous namespace
+
+TEST(WebVectorTest, NoDefaultConstructor) {
+  WebVector<NoDefaultConstructor> vector;
+  vector.reserve(1);
+  vector.emplace_back(42);
+  ASSERT_EQ(1U, vector.size());
+  EXPECT_EQ(42, vector[0].data);
+}
+
 }  // namespace blink
