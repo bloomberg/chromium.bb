@@ -1369,6 +1369,9 @@
                   '|third_party/hunspell/'\
                   '|third_party/hunspell_dictionaries/',
     },
+    'startup': {
+      'filepath': 'chrome/browser/ui/startup/',
+    },
     'streams': {
       'filepath': 'content/browser/streams/',
     },
@@ -2238,6 +2241,8 @@
                    'rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',
                    'timvolodine@chromium.org'],
+    'startup': ['grt+watch@chromium.org',
+                'pastarmovj+watch@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org',
