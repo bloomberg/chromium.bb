@@ -508,6 +508,12 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     arguments->Set("no-anonymous-ftp-user", std::make_unique<base::Value>());
   }
 
+  if (redirect_connect_to_localhost_) {
+    DCHECK_EQ(TYPE_BASIC_AUTH_PROXY, type_);
+    arguments->Set("redirect-connect-to-localhost",
+                   std::make_unique<base::Value>());
+  }
+
   if (UsingSSL(type_)) {
     // Check the certificate arguments of the HTTPS server.
     base::FilePath certificate_path(certificates_dir_);

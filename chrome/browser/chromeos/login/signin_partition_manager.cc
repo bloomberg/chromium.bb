@@ -6,16 +6,25 @@
 
 #include "base/guid.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "net/base/escape.h"
+#include "net/http/http_auth_cache.h"
+#include "net/http/http_network_session.h"
+#include "net/http/http_transaction_factory.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
+
+using content::BrowserThread;
 
 namespace chromeos {
 namespace login {
@@ -46,18 +55,50 @@ void ClearStoragePartition(content::StoragePartition* storage_partition,
       base::Time::Max(), std::move(partition_data_cleared));
 }
 
+net::URLRequestContextGetter* GetSystemURLRequestContextGetter() {
+  return g_browser_process->system_request_context();
+}
+
+// Transfers HttpAuthCache content from |main_url_request_context_getter| into
+// |signin_url_request_context_getter|.
+void PrepareSigninURLRequestContextOnIOThread(
+    net::URLRequestContextGetter* main_url_request_context_getter,
+    net::URLRequestContextGetter* signin_url_request_context_getter) {
+  // Transfer proxy auth data from the main URLRequestContext.
+  net::HttpAuthCache* main_http_auth_cache =
+      main_url_request_context_getter->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  net::HttpAuthCache* signin_http_auth_cache =
+      signin_url_request_context_getter->GetURLRequestContext()
+          ->http_transaction_factory()
+          ->GetSession()
+          ->http_auth_cache();
+  signin_http_auth_cache->UpdateAllFrom(*main_http_auth_cache);
+}
+
+void InvokeStartSigninSessionDoneCallback(
+    SigninPartitionManager::StartSigninSessionDoneCallback callback,
+    const std::string& partition_name) {
+  std::move(callback).Run(partition_name);
+}
+
 }  // namespace
 
 SigninPartitionManager::SigninPartitionManager(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       clear_storage_partition_task_(
-          base::BindRepeating(&ClearStoragePartition)) {}
+          base::BindRepeating(&ClearStoragePartition)),
+      get_system_url_request_context_getter_task_(
+          base::BindRepeating(&GetSystemURLRequestContextGetter)) {}
 
 SigninPartitionManager::~SigninPartitionManager() {}
 
 void SigninPartitionManager::StartSigninSession(
-    const content::WebContents* embedder_web_contents) {
+    const content::WebContents* embedder_web_contents,
+    StartSigninSessionDoneCallback signin_session_started) {
   // If we already were in a sign-in session, close it first.
   // This clears stale data from the last-used StorageParittion.
   CloseCurrentSigninSession(base::BindOnce(&base::DoNothing));
@@ -74,6 +115,19 @@ void SigninPartitionManager::StartSigninSession(
   current_storage_partition_ =
       content::BrowserContext::GetStoragePartitionForSite(browser_context_,
                                                           guest_site, true);
+
+  base::OnceClosure invoke_callback = base::BindOnce(
+      &InvokeStartSigninSessionDoneCallback, std::move(signin_session_started),
+      current_storage_partition_name_);
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &PrepareSigninURLRequestContextOnIOThread,
+          base::RetainedRef(get_system_url_request_context_getter_task_.Run()),
+          base::RetainedRef(
+              current_storage_partition_->GetURLRequestContext())),
+      std::move(invoke_callback));
 }
 
 void SigninPartitionManager::CloseCurrentSigninSession(
@@ -95,6 +149,13 @@ bool SigninPartitionManager::IsInSigninSession() const {
 void SigninPartitionManager::SetClearStoragePartitionTaskForTesting(
     ClearStoragePartitionTask clear_storage_partition_task) {
   clear_storage_partition_task_ = clear_storage_partition_task;
+}
+
+void SigninPartitionManager::SetGetSystemURLRequestContextGetterTaskForTesting(
+    GetSystemURLRequestContextGetterTask
+        get_system_url_request_context_getter_task) {
+  get_system_url_request_context_getter_task_ =
+      get_system_url_request_context_getter_task;
 }
 
 const std::string& SigninPartitionManager::GetCurrentStoragePartitionName()

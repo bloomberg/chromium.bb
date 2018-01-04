@@ -483,6 +483,10 @@ class SigninScreenHandler
   // Called when the cros property controlling allowed input methods changes.
   void OnAllowedInputMethodsChanged();
 
+  // After proxy auth information has been supplied, this function re-enables
+  // responding to network state notifications.
+  void ReenableNetworkStateUpdatesAfterProxyAuth();
+
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;
 
@@ -522,10 +526,10 @@ class SigninScreenHandler
   std::unique_ptr<CrosSettings::ObserverSubscription>
       allowed_input_methods_subscription_;
 
-  // Whether there is an auth UI pending. This flag is set on receiving
-  // NOTIFICATION_AUTH_NEEDED and reset on either NOTIFICATION_AUTH_SUPPLIED or
-  // NOTIFICATION_AUTH_CANCELLED.
-  bool has_pending_auth_ui_ = false;
+  // Whether we're currently ignoring network state updates because a proxy auth
+  // UI pending (or we're waiting for a grace period after the proxy auth UI is
+  // finished for the network to switch into the ONLINE state).
+  bool network_state_ignored_until_proxy_auth_ = false;
 
   // Used for pending GAIA reloads.
   NetworkError::ErrorReason gaia_reload_reason_ =
