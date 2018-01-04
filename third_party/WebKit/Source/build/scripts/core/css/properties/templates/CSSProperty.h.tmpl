@@ -35,6 +35,14 @@ class CSSProperty : public CSSUnresolvedProperty {
  public:
   CORE_EXPORT static const CSSProperty& Get(CSSPropertyID);
 
+  // For backwards compatibility when passing around CSSUnresolvedProperty
+  // references. In case we need to call a function that hasn't been converted
+  // to using property classes yet.
+  virtual CSSPropertyID PropertyID() const {
+    NOTREACHED();
+    return CSSPropertyInvalid;
+  }
+  bool IDEquals(CSSPropertyID id) const { return PropertyID() == id; }
   bool IsResolvedProperty() const override { return true; }
   WTF::String GetJSPropertyName() const;
   virtual bool IsInterpolable() const { return false; }
