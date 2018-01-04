@@ -32,7 +32,9 @@ class CC_PAINT_EXPORT ImageProvider {
     ScopedDecodedDrawImage(ScopedDecodedDrawImage&& other);
     ScopedDecodedDrawImage& operator=(ScopedDecodedDrawImage&& other);
 
-    operator bool() const { return image_.image(); }
+    operator bool() const {
+      return image_.image() || image_.transfer_cache_entry_id();
+    }
     const DecodedDrawImage& decoded_image() const { return image_; }
 
    private:

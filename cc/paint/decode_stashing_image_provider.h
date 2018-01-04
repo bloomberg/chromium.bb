@@ -7,12 +7,13 @@
 
 #include "base/containers/stack_container.h"
 #include "cc/paint/image_provider.h"
+#include "cc/paint/paint_export.h"
 
 namespace cc {
 // An ImageProvider that passes decode requests through to the
 // |source_provider| but keeps the decode cached throughtout its lifetime,
 // instead of passing the ref to the caller.
-class DecodeStashingImageProvider : public ImageProvider {
+class CC_PAINT_EXPORT DecodeStashingImageProvider : public ImageProvider {
  public:
   // |source_provider| must outlive this class.
   explicit DecodeStashingImageProvider(ImageProvider* source_provider);
@@ -21,6 +22,9 @@ class DecodeStashingImageProvider : public ImageProvider {
   // ImageProvider implementation.
   ScopedDecodedDrawImage GetDecodedDrawImage(
       const DrawImage& draw_image) override;
+
+  // Releases all stashed images.
+  void Reset();
 
  private:
   ImageProvider* source_provider_;

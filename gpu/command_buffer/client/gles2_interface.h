@@ -12,7 +12,14 @@
 namespace cc {
 class ClientTransferCacheEntry;
 class DisplayItemList;
-}
+class ImageProvider;
+}  // namespace cc
+
+namespace gfx {
+class Rect;
+class Vector2d;
+class Vector2dF;
+}  // namespace gfx
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;

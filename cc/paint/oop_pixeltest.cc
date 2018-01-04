@@ -33,6 +33,21 @@
 namespace cc {
 namespace {
 
+class NoOpImageProvider : public ImageProvider {
+ public:
+  ~NoOpImageProvider() override = default;
+
+  ScopedDecodedDrawImage GetDecodedDrawImage(
+      const DrawImage& draw_image) override {
+    SkBitmap bitmap;
+    bitmap.allocPixelsFlags(SkImageInfo::MakeN32Premul(10, 10),
+                            SkBitmap::kZeroPixels_AllocFlag);
+    sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+    return ScopedDecodedDrawImage(DecodedDrawImage(
+        image, SkSize::Make(10, 10), SkSize::Make(1, 1), kLow_SkFilterQuality));
+  }
+};
+
 class OopPixelTest : public testing::Test {
  public:
   void SetUp() override {
@@ -77,8 +92,7 @@ class OopPixelTest : public testing::Test {
     GrPixelConfig pixel_config = kRGBA_8888_GrPixelConfig;
     gfx::Rect bitmap_rect;
     gfx::Rect playback_rect;
-    float post_translate_x = 0.f;
-    float post_translate_y = 0.f;
+    gfx::Vector2dF post_translate = {0.f, 0.f};
     float post_scale = 1.f;
   };
 
@@ -118,11 +132,10 @@ class OopPixelTest : public testing::Test {
                             options.msaa_sample_count, options.use_lcd_text,
                             options.use_distance_field_text,
                             options.pixel_config);
-    gl->RasterCHROMIUM(display_item_list.get(), options.bitmap_rect.x(),
-                       options.bitmap_rect.y(), options.playback_rect.x(),
-                       options.playback_rect.y(), options.playback_rect.width(),
-                       options.playback_rect.height(), options.post_translate_x,
-                       options.post_translate_y, options.post_scale);
+    gl->RasterCHROMIUM(display_item_list.get(), &image_provider_,
+                       options.bitmap_rect.OffsetFromOrigin(),
+                       options.playback_rect, options.post_translate,
+                       options.post_scale);
     gl->EndRasterCHROMIUM();
     gl->Flush();
 
@@ -213,9 +226,8 @@ class OopPixelTest : public testing::Test {
     SkCanvas* canvas = surface->getCanvas();
     canvas->drawColor(options.background_color);
 
-    gfx::AxisTransform2d raster_transform(
-        options.post_scale,
-        gfx::Vector2dF(options.post_translate_x, options.post_translate_y));
+    gfx::AxisTransform2d raster_transform(options.post_scale,
+                                          options.post_translate);
     // TODO(enne): add a target colorspace to BeginRasterCHROMIUM etc.
     gfx::ColorSpace target_color_space;
     raster_source->PlaybackToCanvas(canvas, target_color_space,
@@ -250,6 +262,7 @@ class OopPixelTest : public testing::Test {
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
+  NoOpImageProvider image_provider_;
 };
 
 TEST_F(OopPixelTest, DrawColor) {
@@ -369,8 +382,7 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
   options.bitmap_rect = {5, 5, 20, 20};
   options.playback_rect = {3, 2, 15, 12};
   options.background_color = SK_ColorCYAN;
-  options.post_translate_x = 0.5f;
-  options.post_translate_y = 0.25f;
+  options.post_translate = {0.5f, 0.25f};
   options.post_scale = 2.f;
 
   auto actual = Raster(display_item_list, options);
@@ -401,8 +413,7 @@ TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
   options.bitmap_rect = {0, 10, 1, 10};
   options.playback_rect = {0, 10, 1, 10};
   options.background_color = SK_ColorGRAY;
-  options.post_translate_x = 0.f;
-  options.post_translate_y = 0.f;
+  options.post_translate = {0.f, 0.f};
   options.post_scale = 2.f;
 
   auto actual = Raster(display_item_list, options);

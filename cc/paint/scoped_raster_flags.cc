@@ -61,7 +61,7 @@ void ScopedRasterFlags::DecodeImageShader(const SkMatrix& ctm) {
   }
 
   const auto& decoded_image = decoded_draw_image.decoded_image();
-  DCHECK(decoded_image.image());
+  DCHECK(decoded_image.image() || decoded_image.transfer_cache_entry_id());
 
   bool need_scale = !decoded_image.is_scale_adjustment_identity();
   if (need_scale) {

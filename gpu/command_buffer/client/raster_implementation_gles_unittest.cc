@@ -141,17 +141,13 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
                     GLboolean can_use_lcd_text,
                     GLboolean use_distance_field_text,
                     GLint pixel_config));
-  MOCK_METHOD10(RasterCHROMIUM,
-                void(const cc::DisplayItemList* list,
-                     GLint translate_x,
-                     GLint translate_y,
-                     GLint clip_x,
-                     GLint clip_y,
-                     GLint clip_w,
-                     GLint clip_h,
-                     GLfloat post_translate_x,
-                     GLfloat post_translate_y,
-                     GLfloat post_scale));
+  MOCK_METHOD6(RasterCHROMIUM,
+               void(const cc::DisplayItemList* list,
+                    cc::ImageProvider* provider,
+                    const gfx::Vector2d& translate,
+                    const gfx::Rect& playback_rect,
+                    const gfx::Vector2dF& post_translate,
+                    GLfloat post_scale));
   MOCK_METHOD0(EndRasterCHROMIUM, void());
 
   MOCK_METHOD2(PixelStorei, void(GLenum pname, GLint param));
@@ -619,24 +615,18 @@ TEST_F(RasterImplementationGLESTest, BeginRasterCHROMIUM) {
 
 TEST_F(RasterImplementationGLESTest, RasterCHROMIUM) {
   scoped_refptr<cc::DisplayItemList> display_list = new cc::DisplayItemList;
-  const GLint translate_x = 1;
-  const GLint translate_y = 2;
-  const GLint clip_x = 3;
-  const GLint clip_y = 4;
-  const GLint clip_w = 5;
-  const GLint clip_h = 6;
-  const GLfloat post_translate_x = 7.0f;
-  const GLfloat post_translate_y = 8.0f;
+  cc::ImageProvider* image_provider = nullptr;
+  const gfx::Vector2d translate(1, 2);
+  const gfx::Rect playback_rect(3, 4, 5, 6);
+  const gfx::Vector2dF post_translate(7.0f, 8.0f);
   const GLfloat post_scale = 9.0f;
 
-  EXPECT_CALL(
-      *gl_, RasterCHROMIUM(display_list.get(), translate_x, translate_y, clip_x,
-                           clip_y, clip_w, clip_h, post_translate_x,
-                           post_translate_y, post_scale))
+  EXPECT_CALL(*gl_,
+              RasterCHROMIUM(display_list.get(), image_provider, translate,
+                             playback_rect, post_translate, post_scale))
       .Times(1);
-  ri_->RasterCHROMIUM(display_list.get(), translate_x, translate_y, clip_x,
-                      clip_y, clip_w, clip_h, post_translate_x,
-                      post_translate_y, post_scale);
+  ri_->RasterCHROMIUM(display_list.get(), image_provider, translate,
+                      playback_rect, post_translate, post_scale);
 }
 
 TEST_F(RasterImplementationGLESTest, EndRasterCHROMIUM) {

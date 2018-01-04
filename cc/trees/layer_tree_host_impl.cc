@@ -2486,6 +2486,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   if (use_gpu_rasterization_) {
     image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
+        settings_.enable_oop_rasterization,
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes);

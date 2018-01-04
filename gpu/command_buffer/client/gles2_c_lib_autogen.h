@@ -1766,18 +1766,13 @@ void GL_APIENTRY GLES2BeginRasterCHROMIUM(GLuint texture_id,
       use_distance_field_text, pixel_config);
 }
 void GL_APIENTRY GLES2RasterCHROMIUM(const cc::DisplayItemList* list,
-                                     GLint translate_x,
-                                     GLint translate_y,
-                                     GLint clip_x,
-                                     GLint clip_y,
-                                     GLint clip_w,
-                                     GLint clip_h,
-                                     GLfloat post_translate_x,
-                                     GLfloat post_translate_y,
+                                     cc::ImageProvider* provider,
+                                     const gfx::Vector2d& translate,
+                                     const gfx::Rect& playback_rect,
+                                     const gfx::Vector2dF& post_translate,
                                      GLfloat post_scale) {
   gles2::GetGLContext()->RasterCHROMIUM(
-      list, translate_x, translate_y, clip_x, clip_y, clip_w, clip_h,
-      post_translate_x, post_translate_y, post_scale);
+      list, provider, translate, playback_rect, post_translate, post_scale);
 }
 void GL_APIENTRY GLES2EndRasterCHROMIUM() {
   gles2::GetGLContext()->EndRasterCHROMIUM();

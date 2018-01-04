@@ -74,6 +74,55 @@ class PaintOpSerializationTestUtils {
   }
 };
 
+class TestOptionsProvider {
+ public:
+  TestOptionsProvider() {
+    serialize_options_.canvas = &canvas_;
+    serialize_options_.image_provider = &image_provider_;
+    serialize_options_.transfer_cache = &transfer_cache_helper_;
+    deserialize_options_.transfer_cache = &transfer_cache_helper_;
+  }
+
+  const PaintOp::SerializeOptions& serialize_options() const {
+    return serialize_options_;
+  }
+  PaintOp::SerializeOptions& mutable_serialize_options() {
+    return serialize_options_;
+  }
+  const PaintOp::DeserializeOptions deserialize_options() const {
+    return deserialize_options_;
+  }
+  PaintOp::DeserializeOptions mutable_deserialize_options() {
+    return deserialize_options_;
+  }
+  ImageProvider* image_provider() { return &image_provider_; }
+  TransferCacheTestHelper* transfer_cache_helper() {
+    return &transfer_cache_helper_;
+  }
+
+ private:
+  class NoOpImageProvider : public ImageProvider {
+   public:
+    ~NoOpImageProvider() override = default;
+
+    ScopedDecodedDrawImage GetDecodedDrawImage(
+        const DrawImage& draw_image) override {
+      SkBitmap bitmap;
+      bitmap.allocPixelsFlags(SkImageInfo::MakeN32Premul(10, 10),
+                              SkBitmap::kZeroPixels_AllocFlag);
+      sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+      return ScopedDecodedDrawImage(DecodedDrawImage(
+          image, SkSize::Make(0, 0), SkSize::Make(1, 1), kLow_SkFilterQuality));
+    }
+  };
+
+  PaintOp::SerializeOptions serialize_options_;
+  PaintOp::DeserializeOptions deserialize_options_;
+  NoOpImageProvider image_provider_;
+  MockCanvas canvas_;
+  TransferCacheTestHelper transfer_cache_helper_;
+};
+
 TEST(PaintOpBufferTest, Empty) {
   PaintOpBuffer buffer;
   EXPECT_EQ(buffer.size(), 0u);
@@ -1218,12 +1267,10 @@ class SimpleSerializer {
     for (size_t i = 0; i < buffer.size(); ++i)
       bytes_written_[i] = 0;
 
-    PaintOp::SerializeOptions options;
-    options.transfer_cache = &transfer_cache_helper_;
-
     size_t op_idx = 0;
     for (const auto* op : PaintOpBuffer::Iterator(&buffer)) {
-      size_t bytes_written = op->Serialize(current_, remaining_, options);
+      size_t bytes_written = op->Serialize(
+          current_, remaining_, options_provider_.serialize_options());
       if (!bytes_written)
         return;
 
@@ -1245,14 +1292,14 @@ class SimpleSerializer {
 
   const std::vector<size_t>& bytes_written() const { return bytes_written_; }
   size_t TotalBytesWritten() const { return output_size_ - remaining_; }
-  TransferCacheTestHelper* transfer_cache() { return &transfer_cache_helper_; }
+  TestOptionsProvider* options_provider() { return &options_provider_; }
 
  private:
   char* current_ = nullptr;
   size_t output_size_ = 0u;
   size_t remaining_ = 0u;
   std::vector<size_t> bytes_written_;
-  TransferCacheTestHelper transfer_cache_helper_;
+  TestOptionsProvider options_provider_;
 };
 
 class DeserializerIterator {
@@ -1700,9 +1747,9 @@ TEST_P(PaintOpSerializationTest, SmokeTest) {
 
   PaintOpBuffer::Iterator iter(&buffer_);
   size_t i = 0;
-  for (auto* base_written :
-       DeserializerIterator(output_.get(), serializer.TotalBytesWritten(),
-                            serializer.transfer_cache())) {
+  for (auto* base_written : DeserializerIterator(
+           output_.get(), serializer.TotalBytesWritten(),
+           serializer.options_provider()->transfer_cache_helper())) {
     SCOPED_TRACE(base::StringPrintf(
         "%s #%zu", PaintOpTypeToString(GetParamType()).c_str(), i));
     ASSERT_EQ(!*iter, !base_written);
@@ -1728,8 +1775,7 @@ TEST_P(PaintOpSerializationTest, SerializationFailures) {
   serializer.Serialize(buffer_);
   std::vector<size_t> bytes_written = serializer.bytes_written();
 
-  PaintOp::SerializeOptions options;
-  options.transfer_cache = serializer.transfer_cache();
+  TestOptionsProvider options_provider;
 
   size_t op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer_); iter; ++iter, ++op_idx) {
@@ -1741,7 +1787,8 @@ TEST_P(PaintOpSerializationTest, SerializationFailures) {
     // Attempt to write op into a buffer of size |i|, and only expect
     // it to succeed if the buffer is large enough.
     for (size_t i = 0; i < bytes_written[op_idx] + 2; ++i) {
-      size_t written_bytes = iter->Serialize(output_.get(), i, options);
+      size_t written_bytes = iter->Serialize(
+          output_.get(), i, options_provider.serialize_options());
       if (i >= expected_bytes) {
         EXPECT_EQ(expected_bytes, written_bytes) << "i: " << i;
       } else {
@@ -1763,6 +1810,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
 
   SimpleSerializer serializer(output_.get(), output_size_);
   serializer.Serialize(buffer_);
+  TestOptionsProvider* options_provider = serializer.options_provider();
 
   char* first = static_cast<char*>(output_.get());
   char* current = first;
@@ -1771,8 +1819,6 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   static constexpr size_t kOutputOpSize = kBufferBytesPerOp;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialize_buffer_(
       static_cast<char*>(base::AlignedAlloc(kOutputOpSize, kAlign)));
-  PaintOp::DeserializeOptions deserialize_options;
-  deserialize_options.transfer_cache = serializer.transfer_cache();
 
   size_t op_idx = 0;
   size_t total_read = 0;
@@ -1794,15 +1840,16 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
       // properly when presented with invalid offsets.
       serialized->skip = read_size;
       size_t bytes_read = 0;
-      PaintOp* written =
-          PaintOp::Deserialize(current, read_size, deserialize_buffer_.get(),
-                               kOutputOpSize, &bytes_read, deserialize_options);
+      PaintOp* written = PaintOp::Deserialize(
+          current, read_size, deserialize_buffer_.get(), kOutputOpSize,
+          &bytes_read, options_provider->deserialize_options());
 
       // Deserialize buffers with valid ops until the last op. This verifies
       // that the complete buffer is invalidated on encountering the first
       // corrupted op.
       auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-          first, total_read + read_size, deserialize_options);
+          first, total_read + read_size,
+          options_provider->deserialize_options());
 
       // Skips are only valid if they are aligned.
       if (read_size >= skip && read_size % kAlign == 0) {
@@ -1842,24 +1889,21 @@ TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
   PushTestOps(GetParamType());
   ResizeOutputBuffer();
 
-  TransferCacheTestHelper transfer_cache_helper;
-  PaintOp::SerializeOptions options;
-  options.transfer_cache = &transfer_cache_helper;
-  PaintOp::DeserializeOptions deserialize_options;
-  deserialize_options.transfer_cache = &transfer_cache_helper;
+  TestOptionsProvider options_provider;
   size_t deserialized_size = sizeof(LargestPaintOp) + PaintOp::kMaxSkip;
   std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
       static_cast<char*>(
           base::AlignedAlloc(deserialized_size, PaintOpBuffer::PaintOpAlign)));
   for (const auto* op : PaintOpBuffer::Iterator(&buffer_)) {
-    options.flags_to_serialize =
+    options_provider.mutable_serialize_options().flags_to_serialize =
         &static_cast<const PaintOpWithFlags*>(op)->flags;
 
-    size_t bytes_written = op->Serialize(output_.get(), output_size_, options);
+    size_t bytes_written = op->Serialize(output_.get(), output_size_,
+                                         options_provider.serialize_options());
     size_t bytes_read = 0u;
     PaintOp* written = PaintOp::Deserialize(
         output_.get(), bytes_written, deserialized.get(), deserialized_size,
-        &bytes_read, deserialize_options);
+        &bytes_read, options_provider.deserialize_options());
     ASSERT_TRUE(written);
     EXPECT_EQ(*op, *written);
     written->DestroyThis();
@@ -1867,11 +1911,13 @@ TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
 
     PaintFlags override_flags = static_cast<const PaintOpWithFlags*>(op)->flags;
     override_flags.setAlpha(override_flags.getAlpha() * 0.5);
-    options.flags_to_serialize = &override_flags;
-    bytes_written = op->Serialize(output_.get(), output_size_, options);
-    written = PaintOp::Deserialize(output_.get(), bytes_written,
-                                   deserialized.get(), deserialized_size,
-                                   &bytes_read, deserialize_options);
+    options_provider.mutable_serialize_options().flags_to_serialize =
+        &override_flags;
+    bytes_written = op->Serialize(output_.get(), output_size_,
+                                  options_provider.serialize_options());
+    written = PaintOp::Deserialize(
+        output_.get(), bytes_written, deserialized.get(), deserialized_size,
+        &bytes_read, options_provider.deserialize_options());
     ASSERT_TRUE(written);
     ASSERT_TRUE(written->IsPaintOpWithFlags());
     EXPECT_EQ(static_cast<const PaintOpWithFlags*>(written)->flags.getAlpha(),
@@ -1891,17 +1937,17 @@ TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
-  TransferCacheTestHelper transfer_cache_helper;
+  TestOptionsProvider options_proivder;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr,
-                                    &transfer_cache_helper);
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_proivder.image_provider(),
+                                    options_proivder.transfer_cache_helper());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
-  PaintOp::DeserializeOptions deserialized_options;
-  deserialized_options.transfer_cache = &transfer_cache_helper;
-  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-      memory.get(), serializer.written(), deserialized_options);
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_proivder.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
 
   // The deserialized buffer has an extra pair of save/restores, for the
@@ -1959,17 +2005,17 @@ TEST(PaintOpSerializationTest, Preamble) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
-  TransferCacheTestHelper transfer_cache_helper;
+  TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr,
-                                    &transfer_cache_helper);
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_provider.image_provider(),
+                                    options_provider.transfer_cache_helper());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
-  PaintOp::DeserializeOptions deserialized_options;
-  deserialized_options.transfer_cache = &transfer_cache_helper;
-  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-      memory.get(), serializer.written(), deserialized_options);
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
   // 4 ops for the preamble and 2 for save/restore.
   ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 6u);
@@ -2046,18 +2092,18 @@ TEST(PaintOpSerializationTest, SerializesNestedRecords) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
-  TransferCacheTestHelper transfer_cache_helper;
+  TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr,
-                                    &transfer_cache_helper);
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_provider.image_provider(),
+                                    options_provider.transfer_cache_helper());
   PaintOpBufferSerializer::Preamble preamble;
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
-  PaintOp::DeserializeOptions deserialized_options;
-  deserialized_options.transfer_cache = &transfer_cache_helper;
-  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-      memory.get(), serializer.written(), deserialized_options);
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
   ASSERT_EQ(deserialized_buffer->size(), record->size() + 4u);
 
@@ -2099,18 +2145,18 @@ TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
-  TransferCacheTestHelper transfer_cache_helper;
+  TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr,
-                                    &transfer_cache_helper);
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_provider.image_provider(),
+                                    options_provider.transfer_cache_helper());
   PaintOpBufferSerializer::Preamble preamble;
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
-  PaintOp::DeserializeOptions deserialized_options;
-  deserialized_options.transfer_cache = &transfer_cache_helper;
-  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-      memory.get(), serializer.written(), deserialized_options);
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
   ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 1);
 
@@ -2166,17 +2212,17 @@ TEST(PaintOpBufferSerializationTest, AlphaFoldingDuringSerialization) {
   std::unique_ptr<char, base::AlignedFreeDeleter> memory(
       static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
                                             PaintOpBuffer::PaintOpAlign)));
-  TransferCacheTestHelper transfer_cache_helper;
+  TestOptionsProvider options_provider;
   SimpleBufferSerializer serializer(memory.get(),
-                                    PaintOpBuffer::kInitialBufferSize, nullptr,
-                                    &transfer_cache_helper);
+                                    PaintOpBuffer::kInitialBufferSize,
+                                    options_provider.image_provider(),
+                                    options_provider.transfer_cache_helper());
   serializer.Serialize(&buffer, nullptr, preamble);
   ASSERT_NE(serializer.written(), 0u);
 
-  PaintOp::DeserializeOptions deserialized_options;
-  deserialized_options.transfer_cache = &transfer_cache_helper;
-  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
-      memory.get(), serializer.written(), deserialized_options);
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
   ASSERT_TRUE(deserialized_buffer);
 
   // 3 additional ops for save, clip and restore.
@@ -2217,7 +2263,6 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
       static_cast<char*>(base::AlignedAlloc(kSize, kAlign)));
   std::unique_ptr<char, base::AlignedFreeDeleter> output_(
       static_cast<char*>(base::AlignedAlloc(kSize, kAlign)));
-  PaintOp::DeserializeOptions deserialize_options;
 
   PaintOpBuffer buffer;
   buffer.push<DrawColorOp>(SK_ColorMAGENTA, SkBlendMode::kSrc);
@@ -2226,15 +2271,16 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
   PaintOp* op = *iter;
   ASSERT_TRUE(op);
 
-  PaintOp::SerializeOptions serialize_options;
-  size_t bytes_written = op->Serialize(input_.get(), kSize, serialize_options);
+  TestOptionsProvider options_provider;
+  size_t bytes_written =
+      op->Serialize(input_.get(), kSize, options_provider.serialize_options());
   ASSERT_GT(bytes_written, 0u);
 
   // can deserialize from exactly the right size
   size_t bytes_read = 0;
   PaintOp* success =
       PaintOp::Deserialize(input_.get(), bytes_written, output_.get(), kSize,
-                           &bytes_read, deserialize_options);
+                           &bytes_read, options_provider.deserialize_options());
   ASSERT_TRUE(success);
   EXPECT_EQ(bytes_written, bytes_read);
   success->DestroyThis();
@@ -2243,20 +2289,23 @@ TEST(PaintOpBufferTest, PaintOpDeserialize) {
   // (the DeserializationFailures test above tests if the skip is lying)
   for (size_t i = 0; i < bytes_written - 1; ++i)
     EXPECT_FALSE(PaintOp::Deserialize(input_.get(), i, output_.get(), kSize,
-                                      &bytes_read, deserialize_options));
+                                      &bytes_read,
+                                      options_provider.deserialize_options()));
 
   // unaligned skips fail to deserialize
   PaintOp* serialized = reinterpret_cast<PaintOp*>(input_.get());
   EXPECT_EQ(0u, serialized->skip % kAlign);
   serialized->skip -= 1;
   EXPECT_FALSE(PaintOp::Deserialize(input_.get(), bytes_written, output_.get(),
-                                    kSize, &bytes_read, deserialize_options));
+                                    kSize, &bytes_read,
+                                    options_provider.deserialize_options()));
   serialized->skip += 1;
 
   // bogus types fail to deserialize
   serialized->type = static_cast<uint8_t>(PaintOpType::LastPaintOpType) + 1;
   EXPECT_FALSE(PaintOp::Deserialize(input_.get(), bytes_written, output_.get(),
-                                    kSize, &bytes_read, deserialize_options));
+                                    kSize, &bytes_read,
+                                    options_provider.deserialize_options()));
 }
 
 // Test that deserializing invalid SkClipOp enums fails silently.
@@ -2287,19 +2336,18 @@ TEST(PaintOpBufferTest, ValidateSkClip) {
   SkClipOp bad_clip_max = static_cast<SkClipOp>(~static_cast<uint32_t>(0));
   buffer.push<ClipRectOp>(test_rects[1], bad_clip_max, false);
 
-  PaintOp::SerializeOptions serialize_options;
-  PaintOp::DeserializeOptions deserialize_options;
+  TestOptionsProvider options_provider;
 
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
-    size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, serialize_options);
+    size_t bytes_written = op->Serialize(serialized.get(), buffer_size,
+                                         options_provider.serialize_options());
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
-                                            deserialized.get(), buffer_size,
-                                            &bytes_read, deserialize_options);
+    PaintOp* written = PaintOp::Deserialize(
+        serialized.get(), bytes_written, deserialized.get(), buffer_size,
+        &bytes_read, options_provider.deserialize_options());
     // First op should succeed.  Other ops with bad enums should
     // serialize correctly but fail to deserialize due to the bad
     // SkClipOp enum.
@@ -2368,19 +2416,18 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
     buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);
   }
 
-  PaintOp::SerializeOptions serialize_options;
-  PaintOp::DeserializeOptions deserialize_options;
+  TestOptionsProvider options_provider;
 
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
-    size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, serialize_options);
+    size_t bytes_written = op->Serialize(serialized.get(), buffer_size,
+                                         options_provider.serialize_options());
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
-                                            deserialized.get(), buffer_size,
-                                            &bytes_read, deserialize_options);
+    PaintOp* written = PaintOp::Deserialize(
+        serialized.get(), bytes_written, deserialized.get(), buffer_size,
+        &bytes_read, options_provider.deserialize_options());
     // First two ops should succeed.  Other ops with bad enums should
     // serialize correctly but fail to deserialize due to the bad
     // SkBlendMode enum.
@@ -2424,20 +2471,19 @@ TEST(PaintOpBufferTest, ValidateRects) {
   buffer.push<SaveLayerOp>(&bad_rect, &test_flags[0]);
   buffer.push<SaveLayerAlphaOp>(&bad_rect, test_uint8s[0], true);
 
-  PaintOp::SerializeOptions serialize_options;
-  PaintOp::DeserializeOptions deserialize_options;
+  TestOptionsProvider options_provider;
 
   // Every op should serialize but fail to deserialize due to the bad rect.
   int op_idx = 0;
   for (PaintOpBuffer::Iterator iter(&buffer); iter; ++iter) {
     const PaintOp* op = *iter;
-    size_t bytes_written =
-        op->Serialize(serialized.get(), buffer_size, serialize_options);
+    size_t bytes_written = op->Serialize(serialized.get(), buffer_size,
+                                         options_provider.serialize_options());
     ASSERT_GT(bytes_written, 0u);
     size_t bytes_read = 0;
-    PaintOp* written = PaintOp::Deserialize(serialized.get(), bytes_written,
-                                            deserialized.get(), buffer_size,
-                                            &bytes_read, deserialize_options);
+    PaintOp* written = PaintOp::Deserialize(
+        serialized.get(), bytes_written, deserialized.get(), buffer_size,
+        &bytes_read, options_provider.deserialize_options());
     EXPECT_FALSE(written) << "op: " << op_idx;
     ++op_idx;
   }
@@ -2602,7 +2648,8 @@ class MockImageProvider : public ImageProvider {
       return ScopedDecodedDrawImage();
 
     SkBitmap bitmap;
-    bitmap.allocN32Pixels(10, 10);
+    bitmap.allocPixelsFlags(SkImageInfo::MakeN32Premul(10, 10),
+                            SkBitmap::kZeroPixels_AllocFlag);
     sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
     size_t i = index_++;
     return ScopedDecodedDrawImage(

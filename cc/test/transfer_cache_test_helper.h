@@ -21,6 +21,16 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   explicit TransferCacheTestHelper(GrContext* context = nullptr);
   ~TransferCacheTestHelper() override;
 
+  void SetGrContext(GrContext* context);
+  void SetCachedItemsLimit(size_t limit);
+
+  // Direct Access API (simulates ContextSupport methods).
+  bool LockEntryDirect(TransferCacheEntryType type, uint32_t id);
+  void CreateEntryDirect(const ClientTransferCacheEntry& entry);
+  void UnlockEntriesDirect(
+      const std::vector<std::pair<TransferCacheEntryType, uint32_t>>& entries);
+  void DeleteEntryDirect(TransferCacheEntryType type, uint32_t id);
+
  private:
   using EntryKey = std::pair<TransferCacheEntryType, uint32_t>;
 
@@ -33,10 +43,14 @@ class TransferCacheTestHelper : public TransferCacheDeserializeHelper,
   void CreateEntryInternal(const ClientTransferCacheEntry& entry) override;
   void FlushEntriesInternal(const std::vector<EntryKey>& entries) override;
 
+  // Helper functions.
+  void EnforceLimits();
+
   std::map<EntryKey, std::unique_ptr<ServiceTransferCacheEntry>> entries_;
   std::set<EntryKey> locked_entries_;
 
   GrContext* context_ = nullptr;
+  size_t cached_items_limit_ = std::numeric_limits<size_t>::max();
 };
 
 }  // namespace cc

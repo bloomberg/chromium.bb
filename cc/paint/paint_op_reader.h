@@ -9,6 +9,7 @@
 
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_op_writer.h"
+#include "cc/paint/transfer_cache_deserialize_helper.h"
 
 namespace cc {
 
@@ -50,7 +51,7 @@ class CC_PAINT_EXPORT PaintOpReader {
 
   void Read(SkPath* path);
   void Read(PaintFlags* flags);
-  void Read(PaintImage* image);
+  void Read(PaintImage* image, TransferCacheDeserializeHelper* transfer_cache);
   void Read(sk_sp<SkData>* data);
   void Read(scoped_refptr<PaintTextBlob>* blob,
             TransferCacheDeserializeHelper* transfer_cache);

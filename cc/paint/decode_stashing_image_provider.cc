@@ -25,4 +25,8 @@ DecodeStashingImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
   return image_to_return;
 }
 
+void DecodeStashingImageProvider::Reset() {
+  decoded_images_->clear();
+}
+
 }  // namespace cc
