@@ -209,8 +209,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();
 
-  void SimulateWillStartRequest(ui::PageTransition transition);
-
   // RenderFrameHostImpl:
   mojom::FrameNavigationControl* GetNavigationControl() override;
 

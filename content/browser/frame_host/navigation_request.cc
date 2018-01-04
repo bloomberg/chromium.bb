@@ -498,15 +498,7 @@ void NavigationRequest::BeginNavigation() {
     // the NavigationHandle where the callback will be stored.
     // TODO(clamy): pass the method to the NavigationHandle instead of a
     // boolean.
-    bool is_external_protocol =
-        !GetContentClient()->browser()->IsHandledURL(common_params_.url);
     navigation_handle_->WillStartRequest(
-        common_params_.method, common_params_.post_data,
-        Referrer::SanitizeForRequest(common_params_.url,
-                                     common_params_.referrer),
-        common_params_.has_user_gesture, common_params_.transition,
-        is_external_protocol, begin_params_->request_context_type,
-        begin_params_->mixed_content_context_type,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));
     return;
@@ -546,6 +538,8 @@ void NavigationRequest::CreateNavigationHandle() {
     redirect_chain.push_back(begin_params_->client_side_redirect_url);
   redirect_chain.push_back(common_params_.url);
 
+  bool is_external_protocol =
+      !GetContentClient()->browser()->IsHandledURL(common_params_.url);
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       NavigationHandleImpl::Create(
           common_params_.url, redirect_chain, frame_tree_node_,
@@ -555,7 +549,13 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.navigation_start, nav_entry_id_,
           common_params_.started_from_context_menu,
           common_params_.should_check_main_world_csp,
-          begin_params_->is_form_submission, begin_params_->suggested_filename);
+          begin_params_->is_form_submission, begin_params_->suggested_filename,
+          common_params_.method, common_params_.post_data,
+          Referrer::SanitizeForRequest(common_params_.url,
+                                       common_params_.referrer),
+          common_params_.has_user_gesture, common_params_.transition,
+          is_external_protocol, begin_params_->request_context_type,
+          begin_params_->mixed_content_context_type);
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case

@@ -76,10 +76,7 @@ class ExtensionNavigationThrottleUnitTest
         content::NavigationHandle::CreateNavigationHandleForTesting(
             extension_url, host);
     EXPECT_EQ(expected_will_start_result,
-              handle->CallWillStartRequestForTesting(
-                  /*is_post=*/false, content::Referrer(),
-                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_LINK,
-                  /*is_external_protocol=*/false))
+              handle->CallWillStartRequestForTesting())
         << extension_url;
 
     // Reset the handle for a second subtest: server redirect to
@@ -96,10 +93,7 @@ class ExtensionNavigationThrottleUnitTest
             ? NavigationThrottle::PROCEED
             : NavigationThrottle::CANCEL;
     EXPECT_EQ(NavigationThrottle::PROCEED,
-              handle->CallWillStartRequestForTesting(
-                  /*is_post=*/false, content::Referrer(),
-                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_LINK,
-                  /*is_external_protocol=*/false))
+              handle->CallWillStartRequestForTesting())
         << http_url;
     EXPECT_EQ(expected_will_redirect_result,
               handle->CallWillRedirectRequestForTesting(

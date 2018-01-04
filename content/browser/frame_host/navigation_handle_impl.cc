@@ -71,12 +71,22 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
     bool is_form_submission,
-    const base::Optional<std::string>& suggested_filename) {
+    const base::Optional<std::string>& suggested_filename,
+    const std::string& method,
+    scoped_refptr<content::ResourceRequestBody> resource_request_body,
+    const Referrer& sanitized_referrer,
+    bool has_user_gesture,
+    ui::PageTransition transition,
+    bool is_external_protocol,
+    RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
       is_same_document, navigation_start, pending_nav_entry_id,
       started_from_context_menu, should_check_main_world_csp,
-      is_form_submission, suggested_filename));
+      is_form_submission, suggested_filename, method, resource_request_body,
+      sanitized_referrer, has_user_gesture, transition, is_external_protocol,
+      request_context_type, mixed_content_context_type));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -90,11 +100,19 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
     bool is_form_submission,
-    const base::Optional<std::string>& suggested_filename)
+    const base::Optional<std::string>& suggested_filename,
+    const std::string& method,
+    scoped_refptr<content::ResourceRequestBody> resource_request_body,
+    const Referrer& sanitized_referrer,
+    bool has_user_gesture,
+    ui::PageTransition transition,
+    bool is_external_protocol,
+    RequestContextType request_context_type,
+    blink::WebMixedContentContextType mixed_content_context_type)
     : url_(url),
-      has_user_gesture_(false),
-      transition_(ui::PAGE_TRANSITION_LINK),
-      is_external_protocol_(false),
+      has_user_gesture_(has_user_gesture),
+      transition_(transition),
+      is_external_protocol_(is_external_protocol),
       net_error_code_(net::OK),
       render_frame_host_(nullptr),
       is_renderer_initiated_(is_renderer_initiated),
@@ -105,15 +123,15 @@ NavigationHandleImpl::NavigationHandleImpl(
       subframe_entry_committed_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       original_url_(url),
+      method_(method),
       state_(INITIAL),
       is_transferring_(false),
       frame_tree_node_(frame_tree_node),
       next_index_(0),
       navigation_start_(navigation_start),
       pending_nav_entry_id_(pending_nav_entry_id),
-      request_context_type_(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
-      mixed_content_context_type_(
-          blink::WebMixedContentContextType::kBlockable),
+      request_context_type_(request_context_type),
+      mixed_content_context_type_(mixed_content_context_type),
       navigation_id_(CreateUniqueHandleID()),
       should_replace_current_entry_(false),
       redirect_chain_(redirect_chain),
@@ -143,6 +161,23 @@ NavigationHandleImpl::NavigationHandleImpl(
 
   starting_site_instance_ =
       frame_tree_node_->current_frame_host()->GetSiteInstance();
+
+  if (method != "POST")
+    DCHECK(!resource_request_body);
+
+  // Update the navigation parameters.
+  if (method_ == "POST")
+    resource_request_body_ = resource_request_body;
+
+  // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
+  if (transition_ & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
+    // If the page contained a client redirect (meta refresh,
+    // document.location), set the referrer appropriately.
+    sanitized_referrer_ =
+        Referrer(redirect_chain_[0], sanitized_referrer.policy);
+  } else {
+    sanitized_referrer_ = sanitized_referrer;
+  }
 
   // Try to match this with a pending NavigationEntry if possible.  Note that
   // the NavigationController itself may be gone if this is a navigation inside
@@ -261,39 +296,27 @@ const base::TimeTicks& NavigationHandleImpl::NavigationStart() {
 }
 
 bool NavigationHandleImpl::IsPost() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return method_ == "POST";
 }
 
 const scoped_refptr<ResourceRequestBody>&
 NavigationHandleImpl::GetResourceRequestBody() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return resource_request_body_;
 }
 
 const Referrer& NavigationHandleImpl::GetReferrer() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return sanitized_referrer_;
 }
 
 bool NavigationHandleImpl::HasUserGesture() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return has_user_gesture_;
 }
 
 ui::PageTransition NavigationHandleImpl::GetPageTransition() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return transition_;
 }
 
 bool NavigationHandleImpl::IsExternalProtocol() {
-  CHECK_NE(INITIAL, state_)
-      << "This accessor should not be called before the request is started.";
   return is_external_protocol_;
 }
 
@@ -382,29 +405,9 @@ void NavigationHandleImpl::RegisterThrottleForTesting(
 }
 
 NavigationThrottle::ThrottleCheckResult
-NavigationHandleImpl::CallWillStartRequestForTesting(
-    bool is_post,
-    const Referrer& sanitized_referrer,
-    bool has_user_gesture,
-    ui::PageTransition transition,
-    bool is_external_protocol) {
+NavigationHandleImpl::CallWillStartRequestForTesting() {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-
-  scoped_refptr<ResourceRequestBody> resource_request_body;
-  std::string method = "GET";
-  if (is_post) {
-    method = "POST";
-
-    std::string body = "test=body";
-    resource_request_body = new ResourceRequestBody();
-    resource_request_body->AppendBytes(body.data(), body.size());
-  }
-
-  WillStartRequest(method, resource_request_body, sanitized_referrer,
-                   has_user_gesture, transition, is_external_protocol,
-                   REQUEST_CONTEXT_TYPE_LOCATION,
-                   blink::WebMixedContentContextType::kBlockable,
-                   base::Bind(&UpdateThrottleCheckResult, &result));
+  WillStartRequest(base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
@@ -538,14 +541,6 @@ void NavigationHandleImpl::InitAppCacheHandle(
 }
 
 void NavigationHandleImpl::WillStartRequest(
-    const std::string& method,
-    scoped_refptr<content::ResourceRequestBody> resource_request_body,
-    const Referrer& sanitized_referrer,
-    bool has_user_gesture,
-    ui::PageTransition transition,
-    bool is_external_protocol,
-    RequestContextType request_context_type,
-    blink::WebMixedContentContextType mixed_content_context_type,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillStartRequest");
@@ -556,27 +551,6 @@ void NavigationHandleImpl::WillStartRequest(
     return;
   }
 
-  if (method != "POST")
-    DCHECK(!resource_request_body);
-
-  // Update the navigation parameters.
-  method_ = method;
-  if (method_ == "POST")
-    resource_request_body_ = resource_request_body;
-  has_user_gesture_ = has_user_gesture;
-  transition_ = transition;
-  // Mirrors the logic in RenderFrameImpl::SendDidCommitProvisionalLoad.
-  if (transition_ & ui::PAGE_TRANSITION_CLIENT_REDIRECT) {
-    // If the page contained a client redirect (meta refresh,
-    // document.location), set the referrer appropriately.
-    sanitized_referrer_ =
-        Referrer(redirect_chain_[0], sanitized_referrer.policy);
-  } else {
-    sanitized_referrer_ = sanitized_referrer;
-  }
-  is_external_protocol_ = is_external_protocol;
-  request_context_type_ = request_context_type;
-  mixed_content_context_type_ = mixed_content_context_type;
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 

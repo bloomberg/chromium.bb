@@ -169,7 +169,6 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
 
   OnDidStartLoading(true);
   OnDidStartProvisionalLoad(url, std::vector<GURL>(), base::TimeTicks::Now());
-  SimulateWillStartRequest(ui::PAGE_TRANSITION_LINK);
 }
 
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
@@ -386,7 +385,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   GURL url_copy(url);
   OnDidStartProvisionalLoad(url_copy, std::vector<GURL>(),
                             base::TimeTicks::Now());
-  SimulateWillStartRequest(transition);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = nav_entry_id;
@@ -605,17 +603,6 @@ TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
       RenderFrameHostImpl::CreateWebBluetoothService(
           blink::mojom::WebBluetoothServiceRequest());
   return service;
-}
-
-void TestRenderFrameHost::SimulateWillStartRequest(
-    ui::PageTransition transition) {
-  // PlzNavigate: NavigationHandle::WillStartRequest has already been called at
-  // this point.
-  if (!navigation_handle() || IsBrowserSideNavigationEnabled())
-    return;
-  navigation_handle()->CallWillStartRequestForTesting(
-      false /* is_post */, Referrer(GURL(), blink::kWebReferrerPolicyDefault),
-      true /* user_gesture */, transition, false /* is_external_protocol */);
 }
 
 void TestRenderFrameHost::SendFramePolicy(

@@ -27,9 +27,20 @@ NavigationHandle::CreateNavigationHandleForTesting(
     RenderFrameHost* render_frame_host,
     bool committed,
     net::Error error,
-    bool is_same_document) {
+    bool is_same_document,
+    bool is_post,
+    ui::PageTransition transition) {
   RenderFrameHostImpl* rfhi =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
+  scoped_refptr<ResourceRequestBody> resource_request_body;
+  std::string method = "GET";
+  if (is_post) {
+    method = "POST";
+
+    std::string body = "test=body";
+    resource_request_body = new ResourceRequestBody();
+    resource_request_body->AppendBytes(body.data(), body.size());
+  }
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, std::vector<GURL>(), rfhi->frame_tree_node(),
@@ -38,7 +49,10 @@ NavigationHandle::CreateNavigationHandleForTesting(
           false,                  // started_from_context_menu
           CSPDisposition::CHECK,  // should_check_main_world_csp
           false,                  // is_form_submission
-          base::nullopt);         // suggested_filename
+          base::nullopt,          // suggested_filename
+          method, resource_request_body, Referrer(),
+          false,  // has_user_gesture
+          transition);
   handle_impl->set_render_frame_host(rfhi);
   if (error != net::OK)
     handle_impl->set_net_error_code(error);

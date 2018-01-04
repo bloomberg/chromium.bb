@@ -29,8 +29,12 @@ TEST_F(TypedNavigationTimingThrottleTest, IsCreatedForHTTP) {
 TEST_F(TypedNavigationTimingThrottleTest, NotCreatedForHTTPS) {
   GURL https_url("https://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(https_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          https_url, main_rfh(), false, /* committed */
+          net::OK,                      /* error */
+          false,                        /* is_same_document */
+          false,                        /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
   std::unique_ptr<content::NavigationThrottle> throttle =
       TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle.get());
   EXPECT_FALSE(throttle);
@@ -42,16 +46,15 @@ TEST_F(TypedNavigationTimingThrottleTest, URLUpgraded) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL https_url("https://example.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -71,16 +74,15 @@ TEST_F(TypedNavigationTimingThrottleTest, URLNotUpgraded) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   test.ExpectTotalCount("Omnibox.URLNavigationTimeToRedirectToHTTPS", 0);
 }
@@ -92,16 +94,15 @@ TEST_F(TypedNavigationTimingThrottleTest, NonHTTPSRedirect) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL other_url("http://nonexample.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -122,16 +123,15 @@ TEST_F(TypedNavigationTimingThrottleTest, CrossSiteHTTPSRedirect) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL other_url("https://nonexample.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -156,12 +156,7 @@ TEST_F(TypedNavigationTimingThrottleTest, NonTypedNavigation) {
                                                                   main_rfh());
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_LINK, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL https_url("https://example.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -182,16 +177,15 @@ TEST_F(TypedNavigationTimingThrottleTest, ManyRedirects) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   // Redirecting to the "upgraded" URL twice in a row should result in only one
   // activation of the histogram trigger.
@@ -239,16 +233,15 @@ TEST_F(TypedNavigationTimingThrottleTest, AddWWW) {
 
   GURL http_url("http://example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL https_url("https://www.example.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -268,16 +261,15 @@ TEST_F(TypedNavigationTimingThrottleTest, RemoveWWW) {
 
   GURL http_url("http://www.example.test");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL https_url("https://example.test");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -297,16 +289,15 @@ TEST_F(TypedNavigationTimingThrottleTest, NonstandardPorts) {
 
   GURL http_url("http://example.test:8080");
   std::unique_ptr<content::NavigationHandle> handle =
-      content::NavigationHandle::CreateNavigationHandleForTesting(http_url,
-                                                                  main_rfh());
+      content::NavigationHandle::CreateNavigationHandleForTesting(
+          http_url, main_rfh(), false, /* committed */
+          net::OK,                     /* error */
+          false,                       /* is_same_document */
+          false,                       /* is_post */
+          ui::PAGE_TRANSITION_TYPED);
 
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
-            handle
-                ->CallWillStartRequestForTesting(
-                    false,                     /* is_post */
-                    content::Referrer(), true, /* has_user_gesture */
-                    ui::PAGE_TRANSITION_TYPED, false /* is_external_protocol */)
-                .action());
+            handle->CallWillStartRequestForTesting().action());
 
   GURL https_url("https://example.test:4443");
   EXPECT_EQ(content::NavigationThrottle::PROCEED,

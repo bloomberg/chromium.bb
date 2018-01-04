@@ -44,10 +44,7 @@ TEST_F(DelayNavigationThrottleTest, BasicDelay) {
 
   EXPECT_FALSE(mock_time_task_runner->HasPendingTask());
   EXPECT_EQ(content::NavigationThrottle::DEFER,
-            test_handle->CallWillStartRequestForTesting(
-                false /* is_post */, content::Referrer(),
-                false /* has_user_gesture */, ui::PAGE_TRANSITION_LINK,
-                false /* is_external_protocol */));
+            test_handle->CallWillStartRequestForTesting());
 
   // There may be other throttles that DEFER and post async tasks to the UI
   // thread. Allow them to run to completion, so our throttle is guaranteed to
