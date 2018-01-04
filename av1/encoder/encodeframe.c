@@ -2208,8 +2208,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int do_rectangular_split = 1;
 #if CONFIG_EXT_PARTITION_TYPES
   int64_t split_rd[4] = { 0, 0, 0, 0 };
-  int64_t horz_rd[4] = { 0, 0 };
-  int64_t vert_rd[4] = { 0, 0 };
+  int64_t horz_rd[2] = { 0, 0 };
+  int64_t vert_rd[2] = { 0, 0 };
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
