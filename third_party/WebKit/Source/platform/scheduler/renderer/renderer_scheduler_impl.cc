@@ -116,6 +116,76 @@ bool StopLoadingInBackgroundEnabled() {
   return RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled();
 }
 
+const char* TaskTypeToString(TaskType task_type) {
+  switch (task_type) {
+    case TaskType::kDOMManipulation:
+      return "DOMManipultion";
+    case TaskType::kUserInteraction:
+      return "UserInteraction";
+    case TaskType::kNetworking:
+      return "Networking";
+    case TaskType::kNetworkingControl:
+      return "NetworkingControl";
+    case TaskType::kHistoryTraversal:
+      return "HistoryTraversal";
+    case TaskType::kEmbed:
+      return "Embed";
+    case TaskType::kMediaElementEvent:
+      return "MediaElementEvent";
+    case TaskType::kCanvasBlobSerialization:
+      return "CanvasBlobSerialization";
+    case TaskType::kMicrotask:
+      return "Microtask";
+    case TaskType::kJavascriptTimer:
+      return "JavascriptTimer";
+    case TaskType::kRemoteEvent:
+      return "RemoteEvent";
+    case TaskType::kWebSocket:
+      return "WebSocket";
+    case TaskType::kPostedMessage:
+      return "PostedMessage";
+    case TaskType::kUnshippedPortMessage:
+      return "UnshipedPortMessage";
+    case TaskType::kFileReading:
+      return "FileReading";
+    case TaskType::kDatabaseAccess:
+      return "DatabaseAccess";
+    case TaskType::kPresentation:
+      return "Presentation";
+    case TaskType::kSensor:
+      return "Sensor";
+    case TaskType::kPerformanceTimeline:
+      return "PerformanceTimeline";
+    case TaskType::kWebGL:
+      return "WebGL";
+    case TaskType::kIdleTask:
+      return "IdleTask";
+    case TaskType::kMiscPlatformAPI:
+      return "MiscPlatformAPI";
+    case TaskType::kUnspecedTimer:
+      return "UnspecedTimer";
+    case TaskType::kUnspecedLoading:
+      return "UnspecedLoading";
+    case TaskType::kUnthrottled:
+      return "Unthrottled";
+    case TaskType::kInternalTest:
+      return "InternalTest";
+    case TaskType::kCount:
+      return "Count";
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* OptionalTaskDescriptionToString(
+    base::Optional<RendererSchedulerImpl::TaskDescriptionForTracing> opt_desc) {
+  if (!opt_desc)
+    return nullptr;
+  if (opt_desc->task_type)
+    return TaskTypeToString(opt_desc->task_type.value());
+  return MainThreadTaskQueue::NameForQueueType(opt_desc->queue_type);
+}
+
 }  // namespace
 
 RendererSchedulerImpl::RendererSchedulerImpl(
@@ -374,6 +444,10 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                    "RendererScheduler.ProcessType",
                    renderer_scheduler_impl,
                    RendererProcessTypeToString),
+      task_description_for_tracing(base::nullopt,
+                                   "RendererScheduler.MainThreadTask",
+                                   renderer_scheduler_impl,
+                                   OptionalTaskDescriptionToString),
       virtual_time_policy(VirtualTimePolicy::kAdvance),
       virtual_time_pause_count(0),
       max_virtual_time_task_starvation_count(0),
@@ -2272,6 +2346,8 @@ void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
   seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start, queue);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
+  main_thread_only().task_description_for_tracing =
+      TaskDescriptionForTracing{task.task_type(), queue->queue_type()};
 }
 
 void RendererSchedulerImpl::OnTaskCompleted(MainThreadTaskQueue* queue,
@@ -2287,6 +2363,7 @@ void RendererSchedulerImpl::OnTaskCompleted(MainThreadTaskQueue* queue,
 
   // TODO(altimin): Per-page metrics should also be considered.
   main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end);
+  main_thread_only().task_description_for_tracing = base::nullopt;
 }
 
 void RendererSchedulerImpl::OnBeginNestedRunLoop() {
@@ -2432,6 +2509,7 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
   main_thread_only().has_navigated.OnTraceLogEnabled();
   main_thread_only().pause_timers_for_webview.OnTraceLogEnabled();
   main_thread_only().process_type.OnTraceLogEnabled();
+  main_thread_only().task_description_for_tracing.OnTraceLogEnabled();
 
   for (WebViewSchedulerImpl* web_view_scheduler :
        main_thread_only().web_view_schedulers) {
