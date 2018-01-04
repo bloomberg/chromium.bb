@@ -839,6 +839,30 @@ TEST(CircularDeque, EmplaceMoveOnly) {
   EXPECT_EQ(4, q[4].data());
 }
 
+TEST(CircularDeque, EmplaceFrontBackReturnsReference) {
+  circular_deque<int> q;
+  q.reserve(2);
+
+  int& front = q.emplace_front(1);
+  int& back = q.emplace_back(2);
+  ASSERT_EQ(2u, q.size());
+  EXPECT_EQ(1, q[0]);
+  EXPECT_EQ(2, q[1]);
+
+  EXPECT_EQ(&front, &q.front());
+  EXPECT_EQ(&back, &q.back());
+
+  front = 3;
+  back = 4;
+
+  ASSERT_EQ(2u, q.size());
+  EXPECT_EQ(3, q[0]);
+  EXPECT_EQ(4, q[1]);
+
+  EXPECT_EQ(&front, &q.front());
+  EXPECT_EQ(&back, &q.back());
+}
+
 /*
 This test should assert in a debug build. It tries to dereference an iterator
 after mutating the container. Uncomment to double-check that this works.
