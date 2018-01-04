@@ -11,7 +11,6 @@
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
@@ -294,7 +293,7 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForSystemModalWindow) {
   window->Show();
   ParentWindowInPrimaryRootWindow(window.get());
 
-  ASSERT_TRUE(ShellPort::Get()->IsSystemModalWindowOpen());
+  ASSERT_TRUE(Shell::IsSystemModalWindowOpen());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);

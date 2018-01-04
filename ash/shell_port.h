@@ -72,23 +72,10 @@ class ASH_EXPORT ShellPort {
 
   virtual Config GetAshConfig() const = 0;
 
-  // If a system-modal dialog window is currently open, returns the ID of the
-  // system modal window container that contains the window.
-  // If no system-modal dialogs are open it returns -1.
-  int GetOpenSystemModalWindowContainerId();
-
-  // Returns true if a system-modal dialog window is currently open.
-  bool IsSystemModalWindowOpen();
-
   // The return value from this is supplied to AshTouchTransformController; see
   // it and TouchTransformSetter for details.
   virtual std::unique_ptr<display::TouchTransformSetter>
   CreateTouchTransformDelegate() = 0;
-
-  // For testing only: set simulation that a modal window is open
-  void SimulateModalWindowOpenForTesting(bool modal_window_open) {
-    simulate_modal_window_open_for_testing_ = modal_window_open;
-  }
 
   // See aura::client::CursorClient for details on these.
   virtual void LockCursor() = 0;
@@ -193,8 +180,6 @@ class ASH_EXPORT ShellPort {
   static ShellPort* instance_;
 
   base::ObserverList<LockStateObserver> lock_state_observers_;
-
-  bool simulate_modal_window_open_for_testing_ = false;
 };
 
 }  // namespace ash

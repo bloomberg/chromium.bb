@@ -9,7 +9,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
@@ -49,7 +48,7 @@ bool WindowSelectorController::CanSelect() {
   SessionController* session_controller = Shell::Get()->session_controller();
   return session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
-         !ShellPort::Get()->IsSystemModalWindowOpen() &&
+         !Shell::IsSystemModalWindowOpen() &&
          !Shell::Get()->screen_pinning_controller()->IsPinned() &&
          !session_controller->IsRunningInAppMode();
 }

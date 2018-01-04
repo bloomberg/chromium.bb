@@ -6,7 +6,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/focus_rules.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -62,8 +61,7 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
     return false;
   }
 
-  int modal_container_id =
-      ShellPort::Get()->GetOpenSystemModalWindowContainerId();
+  int modal_container_id = Shell::GetOpenSystemModalWindowContainerId();
   if (modal_container_id >= 0)
     return BelongsToContainerWithEqualOrGreaterId(window, modal_container_id);
 

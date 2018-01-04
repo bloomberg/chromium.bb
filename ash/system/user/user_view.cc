@@ -15,7 +15,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
@@ -71,7 +70,7 @@ void SwitchUser(UserIndex user_index) {
 bool IsUserDropdownEnabled() {
   // Don't allow user add or switch when screen cast warning dialog is open.
   // See http://crrev.com/291276 and http://crbug.com/353170.
-  if (ShellPort::Get()->IsSystemModalWindowOpen())
+  if (Shell::IsSystemModalWindowOpen())
     return false;
 
   // Don't allow at login, lock or when adding a multi-profile user.

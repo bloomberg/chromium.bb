@@ -41,6 +41,9 @@ class ShellTestApi {
   // Chrome starting.
   void ResetPowerButtonControllerForTest();
 
+  // Simulates a modal dialog being open.
+  void SimulateModalWindowOpenForTest(bool modal_window_open);
+
  private:
   Shell* shell_;  // not owned
 

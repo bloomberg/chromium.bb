@@ -232,6 +232,14 @@ class ASH_EXPORT Shell : public SessionObserver,
   static const aura::Window* GetContainer(const aura::Window* root_window,
                                           int container_id);
 
+  // If a system-modal dialog window is currently open, returns the ID of the
+  // system modal window container that contains the window.
+  // If no system-modal dialogs are open it returns -1.
+  static int GetOpenSystemModalWindowContainerId();
+
+  // Returns true if a system-modal dialog window is currently open.
+  static bool IsSystemModalWindowOpen();
+
   // TODO(sky): move this and WindowManagerClient into ShellMash that is owned
   // by Shell. Doing the move is gated on having mash create Shell.
   static void set_window_tree_client(aura::WindowTreeClient* client) {
@@ -778,7 +786,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::CursorManager> cursor_manager_;
 
   // For testing only: simulate that a modal window is open
-  bool simulate_modal_window_open_for_testing_;
+  bool simulate_modal_window_open_for_test_ = false;
 
   // See comment for GetRootWindowForNewWindows().
   aura::Window* root_window_for_new_windows_ = nullptr;
