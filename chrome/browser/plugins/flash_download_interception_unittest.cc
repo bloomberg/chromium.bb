@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/flash_download_interception.h"
 
+#include <memory>
+
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -11,6 +13,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_navigation_throttle_inserter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -102,17 +107,16 @@ TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
   // Set the source URL to an HTTP source.
   NavigateAndCommit(GURL("http://example.com"));
 
-  std::unique_ptr<NavigationHandle> handle =
-      NavigationHandle::CreateNavigationHandleForTesting(
-          GURL("https://get.adobe.com/flashplayer"), main_rfh(), false, net::OK,
-          false, true);
+  content::TestNavigationThrottleInserter throttle_inserter(
+      web_contents(),
+      base::BindRepeating(&FlashDownloadInterception::MaybeCreateThrottleFor));
 
-  handle->CallWillStartRequestForTesting();
-  std::unique_ptr<NavigationThrottle> throttle =
-      FlashDownloadInterception::MaybeCreateThrottleFor(handle.get());
-  EXPECT_NE(nullptr, throttle);
-  ASSERT_EQ(NavigationThrottle::CANCEL_AND_IGNORE,
-            throttle->WillStartRequest());
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("https://get.adobe.com/flashplayer"), main_rfh());
+  simulator->Commit();
+  EXPECT_EQ(content::NavigationThrottle::CANCEL_AND_IGNORE,
+            simulator->GetLastThrottleCheckResult());
 }
 
 TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {

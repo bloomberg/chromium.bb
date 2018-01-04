@@ -234,6 +234,7 @@ NavigationSimulator::NavigationSimulator(const GURL& original_url,
       handle_(nullptr),
       navigation_url_(original_url),
       socket_address_("2001:db8::1", 80),
+      initial_method_("GET"),
       browser_initiated_(browser_initiated),
       transition_(browser_initiated ? ui::PAGE_TRANSITION_TYPED
                                     : ui::PAGE_TRANSITION_LINK),
@@ -622,6 +623,12 @@ void NavigationSimulator::SetReloadType(ReloadType reload_type) {
     transition_ = ui::PAGE_TRANSITION_RELOAD;
 }
 
+void NavigationSimulator::SetMethod(const std::string& method) {
+  CHECK_EQ(INITIALIZATION, state_) << "The method parameter cannot "
+                                      "be set after the navigation has started";
+  initial_method_ = method;
+}
+
 void NavigationSimulator::SetReferrer(const Referrer& referrer) {
   CHECK_LE(state_, STARTED) << "The referrer cannot be set after the "
                                "navigation has committed or has failed";
@@ -822,6 +829,7 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
           base::nullopt /* suggested_filename */);
   CommonNavigationParams common_params;
   common_params.url = navigation_url_;
+  common_params.method = initial_method_;
   common_params.referrer = referrer_;
   common_params.transition = transition_;
   common_params.navigation_type =

@@ -213,6 +213,9 @@ class NavigationSimulator : public WebContentsObserver {
   // navigations.
   void SetReloadType(ReloadType reload_type);
 
+  // Sets the HTTP method for the navigation.
+  void SetMethod(const std::string& method);
+
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
   // the original url. Otherwise, they should be specified before calling
@@ -343,6 +346,7 @@ class NavigationSimulator : public WebContentsObserver {
 
   GURL navigation_url_;
   net::HostPortPair socket_address_;
+  std::string initial_method_;
   bool browser_initiated_;
   bool same_document_ = false;
   Referrer referrer_;
