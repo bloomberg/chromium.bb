@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 
+@protocol ActivityServicePositioner;
 @protocol QRScannerResultLoading;
 @protocol TabHistoryPositioner;
 @protocol TabHistoryUIUpdater;
@@ -27,6 +28,7 @@
 - (id<QRScannerResultLoading>)QRScannerResultLoader;
 - (id<TabHistoryPositioner>)tabHistoryPositioner;
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
+- (id<ActivityServicePositioner>)activityServicePositioner;
 
 // Show the animation when transitioning to a prerendered page.
 - (void)showPrerenderingAnimation;

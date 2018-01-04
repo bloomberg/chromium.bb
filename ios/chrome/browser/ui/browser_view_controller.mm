@@ -689,8 +689,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Returns the LegacyToolbarCoordinator. This property is here to separate
 // methods which will be removed during cleanup to other methods. Uses this
 // property only for deprecated methods.
-@property(nonatomic, readonly)
-    LegacyToolbarCoordinator* legacyToolbarCoordinator;
+@property(nonatomic, readonly) id<LegacyToolbarCoordinator>
+    legacyToolbarCoordinator;
 
 // Vertical offset for fullscreen toolbar.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarOffsetConstraint;
@@ -2009,7 +2009,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _activityServiceCoordinator.tabModel = _model;
   _activityServiceCoordinator.browserState = _browserState;
   _activityServiceCoordinator.positionProvider =
-      [_toolbarCoordinator activityServicePositioner];
+      [self.primaryToolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
 
   _qrScannerCoordinator =
