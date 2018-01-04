@@ -57,7 +57,7 @@ static bool Create(int width,
 
   size_t row_bytes = skia::PlatformCanvasStrideForWidth(width);
   if (do_clear)
-    sk_bzero(pixels, row_bytes * height);
+    bzero(pixels, row_bytes * height);
 
   HDC hdc = CreateCompatibleDC(nullptr);
   if (!hdc) {
