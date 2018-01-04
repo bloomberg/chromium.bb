@@ -6,20 +6,22 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
+#include <queue>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
@@ -1335,9 +1337,10 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     return true;
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   StrictMock<MockMediaLog> media_log_;
 
-  base::MessageLoop message_loop_;
   MockDemuxerHost host_;
 
   std::unique_ptr<ChunkDemuxer> demuxer_;

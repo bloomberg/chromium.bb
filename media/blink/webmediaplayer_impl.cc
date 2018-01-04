@@ -23,6 +23,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -336,8 +337,42 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   vfc_task_runner_->DeleteSoon(FROM_HERE, std::move(compositor_));
 
+  if (chunk_demuxer_) {
+    // Continue destruction of |chunk_demuxer_| on the |media_task_runner_| to
+    // avoid racing other pending tasks on |chunk_demuxer_| on that runner while
+    // not further blocking |main_task_runner_| to perform the destruction.
+    media_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&WebMediaPlayerImpl::DemuxerDestructionHelper,
+                                  media_task_runner_, std::move(demuxer_)));
+  }
+
   media_log_->AddEvent(
       media_log_->CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+}
+
+// static
+void WebMediaPlayerImpl::DemuxerDestructionHelper(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    std::unique_ptr<Demuxer> demuxer) {
+  DCHECK(task_runner->BelongsToCurrentThread());
+  // ChunkDemuxer's streams may contain much buffered, compressed media that may
+  // need to be paged back in during destruction.  Paging delay may exceed the
+  // renderer hang monitor's threshold on at least Windows while also blocking
+  // other work on the renderer main thread, so we do the actual destruction in
+  // the background without blocking WMPI destruction or |task_runner|.  On
+  // advice of task_scheduler OWNERS, MayBlock() is not used because virtual
+  // memory overhead is not considered blocking I/O; and CONTINUE_ON_SHUTDOWN is
+  // used to allow process termination to not block on completing the task.
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(
+          [](std::unique_ptr<Demuxer> demuxer_to_destroy) {
+            SCOPED_UMA_HISTOGRAM_TIMER("Media.MSE.DemuxerDestructionTime");
+            demuxer_to_destroy.reset();
+          },
+          std::move(demuxer)));
 }
 
 void WebMediaPlayerImpl::Load(LoadType load_type,
@@ -1131,6 +1166,7 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
       format, type, level, premultiply_alpha, flip_y);
 }
 
+// static
 void WebMediaPlayerImpl::ComputeFrameUploadMetadata(
     VideoFrame* frame,
     int already_uploaded_id,
@@ -1386,8 +1422,10 @@ void WebMediaPlayerImpl::OnMemoryPressure(
        memory_pressure_level ==
            base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
 
-  // base::Unretained is safe, since chunk_demuxer_ is actually owned by
-  // |this| via this->demuxer_.
+  // base::Unretained is safe, since |chunk_demuxer_| is actually owned by
+  // |this| via this->demuxer_. Note the destruction of |chunk_demuxer_| is done
+  // from ~WMPI by first hopping to |media_task_runner_| to prevent race with
+  // this task.
   media_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ChunkDemuxer::OnMemoryPressure,
                             base::Unretained(chunk_demuxer_),
