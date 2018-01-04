@@ -33,6 +33,7 @@ namespace {
 
 class MockCompositor : public WindowAndroidCompositor {
  public:
+  virtual ~MockCompositor() {}
   void AttachLayerForReadback(scoped_refptr<cc::Layer>) override {}
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest>) override {}
@@ -41,6 +42,11 @@ class MockCompositor : public WindowAndroidCompositor {
   MOCK_METHOD0(GetFrameSinkId, viz::FrameSinkId());
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) override {}
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) override {}
+  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
+      ui::CompositorLockClient* client,
+      base::TimeDelta timeout) override {
+    return nullptr;
+  }
 };
 
 class MockGlowClient : public OverscrollGlowClient {

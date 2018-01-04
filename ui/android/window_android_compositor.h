@@ -10,6 +10,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/android/ui_android_export.h"
+#include "ui/compositor/compositor_lock.h"
 
 namespace cc {
 class Layer;
@@ -22,8 +23,6 @@ class ResourceManager;
 // Android interface for compositor-related tasks.
 class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
-  virtual ~WindowAndroidCompositor() {}
-
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
   virtual void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
@@ -32,6 +31,9 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
   virtual viz::FrameSinkId GetFrameSinkId() = 0;
   virtual void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id) = 0;
   virtual void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id) = 0;
+  virtual std::unique_ptr<CompositorLock> GetCompositorLock(
+      CompositorLockClient* client,
+      base::TimeDelta timeout) = 0;
 };
 
 }  // namespace ui
