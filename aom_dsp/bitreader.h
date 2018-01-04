@@ -169,35 +169,6 @@ static INLINE int aom_read_bin_(aom_reader *r, aom_cdf_prob *cdf,
 }
 #endif
 
-static INLINE int aom_read_tree_as_cdf(aom_reader *r,
-                                       const aom_tree_index *tree,
-                                       const aom_prob *probs) {
-  aom_tree_index i = 0;
-  do {
-    aom_cdf_prob cdf[16];
-    aom_tree_index index[16];
-    int path[16];
-    int dist[16];
-    int nsymbs;
-    int symb;
-    nsymbs = tree_to_cdf(tree, probs, i, cdf, index, path, dist);
-    symb = aom_read_cdf(r, cdf, nsymbs, NULL);
-    OD_ASSERT(symb >= 0 && symb < nsymbs);
-    i = index[symb];
-  } while (i > 0);
-  return -i;
-}
-
-static INLINE int aom_read_tree_(aom_reader *r, const aom_tree_index *tree,
-                                 const aom_prob *probs ACCT_STR_PARAM) {
-  int ret;
-  ret = aom_read_tree_as_cdf(r, tree, probs);
-#if CONFIG_ACCOUNTING
-  if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
-#endif
-  return ret;
-}
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

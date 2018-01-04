@@ -169,42 +169,6 @@ static INLINE aom_prob mode_mv_merge_probs(aom_prob pre_prob,
   }
 }
 
-void aom_tree_merge_probs(const aom_tree_index *tree, const aom_prob *pre_probs,
-                          const unsigned int *counts, aom_prob *probs);
-
-int tree_to_cdf(const aom_tree_index *tree, const aom_prob *probs,
-                aom_tree_index root, aom_cdf_prob *cdf, aom_tree_index *ind,
-                int *pth, int *len);
-
-static INLINE void av1_tree_to_cdf(const aom_tree_index *tree,
-                                   const aom_prob *probs, aom_cdf_prob *cdf) {
-  aom_tree_index index[16];
-  int path[16];
-  int dist[16];
-  tree_to_cdf(tree, probs, 0, cdf, index, path, dist);
-}
-
-#define av1_tree_to_cdf_1D(tree, probs, cdf, u) \
-  do {                                          \
-    int i;                                      \
-    for (i = 0; i < u; i++) {                   \
-      av1_tree_to_cdf(tree, probs[i], cdf[i]);  \
-    }                                           \
-  } while (0)
-
-#define av1_tree_to_cdf_2D(tree, probs, cdf, v, u)     \
-  do {                                                 \
-    int j;                                             \
-    int i;                                             \
-    for (j = 0; j < v; j++) {                          \
-      for (i = 0; i < u; i++) {                        \
-        av1_tree_to_cdf(tree, probs[j][i], cdf[j][i]); \
-      }                                                \
-    }                                                  \
-  } while (0)
-
-void av1_indices_from_tree(int *ind, int *inv, const aom_tree_index *tree);
-
 static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   int rate;
   const int rate2 = 5;

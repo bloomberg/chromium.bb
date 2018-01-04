@@ -19,7 +19,6 @@ DSP_SRCS-$(ARCH_X86)$(ARCH_X86_64)   += x86/synonyms.h
 
 # bit reader
 DSP_SRCS-yes += prob.h
-DSP_SRCS-yes += prob.c
 
 ifeq ($(CONFIG_AV1_ENCODER),yes)
 DSP_SRCS-yes += entenc.c
