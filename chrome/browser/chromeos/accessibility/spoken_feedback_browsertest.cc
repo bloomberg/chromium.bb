@@ -673,6 +673,53 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextTabRecovery) {
   }
 }
 
+// Crashes in NACL on debug; see crbug.com/799229.
+#if defined(NDEBUG)
+#define MAYBE_ChromeVoxApi ChromeVoxApi
+#else
+#define MAYBE_ChromeVoxApi DISABLED_ChromeVoxApi
+#endif
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxApi) {
+  EnableChromeVox();
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,"
+           "<script>"
+           "  var output = [];"
+           "  document.addEventListener('chromeVoxLoaded', function() {"
+           "    output.push('load');"
+           "    cvox.Api.speak(output.join(' '));"
+           "  });"
+           "  document.addEventListener('chromeVoxUnloaded', function() {"
+           "    output.push('unload');"
+           "  });"
+           "</script>"));
+
+  // At this point, ChromeVox loads, followed by the page load which will fire a
+  // chromeVoxLoaded event. The page signals back with a 'load' utterance.
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (utterance == "load")
+      break;
+  }
+
+  // Unload ChromeVox, which should trigger the chromeVoxUnloaded event.
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      false, ash::A11Y_NOTIFICATION_NONE);
+
+  // Re-enable ChromeVox here, and check all three events were seen by the
+  // page. Note this exercises a slightly different codepath. Dynamic after
+  // page load injection whereas before we tested on load injection.
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (utterance == "load unload load")
+      break;
+  }
+}
+
 //
 // Spoken feedback tests that run only in guest mode.
 //
