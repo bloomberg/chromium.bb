@@ -14,6 +14,8 @@
 #include "base/android/scoped_java_ref.h"
 #elif defined(OS_MACOSX)
 #include <objc/objc.h>
+#elif defined(OS_WIN)
+#include "base/win/windows_types.h"
 #endif
 
 // This file provides cross platform typedefs for native widget types.
@@ -52,7 +54,6 @@ class Event;
 #endif  // defined(USE_AURA)
 
 #if defined(OS_WIN)
-#include "base/win/windows_types.h"
 typedef struct HFONT__* HFONT;
 struct IAccessible;
 #elif defined(OS_IOS)
