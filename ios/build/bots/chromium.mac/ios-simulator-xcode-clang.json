@@ -16,6 +16,9 @@
     "use_goma=true",
     "use_xcode_clang=true"
   ],
+  "env": {
+    "FORCE_MAC_TOOLCHAIN": ""
+  },
   "additional_compile_targets": [
     "all"
   ],
