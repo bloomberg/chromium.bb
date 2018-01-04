@@ -86,6 +86,9 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
 }
 
 SkiaRenderer::~SkiaRenderer() {
+#if BUILDFLAG(ENABLE_VULKAN)
+  return;
+#endif
   gpu::gles2::GLES2Interface* gl =
       output_surface_->context_provider()->ContextGL();
   for (auto& pair : render_pass_backings_) {
@@ -759,6 +762,10 @@ void SkiaRenderer::UpdateRenderPassTextures(
     const RenderPassList& render_passes_in_draw_order,
     const base::flat_map<RenderPassId, RenderPassRequirements>&
         render_passes_in_frame) {
+#if BUILDFLAG(ENABLE_VULKAN)
+  NOTIMPLEMENTED();
+  return;
+#endif
   std::vector<RenderPassId> passes_to_delete;
   for (const auto& pair : render_pass_backings_) {
     auto render_pass_it = render_passes_in_frame.find(pair.first);
