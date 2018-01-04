@@ -304,13 +304,6 @@ const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chrome/topic/1678461";
 #endif
 
-#if defined(OS_MACOSX)
-// TODO(mark): Change to a Help Center URL when one is available.
-// https://crbug.com/555044
-const char kMac10_678_DeprecationURL[] =
-    "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";
-#endif
-
 #if defined(OS_WIN)
 const char kWindowsXPVistaDeprecationURL[] =
     "https://chrome.blogspot.com/2015/11/updates-to-chrome-platform-support.html";

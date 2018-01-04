@@ -16,9 +16,7 @@ bool ObsoleteSystem::IsObsoleteNowOrSoon() {
 
 // static
 base::string16 ObsoleteSystem::LocalizedObsoleteString() {
-  return l10n_util::GetStringUTF16(IsEndOfTheLine()
-                                       ? IDS_WIN_XP_VISTA_OBSOLETE_NOW
-                                       : IDS_WIN_XP_VISTA_OBSOLETE_SOON);
+  return l10n_util::GetStringUTF16(IDS_WIN_XP_VISTA_OBSOLETE);
 }
 
 // static
