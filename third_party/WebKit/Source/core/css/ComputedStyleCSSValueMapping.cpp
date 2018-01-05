@@ -1604,13 +1604,13 @@ static CSSValue* ValueForTransitionProperty(
 
 CSSValueID ValueForQuoteType(const QuoteType quote_type) {
   switch (quote_type) {
-    case NO_OPEN_QUOTE:
+    case QuoteType::kNoOpen:
       return CSSValueNoOpenQuote;
-    case NO_CLOSE_QUOTE:
+    case QuoteType::kNoClose:
       return CSSValueNoCloseQuote;
-    case CLOSE_QUOTE:
+    case QuoteType::kClose:
       return CSSValueCloseQuote;
-    case OPEN_QUOTE:
+    case QuoteType::kOpen:
       return CSSValueOpenQuote;
   }
   NOTREACHED();
