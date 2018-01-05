@@ -154,7 +154,7 @@ public class ModalDialogManager {
      * @param dialog The dialog to be dismissed or removed from pending list.
      */
     public void dismissDialog(ModalDialogView dialog) {
-        if (dialog != mCurrentPresenter.getModalDialog()) {
+        if (mCurrentPresenter == null || dialog != mCurrentPresenter.getModalDialog()) {
             for (int i = 0; i < mPendingDialogs.size(); ++i) {
                 if (mPendingDialogs.get(i).first == dialog) {
                     mPendingDialogs.remove(i);
@@ -196,6 +196,11 @@ public class ModalDialogManager {
             mPendingDialogs.remove(0).first.getController().onCancel();
         }
         if (isShowing()) cancelDialog(mCurrentPresenter.getModalDialog());
+    }
+
+    @VisibleForTesting
+    public ModalDialogView getCurrentDialogForTest() {
+        return mCurrentPresenter == null ? null : mCurrentPresenter.getModalDialog();
     }
 
     @VisibleForTesting
