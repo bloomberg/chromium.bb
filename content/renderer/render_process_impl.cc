@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -34,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/loader/site_isolation_stats_gatherer.h"
+#include "services/service_manager/embedder/switches.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
@@ -170,7 +172,19 @@ RenderProcessImpl::RenderProcessImpl(
                         "--no-wasm-trap-handler");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
-    base::debug::SetStackDumpFirstChanceCallback(v8::V8::TryHandleSignal);
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (!command_line->HasSwitch(
+            service_manager::switches::kDisableInProcessStackTraces)) {
+      base::debug::SetStackDumpFirstChanceCallback(v8::V8::TryHandleSignal);
+    } else if (!command_line->HasSwitch(switches::kEnableCrashReporter) &&
+               !command_line->HasSwitch(
+                   switches::kEnableCrashReporterForTesting)) {
+      // If we are using WebAssembly trap handling but both Breakpad and
+      // in-process stack traces are disabled then there will be no signal
+      // handler. In this case, we fall back on V8's default handler
+      // (https://crbug.com/798150).
+      v8::V8::RegisterDefaultSignalHandler();
+    }
   }
 #endif
 
