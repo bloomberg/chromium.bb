@@ -873,12 +873,15 @@ void CheckClientDownloadRequest::SendRequest() {
       !referrer_chain_data->GetReferrerChain()->empty()) {
     request.mutable_referrer_chain()->Swap(
         referrer_chain_data->GetReferrerChain());
+    request.mutable_referrer_chain_options()->set_recent_navigations_to_collect(
+        referrer_chain_data->recent_navigations_to_collect());
     UMA_HISTOGRAM_COUNTS_100(
         "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
-        request.referrer_chain().size());
-    if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE)
+        referrer_chain_data->referrer_chain_length());
+    if (type_ == ClientDownloadRequest::SAMPLED_UNSUPPORTED_FILE) {
       SafeBrowsingNavigationObserverManager::SanitizeReferrerChain(
           request.mutable_referrer_chain());
+    }
   }
 
 #if defined(OS_MACOSX)

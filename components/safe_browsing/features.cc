@@ -54,6 +54,9 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
 const base::Feature kDispatchSafetyNetCheckOffThread{
     "DispatchSafetyNetCheckOffThread", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAppendRecentNavigationEvents{
+    "AppendRecentNavigationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of experimental features. Boolean value for each list member should be
 // set to true if the experiment is currently running at a probability other
@@ -65,6 +68,7 @@ constexpr struct {
 } kExperimentalFeatures[]{
     {&kAdSamplerCollectButDontSendFeature, false},
     {&kAdSamplerTriggerFeature, false},
+    {&kAppendRecentNavigationEvents, true},
     {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, true},
     {&kParallelUrlCheck, true},

@@ -225,7 +225,7 @@ class DownloadProtectionService {
 
   // Identify referrer chain info of a download. This function also records UMA
   // stats of download attribution result.
-  std::unique_ptr<ReferrerChain> IdentifyReferrerChain(
+  std::unique_ptr<ReferrerChainData> IdentifyReferrerChain(
       const content::DownloadItem& item);
 
   // Identify referrer chain of the PPAPI download based on the frame URL where
