@@ -25,7 +25,6 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
   ~LazyThreadControllerForTest();
 
   // internal::ThreadControllerImpl:
-  bool IsNested() override;
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
   bool RunsTasksInCurrentSequence() override;

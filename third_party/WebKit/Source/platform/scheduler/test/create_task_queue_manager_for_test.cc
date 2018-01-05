@@ -42,12 +42,6 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
     ThreadControllerImpl::RemoveNestingObserver(observer);
   }
 
-  bool IsNested() {
-    if (!message_loop_)
-      return false;
-    return ThreadControllerImpl::IsNested();
-  }
-
   ~ThreadControllerForTest() override {}
 };
 

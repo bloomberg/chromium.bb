@@ -46,7 +46,6 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner>) override;
   void RestoreDefaultTaskRunner() override;
-  bool IsNested() override;
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
 

@@ -88,11 +88,6 @@ void LazyThreadControllerForTest::RemoveNestingObserver(
   base::RunLoop::RemoveNestingObserverOnCurrentThread(observer);
 }
 
-bool LazyThreadControllerForTest::IsNested() {
-  EnsureMessageLoop();
-  return ThreadControllerImpl::IsNested();
-}
-
 bool LazyThreadControllerForTest::RunsTasksInCurrentSequence() {
   return thread_ref_ == base::PlatformThread::CurrentRef();
 }
