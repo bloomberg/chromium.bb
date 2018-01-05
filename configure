@@ -488,6 +488,7 @@ post_process_cmdline() {
     soft_enable ext_partition
     soft_enable ext_partition_types
     soft_enable lv_map
+    soft_enable mfmv
 
     # Provisional adopted
     soft_enable reference_buffer
