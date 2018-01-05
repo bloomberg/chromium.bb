@@ -74,8 +74,6 @@ class PLATFORM_EXPORT ThreadController {
 
   virtual void RestoreDefaultTaskRunner() = 0;
 
-  virtual bool IsNested() = 0;
-
   virtual void AddNestingObserver(base::RunLoop::NestingObserver* observer) = 0;
 
   virtual void RemoveNestingObserver(

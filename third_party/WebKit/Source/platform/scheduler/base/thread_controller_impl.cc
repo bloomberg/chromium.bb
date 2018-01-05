@@ -94,11 +94,6 @@ void ThreadControllerImpl::RestoreDefaultTaskRunner() {
   message_loop_->SetTaskRunner(message_loop_task_runner_);
 }
 
-bool ThreadControllerImpl::IsNested() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::RunLoop::IsNestedOnCurrentThread();
-}
-
 void ThreadControllerImpl::DoWork(Sequence::WorkType work_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(sequence_);
