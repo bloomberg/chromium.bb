@@ -39,7 +39,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   cc::PaintOp::SerializeOptions serialize_options;
   serialize_options.transfer_cache = &transfer_cache_helper;
   cc::PaintOp::DeserializeOptions deserialize_options;
-  serialize_options.transfer_cache = &transfer_cache_helper;
+  deserialize_options.transfer_cache = &transfer_cache_helper;
 
   // Need 4 bytes to be able to read the type/skip.
   if (size < 4)
