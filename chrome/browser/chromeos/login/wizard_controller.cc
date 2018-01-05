@@ -371,8 +371,8 @@ void WizardController::Init(OobeScreen first_screen) {
       first_screen_ == OobeScreen::SCREEN_UNKNOWN)
     ShowWrongHWIDScreen();
 
-  if (is_out_of_box_ && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            chromeos::switches::kOobeSkipToLogin)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kOobeSkipToLogin)) {
     SkipToLoginForTesting(LoginScreenContext());
   }
 }
