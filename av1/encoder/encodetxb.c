@@ -297,12 +297,6 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   const tran_low_t *nq_dequant_val = txb_info->nq_dequant_vals[coeff_idx != 0];
 #endif  // CONFIG_NEW_QUANT
 
-  const tran_low_t dqc = qcoeff_to_dqcoeff(qc,
-#if CONFIG_NEW_QUANT
-                                           nq_dequant_val,
-#endif  // CONFIG_NEW_QUANT
-                                           dqv, txb_info->shift);
-  const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
   const int coeff_ctx = get_nz_map_ctx(levels, coeff_idx, txb_info->bwl,
 #if CONFIG_LV_MAP_MULTI
                                        txb_info->height, scan_idx, is_eob,
@@ -313,20 +307,30 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
                                      is_eob,
 #endif
                                      txb_info, txb_costs, coeff_ctx);
-
-  // distortion difference when coefficient is quantized to 0
-  const tran_low_t dqc0 = qcoeff_to_dqcoeff(0,
-#if CONFIG_NEW_QUANT
-                                            nq_dequant_val,
-#endif  // CONFIG_NEW_QUANT
-                                            dqv, txb_info->shift);
-  stats->dist0 = get_coeff_dist(tqc, dqc0, txb_info->shift);
-  stats->dist = dqc_dist - stats->dist0;
-  stats->rate = qc_cost;
-
   if (qc == 0) {
+    stats->dist = 0;
+    stats->rate = qc_cost;
     return;
+  } else {
+    const tran_low_t dqc = qcoeff_to_dqcoeff(qc,
+#if CONFIG_NEW_QUANT
+                                             nq_dequant_val,
+#endif  // CONFIG_NEW_QUANT
+                                             dqv, txb_info->shift);
+    const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
+
+    // distortion difference when coefficient is quantized to 0
+    const tran_low_t dqc0 = qcoeff_to_dqcoeff(0,
+#if CONFIG_NEW_QUANT
+                                              nq_dequant_val,
+#endif  // CONFIG_NEW_QUANT
+                                              dqv, txb_info->shift);
+
+    stats->dist0 = get_coeff_dist(tqc, dqc0, txb_info->shift);
+    stats->dist = dqc_dist - stats->dist0;
+    stats->rate = qc_cost;
   }
+
   stats->rd = RDCOST(txb_info->rdmult, stats->rate, stats->dist);
 
   stats->low_qc = get_lower_coeff(qc);
