@@ -42,6 +42,9 @@ Font::~Font() {
 }
 
 Font Font::Derive(int size_delta, int style, Font::Weight weight) const {
+  if (size_delta == 0 && style == GetStyle() && weight == GetWeight())
+    return *this;
+
   return platform_font_->DeriveFont(size_delta, style, weight);
 }
 

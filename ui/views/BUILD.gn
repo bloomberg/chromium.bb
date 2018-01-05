@@ -1177,3 +1177,18 @@ source_set("views_interactive_ui_tests") {
     sources -= [ "corewm/desktop_capture_controller_unittest.cc" ]
   }
 }
+
+test("views_perftests") {
+  sources = [
+    "controls/label_perftest.cc",
+    "views_perftests.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base/test:test_support",
+    "//cc/base:base",
+    "//testing/perf",
+    "//ui/resources:ui_test_pak",
+  ]
+}

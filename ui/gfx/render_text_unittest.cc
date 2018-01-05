@@ -3616,6 +3616,14 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_SurrogatePairsOrCombiningChars) {
 // Test that Zero width characters have the correct line breaking behavior.
 TEST_P(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+
+#if defined(OS_MACOSX)
+  // Don't use Helvetica Neue on 10.10 - it has a buggy zero-width space that
+  // actually gets some width. See http://crbug.com/799333.
+  if (base::mac::IsOS10_10())
+    render_text->SetFontList(FontList("Arial, 12px"));
+#endif
+
   render_text->SetMultiline(true);
   render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
 
@@ -3631,8 +3639,9 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_ZeroWidthChars) {
   render_text->SetDisplayRect(Rect(0, 0, kTestWidth, 0));
   render_text->Draw(canvas());
 
-  ASSERT_EQ(3u, test_api()->lines().size());
-  for (size_t j = 0; j < test_api()->lines().size(); ++j) {
+  EXPECT_EQ(3u, test_api()->lines().size());
+  for (size_t j = 0;
+       j < std::min(arraysize(char_ranges), test_api()->lines().size()); ++j) {
     SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
     int segment_size = test_api()->lines()[j].segments.size();
     ASSERT_GT(segment_size, 0);
@@ -4047,7 +4056,11 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_OrphanedVariationSelector) {
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_AsciiVariationSelector) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
-
+#if defined(OS_MACOSX)
+  // Don't use a system font on macOS - asking for a variation selector on
+  // ASCII glyphs can tickle OS bugs. See http://crbug.com/785522.
+  render_text->SetFontList(FontList("Arial, 12px"));
+#endif
   // A variation selector doesn't have to appear with Emoji. It will probably
   // cause the typesetter to render tofu in this case, but it should not break
   // a text run.
