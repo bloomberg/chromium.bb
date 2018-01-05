@@ -13,9 +13,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/payments/test_payments_client.h"
-#include "components/autofill/core/browser/test_form_data_importer.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
 
 using base::TimeTicks;
 
@@ -25,9 +22,15 @@ class URLRequestContextGetter;
 
 namespace autofill {
 
+namespace payments {
+class TestPaymentsClient;
+}  // namespace payments
+
 class AutofillClient;
 class AutofillDriver;
 class FormStructure;
+class TestFormDataImporter;
+class TestPersonalDataManager;
 
 class TestAutofillManager : public AutofillManager {
  public:
