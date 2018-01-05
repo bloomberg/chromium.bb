@@ -135,7 +135,8 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
         }
 
         CreateRouteRequest createRouteRequest = new CreateRouteRequest(source, sink, presentationId,
-                origin, tabId, isIncognito, nativeRequestId, this, mMessageHandler);
+                origin, tabId, isIncognito, nativeRequestId, this,
+                CreateRouteRequest.RequestedCastSessionType.CAST, mMessageHandler);
 
         ChromeCastSessionManager.get().requestSessionLaunch(createRouteRequest);
     }
