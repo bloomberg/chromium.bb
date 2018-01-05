@@ -27,6 +27,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/loader_util.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/common/appcache_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -97,6 +98,7 @@ void PopulateResourceResponse(
       ServiceWorkerResponseInfo::ForRequest(request);
   if (service_worker_info)
     service_worker_info->GetExtraResponseInfo(&response->head);
+  response->head.appcache_id = kAppCacheNoCacheId;
   AppCacheInterceptor::GetExtraResponseInfo(
       request, &response->head.appcache_id,
       &response->head.appcache_manifest_url);

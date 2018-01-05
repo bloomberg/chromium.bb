@@ -4,7 +4,6 @@
 
 #include "content/public/common/resource_response_info.h"
 
-#include "content/public/common/appcache_info.h"
 #include "net/http/http_response_headers.h"
 
 namespace content {
@@ -14,7 +13,7 @@ ResourceResponseInfo::ResourceResponseInfo()
       content_length(-1),
       encoded_data_length(-1),
       encoded_body_length(-1),
-      appcache_id(kAppCacheNoCacheId),
+      appcache_id(0),
       was_fetched_via_spdy(false),
       was_alpn_negotiated(false),
       was_alternate_protocol_available(false),
