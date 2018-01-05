@@ -266,7 +266,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
 
   surface_layer_ = cc::SurfaceLayer::Create(surface_reference_factory_);
   surface_layer_->SetMasksToBounds(true);
-  surface_layer_->SetDefaultBackgroundColor(SK_ColorTRANSPARENT);
+  surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   surface_layer_->SetPrimarySurfaceId(surface_id);
   surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);

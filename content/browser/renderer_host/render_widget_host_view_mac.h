@@ -492,7 +492,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void PauseForPendingResizeOrRepaintsAndDraw();
 
   // BrowserCompositorMacClient implementation.
-  SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
+  SkColor BrowserCompositorMacGetGutterColor() const override;
   void BrowserCompositorMacOnBeginFrame() override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 

@@ -2619,6 +2619,31 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   ASSERT_EQ(0u, parent_layer->children().size());
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
+  gfx::Size frame_size(100, 100);
+  viz::LocalSurfaceId local_surface_id =
+      parent_local_surface_id_allocator_.GenerateId();
+
+  // Prevent the DelegatedFrameHost from skipping frames.
+  view_->DisableResizeLock();
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(frame_size);
+  view_->Show();
+  viz::CompositorFrame frame =
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size));
+  frame.metadata.root_background_color = SK_ColorRED;
+  view_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr);
+
+  ui::Layer* parent_layer = view_->GetNativeView()->layer();
+
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), parent_layer->bounds());
+  EXPECT_EQ(SK_ColorRED, parent_layer->background_color());
+}
+
 // Resizing is disabled due to flakiness. Commit might come before
 // DrawWaiterForTest looks for compositor frame. crbug.com/759653
 TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {

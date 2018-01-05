@@ -170,7 +170,7 @@ TEST_F(SurfaceLayerTest, PushProperties) {
       viz::LocalSurfaceId(1, base::UnguessableToken::Create()));
   layer->SetPrimarySurfaceId(primary_id);
   layer->SetFallbackSurfaceId(primary_id);
-  layer->SetDefaultBackgroundColor(SK_ColorBLUE);
+  layer->SetBackgroundColor(SK_ColorBLUE);
   layer->SetStretchContentToFillBounds(true);
 
   EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
@@ -195,14 +195,14 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   // Verify that the primary and fallback SurfaceIds are pushed through.
   EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
   EXPECT_EQ(primary_id, layer_impl->fallback_surface_id());
-  EXPECT_EQ(SK_ColorBLUE, layer_impl->default_background_color());
+  EXPECT_EQ(SK_ColorBLUE, layer_impl->background_color());
   EXPECT_TRUE(layer_impl->stretch_content_to_fill_bounds());
 
   viz::SurfaceId fallback_id(
       kArbitraryFrameSinkId,
       viz::LocalSurfaceId(2, base::UnguessableToken::Create()));
   layer->SetFallbackSurfaceId(fallback_id);
-  layer->SetDefaultBackgroundColor(SK_ColorGREEN);
+  layer->SetBackgroundColor(SK_ColorGREEN);
   layer->SetStretchContentToFillBounds(false);
 
   // Verify that fallback surface id is not recorded on the layer tree host as
@@ -218,7 +218,7 @@ TEST_F(SurfaceLayerTest, PushProperties) {
   // fallback viz::SurfaceId is pushed through.
   EXPECT_EQ(primary_id, layer_impl->primary_surface_id());
   EXPECT_EQ(fallback_id, layer_impl->fallback_surface_id());
-  EXPECT_EQ(SK_ColorGREEN, layer_impl->default_background_color());
+  EXPECT_EQ(SK_ColorGREEN, layer_impl->background_color());
   EXPECT_FALSE(layer_impl->stretch_content_to_fill_bounds());
 }
 

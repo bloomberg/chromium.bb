@@ -50,21 +50,12 @@ void SurfaceLayerImpl::SetStretchContentToFillBounds(bool stretch_content) {
   NoteLayerPropertyChanged();
 }
 
-void SurfaceLayerImpl::SetDefaultBackgroundColor(SkColor background_color) {
-  if (default_background_color_ == background_color)
-    return;
-
-  default_background_color_ = background_color;
-  NoteLayerPropertyChanged();
-}
-
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
   layer_impl->SetPrimarySurfaceId(primary_surface_id_);
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
-  layer_impl->SetDefaultBackgroundColor(default_background_color_);
 }
 
 void SurfaceLayerImpl::AppendQuads(viz::RenderPass* render_pass,
@@ -119,10 +110,9 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
 
   auto* surface_draw_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
-  surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
-                            primary_surface_id, fallback_surface_id,
-                            default_background_color_,
-                            stretch_content_to_fill_bounds_);
+  surface_draw_quad->SetNew(
+      shared_quad_state, quad_rect, visible_quad_rect, primary_surface_id,
+      fallback_surface_id, background_color(), stretch_content_to_fill_bounds_);
 
   return surface_draw_quad;
 }
