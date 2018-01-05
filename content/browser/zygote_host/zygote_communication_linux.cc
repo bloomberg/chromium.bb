@@ -18,8 +18,6 @@
 #include "base/posix/unix_domain_socket.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "content/common/zygote_commands_linux.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "media/base/media_switches.h"
@@ -240,7 +238,8 @@ void ZygoteCommunication::ZygoteChildDied(pid_t process) {
   DCHECK_EQ(1U, num_erased);
 }
 
-void ZygoteCommunication::Init() {
+void ZygoteCommunication::Init(
+    base::OnceCallback<void(base::CommandLine*)> add_switches_callback) {
   CHECK(!init_);
 
   base::FilePath chrome_path;
@@ -277,7 +276,7 @@ void ZygoteCommunication::Init() {
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));
 
-  GetContentClient()->browser()->AppendExtraCommandLineSwitches(&cmd_line, -1);
+  std::move(add_switches_callback).Run(&cmd_line);
 
   pid_ = ZygoteHostImpl::GetInstance()->LaunchZygote(&cmd_line, &control_fd_);
 

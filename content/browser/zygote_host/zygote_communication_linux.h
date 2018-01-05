@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 
+#include "base/callback.h"
 #include "base/files/scoped_file.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
@@ -33,7 +34,7 @@ class CONTENT_EXPORT ZygoteCommunication {
   ZygoteCommunication();
   ~ZygoteCommunication();
 
-  void Init();
+  void Init(base::OnceCallback<void(base::CommandLine*)> add_switches_callback);
 
   // Tries to start a process of type indicated by process_type.
   // Returns its pid on success, otherwise base::kNullProcessHandle;
