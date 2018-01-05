@@ -2152,33 +2152,12 @@ jumbo_source_set("browser") {
       "speech/speech_recognizer_impl.h",
 
       # Most webauth code is non-Android
-      "webauth/attestation_object.cc",
-      "webauth/attestation_object.h",
-      "webauth/attestation_statement.cc",
-      "webauth/attestation_statement.h",
-      "webauth/attested_credential_data.cc",
-      "webauth/attested_credential_data.h",
-      "webauth/authenticator_data.cc",
-      "webauth/authenticator_data.h",
       "webauth/authenticator_impl.cc",
       "webauth/authenticator_impl.h",
-      "webauth/authenticator_utils.cc",
-      "webauth/authenticator_utils.h",
       "webauth/collected_client_data.cc",
       "webauth/collected_client_data.h",
-      "webauth/ec_public_key.cc",
-      "webauth/ec_public_key.h",
-      "webauth/fido_attestation_statement.cc",
-      "webauth/fido_attestation_statement.h",
-      "webauth/public_key.cc",
-      "webauth/public_key.h",
-      "webauth/register_response_data.cc",
-      "webauth/register_response_data.h",
     ]
-    deps += [
-      "//components/cbor",
-      "//third_party/flac",
-    ]
+    deps += [ "//third_party/flac" ]
   }
 
   if (is_mac) {

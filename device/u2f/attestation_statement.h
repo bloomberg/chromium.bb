@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBAUTH_ATTESTATION_STATEMENT_H_
-#define CONTENT_BROWSER_WEBAUTH_ATTESTATION_STATEMENT_H_
+#ifndef DEVICE_U2F_ATTESTATION_STATEMENT_H_
+#define DEVICE_U2F_ATTESTATION_STATEMENT_H_
 
 #include "base/macros.h"
 #include "components/cbor/cbor_values.h"
 
-namespace content {
+namespace device {
 
 // A signed data object containing statements about a credential itself and
 // the authenticator that created it.
@@ -39,6 +39,6 @@ class AttestationStatement {
   DISALLOW_COPY_AND_ASSIGN(AttestationStatement);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_WEBAUTH_ATTESTATION_STATEMENT_H_
+#endif  // DEVICE_U2F_ATTESTATION_STATEMENT_H_

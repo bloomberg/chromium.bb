@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/webauth/public_key.h"
+#include "device/u2f/public_key.h"
 
 #include <utility>
 
 #include "base/macros.h"
 
-namespace content {
+namespace device {
+
+PublicKey::~PublicKey() = default;
 
 PublicKey::PublicKey(std::string algorithm)
     : algorithm_(std::move(algorithm)) {}
 
-PublicKey::~PublicKey() {}
-
-}  // namespace content
+}  // namespace device

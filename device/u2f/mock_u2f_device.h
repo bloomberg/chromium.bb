@@ -19,7 +19,6 @@ namespace device {
 class MockU2fDevice : public U2fDevice {
  public:
   static constexpr uint8_t kSign = 0x1;
-  static constexpr uint8_t kRegister = 0x5;
 
   MockU2fDevice();
   ~MockU2fDevice() override;

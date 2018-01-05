@@ -6,46 +6,51 @@
 #define CONTENT_BROWSER_WEBAUTH_COLLECTED_CLIENT_DATA_H_
 
 #include <stdint.h>
-#include <memory>
 #include <string>
-#include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-namespace authenticator_utils {
-constexpr char kCreateType[] = "webauthn.create";
-}
+namespace client_data {
+CONTENT_EXPORT extern const char kCreateType[];
+}  // namespace client_data
 
 // Represents the contextual bindings of both the Relying Party and the
 // client platform that is used in authenticator signatures.
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#dictdef-collectedclientdata
 class CONTENT_EXPORT CollectedClientData {
  public:
+  static CollectedClientData Create(std::string type,
+                                    std::string relying_party_id,
+                                    base::span<const uint8_t> challenge);
+
+  CollectedClientData();
+
   CollectedClientData(std::string type_,
                       std::string base64_encoded_challenge_,
                       std::string origin,
                       std::string hash_algorithm,
                       std::string token_binding_id);
-  virtual ~CollectedClientData();
 
-  static std::unique_ptr<CollectedClientData> Create(
-      std::string type,
-      std::string relying_party_id,
-      std::vector<uint8_t> challenge);
+  // Moveable.
+  CollectedClientData(CollectedClientData&& other);
+  CollectedClientData& operator=(CollectedClientData&& other);
+
+  ~CollectedClientData();
 
   // Builds a JSON-serialized string per step 13 of
   // https://www.w3.org/TR/2017/WD-webauthn-20170505/#createCredential.
-  std::string SerializeToJson();
+  std::string SerializeToJson() const;
 
  private:
-  const std::string type_;
-  const std::string base64_encoded_challenge_;
-  const std::string origin_;
-  const std::string hash_algorithm_;
-  const std::string token_binding_id_;
+  std::string type_;
+  std::string base64_encoded_challenge_;
+  std::string origin_;
+  std::string hash_algorithm_;
+  std::string token_binding_id_;
   // TODO(kpaulhamus): Add extensions support. https://crbug/757502.
 
   DISALLOW_COPY_AND_ASSIGN(CollectedClientData);

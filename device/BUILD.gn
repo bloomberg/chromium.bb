@@ -86,6 +86,7 @@ test("device_unittests") {
   deps = [
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
+    "//components/cbor",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//device/bluetooth:deprecated_experimental_mojo",
