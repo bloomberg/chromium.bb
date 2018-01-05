@@ -3125,10 +3125,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.motion_mode)));
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
-  assert(!memcmp(cm->counts.comp_ref, zero_counts.comp_ref,
-                 sizeof(cm->counts.comp_ref)));
-  assert(!memcmp(cm->counts.comp_bwdref, zero_counts.comp_bwdref,
-                 sizeof(cm->counts.comp_bwdref)));
   assert(!memcmp(cm->counts.skip, zero_counts.skip, sizeof(cm->counts.skip)));
 }
 #endif  // NDEBUG
@@ -3455,7 +3451,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                        num_bwd_ctxs);
 
       if (!frame_is_intra_only(cm)) {
-        av1_adapt_inter_frame_probs(cm);
         av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
                                     cdf_ptrs, num_bwd_ctxs);
         av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,

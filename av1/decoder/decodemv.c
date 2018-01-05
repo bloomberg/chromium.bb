@@ -1305,8 +1305,6 @@ static void set_ref_frames_for_skip_mode(AV1_COMMON *const cm,
 static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *r, int segment_id,
                             MV_REFERENCE_FRAME ref_frame[2]) {
-  FRAME_COUNTS *counts = xd->counts;
-
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     ref_frame[0] = (MV_REFERENCE_FRAME)get_segdata(&cm->seg, segment_id,
                                                    SEG_LVL_REF_FRAME);
@@ -1364,32 +1362,20 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_COMP_REFS
 
       const int idx = 1;
-
-      const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
       const int bit = READ_REF_BIT(comp_ref_p);
-      if (counts) ++counts->comp_ref[ctx][0][bit];
-
       // Decode forward references.
       if (!bit) {
-        const int ctx1 = av1_get_pred_context_comp_ref_p1(cm, xd);
         const int bit1 = READ_REF_BIT(comp_ref_p1);
-        if (counts) ++counts->comp_ref[ctx1][1][bit1];
         ref_frame[!idx] = cm->comp_fwd_ref[bit1 ? 1 : 0];
       } else {
-        const int ctx2 = av1_get_pred_context_comp_ref_p2(cm, xd);
         const int bit2 = READ_REF_BIT(comp_ref_p2);
-        if (counts) ++counts->comp_ref[ctx2][2][bit2];
         ref_frame[!idx] = cm->comp_fwd_ref[bit2 ? 3 : 2];
       }
 
       // Decode backward references.
-      const int ctx_bwd = av1_get_pred_context_comp_bwdref_p(cm, xd);
       const int bit_bwd = READ_REF_BIT(comp_bwdref_p);
-      if (counts) ++counts->comp_bwdref[ctx_bwd][0][bit_bwd];
       if (!bit_bwd) {
-        const int ctx1_bwd = av1_get_pred_context_comp_bwdref_p1(cm, xd);
         const int bit1_bwd = READ_REF_BIT(comp_bwdref_p1);
-        if (counts) ++counts->comp_bwdref[ctx1_bwd][1][bit1_bwd];
         ref_frame[idx] = cm->comp_bwd_ref[bit1_bwd];
       } else {
         ref_frame[idx] = cm->comp_bwd_ref[2];

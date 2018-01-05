@@ -166,7 +166,6 @@ typedef struct frame_contexts {
                                [CDF_SIZE(2)];
 #endif  // CONFIG_EXT_COMP_REFS
   aom_prob comp_ref_prob[REF_CONTEXTS][FWD_REFS - 1];
-  aom_prob comp_bwdref_prob[REF_CONTEXTS][BWD_REFS - 1];
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
@@ -322,12 +321,10 @@ typedef struct FRAME_COUNTS {
   unsigned int comp_ref_type[COMP_REF_TYPE_CONTEXTS][2];
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_COMP_REFS
-#endif  // CONFIG_ENTROPY_STATS
-#if CONFIG_ENTROPY_STATS
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
-#endif  // CONFIG_ENTROPY_STATS
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
+#endif  // CONFIG_ENTROPY_STATS
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
 #if CONFIG_EXT_SKIP
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
@@ -439,7 +436,6 @@ static const int av1_ext_tx_inv[EXT_TX_SET_TYPES][TX_TYPES] = {
 
 void av1_setup_frame_contexts(struct AV1Common *cm);
 void av1_setup_past_independence(struct AV1Common *cm);
-void av1_adapt_inter_frame_probs(struct AV1Common *cm);
 
 static INLINE int av1_ceil_log2(int n) {
   int i = 1, p = 2;

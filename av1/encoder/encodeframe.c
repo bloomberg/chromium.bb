@@ -940,21 +940,48 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           } else {
 #endif  // CONFIG_EXT_COMP_REFS
             const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
-
+            if (allow_update_cdf)
+              update_cdf(av1_get_pred_cdf_comp_ref_p(cm, xd), bit, 2);
+#if CONFIG_ENTROPY_STATS
             counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0][bit]++;
+#endif  // CONFIG_ENTROPY_STATS
             if (!bit) {
+              if (allow_update_cdf) {
+                update_cdf(av1_get_pred_cdf_comp_ref_p1(cm, xd),
+                           ref0 == LAST2_FRAME, 2);
+              }
+#if CONFIG_ENTROPY_STATS
               counts->comp_ref[av1_get_pred_context_comp_ref_p1(cm, xd)][1]
                               [ref0 == LAST2_FRAME]++;
+#endif  // CONFIG_ENTROPY_STATS
             } else {
+              if (allow_update_cdf) {
+                update_cdf(av1_get_pred_cdf_comp_ref_p2(cm, xd),
+                           ref0 == GOLDEN_FRAME, 2);
+              }
+#if CONFIG_ENTROPY_STATS
               counts->comp_ref[av1_get_pred_context_comp_ref_p2(cm, xd)][2]
                               [ref0 == GOLDEN_FRAME]++;
+#endif  // CONFIG_ENTROPY_STATS
             }
-
+            if (allow_update_cdf) {
+              update_cdf(av1_get_pred_cdf_comp_bwdref_p(cm, xd),
+                         ref1 == ALTREF_FRAME, 2);
+            }
+#if CONFIG_ENTROPY_STATS
             counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p(cm, xd)][0]
                                [ref1 == ALTREF_FRAME]++;
-            if (ref1 != ALTREF_FRAME)
+#endif  // CONFIG_ENTROPY_STATS
+            if (ref1 != ALTREF_FRAME) {
+              if (allow_update_cdf) {
+                update_cdf(av1_get_pred_cdf_comp_bwdref_p1(cm, xd),
+                           ref1 == ALTREF2_FRAME, 2);
+              }
+#if CONFIG_ENTROPY_STATS
               counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p1(cm, xd)]
                                  [1][ref1 == ALTREF2_FRAME]++;
+#endif  // CONFIG_ENTROPY_STATS
+            }
 #if CONFIG_EXT_COMP_REFS
           }
 #endif  // CONFIG_EXT_COMP_REFS

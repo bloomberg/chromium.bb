@@ -6262,7 +6262,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   if (!frame_is_intra_only(cm)) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      av1_adapt_inter_frame_probs(cm);
       av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
                                   cdf_ptrs, num_bwd_ctxs);
       av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
