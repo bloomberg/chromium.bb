@@ -40,8 +40,11 @@ void JavaScriptDialogBlockingState::DidStartNavigation(
       web_state->GetNavigationManager()->GetLastCommittedItem();
   // The dialog blocking state should be reset for user-initiated loads or for
   // document-changing, non-reload navigations.
+  bool navigation_is_reload = ui::PageTransitionCoreTypeIs(
+      navigation_context->GetPageTransition(), ui::PAGE_TRANSITION_RELOAD);
   if (!navigation_context->IsRendererInitiated() ||
-      (!navigation_context->IsSameDocument() && item != blocked_item_)) {
+      (!navigation_context->IsSameDocument() && item != blocked_item_ &&
+       !navigation_is_reload)) {
     dialog_count_ = 0;
     blocked_item_ = nullptr;
   }
