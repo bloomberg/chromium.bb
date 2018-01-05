@@ -255,7 +255,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsPartialRasterEnabled() override;
   bool IsGpuMemoryBufferCompositorResourcesEnabled() override;
   bool IsElasticOverscrollEnabled() override;
-  const viz::BufferUsageAndFormatList& GetTextureTargetExceptionList() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorMainThreadTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -776,7 +775,6 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_gpu_memory_buffer_compositor_resources_enabled_;
   bool is_partial_raster_enabled_;
   bool is_elastic_overscroll_enabled_;
-  viz::BufferUsageAndFormatList texture_target_exception_list_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
 

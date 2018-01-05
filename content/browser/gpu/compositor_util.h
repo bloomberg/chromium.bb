@@ -6,10 +6,11 @@
 #define CONTENT_BROWSER_GPU_COMPOSITOR_UTIL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/values.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace content {
 
@@ -48,7 +49,7 @@ CONTENT_EXPORT std::vector<std::string> GetDriverBugWorkarounds();
 
 // Populate a list of buffer usage/format for which a per platform specific
 // texture target must be used instead of GL_TEXTURE_2D.
-CONTENT_EXPORT viz::BufferUsageAndFormatList
+CONTENT_EXPORT std::vector<gfx::BufferUsageAndFormat>
 CreateBufferUsageAndFormatExceptionList();
 
 }  // namespace content

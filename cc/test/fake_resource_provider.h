@@ -11,7 +11,6 @@
 #include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/resource_provider.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace cc {

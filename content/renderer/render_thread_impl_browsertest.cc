@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/service_manager/child_connection.h"
@@ -215,9 +214,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kLang, "en-US");
 
     cmd->AppendSwitchASCII(switches::kNumRasterThreads, "1");
-    cmd->AppendSwitchASCII(
-        switches::kContentImageTextureTarget,
-        viz::BufferUsageAndFormatListToString(viz::BufferUsageAndFormatList()));
 
     std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler =
         blink::scheduler::RendererScheduler::Create();

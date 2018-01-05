@@ -49,6 +49,7 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace gpu {
+struct Capabilities;
 class GpuMemoryBufferManager;
 namespace gles2 {
 class GLES2Interface;
@@ -353,7 +354,8 @@ class CC_EXPORT ResourceProvider
   static gpu::SyncToken GenerateSyncTokenHelper(
       gpu::raster::RasterInterface* ri);
 
-  GLenum GetImageTextureTarget(gfx::BufferUsage usage,
+  GLenum GetImageTextureTarget(const gpu::Capabilities& caps,
+                               gfx::BufferUsage usage,
                                viz::ResourceFormat format) const;
 
   // base::trace_event::MemoryDumpProvider implementation.
@@ -458,7 +460,6 @@ class CC_EXPORT ResourceProvider
   bool IsGLContextLost() const;
 
   std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
-  viz::BufferUsageAndFormatList texture_target_exception_list_;
 
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.

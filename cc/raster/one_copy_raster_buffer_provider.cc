@@ -301,7 +301,8 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
   GLuint texture_id = resource_lock->ConsumeTexture(ri);
 
   GLenum image_target = resource_provider_->GetImageTextureTarget(
-      StagingBufferUsage(), staging_buffer->format);
+      worker_context_provider_->ContextCapabilities(), StagingBufferUsage(),
+      staging_buffer->format);
 
   // Create and bind staging texture.
   if (!staging_buffer->texture_id) {

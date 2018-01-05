@@ -24,6 +24,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "ui/gfx/ipc/buffer_types/gfx_param_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"

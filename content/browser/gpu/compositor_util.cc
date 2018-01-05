@@ -366,8 +366,9 @@ std::vector<std::string> GetDriverBugWorkarounds() {
   return GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds();
 }
 
-viz::BufferUsageAndFormatList CreateBufferUsageAndFormatExceptionList() {
-  viz::BufferUsageAndFormatList usage_format_list;
+std::vector<gfx::BufferUsageAndFormat>
+CreateBufferUsageAndFormatExceptionList() {
+  std::vector<gfx::BufferUsageAndFormat> usage_format_list;
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);
        ++usage_idx) {
     gfx::BufferUsage usage = static_cast<gfx::BufferUsage>(usage_idx);
@@ -376,7 +377,7 @@ viz::BufferUsageAndFormatList CreateBufferUsageAndFormatExceptionList() {
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
       if (gpu::GetImageNeedsPlatformSpecificTextureTarget(format, usage))
-        usage_format_list.push_back(std::make_pair(usage, format));
+        usage_format_list.push_back(gfx::BufferUsageAndFormat(usage, format));
     }
   }
   return usage_format_list;

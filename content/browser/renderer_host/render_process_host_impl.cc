@@ -58,7 +58,6 @@
 #include "cc/base/switches.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
@@ -2459,11 +2458,6 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
 
   if (IsCompositorImageAnimationEnabled())
     command_line->AppendSwitch(switches::kEnableCompositorImageAnimations);
-
-  command_line->AppendSwitchASCII(
-      switches::kContentImageTextureTarget,
-      viz::BufferUsageAndFormatListToString(
-          CreateBufferUsageAndFormatExceptionList()));
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();

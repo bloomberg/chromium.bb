@@ -18,7 +18,6 @@ namespace viz {
 
 ScopedGpuMemoryBufferTexture::ScopedGpuMemoryBufferTexture(
     ContextProvider* context_provider,
-    const BufferUsageAndFormatList& formats,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space)
     : context_provider_(context_provider),
@@ -38,9 +37,7 @@ ScopedGpuMemoryBufferTexture::ScopedGpuMemoryBufferTexture(
   ResourceFormat format = RGBA_8888;
   gfx::BufferFormat buffer_format = BufferFormat(format);
 
-  target_ = GL_TEXTURE_2D;
-  if (base::ContainsValue(formats, std::make_pair(usage, buffer_format)))
-    target_ = gpu::GetPlatformSpecificTextureTarget();
+  target_ = gpu::GetBufferTextureTarget(usage, buffer_format, caps);
 
   gl->BindTexture(target_, gl_id_);
   gl->TexParameteri(target_, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

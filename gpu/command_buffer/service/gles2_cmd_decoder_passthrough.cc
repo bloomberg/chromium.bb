@@ -1174,6 +1174,8 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.dc_layers = !offscreen_ && surface_->SupportsDCLayers();
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
+  caps.texture_target_exception_list =
+      group_->gpu_preferences().texture_target_exception_list;
 
   // TODO:
   // caps.commit_overlay_planes

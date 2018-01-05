@@ -179,8 +179,6 @@ ResourceProvider::ResourceProvider(
       next_id_(next_id),
       next_child_(1),
       lost_context_provider_(false),
-      texture_target_exception_list_(
-          resource_settings.texture_target_exception_list),
       tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
   DCHECK(resource_settings.texture_id_allocation_chunk_size);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -362,7 +360,9 @@ viz::ResourceId ResourceProvider::CreateGpuTextureResource(
   if (use_overlay && settings_.use_texture_storage_image &&
       IsGpuMemoryBufferFormatSupported(format, gfx::BufferUsage::SCANOUT)) {
     resource->usage = gfx::BufferUsage::SCANOUT;
-    resource->target = GetImageTextureTarget(resource->usage, format);
+    resource->target = GetImageTextureTarget(
+        compositor_context_provider_->ContextCapabilities(), resource->usage,
+        format);
     resource->buffer_format = BufferFormat(format);
     resource->is_overlay_candidate = true;
   }
@@ -387,7 +387,8 @@ viz::ResourceId ResourceProvider::CreateGpuMemoryBufferResource(
       id, viz::internal::Resource(size, viz::internal::Resource::INTERNAL, hint,
                                   viz::ResourceType::kGpuMemoryBuffer, format,
                                   color_space));
-  resource->target = GetImageTextureTarget(usage, format);
+  resource->target = GetImageTextureTarget(
+      compositor_context_provider_->ContextCapabilities(), usage, format);
   resource->buffer_format = BufferFormat(format);
   resource->usage = usage;
   resource->is_overlay_candidate = true;
@@ -1047,12 +1048,10 @@ gpu::SyncToken ResourceProvider::GenerateSyncTokenHelper(
 }
 
 GLenum ResourceProvider::GetImageTextureTarget(
+    const gpu::Capabilities& caps,
     gfx::BufferUsage usage,
     viz::ResourceFormat format) const {
-  gfx::BufferFormat buffer_format = BufferFormat(format);
-  bool found = base::ContainsValue(texture_target_exception_list_,
-                                   std::make_pair(usage, buffer_format));
-  return found ? gpu::GetPlatformSpecificTextureTarget() : GL_TEXTURE_2D;
+  return gpu::GetBufferTextureTarget(usage, BufferFormat(format), caps);
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {

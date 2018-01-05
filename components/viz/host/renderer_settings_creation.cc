@@ -35,16 +35,11 @@ bool GetSwitchValueAsInt(const base::CommandLine* command_line,
 
 }  // namespace
 
-ResourceSettings CreateResourceSettings(
-    const BufferUsageAndFormatList& texture_target_exception_list) {
-  ResourceSettings resource_settings;
-  resource_settings.texture_target_exception_list =
-      texture_target_exception_list;
-  return resource_settings;
+ResourceSettings CreateResourceSettings() {
+  return ResourceSettings();
 }
 
-RendererSettings CreateRendererSettings(
-    const BufferUsageAndFormatList& texture_target_exception_list) {
+RendererSettings CreateRendererSettings() {
   RendererSettings renderer_settings;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
@@ -61,8 +56,6 @@ RendererSettings CreateRendererSettings(
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   renderer_settings.enable_draw_occlusion =
       command_line->HasSwitch(switches::kEnableDrawOcclusion);
-  renderer_settings.resource_settings =
-      CreateResourceSettings(texture_target_exception_list);
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(switches::kDisallowNonExactResourceReuse);
   renderer_settings.allow_antialiasing =

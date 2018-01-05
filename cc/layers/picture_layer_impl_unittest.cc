@@ -38,7 +38,6 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"

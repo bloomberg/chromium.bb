@@ -3544,7 +3544,6 @@ GLRenderer::FindOrCreateOverlayTexture(const RenderPassId& render_pass_id,
   auto result = std::make_unique<OverlayTexture>();
   result->texture = ScopedGpuMemoryBufferTexture(
       output_surface_->context_provider(),
-      settings_->resource_settings.texture_target_exception_list,
       gfx::Size(width, height), color_space);
   result->render_pass_id = render_pass_id;
   return result;

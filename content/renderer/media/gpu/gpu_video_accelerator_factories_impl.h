@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/unguessable_token.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
@@ -59,7 +58,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      const viz::BufferUsageAndFormatList& texture_target_exception_list,
       bool enable_video_accelerator,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
@@ -117,7 +115,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
       bool enable_gpu_memory_buffer_video_frames,
-      const viz::BufferUsageAndFormatList& texture_target_exception_list,
       bool enable_video_accelerator,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
@@ -139,7 +136,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   // Whether gpu memory buffers should be used to hold video frames data.
   bool enable_gpu_memory_buffer_video_frames_;
-  const viz::BufferUsageAndFormatList texture_target_exception_list_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 
