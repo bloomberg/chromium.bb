@@ -139,7 +139,7 @@ TEST_P(DataTransferTest, NodeImageUnderScrollOffset) {
     <style>
       * { margin: 0; }
       #first { width: 500px; height: 500px; }
-      #second { width: 300px; height: 200px; }
+      #second { width: 800px; height: 900px; }
     </style>
     <div id='first'></div>
     <div id='second'></div>
@@ -154,14 +154,14 @@ TEST_P(DataTransferTest, NodeImageUnderScrollOffset) {
   Element& first = *GetDocument().getElementById("first");
   const auto first_image = DataTransfer::NodeImage(GetFrame(), first);
   const int first_height = 500;
-  EXPECT_EQ(IntSize(500, first_height - scroll_amount), first_image->Size());
+  EXPECT_EQ(IntSize(500, first_height), first_image->Size());
 
   // The second div should also be offset by the scroll offset. In addition,
   // the second div should be clipped by the viewport.
   Element& second = *GetDocument().getElementById("second");
   const auto second_image = DataTransfer::NodeImage(GetFrame(), second);
   const int viewport_height = 600;
-  EXPECT_EQ(IntSize(300, viewport_height - (first_height - scroll_amount)),
+  EXPECT_EQ(IntSize(800, viewport_height - (first_height - scroll_amount)),
             second_image->Size());
 }
 
@@ -183,6 +183,37 @@ TEST_P(DataTransferTest, NodeImageSizeWithPageScaleFactor) {
   EXPECT_EQ(
       IntSize(node_width * page_scale_factor, node_height * page_scale_factor),
       image->Size());
+
+  // Check that a scroll offset is scaled to device coordinates which includes
+  // page scale factor.
+  const int scroll_amount = 10;
+  LocalFrameView* frame_view = GetDocument().View();
+  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, scroll_amount), kProgrammaticScroll);
+  const auto image_with_offset = DataTransfer::NodeImage(GetFrame(), node);
+  EXPECT_EQ(
+      IntSize(node_width * page_scale_factor, node_height * page_scale_factor),
+      image_with_offset->Size());
+}
+
+TEST_P(DataTransferTest, NodeImageSizeWithPageScaleFactorTooLarge) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * { margin: 0; }
+      html, body { height: 2000px; }
+      #node { width: 800px; height: 601px; }
+    </style>
+    <div id='node'></div>
+  )HTML");
+  const int page_scale_factor = 2;
+  GetPage().SetPageScaleFactor(page_scale_factor);
+  Element& node = *GetDocument().getElementById("node");
+  const auto image = DataTransfer::NodeImage(GetFrame(), node);
+  const int node_width = 800;
+  const int node_height = 601;
+  EXPECT_EQ(IntSize(node_width * page_scale_factor,
+                    (node_height - 1) * page_scale_factor),
+            image->Size());
 
   // Check that a scroll offset is scaled to device coordinates which includes
   // page scale factor.
@@ -235,10 +266,10 @@ TEST_P(DataTransferTest, NodeImageWithPageScaleFactor) {
       EXPECT_EQ(expected_bitmap.getColor(x, y), bitmap.getColor(x, y));
 }
 
-TEST_P(DataTransferTest, NodeImageWithScrolling) {
+TEST_P(DataTransferTest, NodeImageFullyOffscreen) {
   SetBodyInnerHTML(R"HTML(
     <style>
-    #inner {
+    #target {
       position: absolute;
       top: 800px;
       left: 0;
@@ -248,7 +279,7 @@ TEST_P(DataTransferTest, NodeImageWithScrolling) {
       isolation: isolate;
     }
     </style>
-    <div id="inner" draggable="true" ondragstart="drag(event)"></div>
+    <div id="target" draggable="true" ondragstart="drag(event)"></div>
   )HTML");
 
   const int scroll_amount = 800;
@@ -256,11 +287,32 @@ TEST_P(DataTransferTest, NodeImageWithScrolling) {
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_amount), kProgrammaticScroll);
 
-  Element& inner = *GetDocument().getElementById("inner");
-  const auto image = DataTransfer::NodeImage(GetFrame(), inner);
-  const int inner_width = 200;
-  const int inner_height = 100;
-  EXPECT_EQ(IntSize(inner_width, inner_height), image->Size());
+  Element& target = *GetDocument().getElementById("target");
+  const auto image = DataTransfer::NodeImage(GetFrame(), target);
+
+  EXPECT_EQ(IntSize(200, 100), image->Size());
+}
+
+TEST_P(DataTransferTest, NodeImageWithScrolling) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    #target {
+      position: absolute;
+      top: 800px;
+      left: 0;
+      height: 100px;
+      width: 200px;
+      background: lightblue;
+      isolation: isolate;
+    }
+    </style>
+    <div id="target" draggable="true" ondragstart="drag(event)"></div>
+  )HTML");
+
+  Element& target = *GetDocument().getElementById("target");
+  const auto image = DataTransfer::NodeImage(GetFrame(), target);
+
+  EXPECT_EQ(IntSize(200, 100), image->Size());
 }
 
 }  // namespace blink
