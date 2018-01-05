@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/omnibox/favicon_cache.h"
 
 #include "base/containers/mru_cache.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 
@@ -19,9 +18,9 @@ size_t GetFaviconCacheSize() {
 
 }  // namespace
 
-FaviconCache::FaviconCache(Profile* profile)
-    : mru_cache_(GetFaviconCacheSize()),
-      profile_(profile),
+FaviconCache::FaviconCache(favicon::FaviconService* favicon_service)
+    : favicon_service_(favicon_service),
+      mru_cache_(GetFaviconCacheSize()),
       weak_factory_(this) {}
 
 FaviconCache::~FaviconCache() {}
@@ -35,15 +34,12 @@ gfx::Image FaviconCache::GetFaviconForPageUrl(
 
   // We don't have the favicon in the cache. We kick off the request and return
   // an empty gfx::Image.
-  favicon::FaviconService* favicon_service =
-      FaviconServiceFactory::GetForProfile(profile_,
-                                           ServiceAccessType::EXPLICIT_ACCESS);
-  if (!favicon_service)
+  if (!favicon_service_)
     return gfx::Image();
 
   // TODO(tommycli): Investigate using the version of this method that specifies
   // the desired size.
-  favicon_service->GetFaviconImageForPageURL(
+  favicon_service_->GetFaviconImageForPageURL(
       page_url,
       base::BindRepeating(&FaviconCache::OnFaviconFetched,
                           weak_factory_.GetWeakPtr(), page_url,

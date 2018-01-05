@@ -22,6 +22,7 @@
 #include "chrome/browser/bookmarks/bookmark_stats.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -100,7 +101,9 @@ ChromeOmniboxClient::ChromeOmniboxClient(OmniboxEditController* controller,
       profile_(profile),
       scheme_classifier_(profile),
       request_id_(BitmapFetcherService::REQUEST_ID_INVALID),
-      favicon_cache_(profile) {}
+      favicon_cache_(FaviconServiceFactory::GetForProfile(
+          profile,
+          ServiceAccessType::EXPLICIT_ACCESS)) {}
 
 ChromeOmniboxClient::~ChromeOmniboxClient() {
   BitmapFetcherService* image_service =

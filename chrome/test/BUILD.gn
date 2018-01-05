@@ -2878,6 +2878,7 @@ test("unit_tests") {
       "../browser/ui/global_error/global_error_service_unittest.cc",
       "../browser/ui/omnibox/chrome_omnibox_navigation_observer_unittest.cc",
       "../browser/ui/omnibox/clipboard_utils_unittest.cc",
+      "../browser/ui/omnibox/favicon_cache_unittest.cc",
       "../browser/ui/omnibox/omnibox_controller_unittest.cc",
       "../browser/ui/omnibox/test_omnibox_client.cc",
       "../browser/ui/omnibox/test_omnibox_client.h",
@@ -2961,6 +2962,7 @@ test("unit_tests") {
       "../utility/importer/safari_importer_unittest.mm",
     ]
     deps += [
+      "//components/favicon/core/test:test_support",
       "//components/signin/core/browser:signin_features",
       "//third_party/libaddressinput",
     ]
