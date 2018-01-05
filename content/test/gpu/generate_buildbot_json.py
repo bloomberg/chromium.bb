@@ -1415,6 +1415,9 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux Ozone (Intel)',
+          # On Android, these are already run on the main waterfall.
+          # Run them on the one-off Android FYI bots, though.
+          'Android Release (Nexus 5X)',
         ],
       },
     ],
@@ -1447,6 +1450,9 @@ COMMON_GTESTS = {
       {
         'names': [
           'Linux Ozone (Intel)',
+          # On Android, these are already run on the main waterfall.
+          # Run them on the one-off Android FYI bots, though.
+          'Android Release (Nexus 5X)',
         ],
       },
     ],
