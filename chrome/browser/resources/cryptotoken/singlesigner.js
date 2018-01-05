@@ -354,10 +354,12 @@ SingleGnubbySigner.prototype.doSign_ = function(challengeIndex) {
  *     for this gnubby.
  */
 SingleGnubbySigner.signErrorIndicatesInvalidKeyHandle = function(code) {
-  return (
-      code == DeviceStatusCodes.WRONG_DATA_STATUS ||
-      code == DeviceStatusCodes.WRONG_LENGTH_STATUS ||
-      code == DeviceStatusCodes.INVALID_DATA_STATUS);
+  // Negative errors are synthetic, device-level errors, rather than APDU-layer
+  // things. Wait for touch is the only error code defined to be a transient
+  // situation. Unfortunately the spec is ambiguous, and some devices behave
+  // oddly, so we treat all APDU-layer errors as idempotent rather than
+  // transient.
+  return code > 0 && code != DeviceStatusCodes.WAIT_TOUCH_STATUS;
 };
 
 /**
@@ -391,10 +393,6 @@ SingleGnubbySigner.prototype.signCallback_ = function(
 
   var self = this;
   switch (code) {
-    case DeviceStatusCodes.GONE_STATUS:
-      this.goToError_(code);
-      break;
-
     case DeviceStatusCodes.TIMEOUT_STATUS:
       this.gnubby_.sync(this.synced_.bind(this));
       break;
@@ -404,13 +402,6 @@ SingleGnubbySigner.prototype.signCallback_ = function(
       break;
 
     case DeviceStatusCodes.OK_STATUS:
-      // Lower bound on the minimum length, signature length can vary.
-      var MIN_SIGNATURE_LENGTH = 7;
-      if (!opt_info || opt_info.byteLength < MIN_SIGNATURE_LENGTH) {
-        console.error(UTIL_fmt(
-            'Got short response to sign request (' +
-            (opt_info ? opt_info.byteLength : 0) + ' bytes), WTF?'));
-      }
       if (this.forEnroll_) {
         this.goToError_(code);
       } else {
@@ -424,25 +415,22 @@ SingleGnubbySigner.prototype.signCallback_ = function(
       }, SingleGnubbySigner.SIGN_DELAY_MILLIS);
       break;
 
-    case DeviceStatusCodes.WRONG_DATA_STATUS:
-    case DeviceStatusCodes.WRONG_LENGTH_STATUS:
-    case DeviceStatusCodes.INVALID_DATA_STATUS:
+    default:
+      if (code < 0) {
+        // Negative errors are synthetic, device-level errors, rather than
+        // APDU-layer things. Other than the ones explicitly handled above,
+        // these are indicative of unhappy devices, so return them immediately
+        // to the caller.
+        this.goToError_(code);
+        return;
+      }
+
       if (this.challengeIndex_ < this.challenges_.length - 1) {
         this.doSign_(++this.challengeIndex_);
       } else if (this.forEnroll_) {
         this.goToSuccess_(code);
       } else {
         this.goToError_(code);
-      }
-      break;
-
-    default:
-      if (this.forEnroll_) {
-        this.goToError_(code, true);
-      } else if (this.challengeIndex_ < this.challenges_.length - 1) {
-        this.doSign_(++this.challengeIndex_);
-      } else {
-        this.goToError_(code, true);
       }
   }
 };
