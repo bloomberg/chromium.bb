@@ -592,12 +592,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     if (level == 0) continue;
 
     if (c == 0) {
-#if LV_MAP_PROB
       aom_write_bin(w, sign,
                     ec_ctx->dc_sign_cdf[plane_type][txb_ctx->dc_sign_ctx], 2);
-#else
-      aom_write(w, sign, ec_ctx->dc_sign[plane_type][txb_ctx->dc_sign_ctx]);
-#endif
     } else {
       aom_write_bit(w, sign);
     }
@@ -2441,10 +2437,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
     ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
-#if LV_MAP_PROB
     if (allow_update_cdf)
       update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
-#endif
     x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
   }
 

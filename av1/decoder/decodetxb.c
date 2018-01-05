@@ -357,13 +357,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (levels[get_padded_idx(pos, bwl)] == 0) continue;
     if (c == 0) {
       const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-#if LV_MAP_PROB
       *sign = av1_read_record_bin(
           counts, r, ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], 2, ACCT_STR);
-// printf("dc_sign: %d %d\n", plane_type, dc_sign_ctx);
-#else
-      *sign = aom_read(r, ec_ctx->dc_sign[plane_type][dc_sign_ctx], ACCT_STR);
-#endif
       if (counts) ++counts->dc_sign[plane_type][dc_sign_ctx][*sign];
     } else {
       *sign = av1_read_record_bit(counts, r, ACCT_STR);
