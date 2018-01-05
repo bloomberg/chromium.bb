@@ -1077,7 +1077,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (top == bottom) ++bottom;
         final float deviceScale = getDeviceScaleFactor();
         boundMiddlePointX *= deviceScale;
-        boundMiddlePointY *= deviceScale;
+        // The selection coordinates are relative to the content viewport, but we need
+        // coordinates relative to the containing View, so adding getContentOffsetYPix().
+        boundMiddlePointY = boundMiddlePointY * deviceScale
+                + mWebContents.getRenderCoordinates().getContentOffsetYPix();
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
                 break;
