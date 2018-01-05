@@ -69,6 +69,7 @@ struct CONTENT_EXPORT ResourceResponseInfo {
   int64_t encoded_body_length;
 
   // The appcache this response was loaded from, or kAppCacheNoCacheId.
+  // TODO(rdsmith): Remove conceptual dependence on appcache.
   int64_t appcache_id;
 
   // The manifest url of the appcache this response was loaded from.
