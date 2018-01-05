@@ -261,7 +261,7 @@ class MoblabVMTestStageTestCase(
 
     mock_run_moblab_tests.assert_called_once_with(
         'moblab-generic-vm', mock.ANY, mock.ANY,
-        self._temp_host_path('results'))
+        self._temp_host_path('results'), mock.ANY)
     # 1 for the overall results during _Upload, 4 more for the detailed logs.
     self.assertEqual(mock_buildbot_link.call_count, 5)
 

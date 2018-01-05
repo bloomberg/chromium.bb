@@ -13,6 +13,7 @@ archiving results and VM images in case of failure.
 
 from __future__ import print_function
 
+import datetime
 import fnmatch
 import os
 import re
@@ -404,9 +405,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     osutils.SafeMakedirsNonRoot(work_dir)
 
     try:
-      r = ' reached %s test run timeout.' % self
-      with timeout_util.Timeout(self._PERFORM_TIMEOUT_S, reason_message=r):
-        self._PerformStage(work_dir, results_dir)
+      self._PerformStage(work_dir, results_dir)
     except:
       logging.error(_ERROR_MSG % dict(test_name='MoblabVMTest',
                                       test_results='directory'))
@@ -425,14 +424,19 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     osutils.SafeMakedirsNonRoot(self._Workspace(workdir))
     vms = moblab_vm.MoblabVm(self._Workspace(workdir))
     try:
-      vms.Create(self.GetImageDirSymlink(), self.GetImageDirSymlink())
-      vms.Start()
-      RunMoblabTests(
-          self._current_board,
-          vms.moblab_ssh_port,
-          dut_target_image,
-          results_dir,
-      )
+      r = ' reached %s test run timeout.' % self
+      with timeout_util.Timeout(self._PERFORM_TIMEOUT_S, reason_message=r):
+        start_time = datetime.datetime.now()
+        vms.Create(self.GetImageDirSymlink(), self.GetImageDirSymlink())
+        vms.Start()
+        elapsed = (datetime.datetime.now() - start_time).total_seconds()
+        RunMoblabTests(
+            self._current_board,
+            vms.moblab_ssh_port,
+            dut_target_image,
+            results_dir,
+            (self._PERFORM_TIMEOUT_S - elapsed) / 60,
+        )
       vms.Stop()
     except:
       # Ignore errors while arhiving images, but re-raise the original error.
@@ -761,7 +765,8 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
         '** VMTests failed with code %d **' % result.returncode)
 
 
-def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir):
+def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
+                   timeout_m):
   """Run the moblab test suite against a running moblab_vm setup.
 
   Args:
@@ -771,12 +776,14 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir):
         exist on GS so that the provision flow can download and install it on
         the DUT VM.
     results_dir: Directory to drop results into.
+    timeout_m: (int) Timeout for the test in minutes.
   """
   test_args = [
       # moblab in VM takes longer to bring up all upstart services on first
       # boot than on physical machines.
       'services_init_timeout_m=10',
       'target_build="%s"' % dut_target_image,
+      'test_timeout_hint_m=%d' % timeout_m,
   ]
   cros_build_lib.RunCommand(
       [
