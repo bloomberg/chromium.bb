@@ -14,7 +14,10 @@
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/system/simple_watcher.h"
+
+namespace media {
+class MojoDataPipeReader;
+}  // namespace media
 
 namespace cast {
 
@@ -70,28 +73,30 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
 
   class RemotingRtcpClient;
 
-  // media::mojom::RemotingDataStreamSender implementation. ConsumeDataChunk()
-  // and SendFrame() will push callbacks onto the back of the input queue, and
-  // these may or may not be processed at a later time. It depends on whether
-  // the data pipe has data available or the CastTransport can accept more
-  // frames. CancelInFlightData() is processed immediately, and will cause all
-  // pending operations to discard data when they are processed later.
-  void ConsumeDataChunk(uint32_t offset, uint32_t size,
-                        uint32_t total_payload_size) final;
-  void SendFrame() final;
+  // media::mojom::RemotingDataStreamSender implementation. SendFrame() will
+  // push callbacks onto the back of the input queue, and these may or may not
+  // be processed at a later time. It depends on whether the data pipe has data
+  // available or the CastTransport can accept more frames. CancelInFlightData()
+  // is processed immediately, and will cause all pending operations to discard
+  // data when they are processed later.
+  void SendFrame(uint32_t frame_size) final;
   void CancelInFlightData() final;
 
-  // Attempt to run each pending input operation, popping the head of the input
-  // queue as each operation succeeds. |result| is the result code provided by
-  // the |pipe_watcher_|.
-  void ProcessInputQueue(MojoResult result);
+  // Attempt to run next pending input task, popping the head of the input queue
+  // as each task succeeds.
+  void ProcessNextInputTask();
 
-  // These are called via callbacks run from the input queue. They return false
-  // to indicate a retry attempt should be made later, either after the data
-  // pipe has more data or the CastTransport can accept another frame.
-  bool TryConsumeDataChunk(uint32_t offset, uint32_t size,
-                           uint32_t total_payload_size, bool discard_data);
-  bool TrySendFrame(bool discard_data);
+  // These are called via callbacks run from the input queue.
+  // Consumes a frame of |size| from the associated Mojo data pipe.
+  void ReadFrame(uint32_t size);
+  // Sends out the frame to the receiver over network.
+  void TrySendFrame();
+
+  // Called when a frame is completely read/discarded from the data pipe.
+  void OnFrameRead(bool success);
+
+  // Called when an input task completes.
+  void OnInputTaskComplete();
 
   // These are called to deliver RTCP feedback from the receiver.
   void OnReceivedCastMessage(const media::cast::RtcpCastMessage& cast_feedback);
@@ -127,6 +132,8 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
+  void OnPipeError();
+
   // Unique identifier for the RTP stream and this CastRemotingSender.
   const int32_t rtp_stream_id_;
 
@@ -150,8 +157,7 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // Callback that is run to notify when a fatal error occurs.
   base::Closure error_callback_;
 
-  // Mojo data pipe from which to consume data.
-  mojo::ScopedDataPipeConsumerHandle pipe_;
+  std::unique_ptr<media::MojoDataPipeReader> data_pipe_reader_;
 
   // Mojo binding for this instance. Implementation at the other end of the
   // message pipe uses the RemotingDataStreamSender interface to control when
@@ -183,8 +189,8 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // The most recently measured round trip time.
   base::TimeDelta current_round_trip_time_;
 
-  // The next frame's payload data. Populated by one or more calls to
-  // ConsumeDataChunk().
+  // The next frame's payload data. Populated by call to OnFrameRead() when
+  // reading succeeded.
   std::string next_frame_data_;
 
   // Ring buffer to keep track of recent frame RTP timestamps. This should
@@ -195,12 +201,11 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   // Queue of pending input operations. |input_queue_discards_remaining_|
   // indicates the number of operations where data should be discarded (due to
   // CancelInFlightData()).
-  base::queue<base::Callback<bool(bool)>> input_queue_;
+  base::queue<base::RepeatingClosure> input_queue_;
   size_t input_queue_discards_remaining_;
 
-  // Watches |pipe_| for more data to become available, and then calls
-  // ProcessInputQueue().
-  mojo::SimpleWatcher pipe_watcher_;
+  // Indicates whether the |data_pipe_reader_| is processing a reading request.
+  bool is_reading_;
 
   // Set to true if the first frame has not yet been sent, or if a
   // CancelInFlightData() operation just completed. This causes TrySendFrame()

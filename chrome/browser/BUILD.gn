@@ -1766,6 +1766,7 @@ split_static_library("browser") {
     "//media/cast:net",
     "//media/midi",
     "//media/mojo:features",
+    "//media/mojo/common",
     "//media/mojo/interfaces:mirror_service_remoting",
     "//media/mojo/interfaces:remoting",
     "//media/mojo/services",

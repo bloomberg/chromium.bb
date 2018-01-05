@@ -17,22 +17,9 @@ interface RemoterFactory {
 // from a data pipe and then sent to the remote endpoint. There is one
 // RemotingDataStreamSender per data pipe.
 interface RemotingDataStreamSender {
-  // Consumes |size| bytes of data from the data pipe, which is a chunk of the
-  // next frame's data payload starting at the given byte |offset|.
-  // |total_payload_size| indicates the size of the entire data payload for the
-  // frame. Before this is called, |size| bytes of data must have been written
-  // into the data pipe.
-  //
-  // Normally, a frame's entire data payload can be pushed through the data pipe
-  // in one chunk. However, there can be situations where the size of the
-  // payload exceeds the capacity of the data pipe; and so this API supports
-  // feeding the frame data through the pipe in multiple chunks.
-  ConsumeDataChunk(uint32 offset, uint32 size, uint32 total_payload_size);
-
-  // Enqueues another frame for transmission to the remote endpoint. Before this
-  // is called, ConsumeDataChunk() must have been called one or more times to
-  // provide all of the frame's data.
-  SendFrame();
+  // Enqueues another frame for transmission to the remote endpoint, whose
+  // payload is |frame_size| bytes, to be read from the data pipe.
+  SendFrame(uint32 frame_size);
 
   // Cancels the transmission of all in-flight data to the remote, up to and
   // including the last SendFrame() call; and also discard any data chunks
