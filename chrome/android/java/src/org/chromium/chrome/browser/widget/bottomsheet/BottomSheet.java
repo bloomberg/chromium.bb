@@ -114,6 +114,46 @@ public class BottomSheet
     }
 
     /**
+     * A specialized FrameLayout that is capable of ignoring all user input based on the state of
+     * the bottom sheet.
+     */
+    public static class TouchRestrictingFrameLayout extends FrameLayout {
+        /** A handle to the bottom sheet. */
+        private BottomSheet mBottomSheet;
+
+        public TouchRestrictingFrameLayout(Context context, AttributeSet atts) {
+            super(context, atts);
+        }
+
+        /**
+         * @param sheet The bottom sheet.
+         */
+        public void setBottomSheet(BottomSheet sheet) {
+            mBottomSheet = sheet;
+        }
+
+        /**
+         * @return Whether touch is enabled.
+         */
+        private boolean isTouchDisabled() {
+            return mBottomSheet == null || mBottomSheet.isRunningContentSwapAnimation()
+                    || mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_SCROLLING;
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent event) {
+            if (isTouchDisabled()) return false;
+            return super.onInterceptTouchEvent(event);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            if (isTouchDisabled()) return false;
+            return super.onTouchEvent(event);
+        }
+    }
+
+    /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
      */
@@ -216,7 +256,7 @@ public class BottomSheet
     private View mFindInPageView;
 
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
-    private FrameLayout mBottomSheetContentContainer;
+    private TouchRestrictingFrameLayout mBottomSheetContentContainer;
 
     /**
      * The last ratio sent to observers of onTransitionPeekToHalf(). This is used to ensure the
@@ -225,7 +265,7 @@ public class BottomSheet
     private float mLastPeekToHalfRatioSent;
 
     /** The FrameLayout used to hold the bottom sheet toolbar. */
-    private FrameLayout mToolbarHolder;
+    private TouchRestrictingFrameLayout mToolbarHolder;
 
     /**
      * The default toolbar view. This is shown when the current bottom sheet content doesn't have
@@ -683,7 +723,9 @@ public class BottomSheet
 
         getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
-        mBottomSheetContentContainer = (FrameLayout) findViewById(R.id.bottom_sheet_content);
+        mBottomSheetContentContainer =
+                (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
+        mBottomSheetContentContainer.setBottomSheet(this);
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
 
@@ -789,7 +831,9 @@ public class BottomSheet
             }
         });
 
-        mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
+        mToolbarHolder =
+                (TouchRestrictingFrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
+        mToolbarHolder.setBottomSheet(this);
         mDefaultToolbarView = (BottomToolbarPhone) mControlContainer.findViewById(R.id.toolbar);
         mDefaultToolbarView.setActivity(mActivity);
 
@@ -1465,6 +1509,13 @@ public class BottomSheet
      */
     public boolean isRunningSettleAnimation() {
         return mSettleAnimator != null;
+    }
+
+    /**
+     * @return Whether a content swap animation is in progress.
+     */
+    public boolean isRunningContentSwapAnimation() {
+        return mContentSwapAnimatorSet != null && mContentSwapAnimatorSet.isRunning();
     }
 
     /**
