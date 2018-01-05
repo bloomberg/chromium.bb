@@ -71,8 +71,8 @@ std::unique_ptr<base::Value> ConvertDictKeyStyle(const base::Value& value) {
   const base::ListValue* list = nullptr;
   if (value.GetAsList(&list)) {
     std::unique_ptr<base::ListValue> out_list(new base::ListValue());
-    for (const auto& value : *list)
-      out_list->Append(ConvertDictKeyStyle(value));
+    for (const auto& key : *list)
+      out_list->Append(ConvertDictKeyStyle(key));
     return std::move(out_list);
   }
 

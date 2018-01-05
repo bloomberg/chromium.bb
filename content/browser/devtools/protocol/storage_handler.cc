@@ -57,11 +57,11 @@ void ReportUsageAndQuotaDataOnUIThread(
 
   std::unique_ptr<Array<Storage::UsageForType>> usageList =
       Array<Storage::UsageForType>::create();
-  for (const auto& usage : usage_breakdown) {
+  for (const auto& specific_usage : usage_breakdown) {
     std::unique_ptr<Storage::UsageForType> entry =
         Storage::UsageForType::Create()
-            .SetStorageType(GetTypeName(usage.first))
-            .SetUsage(usage.second)
+            .SetStorageType(GetTypeName(specific_usage.first))
+            .SetUsage(specific_usage.second)
             .Build();
     usageList->addItem(std::move(entry));
   }
