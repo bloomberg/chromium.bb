@@ -244,7 +244,7 @@ static int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
 	printf("\thandle    : %i\n", fb->handle);
 	printf("\twidth     : %i\n", fb->width);
 	printf("\theight    : %i\n", fb->height);
-	printf("\tpitch     : %i\n", fb->pitch);;
+	printf("\tpitch     : %i\n", fb->pitch);
 	printf("\tbpp       : %i\n", fb->bpp);
 	printf("\tdepth     : %i\n", fb->depth);
 	printf("\tbuffer_id : %i\n", fb->handle);

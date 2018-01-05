@@ -582,7 +582,7 @@ static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem)
 	if (!sem || !sem->signal_fence.context)
 		return -EINVAL;
 
-	sem->signal_fence.context = NULL;;
+	sem->signal_fence.context = NULL;
 	sem->signal_fence.ip_type = 0;
 	sem->signal_fence.ip_instance = 0;
 	sem->signal_fence.ring = 0;

@@ -533,7 +533,7 @@ err_free_userptr:
 fail:
 	g2d_fini(ctx);
 
-	return ret;;
+	return ret;
 }
 
 #if EXYNOS_G2D_USERPTR_TEST
