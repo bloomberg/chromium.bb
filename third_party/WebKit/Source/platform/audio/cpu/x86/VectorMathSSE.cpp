@@ -6,6 +6,9 @@
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
 
+#include "platform/audio/cpu/x86/VectorMathSSE.h"
+
+#include "platform/audio/VectorMathScalar.h"
 #include "platform/wtf/Assertions.h"
 
 #include <algorithm>
@@ -16,18 +19,8 @@
 namespace blink {
 namespace VectorMath {
 namespace SSE {
-namespace {
 
 #define MM_PS(name) _mm_##name##_ps
-
-using MType = __m128;
-
-constexpr size_t kBitsPerRegister = 128u;
-constexpr size_t kPackedFloatsPerRegister = kBitsPerRegister / 32u;
-constexpr size_t kFramesToProcessMask = ~(kPackedFloatsPerRegister - 1u);
-}
-
-namespace {
 
 bool IsAligned(const float* p) {
   constexpr size_t kBytesPerRegister = kBitsPerRegister / 8u;
@@ -35,7 +28,6 @@ bool IsAligned(const float* p) {
   return (reinterpret_cast<size_t>(p) & kAlignmentOffsetMask) == 0u;
 }
 
-// dest[k] = source1[k] + source2[k]
 void Vadd(const float* source1p,
           const float* source2p,
           float* dest_p,
@@ -73,8 +65,6 @@ void Vadd(const float* source1p,
 #undef ADD_ALL
 }
 
-// dest[k] = clip(source[k], low_threshold, high_threshold)
-//         = max(low_threshold, min(high_threshold, source[k]))
 void Vclip(const float* source_p,
            const float* low_threshold_p,
            const float* high_threshold_p,
@@ -107,7 +97,6 @@ void Vclip(const float* source_p,
 #undef CLIP_ALL
 }
 
-// max = max(abs(source[k])) for all k
 void Vmaxmgv(const float* source_p, float* max_p, size_t frames_to_process) {
   constexpr uint32_t kMask = 0x7FFFFFFFu;
 
@@ -134,7 +123,6 @@ void Vmaxmgv(const float* source_p, float* max_p, size_t frames_to_process) {
     *max_p = std::max(*max_p, maxes[i]);
 }
 
-// dest[k] = source1[k] * source2[k]
 void Vmul(const float* source1p,
           const float* source2p,
           float* dest_p,
@@ -172,7 +160,6 @@ void Vmul(const float* source1p,
 #undef MULTIPLY_ALL
 }
 
-// dest[k] += scale * source[k]
 void Vsma(const float* source_p,
           const float* scale,
           float* dest_p,
@@ -203,7 +190,6 @@ void Vsma(const float* source_p,
 #undef SCALAR_MULTIPLY_AND_ADD_ALL
 }
 
-// dest[k] = scale * source[k]
 void Vsmul(const float* source_p,
            const float* scale,
            float* dest_p,
@@ -233,7 +219,6 @@ void Vsmul(const float* source_p,
 #undef SCALAR_MULTIPLY_ALL
 }
 
-// sum += sum(source[k]^2) for all k
 void Vsvesq(const float* source_p, float* sum_p, size_t frames_to_process) {
   const float* const source_end_p = source_p + frames_to_process;
 
@@ -254,8 +239,6 @@ void Vsvesq(const float* source_p, float* sum_p, size_t frames_to_process) {
     *sum_p += sums[i];
 }
 
-// real_dest_p[k] = real1[k] * real2[k] - imag1[k] * imag2[k]
-// imag_dest_p[k] = real1[k] * imag2[k] + imag1[k] * real2[k]
 void Zvmul(const float* real1p,
            const float* imag1p,
            const float* real2p,
@@ -292,7 +275,6 @@ void Zvmul(const float* real1p,
 
 #undef MM_PS
 
-}  // namespace
 }  // namespace SSE
 }  // namespace VectorMath
 }  // namespace blink
