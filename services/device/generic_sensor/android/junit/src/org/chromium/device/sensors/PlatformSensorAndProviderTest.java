@@ -299,6 +299,28 @@ public class PlatformSensorAndProviderTest {
     }
 
     /**
+     * Test that shared buffer is correctly populated from SensorEvent for sensors with more
+     * than one value.
+     */
+    @Test
+    @Feature({"PlatformSensor"})
+    public void testSensorReadingFromEventMoreValues() {
+        TestPlatformSensor sensor = createTestPlatformSensor(
+                50000, Sensor.TYPE_ROTATION_VECTOR, 4, Sensor.REPORTING_MODE_ON_CHANGE);
+        initPlatformSensor(sensor);
+        TestPlatformSensor spySensor = spy(sensor);
+        SensorEvent event = createFakeEvent(4);
+        assertNotNull(event);
+        spySensor.onSensorChanged(event);
+
+        double timestamp = PLATFORM_SENSOR_TIMESTAMP * SECONDS_IN_NANOSECOND;
+
+        verify(spySensor, times(1))
+                .updateSensorReading(timestamp, getFakeReadingValue(1), getFakeReadingValue(2),
+                        getFakeReadingValue(3), getFakeReadingValue(4));
+    }
+
+    /**
      * Test that PlatformSensor notifies client when there is an error.
      */
     @Test
