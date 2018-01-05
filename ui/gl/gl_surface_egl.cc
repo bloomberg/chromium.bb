@@ -69,19 +69,18 @@
 #define EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE 0x3204
 #define EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE 0x3205
 #define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE 0x3206
+#define EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED_ANGLE 0x3451
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE 0x3209
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE 0x320A
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE 0x345E
 #endif /* EGL_ANGLE_platform_angle */
 
 #ifndef EGL_ANGLE_platform_angle_d3d
 #define EGL_ANGLE_platform_angle_d3d 1
 #define EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE 0x3207
 #define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE 0x3208
-#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE 0x3209
-#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE 0x320A
-#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE 0x320B
-#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_REFERENCE_ANGLE 0x320C
-
-// Hidden enum for the NULL D3D device type.
-#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE 0x6AC0
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE 0x320B
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE 0x320C
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
 #ifndef EGL_ANGLE_platform_angle_opengl
@@ -217,7 +216,7 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
   if (warpDevice) {
     DCHECK(!nullDevice);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
-    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
+    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_WARP_ANGLE);
   } else if (nullDevice) {
     DCHECK(!warpDevice);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
@@ -289,10 +288,16 @@ const char* DisplayTypeString(DisplayType display_type) {
       return "D3D9";
     case ANGLE_D3D11:
       return "D3D11";
+    case ANGLE_D3D11_NULL:
+      return "D3D11Null";
     case ANGLE_OPENGL:
       return "OpenGL";
+    case ANGLE_OPENGL_NULL:
+      return "OpenGLNull";
     case ANGLE_OPENGLES:
       return "OpenGLES";
+    case ANGLE_OPENGLES_NULL:
+      return "OpenGLESNull";
     case ANGLE_NULL:
       return "Null";
     default:
