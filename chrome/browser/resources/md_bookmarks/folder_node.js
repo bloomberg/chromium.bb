@@ -58,6 +58,7 @@ Polymer({
 
   observers: [
     'updateAriaExpanded_(hasChildFolder_, isOpen)',
+    'scrollIntoViewIfNeeded_(isSelectedFolder_)',
   ],
 
   /** @override */
@@ -76,12 +77,6 @@ Polymer({
     });
 
     this.updateFromStore();
-
-    if (this.isSelectedFolder_) {
-      this.async(function() {
-        this.scrollIntoViewIfNeeded();
-      });
-    }
   },
 
   /**
@@ -384,6 +379,17 @@ Polymer({
       this.getFocusTarget().setAttribute('aria-expanded', String(isOpen));
     else
       this.getFocusTarget().removeAttribute('aria-expanded');
+  },
+
+  /**
+   * Scrolls the folder node into view when the folder is selected.
+   * @private
+   */
+  scrollIntoViewIfNeeded_: function() {
+    if (!this.isSelectedFolder_)
+      return;
+
+    this.async(() => this.$.container.scrollIntoViewIfNeeded());
   },
 
   /**
