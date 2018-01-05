@@ -124,69 +124,68 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
   return true;
 }
 
-// Returns a Browser that can host the navigation or tab addition specified in
-// |params|. This might just return the same Browser specified in |params|, or
-// some other if that Browser is deemed incompatible.
-Browser* GetBrowserForDisposition(NavigateParams* params) {
-  // If no source WebContents was specified, we use the selected one from
-  // the target browser. This must happen first, before
-  // GetBrowserForDisposition() has a chance to replace |params->browser| with
-  // another one.
-  if (!params->source_contents && params->browser) {
-    params->source_contents =
-        params->browser->tab_strip_model()->GetActiveWebContents();
-  }
+// Returns a Browser and tab index. The browser can host the navigation or
+// tab addition specified in |params|.  This might just return the same
+// Browser specified in |params|, or some other if that Browser is deemed
+// incompatible. The tab index will be -1 unless a singleton or tab switch
+// was requested, in which case it might be the target tab index, or -1
+// if not found.
+std::pair<Browser*, int> GetBrowserAndTabForDisposition(
+    const NavigateParams& params) {
+  Profile* profile = params.initiating_profile;
 
-  Profile* profile = params->initiating_profile;
-  Browser* current_browser = params->browser;
-
-  switch (params->disposition) {
+  switch (params.disposition) {
+    case WindowOpenDisposition::SINGLETON_TAB:
     case WindowOpenDisposition::SWITCH_TO_TAB:
-#if !defined(OS_ANDROID)
-      for (auto* browser : *BrowserList::GetInstance()) {
-        // Only look at same profile (and anonymity level).
-        if (browser->profile()->IsSameProfile(profile) &&
-            browser->profile()->GetProfileType() == profile->GetProfileType()) {
-          params->browser = browser;
-          int index = GetIndexOfExistingTab(params);
-          if (index >= 0) {
-            params->browser = current_browser;
-            params->tab_switch_hint = index;
-            return browser;
+#if defined(OS_ANDROID)
+      // Do not support tab switching on Android yet.
+      if (params.disposition == WindowOpenDisposition::SINGLETON_TAB) {
+#endif
+        for (auto browser_it = BrowserList::GetInstance()->begin_last_active();
+             browser_it != BrowserList::GetInstance()->end_last_active();
+             ++browser_it) {
+          Browser* browser = *browser_it;
+          // Only look at same profile (and anonymity level).
+          if (browser->profile()->IsSameProfile(profile) &&
+              browser->profile()->GetProfileType() ==
+                  profile->GetProfileType()) {
+            int index = GetIndexOfExistingTab(browser, params);
+            if (index >= 0)
+              return {browser, index};
           }
         }
+#if defined(OS_ANDROID)
       }
-      params->browser = current_browser;
-#endif  // !defined(OS_ANDROID)
+#endif
     // fall through
     case WindowOpenDisposition::CURRENT_TAB:
-      if (params->browser)
-        return params->browser;
+      if (params.browser)
+        return {params.browser, -1};
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile, params->user_gesture);
-    case WindowOpenDisposition::SINGLETON_TAB:
+      return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
       // See if we can open the tab in the window this navigator is bound to.
-      if (params->browser && WindowCanOpenTabs(params->browser))
-        return params->browser;
+      if (params.browser && WindowCanOpenTabs(params.browser))
+        return {params.browser, -1};
+
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
-      return GetOrCreateBrowser(profile, params->user_gesture);
+      return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_POPUP: {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
       std::string app_name;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-      if (!params->extension_app_id.empty()) {
+      if (!params.extension_app_id.empty()) {
         app_name = web_app::GenerateApplicationNameFromExtensionId(
-            params->extension_app_id);
-      } else if (params->browser && !params->browser->app_name().empty()) {
-        app_name = params->browser->app_name();
-      } else if (params->source_contents) {
+            params.extension_app_id);
+      } else if (params.browser && !params.browser->app_name().empty()) {
+        app_name = params.browser->app_name();
+      } else if (params.source_contents) {
         extensions::TabHelper* extensions_tab_helper =
-            extensions::TabHelper::FromWebContents(params->source_contents);
+            extensions::TabHelper::FromWebContents(params.source_contents);
         if (extensions_tab_helper && extensions_tab_helper->is_app()) {
           app_name = web_app::GenerateApplicationNameFromExtensionId(
               extensions_tab_helper->extension_app()->id());
@@ -195,32 +194,34 @@ Browser* GetBrowserForDisposition(NavigateParams* params) {
 #endif
       if (app_name.empty()) {
         Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile,
-                                             params->user_gesture);
-        browser_params.trusted_source = params->trusted_source;
-        browser_params.initial_bounds = params->window_bounds;
-        return new Browser(browser_params);
+                                             params.user_gesture);
+        browser_params.trusted_source = params.trusted_source;
+        browser_params.initial_bounds = params.window_bounds;
+        return {new Browser(browser_params), -1};
       }
-
-      return new Browser(Browser::CreateParams::CreateForApp(
-          app_name, params->trusted_source, params->window_bounds, profile,
-          params->user_gesture));
+      return {new Browser(Browser::CreateParams::CreateForApp(
+                  app_name, params.trusted_source, params.window_bounds,
+                  profile, params.user_gesture)),
+              -1};
     }
     case WindowOpenDisposition::NEW_WINDOW: {
       // Make a new normal browser window.
-      return new Browser(Browser::CreateParams(profile, params->user_gesture));
+      return {new Browser(Browser::CreateParams(profile, params.user_gesture)),
+              -1};
     }
     case WindowOpenDisposition::OFF_THE_RECORD:
       // Make or find an incognito window.
-      return GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
-                                params->user_gesture);
+      return {GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
+                                 params.user_gesture),
+              -1};
     // The following types result in no navigation.
     case WindowOpenDisposition::SAVE_TO_DISK:
     case WindowOpenDisposition::IGNORE_ACTION:
-      return NULL;
+      return {nullptr, -1};
     default:
       NOTREACHED();
   }
-  return NULL;
+  return {nullptr, -1};
 }
 
 // Fix disposition and other parameter values depending on prevailing
@@ -472,10 +473,23 @@ void Navigate(NavigateParams* params) {
     params->disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   }
 
-  params->browser = GetBrowserForDisposition(params);
+  // If no source WebContents was specified, we use the selected one from
+  // the target browser. This must happen first, before
+  // GetBrowserForDisposition() has a chance to replace |params->browser| with
+  // another one.
+  if (!params->source_contents && params->browser) {
+    params->source_contents =
+        params->browser->tab_strip_model()->GetActiveWebContents();
+  }
+  int singleton_index;
+  std::tie(params->browser, singleton_index) =
+      GetBrowserAndTabForDisposition(*params);
   if (!params->browser)
     return;
-
+  if (singleton_index != -1) {
+    params->target_contents =
+        params->browser->tab_strip_model()->GetWebContentsAt(singleton_index);
+  }
 #if defined(OS_CHROMEOS)
   if (source_browser && source_browser != params->browser) {
     // When the newly created browser was spawned by a browser which visits
@@ -551,16 +565,13 @@ void Navigate(NavigateParams* params) {
       ui::PageTransitionCoreTypeIs(params->transition,
                                    ui::PAGE_TRANSITION_KEYWORD);
 
-  // Check if this is a singleton tab that already exists
-  int singleton_index = GetIndexOfExistingTab(params);
-
   // Did we use a prerender?
   bool swapped_in_prerender = false;
 
-  // If no target WebContents was specified, we need to construct one if
-  // we are supposed to target a new tab; unless it's a singleton that already
-  // exists.
-  if (!params->target_contents && singleton_index < 0) {
+  // If no target WebContents was specified (and we didn't seek and find a
+  // singleton), we need to construct one if we are supposed to target a new
+  // tab.
+  if (!params->target_contents) {
     DCHECK(!params->url.is_empty());
     if (params->disposition != WindowOpenDisposition::CURRENT_TAB) {
       params->target_contents = CreateTargetContents(*params, params->url);
@@ -637,14 +648,12 @@ void Navigate(NavigateParams* params) {
         params->browser != source_browser)
       params->window_action = NavigateParams::SHOW_WINDOW;
 
-    WebContents* target =
-        params->browser->tab_strip_model()->GetWebContentsAt(singleton_index);
-
-    if (target->IsCrashed()) {
-      target->GetController().Reload(content::ReloadType::NORMAL, true);
+    if (params->target_contents->IsCrashed()) {
+      params->target_contents->GetController().Reload(
+          content::ReloadType::NORMAL, true);
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
-        target->GetURL() != params->url) {
-      LoadURLInContents(target, params->url, params);
+               params->target_contents->GetURL() != params->url) {
+      LoadURLInContents(params->target_contents, params->url, params);
     }
 
     // If the singleton tab isn't already selected, select it.

@@ -31,8 +31,8 @@ void ShowSingletonTabOverwritingNTP(Browser* browser,
 // Creates a NavigateParams struct for a singleton tab navigation.
 NavigateParams GetSingletonTabNavigateParams(Browser* browser, const GURL& url);
 
-// If the given navigational URL is already open in |params->browser|, return
-// the tab index for it. Otherwise, returns -1.
-int GetIndexOfExistingTab(NavigateParams* params);
+// If the given navigational URL is already open in |browser|, return
+// the tab and tab index for it. Otherwise, returns -1.
+int GetIndexOfExistingTab(Browser* browser, const NavigateParams& params);
 
 #endif  // CHROME_BROWSER_UI_SINGLETON_TABS_H_
