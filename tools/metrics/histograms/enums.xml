@@ -31059,6 +31059,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Redirected on flaky network"/>
   <int value="14" label="Redirected on prohibitively slow network"/>
   <int value="15" label="Redirected on connected network"/>
+  <int value="16" label="Digest mismatch on disconnected network"/>
+  <int value="17" label="Digest mismatch on flaky network"/>
+  <int value="18" label="Digest mismatch on prohibitively slow network"/>
+  <int value="19" label="Digest mismatch on connected network"/>
 </enum>
 
 <enum name="OfflinePagesBackgroundImmediateStartStatus">

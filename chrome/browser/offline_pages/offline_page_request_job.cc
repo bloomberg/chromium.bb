@@ -79,10 +79,22 @@ enum class RequestResult {
   PAGE_NOT_FRESH,
   // Offline page was not found, by searching with either final URL or original
   // URL.
-  OFFLINE_PAGE_NOT_FOUND
+  OFFLINE_PAGE_NOT_FOUND,
+  // Digest for the underlying file does not match with the one saved in the
+  // metadata database.
+  DIGEST_MISMATCH,
 };
 
 const char kUserDataKey[] = "offline_page_key";
+
+void ValidatePage(
+    const GURL& url,
+    const OfflinePageHeader& offline_header,
+    NetworkState network_state,
+    base::WeakPtr<OfflinePageRequestJob> job,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const std::vector<OfflinePageItem>& offline_pages,
+    size_t offline_page_index);
 
 // Contains the info to handle offline page request.
 class OfflinePageRequestInfo : public base::SupportsUserData::Data {
@@ -219,6 +231,25 @@ RequestResultToAggregatedRequestResult(
     NOTREACHED();
   }
 
+  if (request_result == RequestResult::DIGEST_MISMATCH) {
+    switch (network_state) {
+      case NetworkState::DISCONNECTED_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            DIGEST_MISMATCH_ON_DISCONNECTED_NETWORK;
+      case NetworkState::PROHIBITIVELY_SLOW_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            DIGEST_MISMATCH_ON_PROHIBITIVELY_SLOW_NETWORK;
+      case NetworkState::FLAKY_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            DIGEST_MISMATCH_ON_FLAKY_NETWORK;
+      case NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK:
+      case NetworkState::CONNECTED_NETWORK:
+        return OfflinePageRequestJob::AggregatedRequestResult::
+            DIGEST_MISMATCH_ON_CONNECTED_NETWORK;
+    }
+    NOTREACHED();
+  }
+
   DCHECK_EQ(RequestResult::OFFLINE_PAGE_SERVED, request_result);
   DCHECK_NE(NetworkState::CONNECTED_NETWORK, network_state);
   switch (network_state) {
@@ -250,9 +281,8 @@ void ReportRequestResult(RequestResult request_result,
 }
 
 void ReportOfflinePageSize(NetworkState network_state,
-                           const OfflinePageItem* offline_page) {
-  DCHECK(offline_page);
-  if (offline_page->client_id.name_space.empty())
+                           const OfflinePageItem& offline_page) {
+  if (offline_page.client_id.name_space.empty())
     return;
 
   // The two histograms report values between 1KiB and 100MiB.
@@ -261,13 +291,13 @@ void ReportOfflinePageSize(NetworkState network_state,
     case NetworkState::PROHIBITIVELY_SLOW_NETWORK:  // Fall-through
     case NetworkState::FLAKY_NETWORK:
       base::UmaHistogramCounts100000("OfflinePages.PageSizeOnAccess.Offline." +
-                                         offline_page->client_id.name_space,
-                                     offline_page->file_size / 1024);
+                                         offline_page.client_id.name_space,
+                                     offline_page.file_size / 1024);
       return;
     case NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK:
       base::UmaHistogramCounts100000("OfflinePages.PageSizeOnAccess.Online." +
-                                         offline_page->client_id.name_space,
-                                     offline_page->file_size / 1024);
+                                         offline_page.client_id.name_space,
+                                     offline_page.file_size / 1024);
       return;
     case NetworkState::CONNECTED_NETWORK:
       break;
@@ -284,6 +314,18 @@ OfflinePageModel* GetOfflinePageModel(
       OfflinePageModelFactory::GetForBrowserContext(
           web_contents->GetBrowserContext()) :
       nullptr;
+}
+
+void ValidateFileOnBackgroundThread(
+    const base::FilePath& file_path,
+    int64_t expected_file_size,
+    const std::string& expected_digest,
+    const base::Callback<void(bool)>& callback) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&OfflinePageUtils::ValidateFile, file_path, expected_file_size,
+                 expected_digest),
+      callback);
 }
 
 void NotifyOfflineFilePathOnIO(base::WeakPtr<OfflinePageRequestJob> job,
@@ -334,33 +376,54 @@ void NotifyOfflineRedirectOnUI(base::WeakPtr<OfflinePageRequestJob> job,
       base::Bind(&NotifyOfflineRedirectOnIO, job, redirected_url));
 }
 
-// Finds the offline file path based on the select page result and network
-// state and marks it as accessed.
-RequestResult AccessOfflineFile(
+// Failed to find a trusted offline page.
+void FailedToFindTrustedOfflinePage(RequestResult request_error_result,
+                                    NetworkState network_state,
+                                    base::WeakPtr<OfflinePageRequestJob> job) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_NE(RequestResult::OFFLINE_PAGE_SERVED, request_error_result);
+
+  ReportRequestResult(request_error_result, network_state);
+
+  // Proceed with empty file path in order to notify the OfflinePageRequestJob
+  // about the failure.
+  base::FilePath empty_file_path;
+  NotifyOfflineFilePathOnUI(job, std::string(), empty_file_path);
+}
+
+// Succeeded to find a trusted offline page which can be served.
+void SucceededToFindTrustedOfflinePage(
+    const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     base::WeakPtr<OfflinePageRequestJob> job,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const OfflinePageItem* offline_page,
-    base::FilePath* offline_file_path) {
+    const OfflinePageItem& offline_page) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!offline_page)
-    return RequestResult::OFFLINE_PAGE_NOT_FOUND;
 
   // |web_contents_getter| is passed from IO thread. We need to check if
   // web contents is still valid.
   content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return RequestResult::NO_WEB_CONTENTS;
-
-  // If the page is being loaded on a slow network, only use the offline page
-  // if it was created within the past day.
-  if (network_state == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
-      base::Time::Now() - offline_page->creation_time >
-          previews::params::OfflinePreviewFreshnessDuration()) {
-    return RequestResult::PAGE_NOT_FRESH;
+  if (!web_contents) {
+    FailedToFindTrustedOfflinePage(RequestResult::NO_WEB_CONTENTS,
+                                   network_state, job);
+    return;
   }
+
+  // If the match is for original URL, trigger the redirect.
+  // Note: If the offline page has same orginal URL and final URL, don't trigger
+  // the redirect. Some websites might route the redirect finally back to itself
+  // after intermediate redirects for authentication. Previously this case was
+  // not handled and some pages might be saved with same URLs. Though we fixed
+  // the problem, we still need to support those pages already saved with this
+  if (url == offline_page.original_url && url != offline_page.url) {
+    ReportRequestResult(RequestResult::REDIRECTED, network_state);
+    NotifyOfflineRedirectOnUI(job, offline_page.url);
+    return;
+  }
+
+  ReportRequestResult(RequestResult::OFFLINE_PAGE_SERVED, network_state);
+  ReportOfflinePageSize(network_state, offline_page);
 
   // Since offline page will be loaded, it should be marked as accessed.
   OfflinePageModel* offline_page_model =
@@ -369,7 +432,7 @@ RequestResult AccessOfflineFile(
   // |offline_page_model| cannot be null because OfflinePageRequestInterceptor
   // will not be created under incognito mode.
   DCHECK(offline_page_model);
-  offline_page_model->MarkPageAccessed(offline_page->offline_id);
+  offline_page_model->MarkPageAccessed(offline_page.offline_id);
 
   // Save an cached copy of OfflinePageItem such that Tab code can get
   // the loaded offline page immediately.
@@ -377,64 +440,158 @@ RequestResult AccessOfflineFile(
       OfflinePageTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetOfflinePage(
-      *offline_page, offline_header, true /*is_trusted*/,
+      offline_page, offline_header, true /*is_trusted*/,
       network_state == NetworkState::PROHIBITIVELY_SLOW_NETWORK);
 
-  *offline_file_path = offline_page->file_path;
-  return RequestResult::OFFLINE_PAGE_SERVED;
+  // NotifyOfflineFilePathOnUI should always be called regardless the failure
+  // result and empty file path such that OfflinePageRequestJob will be notified
+  // on failure.
+  NotifyOfflineFilePathOnUI(job, offline_page.client_id.name_space,
+                            offline_page.file_path);
 }
 
-// Handles the result of finding an offline page.
-void SucceededToFindOfflinePage(
+void ValidatePageDone(
     const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
     base::WeakPtr<OfflinePageRequestJob> job,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    const OfflinePageItem* offline_page) {
+    const std::vector<OfflinePageItem>& offline_pages,
+    size_t offline_page_index,
+    bool successfully_validated) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_LT(offline_page_index, offline_pages.size());
 
-  // If the match is for original URL, trigger the redirect.
-  // Note: If the offline page has same orginal URL and final URL, don't trigger
-  // the redirect. Some websites might route the redirect finally back to itself
-  // after intermediate redirects for authentication. Previously this case was
-  // not handled and some pages might be saved with same URLs. Though we fixed
-  // the problem, we still need to support those pages already saved with this
-  if (offline_page && url == offline_page->original_url &&
-      url != offline_page->url) {
-    ReportRequestResult(RequestResult::REDIRECTED, network_state);
-    NotifyOfflineRedirectOnUI(job, offline_page->url);
+  if (successfully_validated) {
+    SucceededToFindTrustedOfflinePage(url, offline_header, network_state, job,
+                                      web_contents_getter,
+                                      offline_pages[offline_page_index]);
     return;
   }
 
-  base::FilePath offline_file_path;
-  RequestResult request_result = AccessOfflineFile(
-      offline_header, network_state, job, web_contents_getter, offline_page,
-      &offline_file_path);
+  // Bail out if no more page to validate.
+  offline_page_index++;
+  if (offline_page_index >= offline_pages.size()) {
+    FailedToFindTrustedOfflinePage(RequestResult::DIGEST_MISMATCH,
+                                   network_state, job);
+    return;
+  }
 
-  ReportRequestResult(request_result, network_state);
-  if (request_result == RequestResult::OFFLINE_PAGE_SERVED)
-    ReportOfflinePageSize(network_state, offline_page);
-
-  // NotifyOfflineFilePathOnUI should always be called regardless the failure
-  // result and empty file path such that OfflinePageRequestJob will be notified
-  // on failure.
-  NotifyOfflineFilePathOnUI(
-      job, offline_page ? offline_page->client_id.name_space : std::string(),
-      offline_file_path);
+  // Move to validating next page.
+  ValidatePage(url, offline_header, network_state, job, web_contents_getter,
+               offline_pages, offline_page_index);
 }
 
-void FailedToFindOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
+// Validate an offline page at |offline_page_index|.
+void ValidatePage(
+    const GURL& url,
+    const OfflinePageHeader& offline_header,
+    NetworkState network_state,
+    base::WeakPtr<OfflinePageRequestJob> job,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const std::vector<OfflinePageItem>& offline_pages,
+    size_t offline_page_index) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_LT(offline_page_index, offline_pages.size());
+
+  const OfflinePageItem& offline_page = offline_pages[offline_page_index];
+
+  // If the page is being loaded on a slow network, only use the offline page
+  // if it was created within the past day.
+  if (network_state == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
+      base::Time::Now() - offline_page.creation_time >
+          previews::params::OfflinePreviewFreshnessDuration()) {
+    FailedToFindTrustedOfflinePage(RequestResult::PAGE_NOT_FRESH, network_state,
+                                   job);
+    return;
+  }
+
+  OfflinePageModel* offline_page_model =
+      GetOfflinePageModel(web_contents_getter);
+  if (!offline_page_model) {
+    FailedToFindTrustedOfflinePage(RequestResult::NO_WEB_CONTENTS,
+                                   network_state, job);
+    return;
+  }
+
+  bool can_skip_file_validation = false;
+  bool is_page_trusted = false;
+
+  // If the file is in internal directory, the page can be trusted without
+  // validation.
+  if (offline_page_model->IsArchiveInInternalDir(offline_page.file_path)) {
+    can_skip_file_validation = true;
+    is_page_trusted = true;
+  } else if (offline_page.digest.empty()) {
+    // Otherwise, the file is in public directory. If the digest is not found in
+    // the metadata database, it means that the digest is erased when the file
+    // modification is detected. In this case, the page cannot be trusted.
+    can_skip_file_validation = true;
+    is_page_trusted = false;
+  }
+
+  if (can_skip_file_validation) {
+    ValidatePageDone(url, offline_header, network_state, job,
+                     web_contents_getter, offline_pages, offline_page_index,
+                     is_page_trusted);
+    return;
+  }
+
+  // Validate if the file has been modified.
+  ValidateFileOnBackgroundThread(
+      offline_page.file_path, offline_page.file_size, offline_page.digest,
+      base::Bind(&ValidatePageDone, url, offline_header, network_state, job,
+                 web_contents_getter, offline_pages, offline_page_index));
+}
+
+// Handles the result of finding matched offline pages.
+void SelectPagesForURLDone(
+    const GURL& url,
+    const OfflinePageHeader& offline_header,
+    NetworkState network_state,
+    base::WeakPtr<OfflinePageRequestJob> job,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const std::vector<OfflinePageItem>& offline_pages) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Proceed with empty file path in order to notify the OfflinePageRequestJob
-  // about the failure.
-  base::FilePath empty_file_path;
-  NotifyOfflineFilePathOnUI(job, std::string(), empty_file_path);
+  // Bail out if no page is found.
+  if (offline_pages.empty()) {
+    FailedToFindTrustedOfflinePage(RequestResult::OFFLINE_PAGE_NOT_FOUND,
+                                   network_state, job);
+    return;
+  }
+
+  // Start to validate the first page.
+  ValidatePage(url, offline_header, network_state, job, web_contents_getter,
+               offline_pages, 0);
+}
+
+// Handles the result of finding an offline page with the requested offline ID.
+void GetPageByOfflineIdDone(
+    const GURL& url,
+    const OfflinePageHeader& offline_header,
+    NetworkState network_state,
+    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    base::WeakPtr<OfflinePageRequestJob> job,
+    const OfflinePageItem* offline_page) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If the found offline page does not match the request URL, fail.
+  if (!offline_page || offline_page->url != url) {
+    FailedToFindTrustedOfflinePage(RequestResult::OFFLINE_PAGE_NOT_FOUND,
+                                   network_state, job);
+    return;
+  }
+
+  // Continue with the validation step.
+  std::vector<OfflinePageItem> offline_pages;
+  offline_pages.push_back(*offline_page);
+  SelectPagesForURLDone(url, offline_header, network_state, job,
+                        web_contents_getter, offline_pages);
 }
 
 // Tries to find the offline page to serve for |url|.
-void SelectPageForURL(
+void GetPageToServeURL(
     const GURL& url,
     const OfflinePageHeader& offline_header,
     NetworkState network_state,
@@ -444,104 +601,39 @@ void SelectPageForURL(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents){
-    ReportRequestResult(RequestResult::NO_WEB_CONTENTS, network_state);
-    FailedToFindOfflinePage(job);
+  if (!web_contents) {
+    FailedToFindTrustedOfflinePage(RequestResult::NO_WEB_CONTENTS,
+                                   network_state, job);
     return;
   }
   int tab_id;
   if (!tab_id_getter.Run(web_contents, &tab_id)) {
-    ReportRequestResult(RequestResult::NO_TAB_ID, network_state);
-    FailedToFindOfflinePage(job);
+    FailedToFindTrustedOfflinePage(RequestResult::NO_TAB_ID, network_state,
+                                   job);
     return;
   }
 
-  OfflinePageUtils::SelectPageForURL(
-      web_contents->GetBrowserContext(), url, URLSearchMode::SEARCH_BY_ALL_URLS,
-      tab_id,
-      base::Bind(&SucceededToFindOfflinePage, url, offline_header,
-                 network_state, job, web_contents_getter));
-}
-
-void FindPageWithOfflineIDDone(
-    const GURL& url,
-    const OfflinePageHeader& offline_header,
-    NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
-    base::WeakPtr<OfflinePageRequestJob> job,
-    const OfflinePageItem* offline_page) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // If the found offline page does not has same URL as the request URL, fall
-  // back to find the offline page based on the URL.
-  if (!offline_page || offline_page->url != url) {
-    SelectPageForURL(
-        url, offline_header, network_state, web_contents_getter,
-        tab_id_getter, job);
-    return;
-  }
-
-  SucceededToFindOfflinePage(
-      url, offline_header, network_state, job, web_contents_getter,
-      offline_page);
-}
-
-// Tries to find an offline page associated with |offline_id|.
-void FindPageWithOfflineID(
-    const GURL& url,
-    const OfflinePageHeader& offline_header,
-    int64_t offline_id,
-    NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
-    base::WeakPtr<OfflinePageRequestJob> job) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  OfflinePageModel* offline_page_model =
-      GetOfflinePageModel(web_contents_getter);
-  if (!offline_page_model) {
-    FailedToFindOfflinePage(job);
-    return;
-  }
-
-  offline_page_model->GetPageByOfflineId(
-      offline_id,
-      base::Bind(&FindPageWithOfflineIDDone,
-                 url,
-                 offline_header,
-                 network_state,
-                 web_contents_getter,
-                 tab_id_getter,
-                 job));
-}
-
-// Tries to find the offline page to serve for |url|.
-void SelectPage(
-    const GURL& url,
-    const OfflinePageHeader& offline_header,
-    NetworkState network_state,
-    content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    OfflinePageRequestJob::Delegate::TabIdGetter tab_id_getter,
-    base::WeakPtr<OfflinePageRequestJob> job) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // If an offline ID is present in the offline header, try to load that
+  // If an int64 offline ID is present in the offline header, try to load that
   // particular version.
   if (!offline_header.id.empty()) {
-    // if the id string cannot be converted to int64 id, fall through to
-    // select page via URL.
     int64_t offline_id;
     if (base::StringToInt64(offline_header.id, &offline_id)) {
-      FindPageWithOfflineID(url, offline_header, offline_id,
-                            network_state, web_contents_getter, tab_id_getter,
-                            job);
+      OfflinePageModel* offline_page_model =
+          OfflinePageModelFactory::GetForBrowserContext(
+              web_contents->GetBrowserContext());
+      DCHECK(offline_page_model);
+      offline_page_model->GetPageByOfflineId(
+          offline_id, base::Bind(&GetPageByOfflineIdDone, url, offline_header,
+                                 network_state, web_contents_getter, job));
       return;
     }
   }
 
-  SelectPageForURL(url, offline_header, network_state, web_contents_getter,
-                   tab_id_getter, job);
+  OfflinePageUtils::SelectPagesForURL(
+      web_contents->GetBrowserContext(), url, URLSearchMode::SEARCH_BY_ALL_URLS,
+      tab_id,
+      base::Bind(&SelectPagesForURLDone, url, offline_header, network_state,
+                 job, web_contents_getter));
 }
 
 void ReportAccessEntryPoint(
@@ -641,15 +733,10 @@ void OfflinePageRequestJob::StartAsync() {
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&SelectPage,
-                 request()->url(),
-                 offline_header,
-                 network_state,
-                 delegate_->GetWebContentsGetter(request()),
-                 delegate_->GetTabIdGetter(),
-                 weak_ptr_factory_.GetWeakPtr()));
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&GetPageToServeURL, request()->url(), offline_header,
+                 network_state, delegate_->GetWebContentsGetter(request()),
+                 delegate_->GetTabIdGetter(), weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageRequestJob::Kill() {
