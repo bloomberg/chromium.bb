@@ -281,7 +281,12 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
       resource_content_loader_.Get(), resource_container_.Get());
   session->Append(css_agent);
 
-  session->Append(InspectorDOMSnapshotAgent::Create(inspected_frames_.Get()));
+  InspectorDOMDebuggerAgent* dom_debugger_agent =
+      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session());
+  session->Append(dom_debugger_agent);
+
+  session->Append(InspectorDOMSnapshotAgent::Create(inspected_frames_.Get(),
+                                                    dom_debugger_agent));
 
   session->Append(new InspectorAnimationAgent(inspected_frames_.Get(),
                                               css_agent, session->V8Session()));
@@ -302,8 +307,6 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   tracing_agents_.Set(session_id, tracing_agent);
   session->Append(tracing_agent);
 
-  session->Append(
-      new InspectorDOMDebuggerAgent(isolate, dom_agent, session->V8Session()));
 
   InspectorPageAgent* page_agent = InspectorPageAgent::Create(
       inspected_frames_.Get(), this, resource_content_loader_.Get(),

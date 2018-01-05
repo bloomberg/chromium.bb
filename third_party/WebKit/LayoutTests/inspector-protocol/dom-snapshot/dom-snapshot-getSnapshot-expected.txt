@@ -14,7 +14,18 @@ Tests DOMSnapshot.getSnapshot method.
       "baseURL": "<string>",
       "contentLanguage": "de",
       "documentEncoding": "windows-1252",
-      "frameId": "<string>"
+      "frameId": "<string>",
+      "eventListeners": [
+        {
+          "type": "documentListener",
+          "useCapture": false,
+          "passive": false,
+          "once": false,
+          "scriptId": "19",
+          "lineNumber": 42,
+          "columnNumber": 46
+        }
+      ]
     },
     {
       "nodeType": 1,
@@ -90,7 +101,9 @@ Tests DOMSnapshot.getSnapshot method.
         11,
         61,
         62,
-        63
+        63,
+        64,
+        66
       ],
       "attributes": [
         {
@@ -186,9 +199,24 @@ Tests DOMSnapshot.getSnapshot method.
         {
           "name": "style",
           "value": "display:inline-block; width: 200px"
+        },
+        {
+          "name": "id",
+          "value": "A"
         }
       ],
-      "layoutNodeIndex": 7
+      "layoutNodeIndex": 7,
+      "eventListeners": [
+        {
+          "type": "listenerA",
+          "useCapture": false,
+          "passive": false,
+          "once": false,
+          "scriptId": "19",
+          "lineNumber": 39,
+          "columnNumber": 59
+        }
+      ]
     },
     {
       "nodeType": 3,
@@ -272,7 +300,24 @@ Tests DOMSnapshot.getSnapshot method.
       "childNodeIndexes": [
         26
       ],
-      "layoutNodeIndex": 12
+      "attributes": [
+        {
+          "name": "id",
+          "value": "B"
+        }
+      ],
+      "layoutNodeIndex": 12,
+      "eventListeners": [
+        {
+          "type": "listenerB",
+          "useCapture": false,
+          "passive": false,
+          "once": false,
+          "scriptId": "19",
+          "lineNumber": 40,
+          "columnNumber": 59
+        }
+      ]
     },
     {
       "nodeType": 3,
@@ -313,9 +358,24 @@ Tests DOMSnapshot.getSnapshot method.
         {
           "name": "style",
           "value": "transform: rotateZ(90deg); width: 200px"
+        },
+        {
+          "name": "id",
+          "value": "C"
         }
       ],
-      "layoutNodeIndex": 16
+      "layoutNodeIndex": 16,
+      "eventListeners": [
+        {
+          "type": "listenerC",
+          "useCapture": false,
+          "passive": false,
+          "once": false,
+          "scriptId": "19",
+          "lineNumber": 41,
+          "columnNumber": 59
+        }
+      ]
     },
     {
       "nodeType": 3,
@@ -622,6 +682,27 @@ Tests DOMSnapshot.getSnapshot method.
           "value": "de"
         }
       ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\n",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "SCRIPT",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        65
+      ]
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "\ndocument.getElementById('A').addEventListener('listenerA', () => {});\ndocument.getElementById('B').addEventListener('listenerB', () => {});\ndocument.getElementById('C').addEventListener('listenerC', () => {});\ndocument.addEventListener('documentListener', () => {});\n",
+      "backendNodeId": "<number>"
     },
     {
       "nodeType": 3,

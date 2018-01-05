@@ -18,7 +18,7 @@
 <body class="body-class">
 <div style="font-family: ahem;">
   <div class="class1">Some Text</div> And More Text
-  <div style="display:inline-block; width: 200px">
+  <div style="display:inline-block; width: 200px" id="A">
     <p>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque sit amet est sem.
       Aenean ut neque volutpat, posuere odio at, mollis nibh. Aenean sodales nulla et
@@ -27,14 +27,20 @@
     </p>
     <ul class="class3">
       <li class="class4"></li>
-      <span>Lets have a span</span>
+      <span id="B">Lets have a span</span>
     </ul>
   </div>
-  <div style="transform: rotateZ(90deg); width: 200px">Rotated text!</div>
+  <div style="transform: rotateZ(90deg); width: 200px" id="C">Rotated text!</div>
   <iframe src='./simple-iframe.html' width="400" height="200"></iframe>
   <div id="shadow-host"></div>
   <a href="https://www.google.com/">Click ME!</a>
 </div>
 <meta http-equiv="content-language" content="de">
+<script>
+document.getElementById('A').addEventListener('listenerA', () => {});
+document.getElementById('B').addEventListener('listenerB', () => {});
+document.getElementById('C').addEventListener('listenerC', () => {});
+document.addEventListener('documentListener', () => {});
+</script>
 </body>
 </html>
