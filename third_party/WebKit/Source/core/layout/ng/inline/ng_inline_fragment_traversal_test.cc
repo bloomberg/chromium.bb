@@ -57,7 +57,8 @@ class NGInlineFragmentTraversalTest
   {                                                                          \
     const auto& current = *iter++;                                           \
     EXPECT_TRUE(current.fragment->IsText()) << current.fragment->ToString(); \
-    EXPECT_EQ(content, ToNGPhysicalTextFragment(current.fragment)->Text());  \
+    EXPECT_EQ(content,                                                       \
+              ToNGPhysicalTextFragment(current.fragment.get())->Text());     \
   }
 
 TEST_F(NGInlineFragmentTraversalTest, DescendantsOf) {
