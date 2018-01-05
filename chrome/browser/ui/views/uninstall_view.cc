@@ -31,7 +31,7 @@ UninstallView::UninstallView(int* user_selection,
       user_selection_(*user_selection),
       quit_closure_(quit_closure) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::CONTROL));
+      views::TEXT, views::TEXT));
   SetupControls();
 }
 

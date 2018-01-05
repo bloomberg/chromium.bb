@@ -42,7 +42,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
       title_tf_(nullptr) {
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
-                                                             views::CONTROL));
+                                                             views::TEXT));
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   constexpr int kColumnSetId = 0;

@@ -71,7 +71,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
       make_default_(NULL),
       report_crashes_(NULL) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::CONTROL, views::CONTROL));
+      views::TEXT, views::TEXT));
   GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
