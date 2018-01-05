@@ -25221,7 +25221,6 @@ from previous Chrome versions.
   <int value="-918618075" label="enable-service-worker"/>
   <int value="-914210146" label="enable-web-based-signin"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
-  <int value="-909641013" label="DataReductionProxySiteBreakdown:enabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
   <int value="-899393472" label="enable-new-app-menu-icon"/>
@@ -25797,7 +25796,6 @@ from previous Chrome versions.
   <int value="637452937" label="ChromeHomeSurvey:enabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644189071" label="PermissionsBlacklist:enabled"/>
-  <int value="644674603" label="DataReductionProxySiteBreakdown:disabled"/>
   <int value="646252875" label="ReadItLaterInMenu:enabled"/>
   <int value="646738320" label="disable-gesture-editing"/>
   <int value="649111851" label="MidiManagerCros:enabled"/>

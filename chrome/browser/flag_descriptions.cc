@@ -1854,11 +1854,6 @@ const char kEnableDataReductionProxyMainMenuName[] =
 const char kEnableDataReductionProxyMainMenuDescription[] =
     "Enables the Data Saver menu item in the main menu";
 
-const char kEnableDataReductionProxySiteBreakdownName[] =
-    "Data Saver Site Breakdown";
-const char kEnableDataReductionProxySiteBreakdownDescription[] =
-    "Enable the site breakdown on the Data Saver settings page.";
-
 const char kEnableOmniboxClipboardProviderName[] =
     "Omnibox clipboard URL suggestions";
 const char kEnableOmniboxClipboardProviderDescription[] =

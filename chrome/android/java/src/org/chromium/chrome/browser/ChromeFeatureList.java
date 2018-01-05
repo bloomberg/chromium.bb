@@ -203,7 +203,6 @@ public abstract class ChromeFeatureList {
     // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on
     // Android.
     public static final String DATA_REDUCTION_MAIN_MENU = "DataReductionProxyMainMenu";
-    public static final String DATA_REDUCTION_SITE_BREAKDOWN = "DataReductionProxySiteBreakdown";
     public static final String DONT_PREFETCH_LIBRARIES = "DontPrefetchLibraries";
     public static final String DOWNLOAD_HOME_SHOW_STORAGE_INFO = "DownloadHomeShowStorageInfo";
     public static final String DOWNLOADS_FOREGROUND = "DownloadsForeground";

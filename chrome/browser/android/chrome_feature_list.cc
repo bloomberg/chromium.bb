@@ -93,7 +93,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDontPrefetchLibraries,
     &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
-    &data_reduction_proxy::features::kDataReductionSiteBreakdown,
     &kFullscreenActivity,
     &kImprovedA2HS,
     &kLanguagesPreference,
