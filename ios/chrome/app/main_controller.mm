@@ -74,6 +74,7 @@
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #import "ios/chrome/browser/crash_report/crash_report_background_uploader.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/file_metadata_util.h"
@@ -1135,7 +1136,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kDeleteDownloads
                   block:^{
-                    [LegacyDownloadManagerController clearDownloadsDirectory];
+                    DeleteDownloadsDirectory();
                   }];
 }
 
