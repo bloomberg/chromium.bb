@@ -81,7 +81,7 @@ INSTANTIATE_TEST_CASE_P(C, AV1InvTxfm,
                                           IdctParam(&aom_idct16_c, 16, 4),
                                           IdctParam(&aom_idct32_c, 32, 6)));
 
-#if CONFIG_AV1_ENCODER
+#if CONFIG_AV1_ENCODER && !CONFIG_LV_MAP
 typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, InvTxfmFunc, TX_SIZE, int>
@@ -256,5 +256,5 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_1_add_c, TX_8X8, 1),
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_c, TX_4X4, 1)));
-#endif  // CONFIG_AV1_ENCODER
+#endif  // CONFIG_AV1_ENCODER && !CONFIG_LV_MAP
 }  // namespace

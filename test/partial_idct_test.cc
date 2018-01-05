@@ -30,6 +30,7 @@
 using libaom_test::ACMRandom;
 
 namespace {
+#if !CONFIG_LV_MAP
 typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
 typedef void (*InvTxfmFunc)(const tran_low_t *in, uint8_t *out, int stride);
 typedef void (*InvTxfmWithBdFunc)(const tran_low_t *in, uint8_t *out,
@@ -383,5 +384,6 @@ const PartialInvTxfmParam avx2_partial_idct_tests[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, PartialIDctTest,
                         ::testing::ValuesIn(avx2_partial_idct_tests));
 #endif  // HAVE_AVX2
+#endif  // !CONFIG_LV_MAP
 
 }  // namespace
