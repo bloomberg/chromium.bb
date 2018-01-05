@@ -371,6 +371,102 @@ static INLINE void dc_predictor(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
   }
 }
 
+static INLINE void dc_predictor_rect(uint8_t *dst, ptrdiff_t stride, int bw,
+                                     int bh, const uint8_t *above,
+                                     const uint8_t *left, uint32_t multiplier,
+                                     int shift) {
+  int i, r, expected_dc, sum = 0;
+
+  for (i = 0; i < bw; i++) {
+    sum += above[i];
+  }
+  for (i = 0; i < bh; i++) {
+    sum += left[i];
+  }
+
+  expected_dc = (int)(((uint64_t)sum * multiplier) >> shift);
+
+  for (r = 0; r < bh; r++) {
+    memset(dst, expected_dc, bw);
+    dst += stride;
+  }
+}
+
+#define DC_MULTIPLIER_1X2 0xABU
+#define DC_MULTIPLIER_1X4 0xCDU
+
+void aom_dc_predictor_4x8_c(uint8_t *dst, ptrdiff_t stride,
+                            const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 4, 8, above, left, DC_MULTIPLIER_1X2, 11);
+}
+
+void aom_dc_predictor_8x4_c(uint8_t *dst, ptrdiff_t stride,
+                            const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 8, 4, above, left, DC_MULTIPLIER_1X2, 11);
+}
+
+void aom_dc_predictor_4x16_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 4, 16, above, left, DC_MULTIPLIER_1X4, 12);
+}
+
+void aom_dc_predictor_16x4_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 16, 4, above, left, DC_MULTIPLIER_1X4, 12);
+}
+
+void aom_dc_predictor_8x16_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 8, 16, above, left, DC_MULTIPLIER_1X2, 12);
+}
+
+void aom_dc_predictor_16x8_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 16, 8, above, left, DC_MULTIPLIER_1X2, 12);
+}
+
+void aom_dc_predictor_8x32_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 8, 32, above, left, DC_MULTIPLIER_1X4, 13);
+}
+
+void aom_dc_predictor_32x8_c(uint8_t *dst, ptrdiff_t stride,
+                             const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 32, 8, above, left, DC_MULTIPLIER_1X4, 13);
+}
+
+void aom_dc_predictor_16x32_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 16, 32, above, left, DC_MULTIPLIER_1X2, 13);
+}
+
+void aom_dc_predictor_32x16_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 32, 16, above, left, DC_MULTIPLIER_1X2, 13);
+}
+
+#if CONFIG_TX64X64
+void aom_dc_predictor_16x64_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 16, 64, above, left, DC_MULTIPLIER_1X4, 14);
+}
+
+void aom_dc_predictor_64x16_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 64, 16, above, left, DC_MULTIPLIER_1X4, 14);
+}
+
+void aom_dc_predictor_32x64_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 32, 64, above, left, DC_MULTIPLIER_1X2, 14);
+}
+
+void aom_dc_predictor_64x32_c(uint8_t *dst, ptrdiff_t stride,
+                              const uint8_t *above, const uint8_t *left) {
+  dc_predictor_rect(dst, stride, 64, 32, above, left, DC_MULTIPLIER_1X2, 14);
+}
+#endif  // CONFIG_TX64X64
+
 void aom_d45e_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
                               const uint8_t *above, const uint8_t *left) {
   const int A = above[0];
@@ -918,6 +1014,129 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   }
 }
 
+static INLINE void highbd_dc_predictor_rect(uint16_t *dst, ptrdiff_t stride,
+                                            int bw, int bh,
+                                            const uint16_t *above,
+                                            const uint16_t *left, int bd,
+                                            uint32_t multiplier, int shift) {
+  int i, r, expected_dc, sum = 0;
+  (void)bd;
+
+  for (i = 0; i < bw; i++) {
+    sum += above[i];
+  }
+  for (i = 0; i < bh; i++) {
+    sum += left[i];
+  }
+
+  expected_dc = (int)(((uint64_t)sum * multiplier) >> shift);
+
+  for (r = 0; r < bh; r++) {
+    aom_memset16(dst, expected_dc, bw);
+    dst += stride;
+  }
+}
+
+void aom_highbd_dc_predictor_4x8_c(uint16_t *dst, ptrdiff_t stride,
+                                   const uint16_t *above, const uint16_t *left,
+                                   int bd) {
+  highbd_dc_predictor_rect(dst, stride, 4, 8, above, left, bd,
+                           DC_MULTIPLIER_1X2, 11);
+}
+
+void aom_highbd_dc_predictor_8x4_c(uint16_t *dst, ptrdiff_t stride,
+                                   const uint16_t *above, const uint16_t *left,
+                                   int bd) {
+  highbd_dc_predictor_rect(dst, stride, 8, 4, above, left, bd,
+                           DC_MULTIPLIER_1X2, 11);
+}
+
+void aom_highbd_dc_predictor_4x16_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 4, 16, above, left, bd,
+                           DC_MULTIPLIER_1X4, 12);
+}
+
+void aom_highbd_dc_predictor_16x4_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 16, 4, above, left, bd,
+                           DC_MULTIPLIER_1X4, 12);
+}
+
+void aom_highbd_dc_predictor_8x16_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 8, 16, above, left, bd,
+                           DC_MULTIPLIER_1X2, 12);
+}
+
+void aom_highbd_dc_predictor_16x8_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 16, 8, above, left, bd,
+                           DC_MULTIPLIER_1X2, 12);
+}
+
+void aom_highbd_dc_predictor_8x32_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 8, 32, above, left, bd,
+                           DC_MULTIPLIER_1X4, 13);
+}
+
+void aom_highbd_dc_predictor_32x8_c(uint16_t *dst, ptrdiff_t stride,
+                                    const uint16_t *above, const uint16_t *left,
+                                    int bd) {
+  highbd_dc_predictor_rect(dst, stride, 32, 8, above, left, bd,
+                           DC_MULTIPLIER_1X4, 13);
+}
+
+void aom_highbd_dc_predictor_16x32_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 16, 32, above, left, bd,
+                           DC_MULTIPLIER_1X2, 13);
+}
+
+void aom_highbd_dc_predictor_32x16_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 32, 16, above, left, bd,
+                           DC_MULTIPLIER_1X2, 13);
+}
+
+#if CONFIG_TX64X64
+void aom_highbd_dc_predictor_16x64_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 16, 64, above, left, bd,
+                           DC_MULTIPLIER_1X4, 14);
+}
+
+void aom_highbd_dc_predictor_64x16_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 64, 16, above, left, bd,
+                           DC_MULTIPLIER_1X4, 14);
+}
+
+void aom_highbd_dc_predictor_32x64_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 32, 64, above, left, bd,
+                           DC_MULTIPLIER_1X2, 14);
+}
+
+void aom_highbd_dc_predictor_64x32_c(uint16_t *dst, ptrdiff_t stride,
+                                     const uint16_t *above,
+                                     const uint16_t *left, int bd) {
+  highbd_dc_predictor_rect(dst, stride, 64, 32, above, left, bd,
+                           DC_MULTIPLIER_1X2, 14);
+}
+#endif  // CONFIG_TX64X64
+
 // This serves as a wrapper function, so that all the prediction functions
 // can be unified and accessed as a pointer array. Note that the boundary
 // above and left are not necessarily used all the time.
@@ -982,6 +1201,19 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 4, 4) \
   intra_pred_highbd_sized(type, 2, 2) \
   intra_pred_above_4x4(type)
+#define intra_pred_square(type) \
+  intra_pred_sized(type, 2, 2) \
+  intra_pred_sized(type, 4, 4) \
+  intra_pred_sized(type, 8, 8) \
+  intra_pred_sized(type, 16, 16) \
+  intra_pred_sized(type, 32, 32) \
+  intra_pred_sized(type, 64, 64) \
+  intra_pred_highbd_sized(type, 2, 2) \
+  intra_pred_highbd_sized(type, 4, 4) \
+  intra_pred_highbd_sized(type, 8, 8) \
+  intra_pred_highbd_sized(type, 16, 16) \
+  intra_pred_highbd_sized(type, 32, 32) \
+  intra_pred_highbd_sized(type, 64, 64)
 #else  // CONFIG_TX64X64
 #define intra_pred_rectangular(type) \
   intra_pred_sized(type, 4, 8) \
@@ -1018,6 +1250,17 @@ static INLINE void highbd_dc_predictor(uint16_t *dst, ptrdiff_t stride, int bw,
   intra_pred_sized(type, 4, 4) \
   intra_pred_highbd_sized(type, 2, 2) \
   intra_pred_above_4x4(type)
+#define intra_pred_square(type) \
+  intra_pred_sized(type, 2, 2) \
+  intra_pred_sized(type, 4, 4) \
+  intra_pred_sized(type, 8, 8) \
+  intra_pred_sized(type, 16, 16) \
+  intra_pred_sized(type, 32, 32) \
+  intra_pred_highbd_sized(type, 2, 2) \
+  intra_pred_highbd_sized(type, 4, 4) \
+  intra_pred_highbd_sized(type, 8, 8) \
+  intra_pred_highbd_sized(type, 16, 16) \
+  intra_pred_highbd_sized(type, 32, 32)
 #endif  // CONFIG_TX64X64
 
 intra_pred_allsizes(d207e)
@@ -1035,6 +1278,6 @@ intra_pred_allsizes(paeth)
 intra_pred_allsizes(dc_128)
 intra_pred_allsizes(dc_left)
 intra_pred_allsizes(dc_top)
-intra_pred_allsizes(dc)
+intra_pred_square(dc)
 /* clang-format on */
 #undef intra_pred_allsizes
