@@ -6,6 +6,7 @@
   var helper = new InterceptionHelper(testRunner, session);
 
   var headersMaskList = new Set(['date', 'server', 'last-modified', 'etag', 'keep-alive', 'x-powered-by', 'expires']);
+  var headersHideList = new Set(['x-powered-by']);
 
   var requestInterceptedDict = {
     'ping-redirect.php': async event => {
@@ -17,6 +18,8 @@
         testRunner.log('  responseHeaders:');
         for (var headerName of Object.keys(event.params.responseHeaders).sort()) {
           var headerValue = event.params.responseHeaders[headerName].split(';')[0]; // Sometimes "; charset=UTF-8" gets in here.
+          if (headersHideList.has(headerName.toLowerCase()))
+            continue;
           if (headersMaskList.has(headerName.toLowerCase()))
             headerValue = '<Masked>';
           testRunner.log(`    ${headerName}: ${headerValue}`);

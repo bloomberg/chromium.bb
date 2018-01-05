@@ -25,7 +25,8 @@
       testRunner.log('  redirected: ' + request.redirected);
       testRunner.log('  headersSize: ' + request.headersSize);
       testRunner.log('  receivedDataSize: ' + request.receivedDataSize);
-      testRunner.log('  reportedTotalSize: ' + request.reportedTotalSize);
+      if (!request.redirected) // reportedTotalSize is not stable across platforms.
+        testRunner.log('  reportedTotalSize: ' + request.reportedTotalSize);
       testRunner.log('');
     }
   }
