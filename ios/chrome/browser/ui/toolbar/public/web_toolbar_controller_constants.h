@@ -55,9 +55,6 @@ extern const LayoutOffset kPositionAnimationLeadingOffset;
 
 extern const CGFloat kIPadToolbarY;
 extern const CGFloat kScrollFadeDistance;
-// Offset from the image edge to the beginning of the visible omnibox rectangle.
-// The image is symmetrical, so the offset is equal on each side.
-extern const CGFloat kBackgroundImageVisibleRectOffset;
 
 extern const CGFloat kWebToolbarWidths[INTERFACE_IDIOM_COUNT];
 // UI layouts.  iPhone values followed by iPad values.

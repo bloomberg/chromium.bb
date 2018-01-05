@@ -38,7 +38,6 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10.0;
 
 const CGFloat kIPadToolbarY = 53;
 const CGFloat kScrollFadeDistance = 30;
-const CGFloat kBackgroundImageVisibleRectOffset = 6;
 
 const CGFloat kWebToolbarWidths[INTERFACE_IDIOM_COUNT] = {224, 720};
 // clang-format off

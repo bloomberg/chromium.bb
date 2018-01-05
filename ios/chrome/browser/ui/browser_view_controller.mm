@@ -2456,9 +2456,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
           [guide.owningView convertPoint:anchorPoint
                                   toView:guide.owningView.window];
     } else {
-      DCHECK([_toolbarCoordinator
+      DCHECK([self.legacyToolbarCoordinator
           respondsToSelector:@selector(anchorPointForTabSwitcherButton:)]);
-      tabSwitcherAnchor = [_toolbarCoordinator
+      tabSwitcherAnchor = [self.legacyToolbarCoordinator
           anchorPointForTabSwitcherButton:BubbleArrowDirectionUp];
     }
   }
@@ -2501,7 +2501,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)presentNewIncognitoTabTipBubble {
   DCHECK(self.browserState);
-  DCHECK([_toolbarCoordinator
+  DCHECK([self.legacyToolbarCoordinator
       respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
   // If the BVC is not visible, do not present the bubble.
   if (!self.viewVisible)
@@ -2526,7 +2526,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
     toolsButtonAnchor = [guide.owningView convertPoint:anchorPoint
                                                 toView:guide.owningView.window];
   } else {
-    toolsButtonAnchor = [_toolbarCoordinator
+    toolsButtonAnchor = [self.legacyToolbarCoordinator
         anchorPointForToolsMenuButton:BubbleArrowDirectionUp];
   }
 
@@ -2573,7 +2573,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
     referenceFrame = _contentArea.frame;
   }
 
-  CGRect omniboxFrame = [_toolbarCoordinator visibleOmniboxFrame];
+  CGRect omniboxFrame;
+  if (base::FeatureList::IsEnabled(kCleanToolbar)) {
+    omniboxFrame = FindNamedGuide(kOmniboxGuide, self.view).layoutFrame;
+  } else {
+    omniboxFrame = [self.legacyToolbarCoordinator visibleOmniboxFrame];
+  }
   [_findBarController addFindBarView:animate
                             intoView:self.view
                            withFrame:referenceFrame

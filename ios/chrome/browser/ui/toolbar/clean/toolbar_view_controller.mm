@@ -257,15 +257,6 @@
                         }];
 }
 
-- (CGRect)visibleOmniboxFrame {
-  CGRect frame = self.view.locationBarContainer.frame;
-  frame = [self.view.superview
-      convertRect:frame
-         fromView:[self.view.locationBarContainer superview]];
-  // Needed by the find in page view.
-  return CGRectInset(frame, -kBackgroundImageVisibleRectOffset, 0);
-}
-
 - (void)locationBarIsFirstResonderOnIPad:(BOOL)isFirstResponder {
   // This is an iPad only function.
   DCHECK(IsIPadIdiom());
