@@ -341,7 +341,7 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
           NGFragmentBuilder::FragmentPair value =
               inline_container_fragments->at(key);
           if (!value.start_fragment) {
-            value.start_fragment = descendant.fragment;
+            value.start_fragment = descendant.fragment.get();
             value.start_fragment_union_rect.offset =
                 descendant.offset_to_container_box;
             value.start_fragment_union_rect =
@@ -351,7 +351,7 @@ void NGFragmentBuilder::ComputeInlineContainerFragments(
             value.start_linebox_offset = offsets_.at(i);
           }
           if (!value.end_fragment || value.end_linebox_fragment != linebox) {
-            value.end_fragment = descendant.fragment;
+            value.end_fragment = descendant.fragment.get();
             value.end_fragment_union_rect = NGPhysicalOffsetRect(
                 descendant.offset_to_container_box, value.end_fragment->Size());
             value.end_linebox_fragment = linebox;
