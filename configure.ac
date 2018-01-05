@@ -109,13 +109,6 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package])
 AM_GNU_GETTEXT_VERSION([0.19.8])
 AM_GNU_GETTEXT([external])
 
-if test "$os_win32" = "no"; then
-AC_PATH_PROG(ITSTOOL, [itstool])
-if test -z "$ITSTOOL"; then
-   AC_MSG_ERROR([The itstool were not found. Please install itstool.])
-fi
-fi
-
 dnl ==========================================================================
 
 if test "$os_win32" = "yes"; then
