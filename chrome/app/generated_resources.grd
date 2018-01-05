@@ -6002,6 +6002,9 @@ I don't think this site should be blocked!
         <message name="IDS_PRINT_PREVIEW_FAILED" desc="Message to display when print preview fails.">
           Print preview failed.
         </message>
+        <message name="IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER" desc="Message to display when an unsupported cloud printer is selected.">
+          The selected Google Cloud Print device is no longer supported. Try setting up the printer in your computer's system settings.
+        </message>
         <message name="IDS_PRINT_PREVIEW_PRINT_BUTTON" desc="Print button.">
           Print
         </message>
@@ -6210,6 +6213,9 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
           Currently offline
+        </message>
+        <message name="IDS_PRINT_PREVIEW_NO_LONGER_SUPPORTED" desc="Shown when printer is no longer supported.">
+          No longer supported.
         </message>
         <message name="IDS_PRINT_PREVIEW_EXTENSION_DESTINATION_ICON_TOOLTIP" desc="Tooltip for the icon shown in print destination list next to print destination provided by an extension.">
           Documents you send to print via <ph name="APP_NAME">$1<ex>A Chrome app</ex></ph> can be read by <ph name="APP_NAME">$1<ex>A Chrome app</ex></ph>.
