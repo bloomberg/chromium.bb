@@ -2843,25 +2843,6 @@
             ]
         }
     ],
-    "RendererSideResourceScheduler": [
-        {
-            "platforms": [
-                "win",
-                "mac",
-                "linux",
-                "chromeos",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RendererSideResourceScheduler"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
