@@ -150,9 +150,6 @@ class MEDIA_EXPORT MediaCodecBridge {
   // Requests that the video encoder insert a key frame.
   virtual void RequestKeyFrameSoon() = 0;
 
-  // Returns whether the codec is configured for adaptive playback.
-  virtual bool IsAdaptivePlaybackSupported() = 0;
-
   DISALLOW_COPY_AND_ASSIGN(MediaCodecBridge);
 };
 

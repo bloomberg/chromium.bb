@@ -29,9 +29,9 @@ class MediaCodecEncoder extends MediaCodecBridge {
     // SPS and PPS NALs (Config frame).
     private ByteBuffer mConfigData = null;
 
-    protected MediaCodecEncoder(MediaCodec mediaCodec, String mime,
-            boolean adaptivePlaybackSupported, BitrateAdjustmentTypes bitrateAdjustmentType) {
-        super(mediaCodec, mime, adaptivePlaybackSupported, bitrateAdjustmentType);
+    protected MediaCodecEncoder(
+            MediaCodec mediaCodec, BitrateAdjustmentTypes bitrateAdjustmentType) {
+        super(mediaCodec, bitrateAdjustmentType);
     }
 
     @Override

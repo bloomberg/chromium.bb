@@ -586,7 +586,7 @@ TEST_P(AudioDecoderTest, ProduceAudioSamples) {
     // the predefined number of output buffers are produced without draining
     // (i.e. decoding EOS).
     do {
-      Decode();
+      ASSERT_NO_FATAL_FAILURE(Decode());
       ASSERT_EQ(last_decode_status(), DecodeStatus::OK);
     } while (decoded_audio_size() < kDecodeRuns);
 
