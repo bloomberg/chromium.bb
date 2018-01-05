@@ -255,8 +255,6 @@ class KeyboardControllerTest : public testing::Test,
   }
   void OnKeyboardClosed() override { keyboard_closed_ = true; }
 
-  // TODO(blakeo): remove this method
-  int bounds_number_of_calls() const { return 0; }
   int visible_bounds_number_of_calls() const {
     return visible_bounds_number_of_calls_;
   }
