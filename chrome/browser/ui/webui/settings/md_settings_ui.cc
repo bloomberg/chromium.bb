@@ -64,7 +64,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/stylus_utils.h"
-#include "ash/system/power/power_status.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/ash/ash_util.h"

@@ -1,4 +1,0 @@
-include_rules = [
-  # TODO(mash): Remove. http://crbug.com/644348
-  "+ash/system/power",
-]
