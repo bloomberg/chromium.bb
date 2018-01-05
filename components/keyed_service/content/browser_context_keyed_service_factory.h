@@ -25,7 +25,7 @@ class BrowserContext;
 //
 // We do this because services depend on each other and we need to control
 // shutdown/destruction order. In each derived classes' constructors, the
-// implementors must explicitly state which services are depended on.
+// implementors must explicitly state on which services they depend.
 class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
     : public KeyedServiceFactory {
  public:
