@@ -75,6 +75,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
   }
   int GetTopAreaHeight() const override { return 0; }
+  bool UseCustomFrame() const override { return true; }
 
  private:
   base::string16 window_title_;

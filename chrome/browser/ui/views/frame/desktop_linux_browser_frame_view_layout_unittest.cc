@@ -63,6 +63,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return gfx::Size(78, 29);
   }
   int GetTopAreaHeight() const override { return 0; }
+  bool UseCustomFrame() const override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);
