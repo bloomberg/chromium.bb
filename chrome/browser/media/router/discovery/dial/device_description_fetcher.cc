@@ -139,6 +139,12 @@ void DeviceDescriptionFetcher::OnURLFetchComplete(
     return;
   }
 
+  // Remove trailing slash if there is any.
+  if (app_url.ExtractFileName().empty()) {
+    DVLOG(2) << "App url has trailing slash: " << app_url_header;
+    app_url = GURL(app_url_header.substr(0, app_url_header.length() - 1));
+  }
+
   if (source->GetReceivedResponseContentLength() > kMaxDescriptionSizeBytes) {
     ReportError("Response too large");
     return;

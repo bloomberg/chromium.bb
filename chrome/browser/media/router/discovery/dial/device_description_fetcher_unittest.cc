@@ -90,6 +90,19 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessful) {
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
 }
 
+TEST_F(DeviceDescriptionFetcherTest, FetchSuccessfulAppUrlWithTrailingSlash) {
+  ExpectSuccess(GURL("http://127.0.0.1/apps"), "<xml>description</xml>");
+  net::TestURLFetcher* test_fetcher = StartRequest();
+
+  test_fetcher->set_response_code(net::HTTP_OK);
+  scoped_refptr<net::HttpResponseHeaders> headers =
+      new net::HttpResponseHeaders("");
+  headers->AddHeader("Application-URL: http://127.0.0.1/apps/");
+  test_fetcher->set_response_headers(headers);
+  test_fetcher->SetResponseString("<xml>description</xml>");
+  test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
+}
+
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingDescription) {
   ExpectError("HTTP 404:");
   net::TestURLFetcher* test_fetcher = StartRequest();

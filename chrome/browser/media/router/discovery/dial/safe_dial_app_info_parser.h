@@ -28,8 +28,8 @@ namespace media_router {
 // Section 6.1.2 Server response.
 class SafeDialAppInfoParser {
  public:
-  enum class ParsingError {
-    kNone = 0,
+  enum ParsingResult {
+    kSuccess = 0,
     kInvalidXML = 1,
     kFailToReadName = 2,
     kFailToReadState = 3,
@@ -39,14 +39,14 @@ class SafeDialAppInfoParser {
 
   // |connector| should be a valid connector to the ServiceManager.
   explicit SafeDialAppInfoParser(service_manager::Connector* connector);
-  ~SafeDialAppInfoParser();
+  virtual ~SafeDialAppInfoParser();
 
   // Callback function invoked when done parsing DIAL app info XML.
   // |app_info|: app info object. Empty if parsing failed.
   // |parsing_error|: error encountered while parsing the DIAL app info XML.
   using ParseCallback =
       base::OnceCallback<void(std::unique_ptr<ParsedDialAppInfo> app_info,
-                              ParsingError parsing_error)>;
+                              ParsingResult parsing_result)>;
 
   // Parses the DIAL app info in |xml_text| in a utility process.
   // If the parsing succeeds, invokes callback with a valid
@@ -57,7 +57,7 @@ class SafeDialAppInfoParser {
   // utility process is still cleaned up automatically if unused after some
   // time, even if this object is still alive.
   // Note also that the callback is not called if the object is deleted.
-  void Parse(const std::string& xml_text, ParseCallback callback);
+  virtual void Parse(const std::string& xml_text, ParseCallback callback);
 
  private:
   void OnXmlParsingDone(ParseCallback callback,
