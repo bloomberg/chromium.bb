@@ -669,20 +669,12 @@
 
 # If prerender is completely turned down before we plan on canary, no need to
 # convert. See http://crbug.com/678332 and http://crbug.com/683142
--PrerenderBrowserTest.FirstContentfulPaintHiddenNoCommit
--PrerenderBrowserTest.FirstContentfulPaintTimingNoCommit
--PrerenderBrowserTest.FirstContentfulPaintTimingReuse
--PrerenderBrowserTest.PrerenderBeforeUnload
 -PrerenderBrowserTest.PrerenderCancelSubresourceRedirectUnsupportedScheme
 -PrerenderBrowserTest.PrerenderCancelSubresourceUnsupportedScheme
 -PrerenderBrowserTest.PrerenderDeferredImage
 -PrerenderBrowserTest.PrerenderDeferredImageAfterRedirect
 -PrerenderBrowserTest.PrerenderDeferredSynchronousXHR
 -PrerenderBrowserTest.PrerenderLocationReplaceGWSHistograms
--PrerenderBrowserTest.PrerenderNoCommitNoSwap
--PrerenderBrowserTest.PrerenderNoCommitNoSwap2
--PrerenderBrowserTest.PrerenderPing
--PrerenderBrowserTest.PrerenderUnload
 -PrerenderBrowserTest.PrerenderXhrDelete
 -PrerenderBrowserTest.PrerenderXhrPut
 -PrerenderBrowserTest.ResourcePriority

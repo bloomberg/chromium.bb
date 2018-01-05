@@ -9,7 +9,7 @@
     // The request must be async in order to be allowed in a beforeunload
     // handler.
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://unload-url.test', true);
+    xhr.open('GET', '/unload-url', true);
     xhr.send();
   }
 
