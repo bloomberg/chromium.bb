@@ -158,12 +158,14 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
+     * @param accessPoint The access point for starting signin flow.
      * @param isChildAccount Whether this view is for a child account.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromSelectionPage(
-            boolean isChildAccount, Delegate delegate, Listener listener) {
+    public void initFromSelectionPage(@SigninAccessPoint int accessPoint, boolean isChildAccount,
+            Delegate delegate, Listener listener) {
+        initAccessPoint(accessPoint);
         mIsChildAccount = isChildAccount;
         mUndoBehavior = UNDO_BACK_TO_SELECTION;
         mDelegate = delegate;
@@ -175,10 +177,13 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
+     * @param accessPoint The access point for starting signin flow.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromAddAccountPage(Delegate delegate, Listener listener) {
+    public void initFromAddAccountPage(
+            @SigninAccessPoint int accessPoint, Delegate delegate, Listener listener) {
+        initAccessPoint(accessPoint);
         mIsChildAccount = false; // Children profiles can't add accounts.
         mUndoBehavior = UNDO_ABORT;
         mDelegate = delegate;
@@ -193,6 +198,7 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from signin confirmation page. The account name should be provided by
      * the caller.
      *
+     * @param accessPoint The access point for starting signin flow.
      * @param isChildAccount Whether this view is for a child account.
      * @param accountName An account that should be used for confirmation page and signin.
      * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
@@ -200,15 +206,23 @@ public class AccountSigninView extends FrameLayout {
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromConfirmationPage(boolean isChildAccount, String accountName,
-            boolean isDefaultAccount, @UndoBehavior int undoBehavior, Delegate delegate,
-            Listener listener) {
+    public void initFromConfirmationPage(@SigninAccessPoint int accessPoint, boolean isChildAccount,
+            String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
+            Delegate delegate, Listener listener) {
+        initAccessPoint(accessPoint);
         mIsChildAccount = isChildAccount;
         mUndoBehavior = undoBehavior;
         mDelegate = delegate;
         mListener = listener;
         showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
         triggerUpdateAccounts();
+    }
+
+    private void initAccessPoint(@SigninAccessPoint int accessPoint) {
+        if (accessPoint == SigninAccessPoint.BOOKMARK_MANAGER
+                || accessPoint == SigninAccessPoint.RECENT_TABS) {
+            mCancelButtonTextId = R.string.cancel;
+        }
     }
 
     @Override
@@ -266,16 +280,6 @@ public class AccountSigninView extends FrameLayout {
             mGooglePlayServicesUpdateErrorHandler.cancelDialog();
             mGooglePlayServicesUpdateErrorHandler = null;
         }
-    }
-
-    /**
-     * Changes the visuals slightly for when this view appears in the recent tabs page instead of
-     * in first run.
-     * This is currently used when signing in from the Recent Tabs or Bookmarks pages.
-     */
-    public void configureForRecentTabsOrBookmarksPage() {
-        mCancelButtonTextId = R.string.cancel;
-        setUpCancelButton();
     }
 
     /**

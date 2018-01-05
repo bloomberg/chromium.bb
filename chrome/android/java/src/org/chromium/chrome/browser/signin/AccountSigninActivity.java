@@ -164,7 +164,7 @@ public class AccountSigninActivity extends AppCompatActivity
         mSigninFlowType = getIntent().getIntExtra(INTENT_SIGNIN_FLOW_TYPE, -1);
         switch (mSigninFlowType) {
             case SIGNIN_FLOW_DEFAULT:
-                view.initFromSelectionPage(false, this, this);
+                view.initFromSelectionPage(mAccessPoint, false, this, this);
                 break;
             case SIGNIN_FLOW_CONFIRMATION_ONLY: {
                 String accountName = getIntent().getStringExtra(INTENT_ACCOUNT_NAME);
@@ -173,20 +173,15 @@ public class AccountSigninActivity extends AppCompatActivity
                 }
                 boolean isDefaultAccount =
                         getIntent().getBooleanExtra(INTENT_IS_DEFAULT_ACCOUNT, false);
-                view.initFromConfirmationPage(false, accountName, isDefaultAccount,
+                view.initFromConfirmationPage(mAccessPoint, false, accountName, isDefaultAccount,
                         AccountSigninView.UNDO_ABORT, this, this);
                 break;
             }
             case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
-                view.initFromAddAccountPage(this, this);
+                view.initFromAddAccountPage(mAccessPoint, this, this);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown signin flow type: " + mSigninFlowType);
-        }
-
-        if (mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER
-                || mAccessPoint == SigninAccessPoint.RECENT_TABS) {
-            view.configureForRecentTabsOrBookmarksPage();
         }
 
         setContentView(view);
