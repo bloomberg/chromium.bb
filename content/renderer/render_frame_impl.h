@@ -1265,6 +1265,9 @@ class CONTENT_EXPORT RenderFrameImpl
     return custom_url_loader_factory_.get();
   }
 
+  // Updates the Zoom level of the render view to match current content.
+  void UpdateZoomLevel();
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the

@@ -5487,41 +5487,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
         frame, document_loader->GetRequest());
   }
 
+  UpdateZoomLevel();
+
   if (!frame->Parent()) {
     // Top-level navigation.
-
-    // Reset the zoom limits in case a plugin had changed them previously. This
-    // will also call us back which will cause us to send a message to
-    // update WebContentsImpl.
-    render_view_->webview()->ZoomLimitsChanged(
-        ZoomFactorToZoomLevel(kMinimumZoomFactor),
-        ZoomFactorToZoomLevel(kMaximumZoomFactor));
-
-    // Set zoom level, but don't do it for full-page plugin since they don't use
-    // the same zoom settings.
-    HostZoomLevels::iterator host_zoom =
-        host_zoom_levels_.find(GURL(request.Url()));
-    if (render_view_->webview()->MainFrame()->IsWebLocalFrame() &&
-        render_view_->webview()
-            ->MainFrame()
-            ->ToWebLocalFrame()
-            ->GetDocument()
-            .IsPluginDocument()) {
-      // Reset the zoom levels for plugins.
-      render_view_->SetZoomLevel(0);
-    } else {
-      // If the zoom level is not found, then do nothing. In-page navigation
-      // relies on not changing the zoom level in this case.
-      if (host_zoom != host_zoom_levels_.end())
-        render_view_->SetZoomLevel(host_zoom->second);
-    }
-
-    if (host_zoom != host_zoom_levels_.end()) {
-      // This zoom level was merely recorded transiently for this load.  We can
-      // erase it now.  If at some point we reload this page, the browser will
-      // send us a new, up-to-date zoom level.
-      host_zoom_levels_.erase(host_zoom);
-    }
 
     // Update contents MIME type for main frame.
     params->contents_mime_type =
@@ -5568,8 +5537,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     DCHECK(!navigation_state->request_params().should_clear_history_list);
     params->history_list_was_cleared = false;
     params->report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
-    // Subframes should match the zoom level of the main frame.
-    render_view_->SetZoomLevel(render_view_->page_zoom_level());
   }
 
   // Standard URLs must match the reported origin, when it is not unique.
@@ -5597,6 +5564,46 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // If we end up reusing this WebRequest (for example, due to a #ref click),
   // we don't want the transition type to persist.  Just clear it.
   navigation_state->set_transition_type(ui::PAGE_TRANSITION_LINK);
+}
+
+void RenderFrameImpl::UpdateZoomLevel() {
+  if (!frame_->Parent()) {
+    // Reset the zoom limits in case a plugin had changed them previously. This
+    // will also call us back which will cause us to send a message to
+    // update WebContentsImpl.
+    render_view_->webview()->ZoomLimitsChanged(
+        ZoomFactorToZoomLevel(kMinimumZoomFactor),
+        ZoomFactorToZoomLevel(kMaximumZoomFactor));
+
+    // Set zoom level, but don't do it for full-page plugin since they don't use
+    // the same zoom settings.
+    HostZoomLevels::iterator host_zoom =
+        host_zoom_levels_.find(GetLoadingUrl());
+    if (render_view_->webview()->MainFrame()->IsWebLocalFrame() &&
+        render_view_->webview()
+            ->MainFrame()
+            ->ToWebLocalFrame()
+            ->GetDocument()
+            .IsPluginDocument()) {
+      // Reset the zoom levels for plugins.
+      render_view_->SetZoomLevel(0);
+    } else {
+      // If the zoom level is not found, then do nothing. In-page navigation
+      // relies on not changing the zoom level in this case.
+      if (host_zoom != host_zoom_levels_.end())
+        render_view_->SetZoomLevel(host_zoom->second);
+    }
+
+    if (host_zoom != host_zoom_levels_.end()) {
+      // This zoom level was merely recorded transiently for this load.  We can
+      // erase it now.  If at some point we reload this page, the browser will
+      // send us a new, up-to-date zoom level.
+      host_zoom_levels_.erase(host_zoom);
+    }
+  } else {
+    // Subframes should match the zoom level of the main frame.
+    render_view_->SetZoomLevel(render_view_->page_zoom_level());
+  }
 }
 
 bool RenderFrameImpl::SwapIn() {
