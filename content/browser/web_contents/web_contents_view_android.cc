@@ -107,7 +107,8 @@ WebContentsViewAndroid::WebContentsViewAndroid(
       content_view_core_(NULL),
       delegate_(delegate),
       view_(this, ui::ViewAndroid::LayoutType::NORMAL),
-      synchronous_compositor_client_(nullptr) {}
+      synchronous_compositor_client_(nullptr),
+      gesture_listener_manager_(nullptr) {}
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
   if (view_.GetLayer())
@@ -174,6 +175,12 @@ RenderWidgetHostViewAndroid*
 WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
   return static_cast<RenderWidgetHostViewAndroid*>(
       web_contents_->GetRenderWidgetHostView());
+}
+
+void WebContentsViewAndroid::SetGestureListenerManager(
+    std::unique_ptr<GestureListenerManager> manager) {
+  DCHECK(!gesture_listener_manager_);
+  gesture_listener_manager_ = std::move(manager);
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
@@ -519,10 +526,9 @@ bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
 void WebContentsViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  auto* manager = GestureListenerManager::FromWebContents(web_contents_);
-  if (!manager)
+  if (!gesture_listener_manager_)
     return;
-  manager->GestureEventAck(event, ack_result);
+  gesture_listener_manager_->GestureEventAck(event, ack_result);
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {

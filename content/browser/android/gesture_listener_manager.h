@@ -5,11 +5,9 @@
 #ifndef CONTENT_BROWSER_ANDROID_GESTURE_LISTENER_MANAGER_H_
 #define CONTENT_BROWSER_ANDROID_GESTURE_LISTENER_MANAGER_H_
 
-#include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/input_event_ack_state.h"
 
 namespace blink {
@@ -18,15 +16,16 @@ class WebGestureEvent;
 
 namespace content {
 
+class WebContents;
+
 // Native class for GestureListenerManagerImpl. Owned by
 // |WebContentsViewAndroid|.
-class GestureListenerManager
-    : public WebContentsUserData<GestureListenerManager> {
+class GestureListenerManager {
  public:
   GestureListenerManager(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          WebContents* web_contents);
-  ~GestureListenerManager() override;
+  ~GestureListenerManager();
 
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result);
