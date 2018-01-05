@@ -40,7 +40,7 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
       static_cast<ChromeNavigationData*>(
           navigation_handle->GetNavigationData());
   if (!chrome_navigation_data)
-    return CONTINUE_OBSERVING;
+    return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
   if (data && data->used_data_reduction_proxy() && data->lite_page_received()) {
