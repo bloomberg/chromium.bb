@@ -76684,6 +76684,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearch.Ranker.Model.Status"
+    enum="RankerModelStatus">
+  <owner>hamelphi@google.com</owner>
+  <summary>Tracks the outcome of attempts to download a Ranker Model.</summary>
+</histogram>
+
 <histogram name="Search.ContextualSearch.Ranker.NotSuppressed.ResultsSeen"
     enum="ContextualSearchResultsSeen">
   <owner>donnd@chromium.org</owner>
@@ -76700,6 +76706,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Records Ranker's prediction about whether a tap should be suppressed or not.
     Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.Timer.DownloadModel" units="ms">
+  <owner>hamelphi@google.com</owner>
+  <summary>
+    Time taken for the Ranker Model Loader to download its model from the
+    configured URL, in ms.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.Timer.ParseModel" units="ms">
+  <owner>hamelphi@google.com</owner>
+  <summary>
+    Time taken for the Ranker Model Loader to parse its model, in ms.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.Timer.ReadModel" units="ms">
+  <owner>hamelphi@google.com</owner>
+  <summary>
+    Time taken for the Ranker Model Loader to read its model from local storage
+    (cache), in ms.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.Timer.WriteModel" units="ms">
+  <owner>hamelphi@google.com</owner>
+  <summary>
+    Time taken for the Ranker Model Loader to write its model to local storage,
+    in ms.
   </summary>
 </histogram>
 
