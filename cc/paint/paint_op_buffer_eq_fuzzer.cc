@@ -79,8 +79,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // text blob. However, Skia, given some data, seems to be able to construct an
   // SkTextBlob without accessing the given cataloger. See crbug.com/798939 for
   // an example of such a test case.
-  if (deserialized_op1->GetType() == cc::PaintOpType::DrawTextBlob)
+  if (deserialized_op1->GetType() == cc::PaintOpType::DrawTextBlob) {
+    deserialized_op1->DestroyThis();
     return 0;
+  }
 
   // If we get to this point, then the op should be ok to serialize/deserialize
   // and any failure is a dcheck.
