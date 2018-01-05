@@ -150,16 +150,18 @@ bool DevToolsAgentHostImpl::HandleCertificateError(WebContents* web_contents,
                                                    int cert_error,
                                                    const GURL& request_url,
                                                    CertErrorCallback callback) {
-  DevToolsAgentHost* agent_host =
+  scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetOrCreateFor(web_contents).get();
-  if (NotifyCertificateError(agent_host, cert_error, request_url, callback)) {
+  if (NotifyCertificateError(agent_host.get(), cert_error, request_url,
+                             callback)) {
     // Only allow a single agent host to handle the error.
     callback.Reset();
   }
 
-  for (scoped_refptr<DevToolsAgentHost> agent_host : GetBrowserAgentHosts()) {
-    if (NotifyCertificateError(agent_host.get(), cert_error, request_url,
-                               callback)) {
+  for (scoped_refptr<DevToolsAgentHost> browser_agent_host :
+       GetBrowserAgentHosts()) {
+    if (NotifyCertificateError(browser_agent_host.get(), cert_error,
+                               request_url, callback)) {
       // Only allow a single agent host to handle the error.
       callback.Reset();
     }
