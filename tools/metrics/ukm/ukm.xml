@@ -1741,6 +1741,38 @@ be describing additional metrics about the same event.
   </summary>
 </event>
 
+<event name="SiteIsolation.XSD.Browser.Blocked">
+  <owner>creis@chromium.org</owner>
+  <owner>chrome-site-isolation@google.com</owner>
+  <summary>
+    Resource request response was blocked by the cross-site document blocking
+    logic in the browser process.
+  </summary>
+  <metric name="CanonicalMimeType">
+    <summary>
+      Classification of the Content-Type HTTP response header into one of the
+      blockable document flavours: html, xml, json, plain.
+    </summary>
+  </metric>
+  <metric name="ContentResourceType">
+    <summary>
+      content::ResourceType of the blocked resource (e.g. image / script / xhr /
+      etc.).
+    </summary>
+  </metric>
+  <metric name="HttpResponseCode">
+    <summary>
+      The HTTP response code (e.g. 200 or 404) associated with the blocked
+      resource request.
+    </summary>
+  </metric>
+  <metric name="NeededSniffing">
+    <summary>
+      Whether the HTTP response needed sniffing to confirm its MIME type.
+    </summary>
+  </metric>
+</event>
+
 <event name="SubresourceFilter" singular="True">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>

@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/layered_resource_handler.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/common/cross_site_document_classifier.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 
 namespace net {
@@ -100,6 +102,19 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Called by the OnWillReadController.
   void ResumeOnWillRead(scoped_refptr<net::IOBuffer>* buf, int* buf_size);
 
+  // Helpers for UMA and UKM logging.
+  static void LogBlockedResponseOnUIThread(
+      ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      bool needed_sniffing,
+      CrossSiteDocumentMimeType canonical_mime_type,
+      ResourceType resource_type,
+      int http_response_code);
+  static void LogBlockedResponse(ResourceRequestInfoImpl* resource_request_info,
+                                 bool needed_sniffing,
+                                 bool found_parser_breaker,
+                                 CrossSiteDocumentMimeType canonical_mime_type,
+                                 int http_response_code);
+
   // WeakPtrFactory for |next_handler_|.
   base::WeakPtrFactory<ResourceHandler> weak_next_handler_;
 
@@ -153,6 +168,10 @@ class CONTENT_EXPORT CrossSiteDocumentResourceHandler
   // Whether the next ResourceHandler has already been told that the read has
   // completed, and thus it is safe to cancel or detach on the next read.
   bool blocked_read_completed_ = false;
+
+  // The HTTP response code (e.g. 200 or 404) received in response to this
+  // resource request.
+  int http_response_code_ = 0;
 
   base::WeakPtrFactory<CrossSiteDocumentResourceHandler> weak_this_;
 
