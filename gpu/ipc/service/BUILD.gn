@@ -8,25 +8,8 @@ if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
-group("service") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":ipc_service_sources",
-    ]
-  }
-}
-
-if (is_component_build) {
-  link_target_type = "source_set"
-} else {
-  link_target_type = "static_library"
-}
-target(link_target_type, "ipc_service_sources") {
-  visibility = [ "//gpu/*" ]
+component("service") {
+  output_name = "gpu_ipc_service"
   sources = [
     "command_buffer_stub.cc",
     "command_buffer_stub.h",
@@ -59,7 +42,7 @@ target(link_target_type, "ipc_service_sources") {
     "switches.cc",
     "switches.h",
   ]
-  configs += [ "//gpu:gpu_implementation" ]
+  defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
   public_deps = [
     "//base",
     "//ipc",
@@ -74,11 +57,17 @@ target(link_target_type, "ipc_service_sources") {
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
-    "//gpu/command_buffer/common:common_sources",
-    "//gpu/command_buffer/service:gles2_sources",
-    "//gpu/command_buffer/service:service_sources",
-    "//gpu/config:config_sources",
-    "//gpu/ipc/common:ipc_common_sources",
+
+    # crbug.com/799267: crash_key needs to be added explicitly for Windows and
+    # Mac even though it's not directly referenced, because it's being
+    # implicitly depended upon by gpu/config/gpu_crash_keys.h but deps (even
+    # public ones) are not transitive for static libraries.
+    "//components/crash/core/common:crash_key",
+    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/service",
+    "//gpu/command_buffer/service:gles2",
+    "//gpu/config",
+    "//gpu/ipc/common",
   ]
   libs = []
   ldflags = []
@@ -111,8 +100,10 @@ target(link_target_type, "ipc_service_sources") {
     deps += [ "//ui/accelerated_widget_mac" ]
     lib_dirs = [ "$mac_sdk_path/usr/lib" ]
     libs += [
-      "QuartzCore.framework",
       "CoreGraphics.framework",
+      "IOSurface.framework",
+      "OpenGL.framework",
+      "QuartzCore.framework",
     ]
   }
   if (is_android) {
@@ -134,6 +125,7 @@ target(link_target_type, "ipc_service_sources") {
   }
   if (use_x11) {
     sources += [ "x_util.h" ]
+    libs += [ "X11" ]
   }
   if (use_ozone) {
     deps += [ "//ui/ozone" ]

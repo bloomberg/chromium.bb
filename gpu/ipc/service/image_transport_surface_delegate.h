@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 
 namespace IPC {
 class MessageFilter;
@@ -26,7 +26,7 @@ namespace gles2 {
 class FeatureInfo;
 }
 
-class GPU_EXPORT ImageTransportSurfaceDelegate {
+class GPU_IPC_SERVICE_EXPORT ImageTransportSurfaceDelegate {
  public:
 #if defined(OS_WIN)
   // Tells the delegate that a child window was created with the provided

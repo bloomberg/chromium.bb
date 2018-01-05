@@ -48,5 +48,6 @@ source_set("internal") {
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
+    "//ui/gl",
   ]
 }

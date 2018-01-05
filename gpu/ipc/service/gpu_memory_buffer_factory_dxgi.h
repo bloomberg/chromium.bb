@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_image_dxgi.h"
@@ -26,8 +26,9 @@ class GLImage;
 
 namespace gpu {
 
-class GPU_EXPORT GpuMemoryBufferFactoryDXGI : public GpuMemoryBufferFactory,
-                                              public ImageFactory {
+class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryDXGI
+    : public GpuMemoryBufferFactory,
+      public ImageFactory {
  public:
   GpuMemoryBufferFactoryDXGI();
   ~GpuMemoryBufferFactoryDXGI() override;

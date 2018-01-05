@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 
 namespace gpu {
 
@@ -25,8 +25,8 @@ class GpuChannelManager;
 class GpuMemoryTrackingGroup;
 struct VideoMemoryUsageStats;
 
-class GPU_EXPORT GpuMemoryManager :
-    public base::SupportsWeakPtr<GpuMemoryManager> {
+class GPU_IPC_SERVICE_EXPORT GpuMemoryManager
+    : public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
   explicit GpuMemoryManager(GpuChannelManager* channel_manager);
   ~GpuMemoryManager();

@@ -118,16 +118,12 @@ source_set("ipc_common_sources") {
     sources += [
       "android/scoped_surface_request_conduit.cc",
       "android/scoped_surface_request_conduit.h",
-    ]
-  }
-
-  if (is_android) {
-    sources += [
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",
       "gpu_surface_tracker.cc",
       "gpu_surface_tracker.h",
     ]
+    libs = [ "android" ]
   }
 
   if (use_ozone) {

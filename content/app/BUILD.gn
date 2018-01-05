@@ -124,7 +124,10 @@ template("implement_content_app") {
         "android/library_loader_hooks.cc",
         "android/library_loader_hooks.h",
       ]
-      deps += [ "//mojo/android:libsystem_java" ]
+      deps += [
+        "//mojo/android:libsystem_java",
+        "//ui/gl",
+      ]
     } else {
       sources += [ "content_main.cc" ]
     }

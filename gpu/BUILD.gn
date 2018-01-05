@@ -26,7 +26,6 @@ component("gpu") {
     "//gpu/config:config_sources",
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/common:ipc_common_sources",
-    "//gpu/ipc/service:ipc_service_sources",
   ]
 }
 
@@ -61,7 +60,8 @@ if (!use_static_angle) {
       "//build/config:exe_and_shlib_deps",
       "//gpu/command_buffer/client:gles2_c_lib",
       "//gpu/command_buffer/client:gles2_implementation",
-      "//ui/gl:gl",
+      "//ui/gl",
+      "//ui/gl/init",
     ]
 
     defines = [
@@ -212,6 +212,7 @@ test("gl_tests") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc/service",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
@@ -219,6 +220,7 @@ test("gl_tests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 
   libs = []

@@ -120,6 +120,7 @@ source_set("unit_tests") {
     deps += [
       "//media/mojo/interfaces:test_interfaces",
       "//ui/gfx:test_support",
+      "//ui/gl",
     ]
   }
 }

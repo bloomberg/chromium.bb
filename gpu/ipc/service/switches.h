@@ -6,11 +6,11 @@
 #define GPU_IPC_SERVICE_SWITCHES_H_
 
 #include "base/feature_list.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 
 namespace switches {
 
-GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
+GPU_IPC_SERVICE_EXPORT extern const base::Feature kDirectCompositionOverlays;
 
 }  // namespace switches
 

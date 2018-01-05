@@ -37,5 +37,6 @@ source_set("egl") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 }

@@ -162,9 +162,11 @@ viz_component("common") {
     "//mojo/public/cpp/bindings",
     "//skia",
     "//third_party/libyuv",
+    "//ui/gfx",
     "//ui/gfx:color_space",
     "//ui/gfx:geometry_skia",
     "//ui/gfx/geometry",
+    "//ui/gl",
     "//ui/latency",
   ]
 

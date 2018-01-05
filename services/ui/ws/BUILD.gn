@@ -318,6 +318,7 @@ source_set("tests") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 }
 

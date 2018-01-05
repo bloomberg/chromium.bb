@@ -77,7 +77,8 @@ struct GpuChannelMessage {
 // - forwards messages to child message filters
 // - posts control and out of order messages to the main thread
 // - forwards other messages to the scheduler
-class GPU_EXPORT GpuChannelMessageFilter : public IPC::MessageFilter {
+class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
+    : public IPC::MessageFilter {
  public:
   GpuChannelMessageFilter(
       GpuChannel* gpu_channel,

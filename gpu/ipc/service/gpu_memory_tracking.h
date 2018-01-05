@@ -9,7 +9,7 @@
 
 #include "base/process/process.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 
 namespace gpu {
 
@@ -17,7 +17,7 @@ class GpuMemoryManager;
 
 // All decoders in a context group point to a single GpuMemoryTrackingGroup,
 // which tracks GPU resource consumption for the entire context group.
-class GPU_EXPORT GpuMemoryTrackingGroup {
+class GPU_IPC_SERVICE_EXPORT GpuMemoryTrackingGroup {
  public:
   ~GpuMemoryTrackingGroup();
   void TrackMemoryAllocatedChange(uint64_t old_size, uint64_t new_size);

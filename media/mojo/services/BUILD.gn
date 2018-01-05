@@ -92,6 +92,7 @@ component("services") {
   ]
 
   deps = [
+    "//gpu/ipc/service",
     "//media:shared_memory_support",
     "//media/cdm:cdm_manager",
     "//media/gpu",

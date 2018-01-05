@@ -12,7 +12,7 @@
 
 namespace gpu {
 
-class GPU_EXPORT GLES2CommandBufferStub
+class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
     : public CommandBufferStub,
       public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<GLES2CommandBufferStub> {
