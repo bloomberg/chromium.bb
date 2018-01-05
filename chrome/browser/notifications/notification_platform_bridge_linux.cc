@@ -88,6 +88,13 @@ const int32_t kExpireTimeout = 25000;
 // The maximum amount of characters for displaying the full origin path.
 const size_t kMaxAllowedOriginLength = 28;
 
+// Notification urgency levels, as specified in the FDO notification spec.
+enum FdoUrgency {
+  URGENCY_LOW = 0,
+  URGENCY_NORMAL = 1,
+  URGENCY_CRITICAL = 2,
+};
+
 // The values in this enumeration correspond to those of the
 // Linux.NotificationPlatformBridge.InitializationStatus histogram, so
 // the ordering should not be changed.  New error codes should be
@@ -126,22 +133,17 @@ void EscapeUnsafeCharacters(std::string* message) {
 }
 
 int NotificationPriorityToFdoUrgency(int priority) {
-  enum FdoUrgency {
-    LOW = 0,
-    NORMAL = 1,
-    CRITICAL = 2,
-  };
   switch (priority) {
     case message_center::MIN_PRIORITY:
     case message_center::LOW_PRIORITY:
-      return LOW;
+      return URGENCY_LOW;
     case message_center::HIGH_PRIORITY:
     case message_center::MAX_PRIORITY:
-      return CRITICAL;
+      return URGENCY_CRITICAL;
     default:
       NOTREACHED();
     case message_center::DEFAULT_PRIORITY:
-      return NORMAL;
+      return URGENCY_NORMAL;
   }
 }
 
@@ -627,8 +629,11 @@ class NotificationPlatformBridgeLinuxImpl
     dbus::MessageWriter urgency_writer(nullptr);
     hints_writer.OpenDictEntry(&urgency_writer);
     urgency_writer.AppendString("urgency");
-    urgency_writer.AppendVariantOfUint32(
-        NotificationPriorityToFdoUrgency(notification->priority()));
+    uint32_t urgency =
+        notification->never_timeout()
+            ? URGENCY_CRITICAL
+            : NotificationPriorityToFdoUrgency(notification->priority());
+    urgency_writer.AppendVariantOfUint32(urgency);
     hints_writer.CloseContainer(&urgency_writer);
 
     if (notification->silent()) {
