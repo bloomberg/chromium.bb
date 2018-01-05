@@ -4221,7 +4221,9 @@
       {
         "args": [
           "--xvfb",
-          "--extra-browser-args=--enable-viz"
+          "--extra-browser-args=--enable-viz",
+          "--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot",
+          "--skip=measurements.tab_switching_unittest.TabSwitchingUnittest.testTabSwitching"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests_viz",
@@ -4229,6 +4231,14 @@
           "can_use_on_swarming_builders": true,
           "hard_timeout": 960,
           "shards": 12
+        }
+      },
+      {
+        "isolate_name": "telemetry_unittests",
+        "name": "telemetry_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 4
         }
       },
       {
@@ -4241,7 +4251,7 @@
           "--skip=telemetry.page.cache_temperature_unittest.CacheTemperatureTests.testEnsureHotAfterColdRun"
         ],
         "isolate_name": "telemetry_unittests",
-        "name": "telemetry_unittests",
+        "name": "telemetry_unittests_viz",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 4

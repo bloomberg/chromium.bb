@@ -974,7 +974,7 @@
   'linux_viz_isolated_scripts': {
     'telemetry_perf_unittests': {
       'args': [
-        "--xvfb",
+        '--xvfb',
       ],
       'swarming': {
         'hard_timeout': 960,
@@ -984,15 +984,18 @@
     'telemetry_perf_unittests_viz': {
       'isolate_name': 'telemetry_perf_unittests',
       'args': [
-        "--xvfb",
-        "--extra-browser-args=--enable-viz",
+        '--xvfb',
+        '--extra-browser-args=--enable-viz',
+        '--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot',
+        '--skip=measurements.tab_switching_unittest.TabSwitchingUnittest.testTabSwitching',
       ],
       'swarming': {
         'hard_timeout': 960,
         'shards': 12,
       },
     },
-    'telemetry_unittests': {
+    'telemetry_unittests_viz': {
+      'isolate_name': 'telemetry_unittests',
       'args': [
         '--extra-browser-args=--enable-viz',
         '--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed',
@@ -1004,6 +1007,11 @@
       'swarming': {
         'shards': 4,
       },
+     },
+     'telemetry_unittests': {
+       'swarming': {
+         'shards': 4,
+       },
      },
    },
 
