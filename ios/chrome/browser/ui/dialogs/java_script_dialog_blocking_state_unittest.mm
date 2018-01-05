@@ -34,6 +34,7 @@ class JavaScriptBlockingTestWebState : public web::TestWebState {
   // Simulates a navigation by sending a WebStateObserver callback.
   void SimulateNavigationStarted(bool renderer_initiated,
                                  bool same_document,
+                                 ui::PageTransition transition,
                                  bool change_last_committed_item) {
     if (change_last_committed_item) {
       last_committed_item_ = web::NavigationItem::Create();
@@ -83,38 +84,62 @@ TEST_F(JavaScriptDialogBlockingStateTest, BlockingOptionSelected) {
   EXPECT_TRUE(state().blocked());
 }
 
-// Tests that blocked() returns false after a user-initiated or document-
-// changing navigation.
-TEST_F(JavaScriptDialogBlockingStateTest, StopBlocking) {
-  EXPECT_FALSE(state().blocked());
+// Tests that blocked() returns false after user-initiated navigations.
+TEST_F(JavaScriptDialogBlockingStateTest, StopBlockingForUserInitiated) {
+  // Verify that the blocked bit is unset after a document-changing, user-
+  // initiated navigation.
   state().JavaScriptDialogBlockingOptionSelected();
   EXPECT_TRUE(state().blocked());
-  web_state().SimulateNavigationStarted(false /* renderer_initiated */,
-                                        false /* same_document */,
-                                        true /* change_last_committed_item */);
+  web_state().SimulateNavigationStarted(
+      false /* renderer_initiated */, false /* same_document */,
+      ui::PAGE_TRANSITION_TYPED, /* transition */
+      true /* change_last_committed_item */);
   EXPECT_FALSE(state().blocked());
+
+  // Verify that the blocked bit is unset after a same-changing, user-
+  // initiated navigation.
   state().JavaScriptDialogBlockingOptionSelected();
   EXPECT_TRUE(state().blocked());
-  web_state().SimulateNavigationStarted(true /* renderer_initiated */,
-                                        false /* same_document */,
-                                        true /* change_last_committed_item */);
-  EXPECT_FALSE(state().blocked());
-  state().JavaScriptDialogBlockingOptionSelected();
-  EXPECT_TRUE(state().blocked());
-  web_state().SimulateNavigationStarted(false /* renderer_initiated */,
-                                        true /* same_document */,
-                                        true /* change_last_committed_item */);
+  web_state().SimulateNavigationStarted(
+      false /* renderer_initiated */, true /* same_document */,
+      ui::PAGE_TRANSITION_LINK, /* transition */
+      true /* change_last_committed_item */);
   EXPECT_FALSE(state().blocked());
 }
 
-// Tests that blocked() returns true after a renderer-initiated, same-document
-// navigation that doesn't change the last committed item.
-TEST_F(JavaScriptDialogBlockingStateTest, ContinueBlocking) {
-  EXPECT_FALSE(state().blocked());
+// Tests that blocked() returns false after document-changing navigations.
+TEST_F(JavaScriptDialogBlockingStateTest, StopBlockingForDocumentChange) {
+  // Verify that the blocked bit is unset after a document-changing, renderer-
+  // initiated navigation.
   state().JavaScriptDialogBlockingOptionSelected();
   EXPECT_TRUE(state().blocked());
-  web_state().SimulateNavigationStarted(true /* renderer_initiated */,
-                                        true /* same_document */,
-                                        false /* change_last_committed_item */);
+  web_state().SimulateNavigationStarted(
+      true /* renderer_initiated */, false /* same_document */,
+      ui::PAGE_TRANSITION_LINK, /* transition */
+      true /* change_last_committed_item */);
+  EXPECT_FALSE(state().blocked());
+}
+
+// Tests that blocked() continues to return true after a reload.
+TEST_F(JavaScriptDialogBlockingStateTest, ContinueBlockingForReload) {
+  state().JavaScriptDialogBlockingOptionSelected();
+  EXPECT_TRUE(state().blocked());
+  web_state().SimulateNavigationStarted(
+      true /* renderer_initiated */, true /* same_document */,
+      ui::PAGE_TRANSITION_RELOAD, /* transition */
+      true /* change_last_committed_item */);
+  EXPECT_TRUE(state().blocked());
+}
+
+// Tests that blocked() returns true after a renderer-initiated, same-document
+// navigation.
+TEST_F(JavaScriptDialogBlockingStateTest,
+       ContinueBlockingForRendererInitiatedSameDocument) {
+  state().JavaScriptDialogBlockingOptionSelected();
+  EXPECT_TRUE(state().blocked());
+  web_state().SimulateNavigationStarted(
+      true /* renderer_initiated */, true /* same_document */,
+      ui::PAGE_TRANSITION_LINK, /* transition */
+      false /* change_last_committed_item */);
   EXPECT_TRUE(state().blocked());
 }
