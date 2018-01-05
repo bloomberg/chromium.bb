@@ -254,10 +254,6 @@ class HttpStreamFactoryImpl::Job {
 
   bool should_reconsider_proxy() const { return should_reconsider_proxy_; }
 
-  // TODO(xunjieli): Added to investigate crbug.com/711721. Remove when no
-  // longer needed.
-  void LogHistograms() const;
-
   NetErrorDetails* net_error_details() { return &net_error_details_; }
 
  private:
@@ -419,9 +415,6 @@ class HttpStreamFactoryImpl::Job {
   const CompletionCallback io_callback_;
   std::unique_ptr<ClientSocketHandle> connection_;
   HttpNetworkSession* const session_;
-
-  // |state_| is only used for LogHistograms().
-  State state_;
 
   State next_state_;
 

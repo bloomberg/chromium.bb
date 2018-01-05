@@ -260,8 +260,6 @@ void HttpStreamFactoryImpl::AddJobControllerCountToHistograms() {
   size_t num_controllers_with_request = 0;
   size_t num_controllers_for_preconnect = 0;
   for (const auto& job_controller : job_controller_set_) {
-    // Additionally log the states of the jobs.
-    job_controller->LogHistograms();
     // For a preconnect controller, it should have exactly the main job.
     if (job_controller->is_preconnect()) {
       num_controllers_for_preconnect++;

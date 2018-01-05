@@ -681,13 +681,6 @@ bool HttpStreamFactoryImpl::JobController::HasPendingAltJob() const {
   return alternative_job_.get() != nullptr;
 }
 
-void HttpStreamFactoryImpl::JobController::LogHistograms() const {
-  if (main_job_)
-    main_job_->LogHistograms();
-  if (alternative_job_)
-    alternative_job_->LogHistograms();
-}
-
 size_t HttpStreamFactoryImpl::JobController::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(main_job_) +
          base::trace_event::EstimateMemoryUsage(alternative_job_);

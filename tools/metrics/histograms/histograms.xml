@@ -43689,24 +43689,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.HttpStreamFactoryJob.Alt.NextState"
     enum="HttpStreamFactoryJobState">
+  <obsolete>
+    Deprecated as of 1/2018.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>Reports the next state that the Alternative Job is in.</summary>
 </histogram>
 
 <histogram name="Net.HttpStreamFactoryJob.Alt.State"
     enum="HttpStreamFactoryJobState">
+  <obsolete>
+    Deprecated as of 1/2018.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>Reports the state that the Alternative Job is in.</summary>
 </histogram>
 
 <histogram name="Net.HttpStreamFactoryJob.Main.NextState"
     enum="HttpStreamFactoryJobState">
+  <obsolete>
+    Deprecated as of 1/2018.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>Reports the next state that the Main Job is in.</summary>
 </histogram>
 
 <histogram name="Net.HttpStreamFactoryJob.Main.State"
     enum="HttpStreamFactoryJobState">
+  <obsolete>
+    Deprecated as of 1/2018.
+  </obsolete>
   <owner>xunjieli@chromium.org</owner>
   <summary>Reports the state that the Main Job is in.</summary>
 </histogram>
