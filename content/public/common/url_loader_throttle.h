@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/request_priority.h"
 
 class GURL;
 
@@ -45,6 +46,8 @@ class CONTENT_EXPORT URLLoaderThrottle {
     // not deferred or has already been canceled.
     virtual void Resume() = 0;
 
+    virtual void SetPriority(net::RequestPriority priority);
+
     // Pauses/resumes reading response body if the resource is fetched from
     // network.
     virtual void PauseReadingBodyFromNet();
@@ -62,13 +65,14 @@ class CONTENT_EXPORT URLLoaderThrottle {
   virtual void DetachFromCurrentSequence();
 
   // Called before the resource request is started.
-  virtual void WillStartRequest(const ResourceRequest& request, bool* defer);
+  virtual void WillStartRequest(ResourceRequest* request, bool* defer);
 
   // Called when the request was redirected.  |redirect_info| contains the
   // redirect responses's HTTP status code and some information about the new
   // request that will be sent if the redirect is followed, including the new
   // URL and new method.
   virtual void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                                   const ResourceResponseHead& response_head,
                                    bool* defer);
 
   // Called when the response headers and meta data are available.

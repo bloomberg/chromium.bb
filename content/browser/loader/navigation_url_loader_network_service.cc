@@ -237,11 +237,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         base::Unretained(service_worker_navigation_handle_core),
         base::Unretained(appcache_handle_core));
 
+    ResourceRequest resource_request;
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         std::move(create_url_loader),
         std::vector<std::unique_ptr<content::URLLoaderThrottle>>(),
-        /* routing_id = */ -1,
-        ResourceRequest(),  // not used
+        /* routing_id = */ -1, &resource_request,
         /* client = */ this, kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
   }
@@ -250,6 +250,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       std::unique_ptr<NavigationRequestInfo> request_info,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
       mojom::URLLoaderFactoryPtrInfo factory_for_webui,
       int frame_tree_node_id,
       std::unique_ptr<service_manager::Connector> connector) {
@@ -260,6 +261,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     started_ = true;
     web_contents_getter_ =
         base::Bind(&GetWebContentsFromFrameTreeNodeID, frame_tree_node_id);
+    navigation_ui_data_ = std::move(navigation_ui_data);
     const ResourceType resource_type = request_info->is_main_frame
                                            ? RESOURCE_TYPE_MAIN_FRAME
                                            : RESOURCE_TYPE_SUB_FRAME;
@@ -276,9 +278,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           webui_factory_ptr_.get(),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
-              web_contents_getter_),
+              web_contents_getter_, navigation_ui_data_.get()),
           0 /* routing_id */, 0 /* request_id? */, mojom::kURLLoadOptionNone,
-          *resource_request_, this, kNavigationUrlLoaderTrafficAnnotation,
+          resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
       return;
     }
@@ -344,8 +346,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(start_loader_callback),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
-              web_contents_getter_),
-          frame_tree_node_id_, *resource_request_, this,
+              web_contents_getter_, navigation_ui_data_.get()),
+          frame_tree_node_id_, resource_request_.get(), this,
           kNavigationUrlLoaderTrafficAnnotation,
           base::ThreadTaskRunnerHandle::Get());
 
@@ -419,9 +421,9 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory,
         GetContentClient()->browser()->CreateURLLoaderThrottles(
-            web_contents_getter_),
-        frame_tree_node_id_, 0 /* request_id? */, options, *resource_request_,
-        this, kNavigationUrlLoaderTrafficAnnotation,
+            web_contents_getter_, navigation_ui_data_.get()),
+        frame_tree_node_id_, 0 /* request_id? */, options,
+        resource_request_.get(), this, kNavigationUrlLoaderTrafficAnnotation,
         base::ThreadTaskRunnerHandle::Get());
   }
 
@@ -608,6 +610,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   int redirect_limit_ = net::URLRequest::kMaxRedirects;
   ResourceContext* resource_context_;
   base::Callback<WebContents*()> web_contents_getter_;
+  std::unique_ptr<NavigationUIData> navigation_ui_data_;
   scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;
   mojom::URLLoaderFactoryPtr webui_factory_ptr_;
 
@@ -782,6 +785,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
                      base::Unretained(service_worker_navigation_handle_core),
                      base::Unretained(appcache_handle_core),
                      base::Passed(std::move(request_info)),
+                     base::Passed(std::move(navigation_ui_data)),
                      base::Passed(std::move(factory_for_webui)),
                      frame_tree_node_id,
                      base::Passed(ServiceManagerConnection::GetForProcess()

@@ -37,6 +37,7 @@
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/url_loader_client_impl.h"
 #include "content/renderer/render_frame_impl.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -441,13 +442,15 @@ int ResourceDispatcher::StartAsync(
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= mojom::kURLLoadOptionSniffMimeType;
   }
-  if (is_sync)
+  if (is_sync) {
     options |= mojom::kURLLoadOptionSynchronous;
+    request->load_flags |= net::LOAD_IGNORE_LIMITS;
+  }
 
   std::unique_ptr<ThrottlingURLLoader> url_loader =
       ThrottlingURLLoader::CreateLoaderAndStart(
           url_loader_factory, std::move(throttles), routing_id, request_id,
-          options, *request, client.get(), traffic_annotation,
+          options, request.get(), client.get(), traffic_annotation,
           std::move(task_runner));
   pending_requests_[request_id]->url_loader = std::move(url_loader);
   pending_requests_[request_id]->url_loader_client = std::move(client);

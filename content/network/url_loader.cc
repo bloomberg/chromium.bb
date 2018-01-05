@@ -219,7 +219,7 @@ URLLoader::URLLoader(NetworkContext* context,
       base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
 
   url_request_ = context_->url_request_context()->CreateRequest(
-      GURL(request.url), net::DEFAULT_PRIORITY, this, traffic_annotation);
+      GURL(request.url), request.priority, this, traffic_annotation);
   url_request_->set_method(request.method);
 
   url_request_->set_site_for_cookies(request.site_for_cookies);
@@ -257,8 +257,7 @@ URLLoader::URLLoader(NetworkContext* context,
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
-  int load_flags = BuildLoadFlagsForRequest(request, false);
-  url_request_->SetLoadFlags(load_flags);
+  url_request_->SetLoadFlags(BuildLoadFlagsForRequest(request));
   if (report_raw_headers_) {
     url_request_->SetRequestHeadersCallback(
         base::Bind(&net::HttpRawRequestHeaders::Assign,

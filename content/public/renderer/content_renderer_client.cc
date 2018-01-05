@@ -132,6 +132,7 @@ bool ContentRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
+    ResourceType resource_type,
     std::vector<std::unique_ptr<URLLoaderThrottle>>* throttles,
     GURL* new_url) {
   return false;

@@ -55,6 +55,7 @@ class AwContentRendererClient : public content::ContentRendererClient,
       blink::WebLocalFrame* frame,
       ui::PageTransition transition_type,
       const blink::WebURL& url,
+      content::ResourceType resource_type,
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
       GURL* new_url) override;
 

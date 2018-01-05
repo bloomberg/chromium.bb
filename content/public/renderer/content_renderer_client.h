@@ -18,6 +18,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/resource_type.h"
 #include "media/base/decode_capabilities.h"
 #include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
@@ -230,6 +231,7 @@ class CONTENT_EXPORT ContentRendererClient {
       blink::WebLocalFrame* frame,
       ui::PageTransition transition_type,
       const blink::WebURL& url,
+      ResourceType resource_type,
       std::vector<std::unique_ptr<URLLoaderThrottle>>* throttles,
       GURL* new_url);
 

@@ -213,13 +213,14 @@ class TestURLLoaderThrottle : public URLLoaderThrottle {
 
  private:
   // URLLoaderThrottle implementation.
-  void WillStartRequest(const ResourceRequest& request, bool* defer) override {
+  void WillStartRequest(ResourceRequest* request, bool* defer) override {
     will_start_request_called_++;
     if (will_start_request_callback_)
       will_start_request_callback_.Run(delegate_, defer);
   }
 
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
+                           const content::ResourceResponseHead& response_head,
                            bool* defer) override {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_)
@@ -277,7 +278,7 @@ class ThrottlingURLLoaderTest : public testing::Test {
     request.url = request_url;
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory_.factory_ptr().get(), std::move(throttles_), 0, 0, options,
-        request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS,
+        &request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS,
         base::ThreadTaskRunnerHandle::Get());
     factory_.factory_ptr().FlushForTesting();
   }

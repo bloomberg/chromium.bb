@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
@@ -42,7 +43,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      const ResourceRequest& url_request,
+      ResourceRequest* url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -58,7 +59,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
       StartLoaderCallback start_loader_callback,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       int32_t routing_id,
-      const ResourceRequest& url_request,
+      ResourceRequest* url_request,
       mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -96,7 +97,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
              int32_t request_id,
              uint32_t options,
              StartLoaderCallback start_loader_callback,
-             const ResourceRequest& url_request,
+             ResourceRequest* url_request,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   void StartNow(mojom::URLLoaderFactory* factory,
@@ -104,7 +105,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
                 int32_t request_id,
                 uint32_t options,
                 StartLoaderCallback start_loader_callback,
-                const ResourceRequest& url_request,
+                ResourceRequest* url_request,
                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Processes the result of a URLLoaderThrottle call, adding the throttle to
@@ -140,7 +141,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
 
   void CancelWithError(int error_code);
   void Resume();
-
+  void SetPriority(net::RequestPriority priority);
   void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
   void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
 
@@ -187,7 +188,7 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
               int32_t in_request_id,
               uint32_t in_options,
               StartLoaderCallback in_start_loader_callback,
-              const ResourceRequest& in_url_request,
+              ResourceRequest* in_url_request,
               scoped_refptr<base::SingleThreadTaskRunner> in_task_runner);
     ~StartInfo();
 
@@ -246,6 +247,8 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
 
   // The latest request URL from where we expect a response
   GURL response_url_;
+
+  base::WeakPtrFactory<ThrottlingURLLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };
