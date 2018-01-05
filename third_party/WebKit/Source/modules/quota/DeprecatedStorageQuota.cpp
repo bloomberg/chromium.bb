@@ -62,11 +62,12 @@ StorageType GetStorageType(DeprecatedStorageQuota::Type type) {
   }
 }
 
-void QueryStorageUsageAndQuotaCallback(V8StorageUsageCallback* success_callback,
-                                       V8StorageErrorCallback* error_callback,
-                                       mojom::QuotaStatusCode status_code,
-                                       int64_t usage_in_bytes,
-                                       int64_t quota_in_bytes) {
+void DeprecatedQueryStorageUsageAndQuotaCallback(
+    V8StorageUsageCallback* success_callback,
+    V8StorageErrorCallback* error_callback,
+    mojom::QuotaStatusCode status_code,
+    int64_t usage_in_bytes,
+    int64_t quota_in_bytes) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     if (error_callback) {
       error_callback->InvokeAndReportException(
@@ -127,7 +128,7 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
 
   Platform::Current()->QueryStorageUsageAndQuota(
       WrapRefCounted(security_origin), storage_type,
-      WTF::Bind(&QueryStorageUsageAndQuotaCallback,
+      WTF::Bind(&DeprecatedQueryStorageUsageAndQuotaCallback,
                 WrapPersistent(success_callback),
                 WrapPersistent(error_callback)));
 }
