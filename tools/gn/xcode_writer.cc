@@ -35,9 +35,10 @@ using TargetToFileList = std::unordered_map<const Target*, Target::FileList>;
 using TargetToTarget = std::unordered_map<const Target*, const Target*>;
 using TargetToPBXTarget = std::unordered_map<const Target*, PBXTarget*>;
 
-const char kEarlGreyFileNameIdentifier[] = "egtest.mm";
-const char kXCTestObjCFileNameIdentifier[] = "xctest.m";
-const char kXCTestObjCppFileNameIdentifier[] = "xctest.mm";
+const char* kXCTestFileSuffixes[] = {
+    "egtest.m", "egtest.mm", "xctest.m", "xctest.mm",
+};
+
 const char kXCTestModuleTargetNamePostfix[] = "_module";
 const char kXCUITestRunnerTargetNamePostfix[] = "_runner";
 
@@ -126,12 +127,15 @@ bool IsXCUITestModuleTarget(const Target* target) {
 }
 
 bool IsXCTestFile(const SourceFile& file) {
-  return base::EndsWith(file.GetName(), kEarlGreyFileNameIdentifier,
-                        base::CompareCase::SENSITIVE) ||
-         base::EndsWith(file.GetName(), kXCTestObjCFileNameIdentifier,
-                        base::CompareCase::SENSITIVE) ||
-         base::EndsWith(file.GetName(), kXCTestObjCppFileNameIdentifier,
-                        base::CompareCase::SENSITIVE);
+  std::string file_name = file.GetName();
+  for (size_t i = 0; i < arraysize(kXCTestFileSuffixes); ++i) {
+    if (base::EndsWith(file_name, kXCTestFileSuffixes[i],
+                       base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const Target* FindApplicationTargetByName(
