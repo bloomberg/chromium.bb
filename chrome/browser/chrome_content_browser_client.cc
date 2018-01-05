@@ -1912,8 +1912,9 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     copy_switches = true;
   }
   if (mash_service_registry::IsMashServiceName(identity.name())) {
-    command_line->AppendSwitchASCII(switches::kMashServiceName,
-                                    identity.name());
+    command_line->AppendSwitchASCII(
+        switches::kMashServiceName,
+        mash_service_registry::GetMashServiceLabel(identity.name()));
   }
 #endif
   // TODO(sky): move to a whitelist, but currently the set of flags is rather
