@@ -61,20 +61,7 @@ static INLINE ConvolveParams get_conv_params(int ref, int do_average,
   return conv_params;
 }
 
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-static INLINE void av1_convolve_filter_params_fixup_1212(
-    const InterpFilterParams *params_x, InterpFilterParams *params_y) {
-  if (params_x->interp_filter == MULTITAP_SHARP &&
-      params_y->interp_filter == MULTITAP_SHARP) {
-    // Avoid two directions both using 12-tap filter.
-    // This will reduce hardware implementation cost.
-    *params_y = av1_get_interp_filter_params(EIGHTTAP_SHARP);
-  }
-}
-#endif
-
 static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
-                                                  int avoid_1212,
                                                   InterpFilterParams *params_x,
                                                   InterpFilterParams *params_y
 #if CONFIG_SHORT_FILTER
@@ -96,12 +83,6 @@ static INLINE void av1_get_convolve_filter_params(InterpFilters interp_filters,
   *params_x = av1_get_interp_filter_params(filter_x);
   *params_y = av1_get_interp_filter_params(filter_y);
 #endif
-
-  if (avoid_1212) {
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-    convolve_filter_params_fixup_1212(params_x, params_y);
-#endif
-  }
 }
 
 struct AV1Common;

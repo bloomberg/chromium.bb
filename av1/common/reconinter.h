@@ -87,10 +87,10 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
 
       InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER
-      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+      av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                      &filter_params_y, w, h);
 #else
-      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+      av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                      &filter_params_y);
 
 #endif
@@ -152,10 +152,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
     } else {
       InterpFilterParams filter_params_x, filter_params_y;
 #if CONFIG_SHORT_FILTER
-      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+      av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                      &filter_params_y, w, h);
 #else
-      av1_get_convolve_filter_params(interp_filters, 0, &filter_params_x,
+      av1_get_convolve_filter_params(interp_filters, &filter_params_x,
                                      &filter_params_y);
 #endif
 

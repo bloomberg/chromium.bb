@@ -15,10 +15,6 @@
 #include "./av1_rtcd.h"
 #include "av1/common/filter.h"
 
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-DECLARE_ALIGNED(16, static int16_t, subpel_filters_sharp[15][6][8]);
-#endif
-
 #if USE_TEMPORALFILTER_12TAP
 DECLARE_ALIGNED(16, static int16_t, subpel_temporalfilter[15][6][8]);
 #endif
@@ -31,11 +27,6 @@ typedef void (*TransposeSave)(int width, int pixelsNum, uint32_t *src,
 
 static INLINE HbdSubpelFilterCoeffs
 hbd_get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-  if (p.interp_filter == MULTITAP_SHARP) {
-    return &subpel_filters_sharp[index][0];
-  }
-#endif
 #if USE_TEMPORALFILTER_12TAP
   if (p.interp_filter == TEMPORALFILTER_12TAP) {
     return &subpel_temporalfilter[index][0];
@@ -74,15 +65,6 @@ void av1_highbd_convolve_init_sse4_1(void) {
     int taps = filter_params.taps;
     const int16_t *filter_ptr = filter_params.filter_ptr;
     init_simd_filter(filter_ptr, taps, subpel_temporalfilter);
-  }
-#endif
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-  {
-    InterpFilterParams filter_params =
-        av1_get_interp_filter_params(MULTITAP_SHARP);
-    int taps = filter_params.taps;
-    const int16_t *filter_ptr = filter_params.filter_ptr;
-    init_simd_filter(filter_ptr, taps, subpel_filters_sharp);
   }
 #endif
 }

@@ -63,18 +63,10 @@
 
 #if CONFIG_DUAL_FILTER
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
-#if USE_EXTRA_FILTER
-static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
-  { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 }, { 1, 0 }, { 1, 1 },
-  { 1, 2 }, { 1, 3 }, { 2, 0 }, { 2, 1 }, { 2, 2 }, { 2, 3 },
-  { 3, 0 }, { 3, 1 }, { 3, 2 }, { 3, 3 },
-};
-#else   // USE_EXTRA_FILTER
 static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
   { 0, 0 }, { 0, 1 }, { 0, 2 }, { 1, 0 }, { 1, 1 },
   { 1, 2 }, { 2, 0 }, { 2, 1 }, { 2, 2 },
 };
-#endif  // USE_EXTRA_FILTER
 #endif  // CONFIG_DUAL_FILTER
 
 #define LAST_FRAME_MODE_MASK                                          \

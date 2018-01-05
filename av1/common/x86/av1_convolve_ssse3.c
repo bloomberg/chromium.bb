@@ -19,14 +19,6 @@
 #define WIDTH_BOUND (16)
 #define HEIGHT_BOUND (16)
 
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-DECLARE_ALIGNED(16, static int8_t,
-                sub_pel_filters_12sharp_signal_dir[15][2][16]);
-
-DECLARE_ALIGNED(16, static int8_t,
-                sub_pel_filters_12sharp_ver_signal_dir[15][6][16]);
-#endif  // CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-
 #if USE_TEMPORALFILTER_12TAP
 DECLARE_ALIGNED(16, static int8_t,
                 sub_pel_filters_temporalfilter_12_signal_dir[15][2][16]);
@@ -39,11 +31,6 @@ typedef int8_t (*SubpelFilterCoeffs)[16];
 
 static INLINE SubpelFilterCoeffs
 get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-  if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_12sharp_signal_dir[index][0];
-  }
-#endif
 #if USE_TEMPORALFILTER_12TAP
   if (p.interp_filter == TEMPORALFILTER_12TAP) {
     return &sub_pel_filters_temporalfilter_12_signal_dir[index][0];
@@ -56,11 +43,6 @@ get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
 
 static INLINE SubpelFilterCoeffs
 get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-  if (p.interp_filter == MULTITAP_SHARP) {
-    return &sub_pel_filters_12sharp_ver_signal_dir[index][0];
-  }
-#endif
 #if USE_TEMPORALFILTER_12TAP
   if (p.interp_filter == TEMPORALFILTER_12TAP) {
     return &sub_pel_filters_temporalfilter_12_ver_signal_dir[index][0];
@@ -987,14 +969,6 @@ typedef struct SimdFilter {
   int8_t (*simd_vert_filter)[6][16];
 } SimdFilter;
 
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-#define MULTITAP_FILTER_NUM 1
-SimdFilter simd_filters[MULTITAP_FILTER_NUM] = {
-  { MULTITAP_SHARP, &sub_pel_filters_12sharp_signal_dir[0],
-    &sub_pel_filters_12sharp_ver_signal_dir[0] },
-};
-#endif
-
 #if USE_TEMPORALFILTER_12TAP
 SimdFilter temporal_simd_filter = {
   TEMPORALFILTER_12TAP, &sub_pel_filters_temporalfilter_12_signal_dir[0],
@@ -1013,21 +987,6 @@ void av1_lowbd_convolve_init_ssse3(void) {
                            temporal_simd_filter.simd_horiz_filter);
     init_simd_vert_filter(filter_ptr, taps,
                           temporal_simd_filter.simd_vert_filter);
-  }
-#endif
-#if CONFIG_DUAL_FILTER && USE_EXTRA_FILTER
-  {
-    int i;
-    for (i = 0; i < MULTITAP_FILTER_NUM; ++i) {
-      InterpFilter interp_filter = simd_filters[i].interp_filter;
-      InterpFilterParams filter_params =
-          av1_get_interp_filter_params(interp_filter);
-      int taps = filter_params.taps;
-      const int16_t *filter_ptr = filter_params.filter_ptr;
-      init_simd_horiz_filter(filter_ptr, taps,
-                             simd_filters[i].simd_horiz_filter);
-      init_simd_vert_filter(filter_ptr, taps, simd_filters[i].simd_vert_filter);
-    }
   }
 #endif
   return;
