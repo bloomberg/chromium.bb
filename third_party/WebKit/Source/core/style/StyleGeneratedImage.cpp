@@ -24,7 +24,8 @@
 #include "core/style/StyleGeneratedImage.h"
 
 #include "core/css/CSSImageGeneratorValue.h"
-#include "core/css/resolver/StyleResolver.h"
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace blink {
 
