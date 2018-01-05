@@ -135,7 +135,7 @@ void TextInput::UpdateInput(const TextInputInfo& info) {
 }
 
 bool TextInput::OnBeginFrame(const base::TimeTicks& time,
-                             const gfx::Vector3dF& look_at) {
+                             const gfx::Transform& head_pose) {
   return SetCursorBlinkState(time);
 }
 

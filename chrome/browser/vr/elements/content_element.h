@@ -36,7 +36,7 @@ class ContentElement : public UiElement {
   void OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
                    const gfx::PointF& position) override;
   bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Vector3dF& look_at) override;
+                    const gfx::Transform& head_pose) override;
 
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;

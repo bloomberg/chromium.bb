@@ -104,7 +104,7 @@ void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {
 }
 
 bool ContentElement::OnBeginFrame(const base::TimeTicks& time,
-                                  const gfx::Vector3dF& look_at) {
+                                  const gfx::Transform& head_pose) {
   // TODO(mthiesse): This projection matrix is always going to be a frame
   // behind when computing the content size. We'll need to address this somehow
   // when we allow content resizing, or we could end up triggering an extra

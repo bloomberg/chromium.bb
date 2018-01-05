@@ -30,7 +30,7 @@ TEST(ScaledDepthAdjuster, SimpleDepth) {
   auto adjuster = base::MakeUnique<ScaledDepthAdjuster>(2.5);
   adjuster->AddChild(std::move(element));
   scene.AddUiElement(kRoot, std::move(adjuster));
-  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
+  scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
   CheckScaleAndDepth(p_element, 2.5);
 }
 
@@ -63,7 +63,7 @@ TEST(ScaledDepthAdjuster, InheritedDepth) {
   grandparent->AddChild(std::move(parent_adjuster));
   grandparent_adjuster->AddChild(std::move(grandparent));
   scene.AddUiElement(kRoot, std::move(grandparent_adjuster));
-  scene.OnBeginFrame(MsToTicks(0), kForwardVector);
+  scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
 
   CheckScaleAndDepth(p_child, 2.6f);
   CheckScaleAndDepth(p_parent, 2.4f);

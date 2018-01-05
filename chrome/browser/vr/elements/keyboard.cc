@@ -91,7 +91,7 @@ void Keyboard::OnButtonUp(const gfx::PointF& position) {
 }
 
 bool Keyboard::OnBeginFrame(const base::TimeTicks& time,
-                            const gfx::Vector3dF& head_direction) {
+                            const gfx::Transform& head_pose) {
   if (!delegate_)
     return false;
 

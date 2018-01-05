@@ -881,11 +881,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
         gvr_api_.get(), &render_info_primary_.head_pose);
   }
 
-  gfx::Vector3dF forward_vector =
-      vr::GetForwardVector(render_info_primary_.head_pose);
-
   // Update the render position of all UI elements (including desktop).
-  bool scene_changed = ui_->scene()->OnBeginFrame(current_time, forward_vector);
+  bool scene_changed =
+      ui_->scene()->OnBeginFrame(current_time, render_info_primary_.head_pose);
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())

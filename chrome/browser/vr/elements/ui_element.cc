@@ -174,7 +174,7 @@ bool UiElement::PrepareToDraw() {
 }
 
 bool UiElement::DoBeginFrame(const base::TimeTicks& time,
-                             const gfx::Vector3dF& look_at) {
+                             const gfx::Transform& head_pose) {
   // TODO(mthiesse): This is overly cautious. We may have animations but not
   // trigger any updates, so we should refine this logic and have
   // AnimationPlayer::Tick return a boolean.
@@ -182,7 +182,7 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
   animation_player_.Tick(time);
   last_frame_time_ = time;
   set_update_phase(kUpdatedAnimations);
-  bool begin_frame_updated = OnBeginFrame(time, look_at);
+  bool begin_frame_updated = OnBeginFrame(time, head_pose);
   UpdateComputedOpacity();
   bool was_visible_at_any_point = IsVisible() || updated_visibility_this_frame_;
   return (begin_frame_updated || animations_updated) &&
@@ -190,7 +190,7 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
 }
 
 bool UiElement::OnBeginFrame(const base::TimeTicks& time,
-                             const gfx::Vector3dF& look_at) {
+                             const gfx::Transform& head_pose) {
   return false;
 }
 

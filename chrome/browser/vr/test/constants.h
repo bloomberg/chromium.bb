@@ -28,7 +28,7 @@ static const gfx::Transform kPixelDaydreamProjMatrix(1.03317f,
                                                      0.0f,
                                                      -1.0f,
                                                      0.0f);
-
+static const gfx::Transform kStartHeadPose;
 static const gfx::Vector3dF kForwardVector(0.0f, 0.0f, -1.0f);
 static const gfx::Vector3dF kBackwardVector(0.0f, 0.0f, 1.0f);
 

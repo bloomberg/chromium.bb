@@ -60,7 +60,7 @@ std::unique_ptr<UiElement> UiScene::RemoveUiElement(int element_id) {
 }
 
 bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
-                           const gfx::Vector3dF& look_at) {
+                           const gfx::Transform& head_pose) {
   bool scene_dirty = !initialized_scene_ || is_dirty_;
   initialized_scene_ = true;
   is_dirty_ = false;
@@ -82,7 +82,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // time-related "dirtiness" on the scene graph.
     for (auto& element : *root_element_) {
       element.set_update_phase(UiElement::kDirty);
-      if ((element.DoBeginFrame(current_time, look_at) ||
+      if ((element.DoBeginFrame(current_time, head_pose) ||
            element.updated_bindings_this_frame()) &&
           (element.IsVisible() || element.updated_visiblity_this_frame())) {
         scene_dirty = true;

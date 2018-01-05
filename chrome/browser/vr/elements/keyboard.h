@@ -33,7 +33,7 @@ class Keyboard : public UiElement {
 
  private:
   bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Vector3dF& head_direction) override;
+                    const gfx::Transform& head_pose) override;
   void OnUpdatedWorldSpaceTransform() override;
   void Render(UiElementRenderer* renderer,
               const CameraModel& camera_model) const final;
