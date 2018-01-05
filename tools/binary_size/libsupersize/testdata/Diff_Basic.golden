@@ -45,7 +45,7 @@ Number of unique symbols 46 -> 46 (+0)
 Changed files:
   third_party/container.c
 
-Showing 1 symbols (aliases not grouped for diffs) with total pss: 10 bytes
+Showing 1 symbols (1 -> 1 unique) with total pss: 10 bytes
 Histogram of symbols based on PSS:
     [8,16): 1
 .text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=10 bytes   .bss=0 bytes    total=10 bytes
