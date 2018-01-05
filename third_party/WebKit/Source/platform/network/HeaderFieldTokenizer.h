@@ -30,6 +30,12 @@ class PLATFORM_EXPORT HeaderFieldTokenizer final {
   bool ConsumeToken(Mode, StringView& output);
   bool ConsumeTokenOrQuotedString(Mode, String& output);
 
+  // Consume all characters before (but excluding) any of the characters from
+  // the Vector parameter are found.
+  // Because we potentially have to iterate through the entire Vector for each
+  // character of the base string, the Vector should be small (< 3 members).
+  void ConsumeBeforeAnyCharMatch(Vector<LChar>);
+
   unsigned Index() const { return index_; }
   bool IsConsumed() const { return index_ >= input_.length(); }
 

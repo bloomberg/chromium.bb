@@ -854,14 +854,12 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
           break;
         }
 
+        String value = "";
         if (tokenizer.Consume('=')) {
-          String value;
-          if (!tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, value)) {
-            break;
-          }
-
-          header.SetParameter(parameter_name, value);
+          tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, value);
+          tokenizer.ConsumeBeforeAnyCharMatch({',', ';'});
         }
+        header.SetParameter(parameter_name, value);
       }
 
       headers->push_back(std::make_unique<ServerTimingHeader>(header));
