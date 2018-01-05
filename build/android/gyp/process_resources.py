@@ -582,7 +582,7 @@ def _MoveImagesToNonMdpiFolders(res_root):
     dst_dir = os.path.join(res_root, dst_dir_name)
     build_utils.MakeDirectory(dst_dir)
     for src_file_name in os.listdir(src_dir):
-      if not src_file_name.endswith('.png'):
+      if not os.path.splitext(src_file_name)[1] in ('.png', '.webp'):
         continue
       src_file = os.path.join(src_dir, src_file_name)
       dst_file = os.path.join(dst_dir, src_file_name)
