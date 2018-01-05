@@ -1875,6 +1875,7 @@ domain DOMDebugger
 experimental domain DOMSnapshot
   depends on CSS
   depends on DOM
+  depends on DOMDebugger
   depends on Page
 
   # A Node in the DOM tree.
@@ -1936,6 +1937,8 @@ experimental domain DOMSnapshot
       # event listeners attached via JavaScript as well as anchor tags that naturally navigate when
       # clicked.
       optional boolean isClickable
+      # Details of the node's event listeners, if any.
+      optional array of DOMDebugger.EventListener eventListeners
 
   # Details of post layout rendered text positions. The exact layout should not be regarded as
   # stable and may change between versions.
@@ -1984,6 +1987,8 @@ experimental domain DOMSnapshot
     parameters
       # Whitelist of computed styles to return.
       array of string computedStyleWhitelist
+      # Whether or not to retrieve details of DOM listeners (default false).
+      optional boolean includeEventListeners
     returns
       # The nodes in the DOM tree. The DOMNode at index 0 corresponds to the root document.
       array of DOMNode domNodes

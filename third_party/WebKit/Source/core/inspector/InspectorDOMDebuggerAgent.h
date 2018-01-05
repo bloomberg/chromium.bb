@@ -115,6 +115,19 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void Restore() override;
   void DidCommitLoadForLocalFrame(LocalFrame*) override;
 
+  static void CollectEventListeners(v8::Isolate*,
+                                    EventTarget*,
+                                    v8::Local<v8::Value> target_wrapper,
+                                    Node* target_node,
+                                    bool report_for_all_contexts,
+                                    V8EventListenerInfoList* event_information);
+
+  std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>
+  BuildObjectsForEventListeners(
+      const V8EventListenerInfoList&,
+      v8::Local<v8::Context>,
+      const v8_inspector::StringView& object_group_id);
+
  private:
   static void EventListenersInfoForTarget(v8::Isolate*,
                                           v8::Local<v8::Value>,

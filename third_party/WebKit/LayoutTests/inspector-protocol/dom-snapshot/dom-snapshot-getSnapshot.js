@@ -19,7 +19,7 @@
   }
 
   var whitelist = ['transform', 'transform-origin', 'height', 'width', 'display', 'outline-color', 'color'];
-  var response = await dp.DOMSnapshot.getSnapshot({'computedStyleWhitelist': whitelist});
+  var response = await dp.DOMSnapshot.getSnapshot({'computedStyleWhitelist': whitelist, 'includeEventListeners': true});
   if (response.error)
     testRunner.log(response);
   else
