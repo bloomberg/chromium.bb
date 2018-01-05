@@ -2090,6 +2090,25 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
+#if CONFIG_LOOP_RESTORATION
+  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
+    int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
+    if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
+                                           &rcol0, &rcol1, &rrow0, &rrow1,
+                                           &tile_tl_idx)) {
+      const int rstride = cm->rst_info[plane].horz_units_per_tile;
+      for (int rrow = rrow0; rrow < rrow1; ++rrow) {
+        for (int rcol = rcol0; rcol < rcol1; ++rcol) {
+          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
+          const RestorationUnitInfo *rui =
+              &cm->rst_info[plane].unit_info[rtile_idx];
+          loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
+        }
+      }
+    }
+  }
+#endif
+
   write_partition(cm, xd, hbs, mi_row, mi_col, partition, bsize, w);
   switch (partition) {
     case PARTITION_NONE:
@@ -2161,25 +2180,6 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       (bsize == BLOCK_8X8 || partition != PARTITION_SPLIT))
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
-
-#if CONFIG_LOOP_RESTORATION
-  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
-    int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
-    if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
-                                           &rcol0, &rcol1, &rrow0, &rrow1,
-                                           &tile_tl_idx)) {
-      const int rstride = cm->rst_info[plane].horz_units_per_tile;
-      for (int rrow = rrow0; rrow < rrow1; ++rrow) {
-        for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          const int rtile_idx = tile_tl_idx + rcol + rrow * rstride;
-          const RestorationUnitInfo *rui =
-              &cm->rst_info[plane].unit_info[rtile_idx];
-          loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
-        }
-      }
-    }
-  }
-#endif
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
