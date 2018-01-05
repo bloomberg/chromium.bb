@@ -2424,8 +2424,6 @@ crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-creden
 
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection-nested.html [ Skip ]
 crbug.com/697971 [ Mac10.12 ] fast/text/selection/flexbox-selection.html [ Skip ]
-crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Timeout Failure Pass ]
-crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.js [ Timeout Failure Pass ]
 
 crbug.com/701047 [ Mac10.12 ] editing/caret/caret-color.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/deleting/delete-at-paragraph-boundaries-011.html [ Failure ]
