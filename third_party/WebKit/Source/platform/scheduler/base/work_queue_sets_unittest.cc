@@ -44,9 +44,18 @@ class WorkQueueSetsTest : public ::testing::Test {
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::Bind([] {}), FROM_HERE), base::TimeTicks(),
-        0);
+        TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
+        base::TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
+    return fake_task;
+  }
+
+  TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
+    TaskQueueImpl::Task fake_task(
+        TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
+        base::TimeTicks(), 0);
+    fake_task.set_enqueue_order(enqueue_order);
+    fake_task.nestable = base::Nestable::kNonNestable;
     return fake_task;
   }
 
@@ -291,6 +300,28 @@ TEST_F(WorkQueueSetsTest, BlockQueuesByFence) {
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(selected_work_queue, queue2);
+}
+
+TEST_F(WorkQueueSetsTest, PushNonNestableTaskToFront) {
+  WorkQueue* queue1 = NewTaskQueue("queue1");
+  WorkQueue* queue2 = NewTaskQueue("queue2");
+  WorkQueue* queue3 = NewTaskQueue("queue3");
+  queue1->Push(FakeTaskWithEnqueueOrder(6));
+  queue2->Push(FakeTaskWithEnqueueOrder(5));
+  queue3->Push(FakeTaskWithEnqueueOrder(4));
+  size_t set = 4;
+  work_queue_sets_->ChangeSetIndex(queue1, set);
+  work_queue_sets_->ChangeSetIndex(queue2, set);
+  work_queue_sets_->ChangeSetIndex(queue3, set);
+
+  WorkQueue* selected_work_queue;
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(queue3, selected_work_queue);
+
+  queue1->PushNonNestableTaskToFront(FakeNonNestableTaskWithEnqueueOrder(2));
+
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(queue1, selected_work_queue);
 }
 
 }  // namespace internal

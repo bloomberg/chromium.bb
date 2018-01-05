@@ -107,13 +107,6 @@ void LazyThreadControllerForTest::CancelDelayedWork() {
   ThreadControllerImpl::CancelDelayedWork();
 }
 
-void LazyThreadControllerForTest::PostNonNestableTask(
-    const base::Location& from_here,
-    base::OnceClosure task) {
-  EnsureMessageLoop();
-  ThreadControllerImpl::PostNonNestableTask(from_here, std::move(task));
-}
-
 void LazyThreadControllerForTest::SetDefaultTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   if (!HasMessageLoop()) {

@@ -272,9 +272,11 @@ bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
   }
 
   TrySelectingBlockedQueueOverEnabledQueue(**out_work_queue);
-  DidSelectQueueWithPriority(
-      (*out_work_queue)->task_queue()->GetQueuePriority(),
-      chose_delayed_over_immediate);
+  // We could use |(*out_work_queue)->task_queue()->GetQueuePriority()| here but
+  // for re-queued non-nestable tasks |task_queue()| returns null.
+  DidSelectQueueWithPriority(static_cast<TaskQueue::QueuePriority>(
+                                 (*out_work_queue)->work_queue_set_index()),
+                             chose_delayed_over_immediate);
   return true;
 }
 
