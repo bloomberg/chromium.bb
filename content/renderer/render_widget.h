@@ -418,7 +418,7 @@ class CONTENT_EXPORT RenderWidget
   // Requests a BeginMainFrame callback from the compositor.
   void SetNeedsMainFrame() override;
 
-  int GetWidgetRoutingIdAtPoint(const gfx::Point& point);
+  viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::Point& point);
 
   void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
                         const ui::LatencyInfo& latency_info,

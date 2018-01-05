@@ -6,6 +6,7 @@
 #include "content/common/resize_params.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
@@ -134,10 +135,20 @@ TEST_F(RenderWidgetTest, HitTestAPI) {
       "</body>'></iframe><div></body>");
   blink::WebFrame* main_web_frame =
       static_cast<RenderViewImpl*>(view_)->GetMainRenderFrame()->GetWebFrame();
-  EXPECT_EQ(RenderFrame::GetRoutingIdForWebFrame(main_web_frame),
-            widget()->GetWidgetRoutingIdAtPoint(gfx::Point(10, 10)));
-  EXPECT_EQ(RenderFrame::GetRoutingIdForWebFrame(main_web_frame->FirstChild()),
-            widget()->GetWidgetRoutingIdAtPoint(gfx::Point(150, 150)));
+  viz::FrameSinkId main_frame_sink_id =
+      widget()->GetFrameSinkIdAtPoint(gfx::Point(10, 10));
+  EXPECT_EQ(static_cast<uint32_t>(
+                RenderFrame::GetRoutingIdForWebFrame(main_web_frame)),
+            main_frame_sink_id.sink_id());
+  EXPECT_EQ(static_cast<uint32_t>(RenderThreadImpl::Get()->GetClientId()),
+            main_frame_sink_id.client_id());
+
+  viz::FrameSinkId frame_sink_id =
+      widget()->GetFrameSinkIdAtPoint(gfx::Point(150, 150));
+  EXPECT_EQ(static_cast<uint32_t>(RenderFrame::GetRoutingIdForWebFrame(
+                main_web_frame->FirstChild())),
+            frame_sink_id.sink_id());
+  EXPECT_EQ(main_frame_sink_id.client_id(), frame_sink_id.client_id());
 }
 
 TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {

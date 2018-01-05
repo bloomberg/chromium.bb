@@ -375,11 +375,7 @@ void SurfaceHitTestTestHelper(
         quit_closure.Run();
       }));
   content::RunThisRunLoop(&run_loop);
-  ASSERT_EQ(
-      viz::FrameSinkId(
-          root_view->GetRenderWidgetHost()->GetProcess()->GetID(),
-          child_node->render_manager()->GetProxyToParent()->GetRoutingID()),
-      received_frame_sink_id);
+  ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
 
   main_frame_monitor.ResetEventReceived();
   child_frame_monitor.ResetEventReceived();
@@ -12922,12 +12918,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, HitTestNestedFrames) {
     // |point_in_nested_child| should hit test to |rwhv_grandchild|. We have
     // to check against the nested child's RenderFrameProxyHost for the parent
     // frame's SiteInstance.
-    ASSERT_EQ(viz::FrameSinkId(
-                  rwhv_child->GetRenderWidgetHost()->GetProcess()->GetID(),
-                  grandchild_node->render_manager()
-                      ->GetProxyToParent()
-                      ->GetRoutingID()),
-              received_frame_sink_id);
+    ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
   }
 }
 

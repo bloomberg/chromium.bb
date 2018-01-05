@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
     return pending_resize_params_.sequence_number;
   }
 
+  const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
   void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,
