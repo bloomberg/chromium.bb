@@ -9,8 +9,11 @@
 #include "base/environment.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
 #define REQUIRES_GPU(x) DISABLED_##x
@@ -20,7 +23,7 @@ namespace vr {
 // Base browser test class for running VR-related tests.
 // This is essentially a C++ port of the way Android does similar tests in
 // //chrome/android/javatests/src/.../browser/vr_shell/VrTestFramework.java
-class VrBrowserTest : public InProcessBrowserTest {
+class VrBrowserTestBase : public InProcessBrowserTest {
  public:
   static constexpr base::TimeDelta kPollCheckIntervalShort =
       base::TimeDelta::FromMilliseconds(50);
@@ -42,8 +45,8 @@ class VrBrowserTest : public InProcessBrowserTest {
     STATUS_FAILED = 2
   };
 
-  VrBrowserTest();
-  ~VrBrowserTest() override;
+  VrBrowserTestBase();
+  ~VrBrowserTestBase() override;
 
   void SetUp() override;
 
@@ -114,10 +117,41 @@ class VrBrowserTest : public InProcessBrowserTest {
 
  protected:
   std::unique_ptr<base::Environment> env_;
+  std::vector<base::Feature> enable_features_;
+  std::vector<std::string> append_switches_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(VrBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(VrBrowserTestBase);
+};
+
+// Test class with standard features enabled: WebVR, OpenVR support, and the
+// Gamepad API.
+class VrBrowserTestStandard : public VrBrowserTestBase {
+ public:
+  VrBrowserTestStandard() {
+    append_switches_.push_back(switches::kEnableWebVR);
+    enable_features_.push_back(features::kOpenVR);
+    enable_features_.push_back(features::kGamepadExtensions);
+  }
+};
+
+// Test class with WebVR disabled.
+class VrBrowserTestWebVrDisabled : public VrBrowserTestBase {
+ public:
+  VrBrowserTestWebVrDisabled() {
+    enable_features_.push_back(features::kOpenVR);
+    enable_features_.push_back(features::kGamepadExtensions);
+  }
+};
+
+// Test class with OpenVR support disabled.
+class VrBrowserTestOpenVrDisabled : public VrBrowserTestBase {
+ public:
+  VrBrowserTestOpenVrDisabled() {
+    append_switches_.push_back(switches::kEnableWebVR);
+    enable_features_.push_back(features::kGamepadExtensions);
+  }
 };
 
 }  // namespace vr
