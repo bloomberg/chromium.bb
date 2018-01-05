@@ -342,10 +342,10 @@ void UiInputManager::GetVisualTargetElement(
   // usability, do the following instead:
   //
   // - Project the controller laser onto a distance-limiting sphere.
-  // - Create a vector between the eyes and the outer surface point.
-  // - If any UI elements intersect this vector, and is within the bounding
-  //   sphere, choose the closest to the eyes, and place the reticle at the
-  //   intersection point.
+  // - Create a vector between the eyes and the point on the sphere.
+  // - If any UI elements intersect this vector, and are within the bounding
+  //   sphere, choose the element that is last in scene draw order (which is
+  //   typically the closest to the eye).
 
   // Compute the distance from the eyes to the distance limiting sphere. Note
   // that the sphere is centered at the controller, rather than the eye, for
@@ -361,16 +361,16 @@ void UiInputManager::GetVisualTargetElement(
   // more intuitive. For testing, however, we occasionally hit test along the
   // laser precisely since this geometric accuracy is important and we are not
   // dealing with a physical controller.
-  float closest_element_distance =
-      (reticle_model->target_point - kOrigin).Length();
-
-  HitTestRequest request;
-  request.ray_origin =
+  gfx::Point3F ray_origin =
       hit_test_strategy_ == HitTestStrategy::PROJECT_TO_WORLD_ORIGIN
           ? kOrigin
           : controller_model.laser_origin;
+  float distance_limit = (reticle_model->target_point - ray_origin).Length();
+
+  HitTestRequest request;
+  request.ray_origin = ray_origin;
   request.ray_target = reticle_model->target_point;
-  request.max_distance_to_plane = closest_element_distance;
+  request.max_distance_to_plane = distance_limit;
   HitTestElements(&scene_->root_element(), reticle_model, &request);
 }
 

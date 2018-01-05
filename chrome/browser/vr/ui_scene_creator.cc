@@ -490,7 +490,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
       bool, Model, model_, fullscreen_enabled(), UiElement, element.get(),
       SetTranslate(0,
                    value ? kFullscreenVerticalOffset : kContentVerticalOffset,
-                   value ? -kFullscreenToastDistance : -kContentDistance)));
+                   value ? -kFullscreenDistance : -kContentDistance)));
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
@@ -653,8 +653,8 @@ void UiSceneCreator::CreateContentQuad() {
       ContentElement, main_content.get(), SetTextureLocation));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(main_content));
 
-  // Limit reticle distance to a sphere based on content distance.
-  scene_->set_background_distance(kContentDistance *
+  // Limit reticle distance to a sphere based on maximum content distance.
+  scene_->set_background_distance(kFullscreenDistance *
                                   kBackgroundDistanceMultiplier);
 }
 
@@ -979,8 +979,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   auto inner_circle = base::MakeUnique<Rect>();
   inner_circle->SetName(kSpeechRecognitionCircle);
   inner_circle->SetDrawPhase(kPhaseForeground);
-  inner_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
-  inner_circle->set_corner_radius(kCloseButtonWidth);
+  inner_circle->SetSize(kCloseButtonDiameter * 2, kCloseButtonDiameter * 2);
+  inner_circle->set_corner_radius(kCloseButtonDiameter);
   inner_circle->set_hit_testable(false);
   VR_BIND_COLOR(model_, inner_circle.get(),
                 &ColorScheme::speech_recognition_circle_background,
@@ -992,7 +992,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   microphone_icon->SetName(kSpeechRecognitionMicrophoneIcon);
   microphone_icon->SetDrawPhase(kPhaseForeground);
   microphone_icon->set_hit_testable(false);
-  microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  microphone_icon->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   scene_->AddUiElement(kSpeechRecognitionRoot, std::move(microphone_icon));
 
   TransientElement* speech_result_parent =
@@ -1076,8 +1076,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   auto growing_circle = base::MakeUnique<Throbber>();
   growing_circle->SetName(kSpeechRecognitionListeningGrowingCircle);
   growing_circle->SetDrawPhase(kPhaseForeground);
-  growing_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
-  growing_circle->set_corner_radius(kCloseButtonWidth);
+  growing_circle->SetSize(kCloseButtonDiameter * 2, kCloseButtonDiameter * 2);
+  growing_circle->set_corner_radius(kCloseButtonDiameter);
   growing_circle->set_hit_testable(false);
   VR_BIND_COLOR(model_, growing_circle.get(),
                 &ColorScheme::speech_recognition_circle_background,
@@ -1600,7 +1600,7 @@ void UiSceneCreator::CreateCloseButton() {
   std::unique_ptr<DiscButton> element =
       Create<DiscButton>(kCloseButton, kPhaseForeground, click_handler,
                          vector_icons::kClose16Icon);
-  element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  element->SetSize(kCloseButtonDiameter, kCloseButtonDiameter);
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->SetTranslate(0, kCloseButtonVerticalOffset, -kCloseButtonDistance);
   VR_BIND_BUTTON_COLORS(model_, element.get(), &ColorScheme::button_colors,
@@ -1620,8 +1620,8 @@ void UiSceneCreator::CreateCloseButton() {
           value ? -kCloseButtonFullscreenDistance : -kCloseButtonDistance)));
   element->AddBinding(VR_BIND(
       bool, Model, model_, fullscreen_enabled(), UiElement, element.get(),
-      SetSize(value ? kCloseButtonFullscreenWidth : kCloseButtonWidth,
-              value ? kCloseButtonFullscreenHeight : kCloseButtonHeight)));
+      SetSize(value ? kCloseButtonFullscreenDiameter : kCloseButtonDiameter,
+              value ? kCloseButtonFullscreenDiameter : kCloseButtonDiameter)));
 
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
@@ -1850,7 +1850,7 @@ void UiSceneCreator::CreateFullscreenToast() {
   parent->AddBinding(VR_BIND_FUNC(bool, Model, model_, fullscreen_enabled(),
                                   UiElement, parent, SetVisible));
 
-  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kFullscreenToastDistance);
+  auto scaler = base::MakeUnique<ScaledDepthAdjuster>(kFullscreenDistance);
 
   auto element = base::MakeUnique<Toast>();
   element->SetName(kExclusiveScreenToast);
