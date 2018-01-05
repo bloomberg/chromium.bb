@@ -231,6 +231,45 @@ TEST_F(DownloadTaskImplTest, EmptyContentDownload) {
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
+// Tests sucessfull download of response when content length is unknown until
+// the download completes.
+TEST_F(DownloadTaskImplTest, UnknownLengthContentDownload) {
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  CRWFakeNSURLSessionTask* session_task = Start();
+  ASSERT_TRUE(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+
+  // The response has arrived.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  const char kData[] = "foo";
+  session_task.countOfBytesExpectedToReceive = -1;
+  SimulateDataDownload(session_task, kData);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
+  EXPECT_FALSE(task_->IsDone());
+  EXPECT_EQ(0, task_->GetErrorCode());
+  EXPECT_EQ(-1, task_->GetTotalBytes());
+  EXPECT_EQ(-1, task_->GetPercentComplete());
+  EXPECT_EQ(kData, task_->GetResponseWriter()->AsStringWriter()->data());
+
+  // Download has finished.
+  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
+  int64_t kDataSize = strlen(kData);
+  session_task.countOfBytesExpectedToReceive = kDataSize;
+  SimulateDownloadCompletion(session_task);
+  testing::Mock::VerifyAndClearExpectations(&task_observer_);
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return task_->IsDone();
+  }));
+  EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
+  EXPECT_EQ(0, task_->GetErrorCode());
+  EXPECT_EQ(kDataSize, task_->GetTotalBytes());
+  EXPECT_EQ(100, task_->GetPercentComplete());
+  EXPECT_EQ(kData, task_->GetResponseWriter()->AsStringWriter()->data());
+
+  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
+}
+
 // Tests cancelling the download task.
 TEST_F(DownloadTaskImplTest, Cancelling) {
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));

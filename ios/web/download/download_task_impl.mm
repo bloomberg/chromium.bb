@@ -56,6 +56,9 @@ int GetTaskPercentComplete(NSURLSessionTask* task) {
   if (!task.countOfBytesExpectedToReceive) {
     return 100;
   }
+  if (task.countOfBytesExpectedToReceive == -1) {
+    return -1;
+  }
   DCHECK_GE(task.countOfBytesExpectedToReceive, task.countOfBytesReceived);
   return 100.0 * task.countOfBytesReceived / task.countOfBytesExpectedToReceive;
 }
