@@ -74,9 +74,6 @@ class WebState;
 - (void)setBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha;
 // Briefly animate the progress bar when a pre-rendered tab is displayed.
 - (void)showPrerenderingAnimation;
-// TODO(crbug.com/789583):Use named layout guide instead of frame.
-// Returns visible omnibox frame in Toolbar's superview coordinate system.
-- (CGRect)visibleOmniboxFrame;
 // Returns whether omnibox is a first responder.
 - (BOOL)isOmniboxFirstResponder;
 // Returns whether the omnibox popup is currently displayed.

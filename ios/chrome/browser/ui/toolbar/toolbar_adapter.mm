@@ -72,7 +72,8 @@
 }
 
 - (CGRect)visibleOmniboxFrame {
-  return [self.toolbarCoordinator visibleOmniboxFrame];
+  // No-op. The Clean Toolbar uses named layout guides.
+  return CGRectZero;
 }
 
 - (BOOL)isOmniboxFirstResponder {

@@ -262,10 +262,6 @@
   [self.toolbarViewController showPrerenderingAnimation];
 }
 
-- (CGRect)visibleOmniboxFrame {
-  return [self.toolbarViewController visibleOmniboxFrame];
-}
-
 - (BOOL)isOmniboxFirstResponder {
   return
       [self.locationBarCoordinator.locationBarView.textField isFirstResponder];

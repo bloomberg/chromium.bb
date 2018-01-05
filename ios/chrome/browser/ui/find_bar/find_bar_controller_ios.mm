@@ -33,6 +33,9 @@ namespace {
 const CGFloat kFindBarIPhoneHeight = 56;
 const CGFloat kFindBarIPadHeight = 62;
 
+// Padding added by the invisible background.
+const CGFloat kBackgroundPadding = 6;
+
 // Find Bar animation drop down duration.
 const CGFloat kAnimationDuration = 0.15;
 
@@ -361,7 +364,6 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   frame.size.height = 0;
 
   CGFloat containerWidth = parentView.bounds.size.width;
-  CGFloat nibWidth = frame.size.width;
 
   // On iPad, there are three possible frames for the Search bar:
   // 1. In Regular width size class, it is short, right-aligned to the omnibox's
@@ -372,17 +374,19 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   //   container view from edge to edge, ignoring the omnibox.
   if (view.cr_widthSizeClass == REGULAR) {
     if (base::i18n::IsRTL()) {
-      frame.origin.x = CGRectGetMinX(omniboxFrame);
+      frame.origin.x = CGRectGetMinX(omniboxFrame) - kBackgroundPadding;
     } else {
-      frame.origin.x =
-          CGRectGetMinX(omniboxFrame) + CGRectGetWidth(omniboxFrame) - nibWidth;
+      frame.origin.x = CGRectGetMinX(omniboxFrame) +
+                       CGRectGetWidth(omniboxFrame) - frame.size.width +
+                       kBackgroundPadding;
     }
-    frame.size.width = nibWidth;
   } else {
     // Compact size class.
-    if (omniboxFrame.size.width > nibWidth) {
-      frame.origin.x = omniboxFrame.origin.x;
-      frame.size.width = omniboxFrame.size.width;
+    CGRect visibleFrame = CGRectInset(frame, kBackgroundPadding, 0);
+    if (omniboxFrame.size.width > visibleFrame.size.width) {
+      visibleFrame.origin.x = omniboxFrame.origin.x;
+      visibleFrame.size.width = omniboxFrame.size.width;
+      frame = CGRectInset(visibleFrame, -kBackgroundPadding, 0);
     } else {
       frame.origin.x = 0;
       frame.size.width = containerWidth;

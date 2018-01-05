@@ -735,10 +735,8 @@ using ios::material::TimingFunction;
 
 - (CGRect)visibleOmniboxFrame {
   CGRect frame = _omniboxBackground.frame;
-  frame = [self.view.superview convertRect:frame
-                                  fromView:[_omniboxBackground superview]];
-  // Account for the omnibox background image transparent sides.
-  return CGRectInset(frame, -kBackgroundImageVisibleRectOffset, 0);
+  return [self.view.superview convertRect:frame
+                                 fromView:[_omniboxBackground superview]];
 }
 
 - (BOOL)isOmniboxFirstResponder {
