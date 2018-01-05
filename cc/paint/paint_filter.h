@@ -81,6 +81,8 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
   enum class LightingType : uint8_t {
     kDiffuse,
     kSpecular,
+    // Update the following if kSpecular is not the max anymore.
+    kMaxLightingType = kSpecular
   };
 
   using MapDirection = SkImageFilter::MapDirection;
@@ -193,6 +195,14 @@ class CC_PAINT_EXPORT DropShadowPaintFilter final : public PaintFilter {
                         const CropRect* crop_rect = nullptr);
   ~DropShadowPaintFilter() override;
 
+  SkScalar dx() const { return dx_; }
+  SkScalar dy() const { return dy_; }
+  SkScalar sigma_x() const { return sigma_x_; }
+  SkScalar sigma_y() const { return sigma_y_; }
+  SkColor color() const { return color_; }
+  ShadowMode shadow_mode() const { return shadow_mode_; }
+  const sk_sp<PaintFilter> input() const { return input_; }
+
  private:
   SkScalar dx_;
   SkScalar dy_;
@@ -223,6 +233,9 @@ class CC_PAINT_EXPORT ComposePaintFilter final : public PaintFilter {
   static constexpr Type kType = Type::kCompose;
   ComposePaintFilter(sk_sp<PaintFilter> outer, sk_sp<PaintFilter> inner);
   ~ComposePaintFilter() override;
+
+  const sk_sp<PaintFilter>& outer() const { return outer_; }
+  const sk_sp<PaintFilter>& inner() const { return inner_; }
 
  private:
   sk_sp<PaintFilter> outer_;
@@ -273,6 +286,7 @@ class CC_PAINT_EXPORT XfermodePaintFilter final : public PaintFilter {
                       const CropRect* crop_rect = nullptr);
   ~XfermodePaintFilter() override;
 
+  SkBlendMode blend_mode() const { return blend_mode_; }
   const sk_sp<PaintFilter>& background() const { return background_; }
   const sk_sp<PaintFilter>& foreground() const { return foreground_; }
 
@@ -295,8 +309,19 @@ class CC_PAINT_EXPORT ArithmeticPaintFilter final : public PaintFilter {
                         const CropRect* crop_rect);
   ~ArithmeticPaintFilter() override;
 
+  float k1() const { return k1_; }
+  float k2() const { return k2_; }
+  float k3() const { return k3_; }
+  float k4() const { return k4_; }
+  bool enforce_pm_color() const { return enforce_pm_color_; }
+  const sk_sp<PaintFilter> background() const { return background_; }
+  const sk_sp<PaintFilter> foreground() const { return foreground_; }
+
  private:
-  float floats_[4];
+  float k1_;
+  float k2_;
+  float k3_;
+  float k4_;
   bool enforce_pm_color_;
   sk_sp<PaintFilter> background_;
   sk_sp<PaintFilter> foreground_;
@@ -371,6 +396,9 @@ class CC_PAINT_EXPORT RecordPaintFilter final : public PaintFilter {
   RecordPaintFilter(sk_sp<PaintRecord> record, const SkRect& record_bounds);
   ~RecordPaintFilter() override;
 
+  const sk_sp<PaintRecord>& record() const { return record_; }
+  SkRect record_bounds() const { return record_bounds_; }
+
  private:
   sk_sp<PaintRecord> record_;
   SkRect record_bounds_;
@@ -396,7 +424,7 @@ class CC_PAINT_EXPORT MergePaintFilter final : public PaintFilter {
 
 class CC_PAINT_EXPORT MorphologyPaintFilter final : public PaintFilter {
  public:
-  enum class MorphType : uint8_t { kDilate, kErode };
+  enum class MorphType : uint8_t { kDilate, kErode, kMaxMorphType = kErode };
   static constexpr Type kType = Type::kMorphology;
   MorphologyPaintFilter(MorphType morph_type,
                         int radius_x,
@@ -404,6 +432,11 @@ class CC_PAINT_EXPORT MorphologyPaintFilter final : public PaintFilter {
                         sk_sp<PaintFilter> input,
                         const CropRect* crop_rect = nullptr);
   ~MorphologyPaintFilter() override;
+
+  MorphType morph_type() const { return morph_type_; }
+  int radius_x() const { return radius_x_; }
+  int radius_y() const { return radius_y_; }
+  const sk_sp<PaintFilter>& input() const { return input_; }
 
  private:
   MorphType morph_type_;
@@ -420,6 +453,10 @@ class CC_PAINT_EXPORT OffsetPaintFilter final : public PaintFilter {
                     sk_sp<PaintFilter> input,
                     const CropRect* crop_rect = nullptr);
   ~OffsetPaintFilter() override;
+
+  SkScalar dx() const { return dx_; }
+  SkScalar dy() const { return dy_; }
+  const sk_sp<PaintFilter> input() const { return input_; }
 
  private:
   SkScalar dx_;
@@ -444,7 +481,11 @@ class CC_PAINT_EXPORT TilePaintFilter final : public PaintFilter {
 class CC_PAINT_EXPORT TurbulencePaintFilter final : public PaintFilter {
  public:
   static constexpr Type kType = Type::kTurbulence;
-  enum class TurbulenceType : uint8_t { kTurbulence, kFractalNoise };
+  enum class TurbulenceType : uint8_t {
+    kTurbulence,
+    kFractalNoise,
+    kMaxTurbulenceType = kFractalNoise
+  };
   TurbulencePaintFilter(TurbulenceType turbulence_type,
                         SkScalar base_frequency_x,
                         SkScalar base_frequency_y,
@@ -453,6 +494,13 @@ class CC_PAINT_EXPORT TurbulencePaintFilter final : public PaintFilter {
                         const SkISize* tile_size,
                         const CropRect* crop_rect = nullptr);
   ~TurbulencePaintFilter() override;
+
+  TurbulenceType turbulence_type() const { return turbulence_type_; }
+  SkScalar base_frequency_x() const { return base_frequency_x_; }
+  SkScalar base_frequency_y() const { return base_frequency_y_; }
+  int num_octaves() const { return num_octaves_; }
+  SkScalar seed() const { return seed_; }
+  SkISize tile_size() const { return tile_size_; }
 
  private:
   TurbulenceType turbulence_type_;
@@ -482,6 +530,10 @@ class CC_PAINT_EXPORT MatrixPaintFilter final : public PaintFilter {
                     sk_sp<PaintFilter> input);
   ~MatrixPaintFilter() override;
 
+  const SkMatrix& matrix() const { return matrix_; }
+  SkFilterQuality filter_quality() const { return filter_quality_; }
+  const sk_sp<PaintFilter>& input() const { return input_; }
+
  private:
   SkMatrix matrix_;
   SkFilterQuality filter_quality_;
@@ -503,6 +555,14 @@ class CC_PAINT_EXPORT LightingDistantPaintFilter final : public PaintFilter {
                              sk_sp<PaintFilter> input,
                              const CropRect* crop_rect = nullptr);
   ~LightingDistantPaintFilter() override;
+
+  LightingType lighting_type() const { return lighting_type_; }
+  const SkPoint3& direction() const { return direction_; }
+  SkColor light_color() const { return light_color_; }
+  SkScalar surface_scale() const { return surface_scale_; }
+  SkScalar kconstant() const { return kconstant_; }
+  SkScalar shininess() const { return shininess_; }
+  const sk_sp<PaintFilter> input() const { return input_; }
 
  private:
   LightingType lighting_type_;
@@ -529,6 +589,14 @@ class CC_PAINT_EXPORT LightingPointPaintFilter final : public PaintFilter {
                            sk_sp<PaintFilter> input,
                            const CropRect* crop_rect = nullptr);
   ~LightingPointPaintFilter() override;
+
+  LightingType lighting_type() const { return lighting_type_; }
+  const SkPoint3& location() const { return location_; }
+  SkColor light_color() const { return light_color_; }
+  SkScalar surface_scale() const { return surface_scale_; }
+  SkScalar kconstant() const { return kconstant_; }
+  SkScalar shininess() const { return shininess_; }
+  const sk_sp<PaintFilter>& input() const { return input_; }
 
  private:
   LightingType lighting_type_;
@@ -558,6 +626,17 @@ class CC_PAINT_EXPORT LightingSpotPaintFilter final : public PaintFilter {
                           sk_sp<PaintFilter> input,
                           const CropRect* crop_rect = nullptr);
   ~LightingSpotPaintFilter() override;
+
+  LightingType lighting_type() const { return lighting_type_; }
+  const SkPoint3& location() const { return location_; }
+  const SkPoint3& target() const { return target_; }
+  SkScalar specular_exponent() const { return specular_exponent_; }
+  SkScalar cutoff_angle() const { return cutoff_angle_; }
+  SkColor light_color() const { return light_color_; }
+  SkScalar surface_scale() const { return surface_scale_; }
+  SkScalar kconstant() const { return kconstant_; }
+  SkScalar shininess() const { return shininess_; }
+  const sk_sp<PaintFilter>& input() const { return input_; }
 
  private:
   LightingType lighting_type_;

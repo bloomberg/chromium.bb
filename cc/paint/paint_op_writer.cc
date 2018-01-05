@@ -8,6 +8,7 @@
 #include "cc/paint/image_provider.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_shader.h"
 #include "cc/paint/paint_typeface_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
@@ -22,10 +23,15 @@ void TypefaceCataloger(SkTypeface* typeface, void* ctx) {
 }
 }  // namespace
 
-PaintOpWriter::PaintOpWriter(void* memory, size_t size)
+PaintOpWriter::PaintOpWriter(void* memory,
+                             size_t size,
+                             TransferCacheSerializeHelper* transfer_cache,
+                             ImageProvider* image_provider)
     : memory_(static_cast<char*>(memory) + HeaderBytes()),
       size_(size),
-      remaining_bytes_(size - HeaderBytes()) {
+      remaining_bytes_(size - HeaderBytes()),
+      transfer_cache_(transfer_cache),
+      image_provider_(image_provider) {
   // Leave space for header of type/skip.
   DCHECK_GE(size, HeaderBytes());
 }
@@ -135,9 +141,8 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   Write(flags.shader_.get());
 }
 
-void PaintOpWriter::Write(const DrawImage& image,
-                          ImageProvider* image_provider) {
-  auto decoded_image = image_provider->GetDecodedDrawImage(image);
+void PaintOpWriter::Write(const DrawImage& image) {
+  auto decoded_image = image_provider_->GetDecodedDrawImage(image);
   base::Optional<uint32_t> id =
       decoded_image.decoded_image().transfer_cache_entry_id();
 
@@ -157,29 +162,27 @@ void PaintOpWriter::Write(const sk_sp<SkData>& data) {
   }
 }
 
-void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob,
-                          TransferCacheSerializeHelper* transfer_cache) {
-  auto data = blob->serialize(&TypefaceCataloger, transfer_cache);
+void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
+  auto data = blob->serialize(&TypefaceCataloger, transfer_cache_);
   Write(data);
 }
 
-void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob,
-                          TransferCacheSerializeHelper* transfer_cache) {
+void PaintOpWriter::Write(const scoped_refptr<PaintTextBlob>& blob) {
   if (!valid_)
     return;
 
   for (auto& typeface : blob->typefaces()) {
-    auto locked = transfer_cache->LockEntry(
+    auto locked = transfer_cache_->LockEntry(
         TransferCacheEntryType::kPaintTypeface, typeface.sk_id());
     if (locked)
       continue;
-    transfer_cache->CreateEntry(
+    transfer_cache_->CreateEntry(
         ClientPaintTypefaceTransferCacheEntry(typeface));
-    transfer_cache->AssertLocked(TransferCacheEntryType::kPaintTypeface,
-                                 typeface.sk_id());
+    transfer_cache_->AssertLocked(TransferCacheEntryType::kPaintTypeface,
+                                  typeface.sk_id());
   }
 
-  Write(blob->ToSkTextBlob(), transfer_cache);
+  Write(blob->ToSkTextBlob());
 }
 
 void PaintOpWriter::Write(const PaintShader* shader) {
@@ -357,7 +360,9 @@ void PaintOpWriter::Write(const PaintFilter* filter) {
 }
 
 void PaintOpWriter::Write(const ColorFilterPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  AlignMemory(4);
+  WriteFlattenable(filter.color_filter().get());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const BlurPaintFilter& filter) {
@@ -368,7 +373,13 @@ void PaintOpWriter::Write(const BlurPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const DropShadowPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.dx());
+  WriteSimple(filter.dy());
+  WriteSimple(filter.sigma_x());
+  WriteSimple(filter.sigma_y());
+  WriteSimple(filter.color());
+  WriteSimple(filter.shadow_mode());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const MagnifierPaintFilter& filter) {
@@ -376,7 +387,8 @@ void PaintOpWriter::Write(const MagnifierPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const ComposePaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  Write(filter.outer().get());
+  Write(filter.inner().get());
 }
 
 void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
@@ -384,15 +396,23 @@ void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const ImageFilterPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  // TODO(vmpstr): Implement this? (See comment in ImageFilterPaintFilter.)
 }
 
 void PaintOpWriter::Write(const XfermodePaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.blend_mode()));
+  Write(filter.background().get());
+  Write(filter.foreground().get());
 }
 
 void PaintOpWriter::Write(const ArithmeticPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.k1());
+  WriteSimple(filter.k2());
+  WriteSimple(filter.k3());
+  WriteSimple(filter.k4());
+  WriteSimple(filter.enforce_pm_color());
+  Write(filter.background().get());
+  Write(filter.foreground().get());
 }
 
 void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
@@ -408,19 +428,27 @@ void PaintOpWriter::Write(const ImagePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const RecordPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.record_bounds());
+  Write(filter.record().get());
 }
 
 void PaintOpWriter::Write(const MergePaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.input_count());
+  for (size_t i = 0; i < filter.input_count(); ++i)
+    Write(filter.input_at(i));
 }
 
 void PaintOpWriter::Write(const MorphologyPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.morph_type()));
+  WriteSimple(filter.radius_x());
+  WriteSimple(filter.radius_y());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const OffsetPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.dx());
+  WriteSimple(filter.dy());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const TilePaintFilter& filter) {
@@ -428,7 +456,12 @@ void PaintOpWriter::Write(const TilePaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.turbulence_type()));
+  WriteSimple(filter.base_frequency_x());
+  WriteSimple(filter.base_frequency_y());
+  WriteSimple(filter.num_octaves());
+  WriteSimple(filter.seed());
+  WriteSimple(filter.tile_size());
 }
 
 void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
@@ -436,19 +469,83 @@ void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
 }
 
 void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(filter.matrix());
+  WriteSimple(filter.filter_quality());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.direction());
+  WriteSimple(filter.light_color());
+  WriteSimple(filter.surface_scale());
+  WriteSimple(filter.kconstant());
+  WriteSimple(filter.shininess());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.location());
+  WriteSimple(filter.light_color());
+  WriteSimple(filter.surface_scale());
+  WriteSimple(filter.kconstant());
+  WriteSimple(filter.shininess());
+  Write(filter.input().get());
 }
 
 void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
-  // TODO(vmpstr): Implement this.
+  WriteSimple(static_cast<uint32_t>(filter.lighting_type()));
+  WriteSimple(filter.location());
+  WriteSimple(filter.target());
+  WriteSimple(filter.specular_exponent());
+  WriteSimple(filter.cutoff_angle());
+  WriteSimple(filter.light_color());
+  WriteSimple(filter.surface_scale());
+  WriteSimple(filter.kconstant());
+  WriteSimple(filter.shininess());
+  Write(filter.input().get());
+}
+
+void PaintOpWriter::Write(const PaintRecord* record) {
+  // We need to record how many bytes we will serialize, but we don't know this
+  // information until we do the serialization. So, skip the amount needed
+  // before writing.
+  size_t size_offset = sizeof(size_t);
+  if (size_offset > remaining_bytes_) {
+    valid_ = false;
+    return;
+  }
+
+  char* size_memory = memory_;
+
+  memory_ += size_offset;
+  remaining_bytes_ -= size_offset;
+  AlignMemory(PaintOpBuffer::PaintOpAlign);
+  if (!valid_)
+    return;
+
+  SimpleBufferSerializer serializer(memory_, remaining_bytes_, image_provider_,
+                                    transfer_cache_);
+  serializer.Serialize(record, nullptr, PaintOpBufferSerializer::Preamble());
+  if (!serializer.valid()) {
+    valid_ = false;
+    return;
+  }
+  // Now we can write the number of bytes we used. Ensure this amount is size_t,
+  // since that's what we allocated for it.
+  static_assert(sizeof(serializer.written()) == sizeof(size_t),
+                "written() return type size is different from sizeof(size_t)");
+
+  // Write the size to the size memory, which preceeds the memory for the
+  // record.
+  reinterpret_cast<size_t*>(size_memory)[0] = serializer.written();
+
+  // The serializer should have failed if it ran out of space. DCHECK to verify
+  // that it wrote fewer bytes than we have.
+  DCHECK_LT(serializer.written(), remaining_bytes_);
+  memory_ += serializer.written();
+  remaining_bytes_ -= serializer.written();
 }
 
 }  // namespace cc
