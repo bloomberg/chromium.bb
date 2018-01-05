@@ -235,6 +235,7 @@ void PaintOpReader::Read(PaintFlags* flags) {
   AlignMemory(4);
   ReadFlattenable(&flags->draw_looper_);
 
+  Read(&flags->image_filter_);
   Read(&flags->shader_);
 }
 
@@ -454,6 +455,258 @@ const volatile void* PaintOpReader::ExtractReadableMemory(size_t bytes) {
   memory_ += bytes;
   remaining_bytes_ -= bytes;
   return extracted_memory;
+}
+
+void PaintOpReader::Read(sk_sp<PaintFilter>* filter) {
+  uint32_t type_int = 0;
+  ReadSimple(&type_int);
+  if (type_int > static_cast<uint32_t>(PaintFilter::Type::kMaxFilterType))
+    SetInvalid();
+  if (!valid_)
+    return;
+
+  auto type = static_cast<PaintFilter::Type>(type_int);
+  if (type == PaintFilter::Type::kNullFilter) {
+    *filter = nullptr;
+    return;
+  }
+
+  uint32_t has_crop_rect = 0;
+  base::Optional<PaintFilter::CropRect> crop_rect;
+  ReadSimple(&has_crop_rect);
+  if (has_crop_rect) {
+    uint32_t flags = 0;
+    SkRect rect = SkRect::MakeEmpty();
+    ReadSimple(&flags);
+    ReadSimple(&rect);
+    crop_rect.emplace(rect, flags);
+  }
+
+  switch (type) {
+    case PaintFilter::Type::kNullFilter:
+      NOTREACHED();
+      break;
+    case PaintFilter::Type::kColorFilter:
+      ReadColorFilterPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kBlur:
+      ReadBlurPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kDropShadow:
+      ReadDropShadowPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kMagnifier:
+      ReadMagnifierPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kCompose:
+      ReadComposePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kAlphaThreshold:
+      ReadAlphaThresholdPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kSkImageFilter:
+      ReadImageFilterPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kXfermode:
+      ReadXfermodePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kArithmetic:
+      ReadArithmeticPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kMatrixConvolution:
+      ReadMatrixConvolutionPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kDisplacementMapEffect:
+      ReadDisplacementMapEffectPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kImage:
+      ReadImagePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kPaintRecord:
+      ReadRecordPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kMerge:
+      ReadMergePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kMorphology:
+      ReadMorphologyPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kOffset:
+      ReadOffsetPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kTile:
+      ReadTilePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kTurbulence:
+      ReadTurbulencePaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kPaintFlags:
+      ReadPaintFlagsPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kMatrix:
+      ReadMatrixPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kLightingDistant:
+      ReadLightingDistantPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kLightingPoint:
+      ReadLightingPointPaintFilter(filter, crop_rect);
+      break;
+    case PaintFilter::Type::kLightingSpot:
+      ReadLightingSpotPaintFilter(filter, crop_rect);
+      break;
+  }
+}
+
+void PaintOpReader::ReadColorFilterPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadBlurPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  SkScalar sigma_x = 0.f;
+  SkScalar sigma_y = 0.f;
+  BlurPaintFilter::TileMode tile_mode = SkBlurImageFilter::kClamp_TileMode;
+  sk_sp<PaintFilter> input;
+
+  ReadSimple(&sigma_x);
+  ReadSimple(&sigma_y);
+  ReadSimple(&tile_mode);
+  Read(&input);
+  if (!valid_)
+    return;
+  filter->reset(new BlurPaintFilter(sigma_x, sigma_y, tile_mode,
+                                    std::move(input),
+                                    crop_rect ? &*crop_rect : nullptr));
+}
+
+void PaintOpReader::ReadDropShadowPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadMagnifierPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadComposePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadAlphaThresholdPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadImageFilterPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadXfermodePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadArithmeticPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadMatrixConvolutionPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadDisplacementMapEffectPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadImagePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadRecordPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadMergePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadMorphologyPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadOffsetPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadTilePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadTurbulencePaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadPaintFlagsPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadMatrixPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadLightingDistantPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadLightingPointPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpReader::ReadLightingSpotPaintFilter(
+    sk_sp<PaintFilter>* filter,
+    const base::Optional<PaintFilter::CropRect>& crop_rect) {
+  // TODO(vmpstr): Implement this.
 }
 
 }  // namespace cc

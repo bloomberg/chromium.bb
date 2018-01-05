@@ -35,6 +35,8 @@ PaintFilter::~PaintFilter() = default;
 // static
 std::string PaintFilter::TypeToString(Type type) {
   switch (type) {
+    case Type::kNullFilter:
+      return "kNullFilter";
     case Type::kColorFilter:
       return "kColorFilter";
     case Type::kBlur:

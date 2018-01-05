@@ -131,6 +131,7 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   AlignMemory(4);
   WriteFlattenable(flags.draw_looper_.get());
 
+  Write(flags.image_filter_.get());
   Write(flags.shader_.get());
 }
 
@@ -261,6 +262,193 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
 
   memory_ += padding;
   remaining_bytes_ -= padding;
+}
+
+void PaintOpWriter::Write(const PaintFilter* filter) {
+  if (!filter) {
+    WriteSimple(static_cast<uint32_t>(PaintFilter::Type::kNullFilter));
+    return;
+  }
+  WriteSimple(static_cast<uint32_t>(filter->type()));
+  auto* crop_rect = filter->crop_rect();
+  WriteSimple(static_cast<uint32_t>(!!crop_rect));
+  if (crop_rect) {
+    WriteSimple(crop_rect->flags());
+    WriteSimple(crop_rect->rect());
+  }
+
+  if (!valid_)
+    return;
+
+  switch (filter->type()) {
+    case PaintFilter::Type::kNullFilter:
+      NOTREACHED();
+      break;
+    case PaintFilter::Type::kColorFilter:
+      Write(static_cast<const ColorFilterPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kBlur:
+      Write(static_cast<const BlurPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kDropShadow:
+      Write(static_cast<const DropShadowPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kMagnifier:
+      Write(static_cast<const MagnifierPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kCompose:
+      Write(static_cast<const ComposePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kAlphaThreshold:
+      Write(static_cast<const AlphaThresholdPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kSkImageFilter:
+      Write(static_cast<const ImageFilterPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kXfermode:
+      Write(static_cast<const XfermodePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kArithmetic:
+      Write(static_cast<const ArithmeticPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kMatrixConvolution:
+      Write(static_cast<const MatrixConvolutionPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kDisplacementMapEffect:
+      Write(static_cast<const DisplacementMapEffectPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kImage:
+      Write(static_cast<const ImagePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kPaintRecord:
+      Write(static_cast<const RecordPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kMerge:
+      Write(static_cast<const MergePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kMorphology:
+      Write(static_cast<const MorphologyPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kOffset:
+      Write(static_cast<const OffsetPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kTile:
+      Write(static_cast<const TilePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kTurbulence:
+      Write(static_cast<const TurbulencePaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kPaintFlags:
+      Write(static_cast<const PaintFlagsPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kMatrix:
+      Write(static_cast<const MatrixPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kLightingDistant:
+      Write(static_cast<const LightingDistantPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kLightingPoint:
+      Write(static_cast<const LightingPointPaintFilter&>(*filter));
+      break;
+    case PaintFilter::Type::kLightingSpot:
+      Write(static_cast<const LightingSpotPaintFilter&>(*filter));
+      break;
+  }
+}
+
+void PaintOpWriter::Write(const ColorFilterPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const BlurPaintFilter& filter) {
+  WriteSimple(filter.sigma_x());
+  WriteSimple(filter.sigma_y());
+  WriteSimple(filter.tile_mode());
+  Write(filter.input().get());
+}
+
+void PaintOpWriter::Write(const DropShadowPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const MagnifierPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const ComposePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const ImageFilterPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const XfermodePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const ArithmeticPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const ImagePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const RecordPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const MergePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const MorphologyPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const OffsetPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const TilePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
+}
+
+void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
+  // TODO(vmpstr): Implement this.
 }
 
 }  // namespace cc
