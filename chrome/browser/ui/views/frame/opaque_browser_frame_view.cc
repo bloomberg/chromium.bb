@@ -437,6 +437,10 @@ int OpaqueBrowserFrameView::GetTopAreaHeight() const {
   return top_area_height;
 }
 
+bool OpaqueBrowserFrameView::UseCustomFrame() const {
+  return frame()->UseCustomFrame();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, protected:
 

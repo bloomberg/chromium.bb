@@ -55,6 +55,9 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Computes the height of the top area of the frame.
   virtual int GetTopAreaHeight() const = 0;
 
+  // Returns true if the window frame is rendered by Chrome.
+  virtual bool UseCustomFrame() const = 0;
+
  protected:
   virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}
 };

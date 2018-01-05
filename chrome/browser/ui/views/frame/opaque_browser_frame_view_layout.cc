@@ -183,6 +183,8 @@ int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarTopThickness(bool restored) const {
+  if (!delegate_->UseCustomFrame())
+    return 0;
   return (restored || !IsTitleBarCondensed()) ?
       kTitlebarTopEdgeThickness : FrameBorderThickness(false);
 }
