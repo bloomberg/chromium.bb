@@ -194,6 +194,9 @@ def ParseGTestOutput(output, symbolizer, device_abi):
         log.append(l)
 
     if result_type and test_name:
+      # Don't bother symbolizing output if the test passed.
+      if result_type == base_test_result.ResultType.PASS:
+        stack = []
       results.append(base_test_result.BaseTestResult(
           TestNameWithoutDisabledPrefix(test_name), result_type, duration,
           log=symbolize_stack_and_merge_with_log()))
