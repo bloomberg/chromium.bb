@@ -25133,6 +25133,7 @@ from previous Chrome versions.
   <int value="-1171900360" label="EnablePreventLayerSquashing:disabled"/>
   <int value="-1162944097" label="enable-color-correct-rendering"/>
   <int value="-1161409696" label="MediaRemotingEncrypted:enabled"/>
+  <int value="-1160941363" label="AffiliationBasedMatching:disabled"/>
   <int value="-1160026273" label="enable-web-notification-custom-layouts"/>
   <int value="-1159563774" label="enable-accessibility-script-injection"/>
   <int value="-1158993534" label="PrintScaling:enabled"/>
@@ -25843,6 +25844,7 @@ from previous Chrome versions.
   <int value="762700519" label="enable-checker-imaging"/>
   <int value="765306424" label="ModuleScriptsDynamicImport:disabled"/>
   <int value="765803208" label="AutofillShowTypePredictions:enabled"/>
+  <int value="772348426" label="AffiliationBasedMatching:enabled"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
   <int value="782167080" label="enable-new-qp-input-view"/>

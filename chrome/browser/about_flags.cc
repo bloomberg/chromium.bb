@@ -1602,7 +1602,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillSignaturesName,
      flag_descriptions::kShowAutofillSignaturesDescription, kOsAll,
      SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillSignatures)},
-    {"affiliation-based-matching",
+    {"AffiliationBasedMatching",
      flag_descriptions::kAffiliationBasedMatchingName,
      flag_descriptions::kAffiliationBasedMatchingDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kAffiliationBasedMatching)},
