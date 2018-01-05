@@ -8,7 +8,7 @@ $VerifiedPlatform mac-amd64
 $VerifiedPlatform windows-386 windows-amd64
 
 # vpython.
-infra/tools/luci/vpython/${platform}  git_revision:08e35087eaf8ee95207450d2a2e33152a2f245be
+infra/tools/luci/vpython/${platform}  git_revision:000e38c9086590a3b76c3add3af8c25d047505dd
 
 # LUCI editor
 infra/tools/luci/led/${platform}  git_revision:54b6b3102fbb15ca3e3bd762ff3df7b08057d653
