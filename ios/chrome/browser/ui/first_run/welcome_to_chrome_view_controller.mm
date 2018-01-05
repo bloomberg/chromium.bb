@@ -29,6 +29,7 @@
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#include "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -158,10 +159,17 @@ const BOOL kDefaultStatsCheckboxValue = YES;
 
 #pragma mark - WelcomeToChromeViewDelegate
 
-- (void)welcomeToChromeViewDidTapTOSLink:(WelcomeToChromeView*)view {
+- (void)welcomeToChromeViewDidTapTOSLink {
   NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_TERMS_TITLE);
   NSURL* tosUrl = [self newTermsOfServiceUrl];
   [self openStaticFileWithURL:tosUrl title:title];
+}
+
+- (void)welcomeToChromeViewDidTapPrivacyLink {
+  NSString* title = l10n_util::GetNSString(IDS_IOS_FIRSTRUN_PRIVACY_TITLE);
+  NSURL* privacyUrl = net::NSURLWithGURL(
+      GURL("https://www.google.com/chrome/browser/privacy/"));
+  [self openStaticFileWithURL:privacyUrl title:title];
 }
 
 - (void)welcomeToChromeViewDidTapOKButton:(WelcomeToChromeView*)view {

@@ -122,6 +122,25 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 }
 
 // Navigates to the terms of service and back.
+- (void)testPrivacy {
+  [chrome_test_util::GetMainController() showFirstRunUI];
+
+  id<GREYMatcher> privacyLink = grey_accessibilityLabel(@"Privacy Notice");
+  [[EarlGrey selectElementWithMatcher:privacyLink] performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                          IDS_IOS_FIRSTRUN_PRIVACY_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+
+  // Ensure we went back to the First Run screen.
+  [[EarlGrey selectElementWithMatcher:privacyLink]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Navigates to the terms of service and back.
 - (void)testTermsAndConditions {
   [chrome_test_util::GetMainController() showFirstRunUI];
 
