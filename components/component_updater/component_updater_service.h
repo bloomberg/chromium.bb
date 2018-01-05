@@ -161,7 +161,7 @@ class OnDemandUpdater {
   friend class ::PluginObserver;
   friend class SwReporterOnDemandFetcher;
 #if defined(OS_CHROMEOS)
-  friend class CrOSComponent;
+  friend class CrOSComponentManager;
 #endif  // defined(OS_CHROMEOS)
 
   // Triggers an update check for a component. |id| is a value

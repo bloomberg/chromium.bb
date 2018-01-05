@@ -28,22 +28,23 @@ namespace {
 
 class TestMediaPerceptionAPIDelegate : public MediaPerceptionAPIDelegate {
  public:
-  void LoadCrOSComponent(
-      const media_perception::ComponentType& type,
-      base::OnceCallback<void(const std::string&)> load_callback) override {
+  void LoadCrOSComponent(const media_perception::ComponentType& type,
+                         LoadCrOSComponentCallback load_callback) override {
     // For testing both success and failure cases, test class has the LIGHT
     // component succeed install and the others fail.
     if (type == media_perception::COMPONENT_TYPE_LIGHT) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(load_callback),
-                                    "/run/imageloader/rtanalytics-light/1.0"));
+          FROM_HERE,
+          base::BindOnce(
+              std::move(load_callback),
+              base::FilePath("/run/imageloader/rtanalytics-light/1.0")));
       return;
     }
 
     // Firing callback with empty string indicates that the installation of the
     // component failed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(load_callback), ""));
+        FROM_HERE, base::BindOnce(std::move(load_callback), base::FilePath()));
   }
 };
 

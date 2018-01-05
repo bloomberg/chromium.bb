@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -75,12 +76,12 @@ void ComponentUpdaterServiceProvider::LoadComponent(
 void ComponentUpdaterServiceProvider::OnLoadComponent(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender,
-    const std::string& result) {
+    const base::FilePath& result) {
   if (!result.empty()) {
     std::unique_ptr<dbus::Response> response =
         dbus::Response::FromMethodCall(method_call);
     dbus::MessageWriter writer(response.get());
-    writer.AppendString(result);
+    writer.AppendString(result.value());
     response_sender.Run(std::move(response));
   } else {
     std::unique_ptr<dbus::ErrorResponse> error_response =

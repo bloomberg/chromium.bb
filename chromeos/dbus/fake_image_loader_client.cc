@@ -26,7 +26,7 @@ void FakeImageLoaderClient::LoadComponent(
 void FakeImageLoaderClient::LoadComponentAtPath(
     const std::string& name,
     const base::FilePath& path,
-    DBusMethodCallback<std::string> callback) {
+    DBusMethodCallback<base::FilePath> callback) {
   std::move(callback).Run(base::nullopt);
 }
 
