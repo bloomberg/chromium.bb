@@ -360,7 +360,6 @@ var MainPageBehaviorImpl = {
   },
 
   /**
-  /**
    * Hides or unhides the sections not being expanded.
    * @param {string} sectionName The section to keep visible.
    * @param {boolean} hidden Whether the sections should be hidden.
