@@ -705,19 +705,87 @@ __gCrWeb['common'] = __gCrWeb.common;
   };
 
   /**
-   * Checks whether plugin a node has fallback content.
+   * Checks whether a node has fallback content, which will be displayed in
+   * browsers which do not support the required plugin to display the node's
+   * content.
    * @param {HTMLElement} node The node to check.
-   * @return {boolean} Whether the node has fallback.
+   * @return {boolean} Whether the node has any fallback content.
    * @private
    */
-  var pluginHasFallbackContent_ = function(node) {
-    return node.textContent.trim().length > 0 ||
-           node.getElementsByTagName('img').length > 0;
+  var nodeHasFallbackContent_ = function(node) {
+    if (node.textContent.trim().length > 0) {
+      return true;
+    }
+
+    var childrenCount = node.children.length;
+    for (var i = 0; i < childrenCount; i++) {
+      var childNode = /** @type {!HTMLElement} */(node.children[i]);
+      // Do not consider <param> elements which affect the contents of the
+      // parent object node as fallback content.
+      if (childNode.tagName !== 'PARAM') {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   /**
-   * Returns a list of plugin elements in the document that have no fallback
-   * content. For nested plugins, only the innermost plugin element is returned.
+   * Finds the child embed element of node, if one exists.
+   * @param {HTMLElement} node The node to check.
+   * @return {HTMLElement} The embed fallback node, if one exists.
+   * @private
+   */
+  var getChildEmbedElement_ = function(node) {
+    var childrenCount = node.children.length;
+    if (childrenCount == 0) {
+      return null;
+    }
+    for (var i = 0; i < childrenCount; i++) {
+      var childNode = /** @type {!HTMLElement} */(node.children[i]);
+      if (childNode.tagName === 'EMBED') {
+        return childNode;
+      }
+    }
+    return null;
+  };
+
+  /**
+   * Checks if an embed node explicitly defines the content type to be flash.
+   * @param {HTMLElement} node The node to check.
+   * @return {boolean} Whether the node is known to be flash content.
+   * @private
+   */
+  var embedNodeIsKnownFlashContent_ = function(node) {
+    return node.hasAttribute('type') &&
+           (node.type.indexOf('application/x-shockwave-flash') == 0 ||
+            node.type.indexOf('application/vnd.adobe.flash-movie') == 0);
+  };
+
+  /**
+   * Checks whether a plugin is supported. A supported plugin must have fallback
+   * content and that fallback content must not be known flash content.
+   * @param {HTMLElement} node The node to check.
+   * @return {boolean} Whether the node is supported.
+   * @private
+   */
+  var pluginNodeIsSupported_ = function(node) {
+    if (!nodeHasFallbackContent_(node)) {
+      return false;
+    }
+
+    var embedChildNode = getChildEmbedElement_(node);
+    if (embedChildNode && embedNodeIsKnownFlashContent_(embedChildNode)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * Returns a list of plugin elements in the document that have either no
+   * fallback content or have fallback content that is explicitly defined as
+   * flash. For nested plugins, only the innermost plugin element is returned.
    * @return {!Array<!HTMLElement>} A list of plugin elements.
    * @private
    */
@@ -728,7 +796,7 @@ __gCrWeb['common'] = __gCrWeb.common;
     for (i = 0; i < objectCount; i++) {
       var object = /** @type {!HTMLElement} */(objects[i]);
       if (objectNodeIsPlugin_(object) &&
-          !pluginHasFallbackContent_(object)) {
+          !pluginNodeIsSupported_(object)) {
         pluginNodes.push(object);
       }
     }
@@ -736,7 +804,7 @@ __gCrWeb['common'] = __gCrWeb.common;
     var appletsCount = applets.length;
     for (i = 0; i < appletsCount; i++) {
       var applet = /** @type {!HTMLElement} */(applets[i]);
-      if (!pluginHasFallbackContent_(applet)) {
+      if (!pluginNodeIsSupported_(applet)) {
         pluginNodes.push(applet);
       }
     }

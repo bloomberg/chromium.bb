@@ -193,4 +193,73 @@ TEST_F(CommonJsTest, IsSameOrigin) {
   }
 }
 
+// Tests that __gCrWeb.common.updatePluginPlaceholders JavaScript API correctly
+// find plugins which are candidates for covering with a placeholder.
+// NOTE: Some of the plugins detected here may not actually be covered with a
+// placeholder because __gCrWeb.plugin.addPluginPlaceholders also takes into
+// account the physical size of the plugin.
+TEST_F(CommonJsTest, UpdatePluginPlaceholders) {
+  struct TestData {
+    NSString* plugin_source;
+    BOOL expected_placeholder_installed;
+  } test_data[] = {
+      // Applet with fallback data should be untouched.
+      {@"<html><applet code='Some.class'><p>Fallback text.</p></applet>"
+        "</body></html>",
+       NO},
+      // Applet without fallback data should be covered.
+      {@"<html><applet code='Some.class'></applet></body></html>", YES},
+      // Object with flash embed fallback should be covered.
+      {@"<html><body>"
+        "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000'"
+        "    codebase='http://download.macromedia.com/pub/shockwave/cabs/'"
+        "flash/swflash.cab#version=6,0,0,0'>"
+        "  <param name='movie' value='some.swf'>"
+        "  <embed src='some.swf' type='application/x-shockwave-flash'>"
+        "</object>"
+        "</body></html>",
+       YES},
+      // Object with undefined embed fallback should be untouched.
+      {@"<html><body>"
+        "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000'"
+        "    codebase='http://download.macromedia.com/pub/shockwave/cabs/'"
+        "flash/swflash.cab#version=6,0,0,0'>"
+        "  <param name='movie' value='some.swf'>"
+        "  <embed src='some.swf'>"
+        "</object>"
+        "</body></html>",
+       NO},
+      // Object with text fallback should be untouched.
+      {@"<html><body>"
+        "<object type='application/x-shockwave-flash' data='some.sfw'>"
+        "  <param name='movie' value='some.swf'>"
+        "  <p>Fallback text.</p>"
+        "</object>"
+        "</body></html>",
+       NO},
+      // Object with no fallback should be covered.
+      {@"<html><body>"
+        "<object type='application/x-shockwave-flash' data='some.sfw'>"
+        "  <param name='movie' value='some.swf'>"
+        "</object>"
+        "</body></html>",
+       YES},
+      // Object displaying an image should be untouched.
+      {@"<html><body>"
+        "<object data='foo.png' type='image/png'>"
+        "</object>"
+        "</body></html>",
+       NO},
+  };
+  for (size_t i = 0; i < arraysize(test_data); i++) {
+    TestData& data = test_data[i];
+    LoadHtml(data.plugin_source);
+    id result =
+        ExecuteJavaScript(@"__gCrWeb.common.updatePluginPlaceholders()");
+    EXPECT_NSEQ(@(data.expected_placeholder_installed), result)
+        << " in test " << i << ": "
+        << base::SysNSStringToUTF8(data.plugin_source);
+  }
+}
+
 }  // namespace web
