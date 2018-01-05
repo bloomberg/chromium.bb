@@ -536,7 +536,7 @@ fail:
 	return ret;
 }
 
-#if EXYNOS_G2D_USERPTR_TEST
+#ifdef EXYNOS_G2D_USERPTR_TEST
 static int g2d_blend_test(struct exynos_device *dev,
 					struct exynos_bo *src,
 					struct exynos_bo *dst,
@@ -880,7 +880,7 @@ int main(int argc, char **argv)
 	 *
 	 * Disable the test for now, until the kernel code has been sanitized.
 	 */
-#if EXYNOS_G2D_USERPTR_TEST
+#ifdef EXYNOS_G2D_USERPTR_TEST
 	ret  = g2d_blend_test(dev, src, bo, G2D_IMGBUF_USERPTR);
 	if (ret < 0)
 		fprintf(stderr, "failed to test blend operation.\n");
