@@ -35,6 +35,7 @@
         // Test-only interfaces.
         "test": [
           "ash::mojom::ShelfTestApi",
+          "ash::mojom::ShellTestApi",
           "ash::mojom::SystemTrayTestApi",
           "ash::mojom::TimeToFirstPresentRecorderTestApi"
         ],

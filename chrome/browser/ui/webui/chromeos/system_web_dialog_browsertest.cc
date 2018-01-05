@@ -4,17 +4,38 @@
 
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
-#include "ash/shell.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shell_test_api.mojom.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "url/gurl.h"
 
 namespace {
 
 constexpr char kTestUser[] = "test-user@gmail.com";
 constexpr char kTestUserGaiaId[] = "1234567890";
+
+// Returns whether a system modal window (e.g. modal dialog) is open. Blocks
+// until the ash service responds.
+bool IsSystemModalWindowOpen() {
+  // Wait for window visibility to stabilize.
+  aura::test::WaitForAllChangesToComplete();
+
+  // Connect to the ash test interface.
+  ash::mojom::ShellTestApiPtr shell_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &shell_test_api);
+  ash::mojom::ShellTestApiAsyncWaiter waiter(shell_test_api.get());
+  bool modal_open = false;
+  waiter.IsSystemModalWindowOpen(&modal_open);
+  return modal_open;
+}
 
 class SystemWebDialogTest : public chromeos::LoginManagerTest {
  public:
@@ -44,8 +65,7 @@ class MockSystemWebDialog : public chromeos::SystemWebDialogDelegate {
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, ModalTest) {
   chromeos::SystemWebDialogDelegate* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
-  // TODO(jamescook): Fix for mash. http://crbug.com/798797
-  EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
+  EXPECT_TRUE(IsSystemModalWindowOpen());
 }
 
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PRE_NonModalTest) {
@@ -53,10 +73,10 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PRE_NonModalTest) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
+// Verifies that system dialogs are not modal after login.
 IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, NonModalTest) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   chromeos::SystemWebDialogDelegate* dialog = new MockSystemWebDialog();
   dialog->ShowSystemDialog();
-  // TODO(jamescook): Fix for mash. http://crbug.com/798797
-  EXPECT_FALSE(ash::Shell::IsSystemModalWindowOpen());
+  EXPECT_FALSE(IsSystemModalWindowOpen());
 }
