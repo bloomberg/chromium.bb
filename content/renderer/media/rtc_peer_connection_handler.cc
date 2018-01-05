@@ -2201,14 +2201,17 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRemoveRemoteTrack");
 
-  uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
-  auto it = rtp_receivers_.find(receiver_id);
-  DCHECK(it != rtp_receivers_.end());
   std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
-      remote_stream_adapter_refs = it->second->StreamAdapterRefs();
-  if (!is_closed_)
-    client_->DidRemoveRemoteTrack(it->second->ShallowCopy());
-  rtp_receivers_.erase(it);
+      remote_stream_adapter_refs;
+  {
+    uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
+    auto it = rtp_receivers_.find(receiver_id);
+    DCHECK(it != rtp_receivers_.end());
+    remote_stream_adapter_refs = it->second->StreamAdapterRefs();
+    if (!is_closed_)
+      client_->DidRemoveRemoteTrack(it->second->ShallowCopy());
+    rtp_receivers_.erase(it);
+  }
 
   for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
     // Was this the last usage of the remote stream?
