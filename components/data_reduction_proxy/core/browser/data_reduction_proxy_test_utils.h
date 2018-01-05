@@ -39,7 +39,6 @@ class TestingPrefServiceSimple;
 namespace net {
 class MockClientSocketFactory;
 class NetLog;
-class TestNetworkQualityEstimator;
 class URLRequestContext;
 class URLRequestContextStorage;
 }
@@ -510,7 +509,6 @@ class DataReductionProxyTestContext {
       std::unique_ptr<TestDataReductionProxyEventStorageDelegate>
           storage_delegate,
       std::unique_ptr<TestConfigStorer> config_storer,
-      std::unique_ptr<net::TestNetworkQualityEstimator> estimator,
       TestDataReductionProxyParams* params,
       unsigned int test_context_flags);
 
@@ -523,7 +521,6 @@ class DataReductionProxyTestContext {
   std::unique_ptr<TestingPrefServiceSimple> simple_pref_service_;
   std::unique_ptr<net::TestNetLog> net_log_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<net::TestNetworkQualityEstimator> estimator_;
   // Non-owned pointer. Will be NULL if |this| was built without specifying a
   // |net::MockClientSocketFactory|.
   net::MockClientSocketFactory* mock_socket_factory_;
