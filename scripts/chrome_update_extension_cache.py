@@ -106,10 +106,12 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
 
   osutils.SafeMakedirs(os.path.join(crxdir, 'extensions', 'managed_users'))
   osutils.SafeMakedirs(os.path.join(jsondir, 'extensions', 'managed_users'))
+  osutils.SafeMakedirs(os.path.join(jsondir, 'extensions', 'child_users'))
   was_errors = False
   for ext in extensions:
     managed_users = extensions[ext].get('managed_users', 'no')
     cache_crx = extensions[ext].get('cache_crx', 'yes')
+    child_users = extensions[ext].get('child_users', 'no')
 
     # Remove fields that shouldn't be in the output file.
     for key in ('cache_crx', 'managed_users'):
@@ -134,7 +136,10 @@ def CreateCacheTarball(extensions, outputdir, identifier, tarball):
                 separators=(',', ': '))
 
     if managed_users != 'only':
-      json_file = os.path.join(jsondir, 'extensions/%s.json' % ext)
+      target_json_dir = 'extensions'
+      if child_users == 'yes':
+        target_json_dir = 'extensions/child_users'
+      json_file = os.path.join(jsondir, target_json_dir, '%s.json' % ext)
       json.dump(extensions[ext],
                 open(json_file, 'w'),
                 sort_keys=True,
