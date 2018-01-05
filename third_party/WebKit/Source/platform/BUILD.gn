@@ -522,6 +522,7 @@ jumbo_component("platform") {
     "audio/android/FFTFrameOpenMAXDLAndroid.cpp",
     "audio/cpu/arm/VectorMathNEON.h",
     "audio/cpu/mips/VectorMathMSA.h",
+    "audio/cpu/x86/VectorMathSSE.cpp",
     "audio/cpu/x86/VectorMathSSE.h",
     "audio/cpu/x86/VectorMathX86.h",
     "audio/ffmpeg/FFTFrameFFMPEG.cpp",
