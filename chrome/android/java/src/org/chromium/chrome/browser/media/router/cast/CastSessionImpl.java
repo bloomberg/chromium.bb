@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.common.MediaMetadata;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -96,7 +95,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
         mMessageChannel = new CastMessagingChannel(this);
         updateNamespaces();
 
-        if (mNamespaces.contains(CastMessageHandler.MEDIA_NAMESPACE)) {
+        if (mNamespaces.contains(CastSessionUtil.MEDIA_NAMESPACE)) {
             mMediaPlayer = new RemoteMediaPlayer();
             mMediaPlayer.setOnStatusUpdatedListener(
                     new RemoteMediaPlayer.OnStatusUpdatedListener() {
@@ -122,7 +121,8 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                     new RemoteMediaPlayer.OnMetadataUpdatedListener() {
                         @Override
                         public void onMetadataUpdated() {
-                            setNotificationMetadata(mNotificationBuilder);
+                            CastSessionUtil.setNotificationMetadata(
+                                    mNotificationBuilder, mCastDevice, mMediaPlayer);
                             MediaNotificationManager.show(mNotificationBuilder.build());
                         }
                     });
@@ -133,20 +133,23 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
             contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
                     MediaNotificationUma.SOURCE_PRESENTATION);
         }
-        mNotificationBuilder = new MediaNotificationInfo.Builder()
-                .setPaused(false)
-                .setOrigin(origin)
-                // TODO(avayvod): the same session might have more than one tab id. Should we track
-                // the last foreground alive tab and update the notification with it?
-                .setTabId(tabId)
-                .setPrivate(isIncognito)
-                .setActions(MediaNotificationInfo.ACTION_STOP)
-                .setContentIntent(contentIntent)
-                .setNotificationSmallIcon(R.drawable.ic_notification_media_route)
-                .setDefaultNotificationLargeIcon(R.drawable.cast_playing_square)
-                .setId(R.id.presentation_notification)
-                .setListener(this);
-        setNotificationMetadata(mNotificationBuilder);
+        mNotificationBuilder =
+                new MediaNotificationInfo.Builder()
+                        .setPaused(false)
+                        .setOrigin(origin)
+                        // TODO(avayvod): the same session might have more than one tab id. Should
+                        // we track the last foreground alive tab and update the notification with
+                        // it?
+                        .setTabId(tabId)
+                        .setPrivate(isIncognito)
+                        .setActions(MediaNotificationInfo.ACTION_STOP)
+                        .setContentIntent(contentIntent)
+                        .setNotificationSmallIcon(R.drawable.ic_notification_media_route)
+                        .setDefaultNotificationLargeIcon(R.drawable.cast_playing_square)
+                        .setId(R.id.presentation_notification)
+                        .setListener(this);
+
+        CastSessionUtil.setNotificationMetadata(mNotificationBuilder, mCastDevice, mMediaPlayer);
         MediaNotificationManager.show(mNotificationBuilder.build());
     }
 
@@ -353,8 +356,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                                     }
 
                                     // Media commands wait for the media status update as a result.
-                                    if (CastMessageHandler.MEDIA_NAMESPACE
-                                            .equals(namespace)) return;
+                                    if (CastSessionUtil.MEDIA_NAMESPACE.equals(namespace)) return;
 
                                     // App messages wait for the empty message with the sequence
                                     // number.
@@ -445,8 +447,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
     @Override
     public void onMediaMessage(String message) {
         if (mMediaPlayer != null) {
-            mMediaPlayer.onMessageReceived(
-                    mCastDevice, CastMessageHandler.MEDIA_NAMESPACE, message);
+            mMediaPlayer.onMessageReceived(mCastDevice, CastSessionUtil.MEDIA_NAMESPACE, message);
         }
     }
 
@@ -479,33 +480,5 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                 CastMessageHandler.INVALID_SEQUENCE_NUMBER);
 
         if (mMediaPlayer != null && !isApiClientInvalid()) mMediaPlayer.requestStatus(mApiClient);
-    }
-
-    private void setNotificationMetadata(MediaNotificationInfo.Builder builder) {
-        MediaMetadata notificationMetadata = new MediaMetadata("", "", "");
-        builder.setMetadata(notificationMetadata);
-
-        if (mCastDevice != null) notificationMetadata.setTitle(mCastDevice.getFriendlyName());
-
-        if (mMediaPlayer == null) return;
-
-        com.google.android.gms.cast.MediaInfo info = mMediaPlayer.getMediaInfo();
-        if (info == null) return;
-
-        com.google.android.gms.cast.MediaMetadata metadata = info.getMetadata();
-        if (metadata == null) return;
-
-        String title = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_TITLE);
-        if (title != null) notificationMetadata.setTitle(title);
-
-        String artist = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_ARTIST);
-        if (artist == null) {
-            artist = metadata.getString(com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_ARTIST);
-        }
-        if (artist != null) notificationMetadata.setArtist(artist);
-
-        String album = metadata.getString(
-                com.google.android.gms.cast.MediaMetadata.KEY_ALBUM_TITLE);
-        if (album != null) notificationMetadata.setAlbum(album);
     }
 }

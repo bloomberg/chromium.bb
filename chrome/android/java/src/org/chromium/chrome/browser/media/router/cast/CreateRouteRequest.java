@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.MediaRoute;
+import org.chromium.chrome.browser.media.router.cast.remoting.RemotingCastSession;
 
 import javax.annotation.Nullable;
 
@@ -50,9 +51,15 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private final int mRequestId;
     private final CastMessageHandler mMessageHandler;
     private final ChromeCastSessionManager.CastSessionManagerListener mSessionListener;
+    private final RequestedCastSessionType mSessionType;
 
     private GoogleApiClient mApiClient;
     private int mState = STATE_IDLE;
+
+    // Used to identify whether the request should launch a CastSessionImpl or a RemotingCastSession
+    // (based off of wheter the route creation was requested by a RemotingMediaRouteProvider or a
+    // CastMediaRouteProvider).
+    public enum RequestedCastSessionType { CAST, REMOTE }
 
     /**
      * Initializes the request.
@@ -70,7 +77,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     public CreateRouteRequest(MediaSource source, MediaSink sink, String presentationId,
             String origin, int tabId, boolean isIncognito, int requestId,
             ChromeCastSessionManager.CastSessionManagerListener listener,
-            @Nullable CastMessageHandler messageHandler) {
+            RequestedCastSessionType sessionType, @Nullable CastMessageHandler messageHandler) {
         assert source != null;
         assert sink != null;
 
@@ -82,6 +89,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mIsIncognito = isIncognito;
         mRequestId = requestId;
         mSessionListener = listener;
+        mSessionType = sessionType;
         mMessageHandler = messageHandler;
     }
 
@@ -226,9 +234,20 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(Cast.ApplicationConnectionResult result) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        CastSession session = new CastSessionImpl(mApiClient, result.getSessionId(),
-                result.getApplicationMetadata(), result.getApplicationStatus(), mSink.getDevice(),
-                mOrigin, mTabId, mIsIncognito, mSource, mMessageHandler);
+        CastSession session = null;
+
+        switch (mSessionType) {
+            case CAST:
+                session = new CastSessionImpl(mApiClient, result.getSessionId(),
+                        result.getApplicationMetadata(), result.getApplicationStatus(),
+                        mSink.getDevice(), mOrigin, mTabId, mIsIncognito, mSource, mMessageHandler);
+                break;
+            case REMOTE:
+                session = new RemotingCastSession(mApiClient, result.getSessionId(),
+                        result.getApplicationMetadata(), result.getApplicationStatus(),
+                        mSink.getDevice(), mOrigin, mTabId, mIsIncognito, mSource);
+                break;
+        }
 
         ChromeCastSessionManager.get().onSessionStarted(session);
 
