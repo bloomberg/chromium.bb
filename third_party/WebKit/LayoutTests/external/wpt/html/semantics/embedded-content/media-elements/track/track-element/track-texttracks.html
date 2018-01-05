@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<title>Tests that TextTracks in a TextTrackList are kept in the correct order.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>TextTracks in a TextTrackList are kept in the correct order</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-    <track kind="captions" src="captions-webvtt/tc004-webvtt-file.vtt" >
+    <track kind="captions" src="resources/webvtt-file.vtt">
 </video>
 <script>
 test(function() {
@@ -23,12 +23,14 @@ test(function() {
     assert_equals(video.textTracks[1].kind, "chapters");
     assert_equals(video.textTracks[2].kind, "descriptions");
 
-    // Verify the default parameters of the text track object returned by addTextTrack().
+    // Verify the default parameters of the text track object
+    // returned by addTextTrack().
     assert_equals(video.textTracks[2].mode, "hidden");
     assert_not_equals(video.textTracks[2].cues, null);
     assert_equals(video.textTracks[2].cues.length, 0);
 
-    // Add another track element, it should insert before the addTextTrack() track.
+    // Add another track element, it should insert
+    // before the addTextTrack() track.
     trackElement = document.createElement("track");
     trackElement.setAttribute("kind", "metadata");
     video.appendChild(trackElement);
