@@ -18,6 +18,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/ukm_service.h"
+#include "components/ukm/ukm_source.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -90,14 +91,14 @@ class UkmBrowserTest : public SyncTest {
     auto* service = ukm_service();
     return service ? service->client_id_ : 0;
   }
-  bool has_source_data() const {
+  bool HasDummySource(ukm::SourceId source_id) const {
     auto* service = ukm_service();
-    return service ? !service->sources().empty() : false;
+    return service ? !!service->sources().count(source_id) : false;
   }
-  void RecordDummySource() {
+  void RecordDummySource(ukm::SourceId source_id) {
     auto* service = ukm_service();
     if (service)
-      service->UpdateSourceURL(1, GURL("http://example.com"));
+      service->UpdateSourceURL(source_id, GURL("http://example.com"));
   }
 
  protected:
@@ -452,11 +453,14 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   EXPECT_TRUE(ukm_enabled());
   uint64_t original_client_id = client_id();
 
-  RecordDummySource();
-  EXPECT_TRUE(has_source_data());
+  const ukm::SourceId kDummySourceId = 0x54321;
+  RecordDummySource(kDummySourceId);
+  EXPECT_TRUE(HasDummySource(kDummySourceId));
 
   ClearBrowsingData(profile);
-  EXPECT_FALSE(has_source_data());
+  // Other sources may already have been recorded since the data was cleared,
+  // but the dummy source should be gone.
+  EXPECT_FALSE(HasDummySource(kDummySourceId));
   // Client ID should NOT be reset.
   EXPECT_EQ(original_client_id, client_id());
   EXPECT_TRUE(ukm_enabled());
