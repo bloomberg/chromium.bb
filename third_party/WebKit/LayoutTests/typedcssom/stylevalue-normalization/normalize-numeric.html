@@ -10,6 +10,7 @@
 'use strict';
 
 function test_numeric_normalization(test, property, cssText, expected) {
+  assert_style_value_equals(CSSNumericValue.parse(cssText), expected);
   assert_style_value_equals(CSSStyleValue.parse(property, cssText), expected);
   assert_style_value_equals(
       createInlineStyleMap(test, property + ': ' + cssText).get(property),
@@ -29,10 +30,6 @@ test(t => {
 }, 'Normalizing a <dimension> returns a CSSUnitValue with the correct unit');
 
 test(t => {
-  test_numeric_normalization(t, 'width', '0', CSS.px(0));
-}, 'Normalizing a <dimension> with a unitless zero returns 0px');
-
-test(t => {
   test_numeric_normalization(t, 'z-index', '0', CSS.number(0));
 }, 'Normalizing a <number> with a unitless zero returns 0');
 
@@ -41,5 +38,12 @@ test(t => {
       'calc(1px + calc(1px) + calc(1px * 2) + 1%)',
       new CSSMathSum(CSS.px(4), CSS.percent(1)));
 }, 'Normalizing a <calc> returns simplified expression');
+
+test(t => {
+  assert_style_value_equals(CSSStyleValue.parse('width', '0px'), CSS.px(0));
+  assert_style_value_equals(
+      createInlineStyleMap(t, 'width: 0').get('width'),
+      CSS.px(0));
+}, 'Normalizing a <dimension> with a unitless zero returns 0px');
 
 </script>
