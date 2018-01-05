@@ -822,6 +822,14 @@ class BlockableHostResolver : public HostResolver {
     return ERR_DNS_CACHE_MISS;
   }
 
+  int ResolveStaleFromCache(const RequestInfo& info,
+                            AddressList* addresses,
+                            HostCache::EntryStaleness* stale_info,
+                            const NetLogWithSource& net_log) override {
+    NOTREACHED();
+    return ERR_DNS_CACHE_MISS;
+  }
+
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
                  HostCache::EntryStaleness* stale_out) const override {
