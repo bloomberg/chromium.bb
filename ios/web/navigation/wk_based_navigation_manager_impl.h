@@ -51,6 +51,22 @@ class SessionStorageBuilder;
 // because the provisional load and commit events for iframe navigation are not
 // visible via the WKNavigationDelegate interface. Consequently, pending item
 // and previous item are only tracked for the main frame.
+//
+// Empty Window Open Navigation edge case:
+//
+//   If window.open() is called with an empty URL, WKWebView does not seem to
+//   create a WKBackForwardListItem for the first about:blank navigation. Any
+//   subsequent navigation in this window will replace the about:blank entry.
+//   This is consistent with the HTML spec regarding Location-object navigation
+//   when the browser context's only Document is about:blank:
+//   https://html.spec.whatwg.org/multipage/history.html (Section 7.7.4)
+//
+//   This navigation manager will still create a pendingNavigationItem for this
+//   "empty window open item" and allow CommitPendingItem() to be called on it.
+//   All accessors will behave identically as if the navigation history has a
+//   single normal entry. The only difference is that a subsequent call to
+//   CommitPendingItem() will *replace* the empty window open item. From this
+//   point onward, it is as if the empty window open item never occurred.
 class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
  public:
   WKBasedNavigationManagerImpl();
@@ -143,6 +159,13 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // Index of the last committed item in the main frame. If there is none, this
   // field will equal to -1.
   int last_committed_item_index_;
+
+  // The NavigationItem that corresponds to the empty window open navigation. It
+  // has to be stored separately because it has no WKBackForwardListItem. It is
+  // not null if when CommitPendingItem() is last called, the WKBackForwardList
+  // is empty but not nil. Any subsequent call to CommitPendingItem() will reset
+  // this field to null.
+  std::unique_ptr<NavigationItemImpl> empty_window_open_item_;
 
   // The transient item in main frame.
   std::unique_ptr<NavigationItemImpl> transient_item_;
