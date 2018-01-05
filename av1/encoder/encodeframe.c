@@ -4388,7 +4388,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
-  const BLOCK_SIZE block_size = bsize;
   const int num_planes = av1_num_planes(cm);
 
   if (!is_inter) {
@@ -4397,8 +4396,8 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_CFL
     mbmi->skip = 1;
     for (int plane = 0; plane < num_planes; ++plane) {
-      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
-                                   mi_row, mi_col);
+      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, plane, 1, mi_row,
+                                   mi_col);
     }
 #if CONFIG_CFL
     xd->cfl.store_y = 0;
@@ -4428,10 +4427,10 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
     mbmi->min_tx_size = mbmi->tx_size;
 #if CONFIG_LV_MAP
-    av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col,
+    av1_update_txb_context(cpi, td, dry_run, bsize, rate, mi_row, mi_col,
                            tile_data->allow_update_cdf);
 #else   // CONFIG_LV_MAP
-    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col,
+    av1_tokenize_sb(cpi, td, t, dry_run, bsize, rate, mi_row, mi_col,
                     tile_data->allow_update_cdf);
 #endif  // CONFIG_LV_MAP
   } else {
@@ -4450,7 +4449,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                            &xd->block_refs[ref]->sf);
     }
 
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, block_size);
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
     if (mbmi->motion_mode == OBMC_CAUSAL) {
       av1_build_obmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
@@ -4472,9 +4471,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
 #endif
 
-    av1_encode_sb((AV1_COMMON *)cm, x, block_size, mi_row, mi_col, dry_run);
+    av1_encode_sb((AV1_COMMON *)cm, x, bsize, mi_row, mi_col, dry_run);
     if (mbmi->skip) mbmi->min_tx_size = mbmi->tx_size;
-    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size, rate,
+    av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, bsize, rate,
                           tile_data->allow_update_cdf);
   }
 
