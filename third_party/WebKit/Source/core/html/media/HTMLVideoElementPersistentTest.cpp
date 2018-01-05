@@ -11,7 +11,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,7 +31,7 @@ using ::testing::Sequence;
 
 }  // anonymous namespace
 
-class HTMLVideoElementPersistentTest : public ::testing::Test {
+class HTMLVideoElementPersistentTest : public PageTestBase {
  protected:
   void SetUp() override {
     chrome_client_ = new FullscreenMockChromeClient();
@@ -40,12 +40,10 @@ class HTMLVideoElementPersistentTest : public ::testing::Test {
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
 
-    page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients);
+    PageTestBase::SetupPageWithClients(&clients);
     GetDocument().body()->SetInnerHTMLFromString(
         "<body><div><video></video></div></body>");
   }
-
-  Document& GetDocument() { return page_holder_->GetDocument(); }
 
   HTMLVideoElement* VideoElement() {
     return ToHTMLVideoElement(GetDocument().QuerySelector("video"));
@@ -74,7 +72,6 @@ class HTMLVideoElementPersistentTest : public ::testing::Test {
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<FullscreenMockChromeClient> chrome_client_;
 };
 

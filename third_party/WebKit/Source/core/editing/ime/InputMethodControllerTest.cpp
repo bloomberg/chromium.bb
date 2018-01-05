@@ -19,40 +19,26 @@
 #include "core/frame/Settings.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class InputMethodControllerTest : public ::testing::Test {
+class InputMethodControllerTest : public PageTestBase {
  protected:
   InputMethodController& Controller() {
     return GetFrame().GetInputMethodController();
   }
-  Document& GetDocument() const { return *document_; }
-  LocalFrame& GetFrame() const { return dummy_page_holder_->GetFrame(); }
   Element* InsertHTMLElement(const char* element_code, const char* element_id);
   void CreateHTMLWithCompositionInputEventListeners();
   void CreateHTMLWithCompositionEndEventListener(const SelectionType);
-
- private:
-  void SetUp() override;
-
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Document> document_;
 };
-
-void InputMethodControllerTest::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-  document_ = &dummy_page_holder_->GetDocument();
-  DCHECK(document_);
-}
 
 Element* InputMethodControllerTest::InsertHTMLElement(const char* element_code,
                                                       const char* element_id) {
   GetDocument().write(element_code);
   GetDocument().UpdateStyleAndLayout();
-  Element* element = GetDocument().getElementById(element_id);
+  Element* element = GetElementById(element_id);
   element->focus();
   return element;
 }
