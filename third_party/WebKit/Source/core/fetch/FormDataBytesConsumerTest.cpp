@@ -7,7 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "core/fetch/BytesConsumerTestUtil.h"
 #include "core/html/forms/FormData.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "mojo/common/data_pipe_utils.h"
@@ -121,14 +121,9 @@ class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
   String DebugName() const override { return "NoopClient"; }
 };
 
-class FormDataBytesConsumerTest : public ::testing::Test {
+class FormDataBytesConsumerTest : public PageTestBase {
  public:
-  FormDataBytesConsumerTest() : page_(DummyPageHolder::Create()) {}
-
- protected:
-  Document* GetDocument() { return &page_->GetDocument(); }
-
-  std::unique_ptr<DummyPageHolder> page_;
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 };
 
 TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromString) {
@@ -188,7 +183,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromSimpleFormData) {
   data->AppendData("hoge", 4);
 
   auto result = (new BytesConsumerTestUtil::TwoPhaseReader(
-                     new FormDataBytesConsumer(GetDocument(), data)))
+                     new FormDataBytesConsumer(&GetDocument(), data)))
                     ->Run();
   EXPECT_EQ(Result::kDone, result.first);
   EXPECT_EQ("foohoge",
@@ -199,7 +194,7 @@ TEST_F(FormDataBytesConsumerTest, TwoPhaseReadFromComplexFormData) {
   scoped_refptr<EncodedFormData> data = ComplexFormData();
   MockBytesConsumer* underlying = MockBytesConsumer::Create();
   BytesConsumer* consumer =
-      FormDataBytesConsumer::CreateForTesting(GetDocument(), data, underlying);
+      FormDataBytesConsumer::CreateForTesting(&GetDocument(), data, underlying);
   Checkpoint checkpoint;
 
   const char* buffer = nullptr;
@@ -272,7 +267,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromSimpleFormData) {
       data->EncodeMultiPartFormData();
 
   BytesConsumer* consumer =
-      new FormDataBytesConsumer(GetDocument(), input_form_data);
+      new FormDataBytesConsumer(&GetDocument(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -291,7 +286,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsBlobDataHandleFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   BytesConsumer* consumer =
-      new FormDataBytesConsumer(GetDocument(), input_form_data);
+      new FormDataBytesConsumer(&GetDocument(), input_form_data);
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer->DrainAsBlobDataHandle();
   ASSERT_TRUE(blob_data_handle);
@@ -339,7 +334,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromSimpleFormData) {
       data->EncodeMultiPartFormData();
 
   BytesConsumer* consumer =
-      new FormDataBytesConsumer(GetDocument(), input_form_data);
+      new FormDataBytesConsumer(&GetDocument(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -352,7 +347,7 @@ TEST_F(FormDataBytesConsumerTest, DrainAsFormDataFromComplexFormData) {
   scoped_refptr<EncodedFormData> input_form_data = ComplexFormData();
 
   BytesConsumer* consumer =
-      new FormDataBytesConsumer(GetDocument(), input_form_data);
+      new FormDataBytesConsumer(&GetDocument(), input_form_data);
   EXPECT_EQ(input_form_data, consumer->DrainAsFormData());
   EXPECT_FALSE(consumer->DrainAsBlobDataHandle());
   const char* buffer = nullptr;
@@ -378,7 +373,7 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDraining) {
 TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData) {
   MockBytesConsumer* underlying = MockBytesConsumer::Create();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
-      GetDocument(), ComplexFormData(), underlying);
+      &GetDocument(), ComplexFormData(), underlying);
 
   const char* buffer = nullptr;
   size_t available = 0;
@@ -417,7 +412,7 @@ TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData) {
 
   MockBytesConsumer* underlying = MockBytesConsumer::Create();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
-      GetDocument(), input_form_data, underlying);
+      &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
 
   InSequence s;
@@ -439,7 +434,7 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
 
   MockBytesConsumer* underlying = MockBytesConsumer::Create();
   BytesConsumer* consumer = FormDataBytesConsumer::CreateForTesting(
-      GetDocument(), input_form_data, underlying);
+      &GetDocument(), input_form_data, underlying);
   Checkpoint checkpoint;
 
   InSequence s;
@@ -455,7 +450,7 @@ TEST_F(FormDataBytesConsumerTest, CancelWithComplexFormData) {
 // Tests consuming an EncodedFormData with data pipe elements.
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
   auto* reader = new BytesConsumerTestUtil::TwoPhaseReader(consumer);
   std::pair<BytesConsumer::Result, Vector<char>> result = reader->Run();
   EXPECT_EQ(Result::kDone, result.first);
@@ -466,7 +461,7 @@ TEST_F(FormDataBytesConsumerTest, DataPipeFormData) {
 // Tests DrainAsFormData() on an EncodedFormData with data pipe elements.
 TEST_F(FormDataBytesConsumerTest, DataPipeFormData_DrainAsFormData) {
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
   scoped_refptr<EncodedFormData> drained_form_data =
       consumer->DrainAsFormData();
   EXPECT_EQ(*input_form_data, *drained_form_data);
@@ -479,7 +474,7 @@ TEST_F(FormDataBytesConsumerTest,
        DataPipeFormData_DrainAsFormDataWhileReading) {
   // Create the consumer and start reading.
   scoped_refptr<EncodedFormData> input_form_data = DataPipeFormData();
-  auto* consumer = new FormDataBytesConsumer(GetDocument(), input_form_data);
+  auto* consumer = new FormDataBytesConsumer(&GetDocument(), input_form_data);
   const char* buffer = nullptr;
   size_t available = 0;
   EXPECT_EQ(BytesConsumer::Result::kOk,
