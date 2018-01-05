@@ -16,6 +16,9 @@
 // Minimum tap area dimension, as specified by Apple guidelines.
 const CGFloat kLinkTapAreaMinimum = 44.0;
 
+// Maximum line height expansion factor.
+const CGFloat kMaximumExpansionFactor = 1.25;
+
 namespace {
 // The corner radius of the highlight view.
 const CGFloat kHighlightViewCornerRadius = 2.0;
@@ -40,10 +43,12 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 
 // Designated initializer.  |linkFrame| is the frame of the link text; this may
 // differ from the actual frame of the resulting TransparentLinkButton, which is
-// guaranteed to be at least |kLinkTapAreaMinimum| in each dimension.  |URL| is
-// the URL for the associated link.
+// guaranteed to be at least |kLinkTapAreaMinimum| in each dimension, or
+// |lineHeight| * |kMaximumExpansionFactor| for height, whichever is smaller.
+// |URL| is the URL for the associated link.
 - (instancetype)initWithLinkFrame:(CGRect)linkFrame
-                              URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
+                              URL:(const GURL&)URL
+                       lineHeight:(CGFloat)lineHeight NS_DESIGNATED_INITIALIZER;
 
 // Sets the properties, propogating state to its adjacent link buttons.
 // |sender| is the TransparentLinkButon whose state is being propogated to
@@ -66,9 +71,16 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 @synthesize previousLinkButton = _previousLinkButton;
 @synthesize nextLinkButton = _nextLinkButton;
 
-- (instancetype)initWithLinkFrame:(CGRect)linkFrame URL:(const GURL&)URL {
+- (instancetype)initWithLinkFrame:(CGRect)linkFrame
+                              URL:(const GURL&)URL
+                       lineHeight:(CGFloat)lineHeight {
+  CGFloat linkTapHeightMinimum = kLinkTapAreaMinimum;
+  if (lineHeight > 0) {
+    linkTapHeightMinimum =
+        MIN(lineHeight * kMaximumExpansionFactor, kLinkTapAreaMinimum);
+  }
   CGFloat linkHeightExpansion =
-      MAX(0, (kLinkTapAreaMinimum - linkFrame.size.height) / 2.0);
+      MAX(0, (linkTapHeightMinimum - linkFrame.size.height) / 2.0);
   CGFloat linkWidthExpansion =
       MAX(0, (kLinkTapAreaMinimum - linkFrame.size.width) / 2.0);
   // Expand the frame as necessary to meet the minimum tap area dimensions.
@@ -129,6 +141,7 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
 
 + (NSArray*)buttonsForLinkFrames:(NSArray*)linkFrames
                              URL:(const GURL&)URL
+                      lineHeight:(CGFloat)lineHeight
               accessibilityLabel:(NSString*)label {
   if (!linkFrames.count)
     return @[];
@@ -137,7 +150,9 @@ const CGFloat kHighlightViewBackgroundAlpha = 0.25;
   for (NSValue* linkFrameValue in linkFrames) {
     CGRect linkFrame = [linkFrameValue CGRectValue];
     TransparentLinkButton* button =
-        [[TransparentLinkButton alloc] initWithLinkFrame:linkFrame URL:URL];
+        [[TransparentLinkButton alloc] initWithLinkFrame:linkFrame
+                                                     URL:URL
+                                              lineHeight:lineHeight];
     TransparentLinkButton* previousButton = [buttons lastObject];
     previousButton.nextLinkButton = button;
     [button setPreviousLinkButton:previousButton];
