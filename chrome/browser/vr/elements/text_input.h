@@ -53,7 +53,7 @@ class TextInput : public UiElement {
   }
 
   bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Vector3dF& look_at) final;
+                    const gfx::Transform& head_pose) final;
   void OnSetSize(const gfx::SizeF& size) final;
   void OnSetName() final;
 

@@ -21,7 +21,7 @@ class TimeTicks;
 }  // namespace base
 
 namespace gfx {
-class Vector3dF;
+class Transform;
 }  // namespace gfx
 
 namespace vr {
@@ -42,7 +42,7 @@ class UiScene {
   // absolute begin frame time.
   // Returns true if *anything* was updated.
   bool OnBeginFrame(const base::TimeTicks& current_time,
-                    const gfx::Vector3dF& look_at);
+                    const gfx::Transform& head_pose);
 
   // Returns true if any textures were redrawn.
   bool UpdateTextures();

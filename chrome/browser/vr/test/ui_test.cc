@@ -220,17 +220,17 @@ bool UiTest::RunFor(base::TimeDelta delta) {
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   bool changed = false;
   for (; current_time_ < target_time; current_time_ += frame_time) {
-    if (scene_->OnBeginFrame(current_time_, kForwardVector))
+    if (scene_->OnBeginFrame(current_time_, kStartHeadPose))
       changed = true;
   }
   current_time_ = target_time;
-  if (scene_->OnBeginFrame(current_time_, kForwardVector))
+  if (scene_->OnBeginFrame(current_time_, kStartHeadPose))
     changed = true;
   return changed;
 }
 
 bool UiTest::OnBeginFrame() const {
-  return scene_->OnBeginFrame(current_time_, kForwardVector);
+  return scene_->OnBeginFrame(current_time_, kStartHeadPose);
 }
 
 bool UiTest::OnBeginFrame(base::TimeDelta delta) {

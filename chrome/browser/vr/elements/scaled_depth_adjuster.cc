@@ -22,7 +22,7 @@ gfx::Transform ScaledDepthAdjuster::GetTargetLocalTransform() const {
 }
 
 bool ScaledDepthAdjuster::OnBeginFrame(const base::TimeTicks& time,
-                                       const gfx::Vector3dF& look_at) {
+                                       const gfx::Transform& head_pose) {
   // NB: we compute our local transform only once in the first call to
   // OnBeginFrame that occurs after this element's construction. This permits
   // ScaledDepthAdjuster elements to be added to subtrees that are later added

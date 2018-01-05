@@ -91,11 +91,8 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
 
   GestureList gesture_list;
   ReticleModel reticle_model;
-  EXPECT_TRUE(ui_->scene()->OnBeginFrame(
-      base::TimeTicks(),
-      gfx::Vector3dF(-render_info.head_pose.matrix().get(2, 0),
-                     -render_info.head_pose.matrix().get(2, 1),
-                     -render_info.head_pose.matrix().get(2, 2))));
+  EXPECT_TRUE(
+      ui_->scene()->OnBeginFrame(base::TimeTicks(), render_info.head_pose));
   ui_->input_manager()->HandleInput(MsToTicks(1), controller_model,
                                     &reticle_model, &gesture_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);

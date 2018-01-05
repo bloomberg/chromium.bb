@@ -136,7 +136,7 @@ class UiElement : public cc::AnimationTarget {
 
   // Returns true if the element has been updated in any visible way.
   bool DoBeginFrame(const base::TimeTicks& time,
-                    const gfx::Vector3dF& head_direction);
+                    const gfx::Transform& head_pose);
 
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
@@ -444,7 +444,7 @@ class UiElement : public cc::AnimationTarget {
 
   // Returns true if the element has been updated in any visible way.
   virtual bool OnBeginFrame(const base::TimeTicks& time,
-                            const gfx::Vector3dF& look_at);
+                            const gfx::Transform& head_pose);
 
   // Valid IDs are non-negative.
   int id_ = -1;

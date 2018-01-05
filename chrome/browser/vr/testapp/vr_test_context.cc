@@ -116,7 +116,7 @@ void VrTestContext::DrawFrame() {
   UpdateController();
 
   // Update the render position of all UI elements (including desktop).
-  ui_->scene()->OnBeginFrame(current_time, kForwardVector);
+  ui_->scene()->OnBeginFrame(current_time, head_pose_);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   ui_->ui_renderer()->Draw(render_info);
 

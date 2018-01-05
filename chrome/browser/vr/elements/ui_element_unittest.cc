@@ -109,10 +109,10 @@ TEST(UiElement, AnimateSize) {
   UiElement* rect_ptr = rect.get();
   scene.AddUiElement(kRoot, std::move(rect));
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  EXPECT_TRUE(scene.OnBeginFrame(start_time, kForwardVector));
+  EXPECT_TRUE(scene.OnBeginFrame(start_time, kStartHeadPose));
   EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(10, 100), rect_ptr->size());
   EXPECT_TRUE(scene.OnBeginFrame(start_time + MicrosecondsToDelta(10000),
-                                 kForwardVector));
+                                 kStartHeadPose));
   EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect_ptr->size());
 }
 
@@ -130,13 +130,13 @@ TEST(UiElement, AnimationAffectsInheritableTransform) {
       2, 2, from_operations, to_operations, MicrosecondsToDelta(10000)));
 
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  EXPECT_TRUE(scene.OnBeginFrame(start_time, kForwardVector));
+  EXPECT_TRUE(scene.OnBeginFrame(start_time, kStartHeadPose));
   gfx::Point3F p;
   rect_ptr->LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(10, 100, 1000), p);
   p = gfx::Point3F();
   EXPECT_TRUE(scene.OnBeginFrame(start_time + MicrosecondsToDelta(10000),
-                                 kForwardVector));
+                                 kStartHeadPose));
   rect_ptr->LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }

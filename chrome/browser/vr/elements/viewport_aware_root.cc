@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "chrome/browser/vr/pose_util.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
@@ -41,8 +42,9 @@ ViewportAwareRoot::ViewportAwareRoot() {
 ViewportAwareRoot::~ViewportAwareRoot() = default;
 
 bool ViewportAwareRoot::OnBeginFrame(const base::TimeTicks& time,
-                                     const gfx::Vector3dF& head_direction) {
-  return AdjustRotationForHeadPose(head_direction);
+                                     const gfx::Transform& head_pose) {
+  gfx::Vector3dF look_at = vr::GetForwardVector(head_pose);
+  return AdjustRotationForHeadPose(look_at);
 }
 
 bool ViewportAwareRoot::AdjustRotationForHeadPose(

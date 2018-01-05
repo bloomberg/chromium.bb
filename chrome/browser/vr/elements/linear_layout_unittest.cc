@@ -122,7 +122,7 @@ TEST(LinearLayout, NestedLayouts) {
 
   auto scene = base::MakeUnique<UiScene>();
   scene->AddUiElement(kRoot, std::move(parent_layout));
-  scene->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector);
+  scene->OnBeginFrame(MicrosecondsToTicks(1), kStartHeadPose);
 
   // Ensure that layouts expand to include the cumulative size of children.
   EXPECT_FLOAT_EQ(p_parent_layout->size().width(), 999.f);
