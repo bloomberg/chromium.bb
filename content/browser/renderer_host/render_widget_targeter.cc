@@ -4,10 +4,6 @@
 
 #include "content/browser/renderer_host/render_widget_targeter.h"
 
-#include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_frame_host_manager.h"
-#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -165,24 +161,9 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     const base::Optional<gfx::PointF>& target_location,
     const viz::FrameSinkId& frame_sink_id) {
   request_in_flight_ = false;
-  auto* frame_proxy_host = RenderFrameProxyHost::FromID(
-      frame_sink_id.client_id(), frame_sink_id.sink_id());
-  if (!frame_proxy_host || !root_view || !target) {
-    auto* frame_host = RenderFrameHostImpl::FromID(frame_sink_id.client_id(),
-                                                   frame_sink_id.sink_id());
-    if (frame_host) {
-      FoundTarget(root_view.get(), target.get(), event, latency,
-                  target_location);
-    }
-    FlushEventQueue();
-    return;
-  }
-
-  auto* view =
-      static_cast<RenderWidgetHostViewBase*>(frame_proxy_host->frame_tree_node()
-                                                 ->render_manager()
-                                                 ->current_frame_host()
-                                                 ->GetView());
+  auto* view = delegate_->FindViewFromFrameSinkId(frame_sink_id);
+  if (!view)
+    view = target.get();
   // If a client was asked to find a target, then it is necessary to keep
   // asking the clients until a client claims an event for itself.
   if (view == target.get()) {

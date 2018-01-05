@@ -56,13 +56,4 @@ specific_include_rules = {
   "render_widget_host_input_event_router.cc": [
     "+content/browser/frame_host/render_widget_host_view_guest.h",
   ],
-  # TODO(crbug.com/797362): The dependency is required to find the correct
-  # target from a FrameSinkId. This should be removed from here, and instead
-  # provided through a delegate interface that is implemented in web_contents.
-  "render_widget_targeter.cc": [
-    "+content/browser/frame_host/frame_tree_node.h",
-    "+content/browser/frame_host/render_frame_host_impl.h",
-    "+content/browser/frame_host/render_frame_host_manager.h",
-    "+content/browser/frame_host/render_frame_proxy_host.h",
-  ],
 }

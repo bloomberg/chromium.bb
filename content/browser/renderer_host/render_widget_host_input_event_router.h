@@ -186,6 +186,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                              RenderWidgetHostViewBase* target,
                              const blink::WebInputEvent& event,
                              const ui::LatencyInfo& latency) override;
+  RenderWidgetHostViewBase* FindViewFromFrameSinkId(
+      const viz::FrameSinkId& frame_sink_id) const override;
 
   FrameSinkIdOwnerMap owner_map_;
   TargetMap touchscreen_gesture_target_map_;
