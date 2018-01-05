@@ -949,7 +949,8 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
   for (GLsizei ii = 0; ii < n; ++ii) {
     GLuint client_id = textures[ii];
     scoped_refptr<TexturePassthrough> texture = nullptr;
-    if (!resources_->texture_object_map.GetServiceID(client_id, &texture)) {
+    if (!resources_->texture_object_map.GetServiceID(client_id, &texture) ||
+        texture == nullptr) {
       // Delete with DeleteHelper
       non_mailbox_client_ids.push_back(client_id);
     } else {
