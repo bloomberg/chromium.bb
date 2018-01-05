@@ -32,19 +32,17 @@
 
 #include "base/location.h"
 #include "bindings/modules/v8/v8_storage_error_callback.h"
+#include "bindings/modules/v8/v8_storage_usage_callback.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/quota/DOMError.h"
-#include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
 #include "modules/quota/StorageQuotaClient.h"
-#include "platform/StorageQuotaCallbacks.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom-blink.h"
 
 namespace blink {
@@ -61,6 +59,25 @@ StorageType GetStorageType(DeprecatedStorageQuota::Type type) {
       return StorageType::kPersistent;
     default:
       return StorageType::kUnknown;
+  }
+}
+
+void QueryStorageUsageAndQuotaCallback(V8StorageUsageCallback* success_callback,
+                                       V8StorageErrorCallback* error_callback,
+                                       mojom::QuotaStatusCode status_code,
+                                       int64_t usage_in_bytes,
+                                       int64_t quota_in_bytes) {
+  if (status_code != mojom::QuotaStatusCode::kOk) {
+    if (error_callback) {
+      error_callback->InvokeAndReportException(
+          nullptr, DOMError::Create(static_cast<ExceptionCode>(status_code)));
+    }
+    return;
+  }
+
+  if (success_callback) {
+    success_callback->InvokeAndReportException(nullptr, usage_in_bytes,
+                                               quota_in_bytes);
   }
 }
 
@@ -108,11 +125,11 @@ void DeprecatedStorageQuota::queryUsageAndQuota(
     return;
   }
 
-  StorageQuotaCallbacks* callbacks =
-      DeprecatedStorageQuotaCallbacksImpl::Create(success_callback,
-                                                  error_callback);
   Platform::Current()->QueryStorageUsageAndQuota(
-      WrapRefCounted(security_origin), storage_type, callbacks);
+      WrapRefCounted(security_origin), storage_type,
+      WTF::Bind(&QueryStorageUsageAndQuotaCallback,
+                WrapPersistent(success_callback),
+                WrapPersistent(error_callback)));
 }
 
 void DeprecatedStorageQuota::requestQuota(

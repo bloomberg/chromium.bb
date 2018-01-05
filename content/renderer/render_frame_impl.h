@@ -694,7 +694,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                  const blink::WebRect& sel) override;
   void RequestStorageQuota(blink::mojom::StorageType type,
                            unsigned long long requested_size,
-                           blink::WebStorageQuotaCallbacks callbacks) override;
+                           RequestStorageQuotaCallback) override;
   blink::WebPushClient* PushClient() override;
   blink::WebPresentationClient* PresentationClient() override;
   blink::WebRelatedAppsFetcher* GetRelatedAppsFetcher() override;

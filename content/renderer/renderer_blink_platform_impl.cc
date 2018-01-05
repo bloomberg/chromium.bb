@@ -1369,11 +1369,9 @@ void RendererBlinkPlatformImpl::StopListening(
 void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
     const blink::WebSecurityOrigin& storage_partition,
     blink::mojom::StorageType type,
-    blink::WebStorageQuotaCallbacks callbacks) {
+    QueryStorageUsageAndQuotaCallback callback) {
   QuotaDispatcher::ThreadSpecificInstance(default_task_runner_)
-      ->QueryStorageUsageAndQuota(
-          storage_partition, type,
-          std::make_unique<blink::WebStorageQuotaCallbacks>(callbacks));
+      ->QueryStorageUsageAndQuota(storage_partition, type, std::move(callback));
 }
 
 //------------------------------------------------------------------------------

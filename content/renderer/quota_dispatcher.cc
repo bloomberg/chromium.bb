@@ -13,14 +13,13 @@
 #include "base/threading/thread_local.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/quota/quota_types.mojom.h"
-#include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "url/origin.h"
 
 using blink::mojom::QuotaStatusCode;
 using blink::mojom::StorageType;
-using blink::WebStorageQuotaCallbacks;
 
 namespace content {
 
@@ -58,13 +57,6 @@ QuotaDispatcher::QuotaDispatcher(
 }
 
 QuotaDispatcher::~QuotaDispatcher() {
-  base::IDMap<std::unique_ptr<WebStorageQuotaCallbacks>>::iterator iter(
-      &pending_quota_callbacks_);
-  while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->DidFail(blink::mojom::QuotaStatusCode::kErrorAbort);
-    iter.Advance();
-  }
-
   g_quota_dispatcher_tls.Pointer()->Set(nullptr);
 }
 
@@ -86,13 +78,16 @@ void QuotaDispatcher::WillStopCurrentWorkerThread() {
 void QuotaDispatcher::QueryStorageUsageAndQuota(
     const url::Origin& origin,
     StorageType type,
-    std::unique_ptr<WebStorageQuotaCallbacks> callback) {
+    blink::mojom::QuotaDispatcherHost::QueryStorageUsageAndQuotaCallback
+        callback) {
   DCHECK(callback);
-  int request_id = pending_quota_callbacks_.Add(std::move(callback));
+  // Use WrapCallbackWithDefaultInvokeIfNotRun() to ensure the callback is run
+  // with a failure code if QuotaDispatcher is destroyed.
   quota_host_->QueryStorageUsageAndQuota(
       origin, type,
-      base::BindOnce(&QuotaDispatcher::DidQueryStorageUsageAndQuota,
-                     base::Unretained(this), request_id));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback), blink::mojom::QuotaStatusCode::kErrorAbort, 0,
+          0));
 }
 
 void QuotaDispatcher::RequestStorageQuota(
@@ -100,57 +95,17 @@ void QuotaDispatcher::RequestStorageQuota(
     const url::Origin& origin,
     StorageType type,
     int64_t requested_size,
-    std::unique_ptr<WebStorageQuotaCallbacks> callback) {
+    blink::mojom::QuotaDispatcherHost::RequestStorageQuotaCallback callback) {
   DCHECK(callback);
   DCHECK_EQ(CurrentWorkerId(), 0)
       << "Requests may show permission UI and are not allowed from workers.";
-  int request_id = pending_quota_callbacks_.Add(std::move(callback));
+  // Use WrapCallbackWithDefaultInvokeIfNotRun() to ensure the callback is run
+  // with a failure code if QuotaDispatcher is destroyed.
   quota_host_->RequestStorageQuota(
       render_frame_id, origin, type, requested_size,
-      base::BindOnce(&QuotaDispatcher::DidGrantStorageQuota,
-                     base::Unretained(this), request_id));
-}
-
-void QuotaDispatcher::DidGrantStorageQuota(int64_t request_id,
-                                           QuotaStatusCode status,
-                                           int64_t current_usage,
-                                           int64_t granted_quota) {
-  if (status != blink::mojom::QuotaStatusCode::kOk) {
-    DidFail(request_id, status);
-    return;
-  }
-
-  WebStorageQuotaCallbacks* callback =
-      pending_quota_callbacks_.Lookup(request_id);
-  DCHECK(callback);
-  callback->DidGrantStorageQuota(current_usage, granted_quota);
-  pending_quota_callbacks_.Remove(request_id);
-}
-
-void QuotaDispatcher::DidQueryStorageUsageAndQuota(int64_t request_id,
-                                                   QuotaStatusCode status,
-                                                   int64_t current_usage,
-                                                   int64_t current_quota) {
-  if (status != blink::mojom::QuotaStatusCode::kOk) {
-    DidFail(request_id, status);
-    return;
-  }
-
-  WebStorageQuotaCallbacks* callback =
-      pending_quota_callbacks_.Lookup(request_id);
-  DCHECK(callback);
-  callback->DidQueryStorageUsageAndQuota(current_usage, current_quota);
-  pending_quota_callbacks_.Remove(request_id);
-}
-
-void QuotaDispatcher::DidFail(
-    int request_id,
-    QuotaStatusCode error) {
-  WebStorageQuotaCallbacks* callback =
-      pending_quota_callbacks_.Lookup(request_id);
-  DCHECK(callback);
-  callback->DidFail(error);
-  pending_quota_callbacks_.Remove(request_id);
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback), blink::mojom::QuotaStatusCode::kErrorAbort, 0,
+          0));
 }
 
 }  // namespace content

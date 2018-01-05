@@ -14,7 +14,6 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionUtils.h"
 #include "modules/quota/StorageEstimate.h"
-#include "platform/StorageQuotaCallbacks.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -31,38 +30,23 @@ namespace {
 const char kUniqueOriginErrorMessage[] =
     "The operation is not supported in this context.";
 
-class EstimateCallbacks final : public StorageQuotaCallbacks {
-  WTF_MAKE_NONCOPYABLE(EstimateCallbacks);
-
- public:
-  explicit EstimateCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  ~EstimateCallbacks() override {}
-
-  void DidQueryStorageUsageAndQuota(
-      unsigned long long usage_in_bytes,
-      unsigned long long quota_in_bytes) override {
-    StorageEstimate estimate;
-    estimate.setUsage(usage_in_bytes);
-    estimate.setQuota(quota_in_bytes);
-    resolver_->Resolve(estimate);
-  }
-
-  void DidFail(mojom::QuotaStatusCode error) override {
+void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
+                                       mojom::QuotaStatusCode status_code,
+                                       int64_t usage_in_bytes,
+                                       int64_t quota_in_bytes) {
+  if (status_code != mojom::QuotaStatusCode::kOk) {
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
-    resolver_->Reject(DOMException::Create(static_cast<ExceptionCode>(error)));
+    resolver->Reject(
+        DOMException::Create(static_cast<ExceptionCode>(status_code)));
+    return;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
-    visitor->Trace(resolver_);
-    StorageQuotaCallbacks::Trace(visitor);
-  }
-
- private:
-  Member<ScriptPromiseResolver> resolver_;
-};
+  StorageEstimate estimate;
+  estimate.setUsage(usage_in_bytes);
+  estimate.setQuota(quota_in_bytes);
+  resolver->Resolve(estimate);
+}
 
 }  // namespace
 
@@ -127,7 +111,7 @@ ScriptPromise StorageManager::estimate(ScriptState* script_state) {
 
   Platform::Current()->QueryStorageUsageAndQuota(
       WrapRefCounted(security_origin), mojom::StorageType::kTemporary,
-      new EstimateCallbacks(resolver));
+      WTF::Bind(&QueryStorageUsageAndQuotaCallback, WrapPersistent(resolver)));
   return promise;
 }
 
