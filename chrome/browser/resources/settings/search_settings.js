@@ -439,28 +439,25 @@ cr.define('settings', function() {
       if (this.running_)
         return;
 
-      while (1) {
-        var task = this.popNextTask_();
-        if (!task) {
-          this.running_ = false;
-          if (this.onEmptyCallback_)
-            this.onEmptyCallback_();
-          return;
-        }
-
-        this.running_ = true;
-        window.requestIdleCallback(() => {
-          if (!this.request_.canceled) {
-            task.exec().then(() => {
-              this.running_ = false;
-              this.consumePending_();
-            });
-          }
-          // Nothing to do otherwise. Since the request corresponding to this
-          // queue was canceled, the queue is disposed along with the request.
-        });
+      var task = this.popNextTask_();
+      if (!task) {
+        this.running_ = false;
+        if (this.onEmptyCallback_)
+          this.onEmptyCallback_();
         return;
       }
+
+      this.running_ = true;
+      window.requestIdleCallback(() => {
+        if (!this.request_.canceled) {
+          task.exec().then(() => {
+            this.running_ = false;
+            this.consumePending_();
+          });
+        }
+        // Nothing to do otherwise. Since the request corresponding to this
+        // queue was canceled, the queue is disposed along with the request.
+      });
     }
   }
 
