@@ -50,7 +50,7 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
       quick_launch_check_box_(nullptr),
       weak_ptr_factory_(this) {
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::CONTROL));
+      views::TEXT, views::TEXT));
   InitControls();
 
   // Get shortcut and icon information; needed for creating the shortcut.

@@ -270,7 +270,7 @@ void MessageBoxView::ResetLayoutManager() {
     layout->AddPaddingRow(0, inter_row_vertical_spacing_);
     layout->StartRow(0, kExtraViewColumnSetId);
     layout->AddView(checkbox_);
-    trailing_content_type = views::CONTROL;
+    trailing_content_type = views::TEXT;
   }
 
   if (link_) {

@@ -101,7 +101,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       creation_time_(base::TimeTicks::Now()) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
-      provider->GetDialogInsetsForContentType(views::CONTROL, views::CONTROL));
+      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
