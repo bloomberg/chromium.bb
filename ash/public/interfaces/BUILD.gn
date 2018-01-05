@@ -71,6 +71,7 @@ mojom("test_interfaces") {
   testonly = true
   sources = [
     "shelf_test_api.mojom",
+    "shell_test_api.mojom",
     "system_tray_test_api.mojom",
     "time_to_first_present_recorder_test_api.mojom",
   ]

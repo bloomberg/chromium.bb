@@ -11,12 +11,18 @@
 #include "ash/system/power/backlights_forced_off_setter.h"
 #include "ash/system/power/power_button_controller.h"
 #include "components/prefs/testing_pref_service.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace ash {
 
 ShellTestApi::ShellTestApi() : ShellTestApi(Shell::Get()) {}
 
 ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
+
+// static
+void ShellTestApi::BindRequest(mojom::ShellTestApiRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<ShellTestApi>(), std::move(request));
+}
 
 MessageCenterController* ShellTestApi::message_center_controller() {
   return shell_->message_center_controller_.get();
@@ -55,6 +61,10 @@ void ShellTestApi::ResetPowerButtonControllerForTest() {
 
 void ShellTestApi::SimulateModalWindowOpenForTest(bool modal_window_open) {
   shell_->simulate_modal_window_open_for_test_ = modal_window_open;
+}
+
+void ShellTestApi::IsSystemModalWindowOpen(IsSystemModalWindowOpenCallback cb) {
+  std::move(cb).Run(Shell::IsSystemModalWindowOpen());
 }
 
 }  // namespace ash
