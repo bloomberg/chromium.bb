@@ -373,9 +373,7 @@ struct SetBucketDataImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  void SetHeader(uint32_t size) {
-    header.SetCmdBySize<ValueType>(size);
-  }
+  void SetHeader(uint32_t _size) { header.SetCmdBySize<ValueType>(_size); }
 
   void Init(uint32_t _bucket_id,
             uint32_t _offset,
@@ -561,4 +559,3 @@ static_assert(offsetof(GetBucketData, shared_memory_offset) == 20,
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_CMD_BUFFER_COMMON_H_
-

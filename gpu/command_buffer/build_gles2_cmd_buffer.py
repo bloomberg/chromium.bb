@@ -6253,21 +6253,21 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateCmdComputeSize(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  static uint32_t ComputeDataSize(GLsizei n) {\n")
+    f.write("  static uint32_t ComputeDataSize(GLsizei _n) {\n")
     f.write(
-        "    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT\n")
+        "    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT\n")
     f.write("  }\n")
     f.write("\n")
-    f.write("  static uint32_t ComputeSize(GLsizei n) {\n")
+    f.write("  static uint32_t ComputeSize(GLsizei _n) {\n")
     f.write("    return static_cast<uint32_t>(\n")
-    f.write("        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT\n")
+    f.write("        sizeof(ValueType) + ComputeDataSize(_n));  // NOLINT\n")
     f.write("  }\n")
     f.write("\n")
 
   def WriteImmediateCmdSetHeader(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  void SetHeader(GLsizei n) {\n")
-    f.write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));\n")
+    f.write("  void SetHeader(GLsizei _n) {\n")
+    f.write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));\n")
     f.write("  }\n")
     f.write("\n")
 
@@ -6662,21 +6662,21 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateCmdComputeSize(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  static uint32_t ComputeDataSize(GLsizei n) {\n")
+    f.write("  static uint32_t ComputeDataSize(GLsizei _n) {\n")
     f.write(
-        "    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT\n")
+        "    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT\n")
     f.write("  }\n")
     f.write("\n")
-    f.write("  static uint32_t ComputeSize(GLsizei n) {\n")
+    f.write("  static uint32_t ComputeSize(GLsizei _n) {\n")
     f.write("    return static_cast<uint32_t>(\n")
-    f.write("        sizeof(ValueType) + ComputeDataSize(n));  // NOLINT\n")
+    f.write("        sizeof(ValueType) + ComputeDataSize(_n));  // NOLINT\n")
     f.write("  }\n")
     f.write("\n")
 
   def WriteImmediateCmdSetHeader(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  void SetHeader(GLsizei n) {\n")
-    f.write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));\n")
+    f.write("  void SetHeader(GLsizei _n) {\n")
+    f.write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));\n")
     f.write("  }\n")
     f.write("\n")
 
@@ -7609,24 +7609,24 @@ TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
 
   def WriteImmediateCmdComputeSize(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  static uint32_t ComputeDataSize(GLsizei count) {\n")
+    f.write("  static uint32_t ComputeDataSize(GLsizei _n) {\n")
     f.write("    return static_cast<uint32_t>(\n")
-    f.write("        sizeof(%s) * %d * count);  // NOLINT\n" %
+    f.write("        sizeof(%s) * %d * _n);  // NOLINT\n" %
                (self.GetArrayType(func), self.GetArrayCount(func)))
     f.write("  }\n")
     f.write("\n")
-    f.write("  static uint32_t ComputeSize(GLsizei count) {\n")
+    f.write("  static uint32_t ComputeSize(GLsizei _n) {\n")
     f.write("    return static_cast<uint32_t>(\n")
     f.write(
-        "        sizeof(ValueType) + ComputeDataSize(count));  // NOLINT\n")
+        "        sizeof(ValueType) + ComputeDataSize(_n));  // NOLINT\n")
     f.write("  }\n")
     f.write("\n")
 
   def WriteImmediateCmdSetHeader(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  void SetHeader(GLsizei count) {\n")
+    f.write("  void SetHeader(GLsizei _n) {\n")
     f.write(
-        "    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));\n")
+        "    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));\n")
     f.write("  }\n")
     f.write("\n")
 

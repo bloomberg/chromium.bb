@@ -2384,17 +2384,17 @@ struct DeleteBuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _buffers) {
@@ -2426,17 +2426,17 @@ struct DeleteFramebuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _framebuffers) {
@@ -2500,17 +2500,17 @@ struct DeleteRenderbuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _renderbuffers) {
@@ -2542,17 +2542,17 @@ struct DeleteSamplersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _samplers) {
@@ -2648,17 +2648,17 @@ struct DeleteTexturesImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _textures) {
@@ -2690,17 +2690,17 @@ struct DeleteTransformFeedbacksImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _ids) {
@@ -3374,17 +3374,17 @@ struct GenBuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _buffers) {
@@ -3449,17 +3449,17 @@ struct GenFramebuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _framebuffers) {
@@ -3491,17 +3491,17 @@ struct GenRenderbuffersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _renderbuffers) {
@@ -3533,17 +3533,17 @@ struct GenSamplersImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _samplers) {
@@ -3575,17 +3575,17 @@ struct GenTexturesImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _textures) {
@@ -3617,17 +3617,17 @@ struct GenTransformFeedbacksImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _ids) {
@@ -6112,17 +6112,17 @@ struct InvalidateFramebufferImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLenum _target, GLsizei _count, const GLenum* _attachments) {
@@ -6161,17 +6161,17 @@ struct InvalidateSubFramebufferImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLenum _target,
@@ -8424,17 +8424,17 @@ struct Uniform1fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -8505,17 +8505,17 @@ struct Uniform1ivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLint* _v) {
@@ -8587,17 +8587,17 @@ struct Uniform1uivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLuint) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLuint* _v) {
@@ -8672,17 +8672,17 @@ struct Uniform2fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 2 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 2 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -8757,17 +8757,17 @@ struct Uniform2ivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 2 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 2 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLint* _v) {
@@ -8843,17 +8843,17 @@ struct Uniform2uivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLuint) * 2 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 2 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLuint* _v) {
@@ -8932,17 +8932,17 @@ struct Uniform3fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 3 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 3 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -9021,17 +9021,17 @@ struct Uniform3ivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 3 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 3 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLint* _v) {
@@ -9111,17 +9111,17 @@ struct Uniform3uivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLuint) * 3 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 3 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLuint* _v) {
@@ -9209,17 +9209,17 @@ struct Uniform4fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLfloat* _v) {
@@ -9307,17 +9307,17 @@ struct Uniform4ivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLint* _v) {
@@ -9406,17 +9406,17 @@ struct Uniform4uivImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLuint) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location, GLsizei _count, const GLuint* _v) {
@@ -9493,17 +9493,17 @@ struct UniformMatrix2fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9550,17 +9550,17 @@ struct UniformMatrix2x3fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9607,17 +9607,17 @@ struct UniformMatrix2x4fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9664,17 +9664,17 @@ struct UniformMatrix3fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 9 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 9 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9721,17 +9721,17 @@ struct UniformMatrix3x2fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 6 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9778,17 +9778,17 @@ struct UniformMatrix3x4fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9835,17 +9835,17 @@ struct UniformMatrix4fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 16 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 16 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9892,17 +9892,17 @@ struct UniformMatrix4x2fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 8 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -9949,17 +9949,17 @@ struct UniformMatrix4x3fvImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLfloat) * 12 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLint _location,
@@ -11149,17 +11149,17 @@ struct GenQueriesEXTImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _queries) {
@@ -11191,17 +11191,17 @@ struct DeleteQueriesEXTImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _queries) {
@@ -11576,17 +11576,17 @@ struct GenVertexArraysOESImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, GLuint* _arrays) {
@@ -11618,17 +11618,17 @@ struct DeleteVertexArraysOESImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei n) {
-    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei n) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(n));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei n) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _n, const GLuint* _arrays) {
@@ -13151,17 +13151,17 @@ struct DiscardFramebufferEXTImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLenum _target, GLsizei _count, const GLenum* _attachments) {
@@ -13346,17 +13346,17 @@ struct DrawBuffersEXTImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLenum) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLenum) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _count, const GLenum* _bufs) {
@@ -13650,17 +13650,17 @@ struct ScheduleCALayerInUseQueryCHROMIUMImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLuint) * 1 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * 1 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _count, const GLuint* _textures) {
@@ -15757,17 +15757,17 @@ struct SwapBuffersWithBoundsCHROMIUMImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLsizei _count, const GLint* _rects) {
@@ -16403,17 +16403,17 @@ struct WindowRectanglesEXTImmediate {
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
 
-  static uint32_t ComputeDataSize(GLsizei count) {
-    return static_cast<uint32_t>(sizeof(GLint) * 4 * count);  // NOLINT
+  static uint32_t ComputeDataSize(GLsizei _n) {
+    return static_cast<uint32_t>(sizeof(GLint) * 4 * _n);  // NOLINT
   }
 
-  static uint32_t ComputeSize(GLsizei count) {
+  static uint32_t ComputeSize(GLsizei _n) {
     return static_cast<uint32_t>(sizeof(ValueType) +
-                                 ComputeDataSize(count));  // NOLINT
+                                 ComputeDataSize(_n));  // NOLINT
   }
 
-  void SetHeader(GLsizei count) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
+  void SetHeader(GLsizei _n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(_n));
   }
 
   void Init(GLenum _mode, GLsizei _count, const GLint* _box) {
