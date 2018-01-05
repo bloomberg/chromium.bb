@@ -76,8 +76,31 @@ void LoadPage(const std::string& page_content) {
   [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
 }
 
-// Tests placeholder for a large <object> with an embed fallback.
-- (void)testPluginPlaceholderObjectEmbed {
+// Tests placeholder for a large <object> with a flash embed fallback.
+- (void)testPluginPlaceholderObjectFlashEmbedFallback {
+  const char kPageDescription[] = "Object, embed fallback";
+  const std::string page = base::StringPrintf(
+      "<html><body width='800' height='600'>"
+      "<p>%s</p>"
+      "<object classid='clsid:D27CDB6E-AE6D-11cf-96B8-444553540000'"
+      "    codebase='http://download.macromedia.com/pub/shockwave/cabs/'"
+      "flash/swflash.cab#version=6,0,0,0' width='550' height='550'>"
+      "  <param name='movie' value='some.swf'>"
+      "  <embed src='some.swf' type='application/x-shockwave-flash' "
+      "width='550' height='550'>"
+      "</object>"
+      "</body></html>",
+      kPageDescription);
+  LoadPage(page);
+
+  // Verify that plugin object is replaced with placeholder image.
+  [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
+  [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
+}
+
+// Tests that a large <object> with an embed fallback of unspecified type is
+// untouched.
+- (void)testPluginPlaceholderObjectUndefinedEmbedFallback {
   const char kPageDescription[] = "Object, embed fallback";
   const std::string page = base::StringPrintf(
       "<html><body width='800' height='600'>"
@@ -92,9 +115,9 @@ void LoadPage(const std::string& page_content) {
       kPageDescription);
   LoadPage(page);
 
-  // Verify that plugin object is replaced with placeholder image.
+  // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
+  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
 }
 
 // Tests that a large <object> with text fallback is untouched.
