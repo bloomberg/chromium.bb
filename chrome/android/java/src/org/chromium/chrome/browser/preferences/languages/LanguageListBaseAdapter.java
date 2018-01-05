@@ -191,6 +191,7 @@ public class LanguageListBaseAdapter
                 String languageCode = getItemByPosition(from).getCode();
                 Collections.swap(mLanguageList, from, to);
                 PrefServiceBridge.getInstance().moveAcceptLanguage(languageCode, to - from);
+                LanguagesManager.recordAction(LanguagesManager.ACTION_LANGUAGE_LIST_REORDERED);
                 notifyItemMoved(from, to);
                 return true;
             }

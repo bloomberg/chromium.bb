@@ -24003,6 +24003,23 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8026721" label="Zaza"/>
 </enum>
 
+<enum name="LanguageSettingsActionType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Click on the 'Add Language' button"/>
+  <int value="2" label="Language added"/>
+  <int value="3" label="Language removed"/>
+  <int value="4" label="Disable global 'Offer to translate' by switch"/>
+  <int value="5" label="Enable global 'Offer to translate' by switch"/>
+  <int value="6" label="Disable 'Offer to translate' for single language"/>
+  <int value="7" label="Enable 'Offer to translate' for single language"/>
+  <int value="8" label="Language list reordered"/>
+</enum>
+
+<enum name="LanguageSettingsPageType">
+  <int value="0" label="Main"/>
+  <int value="1" label="Add Language"/>
+</enum>
+
 <enum name="LastSettingParsed">
   <obsolete>
     Deprecated 2015-10-05 in Issue 433475. Histogram was used temorarily for
