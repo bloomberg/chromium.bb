@@ -138,8 +138,10 @@ LoginBubble::LoginBubble() {
 
 LoginBubble::~LoginBubble() {
   Shell::Get()->RemovePreTargetHandler(this);
-  if (bubble_view_)
+  if (bubble_view_) {
     bubble_view_->GetWidget()->RemoveObserver(this);
+    CloseImmediately();
+  }
 }
 
 void LoginBubble::ShowErrorBubble(views::StyledLabel* label,
