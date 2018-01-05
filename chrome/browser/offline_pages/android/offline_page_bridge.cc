@@ -130,6 +130,16 @@ void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
   base::android::RunCallbackAndroid(j_callback_obj, static_cast<int>(result));
 }
 
+void SelectPageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                        const std::vector<OfflinePageItem>& result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_result;
+
+  if (!result.empty())
+    j_result = JNI_SavePageRequest_ToJavaOfflinePageItem(env, result.front());
+  base::android::RunCallbackAndroid(j_callback_obj, j_result);
+}
+
 void SingleOfflinePageItemCallback(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
     const OfflinePageItem* result) {
@@ -515,10 +525,10 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
-  OfflinePageUtils::SelectPageForURL(
+  OfflinePageUtils::SelectPagesForURL(
       browser_context_, GURL(ConvertJavaStringToUTF8(env, j_online_url)),
       URLSearchMode::SEARCH_BY_ALL_URLS, tab_id,
-      base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
+      base::Bind(&SelectPageCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,

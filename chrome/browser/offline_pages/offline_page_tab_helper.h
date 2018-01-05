@@ -110,7 +110,7 @@ class OfflinePageTabHelper :
   void TryLoadingOfflinePageOnNetError(
       content::NavigationHandle* navigation_handle);
 
-  void SelectPageForURLDone(const OfflinePageItem* offline_page);
+  void SelectPagesForURLDone(const std::vector<OfflinePageItem>& offline_pages);
 
   void GetPageByOfflineIdDone(const OfflinePageItem* offline_page);
 

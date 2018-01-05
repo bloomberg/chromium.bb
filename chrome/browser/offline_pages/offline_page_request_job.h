@@ -35,7 +35,7 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
   // NOTE: because this is used for UMA reporting, these values should not be
   // changed or reused; new values should be ended immediately before the MAX
   // value. Make sure to update the histogram enum
-  // (OfflinePagesAggregatedRequestResult in histograms.xml) accordingly.
+  // (OfflinePagesAggregatedRequestResult in enums.xml) accordingly.
   // Public for testing.
   enum class AggregatedRequestResult {
     SHOW_OFFLINE_ON_DISCONNECTED_NETWORK,
@@ -54,6 +54,10 @@ class OfflinePageRequestJob : public net::URLRequestFileJob {
     REDIRECTED_ON_FLAKY_NETWORK,
     REDIRECTED_ON_PROHIBITIVELY_SLOW_NETWORK,
     REDIRECTED_ON_CONNECTED_NETWORK,
+    DIGEST_MISMATCH_ON_DISCONNECTED_NETWORK,
+    DIGEST_MISMATCH_ON_FLAKY_NETWORK,
+    DIGEST_MISMATCH_ON_PROHIBITIVELY_SLOW_NETWORK,
+    DIGEST_MISMATCH_ON_CONNECTED_NETWORK,
     AGGREGATED_REQUEST_RESULT_MAX
   };
 

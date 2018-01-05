@@ -56,17 +56,18 @@ class OfflinePageUtils {
   // Callback to inform the duplicate checking result.
   using DuplicateCheckCallback = base::Callback<void(DuplicateCheckResult)>;
 
-  // Returns via callback an offline page related to |url|, if any. The
-  // page is chosen based on creation date; a more recently created offline
-  // page will be preferred over an older one. The offline page captured from
-  // last visit in the tab will not be considered if its tab id does not match
-  // the provided |tab_id|.
-  static void SelectPageForURL(
+  // Returns via callback all offline pages related to |url|. The offline page
+  // captured from last visit in the tab will be excluded if its tab id does not
+  // match the provided |tab_id|. The returned list is sorted based creation
+  // date in descending order. That is, the most recently created offline will
+  // appear as the first element of the list.
+  static void SelectPagesForURL(
       content::BrowserContext* browser_context,
       const GURL& url,
       URLSearchMode url_search_mode,
       int tab_id,
-      const base::Callback<void(const OfflinePageItem*)>& callback);
+      const base::Callback<void(const std::vector<OfflinePageItem>&)>&
+          callback);
 
   // Gets the offline page corresponding to the given web contents.  The
   // returned pointer is owned by the web_contents and may be deleted by user

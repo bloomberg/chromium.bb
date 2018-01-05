@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -41,43 +42,39 @@
 namespace offline_pages {
 namespace {
 
+class OfflinePageComparer {
+ public:
+  OfflinePageComparer() = default;
+
+  bool operator()(const OfflinePageItem& a, const OfflinePageItem& b) {
+    return a.creation_time > b.creation_time;
+  }
+};
+
 void OnGetPagesByURLDone(
     const GURL& url,
     int tab_id,
     const std::vector<std::string>& namespaces_to_show_in_original_tab,
-    const base::Callback<void(const OfflinePageItem*)>& callback,
+    const base::Callback<void(const std::vector<OfflinePageItem>&)>& callback,
     const MultipleOfflinePageItemResult& pages) {
-  const OfflinePageItem* selected_page_for_final_url = nullptr;
-  const OfflinePageItem* selected_page_for_original_url = nullptr;
+  std::vector<OfflinePageItem> selected_pages;
   std::string tab_id_str = base::IntToString(tab_id);
 
+  // Exclude pages whose tab id does not match.
   for (const auto& page : pages) {
     if (base::ContainsValue(namespaces_to_show_in_original_tab,
                             page.client_id.name_space) &&
         page.client_id.id != tab_id_str) {
       continue;
     }
-
-    if (OfflinePageUtils::EqualsIgnoringFragment(url, page.url)) {
-      if (!selected_page_for_final_url ||
-          page.creation_time > selected_page_for_final_url->creation_time) {
-        selected_page_for_final_url = &page;
-      }
-    } else {
-      // This is consistent with exact match against original url done in
-      // GetPagesTask.
-      DCHECK(url == page.original_url);
-      if (!selected_page_for_original_url ||
-          page.creation_time > selected_page_for_original_url->creation_time) {
-        selected_page_for_original_url = &page;
-      }
-    }
+    selected_pages.push_back(page);
   }
 
-  // Match for final URL should take high priority than matching for original
-  // URL.
-  callback.Run(selected_page_for_final_url ? selected_page_for_final_url
-                                           : selected_page_for_original_url);
+  // Sort based on creation date.
+  std::sort(selected_pages.begin(), selected_pages.end(),
+            OfflinePageComparer());
+
+  callback.Run(selected_pages);
 }
 
 bool IsSupportedByDownload(content::BrowserContext* browser_context,
@@ -150,17 +147,17 @@ void DoCalculateSizeBetween(
 }  // namespace
 
 // static
-void OfflinePageUtils::SelectPageForURL(
+void OfflinePageUtils::SelectPagesForURL(
     content::BrowserContext* browser_context,
     const GURL& url,
     URLSearchMode url_search_mode,
     int tab_id,
-    const base::Callback<void(const OfflinePageItem*)>& callback) {
+    const base::Callback<void(const std::vector<OfflinePageItem>&)>& callback) {
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(browser_context);
   if (!offline_page_model) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, nullptr));
+        FROM_HERE, base::Bind(callback, std::vector<OfflinePageItem>()));
     return;
   }
 
