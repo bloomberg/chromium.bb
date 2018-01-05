@@ -45,6 +45,9 @@ class Builder {
 
   std::vector<const BuilderRecord*> GetAllRecords() const;
 
+  // Returns items which should be generated and which are defined.
+  std::vector<const Item*> GetAllResolvedItems() const;
+
   // Returns targets which should be generated and which are defined.
   std::vector<const Target*> GetAllResolvedTargets() const;
 

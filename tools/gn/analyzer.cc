@@ -15,17 +15,15 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "tools/gn/builder.h"
+#include "tools/gn/config.h"
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/loader.h"
 #include "tools/gn/location.h"
+#include "tools/gn/pool.h"
 #include "tools/gn/source_file.h"
 #include "tools/gn/target.h"
-
-using LabelSet = Analyzer::LabelSet;
-using SourceFileSet = Analyzer::SourceFileSet;
-using TargetSet = Analyzer::TargetSet;
 
 namespace {
 
@@ -34,40 +32,30 @@ struct Inputs {
   std::vector<Label> compile_vec;
   std::vector<Label> test_vec;
   bool compile_included_all = false;
-  SourceFileSet source_files;
-  LabelSet compile_labels;
-  LabelSet test_labels;
+  std::set<const SourceFile*> source_files;
+  std::set<Label> compile_labels;
+  std::set<Label> test_labels;
 };
 
 struct Outputs {
   std::string status;
   std::string error;
   bool compile_includes_all = false;
-  LabelSet compile_labels;
-  LabelSet test_labels;
-  LabelSet invalid_labels;
+  std::set<Label> compile_labels;
+  std::set<Label> test_labels;
+  std::set<Label> invalid_labels;
 };
 
-LabelSet LabelsFor(const TargetSet& targets) {
-  LabelSet labels;
+std::set<Label> LabelsFor(const std::set<const Target*>& targets) {
+  std::set<Label> labels;
   for (auto* target : targets)
     labels.insert(target->label());
   return labels;
 }
 
-bool AnyBuildFilesWereModified(const SourceFileSet& source_files) {
-  for (auto* file : source_files) {
-    if (base::EndsWith(file->value(), ".gn", base::CompareCase::SENSITIVE) ||
-        base::EndsWith(file->value(), ".gni", base::CompareCase::SENSITIVE) ||
-        base::EndsWith(file->value(), "build/vs_toolchain.py",
-                       base::CompareCase::SENSITIVE))
-      return true;
-  }
-  return false;
-}
-
-TargetSet Intersect(const TargetSet& l, const TargetSet& r) {
-  TargetSet result;
+std::set<const Target*> Intersect(const std::set<const Target*>& l,
+                                  const std::set<const Target*>& r) {
+  std::set<const Target*> result;
   std::set_intersection(l.begin(), l.end(), r.begin(), r.end(),
                         std::inserter(result, result.begin()));
   return result;
@@ -109,7 +97,7 @@ void WriteString(base::DictionaryValue& dict,
 void WriteLabels(const Label& default_toolchain,
                  base::DictionaryValue& dict,
                  const std::string& key,
-                 const LabelSet& labels) {
+                 const std::set<Label>& labels) {
   std::vector<std::string> strings;
   auto value = std::make_unique<base::ListValue>();
   for (const auto l : labels)
@@ -224,17 +212,45 @@ std::string OutputsToJSON(const Outputs& outputs,
 
 }  // namespace
 
-Analyzer::Analyzer(const Builder& builder)
-    : all_targets_(builder.GetAllResolvedTargets()),
-      default_toolchain_(builder.loader()->GetDefaultToolchain()) {
-  for (const auto* target : all_targets_) {
-    labels_to_targets_[target->label()] = target;
-    for (const auto& dep_pair : target->GetDeps(Target::DEPS_ALL))
-      dep_map_.insert(std::make_pair(dep_pair.ptr, target));
-  }
-  for (const auto* target : all_targets_) {
-    if (dep_map_.find(target) == dep_map_.end())
-      roots_.insert(target);
+Analyzer::Analyzer(const Builder& builder,
+                   const SourceFile& build_config_file,
+                   const SourceFile& dot_file,
+                   const std::set<SourceFile>& build_args_dependency_files)
+    : all_items_(builder.GetAllResolvedItems()),
+      default_toolchain_(builder.loader()->GetDefaultToolchain()),
+      build_config_file_(build_config_file),
+      dot_file_(dot_file),
+      build_args_dependency_files_(build_args_dependency_files) {
+  for (const auto* item : all_items_) {
+    labels_to_items_[item->label()] = item;
+
+    // Fill dep_map_.
+    if (item->AsTarget()) {
+      for (const auto& dep_target_pair :
+           item->AsTarget()->GetDeps(Target::DEPS_ALL))
+        dep_map_.insert(std::make_pair(dep_target_pair.ptr, item));
+
+      for (const auto& dep_config_pair : item->AsTarget()->configs())
+        dep_map_.insert(std::make_pair(dep_config_pair.ptr, item));
+
+      dep_map_.insert(std::make_pair(item->AsTarget()->toolchain(), item));
+
+      if (item->AsTarget()->output_type() == Target::ACTION ||
+          item->AsTarget()->output_type() == Target::ACTION_FOREACH) {
+        const LabelPtrPair<Pool>& pool =
+            item->AsTarget()->action_values().pool();
+        if (pool.ptr)
+          dep_map_.insert(std::make_pair(pool.ptr, item));
+      }
+    } else if (item->AsConfig()) {
+      for (const auto& dep_config_pair : item->AsConfig()->configs())
+        dep_map_.insert(std::make_pair(dep_config_pair.ptr, item));
+    } else if (item->AsToolchain()) {
+      for (const auto& dep_pair : item->AsToolchain()->deps())
+        dep_map_.insert(std::make_pair(dep_pair.ptr, item));
+    } else {
+      DCHECK(item->AsPool());
+    }
   }
 }
 
@@ -250,7 +266,7 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
-  LabelSet invalid_labels;
+  std::set<Label> invalid_labels;
   for (const auto& label : InvalidLabels(inputs.compile_labels))
     invalid_labels.insert(label);
   for (const auto& label : InvalidLabels(inputs.test_labels))
@@ -261,12 +277,7 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
-  // TODO(crbug.com/555273): We can do smarter things when we detect changes
-  // to build files. For example, if all of the ninja files are unchanged,
-  // we know that we can ignore changes to .gn* files. Also, for most .gn
-  // files, we can treat a change as simply affecting every target, config,
-  // or toolchain defined in that file.
-  if (AnyBuildFilesWereModified(inputs.source_files)) {
+  if (WereMainGNFilesModified(inputs.source_files)) {
     outputs.status = "Found dependency (all)";
     if (inputs.compile_included_all) {
       outputs.compile_includes_all = true;
@@ -280,22 +291,45 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
-  TargetSet affected_targets = AllAffectedTargets(inputs.source_files);
+  std::set<const Item*> affected_items =
+      GetAllAffectedItems(inputs.source_files);
+  std::set<const Target*> affected_targets;
+  for (const Item* affected_item : affected_items) {
+    // Only handles targets in the default toolchain.
+    // TODO(crbug.com/667989): Expand analyzer to non-default toolchains when
+    // the bug is fixed.
+    if (affected_item->AsTarget() &&
+        affected_item->label().GetToolchainLabel() == default_toolchain_)
+      affected_targets.insert(affected_item->AsTarget());
+  }
+
   if (affected_targets.empty()) {
     outputs.status = "No dependency";
     return OutputsToJSON(outputs, default_toolchain_, err);
   }
 
-  TargetSet compile_targets = TargetsFor(inputs.compile_labels);
-  if (inputs.compile_included_all) {
-    for (auto* root : roots_)
-      compile_targets.insert(root);
+  std::set<const Target*> root_targets;
+  for (const auto* item : all_items_) {
+    if (item->AsTarget() && dep_map_.find(item) == dep_map_.end())
+      root_targets.insert(item->AsTarget());
   }
-  TargetSet filtered_targets = Filter(compile_targets);
+
+  std::set<const Target*> compile_targets = TargetsFor(inputs.compile_labels);
+  if (inputs.compile_included_all) {
+    for (auto* root_target : root_targets)
+      compile_targets.insert(root_target);
+  }
+  std::set<const Target*> filtered_targets = Filter(compile_targets);
   outputs.compile_labels =
       LabelsFor(Intersect(filtered_targets, affected_targets));
 
-  TargetSet test_targets = TargetsFor(inputs.test_labels);
+  // If every target is affected, simply compile All instead of listing all
+  // the targets to make the output easier to read.
+  if (inputs.compile_included_all &&
+      outputs.compile_labels.size() == filtered_targets.size())
+    outputs.compile_includes_all = true;
+
+  std::set<const Target*> test_targets = TargetsFor(inputs.test_labels);
   outputs.test_labels = LabelsFor(Intersect(test_targets, affected_targets));
 
   if (outputs.compile_labels.empty() && outputs.test_labels.empty())
@@ -305,47 +339,53 @@ std::string Analyzer::Analyze(const std::string& input, Err* err) const {
   return OutputsToJSON(outputs, default_toolchain_, err);
 }
 
-TargetSet Analyzer::AllAffectedTargets(
-    const SourceFileSet& source_files) const {
-  TargetSet direct_matches;
+std::set<const Item*> Analyzer::GetAllAffectedItems(
+    const std::set<const SourceFile*>& source_files) const {
+  std::set<const Item*> directly_affected_items;
   for (auto* source_file : source_files)
-    AddTargetsDirectlyReferringToFileTo(source_file, &direct_matches);
-  TargetSet all_matches;
-  for (auto* match : direct_matches)
-    AddAllRefsTo(match, &all_matches);
-  return all_matches;
+    AddItemsDirectlyReferringToFile(source_file, &directly_affected_items);
+
+  std::set<const Item*> all_affected_items;
+  for (auto* affected_item : directly_affected_items)
+    AddAllItemsReferringToItem(affected_item, &all_affected_items);
+
+  return all_affected_items;
 }
 
-LabelSet Analyzer::InvalidLabels(const LabelSet& labels) const {
-  LabelSet invalid_labels;
+std::set<Label> Analyzer::InvalidLabels(const std::set<Label>& labels) const {
+  std::set<Label> invalid_labels;
   for (const Label& label : labels) {
-    if (labels_to_targets_.find(label) == labels_to_targets_.end())
+    if (labels_to_items_.find(label) == labels_to_items_.end())
       invalid_labels.insert(label);
   }
   return invalid_labels;
 }
 
-TargetSet Analyzer::TargetsFor(const LabelSet& labels) const {
-  TargetSet targets;
+std::set<const Target*> Analyzer::TargetsFor(
+    const std::set<Label>& labels) const {
+  std::set<const Target*> targets;
   for (const auto& label : labels) {
-    auto it = labels_to_targets_.find(label);
-    if (it != labels_to_targets_.end())
-      targets.insert(it->second);
+    auto it = labels_to_items_.find(label);
+    if (it != labels_to_items_.end()) {
+      DCHECK(it->second->AsTarget());
+      targets.insert(it->second->AsTarget());
+    }
   }
   return targets;
 }
 
-TargetSet Analyzer::Filter(const TargetSet& targets) const {
-  TargetSet seen;
-  TargetSet filtered;
+std::set<const Target*> Analyzer::Filter(
+    const std::set<const Target*>& targets) const {
+  std::set<const Target*> seen;
+  std::set<const Target*> filtered;
   for (const auto* target : targets)
     FilterTarget(target, &seen, &filtered);
   return filtered;
 }
 
 void Analyzer::FilterTarget(const Target* target,
-                            TargetSet* seen,
-                            TargetSet* filtered) const {
+                            std::set<const Target*>* seen,
+                            std::set<const Target*>* filtered) const {
   if (seen->find(target) == seen->end()) {
     seen->insert(target);
     if (target->output_type() != Target::GROUP) {
@@ -357,8 +397,17 @@ void Analyzer::FilterTarget(const Target* target,
   }
 }
 
-bool Analyzer::TargetRefersToFile(const Target* target,
-                                  const SourceFile* file) const {
+bool Analyzer::ItemRefersToFile(const Item* item,
+                                const SourceFile* file) const {
+  for (const auto& cur_file : item->build_dependency_files()) {
+    if (cur_file == *file)
+      return true;
+  }
+
+  if (!item->AsTarget())
+    return false;
+
+  const Target* target = item->AsTarget();
   for (const auto& cur_file : target->sources()) {
     if (cur_file == *file)
       return true;
@@ -391,23 +440,44 @@ bool Analyzer::TargetRefersToFile(const Target* target,
   return false;
 }
 
-void Analyzer::AddTargetsDirectlyReferringToFileTo(const SourceFile* file,
-                                                   TargetSet* matches) const {
-  for (auto* target : all_targets_) {
-    // Only handles targets in the default toolchain.
-    if ((target->label().GetToolchainLabel() == default_toolchain_) &&
-        TargetRefersToFile(target, file))
-      matches->insert(target);
+void Analyzer::AddItemsDirectlyReferringToFile(
+    const SourceFile* file,
+    std::set<const Item*>* directly_affected_items) const {
+  for (const auto* item : all_items_) {
+    if (ItemRefersToFile(item, file))
+      directly_affected_items->insert(item);
   }
 }
 
-void Analyzer::AddAllRefsTo(const Target* target, TargetSet* results) const {
-  if (results->find(target) != results->end())
-    return;  // Already found this target.
-  results->insert(target);
+void Analyzer::AddAllItemsReferringToItem(
+    const Item* item,
+    std::set<const Item*>* all_affected_items) const {
+  if (all_affected_items->find(item) != all_affected_items->end())
+    return;  // Already found this item.
 
-  auto dep_begin = dep_map_.lower_bound(target);
-  auto dep_end = dep_map_.upper_bound(target);
-  for (auto cur_dep = dep_begin; cur_dep != dep_end; cur_dep++)
-    AddAllRefsTo(cur_dep->second, results);
+  all_affected_items->insert(item);
+
+  auto dep_begin = dep_map_.lower_bound(item);
+  auto dep_end = dep_map_.upper_bound(item);
+  for (auto cur_dep = dep_begin; cur_dep != dep_end; ++cur_dep)
+    AddAllItemsReferringToItem(cur_dep->second, all_affected_items);
+}
+
+bool Analyzer::WereMainGNFilesModified(
+    const std::set<const SourceFile*>& modified_files) const {
+  for (const auto* file : modified_files) {
+    if (*file == dot_file_)
+      return true;
+
+    if (*file == build_config_file_)
+      return true;
+
+    for (const auto& build_args_dependency_file :
+         build_args_dependency_files_) {
+      if (*file == build_args_dependency_file)
+        return true;
+    }
+  }
+
+  return false;
 }
