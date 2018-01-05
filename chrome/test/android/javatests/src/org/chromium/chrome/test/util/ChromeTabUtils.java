@@ -236,6 +236,78 @@ public class ChromeTabUtils {
     }
 
     /**
+     * An observer that waits for a Tab to become interactable.
+     *
+     * Notifies the provided callback when:
+     *  - the page has become interactable
+     *  - the tab has been hidden and will not become interactable.
+     * Stops observing with a failure if the tab has crashed.
+     *
+     * We treat the hidden case as success to handle loads in which a page immediately closes itself
+     * or opens a new foreground tab (popup), and may not become interactable.
+     */
+    private static class TabPageInteractableObserver extends EmptyTabObserver {
+        private Tab mTab;
+        private CallbackHelper mCallback;
+
+        public TabPageInteractableObserver(Tab tab, CallbackHelper interactableCallback) {
+            mTab = tab;
+            mCallback = interactableCallback;
+        }
+
+        @Override
+        public void onCrash(Tab tab, boolean sadTabShown) {
+            mCallback.notifyFailed("Tab crashed :(");
+            mTab.removeObserver(this);
+        }
+
+        @Override
+        public void onHidden(Tab tab) {
+            mCallback.notifyCalled();
+            mTab.removeObserver(this);
+        }
+
+        @Override
+        public void onInteractabilityChanged(boolean interactable) {
+            if (interactable) {
+                mCallback.notifyCalled();
+                mTab.removeObserver(this);
+            }
+        }
+    }
+
+    /**
+     * Waits for the tab to become interactable. This occurs after load, once all view
+     * animations have completed.
+     *
+     * @param tab The tab to wait for interactability on.
+     */
+    public static void waitForInteractable(final Tab tab) throws InterruptedException {
+        Assert.assertFalse(ThreadUtils.runningOnUiThread());
+
+        final CallbackHelper interactableCallback = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // If a tab is hidden, don't wait for interactivity. See note in
+                // TabPageInteractableObserver.
+                if (tab.isUserInteractable() || tab.isHidden()) {
+                    interactableCallback.notifyCalled();
+                    return;
+                }
+                tab.addObserver(new TabPageInteractableObserver(tab, interactableCallback));
+            }
+        });
+
+        try {
+            interactableCallback.waitForCallback(
+                    0, 1, ScalableTimeout.scaleTimeout(10), TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            Assert.fail("Page never became interactable.");
+        }
+    }
+
+    /**
      * Switch to the given TabIndex in the current tabModel.
      * @param tabIndex
      */
