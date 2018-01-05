@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -499,7 +500,7 @@ class TestWebGraphicsContext3D {
   gpu::SyncToken last_waited_sync_token_;
   int unpack_alignment_;
 
-  unsigned bound_buffer_;
+  base::flat_map<unsigned, unsigned> bound_buffer_;
   TextureTargets texture_targets_;
 
   scoped_refptr<Namespace> namespace_;
