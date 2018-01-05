@@ -30,9 +30,9 @@ bool ScanConstraintsForExactValue(const blink::WebMediaConstraints& constraints,
     return true;
   }
   for (const auto& advanced_constraint : constraints.Advanced()) {
-    const auto& the_field = advanced_constraint.*picker;
-    if (the_field.HasExact()) {
-      *value = the_field.Exact();
+    const auto& advanced_field = advanced_constraint.*picker;
+    if (advanced_field.HasExact()) {
+      *value = advanced_field.Exact();
       return true;
     }
   }
@@ -45,7 +45,6 @@ bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
                                 T* value) {
   if (constraints.IsNull())
     return false;
-
   const auto& the_field = constraints.Basic().*picker;
   if (the_field.HasMax()) {
     *value = the_field.Max();
@@ -56,13 +55,13 @@ bool ScanConstraintsForMaxValue(const blink::WebMediaConstraints& constraints,
     return true;
   }
   for (const auto& advanced_constraint : constraints.Advanced()) {
-    const auto& the_field = advanced_constraint.*picker;
-    if (the_field.HasMax()) {
-      *value = the_field.Max();
+    const auto& advanced_field = advanced_constraint.*picker;
+    if (advanced_field.HasMax()) {
+      *value = advanced_field.Max();
       return true;
     }
-    if (the_field.HasExact()) {
-      *value = the_field.Exact();
+    if (advanced_field.HasExact()) {
+      *value = advanced_field.Exact();
       return true;
     }
   }
@@ -75,7 +74,6 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
                                 T* value) {
   if (constraints.IsNull())
     return false;
-
   const auto& the_field = constraints.Basic().*picker;
   if (the_field.HasMin()) {
     *value = the_field.Min();
@@ -86,13 +84,13 @@ bool ScanConstraintsForMinValue(const blink::WebMediaConstraints& constraints,
     return true;
   }
   for (const auto& advanced_constraint : constraints.Advanced()) {
-    const auto& the_field = advanced_constraint.*picker;
-    if (the_field.HasMin()) {
-      *value = the_field.Min();
+    const auto& advanced_field = advanced_constraint.*picker;
+    if (advanced_field.HasMin()) {
+      *value = advanced_field.Min();
       return true;
     }
-    if (the_field.HasExact()) {
-      *value = the_field.Exact();
+    if (advanced_field.HasExact()) {
+      *value = advanced_field.Exact();
       return true;
     }
   }

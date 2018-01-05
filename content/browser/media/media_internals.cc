@@ -430,11 +430,7 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
     case media::MediaLogEvent::Type::WEBMEDIAPLAYER_DESTROYED: {
       // Upon player destruction report UMA data; if the player is not torn down
       // before process exit, it will be logged during OnProcessTerminated().
-      auto it = player_info_map.find(event.id);
-      if (it == player_info_map.end())
-        break;
-
-      ReportUMAForPipelineStatus(it->second);
+      ReportUMAForPipelineStatus(player_info);
       player_info_map.erase(it);
     }
     default:

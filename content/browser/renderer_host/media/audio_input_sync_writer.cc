@@ -279,10 +279,10 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
       LOG(WARNING) << error_message;
       AddToNativeLog(error_message);
       if (write_error_count_ == 50) {
-        const std::string error_message =
+        const std::string cap_error_message =
             "AISW: Log cap reached, suppressing further fifo overflow logs.";
-        LOG(WARNING) << error_message;
-        AddToNativeLog(error_message);
+        LOG(WARNING) << cap_error_message;
+        AddToNativeLog(cap_error_message);
       }
     }
     return false;

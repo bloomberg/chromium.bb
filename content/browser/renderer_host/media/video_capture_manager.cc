@@ -375,10 +375,14 @@ void VideoCaptureManager::ConnectClient(
     VideoCaptureControllerEventHandler* client_handler,
     const DoneCB& done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::ostringstream string_stream;
-  string_stream << "ConnectClient: session_id = " << session_id << ", request: "
-                << media::VideoCaptureFormat::ToString(params.requested_format);
-  EmitLogMessage(string_stream.str(), 1);
+  {
+    std::ostringstream string_stream;
+    string_stream << "ConnectClient: session_id = " << session_id
+                  << ", request: "
+                  << media::VideoCaptureFormat::ToString(
+                         params.requested_format);
+    EmitLogMessage(string_stream.str(), 1);
+  }
 
   VideoCaptureController* controller =
       GetOrCreateController(session_id, params);

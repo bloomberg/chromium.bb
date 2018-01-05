@@ -348,11 +348,12 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
     if (scaler)
       yuv_readback_pipeline_->SetScaler(nullptr);
   } else if (!scaler || !scaler->IsSameScaleRatio(scale_from, scale_to)) {
-    std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
+    std::unique_ptr<viz::GLHelper::ScalerInterface> fast_scaler =
         gl_helper->CreateScaler(viz::GLHelper::SCALER_QUALITY_FAST, scale_from,
                                 scale_to, false, false, false);
-    DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
-    yuv_readback_pipeline_->SetScaler(std::move(scaler));
+    DCHECK(
+        fast_scaler);  // Arguments to CreateScaler() should never be invalid.
+    yuv_readback_pipeline_->SetScaler(std::move(fast_scaler));
   }
 
   yuv_readback_pipeline_->ReadbackYUV(
