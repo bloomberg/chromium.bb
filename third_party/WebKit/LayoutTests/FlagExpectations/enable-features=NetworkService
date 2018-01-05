@@ -22,7 +22,6 @@ Bug(none) external/wpt/html/browsers/history/the-location-interface/location-pro
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
 Bug(none) external/wpt/html/semantics/embedded-content/the-iframe-element/iframe-load-event.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/navigation-timing/nav2_test_attributes_values.html [ Failure Timeout ]
-Bug(none) external/wpt/preload/fetch-destination.https.html [ Crash Failure Timeout ]
 Bug(none) external/wpt/resource-timing/test_resource_timing.html [ Failure Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/client-navigate.https.html [ Pass Crash Failure ]

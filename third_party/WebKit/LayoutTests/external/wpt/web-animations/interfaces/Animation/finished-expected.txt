@@ -6,9 +6,8 @@ PASS Test redundant finishing of animation
 PASS Finished promise does not resolve when paused
 PASS Finished promise does not resolve when pause-pending
 PASS The finished promise is fulfilled with its Animation
-PASS finished promise is rejected when an animation is cancelled by calling cancel()
-PASS cancelling an already-finished animation replaces the finished promise
-FAIL cancelling an idle animation still replaces the finished promise assert_not_equals: A redundant call to cancel() should still generate a new finished promise got disallowed value object "[object Promise]"
+PASS finished promise is rejected when an animation is canceled by calling cancel()
+PASS canceling an already-finished animation replaces the finished promise
 FAIL Test finished promise changes for animation duration changes assert_false: shortening of the animation duration should resolve the finished promise expected false got true
 PASS Test finished promise changes when playbackRate == 0
 PASS Test finished promise resolves when reaching to the natural boundary.

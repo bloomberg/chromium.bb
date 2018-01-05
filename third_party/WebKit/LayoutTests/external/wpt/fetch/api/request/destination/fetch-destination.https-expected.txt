@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+PASS Initialize global state
+FAIL HTMLImageElement fetches with an "image" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL fetch() fetches with an empty string Request.destination promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
+FAIL HTMLAudioElement fetches with an "audio" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL HTMLVideoElement fetches with a "video" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL HTMLScriptElement fetches with a "script" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL HTMLLinkElement with rel=stylesheet fetches with a "style" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL HTMLLinkElement with rel=preload and as=fetch fetches with an empty string Request.destination assert_unreached: Fetch errored. Reached unreachable code
+FAIL HTMLLinkElement with rel=preload and as=style fetches with a "style" Request.destination assert_unreached: Fetch errored. Reached unreachable code
+Harness: the test ran to completion.
+
