@@ -633,6 +633,63 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
 
+// This test verifies that navigating to a singleton doesn't mistakenly
+// pick the current browser.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonCorrectWindow) {
+  // Make singleton tab.
+  NavigateParams params1(MakeNavigateParams());
+  params1.disposition = WindowOpenDisposition::CURRENT_TAB;
+  params1.url = GURL("http://maps.google.com/");
+  params1.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params1);
+  Browser* save_browser = browser();
+
+  // Make new window.
+  NavigateParams params2(MakeNavigateParams());
+  params2.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params2.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params2);
+
+  // Navigate to the singleton again.
+  params1.disposition = WindowOpenDisposition::SINGLETON_TAB;
+  Navigate(&params1);
+
+  EXPECT_EQ(save_browser, browser());
+}
+
+// This test verifies that navigation to a singleton prefers the latest
+// used browser, if multiple exist.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SingletonLatestWindow) {
+  // Navigate to a site.
+  NavigateParams params1(MakeNavigateParams());
+  params1.disposition = WindowOpenDisposition::CURRENT_TAB;
+  params1.url = GURL("http://maps.google.com/");
+  params1.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params1);
+
+  // Navigate to a new window.
+  NavigateParams params2(MakeNavigateParams());
+  params2.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params2.url = GURL("http://maps.google.com/");
+  params2.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params2);
+  Browser* save_browser = browser();
+
+  // Make yet another window.
+  NavigateParams params3(MakeNavigateParams());
+  params3.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params3.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params3);
+
+  // Navigate to the latest copy of the URL, in spite of specifying
+  // the current browser.
+  params2.browser = browser();
+  params2.disposition = WindowOpenDisposition::SINGLETON_TAB;
+  Navigate(&params2);
+
+  EXPECT_EQ(save_browser, browser());
+}
+
 #if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
 #define MAYBE_Disposition_Incognito DISABLED_Disposition_Incognito
@@ -1383,7 +1440,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, ViewSourceIsntSingleton) {
   NavigateParams singleton_params(browser(), GURL(chrome::kChromeUIVersionURL),
                                   ui::PAGE_TRANSITION_LINK);
   singleton_params.disposition = WindowOpenDisposition::SINGLETON_TAB;
-  EXPECT_EQ(-1, GetIndexOfExistingTab(&singleton_params));
+  EXPECT_EQ(-1, GetIndexOfExistingTab(browser(), singleton_params));
 }
 
 // This test verifies that browser initiated navigations can send requests

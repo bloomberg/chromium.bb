@@ -56,8 +56,7 @@ Browser* BrowserList::GetLastActive() const {
 
 // static
 BrowserList* BrowserList::GetInstance() {
-  BrowserList** list = NULL;
-  list = &instance_;
+  BrowserList** list = &instance_;
   if (!*list)
     *list = new BrowserList;
   return *list;

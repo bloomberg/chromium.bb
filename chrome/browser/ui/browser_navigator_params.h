@@ -245,9 +245,6 @@ struct NavigateParams {
   // an about:blank or a data url navigation.
   scoped_refptr<content::SiteInstance> source_site_instance;
 
-  // If non-default, provides a hint to GetIndexOfSingleton() where to start.
-  int tab_switch_hint = -1;
-
  private:
   NavigateParams();
 };
