@@ -509,10 +509,6 @@ GLenum ResourceProvider::GetResourceTextureTarget(viz::ResourceId id) {
   return GetResource(id)->target;
 }
 
-viz::ResourceTextureHint ResourceProvider::GetTextureHint(viz::ResourceId id) {
-  return GetResource(id)->hint;
-}
-
 gfx::ColorSpace ResourceProvider::GetResourceColorSpaceForRaster(
     const viz::internal::Resource* resource) const {
   return resource->color_space;

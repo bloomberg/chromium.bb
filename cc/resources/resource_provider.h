@@ -137,7 +137,6 @@ class CC_EXPORT ResourceProvider
   // Producer interface.
   viz::ResourceType GetResourceType(viz::ResourceId id);
   GLenum GetResourceTextureTarget(viz::ResourceId id);
-  viz::ResourceTextureHint GetTextureHint(viz::ResourceId id);
 
   viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
                                            viz::ResourceTextureHint hint,
