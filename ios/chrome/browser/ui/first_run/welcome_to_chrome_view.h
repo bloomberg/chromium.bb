@@ -13,7 +13,10 @@
 @protocol WelcomeToChromeViewDelegate<NSObject>
 
 // Called when the user taps on the "Terms of Service" link.
-- (void)welcomeToChromeViewDidTapTOSLink:(WelcomeToChromeView*)view;
+- (void)welcomeToChromeViewDidTapTOSLink;
+
+// Called when the user taps on the "Privacy Notice" link.
+- (void)welcomeToChromeViewDidTapPrivacyLink;
 
 // Called when the user taps the "Accept & Continue" button.
 - (void)welcomeToChromeViewDidTapOKButton:(WelcomeToChromeView*)view;

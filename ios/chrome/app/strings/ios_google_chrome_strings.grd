@@ -156,14 +156,17 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chrome?
       </message>
-      <message name="IDS_IOS_FIRSTRUN_AGREE_TO_TERMS" desc="Label containing a link to the Terms of Service, displayed in the first run flow. [Length: 70em] [iOS only]">
-        By using this application, you agree to Chrome’s <ph name="BEGIN_LINK">BEGIN_LINK</ph>Terms of Service<ph name="END_LINK">END_LINK</ph>.
+      <message name="IDS_IOS_FIRSTRUN_AGREE_TO_TERMS" desc="Label containing a link to the Terms of Service and Privacy Notice, displayed in the first run flow. [Length: 70em] [iOS only]">
+      By using this application, you agree to Chrome’s <ph name="BEGIN_LINK_TOS">BEGIN_LINK_TOS</ph>Terms of Service<ph name="END_LINK_TOS">END_LINK_TOS</ph> and <ph name="BEGIN_LINK_PRIVACY">BEGIN_LINK_PRIVACY</ph>Privacy Notice<ph name="END_LINK_PRIVACY">END_LINK_PRIVACY</ph>.
       </message>
       <message name="IDS_IOS_FIRSTRUN_NEW_OPT_IN_LABEL" desc="User metrics opt-in label [Length: 80em] [iOS only]">
         Help make Chrome better by sending usage statistics and crash reports to Google.
       </message>
       <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 30em]">
         Google Chrome Terms of Service
+      </message>
+      <message name="IDS_IOS_FIRSTRUN_PRIVACY_TITLE" desc="Title for the Privacy Notice page shown to user on First Run. [Length: 30em]">
+        Google Chrome Privacy Notice
       </message>
       <message name="IDS_IOS_FIRSTRUN_WELCOME_TO_CHROME" desc="Title on the Welcome to Chrome screen presented to the user on First Run. [iOS only]">
         Welcome to Chrome
