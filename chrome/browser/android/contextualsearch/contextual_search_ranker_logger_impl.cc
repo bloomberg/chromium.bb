@@ -95,7 +95,7 @@ AssistRankerPrediction ContextualSearchRankerLoggerImpl::RunInference(
   if (IsQueryEnabledInternal()) {
     was_able_to_predict = predictor_->Predict(*ranker_example_, &prediction);
     // Log to UMA whether we were able to predict or not.
-    base::UmaHistogramBoolean("Search.ContextualSearchRankerWasAbleToPredict",
+    base::UmaHistogramBoolean("Search.ContextualSearch.Ranker.WasAbleToPredict",
                               was_able_to_predict);
     // TODO(chrome-ranker-team): this should be logged internally by Ranker.
     LogFeature(kContextualSearchRankerDidPredict,
