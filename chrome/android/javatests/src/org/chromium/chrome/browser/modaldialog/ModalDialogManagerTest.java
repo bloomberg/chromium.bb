@@ -30,11 +30,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Tests for displaying and functioning of modal dialogs on tabs.
@@ -250,6 +252,7 @@ public class ModalDialogManagerTest {
 
     @Test
     @SmallTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testDismiss_ToggleOverview() throws Exception {
         // Initially there are no dialogs in the pending list. Browser controls are not restricted.
         checkPendingSize(0);
