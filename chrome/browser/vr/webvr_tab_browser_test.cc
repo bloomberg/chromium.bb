@@ -15,7 +15,8 @@
 namespace vr {
 
 // Tests that non-focused tabs cannot get pose information
-IN_PROC_BROWSER_TEST_F(VrBrowserTest, REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
+IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
+                       REQUIRES_GPU(TestPoseDataUnfocusedTab)) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_pose_data_unfocused_tab"));
   ExecuteStepAndWait("stepCheckFrameDataWhileFocusedTab()",

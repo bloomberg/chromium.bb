@@ -14,7 +14,7 @@
 namespace vr {
 
 // Tests that a successful requestPresent call actually enters VR.
-IN_PROC_BROWSER_TEST_F(VrBrowserTest,
+IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
                        REQUIRES_GPU(TestRequestPresentEntersVr)) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_requestPresent_enters_vr"));
@@ -27,7 +27,7 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTest,
 
 // Tests that window.requestAnimationFrame continues to fire while in WebVR
 // presentation since the tab is still visible.
-IN_PROC_BROWSER_TEST_F(VrBrowserTest,
+IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
                        REQUIRES_GPU(TestWindowRafFiresWhilePresenting)) {
   LoadUrlAndAwaitInitialization(
       GetHtmlTestFile("test_window_raf_fires_while_presenting"));
@@ -37,6 +37,25 @@ IN_PROC_BROWSER_TEST_F(VrBrowserTest,
   ExitPresentationOrFail(GetFirstTabWebContents());
   ExecuteStepAndWait("stepVerifyAfterPresent()", GetFirstTabWebContents());
   EndTest(GetFirstTabWebContents());
+}
+
+// Tests that WebVR is not exposed if the flag is not on and the page does not
+// have an origin trial token. Since WebVR isn't actually used, we can remove
+// the GPU requirement.
+IN_PROC_BROWSER_TEST_F(VrBrowserTestWebVrDisabled,
+                       TestWebVrDisabledWithoutFlagSet) {
+  LoadUrlAndAwaitInitialization(
+      GetHtmlTestFile("test_webvr_disabled_without_flag_set"));
+  WaitOnJavaScriptStep(GetFirstTabWebContents());
+  EndTest(GetFirstTabWebContents());
+}
+
+// Tests that WebVR does not return any devices if OpenVR support is disabled.
+// Since OpenVR isn't actually used, we can remove the GPU requirement.
+IN_PROC_BROWSER_TEST_F(VrBrowserTestOpenVrDisabled,
+                       TestWebVrNoDevicesWithoutOpenVr) {
+  LoadUrlAndAwaitInitialization(GetHtmlTestFile("generic_webvr_page"));
+  EXPECT_FALSE(VrDisplayFound(GetFirstTabWebContents()));
 }
 
 }  // namespace vr

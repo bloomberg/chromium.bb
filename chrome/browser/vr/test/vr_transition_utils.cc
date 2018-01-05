@@ -18,13 +18,14 @@ void EnterPresentation(content::WebContents* web_contents) {
 
 void EnterPresentationAndWait(content::WebContents* web_contents) {
   EnterPresentation(web_contents);
-  VrBrowserTest::WaitOnJavaScriptStep(web_contents);
+  VrBrowserTestBase::WaitOnJavaScriptStep(web_contents);
 }
 
 void EnterPresentationOrFail(content::WebContents* web_contents) {
   EnterPresentation(web_contents);
-  EXPECT_TRUE(VrBrowserTest::PollJavaScriptBoolean(
-      "vrDisplay.isPresenting", VrBrowserTest::kPollTimeoutLong, web_contents));
+  EXPECT_TRUE(VrBrowserTestBase::PollJavaScriptBoolean(
+      "vrDisplay.isPresenting", VrBrowserTestBase::kPollTimeoutLong,
+      web_contents));
 }
 
 void ExitPresentation(content::WebContents* web_contents) {
@@ -33,13 +34,13 @@ void ExitPresentation(content::WebContents* web_contents) {
 
 void ExitPresentationAndWait(content::WebContents* web_contents) {
   ExitPresentation(web_contents);
-  VrBrowserTest::WaitOnJavaScriptStep(web_contents);
+  VrBrowserTestBase::WaitOnJavaScriptStep(web_contents);
 }
 
 void ExitPresentationOrFail(content::WebContents* web_contents) {
   ExitPresentation(web_contents);
-  EXPECT_TRUE(VrBrowserTest::PollJavaScriptBoolean(
-      "vrDisplay.isPresenting == false", VrBrowserTest::kPollTimeoutLong,
+  EXPECT_TRUE(VrBrowserTestBase::PollJavaScriptBoolean(
+      "vrDisplay.isPresenting == false", VrBrowserTestBase::kPollTimeoutLong,
       web_contents));
 }
 
