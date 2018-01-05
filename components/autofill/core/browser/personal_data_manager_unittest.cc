@@ -1683,6 +1683,36 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
   EXPECT_EQ(base::ASCIIToUTF16("Hollywood, TX"), suggestions[1].label);
 }
 
+TEST_F(PersonalDataManagerTest,
+       GetProfileSuggestions_NoSubsetsCheckingIfTooManyProfiles) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "johnwayne@me.xyz", "Fox",
+                       "123 Zoo St.\nSecond Line\nThird line", "unit 5",
+                       "Hollywood", "CA", "91601", "US", "12345678910");
+
+  personal_data_->AddProfile(profile);
+  // 31 profiles in a total, expecting no subset removing.
+  for (int i = 0; i < 15; i++) {
+    AutofillProfile profile_no_state = profile;
+    profile_no_state.set_guid(base::GenerateGUID());
+    profile_no_state.SetRawInfo(ADDRESS_HOME_STATE, base::string16());
+    personal_data_->AddProfile(profile_no_state);
+  }
+
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  ASSERT_EQ(16U, personal_data_->GetProfiles().size());
+  std::vector<ServerFieldType> types;
+  types.push_back(ADDRESS_HOME_CITY);
+  types.push_back(ADDRESS_HOME_STATE);
+  std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+      AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
+      false, types);
+  ASSERT_EQ(16U, suggestions.size());
+  EXPECT_EQ(base::ASCIIToUTF16("Hollywood"), suggestions[0].label);
+}
+
 // Tests that GetProfileSuggestions orders its suggestions based on the frecency
 // formula.
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {

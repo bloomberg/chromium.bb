@@ -993,33 +993,41 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   // Don't show two suggestions if one is a subset of the other.
   std::vector<AutofillProfile*> unique_matched_profiles;
   std::vector<Suggestion> unique_suggestions;
-  ServerFieldTypeSet types(other_field_types.begin(), other_field_types.end());
-  for (size_t i = 0; i < matched_profiles.size(); ++i) {
-    bool include = true;
-    AutofillProfile* profile_a = matched_profiles[i];
-    for (size_t j = 0; j < matched_profiles.size(); ++j) {
-      AutofillProfile* profile_b = matched_profiles[j];
-      // Check if profile A is a subset of profile B. If not, continue.
-      if (i == j || suggestions[i].value != suggestions[j].value ||
-          !profile_a->IsSubsetOfForFieldSet(*profile_b, app_locale_, types)) {
-        continue;
-      }
+  // If there are many profiles, subset checking will take a long time(easily
+  // seconds). We will only do this if the profiles count is reasonable.
+  if (matched_profiles.size() <= 15) {
+    ServerFieldTypeSet types(other_field_types.begin(),
+                             other_field_types.end());
+    for (size_t i = 0; i < matched_profiles.size(); ++i) {
+      bool include = true;
+      AutofillProfile* profile_a = matched_profiles[i];
+      for (size_t j = 0; j < matched_profiles.size(); ++j) {
+        AutofillProfile* profile_b = matched_profiles[j];
+        // Check if profile A is a subset of profile B. If not, continue.
+        if (i == j || suggestions[i].value != suggestions[j].value ||
+            !profile_a->IsSubsetOfForFieldSet(*profile_b, app_locale_, types)) {
+          continue;
+        }
 
-      // Check if profile B is also a subset of profile A. If so, the
-      // profiles are identical. Include the first one but not the second.
-      if (i < j &&
-          profile_b->IsSubsetOfForFieldSet(*profile_a, app_locale_, types)) {
-        continue;
-      }
+        // Check if profile B is also a subset of profile A. If so, the
+        // profiles are identical. Include the first one but not the second.
+        if (i < j &&
+            profile_b->IsSubsetOfForFieldSet(*profile_a, app_locale_, types)) {
+          continue;
+        }
 
-      // One-way subset. Don't include profile A.
-      include = false;
-      break;
+        // One-way subset. Don't include profile A.
+        include = false;
+        break;
+      }
+      if (include) {
+        unique_matched_profiles.push_back(matched_profiles[i]);
+        unique_suggestions.push_back(suggestions[i]);
+      }
     }
-    if (include) {
-      unique_matched_profiles.push_back(matched_profiles[i]);
-      unique_suggestions.push_back(suggestions[i]);
-    }
+  } else {
+    unique_matched_profiles = matched_profiles;
+    unique_suggestions = suggestions;
   }
 
   // Generate disambiguating labels based on the list of matches.
