@@ -94368,6 +94368,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="VR.Component.Assets.DurationUntilReady.OnChromeStart"
     units="ms">
+<!-- Histogram will be deprecated. See crbug/799074. -->
+
   <owner>tiborg@chromium.org</owner>
   <summary>
     Duration from starting Chrome until VR assets component is ready to use.
@@ -94380,6 +94382,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Duration from entering a VR mode until the VR assets component is ready to
     use.
+  </summary>
+</histogram>
+
+<histogram name="VR.Component.Assets.DurationUntilReady.OnRegisterComponent"
+    units="ms">
+  <owner>tiborg@chromium.org</owner>
+  <summary>
+    Duration from registering VR assets component until it is ready to use.
   </summary>
 </histogram>
 
