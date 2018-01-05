@@ -21,14 +21,26 @@ partial interface WorkerNavigator {
 [Exposed=(Window,Worker), SecureContext]
 interface LockManager {
   Promise<any> acquire(DOMString name,
-                       LockRequestCallback callback);
+                       LockGrantedCallback callback);
   Promise<any> acquire(DOMString name,
                        LockOptions options,
-                       LockRequestCallback callback);
+                       LockGrantedCallback callback);
+
+  Promise<LockManagerSnapshot> query();
 };
 
 [Exposed=(Window,Worker), SecureContext]
 interface Lock {
   readonly attribute DOMString name;
   readonly attribute LockMode mode;
+};
+
+dictionary LockManagerSnapshot {
+  sequence<LockInfo> pending;
+  sequence<LockInfo> held;
+};
+
+dictionary LockInfo {
+  DOMString name;
+  LockMode mode;
 };

@@ -3980,6 +3980,7 @@ interface LockManager
     attribute @@toStringTag
     method acquire
     method constructor
+    method query
 interface MIDIAccess : EventTarget
     attribute @@toStringTag
     getter inputs

@@ -37,6 +37,8 @@ class LockManager final : public ScriptWrappable,
                         V8LockGrantedCallback*,
                         ExceptionState&);
 
+  ScriptPromise query(ScriptState*, ExceptionState&);
+
   void Trace(blink::Visitor*);
 
   // Wrapper tracing is needed for callbacks. The reference chain is

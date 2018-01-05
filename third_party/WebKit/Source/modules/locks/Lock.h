@@ -25,7 +25,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
  public:
   static Lock* Create(ScriptState*,
                       const String& name,
-                      mojom::blink::LockManager::LockMode,
+                      mojom::blink::LockMode,
                       mojom::blink::LockHandlePtr);
 
   ~Lock() override;
@@ -44,15 +44,15 @@ class Lock final : public ScriptWrappable, public PausableObject {
   // the passed resolver is invoked with the promise's result.
   void HoldUntil(ScriptPromise, ScriptPromiseResolver*);
 
-  static mojom::blink::LockManager::LockMode StringToMode(const String&);
-  static String ModeToString(mojom::blink::LockManager::LockMode);
+  static mojom::blink::LockMode StringToMode(const String&);
+  static String ModeToString(mojom::blink::LockMode);
 
  private:
   class ThenFunction;
 
   Lock(ScriptState*,
        const String& name,
-       mojom::blink::LockManager::LockMode,
+       mojom::blink::LockMode,
        mojom::blink::LockHandlePtr);
 
   void ReleaseIfHeld();
@@ -60,7 +60,7 @@ class Lock final : public ScriptWrappable, public PausableObject {
   Member<ScriptPromiseResolver> resolver_;
 
   const String name_;
-  const mojom::blink::LockManager::LockMode mode_;
+  const mojom::blink::LockMode mode_;
   mojom::blink::LockHandlePtr handle_;
 };
 

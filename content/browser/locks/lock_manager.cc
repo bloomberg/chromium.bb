@@ -7,10 +7,13 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/stl_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+using blink::mojom::LockMode;
 
 namespace content {
 
@@ -133,6 +136,31 @@ void LockManager::ReleaseLock(const url::Origin& origin, int64_t id) {
     origins_.erase(origin);
   else if (dirty)
     ProcessRequests(origin);
+}
+
+void LockManager::QueryState(QueryStateCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const url::Origin& origin = bindings_.dispatch_context();
+  if (!base::ContainsKey(origins_, origin))
+    return;
+  OriginState& state = origins_[origin];
+
+  std::vector<blink::mojom::LockInfoPtr> pending;
+  pending.reserve(state.requested.size());
+  for (const auto& id_lock_pair : state.requested) {
+    pending.emplace_back(base::in_place, id_lock_pair.second->name,
+                         id_lock_pair.second->mode);
+  }
+
+  std::vector<blink::mojom::LockInfoPtr> held;
+  held.reserve(state.held.size());
+  for (const auto& id_lock_pair : state.held) {
+    held.emplace_back(base::in_place, id_lock_pair.second->name,
+                      id_lock_pair.second->mode);
+  }
+
+  std::move(callback).Run(std::move(pending), std::move(held));
 }
 
 bool LockManager::IsGrantable(const url::Origin& origin,

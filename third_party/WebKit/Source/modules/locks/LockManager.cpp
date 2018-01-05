@@ -11,14 +11,36 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/UseCounter.h"
 #include "modules/locks/Lock.h"
-#include "modules/locks/LockOptions.h"
+#include "modules/locks/LockInfo.h"
+#include "modules/locks/LockManagerSnapshot.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "platform/wtf/Vector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
+
+namespace {
+
+LockInfo ToLockInfo(const mojom::blink::LockInfoPtr& record) {
+  LockInfo request;
+  request.setMode(Lock::ModeToString(record->mode));
+  request.setName(record->name);
+  return request;
+}
+
+HeapVector<LockInfo> ToLockInfos(
+    const Vector<mojom::blink::LockInfoPtr>& records) {
+  HeapVector<LockInfo> out;
+  out.ReserveInitialCapacity(records.size());
+  for (const auto& record : records)
+    out.push_back(ToLockInfo(record));
+  return out;
+}
+
+}  // namespace
 
 class LockManager::LockRequestImpl final
     : public GarbageCollectedFinalized<LockRequestImpl>,
@@ -31,7 +53,7 @@ class LockManager::LockRequestImpl final
   LockRequestImpl(V8LockGrantedCallback* callback,
                   ScriptPromiseResolver* resolver,
                   const String& name,
-                  mojom::blink::LockManager::LockMode mode,
+                  mojom::blink::LockMode mode,
                   mojom::blink::LockRequestRequest request,
                   LockManager* manager)
       : callback_(callback),
@@ -130,7 +152,7 @@ class LockManager::LockRequestImpl final
   String name_;
 
   // Held to stamp the Lock object's |mode| property.
-  mojom::blink::LockManager::LockMode mode_;
+  mojom::blink::LockMode mode_;
 
   mojo::Binding<mojom::blink::LockRequest> binding_;
 
@@ -149,6 +171,7 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
                                    ExceptionState& exception_state) {
   return acquire(script_state, name, LockOptions(), callback, exception_state);
 }
+
 ScriptPromise LockManager::acquire(ScriptState* script_state,
                                    const String& name,
                                    const LockOptions& options,
@@ -161,7 +184,8 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     exception_state.ThrowSecurityError(
         "Access to the Locks API is denied in this context.");
     return ScriptPromise();
-  } else if (context->GetSecurityOrigin()->IsLocal()) {
+  }
+  if (context->GetSecurityOrigin()->IsLocal()) {
     UseCounter::Count(context, WebFeature::kFileAccessedLocks);
   }
 
@@ -174,7 +198,7 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
     }
   }
 
-  mojom::blink::LockManager::LockMode mode = Lock::StringToMode(options.mode());
+  mojom::blink::LockMode mode = Lock::StringToMode(options.mode());
 
   mojom::blink::LockManager::WaitMode wait =
       options.ifAvailable() ? mojom::blink::LockManager::WaitMode::NO_WAIT
@@ -188,6 +212,46 @@ ScriptPromise LockManager::acquire(ScriptState* script_state,
                                         mojo::MakeRequest(&request_ptr), this));
 
   service_->RequestLock(name, mode, wait, std::move(request_ptr));
+
+  return promise;
+}
+
+ScriptPromise LockManager::query(ScriptState* script_state,
+                                 ExceptionState& exception_state) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  DCHECK(context->IsContextThread());
+
+  if (!context->GetSecurityOrigin()->CanAccessLocks()) {
+    exception_state.ThrowSecurityError(
+        "Access to the Locks API is denied in this context.");
+    return ScriptPromise();
+  }
+  if (context->GetSecurityOrigin()->IsLocal()) {
+    UseCounter::Count(context, WebFeature::kFileAccessedLocks);
+  }
+
+  if (!service_.get()) {
+    if (auto* provider = context->GetInterfaceProvider())
+      provider->GetInterface(mojo::MakeRequest(&service_));
+    if (!service_.get()) {
+      exception_state.ThrowTypeError("Service not available.");
+      return ScriptPromise();
+    }
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  service_->QueryState(WTF::Bind(
+      [](ScriptPromiseResolver* resolver,
+         Vector<mojom::blink::LockInfoPtr> pending,
+         Vector<mojom::blink::LockInfoPtr> held) {
+        LockManagerSnapshot snapshot;
+        snapshot.setPending(ToLockInfos(pending));
+        snapshot.setHeld(ToLockInfos(held));
+        resolver->Resolve(snapshot);
+      },
+      WrapPersistent(resolver)));
 
   return promise;
 }

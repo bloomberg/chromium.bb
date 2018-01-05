@@ -491,6 +491,8 @@ modules_dictionary_idl_files =
                     "indexeddb/IDBObjectStoreParameters.idl",
                     "indexeddb/IDBObserverInit.idl",
                     "indexeddb/IDBVersionChangeEventInit.idl",
+                    "locks/LockInfo.idl",
+                    "locks/LockManagerSnapshot.idl",
                     "locks/LockOptions.idl",
                     "media_capabilities/AudioConfiguration.idl",
                     "media_capabilities/MediaConfiguration.idl",
