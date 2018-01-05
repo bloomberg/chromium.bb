@@ -473,17 +473,19 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
   }
 
   String specifier = ToCoreStringWithNullCheck(v8_specifier);
-  v8::Local<v8::Value> v8_referrer_url = v8_referrer->GetResourceName();
-  KURL referrer_url;
-  if (v8_referrer_url->IsString()) {
-    String referrer_url_str =
-        ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_url));
-    referrer_url = KURL(NullURL(), referrer_url_str);
+  v8::Local<v8::Value> v8_referrer_resource_url =
+      v8_referrer->GetResourceName();
+  KURL referrer_resource_url;
+  if (v8_referrer_resource_url->IsString()) {
+    String referrer_resource_url_str =
+        ToCoreString(v8::Local<v8::String>::Cast(v8_referrer_resource_url));
+    if (!referrer_resource_url_str.IsEmpty())
+      referrer_resource_url = KURL(NullURL(), referrer_resource_url_str);
   }
   ReferrerScriptInfo referrer_info =
       ReferrerScriptInfo::FromV8HostDefinedOptions(
           context, v8_referrer->GetHostDefinedOptions());
-  modulator->ResolveDynamically(specifier, referrer_url, referrer_info,
+  modulator->ResolveDynamically(specifier, referrer_resource_url, referrer_info,
                                 resolver);
   return v8::Local<v8::Promise>::Cast(promise.V8Value());
 }
