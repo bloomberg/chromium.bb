@@ -89,7 +89,7 @@ void MessagePumpDefault::ScheduleDelayedWork(
 void MessagePumpDefault::SetTimerSlack(TimerSlack timer_slack) {
   thread_latency_qos_policy_data_t policy{};
   policy.thread_latency_qos_tier = timer_slack == TIMER_SLACK_MAXIMUM
-                                       ? LATENCY_QOS_TIER_5
+                                       ? LATENCY_QOS_TIER_3
                                        : LATENCY_QOS_TIER_UNSPECIFIED;
   mac::ScopedMachSendRight thread_port(mach_thread_self());
   kern_return_t kr =
