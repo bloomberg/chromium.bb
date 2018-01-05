@@ -35,7 +35,9 @@ class LeakDetectionStorySet(story.StorySet):
       'https://www.facebook.com',
       'https://www.baidu.com',
       'https://www.wikipedia.org',
-      'https://www.yahoo.com',
+      # TODO(yuzus) Disabling yahoo & quora for the moment because they time
+      # out on a trybot.
+      # 'https://www.yahoo.com'.
       'https://www.reddit.com',
       'http://www.qq.com',
       'http://www.amazon.com',
@@ -46,7 +48,7 @@ class LeakDetectionStorySet(story.StorySet):
       'http://www.time.com',
       'http://infomoney.com.br',
       'http://www.cheapoair.com',
-      'http://www.quora.com',
+      # 'http://www.quora.com',
       'http://www.onlinedown.net',
       'http://www.dailypost.ng',
       'http://www.listindiario.com',
