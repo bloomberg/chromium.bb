@@ -20,7 +20,7 @@
     <div class="settings-box first">
       <paper-input id="name" value="[[profileName]]" pattern=".*\S.*"
           on-change="onProfileNameChanged_" on-keydown="onProfileNameKeydown_"
-          disabled="[[isProfileNameDisabled_(syncStatus)]]"
+          disabled="[[isProfileNameDisabled_(syncStatus)]]" maxlength="500"
           auto-validate no-label-float required>
       </paper-input>
     </div>
