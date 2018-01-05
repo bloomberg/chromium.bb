@@ -213,14 +213,16 @@ ArithmeticPaintFilter::ArithmeticPaintFilter(float k1,
                                              sk_sp<PaintFilter> foreground,
                                              const CropRect* crop_rect)
     : PaintFilter(kType, crop_rect),
-      floats_{k1, k2, k3, k4},
+      k1_(k1),
+      k2_(k2),
+      k3_(k3),
+      k4_(k4),
       enforce_pm_color_(enforce_pm_color),
       background_(std::move(background)),
       foreground_(std::move(foreground)) {
   cached_sk_filter_ = SkArithmeticImageFilter::Make(
-      floats_[0], floats_[1], floats_[2], floats_[3], enforce_pm_color_,
-      GetSkFilter(background_.get()), GetSkFilter(foreground_.get()),
-      crop_rect);
+      k1_, k2_, k3_, k4_, enforce_pm_color_, GetSkFilter(background_.get()),
+      GetSkFilter(foreground_.get()), crop_rect);
 }
 
 ArithmeticPaintFilter::~ArithmeticPaintFilter() = default;

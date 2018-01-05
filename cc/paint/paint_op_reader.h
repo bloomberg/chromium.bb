@@ -21,10 +21,13 @@ class PaintShader;
 class TransferCacheDeserializeHelper;
 class CC_PAINT_EXPORT PaintOpReader {
  public:
-  PaintOpReader(const volatile void* memory, size_t size)
+  PaintOpReader(const volatile void* memory,
+                size_t size,
+                TransferCacheDeserializeHelper* transfer_cache)
       : memory_(static_cast<const volatile char*>(memory) +
                 PaintOpWriter::HeaderBytes()),
-        remaining_bytes_(size - PaintOpWriter::HeaderBytes()) {
+        remaining_bytes_(size - PaintOpWriter::HeaderBytes()),
+        transfer_cache_(transfer_cache) {
     if (size < PaintOpWriter::HeaderBytes())
       valid_ = false;
   }
@@ -52,10 +55,9 @@ class CC_PAINT_EXPORT PaintOpReader {
 
   void Read(SkPath* path);
   void Read(PaintFlags* flags);
-  void Read(PaintImage* image, TransferCacheDeserializeHelper* transfer_cache);
+  void Read(PaintImage* image);
   void Read(sk_sp<SkData>* data);
-  void Read(scoped_refptr<PaintTextBlob>* blob,
-            TransferCacheDeserializeHelper* transfer_cache);
+  void Read(scoped_refptr<PaintTextBlob>* blob);
   void Read(sk_sp<PaintShader>* shader);
   void Read(SkMatrix* matrix);
   void Read(SkColorType* color_type);
@@ -172,9 +174,12 @@ class CC_PAINT_EXPORT PaintOpReader {
       sk_sp<PaintFilter>* filter,
       const base::Optional<PaintFilter::CropRect>& crop_rect);
 
+  void Read(sk_sp<PaintRecord>* record);
+
   const volatile char* memory_ = nullptr;
   size_t remaining_bytes_ = 0u;
   bool valid_ = true;
+  TransferCacheDeserializeHelper* transfer_cache_;
 };
 
 }  // namespace cc
