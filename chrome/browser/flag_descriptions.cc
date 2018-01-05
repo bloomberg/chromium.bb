@@ -653,12 +653,6 @@ const char kFeaturePolicyDescription[] =
     "Enables granting and removing access to features through the "
     "Feature-Policy HTTP header.";
 
-const char kFetchKeepaliveTimeoutSettingName[] =
-    "Fetch API keepalive timeout setting";
-const char kFetchKeepaliveTimeoutSettingDescription[] =
-    "This is for setting the timeout value for Fetch API with keepalive option "
-    "and SendBeacon";
-
 const char kFontCacheScalingName[] = "FontCache scaling";
 const char kFontCacheScalingDescription[] =
     "Reuse a cached font in the renderer to serve different sizes of font for "

@@ -3071,11 +3071,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"enable-fetch-keepalive-timeout-setting",
-     flag_descriptions::kFetchKeepaliveTimeoutSettingName,
-     flag_descriptions::kFetchKeepaliveTimeoutSettingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFetchKeepaliveTimeoutSetting)},
-
     {"enable-renderer-side-resource-scheduler",
      flag_descriptions::kRendererSideResourceSchedulerName,
      flag_descriptions::kRendererSideResourceSchedulerDescription, kOsAll,
