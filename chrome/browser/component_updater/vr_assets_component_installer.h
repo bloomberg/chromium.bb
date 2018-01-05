@@ -30,6 +30,8 @@ class VrAssetsComponentInstallerTraits : public ComponentInstallerPolicy {
   ~VrAssetsComponentInstallerTraits() override {}
 
  private:
+  static void UpdateComponent(ComponentUpdateService* cus);
+
   // ComponentInstallerPolicy:
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
   bool RequiresNetworkEncryption() const override;
@@ -48,12 +50,18 @@ class VrAssetsComponentInstallerTraits : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+  friend void UpdateVrAssetsComponent(ComponentUpdateService* cus);
+
   DISALLOW_COPY_AND_ASSIGN(VrAssetsComponentInstallerTraits);
 };
 
-// Call once during to make the component update service aware of
-// the VR Assets component.
+// Call once to make the component update service aware of the VR Assets
+// component.
 void RegisterVrAssetsComponent(ComponentUpdateService* cus);
+
+// Update VR assets component immediately. The component must be registered
+// before calling this function.
+void UpdateVrAssetsComponent(ComponentUpdateService* cus);
 
 }  // namespace component_updater
 
