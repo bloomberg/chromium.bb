@@ -1562,6 +1562,7 @@ int HttpNetworkTransaction::HandleIOError(int error) {
       break;
     case ERR_SPDY_PING_FAILED:
     case ERR_SPDY_SERVER_REFUSED_STREAM:
+    case ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE:
     case ERR_SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER:
     case ERR_QUIC_HANDSHAKE_FAILED:
       if (HasExceededMaxRetries())
