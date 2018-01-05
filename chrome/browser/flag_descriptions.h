@@ -1141,9 +1141,6 @@ extern const char kEnableCustomFeedbackUiDescription[];
 extern const char kEnableDataReductionProxyMainMenuName[];
 extern const char kEnableDataReductionProxyMainMenuDescription[];
 
-extern const char kEnableDataReductionProxySiteBreakdownName[];
-extern const char kEnableDataReductionProxySiteBreakdownDescription[];
-
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
 

@@ -2080,12 +2080,6 @@ const FeatureEntry kFeatureEntries[] = {
          data_reduction_proxy::features::kDataReductionMainMenu,
          kDataReductionMainMenuFeatureVariations,
          "DataReductionProxyMainMenu")},
-    {"enable-data-reduction-proxy-site-breakdown",
-     flag_descriptions::kEnableDataReductionProxySiteBreakdownName,
-     flag_descriptions::kEnableDataReductionProxySiteBreakdownDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         data_reduction_proxy::features::kDataReductionSiteBreakdown)},
     {"enable-offline-previews", flag_descriptions::kEnableOfflinePreviewsName,
      flag_descriptions::kEnableOfflinePreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kOfflinePreviews)},

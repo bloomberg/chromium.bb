@@ -13,10 +13,6 @@ namespace features {
 const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the site breakdown on the Data Reduction Proxy settings page.
-const base::Feature kDataReductionSiteBreakdown{
-    "DataReductionProxySiteBreakdown", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables a new version of the data reduction proxy protocol where the server
 // decides if a server-generated preview should be served. The previous
 // version required the client to make this decision. The new protocol relies

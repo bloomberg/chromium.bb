@@ -22,12 +22,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Unit test suite for DataReductionStatsPreference.
@@ -80,28 +76,6 @@ public class DataReductionStatsPreferenceTest {
         ContextUtils.initApplicationContextForTests(mContext);
         mSettings = new TestDataReductionProxySettings();
         DataReductionProxySettings.setInstanceForTesting(mSettings);
-
-        Map<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.DATA_REDUCTION_SITE_BREAKDOWN, true);
-        ChromeFeatureList.setTestFeatures(features);
-    }
-
-    /**
-     * Tests that the site breakdown pref isn't initialized if the feature isn't enabled.
-     */
-    @Test
-    @SmallTest
-    @UiThreadTest
-    @Feature({"DataReduction"})
-    public void testDontInitializeSiteBreakdownPref() throws Throwable {
-        // Disable the feature
-        Map<String, Boolean> features = new HashMap<>();
-        features.put(ChromeFeatureList.DATA_REDUCTION_SITE_BREAKDOWN, false);
-        ChromeFeatureList.setTestFeatures(features);
-
-        DataReductionStatsPreference.initializeDataReductionSiteBreakdownPref();
-        Assert.assertFalse(ContextUtils.getAppSharedPreferences().contains(
-                PREF_DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE));
     }
 
     /**

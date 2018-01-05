@@ -369,15 +369,6 @@ void DataReductionProxyCompressionStats::Init() {
           &DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged,
           weak_factory_.GetWeakPtr()));
 
-#if defined(OS_ANDROID)
-  if (!base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown)) {
-    // If the user is moved out of the experiment make sure that data usage
-    // reporting is not enabled and the map is cleared.
-    SetDataUsageReportingEnabled(false);
-    DeleteHistoricalDataUsage();
-  }
-#endif
-
   if (data_usage_reporting_enabled_.GetValue()) {
     current_data_usage_load_status_ = LOADING;
     service_->LoadCurrentDataUsageBucket(base::Bind(
@@ -645,13 +636,15 @@ void DataReductionProxyCompressionStats::DeleteBrowsingHistory(
 
 void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
     std::unique_ptr<DataUsageBucket> data_usage) {
-  DCHECK(current_data_usage_load_status_ == LOADING);
-
   // Exit early if the pref was turned off before loading from storage
   // completed.
   if (!data_usage_reporting_enabled_.GetValue()) {
+    DCHECK_EQ(NOT_LOADED, current_data_usage_load_status_);
+    DCHECK(data_usage_map_.empty());
     current_data_usage_load_status_ = NOT_LOADED;
     return;
+  } else {
+    DCHECK_EQ(LOADING, current_data_usage_load_status_);
   }
 
   DCHECK(data_usage_map_last_updated_.is_null());
@@ -1277,8 +1270,6 @@ void DataReductionProxyCompressionStats::OnDataUsageReportingPrefChanged() {
   } else {
 // Don't delete the historical data on Android, but clear the map.
 #if defined(OS_ANDROID)
-    DCHECK(current_data_usage_load_status_ != LOADING);
-
     if (current_data_usage_load_status_ == LOADED)
       PersistDataUsage();
 
