@@ -180,6 +180,14 @@ class NET_EXPORT HostResolver {
                                AddressList* addresses,
                                const NetLogWithSource& net_log) = 0;
 
+  // Like |ResolveFromCache()|, but can return a stale result if the
+  // implementation supports it. Fills in |*stale_info| if a response is
+  // returned to indicate how stale (or not) it is.
+  virtual int ResolveStaleFromCache(const RequestInfo& info,
+                                    AddressList* addresses,
+                                    HostCache::EntryStaleness* stale_info,
+                                    const NetLogWithSource& source_net_log) = 0;
+
   // Enable or disable the built-in asynchronous DnsClient.
   virtual void SetDnsClientEnabled(bool enabled);
 

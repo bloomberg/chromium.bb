@@ -43,6 +43,19 @@ int MappedHostResolver::ResolveFromCache(const RequestInfo& original_info,
   return impl_->ResolveFromCache(info, addresses, net_log);
 }
 
+int MappedHostResolver::ResolveStaleFromCache(
+    const RequestInfo& original_info,
+    AddressList* addresses,
+    HostCache::EntryStaleness* stale_info,
+    const NetLogWithSource& net_log) {
+  RequestInfo info = original_info;
+  int rv = ApplyRules(&info);
+  if (rv != OK)
+    return rv;
+
+  return impl_->ResolveStaleFromCache(info, addresses, stale_info, net_log);
+}
+
 void MappedHostResolver::SetDnsClientEnabled(bool enabled) {
   impl_->SetDnsClientEnabled(enabled);
 }

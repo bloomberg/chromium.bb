@@ -404,6 +404,15 @@ int StaleHostResolver::ResolveFromCache(const RequestInfo& info,
   return inner_resolver_->ResolveFromCache(info, addresses, net_log);
 }
 
+int StaleHostResolver::ResolveStaleFromCache(
+    const RequestInfo& info,
+    net::AddressList* addresses,
+    net::HostCache::EntryStaleness* stale_info,
+    const net::NetLogWithSource& net_log) {
+  return inner_resolver_->ResolveStaleFromCache(info, addresses, stale_info,
+                                                net_log);
+}
+
 bool StaleHostResolver::HasCached(
     base::StringPiece hostname,
     net::HostCache::Entry::Source* source_out,

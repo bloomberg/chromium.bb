@@ -132,6 +132,14 @@ class HangingHostResolverWithCancel : public HostResolver {
     return ERR_UNEXPECTED;
   }
 
+  int ResolveStaleFromCache(const RequestInfo& info,
+                            AddressList* addresses,
+                            HostCache::EntryStaleness* stale_info,
+                            const NetLogWithSource& net_log) override {
+    NOTIMPLEMENTED();
+    return ERR_UNEXPECTED;
+  }
+
   bool HasCached(base::StringPiece hostname,
                  HostCache::Entry::Source* source_out,
                  HostCache::EntryStaleness* stale_out) const override {

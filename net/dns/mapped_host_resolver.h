@@ -54,6 +54,10 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   int ResolveFromCache(const RequestInfo& info,
                        AddressList* addresses,
                        const NetLogWithSource& net_log) override;
+  int ResolveStaleFromCache(const RequestInfo& info,
+                            AddressList* addresses,
+                            HostCache::EntryStaleness* stale_info,
+                            const NetLogWithSource& source_net_log) override;
   void SetDnsClientEnabled(bool enabled) override;
 
   HostCache* GetHostCache() override;
