@@ -8,6 +8,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from functools import partial
+
 import psutil
 
 from chromite.lib import cros_logging as logging
@@ -36,7 +38,16 @@ class _ProcessMetricsCollector(object):
         _ProcessMetric('autoserv',
                        test_func=_is_parent_autoserv),
         _ProcessMetric('sysmon',
-                       test_func=_is_sysmon),
+                       test_func=partial(_is_python_module,
+                                         'chromite.scripts.sysmon')),
+        _ProcessMetric('job_aborter',
+                       test_func=partial(_is_python_module,
+                                         'lucifer.cmd.job_aborter')),
+        _ProcessMetric('job_reporter',
+                       test_func=partial(_is_python_module,
+                                         'lucifer.cmd.job_reporter')),
+        _ProcessMetric('lucifer_run_job',
+                       test_func=_is_lucifer_run_job),
         _ProcessMetric('apache',
                        test_func=_is_apache),
     ]
@@ -116,9 +127,14 @@ def _is_apache(proc):
   return proc.name() == 'apache2'
 
 
-def _is_sysmon(proc):
-  """Return whether proc is a sysmon process."""
+def _is_python_module(module, proc):
+  """Return whether proc is a process running a Python module."""
   cmdline = proc.cmdline()
   return (cmdline and
           cmdline[0].endswith('python') and
-          cmdline[1:3] == ['-m', 'chromite.scripts.sysmon'])
+          cmdline[1:3] == ['-m', module])
+
+
+def _is_lucifer_run_job(proc):
+  """Return whether proc is a lucifer_run_job process."""
+  return proc.name() == 'lucifer_run_job'

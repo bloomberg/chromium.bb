@@ -32,6 +32,16 @@ def _mock_forked_process(name, cmdline):
   return _mock_process(name, cmdline, parent=parent_proc)
 
 
+def _expected_calls_for(name):
+  """Return expected calls for a process metric."""
+  return [
+      mock.call('proc/count', (name,), None,
+                1, enforce_ge=mock.ANY),
+      mock.call('proc/cpu_percent', (name,), None,
+                2, enforce_ge=mock.ANY),
+  ]
+
+
 class TestProcMetrics(cros_test_lib.TestCase):
   """Tests for proc_metrics."""
 
@@ -81,27 +91,54 @@ class TestProcMetrics(cros_test_lib.TestCase):
                         '/bin/python'),
                        '-m', 'chromite.scripts.sysmon', '--interval', '60']
           ),
+          _mock_process(
+              name='python',
+              cmdline=[('/usr/local/google/home/chromeos-test/.cache/cros_venv'
+                        '/venv-2.7.6-5addca6cf590166d7b70e22a95bea4a0'
+                        '/bin/python'),
+                       '-m', 'lucifer.cmd.job_aborter',
+                       '--jobdir', '/usr/local/autotest/leases']
+          ),
+          _mock_process(
+              name='python',
+              cmdline=[('/usr/local/google/home/chromeos-test/.cache/cros_venv'
+                        '/venv-2.7.6-5addca6cf590166d7b70e22a95bea4a0'
+                        '/bin/python'),
+                       '-m', 'lucifer.cmd.job_reporter',
+                       '--run-job-path',
+                       '/opt/infra-tools/usr/bin/lucifer_run_job',
+                       '--jobdir', '/usr/local/autotest/leases',
+                       '--job-id', '167263377',
+                       '--autoserv-exit', '0',
+                       '--',
+                       '-resultsdir',
+                       ('/usr/local/autotest/results/167263377-chromeos-test/'
+                        'chromeos2-row11-rack6-host5'),
+                       '-autotestdir', '/usr/local/autotest',
+                       '-watcherpath',
+                       '/opt/infra-tools/usr/bin/lucifer_watcher']
+          ),
+          _mock_process(
+              name='lucifer_run_job',
+              cmdline=['/opt/infra-tools/usr/bin/lucifer_run_job',
+                       '-resultsdir',
+                       ('/usr/local/autotest/results/167263377-chromeos-test/'
+                        'chromeos2-row11-rack6-host5'),
+                       '-autotestdir', '/usr/local/autotest',
+                       '-watcherpath',
+                       '/opt/infra-tools/usr/bin/lucifer_watcher']
+          ),
       ]
       proc_metrics.collect_proc_info()
 
     setter = self.store.set
-    calls = [
-        mock.call('proc/count', ('autoserv',), None,
-                  1, enforce_ge=mock.ANY),
-        mock.call('proc/cpu_percent', ('autoserv',), None,
-                  2, enforce_ge=mock.ANY),
-        mock.call('proc/count', ('sysmon',), None,
-                  1, enforce_ge=mock.ANY),
-        mock.call('proc/cpu_percent', ('sysmon',), None,
-                  2, enforce_ge=mock.ANY),
-        mock.call('proc/count', ('apache',), None,
-                  1, enforce_ge=mock.ANY),
-        mock.call('proc/cpu_percent', ('apache',), None,
-                  2, enforce_ge=mock.ANY),
-        mock.call('proc/count', ('other',), None,
-                  1, enforce_ge=mock.ANY),
-        mock.call('proc/cpu_percent', ('other',), None,
-                  2, enforce_ge=mock.ANY),
-    ]
+    calls = []
+    calls.extend(_expected_calls_for('autoserv'))
+    calls.extend(_expected_calls_for('sysmon'))
+    calls.extend(_expected_calls_for('job_aborter'))
+    calls.extend(_expected_calls_for('job_reporter'))
+    calls.extend(_expected_calls_for('lucifer_run_job'))
+    calls.extend(_expected_calls_for('apache'))
+    calls.extend(_expected_calls_for('other'))
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))
