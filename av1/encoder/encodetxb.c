@@ -289,6 +289,8 @@ static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
   const uint8_t *const levels = txb_info->levels;
   stats->new_eob = -1;
   stats->update = 0;
+  stats->rd_low = 0;
+  stats->rd = 0;
 
   const tran_low_t tqc = txb_info->tcoeff[coeff_idx];
   const int dqv = txb_info->dequant[coeff_idx != 0];
