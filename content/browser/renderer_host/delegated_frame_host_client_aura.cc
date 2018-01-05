@@ -28,8 +28,7 @@ bool DelegatedFrameHostClientAura::DelegatedFrameHostIsVisible() const {
   return !render_widget_host_view_->host_->is_hidden();
 }
 
-SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor(
-    SkColor color) const {
+SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor() const {
   // When making an element on the page fullscreen the element's background
   // may not match the page's, so use black as the gutter color to avoid
   // flashes of brighter colors during the transition.
@@ -38,7 +37,7 @@ SkColor DelegatedFrameHostClientAura::DelegatedFrameHostGetGutterColor(
           ->IsFullscreenForCurrentTab()) {
     return SK_ColorBLACK;
   }
-  return color;
+  return render_widget_host_view_->background_color_;
 }
 
 gfx::Size DelegatedFrameHostClientAura::DelegatedFrameHostDesiredSizeInDIP()

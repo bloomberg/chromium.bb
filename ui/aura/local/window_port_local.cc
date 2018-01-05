@@ -177,8 +177,9 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
           ->GetFrameSinkManager()
           ->surface_manager()
           ->reference_factory();
-  window_->layer()->SetShowPrimarySurface(
-      surface_info.id(), window_->bounds().size(), reference_factory);
+  window_->layer()->SetShowPrimarySurface(surface_info.id(),
+                                          window_->bounds().size(),
+                                          SK_ColorWHITE, reference_factory);
   window_->layer()->SetFallbackSurfaceId(surface_info.id());
 }
 

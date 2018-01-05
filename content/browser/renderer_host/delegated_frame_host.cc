@@ -54,7 +54,6 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
       enable_surface_synchronization_(enable_surface_synchronization),
       enable_viz_(enable_viz),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      background_color_(SK_ColorRED),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
       weak_ptr_factory_(this) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
@@ -313,7 +312,8 @@ void DelegatedFrameHost::WasResized() {
 
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_id, current_frame_size_in_dip_, GetSurfaceReferenceFactory());
+        surface_id, current_frame_size_in_dip_, GetGutterColor(),
+        GetSurfaceReferenceFactory());
     if (compositor_)
       compositor_->OnChildResizing();
     // Input throttling and guttering are handled differently when surface
@@ -338,7 +338,7 @@ SkColor DelegatedFrameHost::GetGutterColor() const {
   // In fullscreen mode resizing is uncommon, so it makes more sense to
   // make the initial switch to fullscreen mode look better by using black as
   // the gutter color.
-  return client_->DelegatedFrameHostGetGutterColor(background_color_);
+  return client_->DelegatedFrameHostGetGutterColor();
 }
 
 void DelegatedFrameHost::UpdateGutters() {
@@ -508,8 +508,6 @@ void DelegatedFrameHost::SubmitCompositorFrame(
     root_pass->damage_rect = gfx::Rect(frame_size);
   }
 
-  background_color_ = frame.metadata.root_background_color;
-
   if (frame_size.IsEmpty()) {
     DCHECK(frame.resource_list.empty());
     EvictDelegatedFrame();
@@ -584,7 +582,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     }
   } else {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info.id(), frame_size_in_dip, GetSurfaceReferenceFactory());
+        surface_info.id(), frame_size_in_dip, GetGutterColor(),
+        GetSurfaceReferenceFactory());
   }
 
   client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(

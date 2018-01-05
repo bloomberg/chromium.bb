@@ -25,7 +25,7 @@ class RecyclableCompositorMac;
 
 class BrowserCompositorMacClient {
  public:
-  virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
+  virtual SkColor BrowserCompositorMacGetGutterColor() const = 0;
   virtual void BrowserCompositorMacOnBeginFrame() = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
 };
@@ -102,7 +102,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // DelegatedFrameHostClient implementation.
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
-  SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;
+  SkColor DelegatedFrameHostGetGutterColor() const override;
   gfx::Size DelegatedFrameHostDesiredSizeInDIP() const override;
   bool DelegatedFrameCanCreateResizeLock() const override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;

@@ -94,7 +94,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceId(surface_id1);
   surface_layer_impl->SetFallbackSurfaceId(surface_id2);
-  surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
+  surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);
@@ -178,7 +178,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceId(surface_id1);
   surface_layer_impl->SetFallbackSurfaceId(surface_id1);
-  surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
+  surface_layer_impl->SetBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
   impl.CalcDrawProps(viewport_size);

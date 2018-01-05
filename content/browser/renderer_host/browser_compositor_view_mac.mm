@@ -507,9 +507,8 @@ bool BrowserCompositorMac::DelegatedFrameHostIsVisible() const {
   return state_ == HasAttachedCompositor;
 }
 
-SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor(
-    SkColor color) const {
-  return client_->BrowserCompositorMacGetGutterColor(color);
+SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor() const {
+  return client_->BrowserCompositorMacGetGutterColor();
 }
 
 gfx::Size BrowserCompositorMac::DelegatedFrameHostDesiredSizeInDIP() const {

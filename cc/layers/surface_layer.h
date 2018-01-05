@@ -29,10 +29,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
   // surface is ignored and the content will be stretched to fill the bounds.
   void SetStretchContentToFillBounds(bool stretch_content_to_fill_bounds);
 
-  // Specifies the |background_color| to use when a primary surface is
-  // specified, and a fallback surface is unavailable.
-  void SetDefaultBackgroundColor(SkColor background_color);
-
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -66,7 +62,6 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   scoped_refptr<viz::SurfaceReferenceFactory> ref_factory_;
   bool stretch_content_to_fill_bounds_ = false;
-  SkColor default_background_color_ = SK_ColorWHITE;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };

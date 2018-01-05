@@ -307,6 +307,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetShowPrimarySurface(
       const viz::SurfaceId& surface_id,
       const gfx::Size& frame_size_in_dip,
+      SkColor default_background_color,
       scoped_refptr<viz::SurfaceReferenceFactory> surface_ref);
 
   // In the event that the primary surface is not yet available in the
