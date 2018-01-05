@@ -75,7 +75,8 @@ bool D3D11H264Accelerator::SubmitFrameMetadata(
   HRESULT hr;
   for (;;) {
     hr = video_context_->DecoderBeginFrame(
-        video_decoder_.Get(), our_pic->picture->output_view_.Get(), 0, nullptr);
+        video_decoder_.Get(), our_pic->picture->output_view().Get(), 0,
+        nullptr);
 
     if (hr == E_PENDING || hr == D3DERR_WASSTILLDRAWING) {
       // Hardware is busy.  We should make the call again.

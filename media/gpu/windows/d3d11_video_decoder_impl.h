@@ -53,16 +53,29 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   base::WeakPtr<D3D11VideoDecoderImpl> GetWeakPtr();
 
  private:
+  enum class State {
+    // Initializing resources required to create a codec.
+    kInitializing,
+    // Initialization has completed and we're running. This is the only state
+    // in which |codec_| might be non-null. If |codec_| is null, a codec
+    // creation is pending.
+    kRunning,
+    // A fatal error occurred. A terminal state.
+    kError
+  };
+
   void DoDecode();
   void CreatePictureBuffers();
 
-  void OnMailboxReleased(D3D11PictureBuffer* buffer,
+  void OnMailboxReleased(scoped_refptr<D3D11PictureBuffer> buffer,
                          const gpu::SyncToken& sync_token);
+
+  // Enter the kError state.  This will fail any pending |init_cb_| and / or
+  // pending decode as well.
+  void NotifyError(const char* reason);
 
   base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb_;
   gpu::CommandBufferStub* stub_ = nullptr;
-  // A helper for creating textures. Only valid while |stub_| is valid.
-  std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> device_;
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
@@ -80,9 +93,15 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   DecodeCB current_decode_cb_;
   base::TimeDelta current_timestamp_;
 
-  std::vector<std::unique_ptr<D3D11PictureBuffer>> picture_buffers_;
+  // During init, these will be set.
+  InitCB init_cb_;
+  OutputCB output_cb_;
 
-  VideoDecoder::OutputCB output_cb_;
+  // It would be nice to unique_ptr these, but we give a ref to the VideoFrame
+  // so that the texture is retained until the mailbox is opened.
+  std::vector<scoped_refptr<D3D11PictureBuffer>> picture_buffers_;
+
+  State state_ = State::kInitializing;
 
   base::WeakPtrFactory<D3D11VideoDecoderImpl> weak_factory_;
 
