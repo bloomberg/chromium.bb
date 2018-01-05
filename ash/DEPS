@@ -54,6 +54,8 @@ include_rules = [
   "+chromeos/dbus/shill_device_client.h",
   "+chromeos/dbus/system_clock_client.h",
   "+chromeos/login",
+  # LoginState is deprecated and is not instantiated in mash.
+  "-chromeos/login/login_state.h",
   # TODO(jamescook): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
