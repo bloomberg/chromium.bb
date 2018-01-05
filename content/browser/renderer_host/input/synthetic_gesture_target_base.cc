@@ -96,7 +96,7 @@ void SyntheticGestureTargetBase::DispatchWebTouchEventToPlatform(
   // We assume that platforms supporting touch have their own implementation of
   // SyntheticGestureTarget to route the events through their respective input
   // stack.
-  CHECK(false) << "Touch events not supported for this browser.";
+  LOG(ERROR) << "Touch events not supported for this browser.";
 }
 
 void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
