@@ -70,9 +70,9 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   // Records query results and correctly formats them before sending them off
   // to be displayed.  Called when an Autofill query result is available.
-  virtual void OnSuggestionsReturned(
-      int query_id,
-      const std::vector<Suggestion>& suggestions);
+  virtual void OnSuggestionsReturned(int query_id,
+                                     const std::vector<Suggestion>& suggestions,
+                                     bool is_all_server_suggestions = false);
 
   // Set the data list value associated with the current field.
   void SetCurrentDataListValues(
@@ -113,7 +113,10 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Handle applying any Autofill option listings to the Autofill popup.
   // This function should only get called when there is at least one
   // multi-field suggestion in the list of suggestions.
-  void ApplyAutofillOptions(std::vector<Suggestion>* suggestions);
+  // |is_all_server_suggestions| should be true if |suggestions| are empty or
+  // all |suggestions| come from Google Payments.
+  void ApplyAutofillOptions(std::vector<Suggestion>* suggestions,
+                            bool is_all_server_suggestions);
 
   // Insert the data list values at the start of the given list, including
   // any required separators. Will also go through |suggestions| and remove

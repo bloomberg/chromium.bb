@@ -327,7 +327,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
                                         AutofillDriver* autofill_driver)
       : AutofillExternalDelegate(autofill_manager, autofill_driver),
         on_query_seen_(false),
-        on_suggestions_returned_seen_(false) {}
+        on_suggestions_returned_seen_(false),
+        is_all_server_suggestions_(false) {}
   ~TestAutofillExternalDelegate() override {}
 
   void OnQuery(int query_id,
@@ -338,12 +339,13 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
     on_suggestions_returned_seen_ = false;
   }
 
-  void OnSuggestionsReturned(
-      int query_id,
-      const std::vector<Suggestion>& suggestions) override {
+  void OnSuggestionsReturned(int query_id,
+                             const std::vector<Suggestion>& suggestions,
+                             bool is_all_server_suggestions) override {
     on_suggestions_returned_seen_ = true;
     query_id_ = query_id;
     suggestions_ = suggestions;
+    is_all_server_suggestions_ = is_all_server_suggestions;
   }
 
   void CheckSuggestions(int expected_page_id,
@@ -406,6 +408,8 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
     ASSERT_EQ(expected_num_suggestions, suggestions_.size());
   }
 
+  bool is_all_server_suggestions() const { return is_all_server_suggestions_; }
+
   bool on_query_seen() const { return on_query_seen_; }
 
   bool on_suggestions_returned_seen() const {
@@ -419,6 +423,9 @@ class TestAutofillExternalDelegate : public AutofillExternalDelegate {
   // Records if OnSuggestionsReturned has been called after the most recent
   // call to OnQuery.
   bool on_suggestions_returned_seen_;
+
+  // Records whether the Autofill suggestions all come from Google Payments.
+  bool is_all_server_suggestions_;
 
   // The query id of the most recent Autofill query.
   int query_id_;
@@ -458,6 +465,54 @@ class AutofillManagerTest : public testing::Test {
     // Initialize the TestPersonalDataManager with some default data.
     CreateTestAutofillProfiles();
     CreateTestCreditCards();
+  }
+
+  void CreateTestServerCreditCards() {
+    personal_data_.ClearCreditCards();
+
+    CreditCard masked_server_card;
+    test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
+                            "4234567890123456",  // Visa
+                            "04", "2999", "1");
+    masked_server_card.set_guid("00000000-0000-0000-0000-000000000007");
+    masked_server_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+    personal_data_.AddCreditCard(masked_server_card);
+
+    CreditCard full_server_card;
+    test::SetCreditCardInfo(&full_server_card, "Buddy Holly",
+                            "5187654321098765",  // Mastercard
+                            "10", "2998", "1");
+    full_server_card.set_guid("00000000-0000-0000-0000-000000000008");
+    full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+    personal_data_.AddCreditCard(full_server_card);
+  }
+
+  void CreateTestServerAndLocalCreditCards() {
+    personal_data_.ClearCreditCards();
+
+    CreditCard masked_server_card;
+    test::SetCreditCardInfo(&masked_server_card, "Elvis Presley",
+                            "4234567890123456",  // Visa
+                            "04", "2999", "1");
+    masked_server_card.set_guid("00000000-0000-0000-0000-000000000007");
+    masked_server_card.set_record_type(CreditCard::MASKED_SERVER_CARD);
+    personal_data_.AddCreditCard(masked_server_card);
+
+    CreditCard full_server_card;
+    test::SetCreditCardInfo(&full_server_card, "Buddy Holly",
+                            "5187654321098765",  // Mastercard
+                            "10", "2998", "1");
+    full_server_card.set_guid("00000000-0000-0000-0000-000000000008");
+    full_server_card.set_record_type(CreditCard::FULL_SERVER_CARD);
+    personal_data_.AddCreditCard(full_server_card);
+
+    CreditCard local_card;
+    test::SetCreditCardInfo(&local_card, "Elvis Presley",
+                            "4234567890123456",  // Visa
+                            "04", "2999", "1");
+    local_card.set_guid("00000000-0000-0000-0000-000000000009");
+    local_card.set_record_type(CreditCard::LOCAL_CARD);
+    personal_data_.AddCreditCard(local_card);
   }
 
   void TearDown() override {
@@ -5898,6 +5953,46 @@ TEST_F(AutofillManagerTest, SmallForm_Upload_NoHeuristicsOrQuery) {
             autofill_manager_->GetSubmittedFormSignature());
 
   histogram_tester.ExpectTotalCount("Autofill.FieldPrediction.CreditCard", 0);
+}
+
+// Test that is_all_server_suggestions is true if there are only
+// full_server_card and masked_server_card on file.
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_IsAllServerSuggestionsTrue) {
+  // Create server credit cards.
+  CreateTestServerCreditCards();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  ASSERT_TRUE(external_delegate_->is_all_server_suggestions());
+}
+
+// Test that is_all_server_suggestions is false if there is at least one
+// local_card on file.
+TEST_F(AutofillManagerTest,
+       GetCreditCardSuggestions_IsAllServerSuggestionsFalse) {
+  // Create server and local credit cards.
+  CreateTestServerAndLocalCreditCards();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[1];
+  GetAutofillSuggestions(form, field);
+
+  // Test that we sent the right values to the external delegate.
+  ASSERT_FALSE(external_delegate_->is_all_server_suggestions());
 }
 
 }  // namespace autofill

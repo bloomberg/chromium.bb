@@ -2906,6 +2906,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayName,
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardBankNameDisplay)},
+    {"enable-autofill-credit-card-dropdown-google-pay-branding",
+     flag_descriptions::kEnableAutofillCreditCardDropdownGooglePayBrandingName,
+     flag_descriptions::
+         kEnableAutofillCreditCardDropdownGooglePayBrandingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillCreditCardDropdownGooglePayBranding)},
     {"enable-autofill-credit-card-last-used-date-display",
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayName,
      flag_descriptions::kEnableAutofillCreditCardLastUsedDateDisplayDescription,
@@ -2935,6 +2942,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberName,
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillSendBillingCustomerNumber)},
+    {"enable-autofill-use-new-settings-name-in-dropdown",
+     flag_descriptions::kEnableAutofillUseNewSettingsNameInDropdownName,
+     flag_descriptions::kEnableAutofillUseNewSettingsNameInDropdownDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUseNewSettingsNameInDropdown)},
     {"enable-macviews-credit-card-dialogs",
      flag_descriptions::kEnableAutofillToolkitViewsCreditCardDialogsMac,
      flag_descriptions::

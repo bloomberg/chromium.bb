@@ -80,6 +80,15 @@ SuggestionVectorLabelsAre(const EltsAreMatcher& elts_are_matcher) {
           elts_are_matcher, &Suggestion::label));
 }
 
+// Like SuggestionVectorIdsAre above, but tests the icons.
+template <class EltsAreMatcher>
+inline testing::Matcher<const std::vector<Suggestion>&>
+SuggestionVectorIconsAre(const EltsAreMatcher& elts_are_matcher) {
+  return testing::MakeMatcher(
+      new SuggestionVectorMembersAreMatcher<base::string16>(elts_are_matcher,
+                                                            &Suggestion::icon));
+}
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_SUGGESTION_TEST_HELPERS_H_
