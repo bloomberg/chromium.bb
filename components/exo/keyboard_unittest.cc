@@ -275,25 +275,23 @@ TEST_F(KeyboardTest, OnKeyboardTypeChanged) {
 }
 
 TEST_F(KeyboardTest, KeyboardObserver) {
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->FocusWindow(nullptr);
-
   MockKeyboardDelegate delegate;
   Seat seat;
   auto keyboard = std::make_unique<Keyboard>(&delegate, &seat);
-  MockKeyboardObserver observer;
-  keyboard->AddObserver(&observer);
+  MockKeyboardObserver observer1;
+  MockKeyboardObserver observer2;
 
-  EXPECT_CALL(observer, OnKeyboardDestroying(keyboard.get()));
+  keyboard->AddObserver(&observer1);
+  keyboard->AddObserver(&observer2);
+  EXPECT_TRUE(keyboard->HasObserver(&observer1));
+  EXPECT_TRUE(keyboard->HasObserver(&observer2));
+
+  keyboard->RemoveObserver(&observer1);
+  EXPECT_FALSE(keyboard->HasObserver(&observer1));
+  EXPECT_TRUE(keyboard->HasObserver(&observer2));
+
+  EXPECT_CALL(observer1, OnKeyboardDestroying(keyboard.get())).Times(0);
+  EXPECT_CALL(observer2, OnKeyboardDestroying(keyboard.get()));
   keyboard.reset();
 }
 
