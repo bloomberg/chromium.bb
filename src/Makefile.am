@@ -218,4 +218,9 @@ fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo VERSION @LIBT_CURRENT@.@LIBT_REVISION@) >$@
 	@ ! $(GREP) -q FcERROR $@ || ($(RM) $@; false)
 
+gettextitsdir = $(datadir)/gettext/its
+gettextits_DATA =	\
+	fontconfig.its	\
+	fontconfig.loc
+
 -include $(top_srcdir)/git.mk
