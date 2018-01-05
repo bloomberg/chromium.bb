@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/trees/swap_promise_monitor.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
@@ -20,6 +21,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -159,7 +161,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
-int RenderWidgetInputHandler::GetWidgetRoutingIdAtPoint(
+viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     const gfx::Point& point) {
   gfx::PointF point_in_pixel =
       gfx::ConvertPointToPixel(widget_->GetOriginalDeviceScaleFactor(),
@@ -178,17 +180,23 @@ int RenderWidgetInputHandler::GetWidgetRoutingIdAtPoint(
     DCHECK(web_widget->IsWebFrameWidget());
     auto* frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
     blink::WebFrame* web_frame = frame_widget->LocalRoot();
-    return RenderFrame::GetRoutingIdForWebFrame(web_frame);
+    return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                            RenderFrame::GetRoutingIdForWebFrame(web_frame));
   }
 
   blink::WebFrame* result_frame =
       blink::WebFrame::FromFrameOwnerElement(result_node);
   if (!result_frame) {
     // This means that the node is not an iframe itself. So we just return the
-    // the frame containing the node.
+    // frame containing the node.
     result_frame = result_node.GetDocument().GetFrame();
   }
-  return RenderFrame::GetRoutingIdForWebFrame(result_frame);
+  if (result_frame->IsWebRemoteFrame()) {
+    return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
+        ->frame_sink_id();
+  }
+  return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
+                          RenderFrame::GetRoutingIdForWebFrame(result_frame));
 }
 
 void RenderWidgetInputHandler::HandleInputEvent(

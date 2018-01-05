@@ -902,8 +902,8 @@ void RenderWidget::OnHandleInputEvent(
       latency_info, std::move(callback));
 }
 
-int RenderWidget::GetWidgetRoutingIdAtPoint(const gfx::Point& point) {
-  return input_handler_->GetWidgetRoutingIdAtPoint(point);
+viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::Point& point) {
+  return input_handler_->GetFrameSinkIdAtPoint(point);
 }
 
 void RenderWidget::HandleInputEvent(

@@ -24,9 +24,8 @@ void InputTargetClientImpl::BindToRequest(
 
 void InputTargetClientImpl::FrameSinkIdAt(const gfx::Point& point,
                                           FrameSinkIdAtCallback callback) {
-  std::move(callback).Run(viz::FrameSinkId(
-      RenderThread::Get()->GetClientId(),
-      render_frame_->GetRenderWidget()->GetWidgetRoutingIdAtPoint(point)));
+  std::move(callback).Run(
+      render_frame_->GetRenderWidget()->GetFrameSinkIdAtPoint(point));
 }
 
 }  // namespace content
