@@ -11,8 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/task_scheduler/post_task.h"
-
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,6 +19,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -198,10 +197,6 @@ using net::URLRequestStatus;
 // Returns an NSString* unique to |self|, to use with the
 // NetworkActivityIndicatorManager.
 - (NSString*)getNetworkActivityKey;
-
-// Fills |path| with the FilePath to the downloads directory. Returns YES if
-// this is successul, or NO otherwise.
-+ (BOOL)fetchDownloadsDirectoryFilePath:(base::FilePath*)path;
 
 @end
 
@@ -1207,8 +1202,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
 - (void)beginStartingContentDownload {
   // Ensure the directory that downloaded files are saved to exists.
   base::FilePath downloadsDirectoryPath;
-  if (![LegacyDownloadManagerController
-          fetchDownloadsDirectoryFilePath:&downloadsDirectoryPath]) {
+  if (!GetDownloadsDirectory(&downloadsDirectoryPath)) {
     [self displayError];
     return;
   }
@@ -1229,8 +1223,7 @@ class DownloadContentDelegate : public URLFetcherDelegate {
     return;
   }
   base::FilePath downloadsDirectoryPath;
-  if (![LegacyDownloadManagerController
-          fetchDownloadsDirectoryFilePath:&downloadsDirectoryPath]) {
+  if (!GetDownloadsDirectory(&downloadsDirectoryPath)) {
     [self displayError];
     return;
   }
@@ -1562,27 +1555,6 @@ class DownloadContentDelegate : public URLFetcherDelegate {
       stringWithFormat:
           @"LegacyDownloadManagerController.NetworkActivityIndicatorKey.%d",
           _downloadManagerId];
-}
-
-+ (BOOL)fetchDownloadsDirectoryFilePath:(base::FilePath*)path {
-  if (!GetTempDir(path)) {
-    return NO;
-  }
-  *path = path->Append("downloads");
-  return YES;
-}
-
-+ (void)clearDownloadsDirectory {
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindBlockArc(^{
-        base::FilePath downloadsDirectory;
-        if (![LegacyDownloadManagerController
-                fetchDownloadsDirectoryFilePath:&downloadsDirectory]) {
-          return;
-        }
-        DeleteFile(downloadsDirectory, true);
-      }));
 }
 
 #pragma mark - UIDocumentInteractionControllerDelegate

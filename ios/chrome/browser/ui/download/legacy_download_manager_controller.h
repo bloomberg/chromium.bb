@@ -33,10 +33,6 @@ class WebState;
 // initialization.
 - (void)start;
 
-// Deletes the directory in which downloaded files are saved. It should only be
-// called on the UI thread.
-+ (void)clearDownloadsDirectory;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_DOWNLOAD_LEGACY_DOWNLOAD_MANAGER_CONTROLLER_H_
