@@ -2170,6 +2170,7 @@ skip:
     } while (!err && (!index_set || face_num == set_face_num) && face_num < num_faces);
 
 bail:
+    free (mm_var);
     FcLangSetDestroy (ls);
     FcCharSetDestroy (cs);
     if (face)
