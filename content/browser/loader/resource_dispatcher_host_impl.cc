@@ -26,7 +26,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -1300,19 +1299,10 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   // Prefetches and <a ping> requests outlive their child process.
   if (start_detached || request_data.resource_type == RESOURCE_TYPE_PREFETCH ||
       request_data.keepalive) {
-    auto timeout =
-        base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs);
-    int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
-        features::kFetchKeepaliveTimeoutSetting, "timeout_in_sec", 0);
-    // Adopt only "reasonable" values.
-    if (timeout_set_by_finch_in_sec > 0 &&
-        timeout_set_by_finch_in_sec < 60 * 60) {
-      timeout = base::TimeDelta::FromSeconds(timeout_set_by_finch_in_sec);
-    }
-
-    std::unique_ptr<DetachableResourceHandler> detachable_handler =
-        std::make_unique<DetachableResourceHandler>(request, timeout,
-                                                    std::move(handler));
+    auto detachable_handler = std::make_unique<DetachableResourceHandler>(
+        request,
+        base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
+        std::move(handler));
     if (start_detached)
       detachable_handler->Detach();
     handler = std::move(detachable_handler);
