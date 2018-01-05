@@ -30,6 +30,7 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
   void OnFocus() override;
 
   // Overridden from Button:
+  void RequestFocusFromEvent() override;
   void NotifyClick(const ui::Event& event) override;
 
   // Overridden from LabelButton:
