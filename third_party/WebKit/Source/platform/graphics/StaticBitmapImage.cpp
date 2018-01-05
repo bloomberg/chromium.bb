@@ -118,7 +118,7 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
         alloc_size_in_bytes, WTF::ArrayBufferContents::kZeroInitialize);
     if (!data)
       return false;
-    WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
+    WTF::ArrayBufferContents result(std::move(data),
                                     WTF::ArrayBufferContents::kNotShared);
     result.Transfer(dest_contents);
     return true;
@@ -136,7 +136,7 @@ bool StaticBitmapImage::ConvertToArrayBufferContents(
                                                          initialization_policy);
   if (!data)
     return false;
-  WTF::ArrayBufferContents result(std::move(data), alloc_size_in_bytes,
+  WTF::ArrayBufferContents result(std::move(data),
                                   WTF::ArrayBufferContents::kNotShared);
 
   SkColorType color_type =

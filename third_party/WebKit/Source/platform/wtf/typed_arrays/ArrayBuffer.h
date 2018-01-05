@@ -247,7 +247,7 @@ const void* ArrayBuffer::DataMaybeShared() const {
 }
 
 unsigned ArrayBuffer::ByteLength() const {
-  return contents_.SizeInBytes();
+  return contents_.DataLength();
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Slice(int begin, int end) const {
