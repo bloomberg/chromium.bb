@@ -103,8 +103,16 @@ class DraggedNodeImageBuilder {
       layer = layer->StackingNode()->AncestorStackingContextNode()->Layer();
     IntRect absolute_bounding_box =
         dragged_layout_object->AbsoluteBoundingBoxRectIncludingDescendants();
-    absolute_bounding_box.Intersect(
-        layer->GetLayoutObject().GetFrameView()->VisibleContentRect());
+    // TODO(chrishtr): consider using the root frame's visible rect instead
+    // of the local frame, to avoid over-clipping.
+    FloatRect visible_rect =
+        layer->GetLayoutObject().GetFrameView()->VisibleContentRect();
+    // If the absolute bounding box is large enough to be possibly a memory
+    // or IPC payload issue, clip it to the visible content rect.
+    if (absolute_bounding_box.Size().Area() > visible_rect.Size().Area()) {
+      absolute_bounding_box.Intersect(IntRect(visible_rect));
+    }
+
     FloatRect bounding_box =
         layer->GetLayoutObject()
             .AbsoluteToLocalQuad(FloatQuad(absolute_bounding_box),
