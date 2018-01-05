@@ -56,10 +56,6 @@ class PLATFORM_EXPORT ImageBuffer {
 
  public:
   static std::unique_ptr<ImageBuffer> Create(
-      const IntSize&,
-      ImageInitializationMode = kInitializeImagePixels,
-      const CanvasColorParams& = CanvasColorParams());
-  static std::unique_ptr<ImageBuffer> Create(
       std::unique_ptr<ImageBufferSurface>);
 
   virtual ~ImageBuffer();

@@ -44,8 +44,8 @@
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
 #include "platform/Histogram.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/runtime_enabled_features.h"
 #include "public/platform/WebCanvas.h"
@@ -451,17 +451,18 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
   // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint
-  // argument here?
-  std::unique_ptr<ImageBuffer> image_buffer =
-      ImageBuffer::Create(intrinsic_size);
-  if (!image_buffer) {
+  // argument here? Currently we use unacceleration mode.
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          intrinsic_size, CanvasResourceProvider::kSoftwareResourceUsage);
+  if (!resource_provider) {
     *status = kInvalidSourceImageStatus;
     return nullptr;
   }
 
-  PaintCurrentFrame(image_buffer->Canvas(),
+  PaintCurrentFrame(resource_provider->Canvas(),
                     IntRect(IntPoint(0, 0), intrinsic_size), nullptr);
-  scoped_refptr<Image> snapshot = image_buffer->NewImageSnapshot();
+  scoped_refptr<Image> snapshot = resource_provider->Snapshot();
   if (!snapshot) {
     *status = kInvalidSourceImageStatus;
     return nullptr;

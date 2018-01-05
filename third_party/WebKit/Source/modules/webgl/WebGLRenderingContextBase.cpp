@@ -94,8 +94,8 @@
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/runtime_enabled_features.h"
@@ -4561,25 +4561,25 @@ scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   DCHECK(image);
 
   IntSize size(width, height);
-  ImageBuffer* buf = generated_image_cache_.GetImageBuffer(size);
-  if (!buf) {
+  CanvasResourceProvider* resource_provider =
+      generated_image_cache_.GetCanvasResourceProvider(size);
+  if (!resource_provider) {
     SynthesizeGLError(GL_OUT_OF_MEMORY, function_name, "out of memory");
     return nullptr;
   }
 
   if (!image->CurrentFrameKnownToBeOpaque())
-    buf->Canvas()->clear(SK_ColorTRANSPARENT);
+    resource_provider->Canvas()->clear(SK_ColorTRANSPARENT);
 
   IntRect src_rect(IntPoint(), image->Size());
   IntRect dest_rect(0, 0, size.Width(), size.Height());
   PaintFlags flags;
   // TODO(ccameron): WebGL should produce sRGB images.
   // https://crbug.com/672299
-  image->Draw(buf->Canvas(), flags, dest_rect, src_rect,
+  image->Draw(resource_provider->Canvas(), flags, dest_rect, src_rect,
               kDoNotRespectImageOrientation,
               Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
-  return buf->NewImageSnapshot(kPreferNoAcceleration,
-                               kSnapshotReasonWebGLDrawImageIntoBuffer);
+  return resource_provider->Snapshot();
 }
 
 WebGLTexture* WebGLRenderingContextBase::ValidateTexImageBinding(
@@ -5212,15 +5212,16 @@ scoped_refptr<Image> WebGLRenderingContextBase::VideoFrameToImage(
                       "video visible size is empty");
     return nullptr;
   }
-  ImageBuffer* buf = generated_image_cache_.GetImageBuffer(visible_size);
-  if (!buf) {
+  CanvasResourceProvider* resource_provider =
+      generated_image_cache_.GetCanvasResourceProvider(visible_size);
+  if (!resource_provider) {
     SynthesizeGLError(GL_OUT_OF_MEMORY, "texImage2D", "out of memory");
     return nullptr;
   }
   IntRect dest_rect(0, 0, visible_size.Width(), visible_size.Height());
-  video->PaintCurrentFrame(buf->Canvas(), dest_rect, nullptr,
+  video->PaintCurrentFrame(resource_provider->Canvas(), dest_rect, nullptr,
                            already_uploaded_id, out_metadata);
-  return buf->NewImageSnapshot();
+  return resource_provider->Snapshot();
 }
 
 void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
@@ -7600,38 +7601,42 @@ String WebGLRenderingContextBase::EnsureNotNull(const String& text) const {
   return text;
 }
 
-WebGLRenderingContextBase::LRUImageBufferCache::LRUImageBufferCache(
-    int capacity)
-    : buffers_(WrapArrayUnique(new std::unique_ptr<ImageBuffer>[capacity])),
+WebGLRenderingContextBase::LRUCanvasResourceProviderCache::
+    LRUCanvasResourceProviderCache(int capacity)
+    : resource_providers_(WrapArrayUnique(
+          new std::unique_ptr<CanvasResourceProvider>[capacity])),
       capacity_(capacity) {}
 
-ImageBuffer* WebGLRenderingContextBase::LRUImageBufferCache::GetImageBuffer(
-    const IntSize& size) {
+CanvasResourceProvider* WebGLRenderingContextBase::
+    LRUCanvasResourceProviderCache::GetCanvasResourceProvider(
+        const IntSize& size) {
   int i;
   for (i = 0; i < capacity_; ++i) {
-    ImageBuffer* buf = buffers_[i].get();
-    if (!buf)
+    CanvasResourceProvider* resource_provider = resource_providers_[i].get();
+    if (!resource_provider)
       break;
-    if (buf->Size() != size)
+    if (resource_provider->Size() != size)
       continue;
     BubbleToFront(i);
-    return buf;
+    return resource_provider;
   }
 
-  std::unique_ptr<ImageBuffer> temp(ImageBuffer::Create(size));
+  std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
+      size, CanvasResourceProvider::kSoftwareResourceUsage));
   if (!temp)
     return nullptr;
   i = std::min(capacity_ - 1, i);
-  buffers_[i] = std::move(temp);
+  resource_providers_[i] = std::move(temp);
 
-  ImageBuffer* buf = buffers_[i].get();
+  CanvasResourceProvider* resource_provider = resource_providers_[i].get();
   BubbleToFront(i);
-  return buf;
+  return resource_provider;
 }
 
-void WebGLRenderingContextBase::LRUImageBufferCache::BubbleToFront(int idx) {
+void WebGLRenderingContextBase::LRUCanvasResourceProviderCache::BubbleToFront(
+    int idx) {
   for (int i = idx; i > 0; --i)
-    buffers_[i].swap(buffers_[i - 1]);
+    resource_providers_[i].swap(resource_providers_[i - 1]);
 }
 
 namespace {

@@ -36,9 +36,9 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/runtime_enabled_features.h"
@@ -256,11 +256,13 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
   // fill the background
   IntSize scaled_image_size = image_size;
   scaled_image_size.Scale(device_scale_factor);
-  std::unique_ptr<ImageBuffer> buffer(ImageBuffer::Create(scaled_image_size));
-  if (!buffer)
+  std::unique_ptr<CanvasResourceProvider> resource_provider(
+      CanvasResourceProvider::Create(
+          scaled_image_size, CanvasResourceProvider::kSoftwareResourceUsage));
+  if (!resource_provider)
     return nullptr;
 
-  buffer->Canvas()->scale(device_scale_factor, device_scale_factor);
+  resource_provider->Canvas()->scale(device_scale_factor, device_scale_factor);
 
   const float kDragLabelRadius = 5;
 
@@ -271,7 +273,7 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
   SkRRect rrect;
   rrect.setRectXY(SkRect::MakeWH(image_size.Width(), image_size.Height()),
                   kDragLabelRadius, kDragLabelRadius);
-  buffer->Canvas()->drawRRect(rrect, background_paint);
+  resource_provider->Canvas()->drawRRect(rrect, background_paint);
 
   // Draw the text
   PaintFlags text_paint;
@@ -285,8 +287,8 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
         image_size.Height() -
             (kLabelBorderYOffset + url_font_data->GetFontMetrics().Descent()));
     TextRun text_run(url_string);
-    url_font.DrawText(buffer->Canvas(), TextRunPaintInfo(text_run), text_pos,
-                      device_scale_factor, text_paint);
+    url_font.DrawText(resource_provider->Canvas(), TextRunPaintInfo(text_run),
+                      text_pos, device_scale_factor, text_paint);
   }
 
   if (clip_label_string)
@@ -305,11 +307,12 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
     int available_width = image_size.Width() - kDragLabelBorderX * 2;
     text_pos.SetX(available_width - ceilf(text_width));
   }
-  label_font.DrawBidiText(buffer->Canvas(), TextRunPaintInfo(text_run),
-                          FloatPoint(text_pos), Font::kDoNotPaintIfFontNotReady,
-                          device_scale_factor, text_paint);
+  label_font.DrawBidiText(resource_provider->Canvas(),
+                          TextRunPaintInfo(text_run), FloatPoint(text_pos),
+                          Font::kDoNotPaintIfFontNotReady, device_scale_factor,
+                          text_paint);
 
-  scoped_refptr<StaticBitmapImage> image = buffer->NewImageSnapshot();
+  scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   return DragImage::Create(image.get(), kDoNotRespectImageOrientation,
                            device_scale_factor);
 }
