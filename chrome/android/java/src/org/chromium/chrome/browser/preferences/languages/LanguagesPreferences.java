@@ -49,7 +49,11 @@ public class LanguagesPreferences
         translateSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                PrefServiceBridge.getInstance().setTranslateEnabled((boolean) newValue);
+                boolean enabled = (boolean) newValue;
+                PrefServiceBridge.getInstance().setTranslateEnabled(enabled);
+                LanguagesManager.recordAction(enabled
+                                ? LanguagesManager.ACTION_ENABLE_TRANSLATE_GLOBALLY
+                                : LanguagesManager.ACTION_DISABLE_TRANSLATE_GLOBALLY);
                 return true;
             }
         });
@@ -59,6 +63,7 @@ public class LanguagesPreferences
                 return PrefServiceBridge.getInstance().isTranslateManaged();
             }
         });
+        LanguagesManager.recordImpression(LanguagesManager.PAGE_MAIN);
     }
 
     @Override
@@ -73,6 +78,7 @@ public class LanguagesPreferences
         if (requestCode == REQUEST_CODE_ADD_LANGUAGES && resultCode == getActivity().RESULT_OK) {
             String code = data.getStringExtra(AddLanguageFragment.INTENT_NEW_ACCEPT_LANGAUGE);
             LanguagesManager.getInstance().addToAcceptLanguages(code);
+            LanguagesManager.recordAction(LanguagesManager.ACTION_LANGUAGE_ADDED);
         }
     }
 

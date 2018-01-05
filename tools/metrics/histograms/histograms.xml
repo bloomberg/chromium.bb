@@ -31385,6 +31385,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LanguageSettings.Actions" enum="LanguageSettingsActionType">
+  <owner>googleo@chromium.org</owner>
+  <summary>
+    The actions taken on languages settings, recorded every time they happen.
+    This histogram will record every single event that happens separately.
+  </summary>
+</histogram>
+
+<histogram name="LanguageSettings.PageImpression"
+    enum="LanguageSettingsPageType">
+  <owner>googleo@chromium.org</owner>
+  <summary>The type of panes which language settings loads.</summary>
+</histogram>
+
 <histogram name="LanguageUsage.AcceptLanguage" enum="LanguageCode">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Accept languages.</summary>

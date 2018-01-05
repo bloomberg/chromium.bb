@@ -27,7 +27,6 @@ import java.util.ArrayList;
  * A preference that displays the current accept language list.
  */
 public class LanguageListPreference extends Preference {
-    // TODO(crbug/783049): Make the item in the list drag-able.
     private static class LanguageListAdapter
             extends LanguageListBaseAdapter implements LanguagesManager.AcceptLanguageObserver {
 
@@ -74,8 +73,13 @@ public class LanguageListPreference extends Preference {
                         boolean state = (item.getEndIconId() == 0);
                         PrefServiceBridge.getInstance().setLanguageBlockedState(
                                 info.getCode(), !state);
+                        LanguagesManager.recordAction(
+                                state ? LanguagesManager.ACTION_ENABLE_TRANSLATE_FOR_SINGLE_LANGUAGE
+                                      : LanguagesManager
+                                                .ACTION_DISABLE_TRANSLATE_FOR_SINGLE_LANGUAGE);
                     } else if (item.getTextId() == R.string.remove) {
                         LanguagesManager.getInstance().removeFromAcceptLanguages(info.getCode());
+                        LanguagesManager.recordAction(LanguagesManager.ACTION_LANGUAGE_REMOVED);
                     }
                 }
             });
@@ -112,7 +116,10 @@ public class LanguageListPreference extends Preference {
                 TintedDrawable.constructTintedDrawable(
                         getContext().getResources(), R.drawable.plus, R.color.pref_accent_color),
                 null, null, null);
-        mAddLanguageButton.setOnClickListener(view -> mLauncher.launchAddLanguage());
+        mAddLanguageButton.setOnClickListener(view -> {
+            mLauncher.launchAddLanguage();
+            LanguagesManager.recordAction(LanguagesManager.ACTION_CLICK_ON_ADD_LANGUAGE);
+        });
 
         mRecyclerView = (RecyclerView) mView.findViewById(R.id.language_list);
         LinearLayoutManager layoutMangager = new LinearLayoutManager(getContext());
