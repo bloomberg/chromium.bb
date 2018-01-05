@@ -22,6 +22,7 @@ public class AwSafeBrowsingConfigHelper {
     private static final String TAG = "AwSafeBrowsingConfi-";
 
     private static final String OPT_IN_META_DATA_STR = "android.webkit.WebView.EnableSafeBrowsing";
+    private static final boolean DEFAULT_USER_OPT_IN = false;
 
     private static Boolean sSafeBrowsingUserOptIn;
 
@@ -32,20 +33,17 @@ public class AwSafeBrowsingConfigHelper {
         // If the app specifies something, fallback to the app's preference, otherwise check for the
         // existence of the CLI switch.
         AwContentsStatics.setSafeBrowsingEnabledByManifest(
-                appOptIn == null ? getCommandLineOptIn() : appOptIn);
+                appOptIn == null ? !isDisabledByCommandLine() : appOptIn);
 
-        Callback<Boolean> cb = optin -> setSafeBrowsingUserOptIn(optin == null ? false : optin);
+        Callback<Boolean> cb =
+                optin -> setSafeBrowsingUserOptIn(optin == null ? DEFAULT_USER_OPT_IN : optin);
         PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
     }
 
-    private static boolean getCommandLineOptIn() {
+    private static boolean isDisabledByCommandLine() {
         CommandLine cli = CommandLine.getInstance();
-        // Disable flag has higher precedence than the enable flag
-        if (cli.hasSwitch(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT)) {
-            return false;
-        }
-        return cli.hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-                || cli.hasSwitch(AwSwitches.WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES);
+        // Disable flag has higher precedence than the default
+        return cli.hasSwitch(AwSwitches.WEBVIEW_DISABLE_SAFEBROWSING_SUPPORT);
     }
 
     /**

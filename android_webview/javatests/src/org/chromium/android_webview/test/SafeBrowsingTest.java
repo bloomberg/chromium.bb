@@ -455,7 +455,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDoesNotBlockSafePages() throws Throwable {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(SAFE_HTML_PATH);
@@ -467,7 +466,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDoesNotBlockUnwantedSoftwarePages() throws Throwable {
         // TODO(ntfschr): this is a temporary check until we add support for Unwanted Software
         // warnings (crbug/729272)
@@ -481,7 +479,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingBlocksPhishingPages() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
@@ -494,7 +491,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingWhitelistedUnsafePagesDontShowInterstitial() throws Throwable {
         loadGreenPage();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
@@ -512,7 +508,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testCallbackCalledOnSafeBrowsingBadWhitelistRule() throws Throwable {
         verifyWhiteListRule("http://www.google.com", false);
     }
@@ -520,7 +515,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testCallbackCalledOnSafeBrowsingGoodWhitelistRule() throws Throwable {
         verifyWhiteListRule("www.google.com", true);
     }
@@ -540,7 +534,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsInterstitialForMainFrame() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
@@ -553,7 +546,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsInterstitialForSubresource() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
@@ -567,7 +559,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingProceedThroughInterstitialForMainFrame() throws Throwable {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
@@ -580,7 +571,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingProceedThroughInterstitialForSubresource() throws Throwable {
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
@@ -593,7 +583,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame() throws Throwable {
         loadGreenPage();
         loadPathAndWaitForInterstitial(MALWARE_HTML_PATH);
@@ -612,7 +601,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     @DisabledTest(message = "crbug/737820")
     public void testSafeBrowsingDontProceedCausesNetworkErrorForSubresource() throws Throwable {
         loadPathAndWaitForInterstitial(IFRAME_HTML_PATH);
@@ -631,7 +619,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDontProceedNavigatesBackForMainFrame() throws Throwable {
         loadGreenPage();
         final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
@@ -652,7 +639,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingDontProceedNavigatesBackForSubResource() throws Throwable {
         loadGreenPage();
         final String originalTitle = mActivityTestRule.getTitleOnUiThread(mAwContents);
@@ -673,7 +659,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingCanBeDisabledPerWebview() throws Throwable {
         mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setSafeBrowsingEnabled(false);
 
@@ -704,7 +689,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsNetworkErrorForInvisibleViews() throws Throwable {
         mAwContents.setCanShowInterstitial(false);
         mAwContents.setCanShowBigInterstitial(false);
@@ -722,7 +706,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingShowsQuietInterstitialForOddSizedViews() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         loadGreenPage();
@@ -734,7 +717,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingCanShowQuietPhishingInterstitial() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         loadGreenPage();
@@ -746,7 +728,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingProceedQuietInterstitial() throws Throwable {
         mAwContents.setCanShowBigInterstitial(false);
         int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
@@ -760,7 +741,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingOnSafeBrowsingHitShowInterstitial() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.SHOW_INTERSTITIAL);
 
@@ -781,7 +761,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingOnSafeBrowsingHitProceed() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.PROCEED);
 
@@ -801,7 +780,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingOnSafeBrowsingHitBackToSafety() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
 
@@ -827,7 +805,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingOnSafeBrowsingHitForSubresourceNoPreviousPage() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
         final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
@@ -853,7 +830,6 @@ public class SafeBrowsingTest {
     @SmallTest
     @RetryOnFailure // crbug/765932
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingOnSafeBrowsingHitForSubresource() throws Throwable {
         mContentsClient.setSafeBrowsingAction(SafeBrowsingAction.BACK_TO_SAFETY);
         loadGreenPage();
@@ -894,7 +870,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingUserOptOutOverridesManifest() throws Throwable {
         AwSafeBrowsingConfigHelper.setSafeBrowsingUserOptIn(false);
         loadGreenPage();
@@ -920,7 +895,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingHardcodedMalwareUrl() throws Throwable {
         loadGreenPage();
         int interstitialCount =
@@ -933,7 +907,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingHardcodedPhishingUrl() throws Throwable {
         loadGreenPage();
         int interstitialCount =
@@ -946,7 +919,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingClickLearnMoreLink() throws Throwable {
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "learn-more-link",
                 appendLocale("https://support.google.com/chrome/?p=cpn_safe_browsing_wv"));
@@ -955,7 +927,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingClickReportErrorLink() throws Throwable {
         // Only phishing interstitials have the report-error-link
         loadInterstitialAndClickLink(PHISHING_HTML_PATH, "report-error-link",
@@ -972,7 +943,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingClickDiagnosticLink() throws Throwable {
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
         final String diagnosticUrl =
@@ -987,7 +957,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingClickWhitePaperLink() throws Throwable {
         final String whitepaperUrl =
                 Uri.parse("https://www.google.com/chrome/browser/privacy/whitepaper.html")
@@ -1001,7 +970,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testSafeBrowsingClickPrivacyPolicy() throws Throwable {
         final String privacyPolicyUrl =
                 Uri.parse("https://www.google.com/chrome/browser/privacy/")
@@ -1025,7 +993,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testInitSafeBrowsingCallbackOnUIThread() throws Throwable {
         Context ctx = InstrumentationRegistry.getInstrumentation()
                               .getTargetContext()
@@ -1046,7 +1013,6 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
     public void testInitSafeBrowsingUsesAppContext() throws Throwable {
         MockContext ctx =
                 new MockContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
