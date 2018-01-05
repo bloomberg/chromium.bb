@@ -382,13 +382,21 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
     return;
   }
 
+  media::PictureBuffer& pb = it->second;
+  if (picture.size_changed()) {
+    DCHECK(pb.size() != picture.visible_rect().size());
+    DVLOG(3) << __func__ << " Updating size of PictureBuffer[" << pb.id()
+             << "] from:" << pb.size().ToString()
+             << " to:" << picture.visible_rect().size().ToString();
+    pb.set_size(picture.visible_rect().size());
+  }
+
   uint32_t timestamp = 0;
   gfx::Rect visible_rect;
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect);
   if (!picture.visible_rect().IsEmpty())
     visible_rect = picture.visible_rect();
 
-  const media::PictureBuffer& pb = it->second;
   if (visible_rect.IsEmpty() || !gfx::Rect(pb.size()).Contains(visible_rect)) {
     LOG(ERROR) << "Invalid picture size: " << visible_rect.ToString()
                << " should fit in " << pb.size().ToString();
