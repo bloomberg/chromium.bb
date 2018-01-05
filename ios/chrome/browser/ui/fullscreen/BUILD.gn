@@ -187,6 +187,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":fullscreen",
     "//base",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/side_swipe",
