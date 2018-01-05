@@ -515,7 +515,7 @@ struct drv_array *drv_query_kms(struct driver *drv)
 			for (k = 0; k < drv_array_size(kms_items); k++) {
 				struct kms_item *item = drv_array_at_idx(kms_items, k);
 				if (item->format == plane->formats[j] &&
-				    item->modifier == DRM_FORMAT_MOD_LINEAR) {
+				    item->modifier == DRM_FORMAT_MOD_INVALID) {
 					item->use_flags |= use_flag;
 					found = true;
 					break;
@@ -524,7 +524,7 @@ struct drv_array *drv_query_kms(struct driver *drv)
 
 			if (!found) {
 				struct kms_item item = { .format = plane->formats[j],
-							 .modifier = DRM_FORMAT_MOD_LINEAR,
+							 .modifier = DRM_FORMAT_MOD_INVALID,
 							 .use_flags = use_flag };
 
 				drv_array_append(kms_items, &item);
