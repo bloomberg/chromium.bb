@@ -23,6 +23,7 @@ PASS: level is 5.
 PASS: level is 6.
 PASS: level is 2.
 PASS: level is 2.
+PASS: level is 2.
 PASS successfullyParsed is true
 
 TEST COMPLETE
