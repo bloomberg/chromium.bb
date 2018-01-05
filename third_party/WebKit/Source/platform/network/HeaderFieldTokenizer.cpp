@@ -14,6 +14,7 @@ namespace {
 using Mode = HeaderFieldTokenizer::Mode;
 
 bool IsTokenCharacter(Mode mode, UChar c) {
+  // TODO(cvazac) change this to use LChar
   // TODO(cvazac) Check HTTPArchive for usage and possible deprecation.
   // According to https://tools.ietf.org/html/rfc7230#appendix-B, the
   // following characters (ASCII decimal) should not be included in a TOKEN:
@@ -60,6 +61,7 @@ HeaderFieldTokenizer::HeaderFieldTokenizer(const String& header_field)
 HeaderFieldTokenizer::HeaderFieldTokenizer(HeaderFieldTokenizer&&) = default;
 
 bool HeaderFieldTokenizer::Consume(char c) {
+  // TODO(cvazac) change this to use LChar
   DCHECK_NE(c, ' ');
 
   if (IsConsumed() || input_[index_] != c)
@@ -129,6 +131,24 @@ void HeaderFieldTokenizer::SkipSpaces() {
   // https://tools.ietf.org/html/rfc7230#section-3.2.3
   while (!IsConsumed() && input_[index_] == ' ')
     ++index_;
+}
+
+void HeaderFieldTokenizer::ConsumeBeforeAnyCharMatch(Vector<LChar> chars) {
+  // TODO(cvazac) move this to HeaderFieldTokenizer c'tor
+  DCHECK(input_.Is8Bit());
+
+  DCHECK_GT(chars.size(), 0U);
+  DCHECK_LT(chars.size(), 3U);
+
+  while (!IsConsumed()) {
+    for (const auto& c : chars) {
+      if (c == input_[index_]) {
+        return;
+      }
+    }
+
+    ++index_;
+  }
 }
 
 }  // namespace blink
