@@ -318,7 +318,8 @@ class DescriberText(Describer):
           unique_paths.add(s.object_path)
 
       if group.IsDelta():
-        unique_part = 'aliases not grouped for diffs'
+        before_unique, after_unique = group.CountUniqueSymbols()
+        unique_part = '{:,} -> {:,} unique'.format(before_unique, after_unique)
       else:
         unique_part = '{:,} unique'.format(group.CountUniqueSymbols())
 
