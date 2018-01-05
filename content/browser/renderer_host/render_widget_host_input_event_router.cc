@@ -290,14 +290,8 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
         &delegate, point, transformed_point, &query_renderer);
   }
 
-  // TODO(kenrb): There should be a better way to handle hit tests to surfaces
-  // that are no longer valid for hit testing. See https://crbug.com/790044.
-  auto iter = owner_map_.find(frame_sink_id);
-  // If the point hit a Surface whose namspace is no longer in the map, then
-  // it likely means the RenderWidgetHostView has been destroyed but its
-  // parent frame has not sent a new compositor frame since that happened.
-  return {(iter == owner_map_.end()) ? root_view : iter->second, query_renderer,
-          *transformed_point};
+  auto* view = FindViewFromFrameSinkId(frame_sink_id);
+  return {view ? view : root_view, query_renderer, *transformed_point};
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
@@ -1128,6 +1122,18 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
   }
   // TODO(crbug.com/796656): Handle other types of events.
   NOTREACHED();
+}
+
+RenderWidgetHostViewBase*
+RenderWidgetHostInputEventRouter::FindViewFromFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) const {
+  // TODO(kenrb): There should be a better way to handle hit tests to surfaces
+  // that are no longer valid for hit testing. See https://crbug.com/790044.
+  auto iter = owner_map_.find(frame_sink_id);
+  // If the point hit a Surface whose namspace is no longer in the map, then
+  // it likely means the RenderWidgetHostView has been destroyed but its
+  // parent frame has not sent a new compositor frame since that happened.
+  return iter == owner_map_.end() ? nullptr : iter->second;
 }
 
 }  // namespace content

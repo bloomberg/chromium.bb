@@ -55,6 +55,9 @@ class RenderWidgetTargeter {
                                        RenderWidgetHostViewBase* target,
                                        const blink::WebInputEvent& event,
                                        const ui::LatencyInfo& latency) = 0;
+
+    virtual RenderWidgetHostViewBase* FindViewFromFrameSinkId(
+        const viz::FrameSinkId& frame_sink_id) const = 0;
   };
 
   // The delegate must outlive this targeter.
