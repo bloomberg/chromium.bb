@@ -156,7 +156,9 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterSessionStateChange) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
 
   NotifySessionStateChanged(SessionState::LOGGED_IN_NOT_ACTIVE);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
