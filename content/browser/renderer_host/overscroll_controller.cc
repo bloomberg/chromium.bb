@@ -148,6 +148,14 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
           event.GetType() == blink::WebInputEvent::kGestureFlingStart);
 }
 
+void OverscrollController::OnDidOverscroll(
+    const ui::DidOverscrollParams& params) {
+  // TODO(sunyunjia): We should also decide whether to trigger overscroll,
+  // update scroll_state_ here. See https://crbug.com/799467.
+  if (delegate_)
+    delegate_->OnOverscrollBehaviorUpdate(params.overscroll_behavior);
+}
+
 void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,
                                             bool processed) {
   if (!ShouldProcessEvent(event))

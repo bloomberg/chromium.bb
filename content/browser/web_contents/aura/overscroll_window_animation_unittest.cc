@@ -239,4 +239,91 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
   EXPECT_FALSE(overscroll_aborted());
 }
 
+TEST_F(OverscrollWindowAnimationTest, OverscrollBehaviorAutoAllowsOverscroll) {
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+
+  cc::OverscrollBehavior overscroll_behavior;
+  overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeAuto;
+  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
+  EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
+  EXPECT_TRUE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+}
+
+TEST_F(OverscrollWindowAnimationTest,
+       OverscrollBehaviorContainPreventsOverscroll) {
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+
+  cc::OverscrollBehavior overscroll_behavior;
+  overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeContain;
+  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+}
+
+TEST_F(OverscrollWindowAnimationTest,
+       OverscrollBehaviorNonePreventsOverscroll) {
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+
+  cc::OverscrollBehavior overscroll_behavior;
+  overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeNone;
+  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+}
+
+TEST_F(OverscrollWindowAnimationTest,
+       OverscrollBehaviorNoneOnYAllowsOverscroll) {
+  EXPECT_FALSE(owa()->is_active());
+  EXPECT_FALSE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+
+  cc::OverscrollBehavior overscroll_behavior;
+  overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeAuto;
+  overscroll_behavior.y = cc::OverscrollBehavior::OverscrollBehaviorType::
+      kOverscrollBehaviorTypeNone;
+  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
+  owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
+                                OverscrollSource::TOUCHPAD);
+  EXPECT_TRUE(owa()->is_active());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
+  EXPECT_TRUE(overscroll_started());
+  EXPECT_FALSE(overscroll_completing());
+  EXPECT_FALSE(overscroll_completed());
+  EXPECT_FALSE(overscroll_aborted());
+}
+
 }  // namespace content
