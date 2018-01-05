@@ -146,7 +146,7 @@ enum class BackgroundEdgeOrigin : unsigned { kTop, kRight, kBottom, kLeft };
 enum class EMaskSourceType : unsigned { kAlpha, kLuminance };
 
 // CSS3 Image Values
-enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
+enum class QuoteType : unsigned { kOpen, kClose, kNoOpen, kNoClose };
 
 enum EAnimPlayState { kAnimPlayStatePlaying, kAnimPlayStatePaused };
 

@@ -289,12 +289,12 @@ LayoutTextFragment* LayoutQuote::FindFragmentChild() const {
 
 String LayoutQuote::ComputeText() const {
   switch (type_) {
-    case NO_OPEN_QUOTE:
-    case NO_CLOSE_QUOTE:
+    case QuoteType::kNoOpen:
+    case QuoteType::kNoClose:
       return g_empty_string;
-    case CLOSE_QUOTE:
+    case QuoteType::kClose:
       return GetQuotesData()->GetCloseQuote(depth_ - 1).Impl();
-    case OPEN_QUOTE:
+    case QuoteType::kOpen:
       return GetQuotesData()->GetOpenQuote(depth_).Impl();
   }
   NOTREACHED();
@@ -388,12 +388,12 @@ void LayoutQuote::UpdateDepth() {
   if (previous_) {
     depth_ = previous_->depth_;
     switch (previous_->type_) {
-      case OPEN_QUOTE:
-      case NO_OPEN_QUOTE:
+      case QuoteType::kOpen:
+      case QuoteType::kNoOpen:
         depth_++;
         break;
-      case CLOSE_QUOTE:
-      case NO_CLOSE_QUOTE:
+      case QuoteType::kClose:
+      case QuoteType::kNoClose:
         if (depth_)
           depth_--;
         break;

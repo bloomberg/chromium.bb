@@ -742,16 +742,16 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(
         default:
           NOTREACHED();
         case CSSValueOpenQuote:
-          quote_type = OPEN_QUOTE;
+          quote_type = QuoteType::kOpen;
           break;
         case CSSValueCloseQuote:
-          quote_type = CLOSE_QUOTE;
+          quote_type = QuoteType::kClose;
           break;
         case CSSValueNoOpenQuote:
-          quote_type = NO_OPEN_QUOTE;
+          quote_type = QuoteType::kNoOpen;
           break;
         case CSSValueNoCloseQuote:
-          quote_type = NO_CLOSE_QUOTE;
+          quote_type = QuoteType::kNoClose;
           break;
       }
       next_content = ContentData::Create(quote_type);
