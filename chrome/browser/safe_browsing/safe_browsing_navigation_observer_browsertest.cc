@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -434,6 +436,25 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
 
   SafeBrowsingNavigationObserverManager::HostToIpMap* host_to_ip_map() {
     return observer_manager_->host_to_ip_map();
+  }
+
+  int CountOfRecentNavigationsToAppend(
+      bool extended_reporting_enabled,
+      bool is_incognito,
+      SafeBrowsingNavigationObserverManager::AttributionResult result) {
+    SetExtendedReportingPref(browser()->profile()->GetPrefs(),
+                             extended_reporting_enabled);
+    return SafeBrowsingNavigationObserverManager::
+        CountOfRecentNavigationsToAppend(
+            is_incognito ? *browser()->profile()->GetOffTheRecordProfile()
+                         : *browser()->profile(),
+            result);
+  }
+
+  void AppendRecentNavigations(int recent_navigation_count,
+                               ReferrerChain* out_referrer_chain) {
+    observer_manager_->AppendRecentNavigations(recent_navigation_count,
+                                               out_referrer_chain);
   }
 
  protected:
@@ -2235,6 +2256,144 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            std::vector<GURL>(),  // server redirects
                            ReferrerChainEntry::BROWSER_INITIATED,
                            referrer_chain.Get(1));
+}
+
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       VerifyNumberOfRecentNavigationsToCollect) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kAppendRecentNavigationEvents, {{"recent_navigation_count", "3"}});
+
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/false, /*incognito=*/false,
+                   SafeBrowsingNavigationObserverManager::SUCCESS));
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/false, /*incognito=*/true,
+                   SafeBrowsingNavigationObserverManager::SUCCESS));
+  EXPECT_EQ(0,
+            CountOfRecentNavigationsToAppend(
+                /*sber=*/false, /*incognito=*/false,
+                SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE));
+  EXPECT_EQ(0,
+            CountOfRecentNavigationsToAppend(
+                /*sber=*/false, /*incognito=*/true,
+                SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE));
+  EXPECT_EQ(
+      0, CountOfRecentNavigationsToAppend(
+             /*sber=*/false, /*incognito=*/false,
+             SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER));
+  EXPECT_EQ(
+      0, CountOfRecentNavigationsToAppend(
+             /*sber=*/false, /*incognito=*/true,
+             SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER));
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/false, /*incognito=*/false,
+                   SafeBrowsingNavigationObserverManager::INVALID_URL));
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/false, /*incognito=*/true,
+                   SafeBrowsingNavigationObserverManager::INVALID_URL));
+  EXPECT_EQ(
+      0,
+      CountOfRecentNavigationsToAppend(
+          /*sber=*/false, /*incognito=*/false,
+          SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
+  EXPECT_EQ(
+      0,
+      CountOfRecentNavigationsToAppend(
+          /*sber=*/false, /*incognito=*/true,
+          SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
+
+  EXPECT_EQ(3, CountOfRecentNavigationsToAppend(
+                   /*sber=*/true, /*incognito=*/false,
+                   SafeBrowsingNavigationObserverManager::SUCCESS));
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/true, /*incognito=*/true,
+                   SafeBrowsingNavigationObserverManager::SUCCESS));
+  EXPECT_EQ(3,
+            CountOfRecentNavigationsToAppend(
+                /*sber=*/true, /*incognito=*/false,
+                SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE));
+  EXPECT_EQ(0,
+            CountOfRecentNavigationsToAppend(
+                /*sber=*/true, /*incognito=*/true,
+                SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_PAGE));
+  EXPECT_EQ(
+      0, CountOfRecentNavigationsToAppend(
+             /*sber=*/true, /*incognito=*/false,
+             SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER));
+  EXPECT_EQ(
+      0, CountOfRecentNavigationsToAppend(
+             /*sber=*/true, /*incognito=*/true,
+             SafeBrowsingNavigationObserverManager::SUCCESS_LANDING_REFERRER));
+  EXPECT_EQ(3, CountOfRecentNavigationsToAppend(
+                   /*sber=*/true, /*incognito=*/false,
+                   SafeBrowsingNavigationObserverManager::INVALID_URL));
+  EXPECT_EQ(0, CountOfRecentNavigationsToAppend(
+                   /*sber=*/true, /*incognito=*/true,
+                   SafeBrowsingNavigationObserverManager::INVALID_URL));
+  EXPECT_EQ(
+      3,
+      CountOfRecentNavigationsToAppend(
+          /*sber=*/true, /*incognito=*/false,
+          SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
+  EXPECT_EQ(
+      0,
+      CountOfRecentNavigationsToAppend(
+          /*sber=*/true, /*incognito=*/true,
+          SafeBrowsingNavigationObserverManager::NAVIGATION_EVENT_NOT_FOUND));
+}
+
+IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
+                       AppendRecentNavigations) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kAppendRecentNavigationEvents, {{"recent_navigation_count", "3"}});
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(kSingleFrameTestURL));
+  GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);
+  ClickTestLink("complete_referrer_chain", 2, initial_url);
+  GURL redirect_url = embedded_test_server()->GetURL(kRedirectToLandingURL);
+  GURL landing_url = embedded_test_server()->GetURL(kLandingURL);
+  ClickTestLink("download_on_landing_page", 1, landing_url);
+  GURL download_url = embedded_test_server()->GetURL(kDownloadItemURL);
+  std::string test_server_ip(embedded_test_server()->host_port_pair().host());
+
+  ReferrerChain referrer_chain;
+  AppendRecentNavigations(/*recent_navigation_count=*/3, &referrer_chain);
+  EXPECT_EQ(3, referrer_chain.size());
+  VerifyReferrerChainEntry(
+      download_url,                           // url
+      GURL(),                                 // main_frame_url
+      ReferrerChainEntry::RECENT_NAVIGATION,  // type
+      test_server_ip,                         // ip_address
+      landing_url,                            // referrer_url
+      GURL(),                                 // referrer_main_frame_url
+      false,                                  // is_retargeting
+      std::vector<GURL>(),                    // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
+      referrer_chain.Get(0));
+  VerifyReferrerChainEntry(
+      landing_url,                            // url
+      GURL(),                                 // main_frame_url
+      ReferrerChainEntry::RECENT_NAVIGATION,  // type
+      test_server_ip,                         // ip_address
+      redirect_url,                           // referrer_url
+      GURL(),                                 // referrer_main_frame_url
+      false,                                  // is_retargeting
+      std::vector<GURL>(),                    // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE,
+      referrer_chain.Get(1));
+  VerifyReferrerChainEntry(
+      redirect_url,                           // url
+      GURL(),                                 // main_frame_url
+      ReferrerChainEntry::RECENT_NAVIGATION,  // type
+      test_server_ip,                         // ip_address
+      initial_url,                            // referrer_url
+      GURL(),                                 // referrer_main_frame_url
+      false,                                  // is_retargeting
+      std::vector<GURL>(),                    // server redirects
+      ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE,
+      referrer_chain.Get(2));
 }
 
 }  // namespace safe_browsing

@@ -44,6 +44,10 @@ extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
 // only.
 extern const base::Feature kDispatchSafetyNetCheckOffThread;
 
+// Controls whether to add recent navigation events to referrer chain for SBER
+// users if referrer chain is incomplete.
+extern const base::Feature kAppendRecentNavigationEvents;
+
 base::ListValue GetFeatureStatusList();
 
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_

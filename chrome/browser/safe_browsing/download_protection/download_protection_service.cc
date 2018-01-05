@@ -355,7 +355,8 @@ void DownloadProtectionService::GetCertificateWhitelistStrings(
   }
 }
 
-std::unique_ptr<ReferrerChain> DownloadProtectionService::IdentifyReferrerChain(
+std::unique_ptr<ReferrerChainData>
+DownloadProtectionService::IdentifyReferrerChain(
     const content::DownloadItem& item) {
   // If navigation_observer_manager_ is null, return immediately. This could
   // happen in tests.
@@ -390,7 +391,24 @@ std::unique_ptr<ReferrerChain> DownloadProtectionService::IdentifyReferrerChain(
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
-  return referrer_chain;
+
+  size_t referrer_chain_length = referrer_chain->size();
+
+  // Determines how many recent navigation events to append to referrer chain
+  // if any.
+  size_t recent_navigations_to_collect =
+      web_contents ? SafeBrowsingNavigationObserverManager::
+                         CountOfRecentNavigationsToAppend(
+                             *Profile::FromBrowserContext(
+                                 web_contents->GetBrowserContext()),
+                             result)
+                   : 0u;
+  navigation_observer_manager_->AppendRecentNavigations(
+      recent_navigations_to_collect, referrer_chain.get());
+
+  return std::make_unique<ReferrerChainData>(std::move(referrer_chain),
+                                             referrer_chain_length,
+                                             recent_navigations_to_collect);
 }
 
 void DownloadProtectionService::AddReferrerChainToPPAPIClientDownloadRequest(

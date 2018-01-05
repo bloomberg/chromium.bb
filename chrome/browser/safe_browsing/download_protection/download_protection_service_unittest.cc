@@ -2489,10 +2489,11 @@ TEST_F(DownloadProtectionServiceTest,
       FILE_PATH_LITERAL("a.exe"));  // final_path
   ON_CALL(item, GetWebContents()).WillByDefault(Return(web_contents));
 
-  std::unique_ptr<ReferrerChain> referrer_chain =
+  std::unique_ptr<ReferrerChainData> referrer_chain_data =
       download_service_->IdentifyReferrerChain(item);
+  ReferrerChain* referrer_chain = referrer_chain_data->GetReferrerChain();
 
-  ASSERT_EQ(1, referrer_chain->size());
+  ASSERT_EQ(1u, referrer_chain_data->referrer_chain_length());
   EXPECT_EQ(item.GetUrlChain().back(), referrer_chain->Get(0).url());
   EXPECT_EQ(web_contents->GetLastCommittedURL().spec(),
             referrer_chain->Get(0).referrer_url());
