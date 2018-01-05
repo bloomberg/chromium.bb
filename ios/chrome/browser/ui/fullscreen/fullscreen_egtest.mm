@@ -11,6 +11,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/settings_test_util.h"
@@ -66,11 +68,19 @@ void AssertURLIs(const GURL& expectedURL) {
 #pragma mark - Tests
 
 // Fullscreens tests for Chrome.
-@interface FullscreenTestCase : ChromeTestCase
+@interface FullscreenTestCase : ChromeTestCase {
+  base::test::ScopedFeatureList _featureList;
+}
 
 @end
 
 @implementation FullscreenTestCase
+
+- (void)setUp {
+  // TODO(crbug.com/799345): Remove scoped feature list.
+  _featureList.InitAndDisableFeature(fullscreen::features::kNewFullscreen);
+  [super setUp];
+}
 
 // Verifies that the content offset of the web view is set up at the correct
 // initial value when initially displaying a PDF.

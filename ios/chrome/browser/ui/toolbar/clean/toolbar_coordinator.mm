@@ -185,6 +185,9 @@
 }
 
 - (void)stop {
+  if (!self.started)
+    return;
+
   self.started = NO;
   self.delegate = nil;
   [self.mediator disconnect];
