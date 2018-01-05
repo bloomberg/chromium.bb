@@ -8493,8 +8493,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_INTRABC
 
-void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
-                               RD_STATS *rd_cost, BLOCK_SIZE bsize,
+void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
+                               int mi_col, RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8505,6 +8505,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   TX_SIZE max_uv_tx_size;
 
   (void)cm;
+  (void)mi_row;
+  (void)mi_col;
 
   ctx->skip = 0;
   mbmi->ref_frame[0] = INTRA_FRAME;
@@ -8526,10 +8528,10 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     if (xd->cfl.store_y) {
       // Perform one extra call to txfm_rd_in_plane(), with the values chosen
       // during luma RDO, so we can store reconstructed luma values
-      RD_STATS this_rd_stats;
-      txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
-                       mbmi->sb_type, mbmi->tx_size,
-                       cpi->sf.use_fast_coef_costing);
+      memcpy(x->blk_skip[0], ctx->blk_skip[0],
+             sizeof(uint8_t) * ctx->num_4x4_blk);
+      av1_encode_intra_block_plane((AV1_COMMON *)cm, x, bsize, AOM_PLANE_Y, 1,
+                                   mi_row, mi_col);
       xd->cfl.store_y = 0;
     }
 #endif  // CONFIG_CFL

@@ -240,8 +240,9 @@ static INLINE int av1_cost_coeffs(const struct AV1_COMP *const cpi,
 }
 
 void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
-                               struct RD_STATS *rd_cost, BLOCK_SIZE bsize,
-                               PICK_MODE_CONTEXT *ctx, int64_t best_rd);
+                               int mi_row, int mi_col, struct RD_STATS *rd_cost,
+                               BLOCK_SIZE bsize, PICK_MODE_CONTEXT *ctx,
+                               int64_t best_rd);
 
 unsigned int av1_get_sby_perpixel_variance(const struct AV1_COMP *cpi,
                                            const struct buf_2d *ref,
