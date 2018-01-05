@@ -29,6 +29,7 @@
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -169,6 +170,8 @@ VrShell::VrShell(JNIEnv* env,
   vr::Assets::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
       &VrShell::OnAssetsComponentReady, weak_ptr_factory_.GetWeakPtr()));
   vr::Assets::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kVr);
+
+  UpdateVrAssetsComponent(g_browser_process->component_updater());
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {

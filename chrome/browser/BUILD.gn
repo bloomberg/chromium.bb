@@ -64,7 +64,7 @@ if (is_win) {
 if (enable_vr) {
   buildflag_header("vr_build_features") {
     header = "vr_features.h"
-    flags = [ "REGISTER_VR_ASSETS_COMPONENT=$register_vr_assets_component" ]
+    flags = [ "USE_VR_ASSETS_COMPONENT=$use_vr_assets_component" ]
   }
 }
 

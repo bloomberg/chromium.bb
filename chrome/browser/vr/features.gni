@@ -8,6 +8,6 @@ import("//device/vr/features/features.gni")
 assert(enable_vr)
 
 declare_args() {
-  # Whether to register and subsequently download the VR assets component.
-  register_vr_assets_component = is_chrome_branded
+  # Whether to register, download, etc. the VR assets component.
+  use_vr_assets_component = is_chrome_branded
 }
