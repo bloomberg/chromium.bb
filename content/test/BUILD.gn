@@ -317,6 +317,7 @@ static_library("test_support") {
     "//device/geolocation",
     "//device/geolocation/public/cpp:test_support",
     "//device/geolocation/public/interfaces",
+    "//gpu/ipc:gl_in_process_context",
     "//ipc:test_support",
     "//media",
     "//media/capture",

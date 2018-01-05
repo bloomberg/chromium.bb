@@ -18,7 +18,7 @@ source_set("main") {
   deps = [
     "//cc",
     "//components/viz/service",
-    "//gpu/ipc:command_buffer",
+    "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/common",
     "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/service",

@@ -24,7 +24,6 @@ component("gpu") {
     "//gpu/command_buffer/service:gles2_sources",
     "//gpu/command_buffer/service:service_sources",
     "//gpu/config:config_sources",
-    "//gpu/ipc:command_buffer_sources",
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//gpu/ipc/service:ipc_service_sources",

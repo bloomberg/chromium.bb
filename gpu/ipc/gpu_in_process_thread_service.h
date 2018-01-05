@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gl/gl_share_group.h"
 
@@ -16,7 +16,7 @@ namespace gpu {
 
 // Default Service class when no service is specified. GpuInProcessThreadService
 // is used by Mus and unit tests.
-class GPU_EXPORT GpuInProcessThreadService
+class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
     : public gpu::InProcessCommandBuffer::Service,
       public base::RefCountedThreadSafe<GpuInProcessThreadService> {
  public:
