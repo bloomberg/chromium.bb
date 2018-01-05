@@ -28,6 +28,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/prefix_selector.h"
 #include "ui/views/controls/scroll_view.h"
@@ -51,7 +52,6 @@ static const int kArrowRegionSize = 12;
 // Padding around the text (on each side).
 static const int kTextVerticalPadding = 3;
 static const int kTextHorizontalPadding = 2;
-static const int kTextHorizontalPaddingWithFocusRing = 4;
 // How much children are indented from their parent.
 static const int kIndent = 20;
 
@@ -104,16 +104,6 @@ TreeView::TreeView()
   }
   text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
       kArrowRegionSize;
-
-  // The horizontal padding will be needed before an editor text field is ever
-  // constructed, otherwise it would be nice to use editor_->uses_focus_ring()
-  // or similar. Since Textfields only use focus rings when
-  // IsSecondaryUiMaterial() and when they have no border, checking that here
-  // is safe.
-  text_horizontal_padding_ =
-      ui::MaterialDesignController::IsSecondaryUiMaterial()
-          ? kTextHorizontalPaddingWithFocusRing
-          : kTextHorizontalPadding;
 }
 
 TreeView::~TreeView() {
@@ -186,6 +176,7 @@ void TreeView::StartEditing(TreeModelNode* node) {
   editing_ = true;
   if (!editor_) {
     editor_ = new Textfield;
+    editor_->SetBorder(views::CreateSolidBorder(1, gfx::kGoogleBlue700));
     // Add the editor immediately as GetPreferredSize returns the wrong thing if
     // not parented.
     AddChildView(editor_);
@@ -724,7 +715,7 @@ void TreeView::UpdatePreferredSize() {
 
   preferred_size_.SetSize(
       root_.GetMaxWidth(this, text_offset_, root_shown_ ? 1 : 0) +
-          text_horizontal_padding_ * 2,
+          kTextHorizontalPadding * 2,
       row_height_ * GetRowCount());
 }
 
@@ -739,7 +730,7 @@ void TreeView::LayoutEditor() {
       GetMirroredXWithWidthInView(row_bounds.x(), row_bounds.width()));
   row_bounds.set_x(row_bounds.x() + text_offset_);
   row_bounds.set_width(row_bounds.width() - text_offset_);
-  row_bounds.Inset(text_horizontal_padding_, kTextVerticalPadding);
+  row_bounds.Inset(kTextHorizontalPadding, kTextVerticalPadding);
   row_bounds.Inset(-empty_editor_size_.width() / 2,
                    -(empty_editor_size_.height() - font_list_.GetHeight()) / 2);
   // Give a little extra space for editing.
@@ -828,9 +819,9 @@ void TreeView::PaintRow(gfx::Canvas* canvas,
 
   // Paint the text.
   const gfx::Rect internal_bounds(
-      text_bounds.x() + text_horizontal_padding_,
+      text_bounds.x() + kTextHorizontalPadding,
       text_bounds.y() + kTextVerticalPadding,
-      text_bounds.width() - text_horizontal_padding_ * 2,
+      text_bounds.width() - kTextHorizontalPadding * 2,
       text_bounds.height() - kTextVerticalPadding * 2);
   canvas->DrawStringRect(
       node->model_node()->GetTitle(), font_list_,
@@ -931,15 +922,14 @@ gfx::Rect TreeView::GetTextBoundsForNode(InternalNode* node) {
 // leading aligned.
 gfx::Rect TreeView::GetAuxiliaryTextBoundsForNode(InternalNode* node) {
   gfx::Rect text_bounds = GetTextBoundsForNode(node);
-  int width = base::i18n::IsRTL()
-                  ? text_bounds.x() - text_horizontal_padding_ * 2
-                  : bounds().width() - text_bounds.right() -
-                        2 * text_horizontal_padding_;
+  int width = base::i18n::IsRTL() ? text_bounds.x() - kTextHorizontalPadding * 2
+                                  : bounds().width() - text_bounds.right() -
+                                        2 * kTextHorizontalPadding;
   if (width < 0)
     return gfx::Rect();
   int x = base::i18n::IsRTL()
-              ? text_horizontal_padding_
-              : bounds().right() - width - text_horizontal_padding_;
+              ? kTextHorizontalPadding
+              : bounds().right() - width - kTextHorizontalPadding;
   return gfx::Rect(x, text_bounds.y(), width, text_bounds.height());
 }
 
@@ -948,9 +938,8 @@ gfx::Rect TreeView::GetForegroundBoundsForNodeImpl(InternalNode* node,
                                                    int depth) {
   int width =
       drawing_provider()->ShouldDrawIconForNode(this, node->model_node())
-          ? text_offset_ + node->text_width() + text_horizontal_padding_ * 2
-          : kArrowRegionSize + node->text_width() +
-                text_horizontal_padding_ * 2;
+          ? text_offset_ + node->text_width() + kTextHorizontalPadding * 2
+          : kArrowRegionSize + node->text_width() + kTextHorizontalPadding * 2;
 
   gfx::Rect rect(depth * kIndent + kHorizontalInset, row * row_height_, width,
                  row_height_);
