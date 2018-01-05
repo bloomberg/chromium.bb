@@ -81374,7 +81374,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent selecting entries for eviction.</summary>
 </histogram>
 
-<histogram base="true" name="SimpleCache.FileDescriptorLimitHard">
+<histogram name="SimpleCache.FileDescriptorLimitHard" units="file descriptors">
   <owner>morlovich@chromium.org</owner>
   <summary>
     The maximum limit of how many file descriptors a process can open.  Emitted
@@ -81383,7 +81383,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="SimpleCache.FileDescriptorLimitSoft">
+<histogram name="SimpleCache.FileDescriptorLimitSoft" units="file descriptors">
   <owner>morlovich@chromium.org</owner>
   <summary>
     The current limit of how many file descriptors a process can open.  Emitted
@@ -81392,7 +81392,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram base="true" name="SimpleCache.FileDescriptorLimitStatus"
+<histogram name="SimpleCache.FileDescriptorLimitStatus"
     enum="SimpleCache.FileDescriptorLimitStatus">
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -100800,9 +100800,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SimpleCache.Eviction.SizeWhenDone2"/>
   <affected-histogram name="SimpleCache.Eviction.TimeToDone"/>
   <affected-histogram name="SimpleCache.Eviction.TimeToSelectEntries"/>
-  <affected-histogram name="SimpleCache.FileDescriptorLimitHard"/>
-  <affected-histogram name="SimpleCache.FileDescriptorLimitSoft"/>
-  <affected-histogram name="SimpleCache.FileDescriptorLimitStatus"/>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitHard">
+    <obsolete>
+      Removed January 2018, as the limit is independent of the backend type.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitSoft">
+    <obsolete>
+      Removed January 2018, as the limit is independent of the backend type.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram name="SimpleCache.FileDescriptorLimitStatus">
+    <obsolete>
+      Removed January 2018, as the limit is independent of the backend type.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram name="SimpleCache.GlobalOpenEntryCount"/>
   <affected-histogram name="SimpleCache.HeaderSize"/>
   <affected-histogram name="SimpleCache.HeaderSizeChange"/>

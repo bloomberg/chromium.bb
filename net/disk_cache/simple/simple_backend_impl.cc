@@ -20,8 +20,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -70,7 +70,7 @@ scoped_refptr<base::SequencedTaskRunner> FallbackToInternalIfNull(
 
 bool g_fd_limit_histogram_has_been_populated = false;
 
-void MaybeHistogramFdLimit(net::CacheType cache_type) {
+void MaybeHistogramFdLimit() {
   if (g_fd_limit_histogram_has_been_populated)
     return;
 
@@ -96,14 +96,13 @@ void MaybeHistogramFdLimit(net::CacheType cache_type) {
   }
 #endif
 
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "FileDescriptorLimitStatus", cache_type,
-                   fd_limit_status, FD_LIMIT_STATUS_MAX);
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.FileDescriptorLimitStatus",
+                            fd_limit_status, FD_LIMIT_STATUS_MAX);
   if (fd_limit_status == FD_LIMIT_STATUS_SUCCEEDED) {
-    SIMPLE_CACHE_UMA(SPARSE_SLOWLY,
-                     "FileDescriptorLimitSoft", cache_type, soft_fd_limit);
-    SIMPLE_CACHE_UMA(SPARSE_SLOWLY,
-                     "FileDescriptorLimitHard", cache_type, hard_fd_limit);
+    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitSoft",
+                             soft_fd_limit);
+    base::UmaHistogramSparse("SimpleCache.FileDescriptorLimitHard",
+                             hard_fd_limit);
   }
 
   g_fd_limit_histogram_has_been_populated = true;
@@ -246,7 +245,7 @@ SimpleBackendImpl::SimpleBackendImpl(
   // backends, as default (if first call).
   if (orig_max_size_ < 0)
     orig_max_size_ = 0;
-  MaybeHistogramFdLimit(cache_type_);
+  MaybeHistogramFdLimit();
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
