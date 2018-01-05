@@ -5,7 +5,6 @@
 package org.chromium.net;
 
 import android.annotation.TargetApi;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -19,7 +18,6 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.security.KeyChain;
 import android.security.NetworkSecurityPolicy;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -53,35 +51,6 @@ import java.util.List;
 class AndroidNetworkLibrary {
 
     private static final String TAG = "AndroidNetworkLibrary";
-
-    /**
-     * Stores the key pair through the CertInstaller activity.
-     * @param publicKey The public key bytes as DER-encoded SubjectPublicKeyInfo (X.509)
-     * @param privateKey The private key as DER-encoded PrivateKeyInfo (PKCS#8).
-     * @return: true on success, false on failure.
-     *
-     * Note that failure means that the function could not launch the CertInstaller
-     * activity. Whether the keys are valid or properly installed will be indicated
-     * by the CertInstaller UI itself.
-     */
-    @CalledByNative
-    public static boolean storeKeyPair(byte[] publicKey, byte[] privateKey) {
-        // TODO(digit): Use KeyChain official extra values to pass the public and private
-        // keys when they're available. The "KEY" and "PKEY" hard-coded constants were taken
-        // from the platform sources, since there are no official KeyChain.EXTRA_XXX definitions
-        // for them. b/5859651
-        try {
-            Intent intent = KeyChain.createInstallIntent();
-            intent.putExtra("PKEY", privateKey);
-            intent.putExtra("KEY", publicKey);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ContextUtils.getApplicationContext().startActivity(intent);
-            return true;
-        } catch (ActivityNotFoundException e) {
-            Log.w(TAG, "could not store key pair: " + e);
-        }
-        return false;
-    }
 
     /**
      * @return the mime type (if any) that is associated with the file
