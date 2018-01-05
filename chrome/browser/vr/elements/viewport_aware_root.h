@@ -32,7 +32,6 @@ class ViewportAwareRoot : public UiElement {
  private:
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Transform& head_pose) override;
-  void OnUpdatedWorldSpaceTransform() override;
 
   float viewport_aware_total_rotation_ = 0.f;
   bool children_visible_ = false;

@@ -13,6 +13,7 @@ namespace vr {
 enum UiElementName {
   kNone = 0,
   kRoot,
+  k2dBrowsingRepositioner,
   k2dBrowsingRoot,
   k2dBrowsingBackground,
   k2dBrowsingDefaultBackground,

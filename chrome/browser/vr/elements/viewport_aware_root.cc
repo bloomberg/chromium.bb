@@ -91,9 +91,4 @@ bool ViewportAwareRoot::HasVisibleChildren() {
   return ElementHasVisibleChildren(this);
 }
 
-void ViewportAwareRoot::OnUpdatedWorldSpaceTransform() {
-  // We must not inherit a transform.
-  DCHECK(parent()->world_space_transform().IsIdentity());
-}
-
 }  // namespace vr
