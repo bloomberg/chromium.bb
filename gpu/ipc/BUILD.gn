@@ -4,67 +4,40 @@
 
 import("//build/config/ui.gni")
 
-group("command_buffer") {
-  if (is_component_build) {
-    public_deps = [
-      "//gpu",
-    ]
-  } else {
-    public_deps = [
-      ":command_buffer_sources",
-    ]
-  }
-}
-
-if (is_component_build) {
-  link_target_type = "source_set"
-} else {
-  link_target_type = "static_library"
-}
-target(link_target_type, "command_buffer_sources") {
-  visibility = [ "//gpu/*" ]
-
+component("gl_in_process_context") {
   sources = [
+    "gl_in_process_context.cc",
+    "gl_in_process_context.h",
+    "gl_in_process_context_export.h",
     "gpu_in_process_thread_service.cc",
     "gpu_in_process_thread_service.h",
     "in_process_command_buffer.cc",
     "in_process_command_buffer.h",
   ]
 
-  configs += [ "//gpu:gpu_implementation" ]
-
-  deps = [
-    "//base",
-    "//gpu/command_buffer/client:client_sources",
-    "//gpu/command_buffer/common:common_sources",
-    "//gpu/command_buffer/service:gles2_sources",
-    "//gpu/command_buffer/service:service_sources",
-    "//gpu/config:config_sources",
-    "//gpu/ipc/client:ipc_client_sources",
-    "//gpu/ipc/service:ipc_service_sources",
-    "//ui/gfx",
-    "//ui/gl",
-    "//ui/gl/init",
-  ]
-}
-
-component("gl_in_process_context") {
-  sources = [
-    "gl_in_process_context.cc",
-    "gl_in_process_context.h",
-    "gl_in_process_context_export.h",
-  ]
-
   defines = [ "GL_IN_PROCESS_CONTEXT_IMPLEMENTATION" ]
 
   deps = [
-    ":command_buffer",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//gpu",
+
+    # crbug.com/799267: crash_key needs to be added explicitly for Windows and
+    # Mac even though it's not directly referenced, because it's being
+    # implicitly depended upon by gpu/config/gpu_crash_keys.h but deps (even
+    # public ones) are not transitive for static libraries.
+    "//components/crash/core/common:crash_key",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/ipc:command_buffer",
+    "//gpu/command_buffer/common",
+    "//gpu/command_buffer/service",
+    "//gpu/command_buffer/service:gles2",
+    "//gpu/config",
+    "//gpu/ipc/client",
+    "//gpu/ipc/service",
+    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/gl/init",
   ]
 }

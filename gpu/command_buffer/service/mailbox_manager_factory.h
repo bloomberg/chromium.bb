@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_FACTORY_H_
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/gpu_export.h"
 
 namespace gpu {
 
@@ -13,8 +14,8 @@ struct GpuPreferences;
 
 namespace gles2 {
 
-std::unique_ptr<MailboxManager> CreateMailboxManager(
-    const GpuPreferences& gpu_preferences);
+std::unique_ptr<MailboxManager> GPU_EXPORT
+CreateMailboxManager(const GpuPreferences& gpu_preferences);
 
 }  // namespace gles2
 }  // namespace gpu

@@ -34,7 +34,7 @@
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -82,11 +82,12 @@ class TransferBufferManager;
 // example GPU thread) when being run in single process mode.
 // However, the behavior for accessing one context (i.e. one instance of this
 // class) from different client threads is undefined.
-class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
-                                          public GpuControl,
-                                          public CommandBufferServiceClient,
-                                          public gles2::GLES2DecoderClient,
-                                          public ImageTransportSurfaceDelegate {
+class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
+    : public CommandBuffer,
+      public GpuControl,
+      public CommandBufferServiceClient,
+      public gles2::GLES2DecoderClient,
+      public ImageTransportSurfaceDelegate {
  public:
   class Service;
 
