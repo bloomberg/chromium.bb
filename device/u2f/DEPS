@@ -1,4 +1,6 @@
 include_rules = [
+  "+components/cbor",
   "+crypto",
   "+net/base",
+  "+third_party/boringssl/src/include",
 ]

@@ -18,17 +18,24 @@ using ::testing::_;
 namespace device {
 namespace {
 
+constexpr char kTestRelyingPartyId[] = "google.com";
+
 class FakeU2fRequest : public U2fRequest {
  public:
-  FakeU2fRequest(std::vector<U2fDiscovery*> discoveries,
+  FakeU2fRequest(std::string relying_party_id,
+                 std::vector<U2fDiscovery*> discoveries,
                  const ResponseCallback& cb)
-      : U2fRequest(std::move(discoveries), cb) {}
+      : U2fRequest(std::move(relying_party_id), std::move(discoveries)),
+        cb_(cb) {}
   ~FakeU2fRequest() override = default;
 
   void TryDevice() override {
     cb_.Run(U2fReturnCode::SUCCESS, std::vector<uint8_t>(),
             std::vector<uint8_t>());
   }
+
+ private:
+  ResponseCallback cb_;
 };
 
 void ReponseDoNothing(U2fReturnCode status_code,
@@ -49,7 +56,8 @@ class U2fRequestTest : public testing::Test {
 
 TEST_F(U2fRequestTest, TestIterateDevice) {
   MockU2fDiscovery discovery;
-  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
+  FakeU2fRequest request(kTestRelyingPartyId, {&discovery},
+                         base::BindRepeating(ReponseDoNothing));
 
   auto device0 = std::make_unique<MockU2fDevice>();
   auto device1 = std::make_unique<MockU2fDevice>();
@@ -95,7 +103,8 @@ TEST_F(U2fRequestTest, TestBasicMachine) {
   EXPECT_CALL(discovery, Start())
       .WillOnce(testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccess));
 
-  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
+  FakeU2fRequest request(kTestRelyingPartyId, {&discovery},
+                         base::BindRepeating(ReponseDoNothing));
   request.Start();
 
   // Add one U2F device
@@ -117,7 +126,8 @@ TEST_F(U2fRequestTest, TestAlreadyPresentDevice) {
   EXPECT_CALL(discovery, Start())
       .WillOnce(testing::Invoke(&discovery, &MockU2fDiscovery::StartSuccess));
 
-  FakeU2fRequest request({&discovery}, base::BindRepeating(ReponseDoNothing));
+  FakeU2fRequest request(kTestRelyingPartyId, {&discovery},
+                         base::BindRepeating(ReponseDoNothing));
   request.Start();
 
   EXPECT_NE(nullptr, request.current_device_);

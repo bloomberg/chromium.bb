@@ -14,9 +14,11 @@ namespace device {
 U2fSign::U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
                  const std::vector<uint8_t>& challenge_hash,
                  const std::vector<uint8_t>& app_param,
+                 std::string relying_party_id,
                  std::vector<U2fDiscovery*> discoveries,
-                 const ResponseCallback& cb)
-    : U2fRequest(std::move(discoveries), cb),
+                 const ResponseCallback& completion_callback)
+    : U2fRequest(std::move(relying_party_id), std::move(discoveries)),
+      completion_callback_(std::move(completion_callback)),
       registered_keys_(registered_keys),
       challenge_hash_(challenge_hash),
       app_param_(app_param),
@@ -29,10 +31,12 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
     const std::vector<std::vector<uint8_t>>& registered_keys,
     const std::vector<uint8_t>& challenge_hash,
     const std::vector<uint8_t>& app_param,
+    std::string relying_party_id,
     std::vector<U2fDiscovery*> discoveries,
-    const ResponseCallback& cb) {
+    const ResponseCallback& completion_callback) {
   std::unique_ptr<U2fRequest> request = std::make_unique<U2fSign>(
-      registered_keys, challenge_hash, app_param, std::move(discoveries), cb);
+      registered_keys, challenge_hash, app_param, std::move(relying_party_id),
+      std::move(discoveries), completion_callback);
   request->Start();
 
   return request;
@@ -64,9 +68,10 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
       state_ = State::COMPLETE;
       if (it == registered_keys_.cend()) {
         // This was a response to a fake enrollment. Return an empty key handle.
-        cb_.Run(return_code, response_data, std::vector<uint8_t>());
+        completion_callback_.Run(return_code, response_data,
+                                 std::vector<uint8_t>());
       } else {
-        cb_.Run(return_code, response_data, *it);
+        completion_callback_.Run(return_code, response_data, *it);
       }
       break;
     case U2fReturnCode::CONDITIONS_NOT_SATISFIED: {

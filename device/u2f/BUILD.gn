@@ -7,6 +7,22 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("u2f") {
   sources = [
+    "attestation_object.cc",
+    "attestation_object.h",
+    "attestation_statement.cc",
+    "attestation_statement.h",
+    "attested_credential_data.cc",
+    "attested_credential_data.h",
+    "authenticator_data.cc",
+    "authenticator_data.h",
+    "ec_public_key.cc",
+    "ec_public_key.h",
+    "fido_attestation_statement.cc",
+    "fido_attestation_statement.h",
+    "public_key.cc",
+    "public_key.h",
+    "register_response_data.cc",
+    "register_response_data.h",
     "u2f_apdu_command.cc",
     "u2f_apdu_command.h",
     "u2f_apdu_response.cc",
@@ -32,6 +48,8 @@ source_set("u2f") {
     "u2f_message.h",
     "u2f_packet.cc",
     "u2f_packet.h",
+    "u2f_parsing_utils.cc",
+    "u2f_parsing_utils.h",
     "u2f_register.cc",
     "u2f_register.h",
     "u2f_request.cc",
@@ -43,6 +61,7 @@ source_set("u2f") {
 
   deps = [
     "//base",
+    "//components/cbor",
     "//crypto",
     "//device/base",
     "//device/bluetooth",
@@ -50,6 +69,7 @@ source_set("u2f") {
     "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
+    "//third_party/boringssl",
   ]
 
   # HID is not supported on Android.

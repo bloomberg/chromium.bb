@@ -6,6 +6,7 @@
 #define DEVICE_U2F_U2F_SIGN_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "device/u2f/u2f_request.h"
@@ -19,16 +20,18 @@ class U2fSign : public U2fRequest {
   U2fSign(const std::vector<std::vector<uint8_t>>& registered_keys,
           const std::vector<uint8_t>& challenge_hash,
           const std::vector<uint8_t>& app_param,
+          std::string relying_party_id,
           std::vector<U2fDiscovery*> discoveries,
-          const ResponseCallback& cb);
+          const ResponseCallback& completion_callback);
   ~U2fSign() override;
 
   static std::unique_ptr<U2fRequest> TrySign(
       const std::vector<std::vector<uint8_t>>& registered_keys,
       const std::vector<uint8_t>& challenge_hash,
       const std::vector<uint8_t>& app_param,
+      std::string relying_party_id,
       std::vector<U2fDiscovery*> discoveries,
-      const ResponseCallback& cb);
+      const ResponseCallback& completion_callback);
 
  private:
   void TryDevice() override;
@@ -36,6 +39,7 @@ class U2fSign : public U2fRequest {
                    U2fReturnCode return_code,
                    const std::vector<uint8_t>& response_data);
 
+  ResponseCallback completion_callback_;
   const std::vector<std::vector<uint8_t>> registered_keys_;
   std::vector<uint8_t> challenge_hash_;
   std::vector<uint8_t> app_param_;

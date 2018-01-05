@@ -2,53 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_DATA_H_
-#define CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_DATA_H_
+#ifndef DEVICE_U2F_AUTHENTICATOR_DATA_H_
+#define DEVICE_U2F_AUTHENTICATOR_DATA_H_
 
 #include <stdint.h>
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
+#include "device/u2f/attested_credential_data.h"
 
-namespace content {
-
-class AttestedCredentialData;
+namespace device {
 
 // https://www.w3.org/TR/2017/WD-webauthn-20170505/#sec-authenticator-data.
-class CONTENT_EXPORT AuthenticatorData {
+class AuthenticatorData {
  public:
   enum class Flag : uint8_t {
-    TEST_OF_USER_PRESENCE = 1u << 0,
-    ATTESTATION = 1u << 6
+    kTestOfUserPresence = 1u << 0,
+    kAttestation = 1u << 6
   };
 
-  using Flags = uint8_t;
+  static AuthenticatorData Create(std::string relying_party_id,
+                                  uint8_t flags,
+                                  std::vector<uint8_t> counter,
+                                  AttestedCredentialData data);
 
   AuthenticatorData(std::string relying_party_id,
-                    Flags flags,
+                    uint8_t flags,
                     std::vector<uint8_t> counter,
-                    std::unique_ptr<AttestedCredentialData> data);
-  virtual ~AuthenticatorData();
+                    AttestedCredentialData data);
 
-  static std::unique_ptr<AuthenticatorData> Create(
-      std::string client_data_json,
-      Flags flags,
-      std::vector<uint8_t> counter,
-      std::unique_ptr<AttestedCredentialData> data);
+  // Moveable.
+  AuthenticatorData(AuthenticatorData&& other);
+  AuthenticatorData& operator=(AuthenticatorData&& other);
+
+  ~AuthenticatorData();
 
   // Produces a byte array consisting of:
   // * hash(relying_party_id)
   // * flags
   // * counter
   // * attestation_data.
-  std::vector<uint8_t> SerializeToByteArray();
+  std::vector<uint8_t> SerializeToByteArray() const;
 
  private:
   // RP ID associated with the credential
-  const std::string relying_party_id_;
+  std::string relying_party_id_;
 
   // Flags (bit 0 is the least significant bit):
   // [ED | AT | RFU | RFU | RFU | RFU | RFU | UP ]
@@ -56,15 +55,16 @@ class CONTENT_EXPORT AuthenticatorData {
   //  * Bits 1-5: Reserved for future use (RFU).
   //  * Bit 6: Attestation data included (AT).
   //  * Bit 7: Extension data included (ED).
-  Flags flags_;
+  uint8_t flags_;
 
   // Signature counter, 32-bit unsigned big-endian integer.
-  const std::vector<uint8_t> counter_;
-  const std::unique_ptr<AttestedCredentialData> attested_data_;
+  std::vector<uint8_t> counter_;
+
+  AttestedCredentialData attested_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_WEBAUTH_AUTHENTICATOR_DATA_H_
+#endif  // DEVICE_U2F_AUTHENTICATOR_DATA_H_

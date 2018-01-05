@@ -27,7 +27,8 @@ class U2fRequest : public U2fDiscovery::Observer {
   // U2fRequest will register itself as an observer for each entry in
   // |discoveries|. Clients need to ensure that each discovery outlives this
   // request.
-  U2fRequest(std::vector<U2fDiscovery*> discoveries, ResponseCallback callback);
+  U2fRequest(std::string relying_party_id,
+             std::vector<U2fDiscovery*> discoveries);
   ~U2fRequest() override;
 
   void Start();
@@ -55,8 +56,8 @@ class U2fRequest : public U2fDiscovery::Observer {
   std::list<U2fDevice*> attempted_devices_;
 
   State state_;
+  const std::string relying_party_id_;
   std::vector<U2fDiscovery*> discoveries_;
-  ResponseCallback cb_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestIterateDevice);
