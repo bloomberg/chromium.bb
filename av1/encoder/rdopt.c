@@ -9428,6 +9428,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       skippable = rd_stats_y.skip;
 
 #if CONFIG_FILTER_INTRA
+      uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+      memcpy(best_blk_skip, x->blk_skip[0], sizeof(uint8_t) * ctx->num_4x4_blk);
+
       if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id]) {
         RD_STATS rd_stats_y_fi;
         int filter_intra_selected_flag = 0;
@@ -9472,6 +9475,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                    sizeof(*best_txk_type) *
                        (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
 #endif
+            memcpy(best_blk_skip, x->blk_skip[0],
+                   sizeof(uint8_t) * ctx->num_4x4_blk);
             best_fi_mode = fi_mode;
             rd_stats_y = rd_stats_y_fi;
             rate_y = rd_stats_y_fi.rate;
@@ -9489,6 +9494,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                sizeof(*best_txk_type) *
                    (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
 #endif
+        memcpy(x->blk_skip[0], best_blk_skip,
+               sizeof(uint8_t) * ctx->num_4x4_blk);
+
         if (filter_intra_selected_flag) {
           mbmi->filter_intra_mode_info.use_filter_intra = 1;
           mbmi->filter_intra_mode_info.filter_intra_mode = best_fi_mode;
@@ -10266,6 +10274,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       best_mbmode = *mbmi;
       best_skip2 = 0;
       best_mode_skippable = skippable;
+      for (i = 0; i < MAX_MB_PLANE; ++i)
+        memcpy(ctx->blk_skip[i], x->blk_skip[i],
+               sizeof(uint8_t) * ctx->num_4x4_blk);
     }
   }
 PALETTE_EXIT:
