@@ -1,0 +1,35 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+
+source_set("ctap") {
+  sources = [
+    "ctap_device_command.h",
+    "ctap_get_assertion_request_param.cc",
+    "ctap_get_assertion_request_param.h",
+    "ctap_make_credential_request_param.cc",
+    "ctap_make_credential_request_param.h",
+    "ctap_request_command.h",
+    "ctap_request_param.cc",
+    "ctap_request_param.h",
+    "ctap_response_code.h",
+    "public_key_credential_descriptor.cc",
+    "public_key_credential_descriptor.h",
+    "public_key_credential_params.cc",
+    "public_key_credential_params.h",
+    "public_key_credential_rp_entity.cc",
+    "public_key_credential_rp_entity.h",
+    "public_key_credential_user_entity.cc",
+    "public_key_credential_user_entity.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/cbor",
+    "//services/device/public/interfaces",
+    "//services/service_manager/public/cpp",
+    "//services/service_manager/public/interfaces",
+  ]
+}
