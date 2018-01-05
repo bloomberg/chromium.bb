@@ -109,7 +109,6 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
 class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
  public:
   static CSSCalcValue* Create(const CSSParserTokenRange&, ValueRange);
-  static CSSCalcValue* CreateSimplified(const CSSParserTokenRange&, ValueRange);
   static CSSCalcValue* Create(CSSCalcExpressionNode*,
                               ValueRange = kValueRangeAll);
 

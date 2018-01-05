@@ -9,99 +9,15 @@
 
 test(() => {
   assert_throws(new SyntaxError(), () => CSSNumericValue.parse('%#('));
-  assert_throws(new SyntaxError(), () => CSSNumericValue.parse('auto'));
-  assert_throws(new SyntaxError(), () => CSSNumericValue.parse('1 2'));
 }, 'Parsing an invalid string throws SyntaxError');
 
 test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('-3.14'),
-      CSS.number(-3.14));
-}, 'Parsing a <number-token> returns a number CSSUnitValue');
+  assert_throws(new SyntaxError(), () => CSSNumericValue.parse('auto'));
+}, 'Parsing a string with a non numeric token throws SyntaxError');
 
 test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('-3.14%'),
-      CSS.percent(-3.14));
-}, 'Parsing a <percentage-token> returns a percent CSSUnitValue');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('-3.14px'),
-      CSS.px(-3.14));
-}, 'Parsing a <dimension-token> returns a CSSUnitValue with correct unit');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('0'),
-      CSS.number(0));
-}, 'Parsing a unitless zero returns zero');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1)'),
-      new CSSMathSum(1));
-}, 'Parsing a calc with only one argument returns a CSSMathSum with that argument');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 + 1)'),
-      new CSSMathSum(1, 1));
-}, 'Parsing a calc with addition returns a CSSMathSum');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 - 1)'),
-      new CSSMathSum(1, new CSSMathNegate(1)));
-}, 'Parsing a calc with subtraction returns a CSSMathSum with negated argument');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 * 1)'),
-      new CSSMathProduct(1, 1));
-}, 'Parsing a calc with multiplication returns a CSSMathProduct');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 / 1)'),
-      new CSSMathProduct(1, new CSSMathInvert(1)));
-}, 'Parsing a calc with division returns a CSSMathProduct with inverted argument');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 + 2 - 3 + 4)'),
-      new CSSMathSum(1, 2, new CSSMathNegate(3), 4));
-}, 'Parsing a calc with n-ary addition and subtraction returns a flat CSSMathSum');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 * 2 / 3 * 4)'),
-      new CSSMathProduct(1, 2, new CSSMathInvert(3), 4));
-}, 'Parsing a calc with n-ary multiplication and division returns a flat CSSMathProduct');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(calc(1 + 2) + 3)'),
-      new CSSMathSum(new CSSMathSum(1, 2), 3));
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 + calc(2 + 3))'),
-      new CSSMathSum(1, new CSSMathSum(2, 3)));
-}, 'Parsing a calc with nested sum returns nested CSSMathSum');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(calc(1 * 2) * 3)'),
-      new CSSMathProduct(new CSSMathProduct(1, 2), 3));
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(1 * calc(2 * 3))'),
-      new CSSMathProduct(1, new CSSMathProduct(2, 3)));
-}, 'Parsing a calc with nested product returns nested CSSMathProduct');
-
-test(() => {
-  assert_style_value_equals(
-      CSSNumericValue.parse('calc(calc(1px * 2) + 3%)'),
-      new CSSMathSum(new CSSMathProduct(CSS.px(1), 2), CSS.percent(3)));
-}, 'Parsing a calc with mixed compatible units returns correct CSSMathValue');
+  assert_throws(new SyntaxError(), () => CSSNumericValue.parse('1 2'));
+}, 'Parsing a string with left over numeric tokens throws SyntaxError');
 
 test(() => {
   assert_throws(new SyntaxError(), () => CSSNumericValue.parse('calc(calc(1px * 2s) + 3%)'));
