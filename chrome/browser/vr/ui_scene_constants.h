@@ -88,7 +88,6 @@ static constexpr float kWebVrUrlToastOpacity = 0.8f;
 static constexpr float kWebVrUrlToastRotationRad = gfx::DegToRad(14.0f);
 
 static constexpr float kWebVrToastDistance = 1.0;
-static constexpr float kFullscreenToastDistance = kFullscreenDistance;
 static constexpr float kToastWidthDMM = 0.512f;
 static constexpr float kToastHeightDMM = 0.064f;
 static constexpr float kToastOffsetDMM = 0.004f;
@@ -116,18 +115,13 @@ static constexpr float kButtonZOffsetHoverDMM = 0.048;
 static constexpr float kCloseButtonDistance = 2.4f;
 static constexpr float kCloseButtonVerticalOffset =
     kFullscreenVerticalOffset - (kFullscreenHeight * 0.5f) - 0.35f;
-static constexpr float kCloseButtonHeightDMM = kButtonDiameterDMM;
-static constexpr float kCloseButtonHeight =
-    kCloseButtonHeightDMM * kCloseButtonDistance;
-static constexpr float kCloseButtonWidth =
-    kCloseButtonHeightDMM * kCloseButtonDistance;
+static constexpr float kCloseButtonDiameter =
+    kButtonDiameterDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonFullscreenDistance = 2.9f;
 static constexpr float kCloseButtonFullscreenVerticalOffset =
     kFullscreenVerticalOffset - (kFullscreenHeight / 2) - 0.35f;
-static constexpr float kCloseButtonFullscreenHeight =
-    kCloseButtonHeightDMM * kCloseButtonFullscreenDistance;
-static constexpr float kCloseButtonFullscreenWidth =
-    kCloseButtonHeightDMM * kCloseButtonFullscreenDistance;
+static constexpr float kCloseButtonFullscreenDiameter =
+    kButtonDiameterDMM * kCloseButtonFullscreenDistance;
 
 static constexpr float kLoadingIndicatorWidthDMM = 0.24f;
 static constexpr float kLoadingIndicatorHeightDMM = 0.008f;
