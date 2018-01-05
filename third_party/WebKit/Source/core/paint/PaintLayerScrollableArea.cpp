@@ -1227,6 +1227,8 @@ int PaintLayerScrollableArea::HorizontalScrollbarStart(int min_x) const {
 
 IntSize PaintLayerScrollableArea::ScrollbarOffset(
     const Scrollbar& scrollbar) const {
+  // TODO(szager): Factor out vertical offset calculation into other methods,
+  // for symmetry with *ScrollbarStart methods for horizontal offset.
   if (&scrollbar == VerticalScrollbar()) {
     return IntSize(
         VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
@@ -1235,7 +1237,9 @@ IntSize PaintLayerScrollableArea::ScrollbarOffset(
 
   if (&scrollbar == HorizontalScrollbar()) {
     return IntSize(HorizontalScrollbarStart(0),
-                   GetLayoutBox()->BorderTop().ToInt() + VisibleHeight());
+                   GetLayoutBox()->BorderTop().ToInt() +
+                       VisibleContentRect(kIncludeScrollbars).Height() -
+                       HorizontalScrollbar()->ScrollbarThickness());
   }
 
   NOTREACHED();
@@ -1580,15 +1584,17 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
     if (resize_control_rect.Contains(local_point))
       return true;
   }
-
   int resize_control_size = max(resize_control_rect.Height(), 0);
+
+  IntRect visible_rect = VisibleContentRect(kIncludeScrollbars);
+
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
     LayoutRect v_bar_rect(
         VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
         GetLayoutBox()->BorderTop().ToInt(),
         VerticalScrollbar()->ScrollbarThickness(),
-        VisibleContentRect(kIncludeScrollbars).Height() -
+        visible_rect.Height() -
             (HasHorizontalScrollbar()
                  ? HorizontalScrollbar()->ScrollbarThickness()
                  : resize_control_size));
@@ -1602,13 +1608,15 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   if (HasHorizontalScrollbar() &&
       HorizontalScrollbar()->ShouldParticipateInHitTesting()) {
     // TODO(crbug.com/638981): Are the conversions to int intentional?
+    int h_scrollbar_thickness = HorizontalScrollbar()->ScrollbarThickness();
     LayoutRect h_bar_rect(
         HorizontalScrollbarStart(0),
-        GetLayoutBox()->BorderTop().ToInt() + VisibleHeight(),
-        VisibleContentRect(kIncludeScrollbars).Width() -
-            (HasVerticalScrollbar() ? VerticalScrollbar()->ScrollbarThickness()
+        GetLayoutBox()->BorderTop().ToInt() + visible_rect.Height() -
+            h_scrollbar_thickness,
+        visible_rect.Width() - (HasVerticalScrollbar()
+                                    ? VerticalScrollbar()->ScrollbarThickness()
                                     : resize_control_size),
-        HorizontalScrollbar()->ScrollbarThickness());
+        h_scrollbar_thickness);
     if (h_bar_rect.Contains(local_point)) {
       result.SetScrollbar(HorizontalScrollbar());
       return true;

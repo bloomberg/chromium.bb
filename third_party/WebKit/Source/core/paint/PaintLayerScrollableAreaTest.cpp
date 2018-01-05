@@ -821,4 +821,46 @@ TEST_F(PaintLayerScrollableAreaTest,
   const auto* properties = scroller->FirstFragment().PaintProperties();
   EXPECT_NE(nullptr, properties->ScrollTranslation());
 }
+
+TEST_F(PaintLayerScrollableAreaTest, HitTestOverlayScrollbars) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    html, body {
+      margin: 0;
+    }
+    #scroller {
+      overflow: scroll;
+      height: 100px;
+      width: 100px;
+    }
+    #scrolled {
+      width: 1000px;
+      height: 1000px;
+    }
+    </style>
+    <div id='scroller'><div id='scrolled'></div></div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  auto* scroller = GetLayoutObjectByElementId("scroller");
+  auto* scrollable_area = ToLayoutBoxModelObject(scroller)->GetScrollableArea();
+
+  scrollable_area->SetScrollbarsHidden(true);
+
+  HitTestRequest hit_request(HitTestRequest::kMove | HitTestRequest::kReadOnly);
+  HitTestResult hit_result(hit_request, LayoutPoint(95, 5));
+  GetDocument().GetLayoutView()->HitTest(hit_result);
+  EXPECT_EQ(hit_result.GetScrollbar(), nullptr);
+  hit_result = HitTestResult(hit_request, LayoutPoint(5, 95));
+  GetDocument().GetLayoutView()->HitTest(hit_result);
+  EXPECT_EQ(hit_result.GetScrollbar(), nullptr);
+
+  scrollable_area->SetScrollbarsHidden(false);
+
+  hit_result = HitTestResult(hit_request, LayoutPoint(95, 5));
+  GetDocument().GetLayoutView()->HitTest(hit_result);
+  EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->VerticalScrollbar());
+  hit_result = HitTestResult(hit_request, LayoutPoint(5, 95));
+  GetDocument().GetLayoutView()->HitTest(hit_result);
+  EXPECT_EQ(hit_result.GetScrollbar(), scrollable_area->HorizontalScrollbar());
+}
 }
