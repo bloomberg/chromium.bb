@@ -290,7 +290,8 @@ class MediaCodecUtil {
      * @param mediaCrypto Crypto of the media.
      * @return CodecCreationInfo object
      */
-    static CodecCreationInfo createDecoder(String mime, int codecType, MediaCrypto mediaCrypto) {
+    static CodecCreationInfo createDecoder(
+            String mime, @CodecType int codecType, MediaCrypto mediaCrypto) {
         // Always return a valid CodecCreationInfo, its |mediaCodec| field will be null
         // if we cannot create the codec.
 
