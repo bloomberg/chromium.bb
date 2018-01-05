@@ -7,7 +7,7 @@
 <div id="host"></div>
 <script>
   test(() => {
-    var root = host.createShadowRoot();
+    var root = host.attachShadow({mode:"open"});
     root.innerHTML = "<span></span><span></span>";
     var span = root.firstChild;
     document.documentElement.offsetTop;
