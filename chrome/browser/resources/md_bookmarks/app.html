@@ -30,7 +30,6 @@
         display: flex;
         flex-direction: row;
         flex-grow: 1;
-        overflow: auto;
       }
 
       #splitter {
@@ -56,7 +55,6 @@
         display: block;
         max-width: 40%;
         min-width: var(--min-sidebar-width);
-        overflow-x: hidden;
         overflow-y: auto;
         padding-top: 8px;
         user-select: none;
@@ -65,7 +63,7 @@
 
       bookmarks-list {
         flex: 1;
-        min-width: 550px;
+        overflow: hidden;
       }
     </style>
     <bookmarks-toolbar sidebar-width="[[sidebarWidth_]]" role="banner">
