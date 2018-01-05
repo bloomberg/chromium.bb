@@ -8,9 +8,12 @@
 #include <string>
 
 #include "components/autofill/core/browser/credit_card_save_manager.h"
-#include "components/autofill/core/browser/payments/test_payments_client.h"
 
 namespace autofill {
+
+namespace payments {
+class TestPaymentsClient;
+}  // namespace payments
 
 class AutofillClient;
 class AutofillDriver;

@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/test_credit_card_save_manager.h"
 
+#include "components/autofill/core/browser/payments/test_payments_client.h"
+
 namespace autofill {
 
 TestCreditCardSaveManager::TestCreditCardSaveManager(

@@ -8,7 +8,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/test_payments_client.h"
+#include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_form_structure.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
