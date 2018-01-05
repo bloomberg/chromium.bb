@@ -161,6 +161,7 @@ This file contains the strings for ash.
         Shelf
       </message>
 
+      <!-- Shelf buttons -->
       <message name="IDS_ASH_SHELF_SHUTDOWN_BUTTON" desc="Text shown on shutdown button on login/lock screen.">
         Shut down
       </message>
@@ -175,6 +176,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SHELF_CANCEL_BUTTON" desc="Text shown on cancel button on add user screen.">
         Cancel
+      </message>
+      <message name="IDS_ASH_BROWSE_AS_GUEST_BUTTON" desc="Text shown on Chrome OS sign-in screen button that launches guest session. Should be short.">
+        Browse as Guest
+      </message>
+      <message name="IDS_ASH_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+        Add Person
       </message>
 
       <message name="IDS_ASH_KEYBOARD_OVERLAY_TITLE" desc="The title of the keyboard overlay.">

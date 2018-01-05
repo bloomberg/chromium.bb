@@ -36,11 +36,13 @@ class ASH_EXPORT LoginShelfView : public views::View,
                                   public ShutdownController::Observer {
  public:
   enum ButtonId {
-    kShutdown = 1,  // Shut down the device.
-    kRestart,       // Restart the device.
-    kSignOut,       // Sign out the active user session.
-    kCloseNote,     // Close the lock screen note.
-    kCancel,        // Cancel multiple user sign-in.
+    kShutdown = 1,   // Shut down the device.
+    kRestart,        // Restart the device.
+    kSignOut,        // Sign out the active user session.
+    kCloseNote,      // Close the lock screen note.
+    kCancel,         // Cancel multiple user sign-in.
+    kBrowseAsGuest,  // Use in guest mode.
+    kAddUser,        // Add a new user.
   };
 
   explicit LoginShelfView(
