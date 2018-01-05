@@ -98,7 +98,8 @@ def CheckHtml(input_api, output_api):
 
 def RunOptimizeWebUiTests(input_api, output_api):
   presubmit_path = input_api.PresubmitLocalPath()
-  tests = [input_api.os_path.join(presubmit_path, 'optimize_webui_test.py')]
+  sources = ['optimize_webui_test.py', 'unpack_pak.py']
+  tests = [input_api.os_path.join(presubmit_path, s) for s in sources]
   return input_api.canned_checks.RunUnitTests(input_api, output_api, tests)
 
 
