@@ -13,9 +13,16 @@ namespace {
 constexpr uint32_t kDefaultNumberOfFramesToDeadline = 4;
 }
 
-// Disable surface lifetime management using surface references. This enables
-// adding surface sequences and disables adding temporary references.
-const char kDisableSurfaceReferences[] = "disable-surface-references";
+// The default number of the BeginFrames to wait to activate a surface with
+// dependencies.
+const char kDeadlineToSynchronizeSurfaces[] =
+    "deadline-to-synchronize-surfaces";
+
+// Enable surface lifetime management using surface references. This disables
+// adding surface sequences and enables adding temporary references. This flag
+// is only checked on Android, other platforms always have surface references
+// enabled.
+const char kEnableSurfaceReferences[] = "enable-surface-references";
 
 // Enables multi-client Surface synchronization. In practice, this indicates
 // that LayerTreeHost expects to be given a valid viz::LocalSurfaceId provided
@@ -25,11 +32,6 @@ const char kEnableSurfaceSynchronization[] = "enable-surface-synchronization";
 // Enables running viz. This basically entails running the display compositor
 // in the viz process instead of the browser process.
 const char kEnableViz[] = "enable-viz";
-
-// The default number of the BeginFrames to wait to activate a surface with
-// dependencies.
-const char kDeadlineToSynchronizeSurfaces[] =
-    "deadline-to-synchronize-surfaces";
 
 uint32_t GetDeadlineToSynchronizeSurfaces() {
   std::string deadline_to_synchronize_surfaces_string =

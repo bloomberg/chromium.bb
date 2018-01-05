@@ -97,10 +97,10 @@ class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
 
 struct CompositorDependencies {
   CompositorDependencies() : frame_sink_id_allocator(kDefaultClientId) {
-    // TODO(kylechar): Switch this back to kDisableSurfaceReferences.
+    // TODO(crbug.com/676384): Remove flag along with surface sequences.
     auto surface_lifetime_type =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
-            "enable-surface-references")
+            switches::kEnableSurfaceReferences)
             ? viz::SurfaceManager::LifetimeType::REFERENCES
             : viz::SurfaceManager::LifetimeType::SEQUENCES;
 
