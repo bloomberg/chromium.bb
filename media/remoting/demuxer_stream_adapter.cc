@@ -50,11 +50,9 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       read_until_count_(0),
       last_count_(0),
       pending_flush_(false),
-      current_pending_frame_offset_(0),
       pending_frame_is_eos_(false),
-      write_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       media_status_(DemuxerStream::kOk),
-      producer_handle_(std::move(producer_handle)),
+      data_pipe_writer_(std::move(producer_handle)),
       bytes_written_to_pipe_(0),
       request_buffer_weak_factory_(this),
       weak_factory_(this) {
@@ -99,8 +97,6 @@ base::Optional<uint32_t> DemuxerStreamAdapter::SignalFlush(bool flushing) {
     return base::nullopt;
 
   // Cleans up pending frame data.
-  pending_frame_.clear();
-  current_pending_frame_offset_ = 0;
   pending_frame_is_eos_ = false;
   // Invalidates pending Read() tasks.
   request_buffer_weak_factory_.InvalidateWeakPtrs();
@@ -193,15 +189,6 @@ void DemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RpcBroker::SendMessageToRemote, rpc_broker_,
                             base::Passed(&rpc)));
-
-  // Starts Mojo watcher.
-  if (!write_watcher_.IsWatching()) {
-    DEMUXER_VLOG(2) << "Start Mojo data pipe watcher";
-    write_watcher_.Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                         base::Bind(&DemuxerStreamAdapter::TryWriteData,
-                                    weak_factory_.GetWeakPtr()));
-    write_watcher_.ArmOrNotify();
-  }
 }
 
 void DemuxerStreamAdapter::ReadUntil(std::unique_ptr<pb::RpcMessage> message) {
@@ -297,64 +284,39 @@ void DemuxerStreamAdapter::OnNewBuffer(
     case DemuxerStream::kOk: {
       media_status_ = status;
       DCHECK(pending_frame_.empty());
-      if (!producer_handle_.is_valid())
+      if (!data_pipe_writer_.IsPipeValid())
         return;  // Do not start sending (due to previous fatal error).
       pending_frame_ = DecoderBufferToByteArray(*input);
       pending_frame_is_eos_ = input->end_of_stream();
-      TryWriteData(MOJO_RESULT_OK);
+      WriteFrame();
     } break;
   }
 }
 
-void DemuxerStreamAdapter::TryWriteData(MojoResult result) {
+void DemuxerStreamAdapter::WriteFrame() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  // The Mojo watcher will also call TryWriteData() sometimes as a notification
-  // that data pipe is ready. But that does not necessarily mean the data for a
-  // read request is ready to be written into the pipe.
-  if (!is_processing_read_request() || pending_flush_) {
-    DEMUXER_VLOG(3) << "Skip actions since it's not in the reading state";
-    return;
-  }
+  DCHECK(!pending_flush_);
+  DCHECK(is_processing_read_request());
+  DCHECK(!pending_frame_.empty());
 
-  if (pending_frame_.empty()) {
-    DEMUXER_VLOG(3) << "No data available, waiting for demuxer";
-    return;
-  }
-
-  if (!stream_sender_ || !producer_handle_.is_valid()) {
+  if (!stream_sender_ || !data_pipe_writer_.IsPipeValid()) {
     DEMUXER_VLOG(1) << "Ignore since data pipe stream sender is invalid";
     return;
   }
 
-  uint32_t num_bytes = pending_frame_.size() - current_pending_frame_offset_;
-  MojoResult mojo_result = producer_handle_->WriteData(
-      pending_frame_.data() + current_pending_frame_offset_, &num_bytes,
-      MOJO_WRITE_DATA_FLAG_NONE);
-  if (mojo_result != MOJO_RESULT_OK && mojo_result != MOJO_RESULT_SHOULD_WAIT) {
-    DEMUXER_VLOG(1) << "Pipe was closed unexpectedly (or a bug). result:"
-                    << mojo_result;
+  stream_sender_->SendFrame(pending_frame_.size());
+  data_pipe_writer_.Write(pending_frame_.data(), pending_frame_.size(),
+                          base::BindOnce(&DemuxerStreamAdapter::OnFrameWritten,
+                                         base::Unretained(this)));
+}
+
+void DemuxerStreamAdapter::OnFrameWritten(bool success) {
+  if (!success) {
     OnFatalError(MOJO_PIPE_ERROR);
     return;
   }
 
-  write_watcher_.ArmOrNotify();
-  if (mojo_result != MOJO_RESULT_OK)
-    return;
-
-  stream_sender_->ConsumeDataChunk(current_pending_frame_offset_, num_bytes,
-                                   pending_frame_.size());
-  current_pending_frame_offset_ += num_bytes;
-  bytes_written_to_pipe_ += num_bytes;
-
-  // Checks if all buffer was written to browser process.
-  if (current_pending_frame_offset_ != pending_frame_.size()) {
-    // Returns and wait for mojo watcher to notify to write more data.
-    return;
-  }
-
-  // Signal mojo remoting service that all frame buffer is written to data pipe.
-  stream_sender_->SendFrame();
-
+  bytes_written_to_pipe_ += pending_frame_.size();
   // Resets frame buffer variables.
   bool pending_frame_is_eos = pending_frame_is_eos_;
   ++last_count_;
@@ -424,7 +386,6 @@ void DemuxerStreamAdapter::SendReadAck() {
 
 void DemuxerStreamAdapter::ResetPendingFrame() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  current_pending_frame_offset_ = 0;
   pending_frame_.clear();
   pending_frame_is_eos_ = false;
 }
@@ -437,10 +398,7 @@ void DemuxerStreamAdapter::OnFatalError(StopTrigger stop_trigger) {
   if (error_callback_.is_null())
     return;
 
-  if (write_watcher_.IsWatching()) {
-    DEMUXER_VLOG(2) << "Cancel mojo data pipe watcher";
-    write_watcher_.Cancel();
-  }
+  data_pipe_writer_.Close();
 
   base::ResetAndReturn(&error_callback_).Run(stop_trigger);
 }

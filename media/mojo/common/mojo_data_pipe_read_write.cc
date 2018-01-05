@@ -128,6 +128,10 @@ bool MojoDataPipeReader::IsPipeValid() const {
   return consumer_handle_.is_valid();
 }
 
+void MojoDataPipeReader::Close() {
+  consumer_handle_.reset();
+}
+
 // MojoDataPipeWriter
 
 MojoDataPipeWriter::MojoDataPipeWriter(
@@ -234,6 +238,10 @@ void MojoDataPipeWriter::OnPipeError(MojoResult result) {
 
 bool MojoDataPipeWriter::IsPipeValid() const {
   return producer_handle_.is_valid();
+}
+
+void MojoDataPipeWriter::Close() {
+  producer_handle_.reset();
 }
 
 }  // namespace media

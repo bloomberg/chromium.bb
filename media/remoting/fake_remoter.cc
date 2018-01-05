@@ -26,15 +26,13 @@ FakeRemotingDataStreamSender::FakeRemotingDataStreamSender(
     mojom::RemotingDataStreamSenderRequest request,
     mojo::ScopedDataPipeConsumerHandle consumer_handle)
     : binding_(this, std::move(request)),
-      consumer_handle_(std::move(consumer_handle)),
-      consume_data_chunk_count_(0),
+      data_pipe_reader_(std::move(consumer_handle)),
       send_frame_count_(0),
       cancel_in_flight_count_(0) {}
 
 FakeRemotingDataStreamSender::~FakeRemotingDataStreamSender() = default;
 
 void FakeRemotingDataStreamSender::ResetHistory() {
-  consume_data_chunk_count_ = 0;
   send_frame_count_ = 0;
   cancel_in_flight_count_ = 0;
   next_frame_data_.resize(0);
@@ -94,18 +92,17 @@ bool FakeRemotingDataStreamSender::ValidateFrameBuffer(size_t index,
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
 }
 
-void FakeRemotingDataStreamSender::ConsumeDataChunk(
-    uint32_t offset,
-    uint32_t size,
-    uint32_t total_payload_size) {
-  next_frame_data_.resize(total_payload_size);
-  MojoResult result = consumer_handle_->ReadData(
-      next_frame_data_.data() + offset, &size, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-  CHECK(result == MOJO_RESULT_OK);
-  ++consume_data_chunk_count_;
+void FakeRemotingDataStreamSender::SendFrame(uint32_t frame_size) {
+  next_frame_data_.resize(frame_size);
+  data_pipe_reader_.Read(
+      next_frame_data_.data(), frame_size,
+      base::BindOnce(&FakeRemotingDataStreamSender::OnFrameRead,
+                     base::Unretained(this)));
 }
 
-void FakeRemotingDataStreamSender::SendFrame() {
+void FakeRemotingDataStreamSender::OnFrameRead(bool success) {
+  EXPECT_TRUE(success);
+
   ++send_frame_count_;
   received_frame_list.push_back(std::move(next_frame_data_));
   EXPECT_EQ(send_frame_count_, received_frame_list.size());

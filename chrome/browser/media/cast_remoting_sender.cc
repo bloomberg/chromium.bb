@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/cast/constants.h"
+#include "media/mojo/common/mojo_data_pipe_read_write.h"
 
 using content::BrowserThread;
 
@@ -92,7 +93,7 @@ CastRemotingSender::CastRemotingSender(
       latest_acked_frame_id_(media::cast::FrameId::first() - 1),
       duplicate_ack_counter_(0),
       input_queue_discards_remaining_(0),
-      pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
+      is_reading_(false),
       flow_restart_pending_(true),
       weak_factory_(this) {
   // Confirm this constructor is running on the IO BrowserThread.
@@ -165,12 +166,8 @@ void CastRemotingSender::FindAndBind(
   DCHECK(sender->error_callback_.is_null());
   sender->error_callback_ = error_callback;
 
-  sender->pipe_ = std::move(pipe);
-  sender->pipe_watcher_.Watch(sender->pipe_.get(),
-                              MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-                              base::Bind(&CastRemotingSender::ProcessInputQueue,
-                                         base::Unretained(sender)));
-  sender->pipe_watcher_.ArmOrNotify();
+  sender->data_pipe_reader_ =
+      base::MakeUnique<media::MojoDataPipeReader>(std::move(pipe));
   sender->binding_.Bind(std::move(request));
   sender->binding_.set_connection_error_handler(sender->error_callback_);
 }
@@ -325,111 +322,96 @@ void CastRemotingSender::OnReceivedCastMessage(
 
     // One or more frames were canceled. This may allow pending input operations
     // to complete.
-    ProcessInputQueue(MOJO_RESULT_OK);
+    ProcessNextInputTask();
   }
 }
 
-void CastRemotingSender::ConsumeDataChunk(uint32_t offset, uint32_t size,
-                                          uint32_t total_payload_size) {
+void CastRemotingSender::SendFrame(uint32_t frame_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  input_queue_.push(
-      base::Bind(&CastRemotingSender::TryConsumeDataChunk,
-                 base::Unretained(this), offset, size, total_payload_size));
-  ProcessInputQueue(MOJO_RESULT_OK);
+  const bool need_to_start_processing = input_queue_.empty();
+  input_queue_.push(base::BindRepeating(&CastRemotingSender::ReadFrame,
+                                        base::Unretained(this), frame_size));
+  input_queue_.push(base::BindRepeating(&CastRemotingSender::TrySendFrame,
+                                        base::Unretained(this)));
+  if (need_to_start_processing)
+    ProcessNextInputTask();
 }
 
-void CastRemotingSender::SendFrame() {
+void CastRemotingSender::ProcessNextInputTask() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  input_queue_.push(
-      base::Bind(&CastRemotingSender::TrySendFrame, base::Unretained(this)));
-  ProcessInputQueue(MOJO_RESULT_OK);
+  if (input_queue_.empty() || is_reading_)
+    return;
+
+  input_queue_.front().Run();
 }
 
-void CastRemotingSender::ProcessInputQueue(MojoResult result) {
+void CastRemotingSender::OnInputTaskComplete() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  while (!input_queue_.empty()) {
-    if (!input_queue_.front().Run(input_queue_discards_remaining_ > 0))
-      break;  // Operation must be retried later. Stop processing queue.
-    input_queue_.pop();
-    if (input_queue_discards_remaining_ > 0)
-      --input_queue_discards_remaining_;
+  DCHECK(!input_queue_.empty());
+  input_queue_.pop();
+  if (input_queue_discards_remaining_ > 0)
+    --input_queue_discards_remaining_;
+
+  // Always force a post task to prevent the stack from growing too deep.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&CastRemotingSender::ProcessNextInputTask,
+                                base::Unretained(this)));
+}
+
+void CastRemotingSender::ReadFrame(uint32_t size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!is_reading_);
+  if (!data_pipe_reader_->IsPipeValid()) {
+    VLOG(1) << SENDER_SSRC << "Data pipe handle no longer valid.";
+    OnPipeError();
+    return;
+  }
+
+  is_reading_ = true;
+  if (input_queue_discards_remaining_ > 0) {
+    data_pipe_reader_->Read(nullptr, size,
+                            base::BindOnce(&CastRemotingSender::OnFrameRead,
+                                           base::Unretained(this)));
+  } else {
+    next_frame_data_.resize(size);
+    data_pipe_reader_->Read(
+        reinterpret_cast<uint8_t*>(base::string_as_array(&next_frame_data_)),
+        size,
+        base::BindOnce(&CastRemotingSender::OnFrameRead,
+                       base::Unretained(this)));
   }
 }
 
-bool CastRemotingSender::TryConsumeDataChunk(uint32_t offset, uint32_t size,
-                                             uint32_t total_payload_size,
-                                             bool discard_data) {
+void CastRemotingSender::OnFrameRead(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(is_reading_);
+  is_reading_ = false;
+  if (!success) {
+    OnPipeError();
+    return;
+  }
+  OnInputTaskComplete();
+}
 
-  do {
-    if (!pipe_.is_valid()) {
-      VLOG(1) << SENDER_SSRC << "Data pipe handle no longer valid.";
-      break;
-    }
-
-    if (offset + size > total_payload_size) {
-      LOG(ERROR)
-          << SENDER_SSRC << "BUG: offset + size > total_payload_size ("
-          << offset << " + " << size << " > " << total_payload_size << ')';
-      break;
-    }
-
-    // If the data is to be discarded, do a data pipe read with the DISCARD flag
-    // set.
-    if (discard_data) {
-      const MojoResult result = pipe_->ReadData(
-          nullptr, &size,
-          MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-      if (result == MOJO_RESULT_OK)
-        return true;  // Successfully discarded data.
-      if (result == MOJO_RESULT_OUT_OF_RANGE) {
-        pipe_watcher_.ArmOrNotify();
-        return false;  // Retry later.
-      }
-      LOG(ERROR) << SENDER_SSRC
-                 << "Unexpected result when discarding from data pipe ("
-                 << result << ')';
-      break;
-    }
-
-    // If |total_payload_size| has changed, resize the data string. If it has
-    // not changed, the following statement will be a no-op.
-    next_frame_data_.resize(total_payload_size);
-
-    const MojoResult result =
-        pipe_->ReadData(base::string_as_array(&next_frame_data_) + offset,
-                        &size, MOJO_READ_DATA_FLAG_ALL_OR_NONE);
-    if (result == MOJO_RESULT_OK)
-      return true;  // Successfully consumed data.
-    if (result == MOJO_RESULT_OUT_OF_RANGE) {
-      pipe_watcher_.ArmOrNotify();
-      return false;  // Retry later.
-    }
-    LOG(ERROR)
-        << SENDER_SSRC << "Read from data pipe failed (" << result << ')';
-  } while (false);
-
-  // If this point is reached, there was a fatal error. Shut things down and run
-  // the error callback.
-  pipe_watcher_.Cancel();
-  pipe_.reset();
+void CastRemotingSender::OnPipeError() {
+  data_pipe_reader_.reset();
   binding_.Close();
   error_callback_.Run();
-  return true;
 }
 
-bool CastRemotingSender::TrySendFrame(bool discard_data) {
+void CastRemotingSender::TrySendFrame() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // If the frame's data is to be discarded, just return immediately.
-  if (discard_data)
-    return true;
+  DCHECK(!is_reading_);
+  if (input_queue_discards_remaining_ > 0) {
+    OnInputTaskComplete();
+    return;
+  }
 
   // If there would be too many frames in-flight, do not proceed.
   if (NumberOfFramesInFlight() >= media::cast::kMaxUnackedFrames) {
     VLOG(1) << SENDER_SSRC
             << "Cannot send frame now because too many frames are in flight.";
-    return false;
+    return;
   }
 
   VLOG(2) << SENDER_SSRC
@@ -506,13 +488,11 @@ bool CastRemotingSender::TrySendFrame(bool discard_data) {
   if (is_first_frame_to_be_sent)
     ScheduleNextRtcpReport();
 
-  return true;
+  OnInputTaskComplete();
 }
 
 void CastRemotingSender::CancelInFlightData() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  base::STLClearObject(&next_frame_data_);
 
   // TODO(miu): The following code is something we want to do as an
   // optimization. However, as-is, it's not quite correct. We can only cancel

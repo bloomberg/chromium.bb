@@ -177,6 +177,7 @@ TEST_F(DemuxerStreamAdapterTest, MultiReadUntil) {
 }
 
 TEST_F(DemuxerStreamAdapterTest, WriteOneFrameSmallerThanCapacity) {
+  EXPECT_CALL(*demuxer_stream_, Read(_)).Times(1);
   // Sends a frame with size 50 bytes, pts = 1 and key frame.
   demuxer_stream_->CreateFakeFrame(50, true, 1 /* pts */);
   demuxer_stream_adapter_->FakeReadUntil(1, 999);
@@ -184,7 +185,6 @@ TEST_F(DemuxerStreamAdapterTest, WriteOneFrameSmallerThanCapacity) {
 
   // Checks if it's sent to consumer side and data is correct
   ASSERT_EQ(data_stream_sender_->send_frame_count(), 1U);
-  ASSERT_EQ(data_stream_sender_->consume_data_chunk_count(), 1U);
   ASSERT_TRUE(data_stream_sender_->ValidateFrameBuffer(0, 50, true, 1));
   pb::RpcMessage* last_rpc = demuxer_stream_adapter_->last_received_rpc();
   ASSERT_TRUE(last_rpc);
@@ -194,6 +194,7 @@ TEST_F(DemuxerStreamAdapterTest, WriteOneFrameSmallerThanCapacity) {
 }
 
 TEST_F(DemuxerStreamAdapterTest, WriteOneFrameLargerThanCapacity) {
+  EXPECT_CALL(*demuxer_stream_, Read(_)).Times(1);
   // Sends a frame with size 800 bytes, pts = 1 and key frame.
   demuxer_stream_->CreateFakeFrame(800, true, 1 /* pts */);
   demuxer_stream_adapter_->FakeReadUntil(1, 999);
@@ -201,7 +202,6 @@ TEST_F(DemuxerStreamAdapterTest, WriteOneFrameLargerThanCapacity) {
 
   // Checks if it's sent to consumer side and data is correct
   ASSERT_EQ(data_stream_sender_->send_frame_count(), 1U);
-  ASSERT_EQ(data_stream_sender_->consume_data_chunk_count(), 4U);
   ASSERT_TRUE(data_stream_sender_->ValidateFrameBuffer(0, 800, true, 1));
   pb::RpcMessage* last_rpc = demuxer_stream_adapter_->last_received_rpc();
   ASSERT_TRUE(last_rpc);
@@ -211,6 +211,7 @@ TEST_F(DemuxerStreamAdapterTest, WriteOneFrameLargerThanCapacity) {
 }
 
 TEST_F(DemuxerStreamAdapterTest, SendFrameAndSignalFlushMix) {
+  EXPECT_CALL(*demuxer_stream_, Read(_)).Times(4);
   // Sends a frame with size 50 bytes, pts = 1 and key frame.
   demuxer_stream_->CreateFakeFrame(50, true, 1 /* pts */);
   // Issues ReadUntil request with frame count up to 1 (fetch #0).

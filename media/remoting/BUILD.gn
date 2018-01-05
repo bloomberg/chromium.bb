@@ -60,6 +60,7 @@ source_set("remoting") {
   deps = [
     "//base",
     "//media",
+    "//media/mojo/common",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
     "//ui/gfx",
@@ -92,6 +93,7 @@ source_set("media_remoting_tests") {
     "//base",
     "//base/test:test_support",
     "//media:test_support",
+    "//media/mojo/common",
     "//media/mojo/interfaces:remoting",
     "//testing/gmock",
     "//testing/gtest",
