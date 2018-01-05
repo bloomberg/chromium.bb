@@ -16,7 +16,6 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemv.h"
-#include "av1/encoder/subexp.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 

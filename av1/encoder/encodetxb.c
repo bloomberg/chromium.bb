@@ -19,7 +19,6 @@
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/rdopt.h"
-#include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
 #define TEST_OPTIMIZE_TXB 0

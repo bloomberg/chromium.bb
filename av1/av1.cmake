@@ -160,8 +160,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/segmentation.h"
     "${AOM_ROOT}/av1/encoder/speed_features.c"
     "${AOM_ROOT}/av1/encoder/speed_features.h"
-    "${AOM_ROOT}/av1/encoder/subexp.c"
-    "${AOM_ROOT}/av1/encoder/subexp.h"
     "${AOM_ROOT}/av1/encoder/temporal_filter.c"
     "${AOM_ROOT}/av1/encoder/temporal_filter.h"
     "${AOM_ROOT}/av1/encoder/tokenize.c"

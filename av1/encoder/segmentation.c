@@ -18,7 +18,6 @@
 
 #include "av1/encoder/cost.h"
 #include "av1/encoder/segmentation.h"
-#include "av1/encoder/subexp.h"
 
 void av1_enable_segmentation(struct segmentation *seg) {
   seg->enabled = 1;

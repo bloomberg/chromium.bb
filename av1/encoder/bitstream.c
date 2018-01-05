@@ -50,7 +50,6 @@
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/segmentation.h"
-#include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
 #define ENC_MISMATCH_DEBUG 0
