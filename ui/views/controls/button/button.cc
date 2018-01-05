@@ -192,8 +192,7 @@ bool Button::OnMousePressed(const ui::MouseEvent& event) {
     SetState(STATE_PRESSED);
     AnimateInkDrop(views::InkDropState::ACTION_PENDING, &event);
   }
-  if (request_focus_on_press_)
-    RequestFocus();
+  RequestFocusFromEvent();
   if (IsTriggerableEvent(event) && notify_action_ == NOTIFY_ON_PRESS) {
     NotifyClick(event);
     // NOTE: We may be deleted at this point (by the listener's notification
@@ -323,8 +322,7 @@ void Button::OnGestureEvent(ui::GestureEvent* event) {
   } else if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
              ShouldEnterPushedState(*event)) {
     SetState(STATE_PRESSED);
-    if (request_focus_on_press_)
-      RequestFocus();
+    RequestFocusFromEvent();
     event->StopPropagation();
   } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
              event->type() == ui::ET_GESTURE_END) {
@@ -485,6 +483,11 @@ Button::KeyClickAction Button::GetKeyClickActionForEvent(
       PlatformStyle::kReturnClicksFocusedControl)
     return CLICK_ON_KEY_PRESS;
   return CLICK_NONE;
+}
+
+void Button::RequestFocusFromEvent() {
+  if (request_focus_on_press_)
+    RequestFocus();
 }
 
 void Button::NotifyClick(const ui::Event& event) {

@@ -6,6 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace {
@@ -91,6 +93,43 @@ TEST_F(RadioButtonTest, Focus) {
   EXPECT_EQ(button1, focus_manager->GetFocusedView());
   EXPECT_TRUE(button1->checked());
   EXPECT_FALSE(button2->checked());
+}
+
+TEST_F(RadioButtonTest, FocusOnClick) {
+  RadioButton* button1 = new RadioButton(base::string16(), kGroup);
+  button1->SetSize(gfx::Size(10, 10));
+  button_container().AddChildView(button1);
+  button1->SetChecked(true);
+  RadioButton* button2 = new RadioButton(base::string16(), kGroup);
+  button2->SetSize(gfx::Size(10, 10));
+  button_container().AddChildView(button2);
+
+  const gfx::Point point(1, 1);
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  button2->OnMousePressed(event);
+  button2->OnMouseReleased(event);
+
+  EXPECT_TRUE(button2->checked());
+  auto* focus_manager = button_container().GetFocusManager();
+  // Focus behavior is different pre/post-Harmony.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    // No focus on click.
+    EXPECT_EQ(nullptr, focus_manager->GetFocusedView());
+
+    ui::KeyEvent pressed_tab(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
+    focus_manager->OnKeyEvent(pressed_tab);
+    EXPECT_EQ(button2, focus_manager->GetFocusedView());
+
+    button1->OnMousePressed(event);
+    button1->OnMouseReleased(event);
+    // Button 1 gets focus on click because button 2 already had it.
+    EXPECT_TRUE(button1->checked());
+    EXPECT_EQ(button1, focus_manager->GetFocusedView());
+  } else {
+    EXPECT_EQ(button2, focus_manager->GetFocusedView());
+  }
 }
 
 }  // namespace views
