@@ -8,10 +8,10 @@
 
 #include "ash/login_status.h"
 #include "ash/shell.h"
+#include "ash/system/power/convertible_power_button_controller_test_api.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_screenshot_controller_test_api.h"
 #include "ash/system/power/power_button_test_base.h"
-#include "ash/system/power/tablet_power_button_controller_test_api.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -178,21 +178,21 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
 }
 
-// Tests volume key pressed cancels the ongoing tablet power button.
+// Tests volume key pressed cancels the ongoing convertible power button.
 TEST_F(PowerButtonScreenshotControllerTest,
-       PowerButtonPressedFirst_VolumeKeyCancelTabletPowerButton) {
-  // Tests volume down key can stop tablet power button's shutdown timer.
+       PowerButtonPressedFirst_VolumeKeyCancelConvertiblePowerButton) {
+  // Tests volume down key can stop convertible power button's shutdown timer.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   PressKey(ui::VKEY_VOLUME_DOWN);
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   // Tests volume down key can stop shutdown animation timer.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   PressKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -200,13 +200,13 @@ TEST_F(PowerButtonScreenshotControllerTest,
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Tests volume up key can stop tablet power button's shutdown timer.
+  // Tests volume up key can stop convertible power button's shutdown timer.
   // Also tests that volume up key is not consumed.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_TRUE(convertible_test_api_->ShutdownTimerIsRunning());
   PressKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
@@ -215,7 +215,7 @@ TEST_F(PowerButtonScreenshotControllerTest,
   // Tests volume up key can stop shutdown animation timer.
   // Also tests that volume up key is not consumed.
   PressPowerButton();
-  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
+  EXPECT_TRUE(convertible_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   PressKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(LastKeyConsumed());
@@ -293,23 +293,23 @@ TEST_F(PowerButtonScreenshotControllerTest,
   EXPECT_FALSE(LastKeyConsumed());
 }
 
-// Tests volume key pressed first invalidates tablet power button behavior.
+// Tests volume key pressed first invalidates convertible power button behavior.
 TEST_F(PowerButtonScreenshotControllerTest,
-       VolumeKeyPressedFirst_InvalidateTabletPowerButton) {
-  // Tests volume down key invalidates tablet power button behavior.
+       VolumeKeyPressedFirst_InvalidateConvertiblePowerButton) {
+  // Tests volume down key invalidates convertible power button behavior.
   PressKey(ui::VKEY_VOLUME_DOWN);
   PressPowerButton();
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_DOWN);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
-  // Tests volume up key invalidates tablet power button behavior. Also tests
-  // that volume up key is not consumed.
+  // Tests volume up key invalidates convertible power button behavior. Also
+  // tests that volume up key is not consumed.
   PressKey(ui::VKEY_VOLUME_UP);
   PressPowerButton();
   EXPECT_FALSE(LastKeyConsumed());
-  EXPECT_FALSE(tablet_test_api_->ShutdownTimerIsRunning());
+  EXPECT_FALSE(convertible_test_api_->ShutdownTimerIsRunning());
   ReleasePowerButton();
   ReleaseKey(ui::VKEY_VOLUME_UP);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
