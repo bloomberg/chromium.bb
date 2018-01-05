@@ -60,6 +60,7 @@ const struct {
     {autofill::kMirCard, IDR_AUTOFILL_CC_MIR},
     {autofill::kUnionPay, IDR_AUTOFILL_CC_UNIONPAY},
     {autofill::kVisaCard, IDR_AUTOFILL_CC_VISA},
+    {"googlePay", IDR_AUTOFILL_GOOGLE_PAY},
 #if defined(OS_ANDROID)
     {"httpWarning", IDR_AUTOFILL_HTTP_WARNING},
     {"httpsInvalid", IDR_AUTOFILL_HTTPS_INVALID_WARNING},

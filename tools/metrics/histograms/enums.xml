@@ -25096,6 +25096,8 @@ from previous Chrome versions.
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
+  <int value="-1243358233"
+      label="AutofillUseNewSettingsNameInDropdown:enabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
   <int value="-1225198073" label="ReaderModeInCCT:disabled"/>
@@ -25505,6 +25507,8 @@ from previous Chrome versions.
   <int value="-170986053" label="EnableManualFallbacksFilling:enabled"/>
   <int value="-165756594" label="enable-touch-feedback"/>
   <int value="-159877930" label="MaterialDesignUserManager:disabled"/>
+  <int value="-159046738"
+      label="AutofillCreditCardDropdownGooglePayBranding:disabled"/>
   <int value="-158549277" label="enable-embeddedsearch-api"/>
   <int value="-152677714" label="AsmJsToWebAssembly:enabled"/>
   <int value="-147283486" label="enable-network-portal-notification"/>
@@ -25967,6 +25971,8 @@ from previous Chrome versions.
   <int value="1127427821" label="OmniboxEntitySuggestions:disabled"/>
   <int value="1129888794" label="ash-touch-hud"/>
   <int value="1133635187" label="force-gpu-rasterization"/>
+  <int value="1137429237"
+      label="AutofillCreditCardDropdownGooglePayBranding:enabled"/>
   <int value="1139226452" label="enable-nacl-debug"/>
   <int value="1139363314" label="disable-supervised-user-blacklist"/>
   <int value="1142515376" label="enable-nacl"/>
@@ -26094,6 +26100,8 @@ from previous Chrome versions.
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
+  <int value="1449729378"
+      label="AutofillUseNewSettingsNameInDropdown:disabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>
   <int value="1454363479" label="disable-storage-manager"/>

@@ -535,6 +535,9 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
 
   bool is_filling_credit_card = false;
 
+  // Flag to indicate whether all suggestions come from Google Payments.
+  bool is_all_server_suggestions = false;
+
   // Log interactions of forms that are autofillable.
   if (got_autofillable_form) {
     if (autofill_field->Type().group() == CREDIT_CARD) {
@@ -565,8 +568,10 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
         !field.should_autocomplete) {
       return;
     }
+
     if (is_filling_credit_card) {
-      suggestions = GetCreditCardSuggestions(field, autofill_field->Type());
+      suggestions = GetCreditCardSuggestions(field, autofill_field->Type(),
+                                             &is_all_server_suggestions);
     } else {
       suggestions =
           GetProfileSuggestions(*form_structure, field, *autofill_field);
@@ -671,7 +676,8 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
 
   // Send Autofill suggestions (could be an empty list).
   autocomplete_history_manager_->CancelPendingQuery();
-  external_delegate_->OnSuggestionsReturned(query_id, suggestions);
+  external_delegate_->OnSuggestionsReturned(query_id, suggestions,
+                                            is_all_server_suggestions);
 }
 
 bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
@@ -1547,7 +1553,8 @@ std::vector<Suggestion> AutofillManager::GetProfileSuggestions(
 
 std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
     const FormFieldData& field,
-    const AutofillType& type) const {
+    const AutofillType& type,
+    bool* is_all_server_suggestions) const {
   credit_card_form_event_logger_->OnDidPollSuggestions(field);
 
   // The field value is sanitized before attempting to match it to the user's
@@ -1563,6 +1570,14 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
       break;
     }
   }
+
+  // Check if all the suggestions are server cards (come from Google Payments).
+  *is_all_server_suggestions = true;
+  for (const CreditCard* credit_card : cards_to_suggest) {
+    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+      *is_all_server_suggestions = false;
+  }
+
   for (size_t i = 0; i < suggestions.size(); i++) {
     suggestions[i].frontend_id =
         MakeFrontendID(suggestions[i].backend_id, std::string());

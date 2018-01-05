@@ -10,6 +10,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MIR" file="autofill/mir.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_UNIONPAY" file="autofill/unionpay.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_GOOGLE_PAY" file="autofill/googlepay.png" />
 
   <!-- These are not used on desktop, only Android, so use a placeholder file.
        TODO(rouslan): Remove non-keyboard-accessory icon when keyboard

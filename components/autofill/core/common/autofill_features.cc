@@ -12,6 +12,11 @@ namespace features {
 const base::Feature kAutofillAddressNormalizer{
     "AutofillAddressNormalizer", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether the Autofill credit card dropdown shows Google Pay icon.
+const base::Feature kAutofillCreditCardDropdownGooglePayBranding{
+    "AutofillCreditCardDropdownGooglePayBranding",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether or not a minimum number of fields is required before
 // heuristic field type prediction is run for a form.
 const base::Feature kAutofillEnforceMinRequiredFieldsForHeuristics{
@@ -41,6 +46,10 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
 // element in the DOM.
 const base::Feature kAutofillShowTypePredictions{
     "AutofillShowTypePredictions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to show new settings name in Autofill dropdown.
+const base::Feature kAutofillUseNewSettingsNameInDropdown{
+    "AutofillUseNewSettingsNameInDropdown", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace autofill

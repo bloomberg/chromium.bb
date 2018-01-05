@@ -128,24 +128,27 @@
     Postal code
   </message>
 
+  <message name="IDS_AUTOFILL_SETTINGS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+   Autofill settings
+  </message>
   <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The text displayed in the Autofill popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
      Chrome Autofill settings...
    </message>
   </if>
   <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill popup to direct the user to the Autofill settings UI.">
+    <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
       Chromium Autofill settings...
     </message>
   </if>
 
   <if expr="_google_chrome">
-    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI.">
+    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
      Chrome Autofill settings...
     </message>
   </if>
   <if expr="not _google_chrome">
-    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI.">
+    <message name="IDS_AUTOFILL_CREDIT_CARD_OPTIONS_POPUP" desc="The label of the text displayed in the Autofill Credit Card popup to direct the user to the Autofill settings UI. (This string is going to be deprecated in favor of IDS_AUTOFILL_SETTINGS_POPUP.)">
       Chromium Autofill settings...
     </message>
   </if>

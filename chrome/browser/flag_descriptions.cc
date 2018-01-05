@@ -264,6 +264,12 @@ const char kEnableAutofillCreditCardBankNameDisplayName[] =
 const char kEnableAutofillCreditCardBankNameDisplayDescription[] =
     "If enabled, displays the issuer bank name of a credit card in autofill.";
 
+const char kEnableAutofillCreditCardDropdownGooglePayBrandingName[] =
+    "Show the Google Pay logo in the Autofill credit card dropdown";
+const char kEnableAutofillCreditCardDropdownGooglePayBrandingDescription[] =
+    "If enabled, shows the Google Pay logo in the Autofill credit card "
+    "dropdown.";
+
 const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
     "Display the last used date of a credit card in autofill.";
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
@@ -301,6 +307,12 @@ const char kEnableAutofillToolkitViewsCreditCardDialogsMac[] =
     "Enable toolkit-views credit card dialogs on Mac";
 const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[] =
     "Enable more modern credit card dialogs on Mac, based on toolkit-views.";
+
+const char kEnableAutofillUseNewSettingsNameInDropdownName[] =
+    "Show a new Autofill settings string in the Autofill dropdown";
+const char kEnableAutofillUseNewSettingsNameInDropdownDescription[] =
+    "If enabled, shows a new Autofill settings string in the Autofill "
+    "dropdown.";
 
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
