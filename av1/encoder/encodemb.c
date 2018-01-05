@@ -878,6 +878,13 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     *(args->skip) = 0;
     assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
            DCT_DCT);
+
+#if CONFIG_CFL
+    if (plane == AOM_PLANE_Y && xd->cfl.store_y &&
+        is_cfl_allowed(&xd->mi[0]->mbmi)) {
+      cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
+    }
+#endif  // CONFIG_CFL
     return;
   }
 #endif

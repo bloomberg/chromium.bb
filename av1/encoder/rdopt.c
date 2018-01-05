@@ -2909,6 +2909,8 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
              sizeof(*best_txk_type) *
                  (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
 #endif
+      memcpy(ctx->blk_skip[0], x->blk_skip[0],
+             sizeof(uint8_t) * ctx->num_4x4_blk);
       *rate = this_rate;
       *rate_tokenonly = tokenonly_rd_stats.rate;
       *distortion = tokenonly_rd_stats.dist;
@@ -2926,8 +2928,6 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     memcpy(mbmi->txk_type, best_txk_type,
            sizeof(*best_txk_type) *
                (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
-    memcpy(ctx->blk_skip[0], x->blk_skip[0],
-           sizeof(uint8_t) * ctx->num_4x4_blk);
 #endif
     return 1;
   } else {
