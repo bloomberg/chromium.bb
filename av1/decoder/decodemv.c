@@ -1336,23 +1336,14 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       const COMP_REFERENCE_TYPE comp_ref_type = read_comp_reference_type(xd, r);
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
-        const int ctx = av1_get_pred_context_uni_comp_ref_p(xd);
         const int bit = READ_REF_BIT2(uni_comp_ref_p);
-        if (counts) ++counts->uni_comp_ref[ctx][0][bit];
-
         if (bit) {
           ref_frame[0] = BWDREF_FRAME;
           ref_frame[1] = ALTREF_FRAME;
         } else {
-          const int ctx1 = av1_get_pred_context_uni_comp_ref_p1(xd);
           const int bit1 = READ_REF_BIT2(uni_comp_ref_p1);
-          if (counts) ++counts->uni_comp_ref[ctx1][1][bit1];
-
           if (bit1) {
-            const int ctx2 = av1_get_pred_context_uni_comp_ref_p2(xd);
             const int bit2 = READ_REF_BIT2(uni_comp_ref_p2);
-            if (counts) ++counts->uni_comp_ref[ctx2][2][bit2];
-
             if (bit2) {
               ref_frame[0] = LAST_FRAME;
               ref_frame[1] = GOLDEN_FRAME;

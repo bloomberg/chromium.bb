@@ -5919,25 +5919,26 @@ static void estimate_ref_frame_costs(
         }
       }
 
-      aom_prob uni_comp_ref_p = av1_get_pred_prob_uni_comp_ref_p(cm, xd);
-      aom_prob uni_comp_ref_p1 = av1_get_pred_prob_uni_comp_ref_p1(cm, xd);
-      aom_prob uni_comp_ref_p2 = av1_get_pred_prob_uni_comp_ref_p2(cm, xd);
-
+      const int uni_comp_ref_ctx_p = av1_get_pred_context_uni_comp_ref_p(xd);
+      const int uni_comp_ref_ctx_p1 = av1_get_pred_context_uni_comp_ref_p1(xd);
+      const int uni_comp_ref_ctx_p2 = av1_get_pred_context_uni_comp_ref_p2(xd);
       ref_costs_comp[LAST_FRAME][LAST2_FRAME] =
           base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
-          av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 0);
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p][0][0] +
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p1][1][0];
       ref_costs_comp[LAST_FRAME][LAST3_FRAME] =
           base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
-          av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 1) +
-          av1_cost_bit(uni_comp_ref_p2, 0);
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p][0][0] +
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p1][1][1] +
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p2][2][0];
       ref_costs_comp[LAST_FRAME][GOLDEN_FRAME] =
           base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
-          av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 1) +
-          av1_cost_bit(uni_comp_ref_p2, 1);
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p][0][0] +
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p1][1][1] +
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p2][2][1];
       ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] =
           base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
-          av1_cost_bit(uni_comp_ref_p, 1);
-
+          x->uni_comp_ref_cost[uni_comp_ref_ctx_p][0][1];
 #else   // !CONFIG_EXT_COMP_REFS
 
       ref_costs_comp[LAST_FRAME] = ref_costs_comp[LAST2_FRAME] =

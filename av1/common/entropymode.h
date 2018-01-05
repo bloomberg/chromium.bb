@@ -161,7 +161,6 @@ typedef struct frame_contexts {
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
 #if CONFIG_EXT_COMP_REFS
-  aom_prob uni_comp_ref_prob[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1];
   aom_cdf_prob comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
                                [CDF_SIZE(2)];
@@ -319,13 +318,11 @@ typedef struct FRAME_COUNTS {
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
 #if CONFIG_ENTROPY_STATS
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
-#endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_EXT_COMP_REFS
-#if CONFIG_ENTROPY_STATS
   unsigned int comp_ref_type[COMP_REF_TYPE_CONTEXTS][2];
-#endif  // CONFIG_ENTROPY_STATS
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_COMP_REFS
+#endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_ENTROPY_STATS
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
 #endif  // CONFIG_ENTROPY_STATS

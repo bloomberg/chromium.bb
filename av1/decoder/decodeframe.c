@@ -3099,7 +3099,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
 #ifdef NDEBUG
 #define debug_check_frame_counts(cm) (void)0
-#else  // !NDEBUG
+#else   // !NDEBUG
 // Counts should only be incremented when frame_parallel_decoding_mode and
 // error_resilient_mode are disabled.
 static void debug_check_frame_counts(const AV1_COMMON *const cm) {
@@ -3125,10 +3125,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.motion_mode)));
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
-#if CONFIG_EXT_COMP_REFS
-  assert(!memcmp(cm->counts.uni_comp_ref, zero_counts.uni_comp_ref,
-                 sizeof(cm->counts.uni_comp_ref)));
-#endif  // CONFIG_EXT_COMP_REFS
   assert(!memcmp(cm->counts.comp_ref, zero_counts.comp_ref,
                  sizeof(cm->counts.comp_ref)));
   assert(!memcmp(cm->counts.comp_bwdref, zero_counts.comp_bwdref,

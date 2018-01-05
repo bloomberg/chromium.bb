@@ -1405,11 +1405,6 @@ static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
             { AOM_CDF2(2842) } };
 
 #if CONFIG_EXT_COMP_REFS
-static const aom_prob
-    default_uni_comp_ref_p[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1] = {
-      { 88, 30, 28 }, { 218, 97, 105 }, { 254, 180, 196 }
-    };
-
 static const aom_cdf_prob default_comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS]
                                                    [CDF_SIZE(2)] = {
                                                      { AOM_CDF2(8 * 128) },
@@ -3280,7 +3275,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_INTRA_MOD
   av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
 #if CONFIG_EXT_COMP_REFS
-  av1_copy(fc->uni_comp_ref_prob, default_uni_comp_ref_p);
   av1_copy(fc->comp_ref_type_cdf, default_comp_ref_type_cdf);
   av1_copy(fc->uni_comp_ref_cdf, default_uni_comp_ref_cdf);
 #endif  // CONFIG_EXT_COMP_REFS
@@ -3381,13 +3375,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
-
-#if CONFIG_EXT_COMP_REFS
-  for (i = 0; i < UNI_COMP_REF_CONTEXTS; i++)
-    for (j = 0; j < (UNIDIR_COMP_REFS - 1); j++)
-      fc->uni_comp_ref_prob[i][j] = av1_mode_mv_merge_probs(
-          pre_fc->uni_comp_ref_prob[i][j], counts->uni_comp_ref[i][j]);
-#endif  // CONFIG_EXT_COMP_REFS
 
   for (i = 0; i < REF_CONTEXTS; i++)
     for (j = 0; j < (FWD_REFS - 1); j++)

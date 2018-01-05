@@ -912,15 +912,29 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
           if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
             const int bit = (ref0 == BWDREF_FRAME);
+            if (allow_update_cdf)
+              update_cdf(av1_get_pred_cdf_uni_comp_ref_p(xd), bit, 2);
+#if CONFIG_ENTROPY_STATS
             counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p(xd)][0]
                                 [bit]++;
+#endif  // CONFIG_ENTROPY_STATS
             if (!bit) {
               const int bit1 = (ref1 == LAST3_FRAME || ref1 == GOLDEN_FRAME);
+              if (allow_update_cdf)
+                update_cdf(av1_get_pred_cdf_uni_comp_ref_p1(xd), bit1, 2);
+#if CONFIG_ENTROPY_STATS
               counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p1(xd)][1]
                                   [bit1]++;
+#endif  // CONFIG_ENTROPY_STATS
               if (bit1) {
+                if (allow_update_cdf) {
+                  update_cdf(av1_get_pred_cdf_uni_comp_ref_p2(xd),
+                             ref1 == GOLDEN_FRAME, 2);
+                }
+#if CONFIG_ENTROPY_STATS
                 counts->uni_comp_ref[av1_get_pred_context_uni_comp_ref_p2(xd)]
                                     [2][ref1 == GOLDEN_FRAME]++;
+#endif  // CONFIG_ENTROPY_STATS
               }
             }
           } else {

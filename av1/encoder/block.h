@@ -288,6 +288,8 @@ struct macroblock {
 #if CONFIG_EXT_COMP_REFS
   int comp_ref_type_cost[COMP_REF_TYPE_CONTEXTS]
                         [CDF_SIZE(COMP_REFERENCE_TYPES)];
+  int uni_comp_ref_cost[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
+                       [CDF_SIZE(2)];
 #endif  // CONFIG_EXT_COMP_REFS
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
 #if CONFIG_JNT_COMP
