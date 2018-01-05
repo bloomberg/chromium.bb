@@ -1814,10 +1814,8 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int tile_group_start_row = 0;
 #endif
 
-#if CONFIG_SIMPLE_BWD_ADAPT
   size_t max_tile_size = 0;
   cm->largest_tile_id = 0;
-#endif
   for (int r = 0; r < tile_rows; ++r) {
     for (int c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
@@ -1862,12 +1860,10 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
       cm->tile_group_start_row[r][c] = tile_group_start_row;
       cm->tile_group_start_col[r][c] = tile_group_start_col;
 #endif
-#if CONFIG_SIMPLE_BWD_ADAPT
       if (buf->size > max_tile_size) {
         max_tile_size = buf->size;
         cm->largest_tile_id = r * tile_cols + c;
       }
-#endif
     }
   }
 }
@@ -3460,21 +3456,13 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-#if CONFIG_SIMPLE_BWD_ADAPT
       const int num_bwd_ctxs = 1;
-#else
-      const int num_bwd_ctxs = cm->tile_rows * cm->tile_cols;
-#endif
       FRAME_CONTEXT **tile_ctxs =
           aom_malloc(num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx));
       aom_cdf_prob **cdf_ptrs = aom_malloc(
           num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
-#if CONFIG_SIMPLE_BWD_ADAPT
       make_update_tile_list_dec(pbi, cm->largest_tile_id, num_bwd_ctxs,
                                 tile_ctxs);
-#else
-      make_update_tile_list_dec(pbi, 0, num_bwd_ctxs, tile_ctxs);
-#endif
 #if CONFIG_SYMBOLRATE
       av1_dump_symbol_rate(cm);
 #endif

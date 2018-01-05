@@ -2895,12 +2895,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   *max_tile_size = 0;
   *max_tile_col_size = 0;
 
-// All tile size fields are output on 4 bytes. A call to remux_tiles will
-// later compact the data if smaller headers are adequate.
+  // All tile size fields are output on 4 bytes. A call to remux_tiles will
+  // later compact the data if smaller headers are adequate.
 
-#if CONFIG_SIMPLE_BWD_ADAPT
   cm->largest_tile_id = 0;
-#endif
 
 #if CONFIG_EXT_TILE
   if (cm->large_scale_tile) {
@@ -2943,11 +2941,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         tile_size = mode_bc.pos;
         buf->size = tile_size;
 
-#if CONFIG_SIMPLE_BWD_ADAPT
         if (tile_size > *max_tile_size) {
           cm->largest_tile_id = tile_cols * tile_row + tile_col;
         }
-#endif
         // Record the maximum tile size we see, so we can compact headers later.
         *max_tile_size = AOMMAX(*max_tile_size, tile_size);
 
@@ -3129,11 +3125,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         curr_tg_data_size += tile_size + 4;
         buf->size = tile_size;
 
-#if CONFIG_SIMPLE_BWD_ADAPT
         if (tile_size > *max_tile_size) {
           cm->largest_tile_id = tile_cols * tile_row + tile_col;
         }
-#endif
         if (!is_last_tile) {
           *max_tile_size = AOMMAX(*max_tile_size, tile_size);
           // size of this tile
@@ -4514,9 +4508,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   const int have_tiles = tile_cols * tile_rows > 1;
 #endif
 
-#if CONFIG_SIMPLE_BWD_ADAPT
   cm->largest_tile_id = 0;
-#endif
   *max_tile_size = 0;
   *max_tile_col_size = 0;
 
@@ -4570,9 +4562,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Record the maximum tile size we see, so we can compact headers later.
         if (tile_size > *max_tile_size) {
           *max_tile_size = tile_size;
-#if CONFIG_SIMPLE_BWD_ADAPT
           cm->largest_tile_id = tile_cols * tile_row + tile_col;
-#endif
         }
 
         if (have_tiles) {
@@ -4713,11 +4703,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
         curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));
         buf->size = tile_size;
-#if CONFIG_SIMPLE_BWD_ADAPT
         if (tile_size > *max_tile_size) {
           cm->largest_tile_id = tile_cols * tile_row + tile_col;
         }
-#endif
         if (!is_last_tile) {
           *max_tile_size = AOMMAX(*max_tile_size, tile_size);
         }

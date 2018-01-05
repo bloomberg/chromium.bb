@@ -5910,11 +5910,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
-#if CONFIG_SIMPLE_BWD_ADAPT
   const int num_bwd_ctxs = 1;
-#else
-  const int num_bwd_ctxs = cm->tile_rows * cm->tile_cols;
-#endif
 
   FRAME_CONTEXT **tile_ctxs =
       aom_malloc(num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx));
@@ -6255,11 +6251,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                               &cm->counts);
 #endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-#if CONFIG_SIMPLE_BWD_ADAPT
     make_update_tile_list_enc(cpi, cm->largest_tile_id, 1, tile_ctxs);
-#else
-    make_update_tile_list_enc(cpi, 0, num_bwd_ctxs, tile_ctxs);
-#endif
     av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                num_bwd_ctxs);
     av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
