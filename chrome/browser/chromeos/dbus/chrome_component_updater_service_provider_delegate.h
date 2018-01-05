@@ -20,7 +20,7 @@ class ChromeComponentUpdaterServiceProviderDelegate
   // ComponentUpdaterServiceProvider::Delegate:
   void LoadComponent(
       const std::string& name,
-      base::OnceCallback<void(const std::string&)> load_callback) override;
+      base::OnceCallback<void(const base::FilePath&)> load_callback) override;
   bool UnloadComponent(const std::string& name) override;
 
  private:

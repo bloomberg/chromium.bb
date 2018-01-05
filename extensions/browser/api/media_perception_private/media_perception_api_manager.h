@@ -95,7 +95,7 @@ class MediaPerceptionAPIManager : public BrowserContextKeyedAPI {
 
   // Callback with the mount point for a loaded component.
   void LoadComponentCallback(APISetAnalyticsComponentCallback callback,
-                             const std::string& mount_point);
+                             const base::FilePath& mount_point);
 
   bool ComponentIsLoaded();
 

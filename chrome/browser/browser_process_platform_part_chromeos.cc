@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/browser/component_updater/cros_component_installer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,6 +99,19 @@ void BrowserProcessPlatformPart::InitializeSessionManager() {
 
 void BrowserProcessPlatformPart::ShutdownSessionManager() {
   session_manager_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializeCrosComponentManager() {
+  DCHECK(!cros_component_manager_);
+  cros_component_manager_ =
+      std::make_unique<component_updater::CrOSComponentManager>();
+
+  // Register all installed components for regular update.
+  cros_component_manager_->RegisterInstalled();
+}
+
+void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
+  cros_component_manager_.reset();
 }
 
 void BrowserProcessPlatformPart::RegisterKeepAlive() {
@@ -191,29 +205,6 @@ chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
 
 void BrowserProcessPlatformPart::DestroySystemClock() {
   system_clock_.reset();
-}
-
-void BrowserProcessPlatformPart::RegisterCompatibleCrosComponentPath(
-    const std::string& name,
-    const base::FilePath& path) {
-  compatible_cros_components_[name] = path;
-}
-
-void BrowserProcessPlatformPart::UnregisterCompatibleCrosComponentPath(
-    const std::string& name) {
-  compatible_cros_components_.erase(name);
-}
-
-bool BrowserProcessPlatformPart::IsCompatibleCrosComponent(
-    const std::string& name) const {
-  return compatible_cros_components_.count(name) > 0;
-}
-
-base::FilePath BrowserProcessPlatformPart::GetCompatibleCrosComponentPath(
-    const std::string& name) const {
-  const auto it = compatible_cros_components_.find(name);
-  return it == compatible_cros_components_.end() ? base::FilePath()
-                                                 : it->second;
 }
 
 ui::InputDeviceControllerClient*

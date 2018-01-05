@@ -187,7 +187,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   void OnComponentLoad(const Printer& printer,
                        const std::string& ppd_contents,
                        PrinterSetupCallback cb,
-                       const std::string& result) {
+                       const base::FilePath& result) {
     // Result is the component mount point, or empty
     // if the component couldn't be loaded
     if (result.empty()) {
@@ -214,7 +214,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
       if (components_requested.size() == 1) {
         // Only allow one filter request in ppd file.
         auto& component_name = *components_requested.begin();
-        component_updater::CrOSComponent::LoadComponent(
+        g_browser_process->platform_part()->cros_component_manager()->Load(
             component_name,
             base::BindOnce(&PrinterConfigurerImpl::OnComponentLoad,
                            weak_factory_.GetWeakPtr(), printer, ppd_contents,

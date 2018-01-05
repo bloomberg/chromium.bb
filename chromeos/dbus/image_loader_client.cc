@@ -51,16 +51,17 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
                                       std::move(callback)));
   }
 
-  void LoadComponentAtPath(const std::string& name,
-                           const base::FilePath& path,
-                           DBusMethodCallback<std::string> callback) override {
+  void LoadComponentAtPath(
+      const std::string& name,
+      const base::FilePath& path,
+      DBusMethodCallback<base::FilePath> callback) override {
     dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
                                  imageloader::kLoadComponentAtPath);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     writer.AppendString(path.value());
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(&ImageLoaderClientImpl::OnStringMethod,
+                       base::BindOnce(&ImageLoaderClientImpl::OnFilePathMethod,
                                       std::move(callback)));
   }
 
@@ -137,6 +138,22 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
       return;
     }
     std::move(callback).Run(std::move(result));
+  }
+
+  static void OnFilePathMethod(DBusMethodCallback<base::FilePath> callback,
+                               dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+    dbus::MessageReader reader(response);
+    std::string result;
+    if (!reader.PopString(&result)) {
+      std::move(callback).Run(base::nullopt);
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      return;
+    }
+    std::move(callback).Run(base::FilePath(std::move(result)));
   }
 
   dbus::ObjectProxy* proxy_ = nullptr;

@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_MEDIA_PERCEPTION_PRIVATE_MEDIA_PERCEPTION_API_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "extensions/common/api/media_perception_private.h"
 
 namespace extensions {
@@ -16,7 +17,7 @@ class MediaPerceptionAPIDelegate {
   // the loaded component, if installation succeeded. If the component failed to
   // install, |mount_point| will be empty.
   using LoadCrOSComponentCallback =
-      base::OnceCallback<void(const std::string& mount_point)>;
+      base::OnceCallback<void(const base::FilePath& mount_point)>;
 
   virtual ~MediaPerceptionAPIDelegate() {}
 

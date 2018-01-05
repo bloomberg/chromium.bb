@@ -54,24 +54,22 @@ class MockCrOSComponentInstallerPolicy : public CrOSComponentInstallerPolicy {
                     const std::string& min_env_version_str));
 };
 
-void load_callback(const std::string& result) {}
-
 TEST_F(CrOSComponentInstallerTest, BPPPCompatibleCrOSComponent) {
+  component_updater::CrOSComponentManager cros_component_manager;
   const std::string kComponent = "a";
-  BrowserProcessPlatformPart bppp;
-  EXPECT_FALSE(bppp.IsCompatibleCrosComponent(kComponent));
-  EXPECT_EQ(bppp.GetCompatibleCrosComponentPath(kComponent).value(),
+  EXPECT_FALSE(cros_component_manager.IsCompatible(kComponent));
+  EXPECT_EQ(cros_component_manager.GetCompatiblePath(kComponent).value(),
             std::string());
 
   const base::FilePath kPath("/component/path/v0");
-  bppp.RegisterCompatibleCrosComponentPath(kComponent, kPath);
-  EXPECT_TRUE(bppp.IsCompatibleCrosComponent(kComponent));
-  EXPECT_EQ(bppp.GetCompatibleCrosComponentPath(kComponent), kPath);
-  bppp.UnregisterCompatibleCrosComponentPath(kComponent);
-  EXPECT_FALSE(bppp.IsCompatibleCrosComponent(kComponent));
+  cros_component_manager.RegisterCompatiblePath(kComponent, kPath);
+  EXPECT_TRUE(cros_component_manager.IsCompatible(kComponent));
+  EXPECT_EQ(cros_component_manager.GetCompatiblePath(kComponent), kPath);
+  cros_component_manager.UnregisterCompatiblePath(kComponent);
+  EXPECT_FALSE(cros_component_manager.IsCompatible(kComponent));
 }
 
-TEST_F(CrOSComponentInstallerTest, ComponentReadyCorrectManifest) {
+TEST_F(CrOSComponentInstallerTest, CompatibilityOK) {
   ComponentConfig config("a", "2.1", "");
   MockCrOSComponentInstallerPolicy policy(config);
   EXPECT_CALL(policy, IsCompatible(testing::_, testing::_)).Times(1);
@@ -81,10 +79,9 @@ TEST_F(CrOSComponentInstallerTest, ComponentReadyCorrectManifest) {
       base::MakeUnique<base::DictionaryValue>();
   manifest->SetString("min_env_version", "2.1");
   policy.ComponentReady(version, path, std::move(manifest));
-  RunUntilIdle();
 }
 
-TEST_F(CrOSComponentInstallerTest, ComponentReadyWrongManifest) {
+TEST_F(CrOSComponentInstallerTest, CompatibilityMissingManifest) {
   ComponentConfig config("a", "2.1", "");
   MockCrOSComponentInstallerPolicy policy(config);
   EXPECT_CALL(policy, IsCompatible(testing::_, testing::_)).Times(0);
@@ -93,7 +90,6 @@ TEST_F(CrOSComponentInstallerTest, ComponentReadyWrongManifest) {
   std::unique_ptr<base::DictionaryValue> manifest =
       base::MakeUnique<base::DictionaryValue>();
   policy.ComponentReady(version, path, std::move(manifest));
-  RunUntilIdle();
 }
 
 TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
@@ -106,6 +102,18 @@ TEST_F(CrOSComponentInstallerTest, IsCompatibleOrNot) {
   EXPECT_FALSE(policy.IsCompatible("1.c", "1.c"));
   EXPECT_FALSE(policy.IsCompatible("1", "1.1"));
   EXPECT_TRUE(policy.IsCompatible("1.1.1", "1.1"));
+}
+
+TEST_F(CrOSComponentInstallerTest, RegisterComponent) {
+  std::unique_ptr<CrOSMockComponentUpdateService> cus(
+      new CrOSMockComponentUpdateService());
+  ComponentConfig config(
+      "star-cups-driver", "1.1",
+      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466");
+  EXPECT_CALL(*cus, RegisterComponent(testing::_)).Times(1);
+  component_updater::CrOSComponentManager cros_component_manager;
+  cros_component_manager.Register(cus.get(), config, base::OnceClosure());
+  RunUntilIdle();
 }
 
 }  // namespace component_updater

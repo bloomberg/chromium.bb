@@ -907,11 +907,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   message_center::MessageCenter::Get()->SetProductOSName(
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 
-  // Register all installed components for regular update.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(component_updater::CrOSComponent::GetInstalledComponents),
-      base::BindOnce(component_updater::CrOSComponent::RegisterComponents));
+  g_browser_process->platform_part()->InitializeCrosComponentManager();
 }
 
 class GuestLanguageSetCallbackData {
@@ -1268,6 +1264,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.
   g_browser_process->platform_part()->DestroyChromeUserManager();
+
+  g_browser_process->platform_part()->ShutdownCrosComponentManager();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
