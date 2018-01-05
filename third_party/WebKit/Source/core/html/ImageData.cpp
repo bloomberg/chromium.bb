@@ -712,7 +712,7 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
     WTF::ArrayBufferContents& content,
     CanvasPixelFormat pixel_format,
     ImageDataStorageFormat storage_format) {
-  if (!content.SizeInBytes())
+  if (!content.DataLength())
     return nullptr;
 
   // Uint16 is not supported as the storage format for ImageData created from a
@@ -738,7 +738,7 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
   bool color_converison_successful = false;
   switch (pixel_format) {
     case kRGBA8CanvasPixelFormat:
-      num_pixels = content.SizeInBytes() / 4;
+      num_pixels = content.DataLength() / 4;
       switch (storage_format) {
         case kUint8ClampedArrayStorageFormat:
           array_buffer = DOMArrayBuffer::Create(content);
@@ -761,7 +761,7 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
       break;
 
     case kF16CanvasPixelFormat:
-      num_pixels = content.SizeInBytes() / 8;
+      num_pixels = content.DataLength() / 8;
       src_color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
 
       switch (storage_format) {
