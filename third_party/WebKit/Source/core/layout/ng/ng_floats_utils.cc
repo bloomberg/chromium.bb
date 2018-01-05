@@ -71,43 +71,48 @@ scoped_refptr<NGExclusion> CreateExclusion(
   return NGExclusion::Create(NGBfcRect(start_offset, end_offset), type);
 }
 
-// TODO(ikilpatrick): origin_block_offset looks wrong for fragmentation here.
-WTF::Optional<LayoutUnit> CalculateFragmentationOffset(
-    const LayoutUnit origin_block_offset,
+scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloatFromBuilder(
     const NGUnpositionedFloat& unpositioned_float,
-    const NGConstraintSpace& parent_space) {
+    NGConstraintSpaceBuilder& builder) {
   const ComputedStyle& style = unpositioned_float.node.Style();
-  DCHECK(style.GetWritingMode() == parent_space.GetWritingMode());
-
-  if (parent_space.HasBlockFragmentation()) {
-    return parent_space.FragmentainerSpaceAtBfcStart() - origin_block_offset;
-  }
-
-  return WTF::nullopt;
-}
-
-// Creates a constraint space for an unpositioned float.
-scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloat(
-    const NGUnpositionedFloat& unpositioned_float,
-    const NGConstraintSpace& parent_space,
-    WTF::Optional<LayoutUnit> fragmentation_offset = WTF::nullopt) {
-  const ComputedStyle& style = unpositioned_float.node.Style();
-
-  NGConstraintSpaceBuilder builder(parent_space);
-
-  if (fragmentation_offset) {
-    builder.SetFragmentainerSpaceAtBfcStart(fragmentation_offset.value())
-        .SetFragmentationType(parent_space.BlockFragmentationType());
-  } else {
-    builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
-  }
-
   return builder.SetPercentageResolutionSize(unpositioned_float.percentage_size)
       .SetAvailableSize(unpositioned_float.available_size)
       .SetIsNewFormattingContext(true)
       .SetIsShrinkToFit(true)
       .SetTextDirection(style.Direction())
       .ToConstraintSpace(style.GetWritingMode());
+}
+
+// Creates a constraint space for an unpositioned float, with the intent to
+// position it.
+scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloat(
+    const NGUnpositionedFloat& unpositioned_float,
+    const NGConstraintSpace& parent_space,
+    LayoutUnit origin_block_offset) {
+  NGConstraintSpaceBuilder builder(parent_space);
+
+  DCHECK_EQ(unpositioned_float.node.Style().GetWritingMode(),
+            parent_space.GetWritingMode());
+  if (parent_space.HasBlockFragmentation()) {
+    LayoutUnit fragmentation_offset =
+        parent_space.FragmentainerSpaceAtBfcStart() - origin_block_offset;
+    builder.SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
+    builder.SetFragmentainerSpaceAtBfcStart(fragmentation_offset);
+    builder.SetFragmentationType(parent_space.BlockFragmentationType());
+  } else {
+    builder.SetFragmentationType(NGFragmentationType::kFragmentNone);
+  }
+  return CreateConstraintSpaceForFloatFromBuilder(unpositioned_float, builder);
+}
+
+// Creates a constraint space for an unpositioned float, with the intent to
+// simply calculate its inline size.
+scoped_refptr<NGConstraintSpace>
+CreateConstraintSpaceForFloatForInlineSizeCalculation(
+    const NGUnpositionedFloat& unpositioned_float,
+    const NGConstraintSpace& parent_space) {
+  NGConstraintSpaceBuilder builder(parent_space);
+  return CreateConstraintSpaceForFloatFromBuilder(unpositioned_float, builder);
 }
 
 }  // namespace
@@ -133,7 +138,8 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   }
 
   const scoped_refptr<NGConstraintSpace> space =
-      CreateConstraintSpaceForFloat(*unpositioned_float, parent_space);
+      CreateConstraintSpaceForFloatForInlineSizeCalculation(*unpositioned_float,
+                                                            parent_space);
 
   // If the float has the same writing mode as the block formatting context we
   // shouldn't perform a full layout just yet. Our position may determine where
@@ -197,12 +203,8 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
 #if DCHECK_IS_ON()
     DCHECK(is_same_writing_mode);
 #endif
-    WTF::Optional<LayoutUnit> fragmentation_offset =
-        CalculateFragmentationOffset(origin_block_offset, *unpositioned_float,
-                                     parent_space);
-
     scoped_refptr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
-        *unpositioned_float, parent_space, fragmentation_offset);
+        *unpositioned_float, parent_space, origin_block_offset);
     layout_result = unpositioned_float->node.Layout(
         *space, unpositioned_float->token.get());
   }
