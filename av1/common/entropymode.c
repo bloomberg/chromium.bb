@@ -3426,7 +3426,6 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 #if CONFIG_LV_MAP
   av1_init_lv_map(cm);
 #endif
-  av1_convolve_init(cm);
   cm->fc->initialized = 1;
   av1_setup_frame_contexts(cm);
 

@@ -42,15 +42,7 @@ static void temporal_filter_predictors_mb_c(
   int uv_stride;
   // TODO(angiebird): change plane setting accordingly
   ConvolveParams conv_params = get_conv_params(which_mv, which_mv, 0);
-
-#if USE_TEMPORALFILTER_12TAP
-  const InterpFilters interp_filters =
-      av1_broadcast_interp_filter(TEMPORALFILTER_12TAP);
-  (void)xd;
-#else
   const InterpFilters interp_filters = xd->mi[0]->mbmi.interp_filters;
-#endif  // USE_TEMPORALFILTER_12TAP
-
   WarpTypesAllowed warp_types;
   memset(&warp_types, 0, sizeof(WarpTypesAllowed));
 
@@ -433,13 +425,13 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 #if CONFIG_BGSPRITE
         dst1 = target->y_buffer;
 #else
-        dst1 = cpi->alt_ref_buffer.y_buffer;
+          dst1 = cpi->alt_ref_buffer.y_buffer;
 #endif  // CONFIG_BGSPRITE
         dst1_16 = CONVERT_TO_SHORTPTR(dst1);
 #if CONFIG_BGSPRITE
         stride = target->y_stride;
 #else
-        stride = cpi->alt_ref_buffer.y_stride;
+          stride = cpi->alt_ref_buffer.y_stride;
 #endif  // CONFIG_BGSPRITE
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
@@ -483,8 +475,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
         dst1 = target->y_buffer;
         stride = target->y_stride;
 #else
-        dst1 = cpi->alt_ref_buffer.y_buffer;
-        stride = cpi->alt_ref_buffer.y_stride;
+          dst1 = cpi->alt_ref_buffer.y_buffer;
+          stride = cpi->alt_ref_buffer.y_stride;
 #endif  // CONFIG_BGSPRITE
         byte = mb_y_offset;
         for (i = 0, k = 0; i < 16; i++) {
@@ -502,9 +494,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
         dst2 = target->v_buffer;
         stride = target->uv_stride;
 #else
-        dst1 = cpi->alt_ref_buffer.u_buffer;
-        dst2 = cpi->alt_ref_buffer.v_buffer;
-        stride = cpi->alt_ref_buffer.uv_stride;
+          dst1 = cpi->alt_ref_buffer.u_buffer;
+          dst2 = cpi->alt_ref_buffer.v_buffer;
+          stride = cpi->alt_ref_buffer.uv_stride;
 #endif  // CONFIG_BGSPRITE
         byte = mb_uv_offset;
         for (i = 0, k = 256; i < mb_uv_height; i++) {

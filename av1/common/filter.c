@@ -25,29 +25,6 @@ DECLARE_ALIGNED(256, static const InterpKernel,
   { 0, 0, 0, 16, 112, 0, 0, 0 }, { 0, 0, 0, 8, 120, 0, 0, 0 }
 };
 
-#if USE_TEMPORALFILTER_12TAP
-DECLARE_ALIGNED(16, static const int16_t,
-                sub_pel_filters_temporalfilter_12[SUBPEL_SHIFTS][12]) = {
-  // intfilt 0.8
-  { 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 0 },
-  { 0, 1, -1, 3, -7, 127, 8, -4, 2, -1, 0, 0 },
-  { 0, 1, -3, 5, -12, 124, 18, -8, 4, -2, 1, 0 },
-  { -1, 2, -4, 8, -17, 120, 28, -11, 6, -3, 1, -1 },
-  { -1, 2, -4, 10, -21, 114, 38, -15, 8, -4, 2, -1 },
-  { -1, 3, -5, 11, -23, 107, 49, -18, 9, -5, 2, -1 },
-  { -1, 3, -6, 12, -25, 99, 60, -21, 11, -6, 3, -1 },
-  { -1, 3, -6, 12, -25, 90, 70, -23, 12, -6, 3, -1 },
-  { -1, 3, -6, 12, -24, 80, 80, -24, 12, -6, 3, -1 },
-  { -1, 3, -6, 12, -23, 70, 90, -25, 12, -6, 3, -1 },
-  { -1, 3, -6, 11, -21, 60, 99, -25, 12, -6, 3, -1 },
-  { -1, 2, -5, 9, -18, 49, 107, -23, 11, -5, 3, -1 },
-  { -1, 2, -4, 8, -15, 38, 114, -21, 10, -4, 2, -1 },
-  { -1, 1, -3, 6, -11, 28, 120, -17, 8, -4, 2, -1 },
-  { 0, 1, -2, 4, -8, 18, 124, -12, 5, -3, 1, 0 },
-  { 0, 0, -1, 2, -4, 8, 127, -7, 3, -1, 1, 0 },
-};
-#endif  // USE_TEMPORALFILTER_12TAP
-
 DECLARE_ALIGNED(256, static const InterpKernel,
                 sub_pel_filters_8[SUBPEL_SHIFTS]) = {
   { 0, 0, 0, 128, 0, 0, 0, 0 },      { 0, 2, -6, 126, 8, -2, 0, 0 },
@@ -96,13 +73,6 @@ static const InterpFilterParams
         BILINEAR }
     };
 
-#if USE_TEMPORALFILTER_12TAP
-static const InterpFilterParams av1_interp_temporalfilter_12tap = {
-  (const int16_t *)sub_pel_filters_temporalfilter_12, 12, SUBPEL_SHIFTS,
-  TEMPORALFILTER_12TAP
-};
-#endif  // USE_TEMPORALFILTER_12TAP
-
 #if CONFIG_SHORT_FILTER
 
 DECLARE_ALIGNED(256, static const InterpKernel,
@@ -138,21 +108,12 @@ static const InterpFilterParams av1_interp_4tap[2] = {
 
 InterpFilterParams av1_get_interp_filter_params(
     const InterpFilter interp_filter) {
-#if USE_TEMPORALFILTER_12TAP
-  if (interp_filter == TEMPORALFILTER_12TAP)
-    return av1_interp_temporalfilter_12tap;
-#endif  // USE_TEMPORALFILTER_12TAP
   return av1_interp_filter_params_list[interp_filter];
 }
 
 #if CONFIG_SHORT_FILTER
 InterpFilterParams av1_get_interp_filter_params_with_block_size(
     const InterpFilter interp_filter, const int w) {
-#if USE_TEMPORALFILTER_12TAP
-  if (interp_filter == TEMPORALFILTER_12TAP)
-    return av1_interp_temporalfilter_12tap;
-#endif  // USE_TEMPORALFILTER_12TAP
-
   if (w <= 4 &&
       (interp_filter == MULTITAP_SHARP || interp_filter == EIGHTTAP_REGULAR))
     return av1_interp_4tap[0];
@@ -164,10 +125,6 @@ InterpFilterParams av1_get_interp_filter_params_with_block_size(
 #endif
 
 const int16_t *av1_get_interp_filter_kernel(const InterpFilter interp_filter) {
-#if USE_TEMPORALFILTER_12TAP
-  if (interp_filter == TEMPORALFILTER_12TAP)
-    return av1_interp_temporalfilter_12tap.filter_ptr;
-#endif  // USE_TEMPORALFILTER_12TAP
   return (const int16_t *)av1_interp_filter_params_list[interp_filter]
       .filter_ptr;
 }
