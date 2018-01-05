@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/history/history_tab_helper.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/strings/grit/components_strings.h"
@@ -168,17 +169,29 @@ void HistoryTabHelper::DidFinishNavigation(
   }
 }
 
+void HistoryTabHelper::PageLoaded(
+    web::WebState* web_state,
+    web::PageLoadCompletionStatus load_completion_status) {
+  last_load_completion_ = base::TimeTicks::Now();
+}
+
 void HistoryTabHelper::TitleWasSet(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
   if (delay_notification_) {
     return;
   }
 
-  web::NavigationItem* last_committed_item =
-      web_state_->GetNavigationManager()->GetLastCommittedItem();
-
-  if (last_committed_item) {
-    UpdateHistoryPageTitle(*last_committed_item);
+  // Only store page titles into history if they were set while the page was
+  // loading or during a brief span after load is complete. This fixes the case
+  // where a page uses a title change to alert a user of a situation but that
+  // title change ends up saved in history.
+  if (web_state->IsLoading() ||
+      (base::TimeTicks::Now() - last_load_completion_ <
+       history::GetTitleSettingWindow())) {
+    web::NavigationItem* last_committed_item =
+        web_state_->GetNavigationManager()->GetLastCommittedItem();
+    if (last_committed_item)
+      UpdateHistoryPageTitle(*last_committed_item);
   }
 }
 

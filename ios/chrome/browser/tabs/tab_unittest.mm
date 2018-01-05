@@ -228,6 +228,7 @@ class TabTest : public BlockCleanupTest {
     [tab_ navigationManagerImpl]->CommitPendingItem();
     web_state_impl_->UpdateHttpResponseHeaders(redirectUrl);
     web_state_impl_->OnNavigationFinished(context2.get());
+    web_state_impl_->SetIsLoading(true);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);

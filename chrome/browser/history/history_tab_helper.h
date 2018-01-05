@@ -26,10 +26,6 @@ class HistoryTabHelper : public content::WebContentsObserver,
   void UpdateHistoryForNavigation(
       const history::HistoryAddPageArgs& add_page_args);
 
-  // Sends the page title to the history service. This is called when we receive
-  // the page title and we know we want to update history.
-  void UpdateHistoryPageTitle(const content::NavigationEntry& entry);
-
   // Returns the history::HistoryAddPageArgs to use for adding a page to
   // history.
   history::HistoryAddPageArgs CreateHistoryAddPageArgs(
@@ -45,17 +41,22 @@ class HistoryTabHelper : public content::WebContentsObserver,
   // content::WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
   void WebContentsDestroyed() override;
 
-  // Helper function to return the history service.  May return NULL.
+  // Helper function to return the history service.  May return null.
   history::HistoryService* GetHistoryService();
 
-  // Whether we have a (non-empty) title for the current page.
-  // Used to prevent subsequent title updates from affecting history. This
-  // prevents some weirdness because some AJAXy apps use titles for status
-  // messages.
-  bool received_page_title_;
+  // True after navigation to a page is complete and the page is currently
+  // loading. Only applies to the main frame of the page.
+  bool is_loading_ = false;
+
+  // The time that the current page finished loading. Only title changes within
+  // a certain time period after the page load is complete will be saved to the
+  // history system. Only applies to the main frame of the page.
+  base::TimeTicks last_load_completion_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryTabHelper);
 };

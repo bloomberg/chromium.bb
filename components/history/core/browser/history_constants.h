@@ -6,6 +6,7 @@
 #define COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CONSTANTS_H_
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 
 namespace history {
 
@@ -16,6 +17,10 @@ extern const base::FilePath::CharType kTopSitesFilename[];
 
 // The maximum size of the list returned by history::HistoryService::TopHosts().
 extern const int kMaxTopHosts;
+
+// The span of time after load is complete during which a page may set its title
+// and have the title change be saved in history.
+base::TimeDelta GetTitleSettingWindow();
 
 }  // namespace history
 
