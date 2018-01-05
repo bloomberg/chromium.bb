@@ -130,45 +130,6 @@ static INLINE aom_prob get_prob(unsigned int num, unsigned int den) {
   }
 }
 
-static INLINE aom_prob get_binary_prob(unsigned int n0, unsigned int n1) {
-  const unsigned int den = n0 + n1;
-  if (den == 0) return 128u;
-  return get_prob(n0, den);
-}
-
-/* This function assumes prob1 and prob2 are already within [1,255] range. */
-static INLINE aom_prob weighted_prob(int prob1, int prob2, int factor) {
-  return ROUND_POWER_OF_TWO(prob1 * (256 - factor) + prob2 * factor, 8);
-}
-
-static INLINE aom_prob merge_probs(aom_prob pre_prob, const unsigned int ct[2],
-                                   unsigned int count_sat,
-                                   unsigned int max_update_factor) {
-  const aom_prob prob = get_binary_prob(ct[0], ct[1]);
-  const unsigned int count = AOMMIN(ct[0] + ct[1], count_sat);
-  const unsigned int factor = max_update_factor * count / count_sat;
-  return weighted_prob(pre_prob, prob, factor);
-}
-
-// MODE_MV_MAX_UPDATE_FACTOR (128) * count / MODE_MV_COUNT_SAT;
-static const int count_to_update_factor[MODE_MV_COUNT_SAT + 1] = {
-  0,  6,  12, 19, 25, 32,  38,  44,  51,  57, 64,
-  70, 76, 83, 89, 96, 102, 108, 115, 121, 128
-};
-
-static INLINE aom_prob mode_mv_merge_probs(aom_prob pre_prob,
-                                           const unsigned int ct[2]) {
-  const unsigned int den = ct[0] + ct[1];
-  if (den == 0) {
-    return pre_prob;
-  } else {
-    const unsigned int count = AOMMIN(den, MODE_MV_COUNT_SAT);
-    const unsigned int factor = count_to_update_factor[count];
-    const aom_prob prob = get_prob(ct[0], den);
-    return weighted_prob(pre_prob, prob, factor);
-  }
-}
-
 static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   int rate;
   const int rate2 = 5;

@@ -42,27 +42,6 @@ static INLINE int av1_cost_symbol(aom_cdf_prob p15) {
          av1_cost_literal(shift);
 }
 
-static INLINE unsigned int cost_branch256(const unsigned int ct[2],
-                                          aom_prob p) {
-  return ct[0] * av1_cost_zero(p) + ct[1] * av1_cost_one(p);
-}
-
-static INLINE int treed_cost(aom_tree tree, const aom_prob *probs, int bits,
-                             int len) {
-  int cost = 0;
-  aom_tree_index i = 0;
-
-  do {
-    const int bit = (bits >> --len) & 1;
-    cost += av1_cost_bit(probs[i >> 1], bit);
-    i = tree[i + bit];
-  } while (len);
-
-  return cost;
-}
-
-void av1_cost_tokens(int *costs, const aom_prob *probs, aom_tree tree);
-void av1_cost_tokens_skip(int *costs, const aom_prob *probs, aom_tree tree);
 void av1_cost_tokens_from_cdf(int *costs, const aom_cdf_prob *cdf,
                               const int *inv_map);
 

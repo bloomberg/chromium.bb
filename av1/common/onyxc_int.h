@@ -522,13 +522,7 @@ typedef struct AV1Common {
   TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
   int above_context_alloc_cols;
-
-  // scratch memory for intraonly/keyframe forward updates from default tables
-  // - this is intentionally not placed in FRAME_CONTEXT since it's reset upon
-  // each keyframe and not used afterwards
-  aom_prob kf_y_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
   WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
-
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.

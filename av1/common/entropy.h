@@ -115,13 +115,8 @@ DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);
 #define CAT5_MIN_VAL 35
 #define CAT6_MIN_VAL 67
 
+#define CAT6_BIT_SIZE 18
 // Extra bit probabilities.
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob[18]);
 extern const aom_cdf_prob *av1_cat1_cdf[];
 extern const aom_cdf_prob *av1_cat2_cdf[];
 extern const aom_cdf_prob *av1_cat3_cdf[];
@@ -151,8 +146,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
   int tx_offset = (int)(tx_size - TX_4X4);
   int bits = (int)bit_depth + 3 + tx_offset;
   // Round up
-  bits = AOMMIN((int)sizeof(av1_cat6_prob), ((bits + 3) & ~3));
-  assert(bits <= (int)sizeof(av1_cat6_prob));
+  bits = AOMMIN(CAT6_BIT_SIZE, ((bits + 3) & ~3));
   return bits;
 }
 
@@ -231,7 +225,6 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 
 #define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
 #define TAIL_NODES (MODEL_NODES + 1)
-extern const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
 
 typedef aom_cdf_prob coeff_cdf_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                     [CDF_SIZE(ENTROPY_TOKENS)];
@@ -345,18 +338,6 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
 #define COEF_MAX_UPDATE_FACTOR 112
 #define COEF_COUNT_SAT_AFTER_KEY 24
 #define COEF_MAX_UPDATE_FACTOR_AFTER_KEY 128
-
-static INLINE aom_prob av1_merge_probs(aom_prob pre_prob,
-                                       const unsigned int ct[2],
-                                       unsigned int count_sat,
-                                       unsigned int max_update_factor) {
-  return merge_probs(pre_prob, ct, count_sat, max_update_factor);
-}
-
-static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
-                                               const unsigned int ct[2]) {
-  return mode_mv_merge_probs(pre_prob, ct);
-}
 
 static INLINE TX_SIZE get_txsize_entropy_ctx(TX_SIZE txsize) {
   return (TX_SIZE)((txsize_sqr_map[txsize] + txsize_sqr_up_map[txsize] + 1) >>

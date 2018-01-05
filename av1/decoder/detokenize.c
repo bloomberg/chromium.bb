@@ -59,8 +59,8 @@ static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
     case CATEGORY5_TOKEN:
       return CAT5_MIN_VAL + read_coeff(counts, av1_cat5_cdf, 5, r);
     case CATEGORY6_TOKEN: {
-      const int skip_bits = (int)sizeof(av1_cat6_prob) -
-                            av1_get_cat6_extrabits_size(tx_size, bit_depth);
+      const int skip_bits =
+          CAT6_BIT_SIZE - av1_get_cat6_extrabits_size(tx_size, bit_depth);
       return CAT6_MIN_VAL + read_coeff(counts, av1_cat6_cdf, 18 - skip_bits, r);
     }
     default:
