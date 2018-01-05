@@ -42,6 +42,10 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
     pending_client_->NotifyModuleTreeLoadFinished(module_script);
     pending_client_ = nullptr;
   }
+  void SetExpectedFetchTreeURL(const KURL& url) {
+    expected_fetch_tree_url_ = url;
+  }
+  bool fetch_tree_was_called() const { return fetch_tree_was_called_; }
 
   void Trace(blink::Visitor*);
 
@@ -59,9 +63,10 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
   void FetchTree(const ModuleScriptFetchRequest& request,
                  ModuleTreeClient* client) final {
-    EXPECT_EQ(TestDependencyURL(), request.Url());
+    EXPECT_EQ(expected_fetch_tree_url_, request.Url());
 
     pending_client_ = client;
+    fetch_tree_was_called_ = true;
   }
 
   ScriptValue ExecuteModule(const ModuleScript* module_script,
@@ -74,6 +79,8 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
   scoped_refptr<ScriptState> script_state_;
   Member<ModuleTreeClient> pending_client_;
+  KURL expected_fetch_tree_url_;
+  bool fetch_tree_was_called_ = false;
 };
 
 void DynamicModuleResolverTestModulator::Trace(blink::Visitor* visitor) {
@@ -176,8 +183,9 @@ class DynamicModuleResolverTestNotReached final : public ScriptFunction {
 
 TEST(DynamicModuleResolverTest, ResolveSuccess) {
   V8TestingScope scope;
-  DynamicModuleResolverTestModulator* modulator =
+  auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
@@ -213,6 +221,7 @@ TEST(DynamicModuleResolverTest, ResolveSpecifierFailure) {
   V8TestingScope scope;
   auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
@@ -236,6 +245,7 @@ TEST(DynamicModuleResolverTest, FetchFailure) {
   V8TestingScope scope;
   auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
@@ -263,6 +273,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
   V8TestingScope scope;
   auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
@@ -299,6 +310,7 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
 
   auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(TestDependencyURL());
 
   auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
   ScriptPromise promise = promise_resolver->Promise();
@@ -328,6 +340,28 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
   EXPECT_TRUE(capture->WasCalled());
   EXPECT_EQ("hello", capture->CapturedValue());
+}
+
+TEST(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
+  V8TestingScope scope;
+  scope.GetDocument().SetURL(KURL("https://example.com"));
+
+  auto modulator =
+      new DynamicModuleResolverTestModulator(scope.GetScriptState());
+  modulator->SetExpectedFetchTreeURL(
+      KURL("https://example.com/correct/dependency.js"));
+
+  auto promise_resolver = ScriptPromiseResolver::Create(scope.GetScriptState());
+  auto resolver = DynamicModuleResolver::Create(modulator);
+  KURL wrong_base_url("https://example.com/wrong/bar.js");
+  KURL correct_base_url("https://example.com/correct/baz.js");
+  resolver->ResolveDynamically(
+      "./dependency.js", wrong_base_url,
+      ReferrerScriptInfo(correct_base_url, ScriptFetchOptions()),
+      promise_resolver);
+
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+  EXPECT_TRUE(modulator->fetch_tree_was_called());
 }
 
 }  // namespace blink

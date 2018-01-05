@@ -31,8 +31,8 @@ ReferrerScriptInfo ReferrerScriptInfo::FromV8HostDefinedOptions(
   v8::Local<v8::Primitive> base_url_value = host_defined_options->Get(kBaseURL);
   String base_url_string =
       ToCoreStringWithNullCheck(v8::Local<v8::String>::Cast(base_url_value));
-  KURL base_url(base_url_string);
-  DCHECK(base_url_string.IsEmpty() || base_url.IsValid());
+  KURL base_url = base_url_string.IsEmpty() ? KURL() : KURL(base_url_string);
+  DCHECK(base_url.IsNull() || base_url.IsValid());
 
   v8::Local<v8::Primitive> credentials_mode_value =
       host_defined_options->Get(kCredentialsMode);

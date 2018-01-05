@@ -144,7 +144,7 @@ void DynamicModuleResolver::Trace(blink::Visitor* visitor) {
 
 void DynamicModuleResolver::ResolveDynamically(
     const String& specifier,
-    const KURL& referrer_url,
+    const KURL& referrer_resource_url,
     const ReferrerScriptInfo& referrer_info,
     ScriptPromiseResolver* promise_resolver) {
   DCHECK(modulator_->GetScriptState()->GetIsolate()->InContext())
@@ -159,13 +159,22 @@ void DynamicModuleResolver::ResolveDynamically(
 
   // Step 2.1. "Let url be the result of resolving a module specifier
   // given referencing script and specifier." [spec text]
-  KURL context_url =
-      referrer_url.IsValid()
-          ? referrer_url
-          : ExecutionContext::From(modulator_->GetScriptState())->Url();
-  DCHECK(context_url.IsValid());
+  KURL base_url = referrer_info.BaseURL();
+  if (base_url.IsNull()) {
+    // ReferrerScriptInfo::BaseURL returns null if it should defer to referrer
+    // resource url.
+    base_url = referrer_resource_url;
+  }
+  if (base_url.IsNull()) {
+    // In some cases, "referencing script" may not exist. Use the document's
+    // base URL as last resort.
+    // TODO(kouhei): Revisit this after
+    //               https://github.com/whatwg/html/issues/3295 resolved.
+    base_url = ExecutionContext::From(modulator_->GetScriptState())->BaseURL();
+  }
+  DCHECK(!base_url.IsNull());
 
-  KURL url = Modulator::ResolveModuleSpecifier(specifier, context_url);
+  KURL url = Modulator::ResolveModuleSpecifier(specifier, base_url);
   if (!url.IsValid()) {
     // Step 2.2.1. "If the result is failure, then:" [spec text]
     // Step 2.2.2.1. "Let completion be Completion { [[Type]]: throw, [[Value]]:
