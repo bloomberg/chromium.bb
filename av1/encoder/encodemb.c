@@ -871,6 +871,17 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   av1_predict_intra_block_facade(cm, xd, plane, blk_col, blk_row, tx_size);
 
+#if CONFIG_TXK_SEL
+  const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  if (x->blk_skip[plane][blk_row * bw + blk_col] && plane == 0) {
+    *eob = 0;
+    *(args->skip) = 0;
+    assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
+           DCT_DCT);
+    return;
+  }
+#endif
+
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
   const ENTROPY_CONTEXT *a = &args->ta[blk_col];
