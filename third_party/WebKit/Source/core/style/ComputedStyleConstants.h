@@ -49,7 +49,7 @@ inline bool EnumHasFlags(Enum v, Enum mask) {
 // from top.
 enum class BoxSide : unsigned { kTop, kRight, kBottom, kLeft };
 
-// See core/dom/stylerecalc.md for an explanation on what each state means
+// See core/style/stylerecalc.md for an explanation on what each state means
 enum StyleRecalcChange {
   kNoChange,
   kNoInherit,
