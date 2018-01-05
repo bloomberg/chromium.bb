@@ -289,4 +289,37 @@ TEST_F(LabelLinkControllerTest, LabelStylePropertyChangeTest) {
   EXPECT_NSNE(smallTextRect, rects[0]);
 }
 
+TEST_F(LabelLinkControllerTest, LinkMaximumHeightTest) {
+  NSMutableParagraphStyle* newStyle =
+      [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+  CGFloat lineHeight = 20;
+  [newStyle setMinimumLineHeight:lineHeight];
+  [newStyle setMaximumLineHeight:lineHeight];
+  setLabelAttrStringWithAttr(@"first line test\nsecond line test.",
+                             NSParagraphStyleAttributeName, newStyle);
+  CGRect newFrame = CGRectMake(0, 0, 200, 100);
+  [label_ setFrame:newFrame];
+  [label_ setFont:[UIFont systemFontOfSize:14]];
+  NSRange firstLinkRange = NSMakeRange(0, 5);    // "first".
+  NSRange secondLinkRange = NSMakeRange(16, 6);  // "second".
+  LabelLinkController* llc =
+      [[LabelLinkController alloc] initWithLabel:label_ action:nullptr];
+  GURL firsturl = GURL("http://www.google.com");
+  GURL secondurl = GURL("http://www.cnn.com");
+
+  // Test that a single link is expanded to 44.
+  [llc addLinkWithRange:firstLinkRange url:firsturl];
+  NSArray* rects = [llc buttonFrames];
+  ASSERT_EQ(1UL, [rects count]);
+  ASSERT_EQ(44.0, CGRectGetHeight([rects[0] CGRectValue]));
+
+  // Test that multiple links overlap by only .25 of |lineHeight|.
+  [llc addLinkWithRange:secondLinkRange url:secondurl];
+  rects = [llc buttonFrames];
+  ASSERT_EQ(2UL, [rects count]);
+  CGRect intersection =
+      CGRectIntersection([rects[0] CGRectValue], [rects[1] CGRectValue]);
+  ASSERT_EQ(.25 * lineHeight, CGRectGetHeight(intersection));
+}
+
 }  // namespace

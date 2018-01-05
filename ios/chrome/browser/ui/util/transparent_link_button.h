@@ -28,9 +28,12 @@ extern const CGFloat kLinkTapAreaMinimum;
 // Only the first button in the array will be accessible, and |label| will be
 // set as its accessibility label. This is done to ensure that VoiceOver mode
 // does not have multiple accessibility elements with the same accessibility
-// label and the same action.
+// label and the same action.  |lineHeight| is used to limit the overlap from
+// increasing the TransparentLinkButtons to satisfy a11y guidelines for a
+// minimum touch area.
 + (NSArray*)buttonsForLinkFrames:(NSArray*)linkFrames
                              URL:(const GURL&)URL
+                      lineHeight:(CGFloat)lineHeight
               accessibilityLabel:(NSString*)label;
 
 // The URL passed upon initialization.
