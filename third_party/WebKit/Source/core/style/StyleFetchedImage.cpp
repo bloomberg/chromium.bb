@@ -24,10 +24,12 @@
 #include "core/style/StyleFetchedImage.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/layout/LayoutObject.h"
+#include "core/dom/Document.h"
 #include "core/loader/resource/ImageResourceContent.h"
+#include "core/style/ComputedStyle.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
+#include "platform/geometry/LayoutSize.h"
 
 namespace blink {
 
