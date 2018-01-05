@@ -32,9 +32,9 @@ const char MediaEngagementScore::kHighScoreUpperThresholdParamName[] =
 
 namespace {
 
-const int kScoreMinVisitsParamDefault = 5;
-const double kHighScoreLowerThresholdParamDefault = 0.5;
-const double kHighScoreUpperThresholdParamDefault = 0.7;
+const int kScoreMinVisitsParamDefault = 4;
+const double kHighScoreLowerThresholdParamDefault = 0.2;
+const double kHighScoreUpperThresholdParamDefault = 0.3;
 
 std::unique_ptr<base::DictionaryValue> GetScoreDictForSettings(
     const HostContentSettingsMap* settings,
