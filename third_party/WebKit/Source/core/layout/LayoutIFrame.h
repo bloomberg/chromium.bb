@@ -41,7 +41,6 @@ class LayoutIFrame final : public LayoutEmbeddedContent {
   bool IsInlineBlockOrInlineTable() const override;
 
   void UpdateLayout() override;
-  void UpdateAfterLayout() override;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutIFrame ||
