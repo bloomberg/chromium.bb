@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -654,7 +655,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   UpdateGpuPreferences(&gpu_prefs);
   command_line->AppendSwitchASCII(switches::kGpuPreferences,
                                   gpu::GpuPreferencesToSwitchValue(gpu_prefs));
-
   std::string use_gl =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseGL);
@@ -745,6 +745,9 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 
   gpu_preferences->gpu_program_cache_size =
       gpu::ShaderDiskCache::CacheSizeBytes();
+
+  gpu_preferences->texture_target_exception_list =
+      CreateBufferUsageAndFormatExceptionList();
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {

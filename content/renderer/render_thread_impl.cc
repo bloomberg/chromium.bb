@@ -58,7 +58,6 @@
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
@@ -848,11 +847,6 @@ void RenderThreadImpl::Init(
   is_elastic_overscroll_enabled_ = false;
 #endif
 
-  std::string image_texture_target_string =
-      command_line.GetSwitchValueASCII(switches::kContentImageTextureTarget);
-  texture_target_exception_list_ =
-      viz::StringToBufferUsageAndFormatList(image_texture_target_string);
-
   if (command_line.HasSwitch(switches::kDisableLCDText)) {
     is_lcd_text_enabled_ = false;
   } else if (command_line.HasSwitch(switches::kEnableLCDText)) {
@@ -1499,8 +1493,8 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   gpu_factories_.push_back(GpuVideoAcceleratorFactoriesImpl::Create(
       std::move(gpu_channel_host), base::ThreadTaskRunnerHandle::Get(),
       media_task_runner, std::move(media_context_provider),
-      enable_gpu_memory_buffer_video_frames, texture_target_exception_list_,
-      enable_video_accelerator, vea_provider.PassInterface()));
+      enable_gpu_memory_buffer_video_frames, enable_video_accelerator,
+      vea_provider.PassInterface()));
   return gpu_factories_.back().get();
 }
 
@@ -1633,11 +1627,6 @@ bool RenderThreadImpl::IsGpuMemoryBufferCompositorResourcesEnabled() {
 
 bool RenderThreadImpl::IsElasticOverscrollEnabled() {
   return is_elastic_overscroll_enabled_;
-}
-
-const viz::BufferUsageAndFormatList&
-RenderThreadImpl::GetTextureTargetExceptionList() {
-  return texture_target_exception_list_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

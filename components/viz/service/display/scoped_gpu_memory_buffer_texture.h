@@ -6,7 +6,6 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SCOPED_GPU_MEMORY_BUFFER_TEXTURE_H_
 
 #include "base/macros.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -19,7 +18,6 @@ class ContextProvider;
 class VIZ_SERVICE_EXPORT ScopedGpuMemoryBufferTexture {
  public:
   explicit ScopedGpuMemoryBufferTexture(ContextProvider* context_provider,
-                                        const BufferUsageAndFormatList& formats,
                                         const gfx::Size& size,
                                         const gfx::ColorSpace& color_space);
 

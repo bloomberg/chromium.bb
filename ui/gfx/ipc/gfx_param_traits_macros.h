@@ -10,7 +10,6 @@
 
 #include "build/build_config.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/ca_layer_params.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -25,10 +24,6 @@
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT GFX_IPC_EXPORT
-
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::BufferFormat, gfx::BufferFormat::LAST)
-
-IPC_ENUM_TRAITS_MAX_VALUE(gfx::BufferUsage, gfx::BufferUsage::LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuMemoryBufferType,
                           gfx::GPU_MEMORY_BUFFER_TYPE_LAST)

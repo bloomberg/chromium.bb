@@ -64,6 +64,7 @@ source_set("ipc_client_sources") {
     "//mojo/public/cpp/system",
     "//ui/base/",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
     "//url/ipc:url_ipc",

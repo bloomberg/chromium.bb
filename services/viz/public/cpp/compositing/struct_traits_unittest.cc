@@ -390,8 +390,6 @@ TEST_F(StructTraitsTest, ResourceSettings) {
   ResourceSettings input;
   input.texture_id_allocation_chunk_size = kArbitrarySize;
   input.use_gpu_memory_buffer_resources = kArbitraryBool;
-  input.texture_target_exception_list.push_back(
-      std::make_pair(gfx::BufferUsage::SCANOUT, gfx::BufferFormat::BGRX_8888));
 
   ResourceSettings output;
   SerializeAndDeserialize<mojom::ResourceSettings>(input, &output);
@@ -400,8 +398,6 @@ TEST_F(StructTraitsTest, ResourceSettings) {
             output.texture_id_allocation_chunk_size);
   EXPECT_EQ(input.use_gpu_memory_buffer_resources,
             output.use_gpu_memory_buffer_resources);
-  EXPECT_EQ(input.texture_target_exception_list,
-            output.texture_target_exception_list);
 }
 
 TEST_F(StructTraitsTest, Selection) {

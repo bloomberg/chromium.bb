@@ -176,6 +176,21 @@ struct EnumTraits<gfx::mojom::BufferUsage, gfx::BufferUsage> {
 };
 
 template <>
+struct StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
+                    gfx::BufferUsageAndFormat> {
+  static gfx::BufferUsage usage(const gfx::BufferUsageAndFormat& input) {
+    return input.usage;
+  }
+
+  static gfx::BufferFormat format(const gfx::BufferUsageAndFormat& input) {
+    return input.format;
+  }
+
+  static bool Read(gfx::mojom::BufferUsageAndFormatDataView data,
+                   gfx::BufferUsageAndFormat* out);
+};
+
+template <>
 struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
   static gfx::mojom::GpuMemoryBufferType ToMojom(
       gfx::GpuMemoryBufferType type) {

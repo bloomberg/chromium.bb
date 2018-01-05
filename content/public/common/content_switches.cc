@@ -847,9 +847,6 @@ const char kTouchTextSelectionStrategy[]    = "touch-selection-strategy";
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";
 
-// Texture target for CHROMIUM_image backed content textures.
-const char kContentImageTextureTarget[] = "content-image-texture-target";
-
 // Texture target for CHROMIUM_image backed video frame textures.
 const char kVideoImageTextureTarget[] = "video-image-texture-target";
 

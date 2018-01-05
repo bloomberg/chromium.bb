@@ -4036,6 +4036,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.supports_oop_raster = supports_oop_raster_;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
+  caps.texture_target_exception_list =
+      group_->gpu_preferences().texture_target_exception_list;
 
   return caps;
 }

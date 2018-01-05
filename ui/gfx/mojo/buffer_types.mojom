@@ -42,6 +42,11 @@ enum BufferUsage {
   LAST = GPU_READ_CPU_READ_WRITE_PERSISTENT
 };
 
+struct BufferUsageAndFormat {
+  BufferUsage usage;
+  BufferFormat format;
+};
+
 // gfx::GpuMemoryBufferType
 enum GpuMemoryBufferType {
   EMPTY_BUFFER,

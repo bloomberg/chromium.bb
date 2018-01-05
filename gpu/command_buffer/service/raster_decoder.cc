@@ -191,6 +191,8 @@ Capabilities RasterDecoder::GetCapabilities() {
   gpu::Capabilities caps;
   caps.gpu_rasterization = true;
   caps.supports_oop_raster = true;
+  caps.texture_target_exception_list =
+      group_->gpu_preferences().texture_target_exception_list;
   return caps;
 }
 

@@ -6,12 +6,14 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PREFERENCES_H_
 
 #include <stddef.h>
+#include <vector>
 
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 #include "media/media_features.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace gpu {
 
@@ -157,6 +159,10 @@ struct GPU_EXPORT GpuPreferences {
   // Disable using a single multiplanar GpuMemoryBuffer to store biplanar
   // VideoFrames (e.g. NV12), see https://crbug.com/791676.
   bool disable_biplanar_gpu_memory_buffers_for_video_frames = false;
+
+  // List of texture usage & formats that require use of a platform specific
+  // texture target.
+  std::vector<gfx::BufferUsageAndFormat> texture_target_exception_list;
 };
 
 }  // namespace gpu

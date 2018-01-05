@@ -5,7 +5,9 @@
 #ifndef GPU_IPC_COMMON_GPU_PREFERENCES_STRUCT_TRAITS_H_
 #define GPU_IPC_COMMON_GPU_PREFERENCES_STRUCT_TRAITS_H_
 
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/common/gpu_preferences.mojom.h"
+#include "ui/gfx/mojo/buffer_types_struct_traits.h"
 
 namespace mojo {
 
@@ -99,6 +101,16 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->use_passthrough_cmd_decoder = prefs.use_passthrough_cmd_decoder();
     out->disable_biplanar_gpu_memory_buffers_for_video_frames =
         prefs.disable_biplanar_gpu_memory_buffers_for_video_frames();
+
+    mojo::ArrayDataView<gfx::mojom::BufferUsageAndFormatDataView>
+        usage_and_format_list;
+    prefs.GetTextureTargetExceptionListDataView(&usage_and_format_list);
+    for (size_t i = 0; i < usage_and_format_list.size(); ++i) {
+      gfx::BufferUsageAndFormat usage_format;
+      if (!usage_and_format_list.Read(i, &usage_format))
+        return false;
+      out->texture_target_exception_list.push_back(usage_format);
+    }
     return true;
   }
 
@@ -220,6 +232,10 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool disable_biplanar_gpu_memory_buffers_for_video_frames(
       const gpu::GpuPreferences& prefs) {
     return prefs.disable_biplanar_gpu_memory_buffers_for_video_frames;
+  }
+  static const std::vector<gfx::BufferUsageAndFormat>&
+  texture_target_exception_list(const gpu::GpuPreferences& input) {
+    return input.texture_target_exception_list;
   }
 };
 

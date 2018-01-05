@@ -105,8 +105,7 @@ void ServerWindow::CreateRootCompositorFrameSink(
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
   delegate_->GetVizHostProxy()->CreateRootCompositorFrameSink(
-      frame_sink_id_, widget,
-      viz::CreateRendererSettings(viz::BufferUsageAndFormatList()),
+      frame_sink_id_, widget, viz::CreateRendererSettings(),
       std::move(sink_request), std::move(client), std::move(display_request),
       std::move(display_client));
 }

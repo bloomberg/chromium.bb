@@ -31,6 +31,7 @@ cc_component("ipc") {
     "//ipc",
     "//ui/gfx",
     "//ui/gfx/ipc",
+    "//ui/gfx/ipc/buffer_types",
     "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",

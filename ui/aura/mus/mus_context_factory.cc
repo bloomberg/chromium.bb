@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -24,7 +23,7 @@ MusContextFactory::MusContextFactory(ui::Gpu* gpu)
     : gpu_(gpu),
       resource_settings_(
           // TODO(sad): http://crbug.com/675431
-          viz::CreateResourceSettings(viz::BufferUsageAndFormatList())),
+          viz::CreateResourceSettings()),
       weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}

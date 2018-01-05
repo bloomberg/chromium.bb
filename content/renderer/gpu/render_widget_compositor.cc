@@ -424,8 +424,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsElasticOverscrollEnabled();
   settings.resource_settings.use_gpu_memory_buffer_resources =
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
-  settings.resource_settings.texture_target_exception_list =
-      compositor_deps->GetTextureTargetExceptionList();
   settings.enable_oop_rasterization =
       cmd.HasSwitch(switches::kEnableOOPRasterization);
 

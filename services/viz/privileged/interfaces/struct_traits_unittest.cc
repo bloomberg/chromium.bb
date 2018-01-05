@@ -25,8 +25,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   ResourceSettings arbitrary_resource_settings;
   arbitrary_resource_settings.texture_id_allocation_chunk_size = kArbitrarySize;
   arbitrary_resource_settings.use_gpu_memory_buffer_resources = kArbitraryBool;
-  arbitrary_resource_settings.texture_target_exception_list.push_back(
-      std::make_pair(gfx::BufferUsage::SCANOUT, gfx::BufferFormat::BGRX_8888));
 
   RendererSettings input;
 
@@ -53,8 +51,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
             output.resource_settings.texture_id_allocation_chunk_size);
   EXPECT_EQ(input.resource_settings.use_gpu_memory_buffer_resources,
             output.resource_settings.use_gpu_memory_buffer_resources);
-  EXPECT_EQ(input.resource_settings.texture_target_exception_list,
-            output.resource_settings.texture_target_exception_list);
   EXPECT_EQ(input.allow_antialiasing, output.allow_antialiasing);
   EXPECT_EQ(input.force_antialiasing, output.force_antialiasing);
   EXPECT_EQ(input.force_blending_with_shaders,

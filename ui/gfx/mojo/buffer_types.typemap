@@ -18,6 +18,7 @@ public_deps = [
 type_mappings = [
   "gfx.mojom.BufferFormat=gfx::BufferFormat",
   "gfx.mojom.BufferUsage=gfx::BufferUsage",
+  "gfx.mojom.BufferUsageAndFormat=gfx::BufferUsageAndFormat",
   "gfx.mojom.GpuMemoryBufferHandle=gfx::GpuMemoryBufferHandle",
   "gfx.mojom.GpuMemoryBufferId=gfx::GpuMemoryBufferId[copyable_pass_by_value]",
   "gfx.mojom.GpuMemoryBufferType=gfx::GpuMemoryBufferType",

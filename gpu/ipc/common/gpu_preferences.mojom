@@ -5,6 +5,8 @@
 // gpu/command_buffer/service/gpu_preferences.h
 module gpu.mojom;
 
+import "ui/gfx/mojo/buffer_types.mojom";
+
 // gpu::GpuPreferences::VpxDecodeVendors
 enum VpxDecodeVendors {
   VPX_VENDOR_NONE = 0,
@@ -57,4 +59,5 @@ struct GpuPreferences {
   bool enable_gpu_service_tracing;
   bool use_passthrough_cmd_decoder;
   bool disable_biplanar_gpu_memory_buffers_for_video_frames;
+  array<gfx.mojom.BufferUsageAndFormat> texture_target_exception_list;
 };
