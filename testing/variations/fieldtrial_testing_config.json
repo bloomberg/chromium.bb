@@ -3039,23 +3039,23 @@
             ]
         }
     ],
-    "SafeBrowsingAdSamplerPerformance": [
+    "SafeBrowsingAdSamplerTrigger": [
         {
             "platforms": [
                 "android",
+                "chromeos",
                 "linux",
                 "mac",
                 "win"
             ],
             "experiments": [
                 {
-                    "name": "AllAdSamples_NoReportsSent",
+                    "name": "AdSampler_NormalRate",
                     "params": {
-                        "safe_browsing_ad_sampler_frequency_denominator": "1",
-                        "trigger_type_and_quota_csv": "2,10000"
+                        "safe_browsing_ad_sampler_frequency_denominator": "1000",
+                        "trigger_type_and_quota_csv": "2,10"
                     },
                     "enable_features": [
-                        "SafeBrowsingAdSamplerCollectButDontSend",
                         "SafeBrowsingAdSamplerTrigger",
                         "SafeBrowsingTriggerThrottlerDailyQuota"
                     ]
@@ -3063,7 +3063,6 @@
                 {
                     "name": "Control",
                     "disable_features": [
-                        "SafeBrowsingAdSamplerCollectButDontSend",
                         "SafeBrowsingAdSamplerTrigger",
                         "SafeBrowsingTriggerThrottlerDailyQuota"
                     ]
