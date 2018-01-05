@@ -184,7 +184,7 @@ bool Keyboard::HasObserver(KeyboardObserver* observer) const {
 }
 
 void Keyboard::RemoveObserver(KeyboardObserver* observer) {
-  observer_list_.HasObserver(observer);
+  observer_list_.RemoveObserver(observer);
 }
 
 void Keyboard::SetNeedKeyboardKeyAcks(bool need_acks) {
