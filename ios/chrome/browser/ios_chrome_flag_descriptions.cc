@@ -11,6 +11,10 @@
 
 namespace flag_descriptions {
 
+const char kAdaptiveToolbarName[] = "Adaptive Toolbar";
+const char kAdaptiveToolbarDescription[] =
+    "When enabled, the adaptive toolbar will be used.";
+
 const char kBookmarkNewEditPageName[] = "Bookmark New Edit Page";
 const char kBookmarkNewEditPageDescription[] =
     "When enabled, the new bookmark edit page and folder picker will be used "

@@ -231,7 +231,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)}};
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
+    {"adaptive-toolbar", flag_descriptions::kAdaptiveToolbarName,
+     flag_descriptions::kAdaptiveToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAdaptiveToolbar)},
+};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

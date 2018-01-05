@@ -10,3 +10,6 @@
 
 const base::Feature kCleanToolbar{"CleanToolbar",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAdaptiveToolbar{"AdaptiveToolbar",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};

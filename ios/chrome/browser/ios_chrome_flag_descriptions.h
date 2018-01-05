@@ -7,6 +7,10 @@
 
 namespace flag_descriptions {
 
+// Title and description for the flag to enable the adaptive toolbar.
+extern const char kAdaptiveToolbarName[];
+extern const char kAdaptiveToolbarDescription[];
+
 // Title and description for the flag to enable the new bookmark edit page in
 // the new bookmark UI.
 extern const char kBookmarkNewEditPageName[];
