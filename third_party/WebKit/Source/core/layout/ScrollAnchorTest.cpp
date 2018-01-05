@@ -4,6 +4,7 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMRect.h"
@@ -98,6 +99,7 @@ TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
     <style> body { height: 1000px } div { height: 100px } </style>
     <div id='block1'>abc</div>
     <div id='block2'>def</div>
+    <script></script>
   )HTML");
 
   ScrollableArea* viewport = LayoutViewport();
@@ -124,6 +126,35 @@ TEST_P(ScrollAnchorTest, UMAMetricUpdated) {
   // 7 == "#block2".length()
   histogram_tester.ExpectUniqueSample(
       "Layout.ScrollAnchor.SerializedAnchorSelectorLength", 7, 1);
+
+  // Clear the current anchor so that we can test restoration histograms.
+  // Restoration only proceeds if there isn't an existing anchor.
+  GetScrollAnchor(viewport).Clear();
+
+  V8TestingScope scope;
+  SerializedAnchor bad_anchor("##foobar", LayoutPoint(0, 0));
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).RestoreAnchor(bad_anchor));
+  histogram_tester.ExpectBucketCount("Layout.ScrollAnchor.RestorationStatus",
+                                     ScrollAnchor::kFailedBadSelector, 1);
+
+  SerializedAnchor bad_anchor2("#bl", LayoutPoint(0, 0));
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).RestoreAnchor(bad_anchor2));
+  histogram_tester.ExpectBucketCount("Layout.ScrollAnchor.RestorationStatus",
+                                     ScrollAnchor::kFailedNoMatches, 1);
+
+  SerializedAnchor bad_anchor3("script", LayoutPoint(0, -1000));
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).RestoreAnchor(bad_anchor3));
+  histogram_tester.ExpectBucketCount("Layout.ScrollAnchor.RestorationStatus",
+                                     ScrollAnchor::kFailedNoValidMatches, 1);
+
+  SerializedAnchor serialized_anchor("#block1", LayoutPoint(0, 0));
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+
+  histogram_tester.ExpectTotalCount("Layout.ScrollAnchor.TimeToRestoreAnchor",
+                                    4);
+  histogram_tester.ExpectBucketCount("Layout.ScrollAnchor.RestorationStatus",
+                                     ScrollAnchor::kSuccess, 1);
 }
 
 // TODO(skobes): Convert this to web-platform-tests when visual viewport API is
@@ -687,5 +718,124 @@ TEST_P(ScrollAnchorTest, SerializeAnchorIgnoresDuplicatedId) {
   ScrollLayoutViewport(ScrollOffset(0, 150));
   ValidateSerializedAnchor("html>body>:nth-child(3)>.barbaz",
                            LayoutPoint(0, -50));
+}
+
+TEST_P(ScrollAnchorTest, SerializeAnchorFailsForPseudoElement) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        body { height: 1000px; margin: 0; }
+        div { height: 100px }
+        div:after { content: "foobar"; display: block; margin-top: 50px; }
+      </style>
+      <div>abc</div>
+      <div id='block1'>def</div>)HTML");
+
+  ScrollLayoutViewport(ScrollOffset(0, 50));
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+}
+
+TEST_P(ScrollAnchorTest, RestoreAnchorSimple) {
+  SetBodyInnerHTML(
+      "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
+      "</style>"
+      "<div id='block1'>abc</div>"
+      "<div id='block2'>def</div>");
+
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+
+  SerializedAnchor serialized_anchor("#block2", LayoutPoint(0, 0));
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 100);
+
+  SetHeight(GetDocument().getElementById("block1"), 200);
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 200);
+
+  SetHeight(GetDocument().getElementById("block1"), 50);
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 50);
+}
+
+TEST_P(ScrollAnchorTest, RestoreAnchorNonTrivialSelector) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        body { height: 1000px; margin: 0; }
+        div.hundred { height: 100px; }
+        div.thousand { height: 1000px; }
+      </style>
+      <div id='block1' class='hundred'>abc</div>
+      <div id='ancestor' class='thousand'>
+       <div class='hundred'>abc</div>
+       <div class='hundred'>def</div>
+       <div class='hundred'>
+         <div class='hundred foobar'>
+           <div class='hundred'>ghi</div>
+         </div>
+       <div class='hundred barbaz'></div>
+      </div>)HTML");
+
+  SerializedAnchor serialized_anchor("#ancestor>:nth-child(3)>.foobar>div",
+                                     LayoutPoint(0, -50));
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 350);
+
+  SetHeight(GetDocument().getElementById("block1"), 200);
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 450);
+}
+
+TEST_P(ScrollAnchorTest, RestoreAnchorFailsForInvalidSelectors) {
+  V8TestingScope scope;
+  SetBodyInnerHTML(
+      "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
+      "</style>"
+      "<div id='block1'>abc</div>"
+      "<div id='block2'>def</div>");
+
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+
+  SerializedAnchor serialized_anchor("article", LayoutPoint(0, 0));
+
+  EXPECT_FALSE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+
+  SerializedAnchor serialized_anchor_2("", LayoutPoint(0, 0));
+
+  EXPECT_FALSE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor_2));
+
+  SerializedAnchor serialized_anchor_3("foobar", LayoutPoint(0, 0));
+
+  EXPECT_FALSE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor_3));
+}
+
+// Ensure that when the serialized selector refers to a non-box, non-text
+// element(meaning its corresponding LayoutObject can't be the anchor object)
+// that restoration will still succeed.
+TEST_P(ScrollAnchorTest, RestoreAnchorSucceedsForNonBoxNonTextElement) {
+  SetBodyInnerHTML(
+      "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
+      "</style>"
+      "<div id='block1'>abc</div>"
+      "<code>some code</code>");
+
+  EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
+
+  SerializedAnchor serialized_anchor("html>body>code", LayoutPoint(0, 0));
+
+  EXPECT_TRUE(
+      GetScrollAnchor(LayoutViewport()).RestoreAnchor(serialized_anchor));
+
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 100);
+
+  SetHeight(GetDocument().getElementById("block1"), 200);
+  EXPECT_EQ(LayoutViewport()->ScrollOffsetInt().Height(), 200);
+
+  SerializedAnchor serialized =
+      GetScrollAnchor(LayoutViewport()).GetSerializedAnchor();
+  ValidateSerializedAnchor("html>body>code", LayoutPoint(0, 0));
 }
 }
