@@ -12,12 +12,15 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon_base/favicon_types.h"
 
+namespace favicon {
+class FaviconService;
+}
+
 namespace gfx {
 class Image;
 }
 
 class GURL;
-class Profile;
 
 typedef base::OnceCallback<void(const gfx::Image& favicon)>
     FaviconFetchedCallback;
@@ -26,7 +29,7 @@ typedef base::OnceCallback<void(const gfx::Image& favicon)>
 // them to prevent flicker as the user types.
 class FaviconCache {
  public:
-  explicit FaviconCache(Profile* profile);
+  explicit FaviconCache(favicon::FaviconService* favicon_service);
   virtual ~FaviconCache();
 
   gfx::Image GetFaviconForPageUrl(const GURL& page_url,
@@ -37,9 +40,11 @@ class FaviconCache {
                         FaviconFetchedCallback on_favicon_fetched,
                         const favicon_base::FaviconImageResult& result);
 
+  // Non-owning pointer to a KeyedService.
+  favicon::FaviconService* favicon_service_;
+
   base::CancelableTaskTracker task_tracker_;
   base::MRUCache<GURL, gfx::Image> mru_cache_;
-  Profile* profile_;
   base::WeakPtrFactory<FaviconCache> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconCache);
