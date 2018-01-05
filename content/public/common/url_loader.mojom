@@ -49,7 +49,8 @@ interface URLLoader {
 
   // Sets the request priority.
   // |intra_priority_value| is a lesser priority which is used to prioritize
-  // requests within a given priority level.
+  // requests within a given priority level. If -1 is passed, the existing
+  // intra priority value is maintained.
   SetPriority(RequestPriority priority, int32 intra_priority_value);
 
   // If a URLLoader fetches the resource from network, it should handle these

@@ -158,6 +158,7 @@ class ChromeContentRendererClient
       blink::WebLocalFrame* frame,
       ui::PageTransition transition_type,
       const blink::WebURL& url,
+      content::ResourceType resource_type,
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>* throttles,
       GURL* new_url) override;
   bool IsPrefetchOnly(content::RenderFrame* render_frame,

@@ -8,6 +8,7 @@
 
 namespace content {
 
+void URLLoaderThrottle::Delegate::SetPriority(net::RequestPriority priority) {}
 void URLLoaderThrottle::Delegate::PauseReadingBodyFromNet() {}
 void URLLoaderThrottle::Delegate::ResumeReadingBodyFromNet() {}
 
@@ -19,11 +20,12 @@ void URLLoaderThrottle::DetachFromCurrentSequence() {
   NOTREACHED();
 }
 
-void URLLoaderThrottle::WillStartRequest(const ResourceRequest& request,
+void URLLoaderThrottle::WillStartRequest(ResourceRequest* request,
                                          bool* defer) {}
 
 void URLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
+    const ResourceResponseHead& response_head,
     bool* defer) {}
 
 void URLLoaderThrottle::WillProcessResponse(

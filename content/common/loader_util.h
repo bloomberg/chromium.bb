@@ -38,8 +38,7 @@ scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
 
 void AttachAcceptHeader(ResourceType type, net::URLRequest* request);
 
-int BuildLoadFlagsForRequest(const ResourceRequest& request_data,
-                             bool is_sync_load);
+int BuildLoadFlagsForRequest(const ResourceRequest& request_data);
 
 }  // namespace content
 

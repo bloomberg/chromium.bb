@@ -138,8 +138,7 @@ void AttachAcceptHeader(ResourceType type, net::URLRequest* request) {
   request->SetExtraRequestHeaderByName(kAcceptHeader, accept_value, false);
 }
 
-int BuildLoadFlagsForRequest(const ResourceRequest& request,
-                             bool is_sync_load) {
+int BuildLoadFlagsForRequest(const ResourceRequest& request) {
   int load_flags = request.load_flags;
 
   // Although EV status is irrelevant to sub-frames and sub-resources, we have
@@ -152,9 +151,6 @@ int BuildLoadFlagsForRequest(const ResourceRequest& request,
   } else if (request.resource_type == RESOURCE_TYPE_PREFETCH) {
     load_flags |= net::LOAD_PREFETCH;
   }
-
-  if (is_sync_load)
-    load_flags |= net::LOAD_IGNORE_LIMITS;
 
   return load_flags;
 }

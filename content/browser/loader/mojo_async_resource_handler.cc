@@ -384,8 +384,12 @@ void MojoAsyncResourceHandler::ProceedWithResponse() {
 
 void MojoAsyncResourceHandler::SetPriority(net::RequestPriority priority,
                                            int32_t intra_priority_value) {
-  ResourceDispatcherHostImpl::Get()->scheduler()->ReprioritizeRequest(
-      request(), priority, intra_priority_value);
+  auto* scheduler = ResourceDispatcherHostImpl::Get()->scheduler();
+  if (intra_priority_value == -1) {
+    scheduler->ReprioritizeRequest(request(), priority);
+  } else {
+    scheduler->ReprioritizeRequest(request(), priority, intra_priority_value);
+  }
 }
 
 void MojoAsyncResourceHandler::PauseReadingBodyFromNet() {

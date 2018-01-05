@@ -45,27 +45,28 @@ BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {
 }
 
 void BrowserURLLoaderThrottle::WillStartRequest(
-    const content::ResourceRequest& request,
+    content::ResourceRequest* request,
     bool* defer) {
   DCHECK_EQ(0u, pending_checks_);
   DCHECK(!blocked_);
   DCHECK(!url_checker_);
 
-  original_url_ = request.url;
+  original_url_ = request->url;
   pending_checks_++;
   url_checker_ = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
-      request.headers, request.load_flags, request.resource_type,
-      request.has_user_gesture, std::move(url_checker_delegate_),
+      request->headers, request->load_flags, request->resource_type,
+      request->has_user_gesture, std::move(url_checker_delegate_),
       web_contents_getter_);
 
   url_checker_->CheckUrl(
-      request.url, request.method,
+      request->url, request->method,
       base::BindOnce(&BrowserURLLoaderThrottle::OnCheckUrlResult,
                      base::Unretained(this)));
 }
 
 void BrowserURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
+    const content::ResourceResponseHead& response_head,
     bool* defer) {
   if (blocked_) {
     // OnCheckUrlResult() has set |blocked_| to true and called

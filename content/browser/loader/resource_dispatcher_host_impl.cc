@@ -1041,7 +1041,7 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   bool allow_download = false;
   bool do_not_prompt_for_login = false;
   bool report_raw_headers = false;
-  int load_flags = BuildLoadFlagsForRequest(request_data, is_sync_load);
+  int load_flags = BuildLoadFlagsForRequest(request_data);
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
       IsResourceTypeFrame(request_data.resource_type);

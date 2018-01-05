@@ -376,7 +376,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::CommandLine& command_line) override;
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
-      const base::Callback<content::WebContents*()>& wc_getter) override;
+      const base::Callback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data) override;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       content::RenderFrameHost* frame_host,
       NonNetworkURLLoaderFactoryMap* factories) override;

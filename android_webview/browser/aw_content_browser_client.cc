@@ -572,7 +572,8 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
 
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 AwContentBrowserClient::CreateURLLoaderThrottles(
-    const base::Callback<content::WebContents*()>& wc_getter) {
+    const base::Callback<content::WebContents*()>& wc_getter,
+    content::NavigationUIData* navigation_ui_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::FeatureList::IsEnabled(features::kNetworkService));
 
