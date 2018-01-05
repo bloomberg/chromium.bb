@@ -40,7 +40,7 @@
   await new Promise(f => SourcesTestRunner.startDebuggerTest(f, true));
   await TestRunner.evaluateInPageAsync('setup()');
   var workerTarget = await TestRunner.waitForTarget(target => target.parentTarget() === TestRunner.mainTarget);
-  await TestRunner.waitForExecutionContext(workerTarget.model(SDK.RuntimeModel));
+  var workerExecutionContext = await TestRunner.waitForExecutionContext(workerTarget.model(SDK.RuntimeModel));
   dump();
 
   TestRunner.addResult('');
@@ -48,6 +48,9 @@
   UI.context.setFlavor(SDK.Target, workerTarget);
   dump();
 
+  var mainFrame = TestRunner.resourceTreeModel.mainFrame;
+  var mainExecutionContext =
+      TestRunner.runtimeModel.executionContexts().find(context => context.frameId === mainFrame.id);
   var childFrame =
       TestRunner.resourceTreeModel.frames().find(frame => frame !== TestRunner.resourceTreeModel.mainFrame);
   var childExecutionContext =
@@ -57,54 +60,35 @@
   UI.context.setFlavor(SDK.ExecutionContext, childExecutionContext);
   dump();
 
-  var handleExecutionContextFlavorChanged;
-  UI.context.addFlavorChangeListener(SDK.DebuggerModel.CallFrame, () => {
-    if (handleExecutionContextFlavorChanged)
-      handleExecutionContextFlavorChanged();
-    handleExecutionContextFlavorChanged = undefined;
-  });
-
-  function waitForExecutionContextFlavorChanged() {
-    return new Promise(fulfill => {
-      handleExecutionContextFlavorChanged = fulfill;
-    });
-  }
-
   TestRunner.evaluateInPage('pauseInMain()');
   await SourcesTestRunner.waitUntilPausedPromise();
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Paused in main');
   dump();
 
   await new Promise(f => SourcesTestRunner.resumeExecution(f));
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Resumed');
   dump();
 
   TestRunner.evaluateInPage('pauseInWorker()');
   await SourcesTestRunner.waitUntilPausedPromise();
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Paused in worker');
   dump();
 
   await new Promise(f => SourcesTestRunner.resumeExecution(f));
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Resumed');
   dump();
 
   TestRunner.evaluateInPage('pauseInIframe()');
   await SourcesTestRunner.waitUntilPausedPromise();
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Paused in iframe');
   dump();
 
   await new Promise(f => SourcesTestRunner.resumeExecution(f));
-  await waitForExecutionContextFlavorChanged();
   TestRunner.addResult('');
   TestRunner.addResult('Resumed');
   dump();
