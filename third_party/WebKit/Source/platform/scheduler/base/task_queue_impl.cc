@@ -876,6 +876,23 @@ void TaskQueueImpl::PushImmediateIncomingTaskForTest(
   immediate_incoming_queue().push_back(std::move(task));
 }
 
+void TaskQueueImpl::RequeueDeferredNonNestableTask(
+    TaskQueueImpl::Task&& task,
+    Sequence::WorkType work_type) {
+  DCHECK(task.nestable == base::Nestable::kNonNestable);
+  // The re-queued tasks have to be pushed onto the front because we'd otherwise
+  // violate the strict monotonically increasing enqueue order within the
+  // WorkQueue.  We can't assign them a new enqueue order here because that will
+  // not behave correctly with fences and things will break (e.g Idle TQ).
+  if (work_type == Sequence::WorkType::kDelayed) {
+    main_thread_only().delayed_work_queue->PushNonNestableTaskToFront(
+        std::move(task));
+  } else {
+    main_thread_only().immediate_work_queue->PushNonNestableTaskToFront(
+        std::move(task));
+  }
+}
+
 void TaskQueueImpl::SetOnNextWakeUpChangedCallback(
     TaskQueueImpl::OnNextWakeUpChangedCallback callback) {
 #if DCHECK_IS_ON()

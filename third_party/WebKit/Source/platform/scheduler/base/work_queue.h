@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/scheduler/base/enqueue_order.h"
 #include "platform/scheduler/base/intrusive_heap.h"
+#include "platform/scheduler/base/sequence.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 
 namespace blink {
@@ -32,8 +33,9 @@ class WorkQueueSets;
 // throttling mechanisms.
 class PLATFORM_EXPORT WorkQueue {
  public:
-  enum class QueueType { kDelayed, kImmediate };
+  using QueueType = Sequence::WorkType;
 
+  // Note |task_queue| can be null if queue_type is kNonNestable.
   WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);
   ~WorkQueue();
 
@@ -67,6 +69,11 @@ class PLATFORM_EXPORT WorkQueue {
   // it informs the WorkQueueSets if the head changed.
   void Push(TaskQueueImpl::Task task);
 
+  // Pushes the task onto the front of the |work_queue_| and if it's before any
+  // fence it informs the WorkQueueSets the head changed. Use with caution this
+  // API can easily lead to task starvation if misused.
+  void PushNonNestableTaskToFront(TaskQueueImpl::Task task);
+
   // Reloads the empty |work_queue_| with
   // |task_queue_->TakeImmediateIncomingQueue| and if a fence hasn't been
   // reached it informs the WorkQueueSets if the head changed.
@@ -90,6 +97,8 @@ class PLATFORM_EXPORT WorkQueue {
   HeapHandle heap_handle() const { return heap_handle_; }
 
   void set_heap_handle(HeapHandle handle) { heap_handle_ = handle; }
+
+  QueueType queue_type() const { return queue_type_; }
 
   // Returns true if the front task in this queue has an older enqueue order
   // than the front task of |other_queue|. Both queue are assumed to be

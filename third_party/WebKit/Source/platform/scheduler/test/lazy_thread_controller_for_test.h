@@ -31,8 +31,6 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
   void ScheduleWork() override;
   void ScheduleDelayedWork(base::TimeDelta delta) override;
   void CancelDelayedWork() override;
-  void PostNonNestableTask(const base::Location& from_here,
-                           base::OnceClosure task);
   void SetDefaultTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   void RestoreDefaultTaskRunner() override;

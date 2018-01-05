@@ -53,6 +53,15 @@ void WorkQueueSets::ChangeSetIndex(WorkQueue* work_queue, size_t set_index) {
   work_queue_heaps_[set_index].insert({enqueue_order, work_queue});
 }
 
+void WorkQueueSets::OnFrontTaskChanged(WorkQueue* work_queue) {
+  EnqueueOrder enqueue_order;
+  bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
+  DCHECK(has_enqueue_order);
+  size_t set = work_queue->work_queue_set_index();
+  work_queue_heaps_[set].ChangeKey(work_queue->heap_handle(),
+                                   {enqueue_order, work_queue});
+}
+
 void WorkQueueSets::OnTaskPushedToEmptyQueue(WorkQueue* work_queue) {
   // NOTE if this function changes, we need to keep |WorkQueueSets::AddQueue| in
   // sync.

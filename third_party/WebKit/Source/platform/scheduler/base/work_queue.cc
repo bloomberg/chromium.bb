@@ -67,6 +67,10 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   DCHECK(task.enqueue_order_set());
 #endif
 
+  // Make sure the |enqueue_order()| is monotonically increasing.
+  DCHECK(was_empty ||
+         work_queue_.rbegin()->enqueue_order() < task.enqueue_order());
+
   // Amoritized O(1).
   work_queue_.push_back(std::move(task));
 
@@ -76,6 +80,38 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
   if (work_queue_sets_ && !BlockedByFence())
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
+}
+
+void WorkQueue::PushNonNestableTaskToFront(TaskQueueImpl::Task task) {
+  DCHECK(task.nestable == base::Nestable::kNonNestable);
+
+  bool was_empty = work_queue_.empty();
+#ifndef NDEBUG
+  DCHECK(task.enqueue_order_set());
+#endif
+
+  if (!was_empty) {
+    // Make sure the |enqueue_order()| is monotonically increasing.
+    DCHECK_LE(task.enqueue_order(), work_queue_.front().enqueue_order())
+        << task_queue_->GetName() << " : " << work_queue_sets_->GetName()
+        << " : " << name_;
+  }
+
+  // Amoritized O(1).
+  work_queue_.push_front(std::move(task));
+
+  if (!work_queue_sets_)
+    return;
+
+  // Pretend  to WorkQueueSets that nothing has changed if we're blocked.
+  if (BlockedByFence())
+    return;
+
+  if (was_empty) {
+    work_queue_sets_->OnTaskPushedToEmptyQueue(this);
+  } else {
+    work_queue_sets_->OnFrontTaskChanged(this);
+  }
 }
 
 void WorkQueue::ReloadEmptyImmediateQueue() {

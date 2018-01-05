@@ -68,11 +68,6 @@ void ThreadControllerImpl::CancelDelayedWork() {
   cancelable_delayed_do_work_closure_.Cancel();
 }
 
-void ThreadControllerImpl::PostNonNestableTask(const base::Location& from_here,
-                                               base::OnceClosure task) {
-  task_runner_->PostNonNestableTask(from_here, std::move(task));
-}
-
 bool ThreadControllerImpl::RunsTasksInCurrentSequence() {
   return task_runner_->RunsTasksInCurrentSequence();
 }
