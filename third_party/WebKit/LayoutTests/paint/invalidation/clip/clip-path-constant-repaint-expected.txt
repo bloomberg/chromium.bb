@@ -11,6 +11,13 @@
       "bounds": [800, 300],
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FF0000E6",
+      "maskLayer": [
+        {
+          "name": "Child Clipping Mask Layer",
+          "position": [8, 8],
+          "bounds": [800, 300]
+        }
+      ],
       "transform": 2
     }
   ],
