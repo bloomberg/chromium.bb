@@ -45,6 +45,7 @@
 #include "third_party/skia/include/core/SkMilestone.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
@@ -263,51 +264,6 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   return info;
 }
 
-const char* BufferFormatToString(gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::ATC:
-      return "ATC";
-    case gfx::BufferFormat::ATCIA:
-      return "ATCIA";
-    case gfx::BufferFormat::DXT1:
-      return "DXT1";
-    case gfx::BufferFormat::DXT5:
-      return "DXT5";
-    case gfx::BufferFormat::ETC1:
-      return "ETC1";
-    case gfx::BufferFormat::R_8:
-      return "R_8";
-    case gfx::BufferFormat::R_16:
-      return "R_16";
-    case gfx::BufferFormat::RG_88:
-      return "RG_88";
-    case gfx::BufferFormat::BGR_565:
-      return "BGR_565";
-    case gfx::BufferFormat::RGBA_4444:
-      return "RGBA_4444";
-    case gfx::BufferFormat::RGBX_8888:
-      return "RGBX_8888";
-    case gfx::BufferFormat::RGBA_8888:
-      return "RGBA_8888";
-    case gfx::BufferFormat::BGRX_8888:
-      return "BGRX_8888";
-    case gfx::BufferFormat::BGRX_1010102:
-      return "BGRX_1010102";
-    case gfx::BufferFormat::BGRA_8888:
-      return "BGRA_8888";
-    case gfx::BufferFormat::RGBA_F16:
-      return "RGBA_F16";
-    case gfx::BufferFormat::YVU_420:
-      return "YVU_420";
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
-      return "YUV_420_BIPLANAR";
-    case gfx::BufferFormat::UYVY_422:
-      return "UYVY_422";
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
 const char* BufferUsageToString(gfx::BufferUsage usage) {
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
@@ -365,7 +321,7 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
       native_usage_support = base::StringPrintf("Software only");
 
     gpu_memory_buffer_info->Append(NewDescriptionValuePair(
-        BufferFormatToString(static_cast<gfx::BufferFormat>(format)),
+        gfx::BufferFormatToString(static_cast<gfx::BufferFormat>(format)),
         native_usage_support));
   }
   return gpu_memory_buffer_info;
