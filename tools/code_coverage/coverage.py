@@ -53,6 +53,7 @@ from __future__ import print_function
 import sys
 
 import argparse
+import json
 import os
 import subprocess
 import threading
@@ -62,8 +63,14 @@ sys.path.append(
     os.path.join(
         os.path.dirname(__file__), os.path.pardir, os.path.pardir, 'tools',
         'clang', 'scripts'))
-
 import update as clang_update
+
+sys.path.append(
+    os.path.join(
+        os.path.dirname(__file__), os.path.pardir, os.path.pardir,
+        'third_party'))
+import jinja2
+from collections import defaultdict
 
 # Absolute path to the root of the checkout.
 SRC_ROOT_PATH = os.path.abspath(
@@ -98,6 +105,137 @@ CLANG_COVERAGE_BUILD_ARG = 'use_clang_coverage'
 # A set of targets that depend on target "testing/gtest", this set is generated
 # by 'gn refs "testing/gtest"', and it is lazily initialized when needed.
 GTEST_TARGET_NAMES = None
+
+# The default name of the html coverage report for a directory.
+DIRECTORY_COVERAGE_HTML_REPORT_NAME = os.extsep.join(['report', 'html'])
+
+
+class _CoverageSummary(object):
+  """Encapsulates coverage summary representation."""
+
+  def __init__(self, regions_total, regions_covered, functions_total,
+               functions_covered, lines_total, lines_covered):
+    """Initializes _CoverageSummary object."""
+    self._summary = {
+        'regions': {
+            'total': regions_total,
+            'covered': regions_covered
+        },
+        'functions': {
+            'total': functions_total,
+            'covered': functions_covered
+        },
+        'lines': {
+            'total': lines_total,
+            'covered': lines_covered
+        }
+    }
+
+  def Get(self):
+    """Returns summary as a dictionary."""
+    return self._summary
+
+  def AddSummary(self, other_summary):
+    """Adds another summary to this one element-wise."""
+    for feature in self._summary:
+      self._summary[feature]['total'] += other_summary.Get()[feature]['total']
+      self._summary[feature]['covered'] += other_summary.Get()[feature][
+          'covered']
+
+
+class _DirectoryCoverageReportHtmlGenerator(object):
+  """Encapsulates coverage html report generation for a directory.
+
+  The generated html has a table that contains links to the coverage report of
+  its sub-directories and files. Please refer to ./directory_example_report.html
+  for an example of the generated html file.
+  """
+
+  def __init__(self):
+    """Initializes _DirectoryCoverageReportHtmlGenerator object."""
+    css_file_name = os.extsep.join(['style', 'css'])
+    css_absolute_path = os.path.abspath(os.path.join(OUTPUT_DIR, css_file_name))
+    assert os.path.exists(css_absolute_path), (
+        'css file doesn\'t exit. Please make sure "llvm-cov show -format=html" '
+        'is called first, and the css file is generated at: "%s"' %
+        css_absolute_path)
+
+    self._css_absolute_path = css_absolute_path
+    self._table_entries = []
+    template_dir = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'html_templates')
+
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(template_dir), trim_blocks=True)
+    self._header_template = jinja_env.get_template('header.html')
+    self._table_template = jinja_env.get_template('table.html')
+    self._footer_template = jinja_env.get_template('footer.html')
+
+  def AddLinkToAnotherReport(self, html_report_path, name, summary):
+    """Adds a link to another html report in this report.
+
+    The link to be added is assumed to be an entry in this directory.
+    """
+    table_entry = {
+        'href':
+            html_report_path,
+        'name':
+            name,
+        'is_dir':
+            os.path.basename(html_report_path) ==
+            DIRECTORY_COVERAGE_HTML_REPORT_NAME
+    }
+    summary_dict = summary.Get()
+    for feature in summary_dict.keys():
+      percentage = round((float(summary_dict[feature]['covered']
+                               ) / summary_dict[feature]['total']) * 100, 2)
+      color_class = self._GetColorClass(percentage)
+      table_entry[feature] = {
+          'total': summary_dict[feature]['total'],
+          'covered': summary_dict[feature]['covered'],
+          'percentage': percentage,
+          'color_class': color_class
+      }
+    self._table_entries.append(table_entry)
+
+  def _GetColorClass(self, percentage):
+    """Returns the css color class based on coverage percentage."""
+    if percentage >= 0 and percentage < 80:
+      return 'red'
+    if percentage >= 80 and percentage < 100:
+      return 'yellow'
+    if percentage == 100:
+      return 'green'
+
+    assert False, 'Invalid coverage percentage: "%d"' % percentage
+
+  def WriteHtmlCoverageReport(self, output_path):
+    """Write html coverage report for the directory.
+
+    In the report, sub-directories are displayed before files and within each
+    category, entries are sorted alphabetically.
+
+    Args:
+      output_path: A path to the html report.
+    """
+
+    def EntryCmp(left, right):
+      """Compare function for table entries."""
+      if left['is_dir'] != right['is_dir']:
+        return -1 if left['is_dir'] == True else 1
+
+      return left['name'] < right['name']
+
+    self._table_entries = sorted(self._table_entries, cmp=EntryCmp)
+
+    css_path = os.path.join(OUTPUT_DIR, os.extsep.join(['style', 'css']))
+    html_header = self._header_template.render(
+        css_path=os.path.relpath(css_path, os.path.dirname(output_path)))
+    html_table = self._table_template.render(entries=self._table_entries)
+    html_footer = self._footer_template.render()
+
+    with open(output_path, 'w') as html_file:
+      html_file.write(html_header + html_table + html_footer)
 
 
 def _GetPlatform():
@@ -154,11 +292,10 @@ def DownloadCoverageToolsIfNeeded():
   coverage_revision, coverage_sub_revision = _GetRevisionFromStampFile(
       coverage_revision_stamp_file, platform)
 
-  has_coverage_tools = (os.path.exists(LLVM_COV_PATH) and
-                        os.path.exists(LLVM_PROFDATA_PATH))
+  has_coverage_tools = (
+      os.path.exists(LLVM_COV_PATH) and os.path.exists(LLVM_PROFDATA_PATH))
 
-  if (has_coverage_tools and
-      coverage_revision == clang_revision and
+  if (has_coverage_tools and coverage_revision == clang_revision and
       coverage_sub_revision == clang_sub_revision):
     # LLVM coverage tools are up to date, bail out.
     return clang_revision
@@ -199,9 +336,6 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
     profdata_file_path: A path to the profdata file.
     filters: A list of directories and files to get coverage for.
   """
-  print('Generating per file line-by-line code coverage in html '
-        '(this can take a while depending on size of target!)')
-
   # llvm-cov show [options] -instr-profile PROFILE BIN [-object BIN,...]
   # [[-object BIN]] [SOURCES]
   # NOTE: For object files, the first one is specified as a positional argument,
@@ -216,6 +350,88 @@ def _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
   subprocess_cmd.extend(filters)
 
   subprocess.check_call(subprocess_cmd)
+
+
+def _GeneratePerDirectoryCoverageInHtml(binary_paths, profdata_file_path,
+                                        filters):
+  """Generates coverage breakdown per directory."""
+  per_file_coverage_summary = _GeneratePerFileCoverageSummary(
+      binary_paths, profdata_file_path, filters)
+
+  per_directory_coverage_summary = defaultdict(
+      lambda: _CoverageSummary(0, 0, 0, 0, 0, 0))
+
+  # Calculate per directory code coverage summaries.
+  for file_path in per_file_coverage_summary:
+    summary = per_file_coverage_summary[file_path]
+    parent_dir = os.path.dirname(file_path)
+    while True:
+      per_directory_coverage_summary[parent_dir].AddSummary(summary)
+
+      if parent_dir == SRC_ROOT_PATH:
+        break
+      parent_dir = os.path.dirname(parent_dir)
+
+  for dir_path in per_directory_coverage_summary:
+    _GenerateCoverageInHtmlForDirectory(
+        dir_path, per_directory_coverage_summary, per_file_coverage_summary)
+
+
+def _GenerateCoverageInHtmlForDirectory(
+    dir_path, per_directory_coverage_summary, per_file_coverage_summary):
+  """Generates coverage html report for a single directory."""
+  html_generator = _DirectoryCoverageReportHtmlGenerator()
+
+  for entry_name in os.listdir(dir_path):
+    entry_path = os.path.normpath(os.path.join(dir_path, entry_name))
+    entry_html_report_path = _GetCoverageHtmlReportPath(entry_path)
+
+    # Use relative paths instead of absolute paths to make the generated
+    # reports portable.
+    html_report_path = _GetCoverageHtmlReportPath(dir_path)
+    entry_html_report_relative_path = os.path.relpath(
+        entry_html_report_path, os.path.dirname(html_report_path))
+
+    if entry_path in per_directory_coverage_summary:
+      html_generator.AddLinkToAnotherReport(
+          entry_html_report_relative_path, os.path.basename(entry_path),
+          per_directory_coverage_summary[entry_path])
+    elif entry_path in per_file_coverage_summary:
+      html_generator.AddLinkToAnotherReport(
+          entry_html_report_relative_path, os.path.basename(entry_path),
+          per_file_coverage_summary[entry_path])
+
+  html_generator.WriteHtmlCoverageReport(html_report_path)
+
+
+def _OverwriteHtmlReportsIndexFile():
+  """Overwrites the index file to link to the source root directory report."""
+  html_index_file_path = os.path.join(OUTPUT_DIR,
+                                      os.extsep.join(['index', 'html']))
+  src_root_html_report_path = _GetCoverageHtmlReportPath(SRC_ROOT_PATH)
+  src_root_html_report_relative_path = os.path.relpath(
+      src_root_html_report_path, os.path.dirname(html_index_file_path))
+  content = ("""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <!-- HTML meta refresh URL redirection -->
+        <meta http-equiv="refresh" content="0; url=%s">
+      </head>
+    </html>""" % src_root_html_report_relative_path)
+  with open(html_index_file_path, 'w') as f:
+    f.write(content)
+
+
+def _GetCoverageHtmlReportPath(file_or_dir_path):
+  """Given a file or directory, returns the corresponding html report path."""
+  html_path = (
+      os.path.join(os.path.abspath(OUTPUT_DIR), 'coverage') +
+      os.path.abspath(file_or_dir_path))
+  if os.path.isdir(file_or_dir_path):
+    return os.path.join(html_path, DIRECTORY_COVERAGE_HTML_REPORT_NAME)
+  else:
+    return os.extsep.join([html_path, 'html'])
 
 
 def _CreateCoverageProfileDataForTargets(targets, commands, jobs_count=None):
@@ -248,8 +464,6 @@ def _BuildTargets(targets, jobs_count):
     targets: A list of targets to build with coverage instrumentation.
     jobs_count: Number of jobs to run in parallel for compilation. If None, a
                 default value is derived based on CPUs availability.
-
-
   """
 
   def _IsGomaConfigured():
@@ -373,6 +587,51 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_file_paths):
     raise error
 
   return profdata_file_path
+
+
+def _GeneratePerFileCoverageSummary(binary_paths, profdata_file_path, filters):
+  """Generates per file coverage summary using "llvm-cov export" command."""
+  # llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...]
+  # [[-object BIN]] [SOURCES].
+  # NOTE: For object files, the first one is specified as a positional argument,
+  # and the rest are specified as keyword argument.
+  subprocess_cmd = [
+      LLVM_COV_PATH, 'export', '-summary-only',
+      '-instr-profile=' + profdata_file_path, binary_paths[0]
+  ]
+  subprocess_cmd.extend(
+      ['-object=' + binary_path for binary_path in binary_paths[1:]])
+  subprocess_cmd.extend(filters)
+
+  json_output = json.loads(subprocess.check_output(subprocess_cmd))
+  assert len(json_output['data']) == 1
+  files_coverage_data = json_output['data'][0]['files']
+
+  per_file_coverage_summary = {}
+  for file_coverage_data in files_coverage_data:
+    file_path = file_coverage_data['filename']
+    summary = file_coverage_data['summary']
+
+    # TODO(crbug.com/797345): Currently, [SOURCES] parameter doesn't apply to
+    # llvm-cov export command, so work it around by manually filter the paths.
+    # Remove this logic once the bug is fixed and clang has rolled past it.
+    if filters and not any(
+        os.path.abspath(file_path).startswith(os.path.abspath(filter))
+        for filter in filters):
+      continue
+
+    if summary['lines']['count'] == 0:
+      continue
+
+    per_file_coverage_summary[file_path] = _CoverageSummary(
+        regions_total=summary['regions']['count'],
+        regions_covered=summary['regions']['covered'],
+        functions_total=summary['functions']['count'],
+        functions_covered=summary['functions']['covered'],
+        lines_total=summary['lines']['count'],
+        lines_covered=summary['lines']['covered'])
+
+  return per_file_coverage_summary
 
 
 def _GetBinaryPath(command):
@@ -562,10 +821,19 @@ def Main():
 
   profdata_file_path = _CreateCoverageProfileDataForTargets(
       args.targets, args.command, args.jobs)
-
   binary_paths = [_GetBinaryPath(command) for command in args.command]
+
+  print('Generating code coverage report in html (this can take a while '
+        'depending on size of target!)')
   _GenerateLineByLineFileCoverageInHtml(binary_paths, profdata_file_path,
                                         absolute_filter_paths)
+  _GeneratePerDirectoryCoverageInHtml(binary_paths, profdata_file_path,
+                                      absolute_filter_paths)
+
+  # The default index file is generated only for the list of source files, needs
+  # to overwrite it to display per directory code coverage breakdown.
+  _OverwriteHtmlReportsIndexFile()
+
   html_index_file_path = 'file://' + os.path.abspath(
       os.path.join(OUTPUT_DIR, 'index.html'))
   print('\nCode coverage profile data is created as: %s' % profdata_file_path)
