@@ -110,6 +110,9 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
 
     @Override
     public void onClick() {
+        if (mBitmapDetails == null)
+            return; // Clicks are disabled until initialize() has been called.
+
         if (isGalleryTile()) {
             mCategoryView.showGallery();
             return;
