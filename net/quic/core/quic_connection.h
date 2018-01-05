@@ -778,6 +778,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Decides whether to send probing retransmissions, and does so if required.
   void MaybeSendProbingRetransmissions();
 
+  // Notify various components(SendPacketManager, Session etc.) that this
+  // connection has been migrated.
+  void OnConnectionMigration(PeerAddressChangeType addr_change_type);
+
  private:
   friend class test::QuicConnectionPeer;
 
