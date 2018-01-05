@@ -82,6 +82,10 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* GetFootnoteViewForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      SaveCardBubbleViewsFullFormBrowserTest,
+      Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn);
+
   // The current step of the save card flow.  Accounts for:
   //  1) Local save vs. Upload save
   //  2) Upload save can have all information or be missing CVC

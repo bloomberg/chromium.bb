@@ -9,9 +9,12 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -103,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
-  DisableSecondaryUiMdExperiment();
+  // Disable the SecondaryUiMd experiment.
+  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -138,7 +142,8 @@ IN_PROC_BROWSER_TEST_F(
 // does not have a [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
-  EnableSecondaryUiMdExperiment();
+  // Enable the SecondaryUiMd experiment.
+  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsDeclines();
@@ -234,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
-  DisableSecondaryUiMdExperiment();
+  // Disable the SecondaryUiMd experiment.
+  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -268,7 +274,8 @@ IN_PROC_BROWSER_TEST_F(
 // does not have a [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButtonIfSecondaryUiMdExpOn) {
-  EnableSecondaryUiMdExperiment();
+  // Enable the SecondaryUiMd experiment.
+  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -288,12 +295,37 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
-// TODO(crbug.com/791861): There doesn't seem to be a good way of accessing and
-// clicking the [X] close button in the top-right corner of the dialog. Calling
-// Close() on the bubble doesn't reach WindowClosing(). The closest thing would
-// be forcibly destroying the bubble, but at that point the test is already far
-// removed from emulating clicking the [X]. When/if that can be worked around,
-// create an Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn test.
+// Tests the upload save bubble. Ensures that clicking the top-right [X] close
+// button successfully causes the bubble to go away.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn) {
+  // Enable the SecondaryUiMd experiment.
+  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  base::HistogramTester histogram_tester;
+  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
+  ClickOnDialogView(
+      GetSaveCardBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTest());
+  // The bubble should be closed.
+  // (Must wait for page navigation to complete before checking.)
+  nav_observer.Wait();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
 
 // Tests the upload save bubble. Ensures that the updated UI version of the
 // bubble (as of M62) does not have a [Learn more] link.
@@ -329,7 +361,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_SubmittingFormWithInvalidCvcShowsBubbleIfCvcExpOn) {
-  EnableRequestCvcIfMissingExperiment();
+  // Enable the RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamRequestCvcIfMissing);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -353,7 +387,9 @@ IN_PROC_BROWSER_TEST_F(
 // [Confirm] button is disabled if CVC has not yet been entered.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ConfirmButtonIsDisabledIfNoCvcAndCvcExpOn) {
-  EnableRequestCvcIfMissingExperiment();
+  // Enable the RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamRequestCvcIfMissing);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -389,7 +425,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // [Confirm] button is disabled if the entered CVC is invalid.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ConfirmButtonIsDisabledIfInvalidCvcAndCvcExpOn) {
-  EnableRequestCvcIfMissingExperiment();
+  // Enable the RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamRequestCvcIfMissing);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -432,7 +470,9 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_Entering3DigitCvcAndClickingConfirmClosesBubbleIfNoCvcAndCvcExpOn) {
-  EnableRequestCvcIfMissingExperiment();
+  // Enable the RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamRequestCvcIfMissing);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -487,7 +527,9 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_Entering4DigitCvcAndClickingConfirmClosesBubbleIfNoCvcAndCvcExpOn) {
-  EnableRequestCvcIfMissingExperiment();
+  // Enable the RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamRequestCvcIfMissing);
 
   // Set up the Payments RPC.
   SetUploadDetailsRpcPaymentsAccepts();
@@ -535,11 +577,66 @@ IN_PROC_BROWSER_TEST_F(
                  1)));
 }
 
+// Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
+// call to Payments when the detected values experiment is on, and offers to
+// upload save the card if Payments allows it.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_CanOfferToSaveEvenIfNothingFoundIfPaymentsAccepts) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form, even with only card number and expiration date, should
+  // start the flow of asking Payments if Chrome should offer to save the card
+  // to Google. In this case, Payments says yes, and the offer to save bubble
+  // should be shown.
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithCardDetailsOnly();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+}
+
+// Tests the upload save logic. Ensures that Chrome delegates the offer-to-save
+// call to Payments when the detected values experiment is on, and still does
+// not surface the offer to upload save dialog if Payments declines it.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_ShouldNotOfferToSaveIfNothingFoundAndPaymentsDeclines) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsDeclines();
+
+  // Submitting the form, even with only card number and expiration date, should
+  // start the flow of asking Payments if Chrome should offer to save the card
+  // to Google. In this case, Payments says no, so the offer to save bubble
+  // should not be shown.
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitFormWithCardDetailsOnly();
+  WaitForObservedEvent();
+  EXPECT_FALSE(GetSaveCardBubbleViews());
+}
+
 // Tests the upload save logic. Ensures that credit card upload is offered if
 // name, address, and CVC are detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldAttemptToOfferToSaveIfEverythingFound) {
-  DisableSendDetectedValuesExperiment();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOff_ShouldAttemptToOfferToSaveIfEverythingFound) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submitting the form should start the flow of asking Payments if Chrome
   // should offer to save the card to Google.
@@ -552,8 +649,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // if street addresses conflict, as long as their postal codes are the same.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-    Logic_ShouldAttemptToOfferToSaveIfStreetAddressesConflict) {
-  DisableSendDetectedValuesExperiment();
+    Logic_DetectedValuesOff_ShouldAttemptToOfferToSaveIfStreetAddressesConflict) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting street address.
   content::TestNavigationObserver shipping_form_nav_observer(
@@ -571,9 +670,15 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if CVC is not detected and the CVC fix flow is not enabled.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldNotOfferToSaveIfCvcNotFoundAndCvcExpOff) {
-  DisableRequestCvcIfMissingAndSendDetectedValuesExperiments();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfCvcNotFoundAndCvcExpOff) {
+  // Disable both the RequestCvcIfMissing and SendDetectedValues experiments.
+  scoped_feature_list_.InitWithFeatures(
+      {},  // Enabled
+      {kAutofillUpstreamRequestCvcIfMissing,
+       kAutofillUpstreamSendDetectedValues}  // Disabled
+      );
 
   // Submitting the form should not show the upload save bubble because CVC is
   // missing.
@@ -582,12 +687,37 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   WaitForObservedEvent();
 }
 
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if CVC is not detected and the CVC fix flow experiment is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfCvcNotFoundAndCvcExpOff) {
+  // Enable the SendDetectedValues experiment, but disable the
+  // RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitWithFeatures(
+      {kAutofillUpstreamSendDetectedValues},  // Enabled
+      {kAutofillUpstreamRequestCvcIfMissing}  // Disabled
+      );
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though CVC is missing.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
+  FillAndSubmitFormWithoutCvc();
+  WaitForObservedEvent();
+}
+
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if an invalid CVC is detected and the CVC fix flow is not enabled.
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
-    Logic_ShouldNotOfferToSaveIfInvalidCvcFoundAndCvcExpOff) {
-  DisableRequestCvcIfMissingAndSendDetectedValuesExperiments();
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfInvalidCvcFoundAndCvcExpOff) {
+  // Disable both the RequestCvcIfMissing and SendDetectedValues experiments.
+  scoped_feature_list_.InitWithFeatures(
+      {},  // Enabled
+      {kAutofillUpstreamRequestCvcIfMissing,
+       kAutofillUpstreamSendDetectedValues}  // Disabled
+      );
 
   // Submitting the form should not show the upload save bubble because CVC is
   // invalid.
@@ -596,11 +726,35 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if the detected CVC is invalid and the CVC fix flow experiment is disabled.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfInvalidCvcFoundAndCvcExpOff) {
+  // Enable the SendDetectedValues experiment, but disable the
+  // RequestCvcIfMissing experiment.
+  scoped_feature_list_.InitWithFeatures(
+      {kAutofillUpstreamSendDetectedValues},  // Enabled
+      {kAutofillUpstreamRequestCvcIfMissing}  // Disabled
+      );
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though the provided
+  // CVC is invalid.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
+  FillAndSubmitFormWithInvalidCvc();
+  WaitForObservedEvent();
+}
+
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if address/cardholder name is not detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldNotOfferToSaveIfNameNotFound) {
-  DisableSendDetectedValuesExperiment();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfNameNotFound) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submitting the form should not show the upload save bubble because name is
   // missing.
@@ -609,11 +763,32 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   WaitForObservedEvent();
 }
 
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if address/cardholder name is not detected.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfNameNotFound) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though name is
+  // missing.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
+  FillAndSubmitFormWithoutName();
+  WaitForObservedEvent();
+}
+
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if multiple conflicting names are detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-                       Logic_ShouldNotOfferToSaveIfNamesConflict) {
-  DisableSendDetectedValuesExperiment();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfNamesConflict) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting name.
   content::TestNavigationObserver shipping_form_nav_observer(
@@ -628,11 +803,38 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
   WaitForObservedEvent();
 }
 
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if multiple conflicting names are detected.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfNamesConflict) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Submit first shipping address form with a conflicting name.
+  content::TestNavigationObserver shipping_form_nav_observer(
+      GetActiveWebContents(), 1);
+  FillAndSubmitFormWithConflictingName();
+  shipping_form_nav_observer.Wait();
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though the name
+  // conflicts with the previous form.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+}
+
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if billing address is not detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Logic_ShouldNotOfferToSaveIfAddressNotFound) {
-  DisableSendDetectedValuesExperiment();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfAddressNotFound) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submitting the form should not show the upload save bubble because address
   // is missing.
@@ -641,11 +843,32 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   WaitForObservedEvent();
 }
 
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if billing address is not detected.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfAddressNotFound) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though billing address
+  // is missing.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
+  FillAndSubmitFormWithoutAddress();
+  WaitForObservedEvent();
+}
+
 // Tests the upload save logic. Ensures that credit card upload is not offered
 // if multiple conflicting billing address postal codes are detected.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
-                       Logic_ShouldNotOfferToSaveIfPostalCodesConflict) {
-  DisableSendDetectedValuesExperiment();
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+    Logic_DetectedValuesOff_ShouldNotOfferToSaveIfPostalCodesConflict) {
+  // Disable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndDisableFeature(
+      kAutofillUpstreamSendDetectedValues);
 
   // Submit first shipping address form with a conflicting postal code.
   content::TestNavigationObserver shipping_form_nav_observer(
@@ -656,6 +879,30 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormWithShippingBrowserTest,
   // Submitting the second form should not show the upload save bubble because
   // the postal code conflicts with the previous form.
   ResetEventWaiterForSequence({DialogEvent::DID_NOT_REQUEST_UPLOAD_SAVE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+}
+
+// Tests the upload save logic. Ensures that Chrome lets Payments decide whether
+// upload save should be offered if the detected values experiment is on, even
+// if multiple conflicting billing address postal codes are detected.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormWithShippingBrowserTest,
+    Logic_DetectedValuesOn_ShouldAttemptToOfferToSaveIfPostalCodesConflict) {
+  // Enable the SendDetectedValues experiment.
+  scoped_feature_list_.InitAndEnableFeature(
+      kAutofillUpstreamSendDetectedValues);
+
+  // Submit first shipping address form with a conflicting postal code.
+  content::TestNavigationObserver shipping_form_nav_observer(
+      GetActiveWebContents(), 1);
+  FillAndSubmitFormWithConflictingPostalCode();
+  shipping_form_nav_observer.Wait();
+
+  // Submitting the form should still start the flow of asking Payments if
+  // Chrome should offer to save the card to Google, even though the postal code
+  // conflicts with the previous form.
+  ResetEventWaiterForSequence({DialogEvent::REQUESTED_UPLOAD_SAVE});
   FillAndSubmitForm();
   WaitForObservedEvent();
 }
