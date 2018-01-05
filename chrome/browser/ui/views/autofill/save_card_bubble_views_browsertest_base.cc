@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -26,7 +25,6 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -195,39 +193,24 @@ void SaveCardBubbleViewsBrowserTestBase::OnSentUploadCardRequest() {
     event_waiter_->OnEvent(DialogEvent::SENT_UPLOAD_CARD_REQUEST);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::
-    DisableRequestCvcIfMissingAndSendDetectedValuesExperiments() {
-  scoped_feature_list_.InitWithFeatures(
-      {},  // Enabled
-      {kAutofillUpstreamRequestCvcIfMissing,
-       kAutofillUpstreamSendDetectedValues}  // Disabled
-      );
-}
-
-void SaveCardBubbleViewsBrowserTestBase::DisableSendDetectedValuesExperiment() {
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillUpstreamSendDetectedValues);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::DisableSecondaryUiMdExperiment() {
-  scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::EnableRequestCvcIfMissingExperiment() {
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillUpstreamRequestCvcIfMissing);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::EnableSecondaryUiMdExperiment() {
-  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
-}
-
 // Should be called for credit_card_upload_form_address_and_cc.html.
 void SaveCardBubbleViewsBrowserTestBase::FillAndSubmitForm() {
   content::WebContents* web_contents = GetActiveWebContents();
   const std::string click_fill_button_js =
       "(function() { document.getElementById('fill_form').click(); })();";
   ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_button_js));
+
+  const std::string click_submit_button_js =
+      "(function() { document.getElementById('submit').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_submit_button_js));
+}
+
+void SaveCardBubbleViewsBrowserTestBase::
+    FillAndSubmitFormWithCardDetailsOnly() {
+  content::WebContents* web_contents = GetActiveWebContents();
+  const std::string click_fill_card_button_js =
+      "(function() { document.getElementById('fill_card_only').click(); })();";
+  ASSERT_TRUE(content::ExecuteScript(web_contents, click_fill_card_button_js));
 
   const std::string click_submit_button_js =
       "(function() { document.getElementById('submit').click(); })();";
@@ -391,20 +374,21 @@ void SaveCardBubbleViewsBrowserTestBase::SetUploadDetailsRpcServerError() {
       net::HTTP_INTERNAL_SERVER_ERROR, net::URLRequestStatus::FAILED);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewWithIdAndWait(
-    DialogViewId view_id) {
-  views::View* specified_view = FindViewInBubbleById(view_id);
-  DCHECK(specified_view);
-
+void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogView(views::View* view) {
+  DCHECK(view);
   ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                          ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                          ui::EF_LEFT_MOUSE_BUTTON);
-  specified_view->OnMousePressed(pressed);
+  view->OnMousePressed(pressed);
   ui::MouseEvent released_event = ui::MouseEvent(
       ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  specified_view->OnMouseReleased(released_event);
+  view->OnMouseReleased(released_event);
+}
 
+void SaveCardBubbleViewsBrowserTestBase::ClickOnDialogViewWithIdAndWait(
+    DialogViewId view_id) {
+  ClickOnDialogView(FindViewInBubbleById(view_id));
   WaitForObservedEvent();
 }
 
