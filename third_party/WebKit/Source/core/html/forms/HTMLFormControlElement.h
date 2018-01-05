@@ -175,6 +175,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
  private:
   bool IsFormControlElement() const final { return true; }
+  bool AlwaysCreateUserAgentShadowRoot() const override { return true; }
 
   int tabIndex() const override;
 
