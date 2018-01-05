@@ -1884,7 +1884,8 @@ void LocalFrameView::RestoreScrollbar() {
 
 bool LocalFrameView::RestoreScrollAnchor(
     const ScrollAnchor::SerializedAnchor& serialized_anchor) {
-  return false;
+  return ShouldPerformScrollAnchoring() &&
+         scroll_anchor_.RestoreAnchor(serialized_anchor);
 }
 
 void LocalFrameView::ProcessUrlFragment(const KURL& url,

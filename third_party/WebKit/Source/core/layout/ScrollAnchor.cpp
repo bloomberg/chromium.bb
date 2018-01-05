@@ -4,9 +4,11 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include "bindings/core/v8/V8BindingForCore.h"
 #include "core/css/CSSMarkup.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NthIndexCache.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -213,22 +215,29 @@ static const String UniqueSimpleSelectorAmongSiblings(Element* element) {
          String::Number(NthIndexCache::NthChildIndex(*element)) + ")";
 }
 
-// Computes a selector that uniquely identifies |anchor_element|. This is done
+// Computes a selector that uniquely identifies |anchor_node|. This is done
 // by computing a selector that uniquely identifies each ancestor among its
 // sibling elements, terminating at a definitively unique ancestor. The
 // definitively unique ancestor is either the first ancestor with an id or
 // the root of the document. The computed selectors are chained together with
 // the child combinator(>) to produce a compound selector that is
-// effectively a path through the DOM tree to |anchor_element|.
-static const String ComputeUniqueSelector(Element* anchor_element) {
-  DCHECK(anchor_element);
+// effectively a path through the DOM tree to |anchor_node|.
+static const String ComputeUniqueSelector(Node* anchor_node) {
+  DCHECK(anchor_node);
+  // The scroll anchor can be a pseudo element, but pseudo elements aren't part
+  // of the DOM and can't be used as part of a selector. We fail in this case;
+  // success isn't possible.
+  if (anchor_node->IsPseudoElement()) {
+    return String();
+  }
+
   TRACE_EVENT0("blink", "ScrollAnchor::SerializeAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
       "Layout.ScrollAnchor.TimeToComputeAnchorNodeSelector");
 
   std::vector<String> selector_list;
-  for (Element* element = anchor_element; element;
-       element = ElementTraversal::FirstAncestor(*element->ToNode())) {
+  for (Element* element = ElementTraversal::FirstAncestorOrSelf(*anchor_node);
+       element; element = ElementTraversal::FirstAncestor(*element->ToNode())) {
     selector_list.push_back(UniqueSimpleSelectorAmongSiblings(element));
     if (element->HasID() &&
         !element->GetDocument().ContainsMultipleElementsWithId(
@@ -459,7 +468,77 @@ void ScrollAnchor::Adjust() {
 }
 
 bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
-  NOTIMPLEMENTED();
+  if (!scroller_ || anchor_object_) {
+    return false;
+  }
+
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Layout.ScrollAnchor.TimeToRestoreAnchor");
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, restoration_status_histogram,
+                      ("Layout.ScrollAnchor.RestorationStatus", kStatusCount));
+
+  Document* document = &(ScrollerLayoutBox(scroller_)->GetDocument());
+  v8::Isolate* isolate =
+      ToScriptStateForMainWorld(document->GetFrame())->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kQueryContext,
+                                 "ScrollAnchor", "RestoreAnchor");
+  StaticElementList* found_elements = document->QuerySelectorAll(
+      AtomicString(serialized_anchor.selector), exception_state);
+
+  if (exception_state.HadException()) {
+    restoration_status_histogram.Count(kFailedBadSelector);
+    return false;
+  }
+
+  if (found_elements->length() < 1) {
+    restoration_status_histogram.Count(kFailedNoMatches);
+    return false;
+  }
+
+  for (unsigned index = 0; index < found_elements->length(); index++) {
+    Element* anchor_element = found_elements->item(index);
+    LayoutObject* anchor_object = anchor_element->ToNode()->GetLayoutObject();
+
+    if (!anchor_object) {
+      continue;
+    }
+
+    // There are scenarios where the layout object we find is non-box and
+    // non-text; this can happen, e.g., if the original anchor object was a text
+    // element of a non-box element like <code>. The generated selector can't
+    // directly locate the text object, resulting in a loss of precision.
+    // Instead we scroll the object we do find into the same relative position
+    // and attempt to re-find the anchor. The user-visible effect should end up
+    // roughly the same.
+    ScrollOffset current_offset = scroller_->GetScrollOffset();
+    FloatPoint desired_point =
+        anchor_object->AbsoluteBoundingBoxFloatRect().Location() +
+        current_offset;
+    ScrollOffset desired_offset =
+        ScrollOffset(desired_point.X(), desired_point.Y());
+    ScrollOffset delta =
+        ScrollOffset(RoundedIntSize(serialized_anchor.relative_offset));
+    desired_offset -= delta;
+    scroller_->SetScrollOffset(desired_offset, kAnchoringScroll);
+    FindAnchor();
+
+    // If the above FindAnchor call failed, reset the scroll position and try
+    // again with the next found element.
+    if (!anchor_object_) {
+      scroller_->SetScrollOffset(current_offset, kAnchoringScroll);
+      continue;
+    }
+
+    corner_ = CornerToAnchor(scroller_);
+    saved_relative_offset_ =
+        ComputeRelativeOffset(anchor_object_, scroller_, corner_);
+    saved_selector_ = serialized_anchor.selector;
+    anchor_object_->SetIsScrollAnchorObject();
+
+    restoration_status_histogram.Count(kSuccess);
+    return true;
+  }
+
+  restoration_status_histogram.Count(kFailedNoValidMatches);
   return false;
 }
 
@@ -481,7 +560,7 @@ const SerializedAnchor ScrollAnchor::GetSerializedAnchor() {
 
   DCHECK(anchor_object_->GetNode());
   SerializedAnchor new_anchor(
-      ComputeUniqueSelector(ToElement(anchor_object_->GetNode())),
+      ComputeUniqueSelector(anchor_object_->GetNode()),
       ComputeRelativeOffset(anchor_object_, scroller_, corner_));
   if (new_anchor.IsValid()) {
     saved_selector_ = new_anchor.selector;

@@ -37662,6 +37662,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Rollback: SBER2 absent so SBER1 must be cleared"/>
 </enum>
 
+<enum name="ScrollAnchorRestorationStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="FAILED_NO_MATCHES"/>
+  <int value="2" label="FAILED_NO_VALID_MATCHES"/>
+  <int value="3" label="FAILED_BAD_SELECTOR"/>
+</enum>
+
 <enum name="ScrollingThreadStatus">
   <int value="0" label="SCROLLING_ON_COMPOSITOR"/>
   <int value="1" label="SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN"/>

@@ -31536,6 +31536,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Layout.ScrollAnchor.RestorationStatus"
+    enum="ScrollAnchorRestorationStatus">
+  <owner>pnoland@chromium.org</owner>
+  <summary>
+    Records the status of attempts to restore a serialized scroll anchor.
+  </summary>
+</histogram>
+
 <histogram name="Layout.ScrollAnchor.SerializedAnchorSelectorLength"
     units="characters">
   <owner>pnoland@chromium.org</owner>
@@ -31564,6 +31572,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Layout.ScrollAnchor.TimeToFindAnchor" units="microseconds">
   <owner>ymalik@chromium.org</owner>
   <summary>The time it took to find a suitable anchor element.</summary>
+</histogram>
+
+<histogram name="Layout.ScrollAnchor.TimeToRestoreAnchor" units="microseconds">
+  <owner>pnoland@chromium.org</owner>
+  <summary>
+    The time it took to restore the scroll anchor using the serialized anchor
+    element.
+  </summary>
 </histogram>
 
 <histogram name="LevelDB.Open" enum="LevelDBStatus">
