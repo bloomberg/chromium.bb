@@ -210,7 +210,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void QueryStorageUsageAndQuota(
       const blink::WebSecurityOrigin& storage_partition,
       blink::mojom::StorageType,
-      blink::WebStorageQuotaCallbacks) override;
+      QueryStorageUsageAndQuotaCallback) override;
   blink::WebThread* CurrentThread() override;
   blink::BlameContext* GetTopLevelBlameContext() override;
   void RecordRappor(const char* metric,

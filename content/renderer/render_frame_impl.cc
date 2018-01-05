@@ -181,7 +181,6 @@
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRemoteScrollProperties.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -285,7 +284,6 @@ using blink::WebSecurityPolicy;
 using blink::WebSerializedScriptValue;
 using blink::WebServiceWorkerProvider;
 using blink::WebSettings;
-using blink::WebStorageQuotaCallbacks;
 using blink::WebString;
 using blink::WebThreadSafeData;
 using blink::WebURL;
@@ -5111,16 +5109,15 @@ void RenderFrameImpl::ReportFindInPageSelection(
 void RenderFrameImpl::RequestStorageQuota(
     blink::mojom::StorageType type,
     unsigned long long requested_size,
-    blink::WebStorageQuotaCallbacks callbacks) {
+    RequestStorageQuotaCallback callback) {
   WebSecurityOrigin origin = frame_->GetDocument().GetSecurityOrigin();
   if (origin.IsUnique()) {
     // Unique origins cannot store persistent state.
-    callbacks.DidFail(blink::mojom::QuotaStatusCode::kErrorAbort);
+    std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort, 0, 0);
     return;
   }
   RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
-      routing_id_, origin, type, requested_size,
-      std::make_unique<blink::WebStorageQuotaCallbacks>(callbacks));
+      routing_id_, origin, type, requested_size, std::move(callback));
 }
 
 blink::WebPresentationClient* RenderFrameImpl::PresentationClient() {

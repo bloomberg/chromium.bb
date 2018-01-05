@@ -49,7 +49,6 @@
 #include "WebPlatformEventType.h"
 #include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
-#include "WebStorageQuotaCallbacks.h"
 #include "WebString.h"
 #include "WebURLError.h"
 #include "WebURLLoader.h"
@@ -696,14 +695,15 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Quota -----------------------------------------------------------
 
   // Queries the storage partition's storage usage and quota information.
-  // WebStorageQuotaCallbacks::DidQueryStorageUsageAndQuota will be called
-  // with the current usage and quota information for the partition. When
-  // an error occurs WebStorageQuotaCallbacks::DidFail is called with an
-  // error code.
+  // The callback will be called with the current usage and quota information
+  // for the partition. When an error occurs the callback is called with a
+  // status code other than kOk.
+  using QueryStorageUsageAndQuotaCallback =
+      base::OnceCallback<void(mojom::QuotaStatusCode, int64_t, int64_t)>;
   virtual void QueryStorageUsageAndQuota(
       const WebSecurityOrigin& storage_partition,
       mojom::StorageType,
-      WebStorageQuotaCallbacks) {}
+      QueryStorageUsageAndQuotaCallback) {}
 
   // WebDatabase --------------------------------------------------------
 

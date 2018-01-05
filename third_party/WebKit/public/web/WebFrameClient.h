@@ -63,7 +63,6 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSetSinkIdCallbacks.h"
 #include "public/platform/WebSourceLocation.h"
-#include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebSuddenTerminationDisablerType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLLoaderFactory.h"
@@ -712,16 +711,17 @@ class BLINK_EXPORT WebFrameClient {
   // Quota ---------------------------------------------------------
 
   // Requests a new quota size for the origin's storage.
-  // |newQuotaInBytes| indicates how much storage space (in bytes) the
-  // caller expects to need.
-  // WebStorageQuotaCallbacks::didGrantStorageQuota will be called when
-  // a new quota is granted. WebStorageQuotaCallbacks::didFail
-  // is called with an error code otherwise.
-  // Note that the requesting quota size may not always be granted and
-  // a smaller amount of quota than requested might be returned.
+  // |newQuotaInBytes| indicates how much storage space (in bytes) the caller
+  // expects to need.
+  // The callback will be called when a new quota is granted, with kOk as the
+  // status code if successful or with an error code otherwise.
+  // Note that the requesting quota size may not always be granted and a smaller
+  // amount of quota than requested might be returned.
+  using RequestStorageQuotaCallback =
+      base::OnceCallback<void(mojom::QuotaStatusCode, int64_t, int64_t)>;
   virtual void RequestStorageQuota(mojom::StorageType,
                                    unsigned long long new_quota_in_bytes,
-                                   WebStorageQuotaCallbacks) {}
+                                   RequestStorageQuotaCallback) {}
 
   // MediaStream -----------------------------------------------------
 

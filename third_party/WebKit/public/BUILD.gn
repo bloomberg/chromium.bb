@@ -332,7 +332,6 @@ source_set("blink_headers") {
     "platform/WebSpellCheckPanelHostClient.h",
     "platform/WebStorageArea.h",
     "platform/WebStorageNamespace.h",
-    "platform/WebStorageQuotaCallbacks.h",
     "platform/WebString.h",
     "platform/WebSurfaceLayerBridge.h",
     "platform/WebTextInputInfo.h",

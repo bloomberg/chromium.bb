@@ -30,16 +30,40 @@
 
 #include "modules/quota/StorageQuotaClient.h"
 
+#include "bindings/modules/v8/v8_storage_error_callback.h"
+#include "bindings/modules/v8/v8_storage_quota_callback.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
+#include "modules/quota/DOMError.h"
 #include "public/platform/TaskType.h"
 #include "public/web/WebFrameClient.h"
 
 namespace blink {
+
+namespace {
+
+void RequestStorageQuotaCallback(V8StorageQuotaCallback* success_callback,
+                                 V8StorageErrorCallback* error_callback,
+                                 mojom::QuotaStatusCode status_code,
+                                 int64_t usage_in_bytes,
+                                 int64_t granted_quota_in_bytes) {
+  if (status_code != mojom::QuotaStatusCode::kOk) {
+    if (error_callback) {
+      error_callback->InvokeAndReportException(
+          nullptr, DOMError::Create(static_cast<ExceptionCode>(status_code)));
+    }
+    return;
+  }
+
+  if (success_callback) {
+    success_callback->InvokeAndReportException(nullptr, granted_quota_in_bytes);
+  }
+}
+
+}  // namespace
 
 StorageQuotaClient::StorageQuotaClient() {}
 
@@ -58,11 +82,10 @@ void StorageQuotaClient::RequestQuota(ScriptState* script_state,
   Document* document = ToDocument(execution_context);
   WebLocalFrameImpl* web_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
-  StorageQuotaCallbacks* callbacks =
-      DeprecatedStorageQuotaCallbacksImpl::Create(success_callback,
-                                                  error_callback);
-  web_frame->Client()->RequestStorageQuota(storage_type, new_quota_in_bytes,
-                                           callbacks);
+  web_frame->Client()->RequestStorageQuota(
+      storage_type, new_quota_in_bytes,
+      WTF::Bind(&RequestStorageQuotaCallback, WrapPersistent(success_callback),
+                WrapPersistent(error_callback)));
 }
 
 const char* StorageQuotaClient::SupplementName() {
