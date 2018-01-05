@@ -38,7 +38,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/login/login_state.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
@@ -67,7 +66,6 @@
 
 #include "ui/views/view.h"
 
-using chromeos::LoginState;
 using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::ManagedNetworkConfigurationHandler;
@@ -84,7 +82,7 @@ const int kPowerStatusPaddingRight = 10;
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
     return false;
-  if (!LoginState::IsInitialized() || !LoginState::Get()->IsUserLoggedIn())
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return false;
   ManagedNetworkConfigurationHandler* managed_configuration_handler =
       NetworkHandler::Get()->managed_network_configuration_handler();
