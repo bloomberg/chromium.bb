@@ -46,6 +46,9 @@ class FilterOperations;
 class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
  public:
   enum class Type : uint8_t {
+    // For serialization purposes, we reserve one enum to indicate that there
+    // was no PaintFilter, ie the filter is "null".
+    kNullFilter,
     kColorFilter,
     kBlur,
     kDropShadow,
@@ -72,6 +75,8 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
     kLightingDistant,
     kLightingPoint,
     kLightingSpot,
+    // Update the following if kLightingSpot is not the max anymore.
+    kMaxFilterType = kLightingSpot
   };
   enum class LightingType : uint8_t {
     kDiffuse,
@@ -162,6 +167,10 @@ class CC_PAINT_EXPORT BlurPaintFilter final : public PaintFilter {
   ~BlurPaintFilter() override;
 
   const sk_sp<PaintFilter>& input() const { return input_; }
+
+  SkScalar sigma_x() const { return sigma_x_; }
+  SkScalar sigma_y() const { return sigma_y_; }
+  TileMode tile_mode() const { return tile_mode_; }
 
  private:
   SkScalar sigma_x_;

@@ -9,6 +9,7 @@
 
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_filter.h"
 
 struct SkRect;
 struct SkIRect;
@@ -74,6 +75,33 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void WriteFlattenable(const SkFlattenable* val);
   void Write(const sk_sp<SkTextBlob>& blob,
              TransferCacheSerializeHelper* transfer_cache);
+  void Write(const PaintFilter* filter);
+
+  // The main entry point is Write(const PaintFilter* filter) which casts the
+  // filter and calls one of the following functions.
+  void Write(const ColorFilterPaintFilter& filter);
+  void Write(const BlurPaintFilter& filter);
+  void Write(const DropShadowPaintFilter& filter);
+  void Write(const MagnifierPaintFilter& filter);
+  void Write(const ComposePaintFilter& filter);
+  void Write(const AlphaThresholdPaintFilter& filter);
+  void Write(const ImageFilterPaintFilter& filter);
+  void Write(const XfermodePaintFilter& filter);
+  void Write(const ArithmeticPaintFilter& filter);
+  void Write(const MatrixConvolutionPaintFilter& filter);
+  void Write(const DisplacementMapEffectPaintFilter& filter);
+  void Write(const ImagePaintFilter& filter);
+  void Write(const RecordPaintFilter& filter);
+  void Write(const MergePaintFilter& filter);
+  void Write(const MorphologyPaintFilter& filter);
+  void Write(const OffsetPaintFilter& filter);
+  void Write(const TilePaintFilter& filter);
+  void Write(const TurbulencePaintFilter& filter);
+  void Write(const PaintFlagsPaintFilter& filter);
+  void Write(const MatrixPaintFilter& filter);
+  void Write(const LightingDistantPaintFilter& filter);
+  void Write(const LightingPointPaintFilter& filter);
+  void Write(const LightingSpotPaintFilter& filter);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;
