@@ -712,6 +712,7 @@ interface LockManager
     attribute @@toStringTag
     method acquire
     method constructor
+    method query
 interface MessageChannel
     attribute @@toStringTag
     getter port1

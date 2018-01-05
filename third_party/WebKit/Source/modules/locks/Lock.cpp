@@ -58,14 +58,14 @@ class Lock::ThenFunction final : public ScriptFunction {
 // static
 Lock* Lock::Create(ScriptState* script_state,
                    const String& name,
-                   mojom::blink::LockManager::LockMode mode,
+                   mojom::blink::LockMode mode,
                    mojom::blink::LockHandlePtr handle) {
   return new Lock(script_state, name, mode, std::move(handle));
 }
 
 Lock::Lock(ScriptState* script_state,
            const String& name,
-           mojom::blink::LockManager::LockMode mode,
+           mojom::blink::LockMode mode,
            mojom::blink::LockHandlePtr handle)
     : PausableObject(ExecutionContext::From(script_state)),
       name_(name),
@@ -92,21 +92,21 @@ void Lock::HoldUntil(ScriptPromise promise, ScriptPromiseResolver* resolver) {
 }
 
 // static
-mojom::blink::LockManager::LockMode Lock::StringToMode(const String& string) {
+mojom::blink::LockMode Lock::StringToMode(const String& string) {
   if (string == kLockModeNameShared)
-    return mojom::blink::LockManager::LockMode::SHARED;
+    return mojom::blink::LockMode::SHARED;
   if (string == kLockModeNameExclusive)
-    return mojom::blink::LockManager::LockMode::EXCLUSIVE;
+    return mojom::blink::LockMode::EXCLUSIVE;
   NOTREACHED();
-  return mojom::blink::LockManager::LockMode::SHARED;
+  return mojom::blink::LockMode::SHARED;
 }
 
 // static
-String Lock::ModeToString(mojom::blink::LockManager::LockMode mode) {
+String Lock::ModeToString(mojom::blink::LockMode mode) {
   switch (mode) {
-    case mojom::blink::LockManager::LockMode::SHARED:
+    case mojom::blink::LockMode::SHARED:
       return kLockModeNameShared;
-    case mojom::blink::LockManager::LockMode::EXCLUSIVE:
+    case mojom::blink::LockMode::EXCLUSIVE:
       return kLockModeNameExclusive;
   }
   NOTREACHED();

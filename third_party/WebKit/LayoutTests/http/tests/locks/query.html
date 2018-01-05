@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Web Locks API: navigator.locks.query method</title>
+<link rel=help href="https://github.com/inexorabletash/web-locks">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+let res_num = 0;
+function uniqueName(testCase) {
+  return `${self.location.pathname}-${testCase.name}-${++res_num}`;
+}
+
+// Returns an array of the modes for the locks with matching name.
+function modes(list, name) {
+  return list.filter(item => item.name === name).map(item => item.mode);
+}
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  await navigator.locks.acquire(res, async lock1 => {
+    const state = await navigator.locks.query();
+    assert_array_equals(modes(state.held, res), ['exclusive'],
+                        'Held lock should appear once');
+  });
+
+  await navigator.locks.acquire(res, {mode: 'shared'}, async lock1 => {
+    const state = await navigator.locks.query();
+    assert_array_equals(modes(state.held, res), ['shared'],
+                        'Held lock should appear once');
+  });
+}, 'query() reports individual held locks');
+
+promise_test(async t => {
+  const res1 = uniqueName(t);
+  const res2 = uniqueName(t);
+
+  await navigator.locks.acquire(res1, async lock1 => {
+    await navigator.locks.acquire(res2, {mode: 'shared'}, async lock2 => {
+      const state = await navigator.locks.query();
+      assert_array_equals(modes(state.held, res1), ['exclusive'],
+                          'Held lock should appear once');
+      assert_array_equals(modes(state.held, res2), ['shared'],
+                          'Held lock should appear once');
+    });
+  });
+}, 'query() reports multiple held locks');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  await navigator.locks.acquire(res, async lock1 => {
+    // Attempt to acquire this again - should be blocked.
+    let lock2_acquired = false;
+    navigator.locks.acquire(res, lock2 => { lock2_acquired = true; });
+
+    // Verify that it was blocked.
+    await navigator.locks.acquire(res, {ifAvailable: true}, async lock3 => {
+      assert_false(lock2_acquired, 'second request should be blocked');
+      assert_equals(lock3, null, 'third request should have failed');
+
+      const state = await navigator.locks.query();
+      assert_array_equals(modes(state.pending, res), ['exclusive'],
+                          'Pending lock should appear once');
+      assert_array_equals(modes(state.held, res), ['exclusive'],
+                          'Held lock should appear once');
+    });
+  });
+}, 'query() reports pending and held locks');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  await navigator.locks.acquire(res, {mode: 'shared'}, async lock1 => {
+    await navigator.locks.acquire(res, {mode: 'shared'}, async lock2 => {
+      const state = await navigator.locks.query();
+      assert_array_equals(modes(state.held, res), ['shared', 'shared'],
+                          'Held lock should appear twice');
+    });
+  });
+}, 'query() reports held shared locks with appropriate count');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  await navigator.locks.acquire(res, async lock1 => {
+    let lock2_acquired = false, lock3_acquired = false;
+    navigator.locks.acquire(res, {mode: 'shared'},
+                            lock2 => { lock2_acquired = true; });
+    navigator.locks.acquire(res, {mode: 'shared'},
+                            lock3 => { lock3_acquired = true; });
+
+    await navigator.locks.acquire(res, {ifAvailable: true}, async lock4 => {
+      assert_equals(lock4, null, 'lock should not be available');
+      assert_false(lock2_acquired, 'second attempt should be blocked');
+      assert_false(lock3_acquired, 'third attempt should be blocked');
+
+      const state = await navigator.locks.query();
+      assert_array_equals(modes(state.held, res), ['exclusive'],
+                          'Held lock should appear once');
+
+      assert_array_equals(modes(state.pending, res), ['shared', 'shared'],
+                          'Pending lock should appear twice');
+    });
+  });
+}, 'query() reports pending shared locks with appropriate count');
+
+</script>

@@ -17,4 +17,6 @@ callback LockGrantedCallback = any (Lock lock);
         DOMString name,
         LockOptions options,
         LockGrantedCallback callback);
+
+    [CallWith=ScriptState, RaisesException] Promise<LockState> query();
 };

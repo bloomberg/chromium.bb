@@ -33,12 +33,15 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // Request a lock. When the lock is acquired, |callback| will be invoked with
   // a LockHandle.
   void RequestLock(const std::string& name,
-                   LockMode mode,
+                   blink::mojom::LockMode mode,
                    WaitMode wait,
                    blink::mojom::LockRequestPtr request) override;
 
   // Called by a LockHandle's implementation when destructed.
   void ReleaseLock(const url::Origin& origin, int64_t id);
+
+  // Called to request a snapshot of the current lock state for an origin.
+  void QueryState(QueryStateCallback callback) override;
 
  protected:
   friend class base::RefCountedThreadSafe<LockManager>;
@@ -53,8 +56,9 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
     OriginState();
     ~OriginState();
 
-    bool IsGrantable(const std::string& name, LockMode mode) const;
-    void MergeLockState(const std::string& name, LockMode mode);
+    bool IsGrantable(const std::string& name,
+                     blink::mojom::LockMode mode) const;
+    void MergeLockState(const std::string& name, blink::mojom::LockMode mode);
 
     std::map<int64_t, std::unique_ptr<Lock>> requested;
     std::map<int64_t, std::unique_ptr<Lock>> held;
@@ -67,7 +71,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
 
   bool IsGrantable(const url::Origin& origin,
                    const std::string& name,
-                   LockMode mode);
+                   blink::mojom::LockMode mode);
 
   // Called when a lock is requested and optionally when a lock is released,
   // to process outstanding requests within the origin.
