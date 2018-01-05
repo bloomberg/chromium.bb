@@ -23,7 +23,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -119,16 +118,8 @@ SaveCardBubbleViewsBrowserTestBase::SaveCardBubbleViewsBrowserTestBase(
 
 SaveCardBubbleViewsBrowserTestBase::~SaveCardBubbleViewsBrowserTestBase() {}
 
-void SaveCardBubbleViewsBrowserTestBase::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  // HTTPS server only serves a valid cert for localhost, so this is needed to
-  // load pages from "a.com" without an interstitial.
-  command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
-}
-
 void SaveCardBubbleViewsBrowserTestBase::SetUpOnMainThread() {
   // Set up the HTTPS server (uses the embedded_test_server).
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   embedded_test_server()->ServeFilesFromSourceDirectory(
       "components/test/data/autofill");
@@ -174,8 +165,8 @@ void SaveCardBubbleViewsBrowserTestBase::NavigateTo(
   if (file_path.find("data:") == 0U) {
     ui_test_utils::NavigateToURL(browser(), GURL(file_path));
   } else {
-    ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL("a.com", file_path));
+    ui_test_utils::NavigateToURL(browser(),
+                                 embedded_test_server()->GetURL(file_path));
   }
 }
 
