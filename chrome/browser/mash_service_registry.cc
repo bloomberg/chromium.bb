@@ -57,6 +57,17 @@ bool IsMashServiceName(const std::string& name) {
   return false;
 }
 
+std::string GetMashServiceLabel(const std::string& service_name) {
+  for (const Service& service : kServices) {
+    if (service_name == service.name) {
+      // Use the process group name when available because that makes it more
+      // obvious that multiple services are running in the same process.
+      return service.process_group ? service.process_group : service.name;
+    }
+  }
+  return std::string();
+}
+
 bool ShouldTerminateOnServiceQuit(const std::string& name) {
   // Some services going down are treated as catastrophic failures, usually
   // because both the browser and the service cache data about each other's

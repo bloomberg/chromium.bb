@@ -21,6 +21,11 @@ void RegisterOutOfProcessServices(
 // Returns true if |name| identifies a mash related service.
 bool IsMashServiceName(const std::string& name);
 
+// If |service_name| identifies a mash related service returns an arbitrary
+// label that identifies the service or group of related services. Otherwise
+// returns the empty string.
+std::string GetMashServiceLabel(const std::string& service_name);
+
 // Returns true if the browser should exit when service |name| quits.
 bool ShouldTerminateOnServiceQuit(const std::string& name);
 
