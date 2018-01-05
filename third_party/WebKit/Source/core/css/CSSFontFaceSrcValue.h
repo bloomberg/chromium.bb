@@ -99,7 +99,32 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   Referrer referrer_;
   bool is_local_;
   ContentSecurityPolicyDisposition should_check_content_security_policy_;
-  mutable Member<FontResource> fetched_;
+
+  class FontResourceHelper
+      : public GarbageCollectedFinalized<FontResourceHelper>,
+        public FontResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
+
+   public:
+    static FontResourceHelper* Create(FontResource* resource,
+                                      WebTaskRunner* task_runner) {
+      return new FontResourceHelper(resource, task_runner);
+    }
+
+    virtual void Trace(blink::Visitor* visitor) {
+      FontResourceClient::Trace(visitor);
+    }
+
+   private:
+    FontResourceHelper(FontResource* resource, WebTaskRunner* task_runner) {
+      SetResource(resource, task_runner);
+    }
+
+    String DebugName() const override {
+      return "CSSFontFaceSrcValue::FontResourceHelper";
+    }
+  };
+  mutable Member<FontResourceHelper> fetched_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, IsFontFaceSrcValue());
