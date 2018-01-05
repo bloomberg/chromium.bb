@@ -61,6 +61,10 @@ class Item {
     return build_dependency_files_;
   }
 
+  std::set<SourceFile>& build_dependency_files() {
+    return build_dependency_files_;
+  }
+
   // Called when this item is resolved, meaning it and all of its dependents
   // have no unresolved deps. Returns true on success. Sets the error and
   // returns false on failure.
@@ -69,7 +73,7 @@ class Item {
  private:
   const Settings* settings_;
   Label label_;
-  const std::set<SourceFile> build_dependency_files_;
+  std::set<SourceFile> build_dependency_files_;
   const ParseNode* defined_from_;
 
   Visibility visibility_;

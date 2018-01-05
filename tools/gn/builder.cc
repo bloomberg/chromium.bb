@@ -138,6 +138,19 @@ std::vector<const BuilderRecord*> Builder::GetAllRecords() const {
   return result;
 }
 
+std::vector<const Item*> Builder::GetAllResolvedItems() const {
+  std::vector<const Item*> result;
+  result.reserve(records_.size());
+  for (const auto& record : records_) {
+    if (record.second->type() != BuilderRecord::ITEM_UNKNOWN &&
+        record.second->should_generate() && record.second->item()) {
+      result.push_back(record.second->item());
+    }
+  }
+
+  return result;
+}
+
 std::vector<const Target*> Builder::GetAllResolvedTargets() const {
   std::vector<const Target*> result;
   result.reserve(records_.size());
