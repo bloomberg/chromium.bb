@@ -259,9 +259,13 @@ AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives, [
 if test "x$drm_cv_atomic_primitives" = xIntel; then
 	AC_DEFINE(HAVE_LIBDRM_ATOMIC_PRIMITIVES, 1,
 		[Enable if your compiler supports the Intel __sync_* atomic primitives])
+else
+	AC_DEFINE(HAVE_LIBDRM_ATOMIC_PRIMITIVES, 0)
 fi
 if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
 	AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
+else
+	AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 0)
 fi
 
 dnl Print out the approapriate message considering the value set be the
