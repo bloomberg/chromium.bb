@@ -9,8 +9,10 @@
 
 #include <string>
 
+#include "base/debug/alias.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "url/scheme_host_port.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -186,6 +188,19 @@ URL_EXPORT std::ostream& operator<<(std::ostream& out, const Origin& origin);
 
 URL_EXPORT bool IsSameOriginWith(const GURL& a, const GURL& b);
 URL_EXPORT bool IsSamePhysicalOriginWith(const GURL& a, const GURL& b);
+
+// Helper macro used by DEBUG_ALIAS_FOR_ORIGIN below.
+// TODO(lukasza): Move this to base/debug/alias.h
+#define DEBUG_ALIAS_FOR_CSTR(var_name, c_str, char_count) \
+  char var_name[char_count];                              \
+  base::strlcpy(var_name, (c_str), arraysize(var_name));  \
+  base::debug::Alias(var_name);
+
+// DEBUG_ALIAS_FOR_ORIGIN(var_name, origin) copies |origin| into a new
+// stack-allocated variable named |<var_name>|.  This helps ensure that the
+// value of |origin| gets preserved in crash dumps.
+#define DEBUG_ALIAS_FOR_ORIGIN(var_name, origin) \
+  DEBUG_ALIAS_FOR_CSTR(var_name, origin.Serialize().c_str(), 128)
 
 }  // namespace url
 
