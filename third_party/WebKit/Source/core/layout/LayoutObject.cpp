@@ -429,6 +429,10 @@ LayoutObject* LayoutObject::NextInPreOrder() const {
 }
 
 bool LayoutObject::HasClipRelatedProperty() const {
+  // TODO(trchen): CSS clip-path is really a stacking context effect instead
+  // of a clip. A bunch of call sites, e.g. CompositingRequirementsUpdater rely
+  // on returning false positives here to work properly. We should fix those
+  // call sites and remove HasClipPath() here.
   if (HasClip() || HasOverflowClip() || HasClipPath() ||
       Style()->ContainsPaint())
     return true;

@@ -56,7 +56,7 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # Slimming paint V1.75
 crbug.com/771643 [ Mac Win Android ] virtual/spv175/ [ Skip ]
 
-crbug.com/769942 virtual/spv175/compositing/clip-path-with-composited-descendent.html [ Failure ]
+crbug.com/769942 virtual/spv175/compositing/clip-path-with-composited-descendants.html [ Failure ]
 crbug.com/769942 virtual/spv175/compositing/images/direct-image-clip-path.html [ Failure ]
 crbug.com/769942 virtual/spv175/compositing/images/direct-image-dynamic-clip-path.html [ Failure ]
 crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path-text.html [ Failure ]

@@ -784,10 +784,12 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   // clipping mask to properly clip the scrolled contents, even if there are no
   // composited descendants.
   bool has_clip_path = style.ClipPath();
-  bool needs_child_clipping_mask =
-      (has_clip_path || style.HasBorderRadius()) &&
+  bool needs_child_clipping_mask_for_border_radius =
+      style.HasBorderRadius() &&
       (has_child_clipping_layer || IsAcceleratedContents(layout_object) ||
        HasScrollingLayer());
+  bool needs_child_clipping_mask =
+      has_clip_path || needs_child_clipping_mask_for_border_radius;
 
   GraphicsLayer* layer_to_apply_child_clipping_mask = nullptr;
   bool should_apply_child_clipping_mask_on_contents = false;

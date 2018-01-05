@@ -664,6 +664,7 @@ Bug(none) paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
 
 crbug.com/769942 svg/clip-path/ [ Skip ]
+crbug.com/769942 compositing/clip-path-with-composited-descendants.html [ Failure ]
 crbug.com/769942 compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 crbug.com/769942 compositing/overflow/descendant-with-clip-path.html [ Failure ]
 crbug.com/769942 fast/canvas/canvas-css-clip-path.html [ Failure ]
