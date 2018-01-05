@@ -368,7 +368,6 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     proxy_service_ =
         net::ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
     context_->set_proxy_service(proxy_service_.get());
-    context_->set_network_quality_estimator(&test_network_quality_estimator_);
 
     mock_socket_factory_.reset(new net::MockClientSocketFactory());
 
@@ -396,6 +395,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
     context_->set_enable_brotli(enable_brotli_globally);
+    context_->set_network_quality_estimator(&test_network_quality_estimator_);
     context_->Init();
 
     test_context_->DisableWarmupURLFetch();

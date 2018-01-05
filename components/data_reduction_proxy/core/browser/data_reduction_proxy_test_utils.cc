@@ -35,7 +35,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/network_delegate_impl.h"
-#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_list.h"
@@ -420,24 +419,14 @@ DataReductionProxyTestContext::Builder::Build() {
   std::unique_ptr<net::TestNetLog> net_log(new net::TestNetLog());
   std::unique_ptr<TestConfigStorer> config_storer(
       new TestConfigStorer(pref_service.get()));
-  std::unique_ptr<net::TestNetworkQualityEstimator> estimator;
-
   if (request_context_) {
     request_context_getter = new net::TrivialURLRequestContextGetter(
         request_context_, task_runner);
-    if (!request_context_->network_quality_estimator()) {
-      estimator.reset(new net::TestNetworkQualityEstimator());
-      request_context_->set_network_quality_estimator(estimator.get());
-    }
   } else {
     std::unique_ptr<net::TestURLRequestContext> test_request_context(
         new net::TestURLRequestContext(true));
     if (mock_socket_factory_)
       test_request_context->set_client_socket_factory(mock_socket_factory_);
-    if (!test_request_context->network_quality_estimator()) {
-      estimator.reset(new net::TestNetworkQualityEstimator());
-      test_request_context->set_network_quality_estimator(estimator.get());
-    }
     test_request_context->Init();
     request_context_getter = new net::TestURLRequestContextGetter(
         task_runner, std::move(test_request_context));
@@ -541,8 +530,7 @@ DataReductionProxyTestContext::Builder::Build() {
           task_runner, std::move(pref_service), std::move(net_log),
           request_context_getter, mock_socket_factory_, std::move(io_data),
           std::move(settings), std::move(storage_delegate),
-          std::move(config_storer), std::move(estimator), raw_params,
-          test_context_flags));
+          std::move(config_storer), raw_params, test_context_flags));
 
   if (!skip_settings_initialization_)
     test_context->InitSettingsWithoutCheck();
@@ -561,7 +549,6 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
     std::unique_ptr<TestDataReductionProxyEventStorageDelegate>
         storage_delegate,
     std::unique_ptr<TestConfigStorer> config_storer,
-    std::unique_ptr<net::TestNetworkQualityEstimator> estimator,
     TestDataReductionProxyParams* params,
     unsigned int test_context_flags)
     : test_context_flags_(test_context_flags),
@@ -569,7 +556,6 @@ DataReductionProxyTestContext::DataReductionProxyTestContext(
       simple_pref_service_(std::move(simple_pref_service)),
       net_log_(std::move(net_log)),
       request_context_getter_(request_context_getter),
-      estimator_(std::move(estimator)),
       mock_socket_factory_(mock_socket_factory),
       io_data_(std::move(io_data)),
       settings_(std::move(settings)),
