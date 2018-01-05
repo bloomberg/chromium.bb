@@ -420,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionNullTest) {
 
 // Disabled due to flakiness: https://crbug.com/783891
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
-                       DISABLED_MotionOnlySomeSensorsAreAvailableTest) {
+                       MotionOnlySomeSensorsAreAvailableTest) {
   // The test page registers an event handler for motion events and
   // expects to get an event with only the gyroscope and linear acceleration
   // sensor values, because no accelerometer values can be provided.
