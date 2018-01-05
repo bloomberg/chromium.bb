@@ -191,11 +191,13 @@ void NonBlockingTypeCommitContribution::AdjustCommitProto(
 
   // Encrypt the specifics and hide the title if necessary.
   if (cryptographer_) {
-    sync_pb::EntitySpecifics encrypted_specifics;
-    bool result = cryptographer_->Encrypt(
-        commit_proto->specifics(), encrypted_specifics.mutable_encrypted());
-    DCHECK(result);
-    commit_proto->mutable_specifics()->CopyFrom(encrypted_specifics);
+    if (commit_proto->has_specifics()) {
+      sync_pb::EntitySpecifics encrypted_specifics;
+      bool result = cryptographer_->Encrypt(
+          commit_proto->specifics(), encrypted_specifics.mutable_encrypted());
+      DCHECK(result);
+      commit_proto->mutable_specifics()->CopyFrom(encrypted_specifics);
+    }
     commit_proto->set_name("encrypted");
   }
 

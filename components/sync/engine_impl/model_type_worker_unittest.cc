@@ -759,6 +759,33 @@ TEST_F(ModelTypeWorkerTest, EncryptedCommit) {
   EXPECT_FALSE(tag1_entity.specifics().preference().has_value());
 }
 
+// Test commit of encrypted tombstone.
+TEST_F(ModelTypeWorkerTest, EncryptedDelete) {
+  NormalInitialize();
+
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Init the Cryptographer, it'll cause the EKN to be pushed.
+  AddPendingKey();
+  DecryptPendingKey();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(GetLocalCryptographerKeyName(),
+            processor()->GetNthUpdateState(0).encryption_key_name());
+
+  // Normal commit request stuff.
+  processor()->SetCommitRequest(GenerateDeleteRequest(kTag1));
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  ASSERT_TRUE(server()->HasCommitEntity(kHash1));
+  const SyncEntity& tag1_entity = server()->GetLastCommittedEntity(kHash1);
+
+  EXPECT_FALSE(tag1_entity.specifics().has_encrypted());
+
+  // The title should be overwritten.
+  EXPECT_EQ(tag1_entity.name(), "encrypted");
+}
+
 // Test that updates are not delivered to the processor when encryption is
 // required but unavailable.
 TEST_F(ModelTypeWorkerTest, EncryptionBlocksUpdates) {
