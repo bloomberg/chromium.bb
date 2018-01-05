@@ -63,6 +63,7 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
         navigation_item_committed_called_(false),
         did_start_loading_called_(false),
         did_stop_loading_called_(false),
+        did_start_navigation_called_(false),
         page_loaded_called_with_success_(false),
         web_state_destroyed_called_(false) {}
 
@@ -79,6 +80,9 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   }
   bool did_start_loading_called() const { return did_start_loading_called_; }
   bool did_stop_loading_called() const { return did_stop_loading_called_; }
+  bool did_start_navigation_called() const {
+    return did_start_navigation_called_;
+  }
   bool page_loaded_called_with_success() const {
     return page_loaded_called_with_success_;
   }
@@ -106,6 +110,11 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   void WebStateDidStopLoading(WebState* web_state) override {
     did_stop_loading_called_ = true;
   }
+  void WebStateDidStartNavigation(
+      WebState* web_state,
+      NavigationContext* navigation_context) override {
+    did_start_navigation_called_ = true;
+  }
   void PageLoaded(WebState* web_state,
                   PageLoadCompletionStatus load_completion_status) override {
     page_loaded_called_with_success_ =
@@ -120,6 +129,7 @@ class TestGlobalWebStateObserver : public GlobalWebStateObserver {
   bool navigation_item_committed_called_;
   bool did_start_loading_called_;
   bool did_stop_loading_called_;
+  bool did_start_navigation_called_;
   bool page_loaded_called_with_success_;
   bool web_state_destroyed_called_;
 };
@@ -603,6 +613,12 @@ TEST_F(WebStateImplTest, GlobalObserverTest) {
   LoadCommittedDetails details;
   web_state_->OnNavigationItemCommitted(details);
   EXPECT_TRUE(observer->navigation_item_committed_called());
+
+  // Test that DidStartNavigation() is called.
+  EXPECT_FALSE(observer->did_start_navigation_called());
+  FakeNavigationContext context;
+  web_state_->OnNavigationStarted(&context);
+  EXPECT_TRUE(observer->did_start_navigation_called());
 
   // Test that WebStateDidStartLoading() is called.
   EXPECT_FALSE(observer->did_start_loading_called());

@@ -46,6 +46,8 @@ class GlobalWebStateEventTracker : public WebStateObserver {
   void NavigationItemCommitted(
       WebState* web_state,
       const LoadCommittedDetails& load_details) override;
+  void DidStartNavigation(WebState* web_state,
+                          NavigationContext* navigation_context) override;
   void DidStartLoading(WebState* web_state) override;
   void DidStopLoading(WebState* web_state) override;
   void PageLoaded(WebState* web_state,

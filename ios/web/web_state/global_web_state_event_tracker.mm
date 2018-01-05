@@ -57,6 +57,13 @@ void GlobalWebStateEventTracker::NavigationItemCommitted(
     observer.NavigationItemCommitted(web_state, load_details);
 }
 
+void GlobalWebStateEventTracker::DidStartNavigation(
+    WebState* web_state,
+    NavigationContext* navigation_context) {
+  for (auto& observer : observer_list_)
+    observer.WebStateDidStartNavigation(web_state, navigation_context);
+}
+
 void GlobalWebStateEventTracker::DidStartLoading(WebState* web_state) {
   for (auto& observer : observer_list_)
     observer.WebStateDidStartLoading(web_state);
