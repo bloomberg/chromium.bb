@@ -162,6 +162,7 @@ component("gpu") {
     "//ui/gfx/geometry",
   ]
   deps = [
+    "//gpu/ipc/service",
     "//ui/base",
     "//ui/display/types",
     "//ui/gl",
@@ -511,6 +512,8 @@ source_set("android_video_decode_accelerator_unittests") {
       "//media:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//ui/gl",
+      "//ui/gl/init",
     ]
   }
 }

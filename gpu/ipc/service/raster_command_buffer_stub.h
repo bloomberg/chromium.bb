@@ -9,7 +9,8 @@
 
 namespace gpu {
 
-class GPU_EXPORT RasterCommandBufferStub : public CommandBufferStub {
+class GPU_IPC_SERVICE_EXPORT RasterCommandBufferStub
+    : public CommandBufferStub {
  public:
   RasterCommandBufferStub(GpuChannel* channel,
                           const GPUCreateCommandBufferConfig& init_params,

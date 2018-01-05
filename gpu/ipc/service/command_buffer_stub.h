@@ -24,8 +24,8 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/sequence_id.h"
-#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -48,7 +48,7 @@ struct WaitForCommandState;
 class GpuChannel;
 class SyncPointClientState;
 
-class GPU_EXPORT CommandBufferStub
+class GPU_IPC_SERVICE_EXPORT CommandBufferStub
     : public IPC::Listener,
       public IPC::Sender,
       public CommandBufferServiceClient,

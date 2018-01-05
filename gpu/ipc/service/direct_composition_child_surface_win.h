@@ -10,12 +10,13 @@
 #include <dcomp.h>
 #include <wrl/client.h>
 
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gpu {
 
-class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
+class GPU_IPC_SERVICE_EXPORT DirectCompositionChildSurfaceWin
+    : public gl::GLSurfaceEGL {
  public:
   DirectCompositionChildSurfaceWin(const gfx::Size& size,
                                    bool is_hdr,

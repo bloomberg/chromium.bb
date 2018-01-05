@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -19,7 +19,7 @@ namespace gpu {
 
 class ImageFactory;
 
-class GPU_EXPORT GpuMemoryBufferFactory {
+class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactory {
  public:
   virtual ~GpuMemoryBufferFactory() = default;
 

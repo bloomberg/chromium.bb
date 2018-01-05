@@ -13,7 +13,7 @@
 
 namespace gpu {
 
-struct FlushParams {
+struct GPU_EXPORT FlushParams {
   FlushParams();
   FlushParams(const FlushParams& other);
   FlushParams(FlushParams&& other);

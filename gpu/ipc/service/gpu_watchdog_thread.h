@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/progress_reporter.h"
-#include "gpu/gpu_export.h"
+#include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_X11)
@@ -28,9 +28,10 @@ namespace gpu {
 
 // A thread that intermitently sends tasks to a group of watched message loops
 // and deliberately crashes if one of them does not respond after a timeout.
-class GPU_EXPORT GpuWatchdogThread : public base::Thread,
-                                     public base::PowerObserver,
-                                     public gles2::ProgressReporter {
+class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
+    : public base::Thread,
+      public base::PowerObserver,
+      public gles2::ProgressReporter {
  public:
   ~GpuWatchdogThread() override;
 

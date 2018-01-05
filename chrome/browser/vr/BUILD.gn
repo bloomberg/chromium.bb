@@ -201,12 +201,14 @@ static_library("vr_common") {
     "web_contents_event_forwarder.h",
   ]
 
+  public_deps = [
+    "//ui/gl",
+  ]
+
   if (enable_gvr_services) {
     sources += [ "controller_mesh.cc" ]
 
-    public_deps = [
-      "//chrome/browser/resources:vr_shell_resources",
-    ]
+    public_deps += [ "//chrome/browser/resources:vr_shell_resources" ]
   }
 
   deps = [
@@ -230,7 +232,6 @@ static_library("vr_common") {
     "//skia",
     "//ui/base",
     "//ui/display",
-    "//ui/gl",
     "//ui/gl/init",
   ]
 }
