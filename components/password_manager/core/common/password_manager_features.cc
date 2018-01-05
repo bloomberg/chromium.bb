@@ -14,7 +14,7 @@ namespace features {
 // application will also be considered matches for, and be filled into
 // corresponding Web applications.
 const base::Feature kAffiliationBasedMatching = {
-    "affiliation-based-matching", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AffiliationBasedMatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use HTML based username detector.
 const base::Feature kEnableHtmlBasedUsernameDetector = {
