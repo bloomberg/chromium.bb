@@ -738,8 +738,7 @@
         "args": [
           "--mus"
         ],
-        "name": "ash_unittests-mus",
-        "override_isolate_target": "ash_unittests",
+        "name": "ash_unittests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -764,6 +763,20 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--mus",
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests"
+        ],
+        "name": "browser_tests --mus",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1500,
+          "shards": 5
         },
         "test": "browser_tests"
       },
@@ -825,7 +838,7 @@
         "args": [
           "--mus"
         ],
-        "name": "mus_content_unittests",
+        "name": "content_unittests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1041,6 +1054,16 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/unit_tests_cros_asan.filter"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--mus"
+        ],
+        "name": "unit_tests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

@@ -4405,6 +4405,16 @@
     "gtest_tests": [
       {
         "args": [
+          "--mus"
+        ],
+        "name": "ash_unittests --mus",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
+      },
+      {
+        "args": [
           "--mash",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
         ],
@@ -4417,13 +4427,17 @@
       },
       {
         "args": [
-          "--mus"
+          "--mus",
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests"
         ],
-        "name": "ash_unittests-mus",
+        "name": "browser_tests --mus",
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1500,
+          "shards": 5
         },
-        "test": "ash_unittests"
+        "test": "browser_tests"
       },
       {
         "args": [
@@ -4435,19 +4449,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1800,
-          "shards": 5
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--mus",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "mus_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 1500,
           "shards": 5
         },
         "test": "browser_tests"
@@ -4468,7 +4469,7 @@
         "args": [
           "--mus"
         ],
-        "name": "mus_content_browsertests",
+        "name": "content_browsertests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
@@ -4486,6 +4487,16 @@
           "shards": 2
         },
         "test": "content_browsertests"
+      },
+      {
+        "args": [
+          "--mus"
+        ],
+        "name": "content_unittests --mus",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_unittests"
       },
       {
         "args": [
@@ -4508,7 +4519,7 @@
         "args": [
           "--mus"
         ],
-        "name": "mus_unit_tests",
+        "name": "unit_tests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },

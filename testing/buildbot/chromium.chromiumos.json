@@ -841,11 +841,9 @@
       },
       {
         "args": [
-          "--mash",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
+          "--mus"
         ],
-        "name": "ash_unittests-mash",
-        "override_isolate_target": "ash_unittests",
+        "name": "ash_unittests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -853,9 +851,10 @@
       },
       {
         "args": [
-          "--mus"
+          "--mash",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/ash_unittests_mash.filter"
         ],
-        "name": "ash_unittests-mus",
+        "name": "ash_unittests-mash",
         "override_isolate_target": "ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -889,6 +888,20 @@
       },
       {
         "args": [
+          "--mus",
+          "--ozone-platform=headless",
+          "--override-use-software-gl-for-tests"
+        ],
+        "name": "browser_tests --mus",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1500,
+          "shards": 5
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--mash",
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
@@ -897,20 +910,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "hard_timeout": 1800,
-          "shards": 5
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--mus",
-          "--ozone-platform=headless",
-          "--override-use-software-gl-for-tests"
-        ],
-        "name": "mus_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 1500,
           "shards": 5
         },
         "test": "browser_tests"
@@ -972,11 +971,9 @@
       },
       {
         "args": [
-          "--mus",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mus.content_browsertests.filter"
+          "--mus"
         ],
         "name": "content_browsertests --mus",
-        "override_isolate_target": "content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
@@ -1005,7 +1002,7 @@
         "args": [
           "--mus"
         ],
-        "name": "mus_content_unittests",
+        "name": "content_unittests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -1289,6 +1286,16 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--mus"
+        ],
+        "name": "unit_tests --mus",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
