@@ -89,6 +89,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -1038,6 +1039,12 @@ void RenderWidgetHostViewAura::WheelEventAck(
     overscroll_controller_->ReceivedEventACK(
         event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
   }
+}
+
+void RenderWidgetHostViewAura::DidOverscroll(
+    const ui::DidOverscrollParams& params) {
+  if (overscroll_controller_)
+    overscroll_controller_->OnDidOverscroll(params);
 }
 
 void RenderWidgetHostViewAura::GestureEventAck(

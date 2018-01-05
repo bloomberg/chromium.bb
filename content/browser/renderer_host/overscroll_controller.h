@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "ui/events/blink/did_overscroll_params.h"
 
 namespace content {
 
@@ -49,6 +50,11 @@ class CONTENT_EXPORT OverscrollController {
   // updated properly. Returns true if the event was handled, in which case
   // further processing should cease.
   bool WillHandleEvent(const blink::WebInputEvent& event);
+
+  // This is called whenever an overscroll event is generated on the renderer
+  // side. This is called before ReceivedEventAck. The params contains an
+  // OverscrollBehavior that can prevent overscroll navigation.
+  void OnDidOverscroll(const ui::DidOverscrollParams& params);
 
   // This must be called when the ACK for any event comes in. This updates the
   // overscroll gesture status as appropriate.
