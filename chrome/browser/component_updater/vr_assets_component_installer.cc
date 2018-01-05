@@ -22,8 +22,6 @@
 #include "chrome/browser/vr_features.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/component_updater/component_updater_service.h"
-#include "components/crx_file/id_util.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -43,20 +41,6 @@ const base::FilePath::CharType kRelativeInstallDir[] =
 }  // namespace
 
 namespace component_updater {
-
-// static
-void VrAssetsComponentInstallerTraits::UpdateComponent(
-    ComponentUpdateService* cus) {
-#if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
-  const std::string crx_id = crx_file::id_util::GenerateIdFromHash(
-      kPublicKeySHA256, sizeof(kPublicKeySHA256));
-  // Make sure the component is registered.
-  DCHECK(std::find(cus->GetComponentIDs().begin(), cus->GetComponentIDs().end(),
-                   crx_id) != cus->GetComponentIDs().end());
-  cus->GetOnDemandUpdater().OnDemandUpdate(
-      crx_id, base::BindOnce([](update_client::Error error) { return; }));
-#endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
-}
 
 bool VrAssetsComponentInstallerTraits::
     SupportsGroupPolicyEnabledComponentUpdates() const {
@@ -148,18 +132,14 @@ std::vector<std::string> VrAssetsComponentInstallerTraits::GetMimeTypes()
 }
 
 void RegisterVrAssetsComponent(ComponentUpdateService* cus) {
-#if BUILDFLAG(USE_VR_ASSETS_COMPONENT)
+#if BUILDFLAG(REGISTER_VR_ASSETS_COMPONENT)
   std::unique_ptr<ComponentInstallerPolicy> policy(
       new VrAssetsComponentInstallerTraits());
   auto installer = base::MakeRefCounted<ComponentInstaller>(std::move(policy));
   installer->Register(cus, base::Closure());
   vr::Assets::GetInstance()->GetMetricsHelper()->OnRegisteredComponent();
   VLOG(1) << "Registered VR assets component";
-#endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
-}
-
-void UpdateVrAssetsComponent(ComponentUpdateService* cus) {
-  VrAssetsComponentInstallerTraits::UpdateComponent(cus);
+#endif  // BUILDFLAG(REGISTER_VR_ASSETS_COMPONENT)
 }
 
 }  // namespace component_updater
