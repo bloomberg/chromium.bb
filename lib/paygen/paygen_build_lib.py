@@ -91,11 +91,6 @@ class EarlyExit(Error):
     return self.__doc__
 
 
-class BuildFinished(EarlyExit):
-  """This build has already been marked as finished, no need to process."""
-  RESULT = 22
-
-
 class BuildLocked(EarlyExit):
   """This build is locked and already being processed elsewhere."""
   RESULT = 23
@@ -869,21 +864,15 @@ class PaygenBuild(object):
     process this build.
 
     Raises:
-      BuildFinished: If the build was already marked as finished.
       BuildLocked: If the build is locked by another server or process.
     """
     lock_uri = self._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    finished_uri = self._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
     suite_name = None
 
     logging.info('Examining: %s', self._build)
 
     try:
       with gslock.Lock(lock_uri, dry_run=bool(self._drm)):
-        # If the build was already marked as finished, we're finished.
-        if gslib.Exists(finished_uri):
-          raise BuildFinished()
-
         logging.info('Starting: %s', self._build)
 
         payloads, payload_tests = self._DiscoverRequiredPayloads()
@@ -945,7 +934,7 @@ class PaygenBuild(object):
     finally:
       self._CleanupBuild()
 
-    return suite_name, self._archive_board, self._archive_build, finished_uri
+    return suite_name, self._archive_board, self._archive_build
 
 
 def ValidateBoardConfig(board):

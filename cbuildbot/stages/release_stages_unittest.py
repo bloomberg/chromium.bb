@@ -315,7 +315,6 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         'foo-suite-name',
         'foo-archive-board',
         'foo-archive-build',
-        'foo-finished_uri',
     )])
 
   # pylint: disable=arguments-differ
@@ -543,7 +542,6 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         # when converting to release tools naming.
         channel='foochan-channel',
         build='foo-version',
-        finished_uri='foo-finished-uri',
         skip_duts_check=False,
         debug=True)
 

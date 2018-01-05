@@ -187,9 +187,6 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
     self.assertEqual(
         paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK),
         'gs://crt/foo-channel/foo-board/1.2.3/payloads/LOCK_flag')
-    self.assertEqual(
-        paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED),
-        'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
 
   def testFilterHelpers(self):
     """Test _FilterForMp helper method."""
@@ -850,20 +847,6 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
     with self.assertRaises(paygen_build_lib.BuildLocked):
       paygen.CreatePayloads()
 
-  def testCreatePayloadsFinishedBuild(self):
-    """Test paygen_build_lib._GeneratePayloads if the build marked finished."""
-    self.mockExists.return_value = True
-
-    paygen = self._GetPaygenBuildInstance()
-    finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
-
-    with self.assertRaises(paygen_build_lib.BuildFinished):
-      paygen.CreatePayloads()
-
-    self.mockExists.assert_called_once(finished_uri)
-
-    self.assertEqual(self.mockCleanup.call_args_list, [mock.call()])
-
   def testCreatePayloadsBuildNotReady(self):
     """Test paygen_build_lib._GeneratePayloads if not all images are there."""
     self.mockExists.return_value = False
@@ -915,8 +898,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         testdata,
-        ('suite_name', 'archive_board', 'archive_build',
-         'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
+        ('suite_name', 'archive_board', 'archive_build')
     )
 
     self.assertEqual(self.mockGenerate.call_args_list, [
@@ -959,8 +941,7 @@ class TestCreatePayloads(BasePaygenBuildLibTestWithBuilds):
 
     self.assertEqual(
         testdata,
-        ('suite_name', 'archive_board', 'archive_build',
-         'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
+        ('suite_name', 'archive_board', 'archive_build')
     )
 
     # Note... no payloads were generated.

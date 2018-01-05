@@ -7,13 +7,11 @@
 
 This includes definitions for various build flags:
 
-  FINISHED - means that the payloads have been fully generated.
   LOCK - means that payload processing is in progress on the host which
          owns the locks. Locks have a timeout associated with them in
          case of error, but are not 100% atomic when a lock is timing out.
 
   Example file paths:
-    gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/FINISHED_flag
     gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/LOCK_flag
 """
 
@@ -159,10 +157,9 @@ class ChromeosReleases(object):
   BUCKET = 'chromeos-releases'
 
   # Build flags
-  FINISHED = 'FINISHED'
   LOCK = 'LOCK'
 
-  FLAGS = (FINISHED, LOCK)
+  FLAGS = (LOCK,)
 
   UNSIGNED_IMAGE_TYPES = ('test', 'recovery', 'base')
 
@@ -254,7 +251,6 @@ class ChromeosReleases(object):
   def BuildPayloadsFlagUri(channel, board, version, flag, bucket=None):
     """Creates the gspath for a given build flag.
 
-    FINISHED - means that the payloads have been fully generated.
     LOCK - means that payload processing is in progress on the host which
            owns the locks. Locks have a timeout associated with them in
            case of error, but are not 100% atomic when a lock is timing out.
@@ -263,7 +259,7 @@ class ChromeosReleases(object):
       channel: What channel does the build belong too. Usually "xxx-channel".
       board: What board is the build for? "x86-alex", "lumpy", etc.
       version: What is the build version. "3015.0.0", "1945.76.3", etc
-      flag: gs_paths.FINISHED, or gs_paths.LOCK
+      flag: gs_paths.LOCK
       bucket: What bucket is the build in? (None means ChromeosReleases.BUCKET)
 
     Returns:

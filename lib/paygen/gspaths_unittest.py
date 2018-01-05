@@ -209,17 +209,6 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         self._PopulateGsPath(self._GS_PAYLOADS_SIGNING_PATH_TEMPLATE,
                              bucket=self._CHROMEOS_RELEASES_BUCKET))
 
-  def testBuildPayloadsFlagUri(self):
-    self.assertEquals(
-        gspaths.ChromeosReleases.BuildPayloadsFlagUri(
-            self.channel,
-            self.board,
-            self.version,
-            gspaths.ChromeosReleases.FINISHED,
-            bucket=self.bucket),
-        self._PopulateGsPath(self._GS_PAYLOADS_PATH_TEMPLATE,
-                             suffix='FINISHED_flag'))
-
     self.assertEquals(
         gspaths.ChromeosReleases.BuildPayloadsFlagUri(
             self.channel,

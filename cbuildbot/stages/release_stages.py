@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import json
 import os
-import socket
 
 from chromite.cbuildbot import commands
 from chromite.lib import failures_lib
@@ -22,8 +21,6 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import timeout_util
-from chromite.lib.paygen import dryrun_lib
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
 
@@ -464,7 +461,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
 
         # Now, schedule the payload tests if desired.
         if not self.skip_testing:
-          suite_name, archive_board, archive_build, finished_uri = testdata
+          suite_name, archive_board, archive_build = testdata
 
           # For unified builds, only test against the specified models.
           if self._run.config.models:
@@ -483,7 +480,6 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                   model.lab_board_name,
                   self.channel,
                   archive_build,
-                  finished_uri,
                   self.skip_duts_check,
                   self.debug) for model in models]
               steps = [stage.Run for stage in stages]
@@ -497,7 +493,6 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                   models[0].lab_board_name,
                   self.channel,
                   archive_build,
-                  finished_uri,
                   self.skip_duts_check,
                   self.debug).Run()
           else:
@@ -509,20 +504,15 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                 archive_board,
                 self.channel,
                 archive_build,
-                finished_uri,
                 self.skip_duts_check,
                 self.debug).Run()
 
 
 
-      except (paygen_build_lib.BuildFinished,
-              paygen_build_lib.BuildLocked) as e:
-        # These errors are normal if it's possible that another builder is, or
-        # has processed the same build. (perhaps by a trybot generating payloads
-        # on request).
-        #
-        # This means the build was finished by the other process, or is already
-        # being processed (so the build is locked).
+      except (paygen_build_lib.BuildLocked) as e:
+        # These errors are normal if it's possible that another builder is
+        # processing the same build. (perhaps by a trybot generating payloads on
+        # request).
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
 
 
@@ -537,7 +527,6 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       lab_board_name,
       channel,
       build,
-      finished_uri,
       skip_duts_check,
       debug,
       **kwargs):
@@ -551,7 +540,6 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       lab_board_name: The actual board label tested against in Autotest
       channel: Channel of payloads to generate ('stable', 'beta', etc)
       build: Version of payloads to generate.
-      finished_uri: GS URI of the finished flag to create on success.
       skip_duts_check: Do not check minimum available DUTs before tests.
       debug: Boolean indicating if this is a test run or a real run.
     """
@@ -561,7 +549,6 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     self.lab_board_name = lab_board_name
 
     self.build = build
-    self.finished_uri = finished_uri
     self.skip_duts_check = skip_duts_check
     self.debug = debug
     # We don't need the '-channel'suffix.
@@ -573,7 +560,6 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
 
     super(PaygenTestStage, self).__init__(
         builder_run, board, suffix=suffix, **kwargs)
-    self._drm = dryrun_lib.DryRunMgr(self.debug)
 
   def PerformStage(self):
     """Schedule the tests to run."""
@@ -585,10 +571,6 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
                                            self.skip_duts_check,
                                            self.debug,
                                            job_keyvals=self.GetJobKeyvals())
-
-    # Mark the build as finished since the payloads were generated, uploaded,
-    # and tested by this point.
-    self._drm(gslib.CreateWithContents, self.finished_uri, socket.gethostname())
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
