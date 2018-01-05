@@ -901,8 +901,14 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
                                                         ? UNIDIR_COMP_REFERENCE
                                                         : BIDIR_COMP_REFERENCE;
+          if (allow_update_cdf) {
+            update_cdf(av1_get_comp_reference_type_cdf(xd), comp_ref_type,
+                       COMP_REFERENCE_TYPES);
+          }
+#if CONFIG_ENTROPY_STATS
           counts->comp_ref_type[av1_get_comp_reference_type_context(xd)]
                                [comp_ref_type]++;
+#endif  // CONFIG_ENTROPY_STATS
 
           if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
             const int bit = (ref0 == BWDREF_FRAME);

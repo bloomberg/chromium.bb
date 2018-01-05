@@ -1289,8 +1289,6 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(const MACROBLOCKD *xd,
   const COMP_REFERENCE_TYPE comp_ref_type =
       (COMP_REFERENCE_TYPE)aom_read_symbol(
           r, xd->tile_ctx->comp_ref_type_cdf[ctx], 2, ACCT_STR);
-  FRAME_COUNTS *counts = xd->counts;
-  if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
   return comp_ref_type;  // UNIDIR_COMP_REFERENCE or BIDIR_COMP_REFERENCE
 }
 #endif  // CONFIG_EXT_COMP_REFS

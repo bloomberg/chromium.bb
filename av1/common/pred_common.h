@@ -200,11 +200,6 @@ static INLINE aom_cdf_prob *av1_get_reference_mode_cdf(const AV1_COMMON *cm,
 #if CONFIG_EXT_COMP_REFS
 int av1_get_comp_reference_type_context(const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_comp_reference_type_prob(const AV1_COMMON *cm,
-                                                        const MACROBLOCKD *xd) {
-  return cm->fc->comp_ref_type_prob[av1_get_comp_reference_type_context(xd)];
-}
-
 int av1_get_pred_context_uni_comp_ref_p(const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_pred_prob_uni_comp_ref_p(const AV1_COMMON *cm,

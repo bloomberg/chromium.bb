@@ -5892,12 +5892,12 @@ static void estimate_ref_frame_costs(
       aom_prob bwdref_comp_p1 = av1_get_pred_prob_comp_bwdref_p1(cm, xd);
 
 #if CONFIG_EXT_COMP_REFS
-      aom_prob comp_ref_type_p = av1_get_comp_reference_type_prob(cm, xd);
+      const int comp_ref_type_ctx = av1_get_comp_reference_type_context(xd);
       unsigned int ref_bicomp_costs[TOTAL_REFS_PER_FRAME] = { 0 };
 
       ref_bicomp_costs[LAST_FRAME] = ref_bicomp_costs[LAST2_FRAME] =
           ref_bicomp_costs[LAST3_FRAME] = ref_bicomp_costs[GOLDEN_FRAME] =
-              base_cost + av1_cost_bit(comp_ref_type_p, 1);
+              base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][1];
       ref_bicomp_costs[BWDREF_FRAME] = ref_bicomp_costs[ALTREF2_FRAME] = 0;
       ref_bicomp_costs[ALTREF_FRAME] = 0;
 
@@ -5932,19 +5932,18 @@ static void estimate_ref_frame_costs(
       aom_prob uni_comp_ref_p2 = av1_get_pred_prob_uni_comp_ref_p2(cm, xd);
 
       ref_costs_comp[LAST_FRAME][LAST2_FRAME] =
-          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
           av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 0);
       ref_costs_comp[LAST_FRAME][LAST3_FRAME] =
-          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
           av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 1) +
           av1_cost_bit(uni_comp_ref_p2, 0);
       ref_costs_comp[LAST_FRAME][GOLDEN_FRAME] =
-          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
           av1_cost_bit(uni_comp_ref_p, 0) + av1_cost_bit(uni_comp_ref_p1, 1) +
           av1_cost_bit(uni_comp_ref_p2, 1);
-
       ref_costs_comp[BWDREF_FRAME][ALTREF_FRAME] =
-          base_cost + av1_cost_bit(comp_ref_type_p, 0) +
+          base_cost + x->comp_ref_type_cost[comp_ref_type_ctx][0] +
           av1_cost_bit(uni_comp_ref_p, 1);
 
 #else   // !CONFIG_EXT_COMP_REFS
