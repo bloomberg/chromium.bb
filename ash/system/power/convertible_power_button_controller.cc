@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/power/tablet_power_button_controller.h"
+#include "ash/system/power/convertible_power_button_controller.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -45,12 +45,13 @@ constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
 
 }  // namespace
 
-constexpr base::TimeDelta TabletPowerButtonController::kScreenStateChangeDelay;
+constexpr base::TimeDelta
+    ConvertiblePowerButtonController::kScreenStateChangeDelay;
 
 constexpr base::TimeDelta
-    TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay;
+    ConvertiblePowerButtonController::kIgnoreRepeatedButtonUpDelay;
 
-TabletPowerButtonController::TabletPowerButtonController(
+ConvertiblePowerButtonController::ConvertiblePowerButtonController(
     PowerButtonDisplayController* display_controller,
     base::TickClock* tick_clock)
     : lock_state_controller_(Shell::Get()->lock_state_controller()),
@@ -61,14 +62,14 @@ TabletPowerButtonController::TabletPowerButtonController(
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
-TabletPowerButtonController::~TabletPowerButtonController() {
+ConvertiblePowerButtonController::~ConvertiblePowerButtonController() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 }
 
-void TabletPowerButtonController::OnPowerButtonEvent(
+void ConvertiblePowerButtonController::OnPowerButtonEvent(
     bool down,
     const base::TimeTicks& timestamp) {
   if (down) {
@@ -119,43 +120,43 @@ void TabletPowerButtonController::OnPowerButtonEvent(
   }
 }
 
-void TabletPowerButtonController::SuspendDone(
+void ConvertiblePowerButtonController::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   last_resume_time_ = tick_clock_->NowTicks();
 }
 
-void TabletPowerButtonController::OnTabletModeStarted() {
+void ConvertiblePowerButtonController::OnTabletModeStarted() {
   shutdown_timer_.Stop();
   if (lock_state_controller_->CanCancelShutdownAnimation())
     lock_state_controller_->CancelShutdownAnimation();
 }
 
-void TabletPowerButtonController::OnTabletModeEnded() {
+void ConvertiblePowerButtonController::OnTabletModeEnded() {
   shutdown_timer_.Stop();
   if (lock_state_controller_->CanCancelShutdownAnimation())
     lock_state_controller_->CancelShutdownAnimation();
 }
 
-void TabletPowerButtonController::CancelTabletPowerButton() {
+void ConvertiblePowerButtonController::CancelTabletPowerButton() {
   if (lock_state_controller_->CanCancelShutdownAnimation())
     lock_state_controller_->CancelShutdownAnimation();
   force_off_on_button_up_ = false;
   shutdown_timer_.Stop();
 }
 
-void TabletPowerButtonController::StartShutdownTimer() {
+void ConvertiblePowerButtonController::StartShutdownTimer() {
   base::TimeDelta timeout = screen_off_when_power_button_down_
                                 ? kShutdownWhenScreenOffTimeout
                                 : kShutdownWhenScreenOnTimeout;
   shutdown_timer_.Start(FROM_HERE, timeout, this,
-                        &TabletPowerButtonController::OnShutdownTimeout);
+                        &ConvertiblePowerButtonController::OnShutdownTimeout);
 }
 
-void TabletPowerButtonController::OnShutdownTimeout() {
+void ConvertiblePowerButtonController::OnShutdownTimeout() {
   lock_state_controller_->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
 }
 
-void TabletPowerButtonController::LockScreenIfRequired() {
+void ConvertiblePowerButtonController::LockScreenIfRequired() {
   SessionController* session_controller = Shell::Get()->session_controller();
   if (session_controller->ShouldLockScreenAutomatically() &&
       session_controller->CanLockScreen() &&

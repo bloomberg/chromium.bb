@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_H_
-#define ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_H_
+#ifndef ASH_SYSTEM_POWER_CONVERTIBLE_POWER_BUTTON_CONTROLLER_H_
+#define ASH_SYSTEM_POWER_CONVERTIBLE_POWER_BUTTON_CONTROLLER_H_
 
 #include <memory>
 #include <utility>
@@ -28,9 +28,9 @@ namespace ash {
 class LockStateController;
 class PowerButtonDisplayController;
 
-// Handles power button events on convertible/tablet device. This class is
+// Handles power button events on convertible device. This class is
 // instantiated and used in PowerButtonController.
-class ASH_EXPORT TabletPowerButtonController
+class ASH_EXPORT ConvertiblePowerButtonController
     : public chromeos::PowerManagerClient::Observer,
       public TabletModeObserver {
  public:
@@ -48,9 +48,10 @@ class ASH_EXPORT TabletPowerButtonController
   static constexpr base::TimeDelta kIgnoreRepeatedButtonUpDelay =
       base::TimeDelta::FromMilliseconds(500);
 
-  TabletPowerButtonController(PowerButtonDisplayController* display_controller,
-                              base::TickClock* tick_clock);
-  ~TabletPowerButtonController() override;
+  ConvertiblePowerButtonController(
+      PowerButtonDisplayController* display_controller,
+      base::TickClock* tick_clock);
+  ~ConvertiblePowerButtonController() override;
 
   // Handles a power button event.
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
@@ -62,11 +63,11 @@ class ASH_EXPORT TabletPowerButtonController
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  // Cancel the ongoing tablet power button behavior.
+  // Cancel the ongoing power button behavior of convertible devices.
   void CancelTabletPowerButton();
 
  private:
-  friend class TabletPowerButtonControllerTestApi;
+  friend class ConvertiblePowerButtonControllerTestApi;
 
   // Starts |shutdown_timer_| when the power button is pressed while in
   // tablet mode.
@@ -92,7 +93,7 @@ class ASH_EXPORT TabletPowerButtonController
   // True if power button released should force off display.
   bool force_off_on_button_up_ = true;
 
-  // Started when the tablet power button is pressed and stopped when it's
+  // Started when the convertible power button is pressed and stopped when it's
   // released. Runs OnShutdownTimeout() to start shutdown.
   base::OneShotTimer shutdown_timer_;
 
@@ -104,9 +105,9 @@ class ASH_EXPORT TabletPowerButtonController
   // Time source for performed action times.
   base::TickClock* tick_clock_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonController);
+  DISALLOW_COPY_AND_ASSIGN(ConvertiblePowerButtonController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_TABLET_POWER_BUTTON_CONTROLLER_H_
+#endif  // ASH_SYSTEM_POWER_CONVERTIBLE_POWER_BUTTON_CONTROLLER_H_
