@@ -208,7 +208,7 @@ AbortCallback SmbFileSystem::CloseFile(
     int file_handle,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   GetSmbProviderClient()->CloseFile(
-      file_handle,
+      GetMountId(), file_handle,
       base::BindOnce(&SmbFileSystem::HandleRequestCloseFileCallback,
                      weak_ptr_factory_.GetWeakPtr(), callback));
   return AbortCallback();

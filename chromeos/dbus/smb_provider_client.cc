@@ -102,8 +102,11 @@ class SmbProviderClientImpl : public SmbProviderClient {
                &SmbProviderClientImpl::HandleOpenFileCallback, &callback);
   }
 
-  void CloseFile(int32_t file_id, CloseFileCallback callback) override {
+  void CloseFile(int32_t mount_id,
+                 int32_t file_id,
+                 CloseFileCallback callback) override {
     smbprovider::CloseFileOptions options;
+    options.set_mount_id(mount_id);
     options.set_file_id(file_id);
     CallMethod(smbprovider::kCloseFileMethod, options,
                &SmbProviderClientImpl::HandleCloseFileCallback, &callback);
