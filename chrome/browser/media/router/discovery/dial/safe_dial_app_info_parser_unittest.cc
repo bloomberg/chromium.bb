@@ -103,21 +103,21 @@ class SafeDialAppInfoParserTest : public testing::Test {
 
   std::unique_ptr<ParsedDialAppInfo> Parse(
       const std::string& xml,
-      SafeDialAppInfoParser::ParsingError expected_error) {
+      SafeDialAppInfoParser::ParsingResult expected_result) {
     base::RunLoop run_loop;
     SafeDialAppInfoParser parser(connector_.get());
     parser.Parse(xml,
                  base::BindOnce(&SafeDialAppInfoParserTest::OnParsingCompleted,
-                                base::Unretained(this), expected_error));
+                                base::Unretained(this), expected_result));
     base::RunLoop().RunUntilIdle();
     return std::move(app_info_);
   }
 
-  void OnParsingCompleted(SafeDialAppInfoParser::ParsingError expected_error,
+  void OnParsingCompleted(SafeDialAppInfoParser::ParsingResult expected_result,
                           std::unique_ptr<ParsedDialAppInfo> app_info,
-                          SafeDialAppInfoParser::ParsingError error) {
+                          SafeDialAppInfoParser::ParsingResult result) {
     app_info_ = std::move(app_info);
-    EXPECT_EQ(expected_error, error);
+    EXPECT_EQ(expected_result, result);
   }
 
  private:
@@ -130,14 +130,14 @@ class SafeDialAppInfoParserTest : public testing::Test {
 
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlNoService) {
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse("", SafeDialAppInfoParser::ParsingError::kInvalidXML);
+      Parse("", SafeDialAppInfoParser::ParsingResult::kInvalidXML);
   EXPECT_FALSE(app_info);
 }
 
 TEST_F(SafeDialAppInfoParserTest, TestValidXml) {
   std::string xml_text(kValidAppInfoXml);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kNone);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kSuccess);
 
   EXPECT_EQ("YouTube", app_info->name);
   EXPECT_EQ(DialAppState::kRunning, app_info->state);
@@ -149,7 +149,7 @@ TEST_F(SafeDialAppInfoParserTest, TestValidXml) {
 TEST_F(SafeDialAppInfoParserTest, TestValidXmlExtraData) {
   std::string xml_text(kValidAppInfoXmlExtraData);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kNone);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kSuccess);
 
   EXPECT_EQ("YouTube", app_info->name);
   EXPECT_EQ(DialAppState::kRunning, app_info->state);
@@ -161,28 +161,28 @@ TEST_F(SafeDialAppInfoParserTest, TestValidXmlExtraData) {
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlNoState) {
   std::string xml_text(kInvalidXmlNoState);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kFailToReadState);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kFailToReadState);
   EXPECT_FALSE(app_info);
 }
 
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlInvalidState) {
   std::string xml_text(kInvalidXmlInvalidState);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kInvalidState);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kInvalidState);
   EXPECT_FALSE(app_info);
 }
 
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlNoName) {
   std::string xml_text(kInvalidXmlNoName);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kMissingName);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kMissingName);
   EXPECT_FALSE(app_info);
 }
 
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlMultipleServices) {
   std::string xml_text(kInvalidXmlMultipleServices);
   std::unique_ptr<ParsedDialAppInfo> app_info =
-      Parse(xml_text, SafeDialAppInfoParser::ParsingError::kInvalidXML);
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kInvalidXML);
   EXPECT_FALSE(app_info);
 }
 

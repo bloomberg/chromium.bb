@@ -19,8 +19,10 @@
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "content/public/common/presentation_connection_message.h"
+#include "net/base/ip_endpoint.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -132,6 +134,24 @@ class MockCastMediaSinkService : public CastMediaSinkService {
   MOCK_METHOD0(StartMdnsDiscovery, void());
 };
 #endif  // !defined(OS_ANDROID)
+
+// Helper function to create an IP endpoint object.
+// If |num| is 1, returns 192.168.0.101:8009;
+// If |num| is 2, returns 192.168.0.102:8009.
+net::IPEndPoint CreateIPEndPoint(int num);
+
+// Helper function to create a DIAL media sink object.
+// If |num| is 1, returns a media sink object with following data:
+// {
+//   id: "id 1",
+//   name: "friendly name 1",
+//   extra_data {
+//     model_name: "model name 1"
+//     ip_address: 192.168.1.101,
+//     app_url: "http://192.168.0.101/apps"
+//   }
+// }
+MediaSinkInternal CreateDialSink(int num);
 
 }  // namespace media_router
 

@@ -28,17 +28,17 @@ DialAppState ParseDialAppState(const std::string& app_state) {
 }
 
 // Parses |child_element| content, and sets corresponding fields of
-// |out_app_info|. Returns ParsingError::kNone if parsing succeeds.
-SafeDialAppInfoParser::ParsingError ProcessChildElement(
+// |out_app_info|. Returns ParsingResult::kSuccess if parsing succeeds.
+SafeDialAppInfoParser::ParsingResult ProcessChildElement(
     const base::Value& child_element,
     ParsedDialAppInfo* out_app_info) {
   std::string tag_name;
   if (!data_decoder::GetXmlElementTagName(child_element, &tag_name))
-    return SafeDialAppInfoParser::ParsingError::kInvalidXML;
+    return SafeDialAppInfoParser::ParsingResult::kInvalidXML;
 
   if (tag_name == "name") {
     if (!data_decoder::GetXmlElementText(child_element, &out_app_info->name))
-      return SafeDialAppInfoParser::ParsingError::kFailToReadName;
+      return SafeDialAppInfoParser::ParsingResult::kFailToReadName;
   } else if (tag_name == "options") {
     out_app_info->allow_stop = data_decoder::GetXmlElementAttribute(
                                    child_element, "allowStop") != "false";
@@ -48,7 +48,7 @@ SafeDialAppInfoParser::ParsingError ProcessChildElement(
   } else if (tag_name == "state") {
     std::string state;
     if (!data_decoder::GetXmlElementText(child_element, &state))
-      return SafeDialAppInfoParser::ParsingError::kFailToReadState;
+      return SafeDialAppInfoParser::ParsingResult::kFailToReadState;
     out_app_info->state = ParseDialAppState(state);
   } else {
     std::string extra_data;
@@ -60,20 +60,20 @@ SafeDialAppInfoParser::ParsingError ProcessChildElement(
     }
   }
 
-  return SafeDialAppInfoParser::ParsingError::kNone;
+  return SafeDialAppInfoParser::ParsingResult::kSuccess;
 }
 
-// Returns ParsingError::kNone if mandatory fields (name, state) are valid.
+// Returns ParsingResult::kSuccess if mandatory fields (name, state) are valid.
 // |app_info|: app info object to be validated.
-SafeDialAppInfoParser::ParsingError ValidateParsedAppInfo(
+SafeDialAppInfoParser::ParsingResult ValidateParsedAppInfo(
     const ParsedDialAppInfo& app_info) {
   if (app_info.name.empty())
-    return SafeDialAppInfoParser::ParsingError::kMissingName;
+    return SafeDialAppInfoParser::ParsingResult::kMissingName;
 
   if (app_info.state == DialAppState::kUnknown)
-    return SafeDialAppInfoParser::ParsingError::kInvalidState;
+    return SafeDialAppInfoParser::ParsingResult::kInvalidState;
 
-  return SafeDialAppInfoParser::ParsingError::kNone;
+  return SafeDialAppInfoParser::ParsingResult::kSuccess;
 }
 
 }  // namespace
@@ -110,7 +110,7 @@ void SafeDialAppInfoParser::OnXmlParsingDone(
   }
 
   if (!value || !value->is_dict()) {
-    std::move(callback).Run(nullptr, ParsingError::kInvalidXML);
+    std::move(callback).Run(nullptr, ParsingResult::kInvalidXML);
     return;
   }
 
@@ -120,7 +120,7 @@ void SafeDialAppInfoParser::OnXmlParsingDone(
   const base::Value* service_element =
       data_decoder::FindXmlElementPath(*value, {"service"}, &unique_service);
   if (!service_element || !unique_service) {
-    std::move(callback).Run(nullptr, ParsingError::kInvalidXML);
+    std::move(callback).Run(nullptr, ParsingResult::kInvalidXML);
     return;
   }
 
@@ -134,27 +134,27 @@ void SafeDialAppInfoParser::OnXmlParsingDone(
   const base::Value* child_elements =
       data_decoder::GetXmlElementChildren(*service_element);
   if (!child_elements || !child_elements->is_list()) {
-    std::move(callback).Run(nullptr, ParsingError::kInvalidXML);
+    std::move(callback).Run(nullptr, ParsingResult::kInvalidXML);
     return;
   }
 
-  ParsingError parsing_error = ParsingError::kNone;
+  ParsingResult parsing_result = ParsingResult::kSuccess;
   for (const auto& child_element : child_elements->GetList()) {
-    parsing_error = ProcessChildElement(child_element, app_info.get());
-    if (parsing_error != ParsingError::kNone) {
-      std::move(callback).Run(nullptr, parsing_error);
+    parsing_result = ProcessChildElement(child_element, app_info.get());
+    if (parsing_result != ParsingResult::kSuccess) {
+      std::move(callback).Run(nullptr, parsing_result);
       return;
     }
   }
 
   // Validate mandatory fields (name, state).
-  parsing_error = ValidateParsedAppInfo(*app_info);
-  if (parsing_error != ParsingError::kNone) {
-    std::move(callback).Run(nullptr, parsing_error);
+  parsing_result = ValidateParsedAppInfo(*app_info);
+  if (parsing_result != ParsingResult::kSuccess) {
+    std::move(callback).Run(nullptr, parsing_result);
     return;
   }
 
-  std::move(callback).Run(std::move(app_info), ParsingError::kNone);
+  std::move(callback).Run(std::move(app_info), ParsingResult::kSuccess);
 }
 
 }  // namespace media_router
