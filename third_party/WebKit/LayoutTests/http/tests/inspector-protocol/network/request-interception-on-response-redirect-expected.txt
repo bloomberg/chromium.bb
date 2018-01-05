@@ -26,7 +26,6 @@ Request Intercepted: ping-redirect.php
     Location: ping-redirected-page.html
     Pragma: no-cache
     Server: <Masked>
-    X-Powered-By: <Masked>
   redirectUrl: ping-redirected-page.html
   responseBody:
     error: Can only get response body on requests captured after headers received.

@@ -23,7 +23,6 @@ Request Intercepted: redirect1.php
     Location: redirect2.php
     Pragma: no-cache
     Server: <Masked>
-    X-Powered-By: <Masked>
   redirectUrl: redirect2.php
   responseBody:
     Error<Can only get response body on requests captured after headers received.>
@@ -43,7 +42,6 @@ Request Intercepted: redirect2.php
     Location: final.html
     Pragma: no-cache
     Server: <Masked>
-    X-Powered-By: <Masked>
   redirectUrl: final.html
   responseBody:
     Error<Can only get response body on requests captured after headers received.>
