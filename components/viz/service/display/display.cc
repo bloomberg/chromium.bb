@@ -647,19 +647,26 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
         continue;
       }
 
-      // If the |quad| is not shown on the screen, i.e., covered by the occluded
-      // region, then remove |quad| from the compositor frame.
       if (occlusion_in_quad_content_space.Contains(quad->visible_rect)) {
-        // Case 1: for simple transforms (scale or translation), the occlusion
-        // region is defined in the quad content space.
+        // Case 1: for simple transforms (scale or translation), define the
+        // occlusion region in the quad content space. If the |quad| is not
+        // shown on the screen, then remove |quad| from the compositor frame.
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
 
+      } else if (occlusion_in_quad_content_space.Intersects(
+                     quad->visible_rect)) {
+        // Case 2: for simple transforms, if the quad is partially shown on
+        // screen and the region formed by (occlusion region - visible_rect) is
+        // a rect, then update visible_rect to the resulting rect.
+        quad->visible_rect.Subtract(occlusion_in_quad_content_space);
+        ++quad;
       } else if (occlusion_in_quad_content_space.IsEmpty() &&
                  occlusion_in_target_space.Contains(
                      cc::MathUtil::MapEnclosingClippedRect(
                          transform, quad->visible_rect))) {
-        // Case 2: for non-simple transforms, the occlusion region is defined in
-        // the target space.
+        // Case 3: for non simple transforms, define the occlusion region in
+        // target space. If the |quad| is not shown on the screen, then remove
+        // |quad| from the compositor frame.
         quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
       } else {
         ++quad;
