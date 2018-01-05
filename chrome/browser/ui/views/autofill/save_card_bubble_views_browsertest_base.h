@@ -50,7 +50,6 @@ class SaveCardBubbleViewsBrowserTestBase
       const std::string& test_file_path);
   ~SaveCardBubbleViewsBrowserTestBase() override;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
   void NavigateTo(const std::string& file_path);
