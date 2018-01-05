@@ -218,11 +218,10 @@ constexpr ResourceType kAcceleratedCompositedFallbackList[] = {
 
 std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     const IntSize& size,
-    unsigned msaa_sample_count,
-    const CanvasColorParams& colorParams,
     ResourceUsage usage,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-        context_provider_wrapper) {
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    unsigned msaa_sample_count,
+    const CanvasColorParams& colorParams) {
   const ResourceType* resource_type_fallback_list = nullptr;
   size_t list_length = 0;
 

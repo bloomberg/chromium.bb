@@ -12,7 +12,7 @@
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/UnacceleratedStaticBitmapImage.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/threading/BackgroundTaskRunner.h"
@@ -510,17 +510,18 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   if (DstBufferSizeHasOverflow(parsed_options))
     return;
 
-  std::unique_ptr<ImageBuffer> buffer =
-      ImageBuffer::Create(IntSize(video->videoWidth(), video->videoHeight()),
-                          kDoNotInitializeImagePixels);
-  if (!buffer)
+  std::unique_ptr<CanvasResourceProvider> resource_provider =
+      CanvasResourceProvider::Create(
+          IntSize(video->videoWidth(), video->videoHeight()),
+          CanvasResourceProvider::kSoftwareResourceUsage);
+  if (!resource_provider)
     return;
 
   video->PaintCurrentFrame(
-      buffer->Canvas(),
+      resource_provider->Canvas(),
       IntRect(IntPoint(), IntSize(video->videoWidth(), video->videoHeight())),
       nullptr);
-  scoped_refptr<StaticBitmapImage> input = buffer->NewImageSnapshot();
+  scoped_refptr<StaticBitmapImage> input = resource_provider->Snapshot();
   image_ = CropImageAndApplyColorSpaceConversion(input, parsed_options);
   if (!image_)
     return;

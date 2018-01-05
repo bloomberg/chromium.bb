@@ -277,8 +277,8 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
           : CanvasResourceProvider::kSoftwareCompositedResourceUsage;
 
   resource_provider_ = CanvasResourceProvider::Create(
-      Size(), msaa_sample_count_, color_params_, usage,
-      SharedGpuContext::ContextProviderWrapper());
+      Size(), usage, SharedGpuContext::ContextProviderWrapper(),
+      msaa_sample_count_, color_params_);
 
   if (resource_provider_) {
     // Always save an initial frame, to support resetting the top level matrix
@@ -596,9 +596,9 @@ bool Canvas2DLayerBridge::Restore() {
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     std::unique_ptr<CanvasResourceProvider> resource_provider =
         CanvasResourceProvider::Create(
-            Size(), msaa_sample_count_, color_params_,
-            CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
-            std::move(context_provider_wrapper));
+            Size(), CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
+            std::move(context_provider_wrapper), msaa_sample_count_,
+            color_params_);
 
     if (!resource_provider)
       ReportResourceProviderCreationFailure();

@@ -45,7 +45,6 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/graphics/gpu/WebGLImageConversion.h"
@@ -67,6 +66,7 @@ class GLES2Interface;
 
 namespace blink {
 
+class CanvasResourceProvider;
 class EXTDisjointTimerQuery;
 class EXTDisjointTimerQueryWebGL2;
 class ExceptionState;
@@ -74,7 +74,6 @@ class HTMLCanvasElementOrOffscreenCanvas;
 class HTMLImageElement;
 class HTMLVideoElement;
 class ImageBitmap;
-class ImageBuffer;
 class ImageData;
 class IntSize;
 class OESVertexArrayObject;
@@ -743,19 +742,20 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   Vector<GLenum> compressed_texture_formats_;
 
-  // Fixed-size cache of reusable image buffers for video texImage2D calls.
-  class LRUImageBufferCache {
+  // Fixed-size cache of reusable resource providers for video texImage2D calls.
+  class LRUCanvasResourceProviderCache {
    public:
-    LRUImageBufferCache(int capacity);
+    LRUCanvasResourceProviderCache(int capacity);
     // The pointer returned is owned by the image buffer map.
-    ImageBuffer* GetImageBuffer(const IntSize&);
+    CanvasResourceProvider* GetCanvasResourceProvider(const IntSize&);
 
    private:
     void BubbleToFront(int idx);
-    std::unique_ptr<std::unique_ptr<ImageBuffer>[]> buffers_;
+    std::unique_ptr<std::unique_ptr<CanvasResourceProvider>[]>
+        resource_providers_;
     int capacity_;
   };
-  LRUImageBufferCache generated_image_cache_;
+  LRUCanvasResourceProviderCache generated_image_cache_;
 
   GLint max_texture_size_;
   GLint max_cube_map_texture_size_;

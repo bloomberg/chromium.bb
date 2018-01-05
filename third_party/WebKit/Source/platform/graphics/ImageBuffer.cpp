@@ -58,19 +58,6 @@ std::unique_ptr<ImageBuffer> ImageBuffer::Create(
   return WTF::WrapUnique(new ImageBuffer(std::move(surface)));
 }
 
-std::unique_ptr<ImageBuffer> ImageBuffer::Create(
-    const IntSize& size,
-    ImageInitializationMode initialization_mode,
-    const CanvasColorParams& color_params) {
-  std::unique_ptr<ImageBufferSurface> surface(
-      WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-          size, initialization_mode, color_params)));
-
-  if (!surface->IsValid())
-    return nullptr;
-  return WTF::WrapUnique(new ImageBuffer(std::move(surface)));
-}
-
 ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
     : weak_ptr_factory_(this),
       surface_(std::move(surface)) {

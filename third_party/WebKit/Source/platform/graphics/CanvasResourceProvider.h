@@ -65,10 +65,10 @@ class PLATFORM_EXPORT CanvasResourceProvider {
 
   static std::unique_ptr<CanvasResourceProvider> Create(
       const IntSize&,
-      unsigned msaa_sample_count,
-      const CanvasColorParams&,
       ResourceUsage,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr,
+      unsigned msaa_sample_count = 0,
+      const CanvasColorParams& = CanvasColorParams());
 
   // Use this method for capturing a frame that is intended to be displayed via
   // the compositor. Cases that need to acquire a snaptshot that is not destined
