@@ -44,7 +44,7 @@ GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
 // Returns the normalized size of the element projected into screen space.
 // If (1, 1) the element fills the entire buffer.
 gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
-                               const gfx::Transform& model_matrix,
+                               float distance,
                                const gfx::SizeF& size);
 
 // Sets default texture parameters given a texture type.

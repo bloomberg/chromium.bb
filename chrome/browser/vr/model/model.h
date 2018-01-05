@@ -48,37 +48,19 @@ struct Model {
   WebVrModel web_vr;
 
   std::vector<UiMode> ui_modes;
-  void push_mode(UiMode mode) {
-    if (!ui_modes.empty() && ui_modes.back() == mode)
-      return;
-    ui_modes.push_back(mode);
-  }
-  void pop_mode() { pop_mode(ui_modes.back()); }
-  void pop_mode(UiMode mode) {
-    if (ui_modes.empty() || ui_modes.back() != mode)
-      return;
-    // We should always have a mode to be in when we're clearing a mode.
-    DCHECK_GE(ui_modes.size(), 2u);
-    ui_modes.pop_back();
-  }
-  bool browsing_enabled() const { return !web_vr_enabled(); }
-  bool default_browsing_enabled() const {
-    return ui_modes.back() == kModeBrowsing;
-  }
-  bool voice_search_enabled() const {
-    return ui_modes.back() == kModeVoiceSearch;
-  }
-  bool omnibox_editing_enabled() const {
-    return ui_modes.back() == kModeEditingOmnibox;
-  }
-  bool fullscreen_enabled() const { return ui_modes.back() == kModeFullscreen; }
-  bool web_vr_enabled() const {
-    return ui_modes.back() == kModeWebVr ||
-           ui_modes.back() == kModeWebVrAutopresented;
-  }
-  bool web_vr_autopresentation_enabled() const {
-    return ui_modes.back() == kModeWebVrAutopresented;
-  }
+  void push_mode(UiMode mode);
+  void pop_mode();
+  void pop_mode(UiMode mode);
+  void toggle_mode(UiMode mode);
+  UiMode get_last_opaque_mode() const;
+  bool browsing_enabled() const;
+  bool default_browsing_enabled() const;
+  bool voice_search_enabled() const;
+  bool omnibox_editing_enabled() const;
+  bool fullscreen_enabled() const;
+  bool web_vr_enabled() const;
+  bool web_vr_autopresentation_enabled() const;
+  bool reposition_window_enabled() const;
 
   // Focused text state.
   bool editing_input = false;

@@ -26,6 +26,7 @@
 #include "chrome/browser/vr/elements/laser.h"
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
 #include "chrome/browser/vr/elements/spinner.h"
@@ -444,9 +445,22 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
+  auto repositioner = base::MakeUnique<Repositioner>(kContentDistance);
+  repositioner->SetName(k2dBrowsingRepositioner);
+  repositioner->AddBinding(
+      VR_BIND_FUNC(bool, Model, model_, reposition_window_enabled(),
+                   Repositioner, repositioner.get(), set_enable));
+  repositioner->AddBinding(VR_BIND_FUNC(gfx::Point3F, Model, model_,
+                                        controller.laser_origin, Repositioner,
+                                        repositioner.get(), set_laser_origin));
+  repositioner->AddBinding(
+      VR_BIND_FUNC(gfx::Vector3dF, Model, model_, controller.laser_direction,
+                   Repositioner, repositioner.get(), set_laser_direction));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
+
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForVoice, kPhaseNone);
   element->set_hit_testable(false);
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 
   element = Create<UiElement>(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                               kPhaseNone);
@@ -940,7 +954,7 @@ void UiSceneCreator::CreateViewportAwareRoot() {
   element = base::MakeUnique<ViewportAwareRoot>();
   element->SetName(k2dBrowsingViewportAwareRoot);
   element->set_hit_testable(false);
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(element));
 }
 
 void UiSceneCreator::CreateVoiceSearchUiGroup() {
@@ -974,7 +988,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
           kSpeechRecognitionOpacityAnimationDurationMs));
   // Set initial visibility so we don't see the voice search ui fade out.
   speech_recognition_root->SetVisibleImmediately(false);
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(speech_recognition_root));
+  scene_->AddUiElement(k2dBrowsingRepositioner,
+                       std::move(speech_recognition_root));
 
   auto inner_circle = base::MakeUnique<Rect>();
   inner_circle->SetName(kSpeechRecognitionCircle);
@@ -1236,7 +1251,8 @@ void UiSceneCreator::CreateKeyboard() {
                                     UiElement, keyboard.get(), SetVisible));
   scaler->AddChild(std::move(keyboard));
   visibility_control_root->AddChild(std::move(scaler));
-  scene_->AddUiElement(kRoot, std::move(visibility_control_root));
+  scene_->AddUiElement(k2dBrowsingRepositioner,
+                       std::move(visibility_control_root));
 }
 
 void UiSceneCreator::CreateUrlBar() {
@@ -1339,7 +1355,7 @@ void UiSceneCreator::CreateSnackbars() {
   snackbar->SetTransitionedProperties({OPACITY, TRANSFORM});
   snackbar->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSnackbarTransitionDurationMs));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(snackbar));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(snackbar));
 }
 
 void UiSceneCreator::CreateOmnibox() {
@@ -1583,7 +1599,8 @@ void UiSceneCreator::CreateOmnibox() {
 
   visibility_control_root->AddChild(std::move(scaler));
 
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(visibility_control_root));
+  scene_->AddUiElement(k2dBrowsingRepositioner,
+                       std::move(visibility_control_root));
 }
 
 void UiSceneCreator::CreateCloseButton() {
@@ -1651,7 +1668,7 @@ void UiSceneCreator::CreateExitPrompt() {
       bool, Model, model_,
       active_modal_prompt_type == kModalPromptTypeExitVRForSiteInfo, UiElement,
       backplane.get(), SetVisible));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(backplane));
 
   std::unique_ptr<ExitPrompt> exit_prompt = base::MakeUnique<ExitPrompt>(
       512,
@@ -1756,7 +1773,7 @@ void UiSceneCreator::CreateAudioPermissionPrompt() {
                 &TexturedElement::SetForegroundColor);
   shadow->AddChild(std::move(prompt));
   backplane->AddChild(std::move(shadow));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
+  scene_->AddUiElement(k2dBrowsingRepositioner, std::move(backplane));
 }
 
 void UiSceneCreator::CreateWebVrOverlayElements() {

@@ -183,6 +183,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_C:
         model_->can_apply_new_background = true;
         break;
+      case ui::DomCode::US_P:
+        model_->toggle_mode(kModeRepositionWindow);
+        break;
       default:
         break;
     }

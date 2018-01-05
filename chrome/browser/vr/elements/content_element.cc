@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/elements/content_element.h"
 
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -20,6 +21,16 @@ static constexpr float kContentBoundsPropagationThreshold = 0.2f;
 // Changes of the aspect ratio lead to a
 // distorted content much more quickly. Thus, have a smaller threshold here.
 static constexpr float kContentAspectRatioPropagationThreshold = 0.01f;
+
+gfx::Vector3dF GetNormalFromTransform(const gfx::Transform& transform) {
+  gfx::Vector3dF x_axis(1, 0, 0);
+  gfx::Vector3dF y_axis(0, 1, 0);
+  transform.TransformVector(&x_axis);
+  transform.TransformVector(&y_axis);
+  gfx::Vector3dF normal = CrossProduct(x_axis, y_axis);
+  normal.GetNormalized(&normal);
+  return normal;
+}
 
 }  // namespace
 
@@ -127,8 +138,13 @@ bool ContentElement::OnBeginFrame(const base::TimeTicks& time,
   // is animated. This approach only works with the current scene hierarchy and
   // set of animated properties.
   gfx::Transform target_transform = ComputeTargetWorldSpaceTransform();
+
+  gfx::Point3F target_center;
+  target_transform.TransformPoint(&target_center);
+  gfx::Vector3dF target_normal = GetNormalFromTransform(target_transform);
+  float distance = gfx::DotProduct(target_center - kOrigin, -target_normal);
   gfx::SizeF screen_size =
-      CalculateScreenSize(projection_matrix_, target_transform, target_size);
+      CalculateScreenSize(projection_matrix_, distance, target_size);
 
   float aspect_ratio = target_size.width() / target_size.height();
   gfx::SizeF screen_bounds;

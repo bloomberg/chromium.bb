@@ -8,12 +8,18 @@
 namespace vr {
 
 enum UiMode {
+  // Opaque modes. These modes should hide previous opaque UiMode.
   kModeBrowsing,
   kModeFullscreen,
   kModeWebVr,
   kModeWebVrAutopresented,
   kModeVoiceSearch,
   kModeEditingOmnibox,
+
+  // Translucent modes. These modes should NOT hide previous opaque UiMode.
+  // This is useful for modal style UiMode which should not hide kModeBrowsing
+  // for example.
+  kModeRepositionWindow,
 };
 
 }  // namespace vr
