@@ -98,9 +98,6 @@ static unsigned long HashHash(unsigned long key)
     }
 
     hash %= HASH_SIZE;
-#if DEBUG
-    printf( "Hash(%lu) = %lu\n", key, hash);
-#endif
     return hash;
 }
 
@@ -201,9 +198,6 @@ int drmHashInsert(void *t, unsigned long key, void *value)
     bucket->value        = value;
     bucket->next         = table->buckets[hash];
     table->buckets[hash] = bucket;
-#if DEBUG
-    printf("Inserted %lu at %lu/%p\n", key, hash, bucket);
-#endif
     return 0;			/* Added to table */
 }
 
