@@ -44,7 +44,7 @@ void ClearBrowsingData(Profile* profile) {
       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
   observer.BlockUntilCompletion();
   // Make sure HistoryServiceObservers have a chance to be notified.
-  content::RunAllPendingInMessageLoop();
+  content::RunAllTasksUntilIdle();
 }
 
 }  // namespace
