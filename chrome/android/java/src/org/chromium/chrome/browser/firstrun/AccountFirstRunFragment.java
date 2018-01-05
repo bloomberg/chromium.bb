@@ -20,7 +20,16 @@ import org.chromium.chrome.browser.signin.SigninManager;
 /**
  * A {@link Fragment} meant to handle sync setup for the first run experience.
  */
-public class AccountFirstRunFragment extends FirstRunPage implements AccountSigninView.Delegate {
+public class AccountFirstRunFragment
+        extends Fragment implements FirstRunFragment, AccountSigninView.Delegate {
+    /** FRE page that instantiates this fragment. */
+    public static class Page implements FirstRunPage<AccountFirstRunFragment> {
+        @Override
+        public AccountFirstRunFragment instantiateFragment() {
+            return new AccountFirstRunFragment();
+        }
+    }
+
     // Per-page parameters:
     public static final String FORCE_SIGNIN_ACCOUNT_TO = "ForceSigninAccountTo";
     public static final String PRESELECT_BUT_ALLOW_TO_CHANGE = "PreselectButAllowToChange";
@@ -49,7 +58,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
             public void onAccountSelectionCanceled() {
                 SignInPromo.temporarilySuppressPromos();
                 getPageDelegate().refuseSignIn();
-                advanceToNextPage();
+                getPageDelegate().advanceToNextPage();
             }
 
             @Override
@@ -64,7 +73,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
                 if (settingsClicked) {
                     getPageDelegate().askToOpenSignInSettings();
                 }
-                advanceToNextPage();
+                getPageDelegate().advanceToNextPage();
             }
 
             @Override
@@ -87,8 +96,7 @@ public class AccountFirstRunFragment extends FirstRunPage implements AccountSign
         SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
     }
 
-    // FirstRunPage:
-
+    // FirstRunFragment:
     @Override
     public boolean interceptBackPressed() {
         Bundle freProperties = getPageDelegate().getProperties();

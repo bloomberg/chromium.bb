@@ -9,18 +9,16 @@ import android.app.FragmentManager;
 import android.support.v13.app.FragmentStatePagerAdapter;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 /**
  * Adapter used to provide First Run pages to the FirstRunActivity ViewPager.
  */
 class FirstRunPagerAdapter extends FragmentStatePagerAdapter {
-    private final List<Callable<FirstRunPage>> mPages;
+    private final List<FirstRunPage> mPages;
 
     private boolean mStopAtTheFirstPage;
 
-    public FirstRunPagerAdapter(
-            FragmentManager fragmentManager, List<Callable<FirstRunPage>> pages) {
+    public FirstRunPagerAdapter(FragmentManager fragmentManager, List<FirstRunPage> pages) {
         super(fragmentManager);
         assert pages != null;
         assert pages.size() > 0;
@@ -41,13 +39,7 @@ class FirstRunPagerAdapter extends FragmentStatePagerAdapter {
     @Override
     public Fragment getItem(int position) {
         assert position >= 0 && position < mPages.size();
-        FirstRunPage result = null;
-        try {
-            result = mPages.get(position).call();
-        } catch (Exception e) {
-            // We can always return null and it will be properly handled at the caller level.
-        }
-        return result;
+        return mPages.get(position).instantiateFragment();
     }
 
     @Override
