@@ -141,7 +141,6 @@ const OncFieldSignature openvpn_fields[] = {
     {::onc::openvpn::kTLSVersionMin, &kStringSignature},
     {::onc::openvpn::kUserAuthenticationType, &kStringSignature},
     {::onc::vpn::kUsername, &kStringSignature},
-    // Not supported, yet.
     {::onc::openvpn::kVerb, &kStringSignature},
     {::onc::openvpn::kVerifyHash, &kStringSignature},
     {::onc::openvpn::kVerifyX509, &kVerifyX509Signature},
