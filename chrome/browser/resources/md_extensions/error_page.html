@@ -175,6 +175,7 @@
       <div id="main">
         <div id="heading">
           <button id="close-button" is="paper-icon-button-light"
+              aria-label="$i18n{back}"
               class="icon-arrow-back no-overlap" on-tap="onCloseButtonTap_">
           </button>
           <span>$i18n{errorsPageHeading}</span>
@@ -192,9 +193,14 @@
                 <div class$="error-item
                     [[computeErrorClass_(item, selectedEntry_)]]">
                   <div actionable class=" start" on-tap="onErrorItemAction_"
-                      on-keydown="onErrorItemAction_" tabindex="0">
-                    <iron-icon icon$="[[computeErrorIcon_(item)]]"></iron-icon>
-                    <div class="error-message">[[item.message]]</div>
+                      on-keydown="onErrorItemAction_" tabindex="0"
+                      role="button">
+                    <iron-icon icon$="[[computeErrorIcon_(item)]]"
+                        aria-label$="[[computeErrorTypeLabel_(item)]]">
+                    </iron-icon>
+                    <div id$="[[item.id]]" class="error-message">
+                      [[item.message]]
+                    </div>
                     <div class$="cr-icon [[iconName_(index, selectedEntry_)]]"
                         hidden="[[!computeIsRuntimeError_(item)]]">
                     </div>
@@ -202,6 +208,8 @@
                   <div class="separator"></div>
                   <button is="paper-icon-button-light" class="icon-delete-gray"
                       on-tap="onDeleteErrorAction_"
+                      aria-describedby$="[[item.id]]"
+                      aria-label="$i18n{clearEntry}"
                       on-keydown="onDeleteErrorAction_">
                   </button>
                 </div>
