@@ -23,6 +23,7 @@
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
+#include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
@@ -69,6 +70,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
   bool v2_process = false;
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_CDM:
+    case service_manager::SANDBOX_TYPE_GPU:
     case service_manager::SANDBOX_TYPE_PPAPI:
     case service_manager::SANDBOX_TYPE_RENDERER:
     case service_manager::SANDBOX_TYPE_UTILITY:
@@ -90,6 +92,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
       case service_manager::SANDBOX_TYPE_CDM:
         profile += service_manager::kSeatbeltPolicyString_cdm;
         break;
+      case service_manager::SANDBOX_TYPE_GPU:
+        profile += service_manager::kSeatbeltPolicyString_gpu_v2;
+        break;
       case service_manager::SANDBOX_TYPE_PPAPI:
         profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
         break;
@@ -110,14 +115,21 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     seatbelt_exec_client_ = std::make_unique<sandbox::SeatbeltExecClient>();
     seatbelt_exec_client_->SetProfile(profile);
 
-    if (sandbox_type == service_manager::SANDBOX_TYPE_RENDERER ||
-        sandbox_type == service_manager::SANDBOX_TYPE_PPAPI) {
-      SetupCommonSandboxParameters(seatbelt_exec_client_.get());
-    } else if (sandbox_type == service_manager::SANDBOX_TYPE_UTILITY) {
-      SetupUtilitySandboxParameters(seatbelt_exec_client_.get(),
-                                    *command_line_.get());
-    } else if (sandbox_type == service_manager::SANDBOX_TYPE_CDM) {
-      SetupCDMSandboxParameters(seatbelt_exec_client_.get());
+    switch (sandbox_type) {
+      case service_manager::SANDBOX_TYPE_CDM:
+        SetupCDMSandboxParameters(seatbelt_exec_client_.get());
+        break;
+      case service_manager::SANDBOX_TYPE_GPU:
+      case service_manager::SANDBOX_TYPE_PPAPI:
+      case service_manager::SANDBOX_TYPE_RENDERER:
+        SetupCommonSandboxParameters(seatbelt_exec_client_.get());
+        break;
+      case service_manager::SANDBOX_TYPE_UTILITY:
+        SetupUtilitySandboxParameters(seatbelt_exec_client_.get(),
+                                      *command_line_.get());
+        break;
+      default:
+        NOTREACHED();
     }
 
     int pipe = seatbelt_exec_client_->SendProfileAndGetFD();

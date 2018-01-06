@@ -9,6 +9,7 @@ action_foreach("package_sb_files") {
     "common.sb",
     "common_v2.sb",
     "gpu.sb",
+    "gpu_v2.sb",
     "nacl_loader.sb",
     "ppapi.sb",
     "ppapi_v2.sb",
