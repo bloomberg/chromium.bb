@@ -516,11 +516,11 @@ void FrameFetchContext::DispatchDidReceiveResponse(
                               ->Loader()
                               .GetProvisionalDocumentLoader()) {
     FrameClientHintsPreferencesContext hints_context(GetFrame());
-    if (IsClientHintsAllowed(response.Url())) {
+
       document_loader_->GetClientHintsPreferences()
           .UpdateFromAcceptClientHintsHeader(
               response.HttpHeaderField(HTTPNames::Accept_CH), &hints_context);
-    }
+
     // When response is received with a provisional docloader, the resource
     // haven't committed yet, and we cannot load resources, only preconnect.
     resource_loading_policy = LinkLoader::kDoNotLoadResources;
@@ -832,14 +832,12 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
     ResourceRequest& request) {
-  if (!IsClientHintsAllowed(request.Url()))
-    return;
-
   WebEnabledClientHints enabled_hints;
   // Check if |url| is allowed to run JavaScript. If not, client hints are not
   // attached to the requests that initiate on the render side.
   if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() &&
-      GetContentSettingsClient() && AllowScriptFromSource(request.Url())) {
+      IsClientHintsAllowed(request.Url()) && GetContentSettingsClient() &&
+      AllowScriptFromSource(request.Url())) {
     // TODO(tbansal): crbug.com/735518 This code path is not executed for main
     // frame navigations when browser side navigation is enabled. For main
     // frame requests with browser side navigation enabled, the client hints
