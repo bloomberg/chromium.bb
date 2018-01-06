@@ -2336,12 +2336,6 @@ class KioskHiddenWebUITest : public KioskTest,
  public:
   KioskHiddenWebUITest() : wallpaper_loaded_(false) {}
 
-  // KioskTest overrides:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    KioskTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableBootAnimation);
-  }
-
   void SetUpOnMainThread() override {
     LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 

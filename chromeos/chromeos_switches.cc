@@ -169,9 +169,6 @@ const char kDisableArcDataWipe[] = "disable-arc-data-wipe";
 // Disables ARC Opt-in verification process and ARC is enabled by default.
 const char kDisableArcOptInVerification[] = "disable-arc-opt-in-verification";
 
-// Disables wallpaper boot animation (except of OOBE case).
-const char kDisableBootAnimation[] = "disable-boot-animation";
-
 // Disables bypass proxy for captive portal authorization.
 const char kDisableCaptivePortalBypassProxy[] =
     "disable-captive-portal-bypass-proxy";
