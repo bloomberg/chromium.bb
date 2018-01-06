@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/plugins/reload_plugin_infobar_delegate.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -198,6 +199,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"app_banner", IBD::APP_BANNER_INFOBAR_DELEGATE},
       {"nacl", IBD::NACL_INFOBAR_DELEGATE},
       {"reload_plugin", IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE},
+      {"plugin_observer", IBD::PLUGIN_OBSERVER_INFOBAR_DELEGATE},
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
       {"alternate_nav", IBD::ALTERNATE_NAV_INFOBAR_DELEGATE},
@@ -229,6 +231,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           GetInfoBarService(), nullptr,
           l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
                                      base::ASCIIToUTF16("Test Plugin")));
+      break;
+    case IBD::PLUGIN_OBSERVER_INFOBAR_DELEGATE:
+      PluginObserver::CreatePluginObserverInfoBar(
+          GetInfoBarService(), base::ASCIIToUTF16("Test Plugin"));
       break;
     case IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE:
       ChromeSelectFilePolicy(GetWebContents()).SelectFileDenied();
@@ -328,6 +334,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_nacl) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_reload_plugin) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_plugin_observer) {
   ShowAndVerifyUi();
 }
 

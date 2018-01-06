@@ -11,12 +11,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/common/features.h"
 #include "chrome/common/plugin.mojom.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+class InfoBarService;
 
 namespace content {
 class WebContents;
@@ -31,6 +34,10 @@ class PluginObserver : public content::WebContentsObserver,
   // content::WebContentsObserver implementation.
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
+
+  // Public for tests only.
+  static void CreatePluginObserverInfoBar(InfoBarService* infobar_service,
+                                          const base::string16& plugin_name);
 
  private:
   class ComponentObserver;
