@@ -175,6 +175,11 @@ void StubNotificationDisplayService::RemoveAllNotifications(
   }
 }
 
+void StubNotificationDisplayService::SetProcessNotificationOperationDelegate(
+    const ProcessNotificationOperationCallback& delegate) {
+  process_notification_operation_delegate_ = delegate;
+}
+
 void StubNotificationDisplayService::Display(
     NotificationHandler::Type notification_type,
     const message_center::Notification& notification,
@@ -213,6 +218,26 @@ void StubNotificationDisplayService::GetDisplayed(
     notifications->insert(notification_data.notification.id());
 
   callback.Run(std::move(notifications), true /* supports_synchronization */);
+}
+
+void StubNotificationDisplayService::ProcessNotificationOperation(
+    NotificationCommon::Operation operation,
+    NotificationHandler::Type notification_type,
+    const GURL& origin,
+    const std::string& notification_id,
+    const base::Optional<int>& action_index,
+    const base::Optional<base::string16>& reply,
+    const base::Optional<bool>& by_user) {
+  if (process_notification_operation_delegate_) {
+    process_notification_operation_delegate_.Run(operation, notification_type,
+                                                 origin, notification_id,
+                                                 action_index, reply, by_user);
+    return;
+  }
+
+  NotificationDisplayServiceImpl::ProcessNotificationOperation(
+      operation, notification_type, origin, notification_id, action_index,
+      reply, by_user);
 }
 
 StubNotificationDisplayService::NotificationData::NotificationData(

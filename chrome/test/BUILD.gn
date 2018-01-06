@@ -4759,6 +4759,7 @@ if (is_android) {
     if (is_win) {
       sources += [
         "../browser/downgrade/user_data_downgrade_browsertest.cc",
+        "../browser/notifications/notification_platform_bridge_win_interactive_uitest.cc",
         "../browser/ui/views/touch_events_interactive_uitest_win.cc",
         "//ui/resources/cursors/aliasb.cur",
         "//ui/resources/cursors/cell.cur",
@@ -4785,7 +4786,16 @@ if (is_android) {
       configs +=
           [ "//build/config/win:default_large_module_incremental_linking" ]
 
-      libs = [ "oleacc.lib" ]
+      libs = [
+        "oleacc.lib",
+        "runtimeobject.lib",
+      ]
+
+      ldflags += [
+        "/DELAYLOAD:api-ms-win-core-winrt-error-l1-1-0.dll",
+        "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll",
+        "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll",
+      ]
     }
 
     if (is_mac) {

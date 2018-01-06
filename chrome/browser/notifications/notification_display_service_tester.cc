@@ -143,3 +143,9 @@ void NotificationDisplayServiceTester::RemoveAllNotifications(
     bool by_user) {
   display_service_->RemoveAllNotifications(type, by_user);
 }
+
+void NotificationDisplayServiceTester::SetProcessNotificationOperationDelegate(
+    const StubNotificationDisplayService::ProcessNotificationOperationCallback&
+        delegate) {
+  display_service_->SetProcessNotificationOperationDelegate(delegate);
+}

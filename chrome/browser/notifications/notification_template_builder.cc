@@ -35,7 +35,6 @@ const char kAttribution[] = "attribution";
 const char kAudioElement[] = "audio";
 const char kBindingElement[] = "binding";
 const char kBindingElementTemplateAttribute[] = "template";
-const char kButtonIndex[] = "buttonIndex=";
 const char kContent[] = "content";
 const char kContextMenu[] = "contextMenu";
 const char kForeground[] = "foreground";
@@ -73,6 +72,7 @@ const char kXmlVersionHeader[] = "<?xml version=\"1.0\"?>\n";
 
 }  // namespace
 
+const char kNotificationButtonIndex[] = "buttonIndex";
 const char kNotificationToastElement[] = "toast";
 const char kNotificationLaunchAttribute[] = "launch";
 
@@ -344,7 +344,8 @@ void NotificationTemplateBuilder::WriteActionElement(
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
   xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
-  std::string param = std::string(kButtonIndex) + base::IntToString(index);
+  std::string param =
+      std::string(kNotificationButtonIndex) + "=" + base::IntToString(index);
   xml_writer_->AddAttribute(kArguments, param);
 
   if (!button.icon.IsEmpty()) {
