@@ -38,7 +38,9 @@ class CORE_EXPORT ThreadDebugger : public v8_inspector::V8InspectorClient,
   static void IdleStarted(v8::Isolate*);
   static void IdleFinished(v8::Isolate*);
 
-  void AsyncTaskScheduled(const String& task_name, void* task, bool recurring);
+  void AsyncTaskScheduled(const StringView& task_name,
+                          void* task,
+                          bool recurring);
   void AsyncTaskCanceled(void* task);
   void AllAsyncTasksCanceled();
   void AsyncTaskStarted(void* task);

@@ -473,7 +473,7 @@ std::unique_ptr<TracedValue> EndData(const HitTestRequest&,
 }
 
 namespace InspectorAsyncTask {
-std::unique_ptr<TracedValue> Data(const String&);
+std::unique_ptr<TracedValue> Data(const StringView&);
 }
 
 CORE_EXPORT String ToHexString(const void* p);
