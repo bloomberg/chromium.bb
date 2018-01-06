@@ -80,7 +80,7 @@ void ThreadDebugger::IdleFinished(v8::Isolate* isolate) {
     debugger->GetV8Inspector()->idleFinished();
 }
 
-void ThreadDebugger::AsyncTaskScheduled(const String& operation_name,
+void ThreadDebugger::AsyncTaskScheduled(const StringView& operation_name,
                                         void* task,
                                         bool recurring) {
   DCHECK_EQ(reinterpret_cast<intptr_t>(task) % 2, 0);

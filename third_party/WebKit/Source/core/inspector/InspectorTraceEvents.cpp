@@ -1314,9 +1314,9 @@ std::unique_ptr<TracedValue> InspectorHitTestEvent::EndData(
   return value;
 }
 
-std::unique_ptr<TracedValue> InspectorAsyncTask::Data(const String& name) {
+std::unique_ptr<TracedValue> InspectorAsyncTask::Data(const StringView& name) {
   std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("name", name);
+  value->SetString("name", name.ToString());
   return value;
 }
 

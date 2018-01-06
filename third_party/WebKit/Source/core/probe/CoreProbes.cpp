@@ -87,7 +87,7 @@ AsyncTask::~AsyncTask() {
 }
 
 void AsyncTaskScheduled(ExecutionContext* context,
-                        const String& name,
+                        const StringView& name,
                         void* task) {
   TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask",
                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
@@ -104,7 +104,11 @@ void AsyncTaskScheduledBreakable(ExecutionContext* context,
 }
 
 void AsyncTaskCanceled(ExecutionContext* context, void* task) {
-  if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
+  AsyncTaskCanceled(ToIsolate(context), task);
+}
+
+void AsyncTaskCanceled(v8::Isolate* isolate, void* task) {
+  if (ThreadDebugger* debugger = ThreadDebugger::From(isolate))
     debugger->AsyncTaskCanceled(AsyncId(task));
   TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
                         TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));

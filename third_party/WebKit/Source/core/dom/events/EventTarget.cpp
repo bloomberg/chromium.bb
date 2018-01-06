@@ -103,6 +103,11 @@ bool IsScrollBlockingEvent(const AtomicString& event_type) {
          event_type == EventTypeNames::wheel;
 }
 
+bool IsInstrumentedForAsyncStack(const AtomicString& event_type) {
+  return event_type == EventTypeNames::load ||
+         event_type == EventTypeNames::error;
+}
+
 double BlockedEventsWarningThreshold(ExecutionContext* context,
                                      const Event* event) {
   if (!event->cancelable())
@@ -367,6 +372,10 @@ bool EventTarget::AddEventListenerInternal(
       event_type, listener, options, &registered_listener);
   if (added) {
     AddedEventListener(event_type, registered_listener);
+    if (V8AbstractEventListener::Cast(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
+      probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
+    }
   }
   return added;
 }
@@ -499,6 +508,10 @@ bool EventTarget::SetAttributeEventListener(const AtomicString& event_type,
     return false;
   }
   if (registered_listener) {
+    if (V8AbstractEventListener::Cast(listener) &&
+        IsInstrumentedForAsyncStack(event_type)) {
+      probe::AsyncTaskScheduled(GetExecutionContext(), event_type, listener);
+    }
     registered_listener->SetCallback(listener);
     return true;
   }
@@ -786,6 +799,9 @@ bool EventTarget::FireEventListeners(Event* event,
     bool passive_forced = registered_listener.PassiveForcedForDocumentTarget();
 
     probe::UserCallback probe(context, nullptr, event->type(), false, this);
+    probe::AsyncTask async_task(
+        context, V8AbstractEventListener::Cast(listener), "event",
+        IsInstrumentedForAsyncStack(event->type()));
 
     // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
     // event listeners, even though that violates some versions of the DOM spec.

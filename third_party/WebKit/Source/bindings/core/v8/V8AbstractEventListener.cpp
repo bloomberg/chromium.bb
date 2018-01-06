@@ -40,6 +40,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
 #include "core/events/BeforeUnloadEvent.h"
+#include "core/probe/CoreProbes.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/InstanceCounters.h"
 #include "platform/bindings/V8PrivateProperty.h"
@@ -241,6 +242,7 @@ bool V8AbstractEventListener::BelongsToTheCurrentWorld(
 void V8AbstractEventListener::ClearListenerObject() {
   if (!HasExistingListenerObject())
     return;
+  probe::AsyncTaskCanceled(GetIsolate(), this);
   listener_.Clear();
   if (worker_or_worklet_global_scope_) {
     worker_or_worklet_global_scope_->DeregisterEventListener(this);

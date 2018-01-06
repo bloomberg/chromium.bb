@@ -91,12 +91,13 @@ inline CoreProbeSink* ToCoreProbeSink(EventTarget* event_target) {
 }
 
 CORE_EXPORT void AsyncTaskScheduled(ExecutionContext*,
-                                    const String& name,
+                                    const StringView& name,
                                     void*);
 CORE_EXPORT void AsyncTaskScheduledBreakable(ExecutionContext*,
                                              const char* name,
                                              void*);
 CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, void*);
+CORE_EXPORT void AsyncTaskCanceled(v8::Isolate*, void*);
 CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,
                                             void*);
