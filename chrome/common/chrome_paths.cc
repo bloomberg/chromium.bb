@@ -569,6 +569,11 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = base::FilePath(kChromeOSComponentFlash);
       create_dir = false;
       break;
+    case chrome::DIR_CHILD_USERS_DEFAULT_APPS:
+      if (!PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("child_users"));
+      break;
 #endif  // defined(OS_CHROMEOS)
 
     default:
