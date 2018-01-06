@@ -1,2 +1,5 @@
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage
+# WPT-NOTIFY: true
+bsittler@chromium.org
+pwnall@chromium.org
