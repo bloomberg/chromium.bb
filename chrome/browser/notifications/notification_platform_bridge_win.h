@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
@@ -41,6 +42,15 @@ class NotificationPlatformBridgeWin : public NotificationPlatformBridge {
   friend class NotificationPlatformBridgeWinImpl;
   friend class NotificationPlatformBridgeWinTest;
   FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinTest, EncodeDecode);
+  FRIEND_TEST_ALL_PREFIXES(NotificationPlatformBridgeWinUITest, HandleEvent);
+
+  // Simulates a click/dismiss event. Only for use in testing.
+  // Note: Ownership of |notification| and |args| is retained by the caller.
+  void ForwardHandleEventForTesting(
+      NotificationCommon::Operation operation,
+      ABI::Windows::UI::Notifications::IToastNotification* notification,
+      ABI::Windows::UI::Notifications::IToastActivatedEventArgs* args,
+      const base::Optional<bool>& by_user);
 
   // Takes an |encoded| string as input and decodes it, returning the values in
   // the out parameters. Returns true if successful, but false otherwise.

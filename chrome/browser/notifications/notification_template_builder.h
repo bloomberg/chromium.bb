@@ -34,6 +34,9 @@ extern const char kNotificationToastElement[];
 // The Notification Launch attribute name in the toast XML.
 extern const char kNotificationLaunchAttribute[];
 
+// The Notification button-index attribute.
+extern const char kNotificationButtonIndex[];
+
 // Builds XML-based notification templates for displaying a given notification
 // in the Windows Action Center.
 //
