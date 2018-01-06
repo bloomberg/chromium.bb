@@ -2156,7 +2156,7 @@ crbug.com/591099 external/wpt/WebCryptoAPI/generateKey/successes.worker.html [ T
 crbug.com/591099 external/wpt/WebCryptoAPI/import_export/rsa_importKey.worker.html [ Timeout ]
 crbug.com/709227 external/wpt/WebCryptoAPI/import_export/symmetric_importKey.worker.html [ Failure ]
 crbug.com/714962 external/wpt/WebCryptoAPI/import_export/test_rsa_importKey.https.html [ Pass Timeout ]
-crbug.com/591099 external/wpt/XMLHttpRequest/send-authentication-prompt-2-manual.htm [ Failure ]
+crbug.com/591099 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
 crbug.com/591099 external/wpt/acid/acid3/test.html [ Crash ]
 crbug.com/591099 external/wpt/compat/webkit-text-fill-color-property-005.html [ Failure ]
 crbug.com/591099 external/wpt/credential-management/federatedcredential-framed-get.sub.https.html [ Pass ]
