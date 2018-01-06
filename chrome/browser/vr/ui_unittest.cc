@@ -9,6 +9,7 @@
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
+#include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/target_property.h"
@@ -38,11 +40,22 @@ const std::set<UiElementName> kFloorCeilingBackgroundElements = {
     kBackgroundFront, kBackgroundLeft,   kBackgroundBack, kBackgroundRight,
     kBackgroundTop,   kBackgroundBottom, kCeiling,        kFloor};
 const std::set<UiElementName> kElementsVisibleInBrowsing = {
-    kBackgroundFront,   kBackgroundLeft, kBackgroundBack,
-    kBackgroundRight,   kBackgroundTop,  kBackgroundBottom,
-    kCeiling,           kFloor,          kContentQuad,
-    kBackplane,         kUrlBar,         kUnderDevelopmentNotice,
-    kController,        kReticle,        kLaser,
+    kBackgroundFront,
+    kBackgroundLeft,
+    kBackgroundBack,
+    kBackgroundRight,
+    kBackgroundTop,
+    kBackgroundBottom,
+    kCeiling,
+    kFloor,
+    kContentQuad,
+    kContentQuadShadow,
+    kBackplane,
+    kUrlBar,
+    kUnderDevelopmentNotice,
+    kController,
+    kReticle,
+    kLaser,
     kVoiceSearchButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
@@ -425,6 +438,7 @@ TEST_F(UiTest, AppButtonClickForAutopresentation) {
 TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   auto visible_in_fullscreen = kFloorCeilingBackgroundElements;
   visible_in_fullscreen.insert(kContentQuad);
+  visible_in_fullscreen.insert(kContentQuadShadow);
   visible_in_fullscreen.insert(kBackplane);
   visible_in_fullscreen.insert(kCloseButton);
   visible_in_fullscreen.insert(kExclusiveScreenToast);
@@ -1081,8 +1095,9 @@ TEST_F(UiTest, TextureBackgroundAfterAssetLoaded) {
   EXPECT_FALSE(IsVisible(k2dBrowsingDefaultBackground));
   EXPECT_FALSE(IsVisible(kContentQuad));
 
-  auto bitmap = base::MakeUnique<SkBitmap>();
-  ui_->SetBackgroundImage(std::move(bitmap));
+  auto assets = base::MakeUnique<Assets>();
+  ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
+                      base::Version("1.0"));
 
   EXPECT_TRUE(IsVisible(k2dBrowsingTexturedBackground));
   EXPECT_TRUE(IsVisible(kContentQuad));

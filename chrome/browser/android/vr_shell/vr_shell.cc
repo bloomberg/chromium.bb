@@ -33,7 +33,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/vr/assets.h"
+#include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -163,9 +163,10 @@ VrShell::VrShell(JNIEnv* env,
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !ui_initial_state.in_web_vr);
   }
 
-  vr::Assets::GetInstance()->SetOnComponentReadyCallback(base::BindRepeating(
-      &VrShell::OnAssetsComponentReady, weak_ptr_factory_.GetWeakPtr()));
-  vr::Assets::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kVr);
+  vr::AssetsLoader::GetInstance()->SetOnComponentReadyCallback(
+      base::BindRepeating(&VrShell::OnAssetsComponentReady,
+                          weak_ptr_factory_.GetWeakPtr()));
+  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kVr);
 
   UpdateVrAssetsComponent(g_browser_process->component_updater());
 }
@@ -426,10 +427,11 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   ui_->SetWebVrMode(enabled, show_toast);
 
   if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
-    vr::Assets::GetInstance()->GetMetricsHelper()->OnEnter(
+    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
         vr::Mode::kVrBrowsing);
   } else {
-    vr::Assets::GetInstance()->GetMetricsHelper()->OnEnter(vr::Mode::kWebVr);
+    vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnEnter(
+        vr::Mode::kWebVr);
   }
 }
 
@@ -966,7 +968,13 @@ void VrShell::OnVoiceResults(const base::string16& result) {
 
 void VrShell::OnAssetsLoaded(vr::AssetsLoadStatus status,
                              const base::Version& component_version) {
-  vr::Assets::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
+  if (status == vr::AssetsLoadStatus::kSuccess) {
+    VLOG(1) << "Successfully loaded VR assets component";
+  } else {
+    VLOG(1) << "Failed to load VR assets component";
+  }
+
+  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnAssetsLoaded(
       status, component_version);
 }
 
@@ -1004,7 +1012,7 @@ jlong JNI_VrShellImpl_Init(JNIEnv* env,
   ui_initial_state.skips_redraw_when_not_dirty =
       base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalRendering);
   ui_initial_state.assets_available =
-      vr::Assets::GetInstance()->ComponentReady();
+      vr::AssetsLoader::GetInstance()->ComponentReady();
 
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),

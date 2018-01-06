@@ -59,6 +59,9 @@ class FakeUiElementRenderer : public UiElementRenderer {
                   float opacity,
                   float corner_radius) override;
 
+  void DrawStars(float t,
+                 const gfx::Transform& model_view_proj_matrix) override;
+
  private:
   float opacity_ = -1.f;
   float called_ = false;

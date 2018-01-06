@@ -141,6 +141,10 @@ void InitializeColorSchemes() {
   normal_scheme.snackbar_button_colors.background_hover = 0xDD2D2D2D;
   normal_scheme.snackbar_button_colors.background_down = 0xDD2D2D2D;
 
+  normal_scheme.normal_factor = 1.0f;
+  normal_scheme.incognito_factor = 0.0f;
+  normal_scheme.fullscreen_factor = 0.0f;
+
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();
   fullscreen_scheme.world_background = 0xFF000714;
@@ -167,6 +171,10 @@ void InitializeColorSchemes() {
       fullscreen_scheme.element_foreground;
   fullscreen_scheme.system_indicator_background =
       fullscreen_scheme.element_background;
+
+  fullscreen_scheme.normal_factor = 0.0f;
+  fullscreen_scheme.incognito_factor = 0.0f;
+  fullscreen_scheme.fullscreen_factor = 1.0f;
 
   g_incognito_scheme.Get() = normal_scheme;
   ColorScheme& incognito_scheme = g_incognito_scheme.Get();
@@ -237,6 +245,10 @@ void InitializeColorSchemes() {
       incognito_scheme.omnibox_background;
   incognito_scheme.suggestion_button_colors.background_hover = 0xFF656565;
   incognito_scheme.suggestion_button_colors.background_down = 0xFF656565;
+
+  incognito_scheme.normal_factor = 0.0f;
+  incognito_scheme.incognito_factor = 1.0f;
+  incognito_scheme.fullscreen_factor = 0.0f;
 
   initialized = true;
 }

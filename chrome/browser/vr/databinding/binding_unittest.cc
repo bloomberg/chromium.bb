@@ -29,7 +29,8 @@ TEST(Binding, BoundBool) {
   TestView b;
   b.value = false;
 
-  b.binding = VR_BIND_FIELD(bool, TestModel, &a, value, TestView, &b, value);
+  b.binding =
+      VR_BIND_FIELD(bool, TestModel, &a, model->value, TestView, &b, value);
 
   EXPECT_NE(a.value, b.value);
   b.binding->Update();

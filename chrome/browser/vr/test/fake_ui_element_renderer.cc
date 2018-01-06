@@ -79,4 +79,8 @@ void FakeUiElementRenderer::DrawShadow(
   // last moment before calling into the UiElementRenderer.
 }
 
+void FakeUiElementRenderer::DrawStars(
+    float t,
+    const gfx::Transform& model_view_proj_matrix) {}
+
 }  // namespace vr
