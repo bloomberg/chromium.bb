@@ -190,8 +190,8 @@ TEST(UiScene, InvisibleElementsDoNotCauseBindingDirtiness) {
   struct FakeModel {
     int foo = 1;
   } model;
-  element->AddBinding(VR_BIND(int, FakeModel, &model, model->foo, UiElement,
-                              element.get(), view->SetSize(1, value)));
+  element->AddBinding(VR_BIND(int, FakeModel, &model, foo, UiElement,
+                              element.get(), SetSize(1, value)));
   UiElement* element_ptr = element.get();
   scene.AddUiElement(kRoot, std::move(element));
   EXPECT_TRUE(scene.OnBeginFrame(MsToTicks(1), kStartHeadPose));

@@ -30,7 +30,6 @@ UiElementRenderer::UiElementRenderer(bool use_gl) {
   Init();
   BaseQuadRenderer::CreateBuffers();
   TexturedQuadRenderer::CreateBuffers();
-  Stars::Renderer::CreateBuffers();
 }
 
 UiElementRenderer::~UiElementRenderer() = default;
@@ -46,7 +45,6 @@ void UiElementRenderer::Init() {
   controller_renderer_ = base::MakeUnique<Controller::Renderer>();
   gradient_grid_renderer_ = base::MakeUnique<Grid::Renderer>();
   shadow_renderer_ = base::MakeUnique<Shadow::Renderer>();
-  stars_renderer_ = base::MakeUnique<Stars::Renderer>();
   background_renderer_ = base::MakeUnique<Background::Renderer>();
 }
 
@@ -139,29 +137,11 @@ void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,
                          y_padding, y_offset, color, opacity, corner_radius);
 }
 
-void UiElementRenderer::DrawStars(
-    float t,
-    const gfx::Transform& model_view_proj_matrix) {
-  FlushIfNecessary(stars_renderer_.get());
-  stars_renderer_->Draw(t, model_view_proj_matrix);
-}
-
 void UiElementRenderer::DrawBackground(
     const gfx::Transform& model_view_proj_matrix,
-    int texture_data_handle,
-    int normal_gradient_texture_data_handle,
-    int incognito_gradient_texture_data_handle,
-    int fullscreen_gradient_texture_data_handle,
-    float normal_factor,
-    float incognito_factor,
-    float fullscreen_factor) {
+    int texture_data_handle) {
   FlushIfNecessary(background_renderer_.get());
-  background_renderer_->Draw(model_view_proj_matrix, texture_data_handle,
-                             normal_gradient_texture_data_handle,
-                             incognito_gradient_texture_data_handle,
-                             fullscreen_gradient_texture_data_handle,
-                             normal_factor, incognito_factor,
-                             fullscreen_factor);
+  background_renderer_->Draw(model_view_proj_matrix, texture_data_handle);
 }
 
 void UiElementRenderer::Flush() {
