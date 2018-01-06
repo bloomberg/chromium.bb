@@ -108,6 +108,7 @@ if (is_mac || is_ios || is_linux) {
   enable_frame_pointers = current_cpu != "arm"
 } else if (is_android) {
   enable_frame_pointers =
+      enable_profiling ||
       # Ensure that stacks from arm64 crash dumps are usable (crbug.com/391706).
       current_cpu == "arm64" ||
       # For x86 Android, unwind tables are huge without frame pointers
