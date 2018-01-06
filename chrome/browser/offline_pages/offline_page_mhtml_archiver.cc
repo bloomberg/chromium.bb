@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/offline_pages/core/archive_validator.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -44,7 +45,7 @@ void ComputeDigestOnFileThread(
     const base::Callback<void(const std::string&)>& callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&OfflinePageUtils::ComputeDigest, file_path), callback);
+      base::Bind(&ArchiveValidator::ComputeDigest, file_path), callback);
 }
 }  // namespace
 

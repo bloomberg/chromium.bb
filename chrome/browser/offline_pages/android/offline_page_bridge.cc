@@ -29,6 +29,7 @@
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue_results.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -809,7 +810,7 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&OfflinePageUtils::ValidateFile, offline_page->file_path,
+      base::Bind(&ArchiveValidator::ValidateFile, offline_page->file_path,
                  offline_page->file_size, offline_page->digest),
       base::Bind(&ValidateFileCallback, j_callback_obj, offline_page->url,
                  offline_page->file_path));
