@@ -108,7 +108,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   bool OnGlThread() const;
 
   void OnAssetsLoaded(vr::AssetsLoadStatus status,
-                      std::unique_ptr<SkBitmap> background_image,
+                      std::unique_ptr<vr::Assets> assets,
                       const base::Version& component_version);
 
   // Created on GL thread.

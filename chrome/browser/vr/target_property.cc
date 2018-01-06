@@ -8,7 +8,7 @@
 
 namespace vr {
 
-static_assert(TargetProperty::LAST_TARGET_PROPERTY <
+static_assert(TargetProperty::NUM_TARGET_PROPERTIES - 1 <
                   cc::kMaxTargetPropertyIndex,
               "The number of vr target properties has exceeded the capacity of"
               " TargetProperties");

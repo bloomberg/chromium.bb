@@ -133,4 +133,9 @@ void SetColorUniform(GLuint handle, SkColor c) {
               SkColorGetB(c) / 255.0, SkColorGetA(c) / 255.0);
 }
 
+void SetOpaqueColorUniform(GLuint handle, SkColor c) {
+  glUniform3f(handle, SkColorGetR(c) / 255.0, SkColorGetG(c) / 255.0,
+              SkColorGetB(c) / 255.0);
+}
+
 }  // namespace vr

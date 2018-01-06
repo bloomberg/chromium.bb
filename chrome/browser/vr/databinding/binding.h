@@ -104,28 +104,26 @@ class Binding : public BindingBase {
 //     VR_BIND_FUNC(int, MyModel, &m, source, MyView, &v, SetAwesomeness);
 //
 #ifndef NDEBUG
-#define VR_BIND(T, M, m, Get, V, v, Set)                              \
-  base::MakeUnique<Binding<T>>(                                       \
-      base::BindRepeating([](M* model) { return model->Get; },        \
-                          base::Unretained(m)),                       \
-      #Get,                                                           \
-      base::BindRepeating([](V* view, const T& value) { view->Set; }, \
-                          base::Unretained(v)),                       \
+#define VR_BIND(T, M, m, Get, V, v, Set)                                      \
+  base::MakeUnique<Binding<T>>(                                               \
+      base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
+      #Get,                                                                   \
+      base::BindRepeating([](V* view, const T& value) { Set; },               \
+                          base::Unretained(v)),                               \
       #Set)
 #else
-#define VR_BIND(T, M, m, Get, V, v, Set)                              \
-  base::MakeUnique<Binding<T>>(                                       \
-      base::BindRepeating([](M* model) { return model->Get; },        \
-                          base::Unretained(m)),                       \
-      base::BindRepeating([](V* view, const T& value) { view->Set; }, \
+#define VR_BIND(T, M, m, Get, V, v, Set)                                      \
+  base::MakeUnique<Binding<T>>(                                               \
+      base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
+      base::BindRepeating([](V* view, const T& value) { Set; },               \
                           base::Unretained(v)))
 #endif
 
 #define VR_BIND_FUNC(T, M, m, Get, V, v, f) \
-  VR_BIND(T, M, m, Get, V, v, f(value))
+  VR_BIND(T, M, m, Get, V, v, view->f(value))
 
 #define VR_BIND_FIELD(T, M, m, Get, V, v, f) \
-  VR_BIND(T, M, m, Get, V, v, f = value)
+  VR_BIND(T, M, m, Get, V, v, view->f = value)
 
 #define VR_BIND_LAMBDA(...) base::BindRepeating(__VA_ARGS__), #__VA_ARGS__
 
