@@ -16,10 +16,8 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/nqe/network_quality_estimator.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -33,8 +31,6 @@ WarmupURLFetcher::WarmupURLFetcher(
       is_fetch_in_flight_(false),
       callback_(callback) {
   DCHECK(url_request_context_getter_);
-  DCHECK(url_request_context_getter_->GetURLRequestContext()
-             ->network_quality_estimator());
 }
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
@@ -131,8 +127,6 @@ void WarmupURLFetcher::GetWarmupURLWithQueryParam(
 
 void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(source, fetcher_.get());
-  DCHECK(is_fetch_in_flight_);
-
   is_fetch_in_flight_ = false;
   UMA_HISTOGRAM_BOOLEAN(
       "DataReductionProxy.WarmupURL.FetchSuccessful",
