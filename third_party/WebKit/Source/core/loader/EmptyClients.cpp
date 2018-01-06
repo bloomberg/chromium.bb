@@ -49,9 +49,6 @@ void FillWithEmptyClients(Page::PageClients& page_clients) {
   DEFINE_STATIC_LOCAL(ChromeClient, dummy_chrome_client,
                       (EmptyChromeClient::Create()));
   page_clients.chrome_client = &dummy_chrome_client;
-
-  DEFINE_STATIC_LOCAL(EmptyEditorClient, dummy_editor_client, ());
-  page_clients.editor_client = &dummy_editor_client;
 }
 
 class EmptyPopupMenu : public PopupMenu {

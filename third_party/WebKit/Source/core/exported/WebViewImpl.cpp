@@ -332,7 +332,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          mojom::PageVisibilityState visibility_state)
     : client_(client),
       chrome_client_(ChromeClientImpl::Create(this)),
-      editor_client_(*this),
       should_auto_resize_(false),
       zoom_level_(0),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
@@ -374,7 +373,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
-  page_clients.editor_client = &editor_client_;
 
   page_ = Page::CreateOrdinary(page_clients);
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);

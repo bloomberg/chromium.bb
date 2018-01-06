@@ -73,7 +73,6 @@
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"

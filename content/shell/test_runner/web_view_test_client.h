@@ -30,7 +30,6 @@ class WebViewTestClient : public blink::WebViewClient {
   ~WebViewTestClient() override;
 
   // WebViewClient overrides needed by WebViewTestProxy.
-  void DidChangeContents() override;
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,
                              const blink::WebWindowFeatures& features,

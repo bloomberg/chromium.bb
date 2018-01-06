@@ -46,7 +46,6 @@ namespace blink {
 
 class CompositeEditCommand;
 class DragData;
-class EditorClient;
 class EditorInternalCommand;
 class FrameSelection;
 class LocalFrame;
@@ -76,8 +75,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
  public:
   static Editor* Create(LocalFrame&);
   ~Editor();
-
-  EditorClient& Client() const;
 
   CompositeEditCommand* LastEditCommand() { return last_edit_command_.Get(); }
 

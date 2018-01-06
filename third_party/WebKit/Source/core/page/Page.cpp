@@ -128,7 +128,6 @@ Page::Page(PageClients& page_clients)
           OverscrollController::Create(GetVisualViewport(), GetChromeClient())),
       main_frame_(nullptr),
       plugin_data_(nullptr),
-      editor_client_(page_clients.editor_client),
       use_counter_(page_clients.chrome_client &&
                            page_clients.chrome_client->IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
@@ -141,8 +140,6 @@ Page::Page(PageClients& page_clients)
       page_lifecycle_state_(PageLifecycleState::kUnknown),
       is_cursor_visible_(true),
       subframe_count_(0) {
-  DCHECK(editor_client_);
-
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
@@ -739,9 +736,7 @@ ScrollbarTheme& Page::GetScrollbarTheme() const {
   return ScrollbarTheme::DeprecatedStaticGetTheme();
 }
 
-Page::PageClients::PageClients()
-    : chrome_client(nullptr),
-      editor_client(nullptr) {}
+Page::PageClients::PageClients() : chrome_client(nullptr) {}
 
 Page::PageClients::~PageClients() {}
 
