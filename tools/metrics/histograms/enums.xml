@@ -44411,6 +44411,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="-2081867874" label="/usbDevices"/>
   <int value="-2019732586" label="/printing"/>
   <int value="-1930329480" label="/signOut"/>
+  <int value="-1924511305" label="/help"/>
   <int value="-1915654604" label="/sound"/>
   <int value="-1836863301" label="/ads"/>
   <int value="-1820397898" label="/manageAccessibility"/>
