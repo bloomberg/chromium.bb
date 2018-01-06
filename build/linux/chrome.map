@@ -48,10 +48,6 @@ global:
   pvalloc;
   realloc;
   __realloc_hook;
-  __start_google_malloc;
-  __start_malloc_hook;
-  __stop_google_malloc;
-  __stop_malloc_hook;
   valloc;
 
   # Various flavors of operator new and operator delete.
