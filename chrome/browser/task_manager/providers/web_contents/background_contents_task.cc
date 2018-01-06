@@ -18,24 +18,11 @@
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace task_manager {
 
 namespace {
-
-// The default icon for the background webcontents task.
-gfx::ImageSkia* g_default_icon = nullptr;
-
-gfx::ImageSkia* GetDefaultIcon() {
-  if (!g_default_icon && ui::ResourceBundle::HasSharedInstance()) {
-    g_default_icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PLUGINS_FAVICON);
-  }
-
-  return g_default_icon;
-}
 
 base::string16 AdjustAndLocalizeTitle(const base::string16& title,
                                       const std::string& url_spec) {
@@ -55,12 +42,14 @@ base::string16 AdjustAndLocalizeTitle(const base::string16& title,
 
 }  // namespace
 
+gfx::ImageSkia* BackgroundContentsTask::s_icon_ = nullptr;
+
 BackgroundContentsTask::BackgroundContentsTask(
     const base::string16& title,
     BackgroundContents* background_contents)
     : RendererTask(
           AdjustAndLocalizeTitle(title, background_contents->GetURL().spec()),
-          GetDefaultIcon(),
+          FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
           background_contents->web_contents()) {}
 
 BackgroundContentsTask::~BackgroundContentsTask() {

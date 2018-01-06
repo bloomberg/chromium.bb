@@ -23,6 +23,8 @@ class BackgroundContentsTask : public RendererTask {
   void UpdateFavicon() override;
 
  private:
+  static gfx::ImageSkia* s_icon_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundContentsTask);
 };
 

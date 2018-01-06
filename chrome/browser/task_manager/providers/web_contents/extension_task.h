@@ -52,6 +52,8 @@ class ExtensionTask
   // for the first time if any.
   void LoadExtensionIcon(const extensions::Extension* extension);
 
+  static gfx::ImageSkia* s_icon_;
+
   // The favicon of the extension represented by this task.
   std::unique_ptr<extensions::IconImage> extension_icon_;
 

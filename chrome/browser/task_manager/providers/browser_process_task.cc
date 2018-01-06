@@ -9,34 +9,17 @@
 #include "chrome/grit/theme_resources.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace task_manager {
 
-namespace {
-
-gfx::ImageSkia* g_default_icon = nullptr;
-
-gfx::ImageSkia* GetDefaultIcon() {
-  if (!g_default_icon && ui::ResourceBundle::HasSharedInstance()) {
-    g_default_icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PRODUCT_LOGO_16);
-    if (g_default_icon)
-      g_default_icon->MakeThreadSafe();
-  }
-
-  return g_default_icon;
-}
-
-}  // namespace
+gfx::ImageSkia* BrowserProcessTask::s_icon_ = nullptr;
 
 BrowserProcessTask::BrowserProcessTask()
     : Task(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT),
            "Browser Process",
-           GetDefaultIcon(),
+           FetchIcon(IDR_PRODUCT_LOGO_16, &s_icon_),
            base::GetCurrentProcessHandle()),
-       used_sqlite_memory_(-1) {
-}
+      used_sqlite_memory_(-1) {}
 
 BrowserProcessTask::~BrowserProcessTask() {
 }
