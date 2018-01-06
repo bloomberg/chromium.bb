@@ -5,14 +5,15 @@
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_INFOBAR_DELEGATE_H_
 
-#include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
+
+class InfoBarService;
 
 class NaClInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a NaCl infobar and delegate and adds the infobar to the infobar
-  // service corresponding to the given render process and view IDs.
-  static void Create(int render_process_id, int render_view_id);
+  // Creates a NaCl infobar and delegate and adds the infobar to
+  // |infobar_service|.
+  static void Create(InfoBarService* infobar_service);
 
  private:
   NaClInfoBarDelegate();

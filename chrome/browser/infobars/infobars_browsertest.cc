@@ -32,6 +32,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/core/infobar.h"
+#include "components/nacl/common/features.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
@@ -52,6 +53,10 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_manager.h"
+#endif
+
+#if BUILDFLAG(ENABLE_NACL)
+#include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #endif
 
 class InfoBarsTest : public InProcessBrowserTest {
@@ -191,6 +196,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
   using IBD = infobars::InfoBarDelegate;
   const base::flat_map<std::string, IBD::InfoBarIdentifier> kIdentifiers = {
       {"app_banner", IBD::APP_BANNER_INFOBAR_DELEGATE},
+      {"nacl", IBD::NACL_INFOBAR_DELEGATE},
       {"reload_plugin", IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE},
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
@@ -210,6 +216,13 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::APP_BANNER_INFOBAR_DELEGATE:
       banners::AppBannerInfoBarDelegateDesktop::Create(
           GetWebContents(), nullptr, nullptr, content::Manifest());
+      break;
+    case IBD::NACL_INFOBAR_DELEGATE:
+#if BUILDFLAG(ENABLE_NACL)
+      NaClInfoBarDelegate::Create(GetInfoBarService());
+#else
+      ADD_FAILURE() << "This infobar is not supported when NaCl is disabled.";
+#endif
       break;
     case IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE:
       ReloadPluginInfoBarDelegate::Create(
@@ -307,6 +320,12 @@ void InfoBarUiTest::UpdateInfoBars() {
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_app_banner) {
   ShowAndVerifyUi();
 }
+
+#if BUILDFLAG(ENABLE_NACL)
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_nacl) {
+  ShowAndVerifyUi();
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_reload_plugin) {
   ShowAndVerifyUi();
