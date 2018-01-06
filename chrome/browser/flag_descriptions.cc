@@ -2440,10 +2440,6 @@ const char kAshEnableUnifiedDesktopDescription[] =
     "Enable unified desktop mode which allows a window to span multiple "
     "displays.";
 
-const char kBootAnimationName[] = "Boot animation";
-const char kBootAnimationDescription[] =
-    "Wallpaper boot animation (except for OOBE case).";
-
 const char kBulkPrintersName[] = "Bulk Printers Policy";
 const char kBulkPrintersDescription[] = "Enables the new bulk printers policy";
 

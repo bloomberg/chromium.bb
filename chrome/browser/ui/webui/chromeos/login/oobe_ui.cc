@@ -525,15 +525,6 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("buildType", "chromium");
 #endif
 
-  // If we're not doing boot animation then WebUI should trigger
-  // wallpaper load on boot.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBootAnimation)) {
-    localized_strings->SetString("bootIntoWallpaper", "on");
-  } else {
-    localized_strings->SetString("bootIntoWallpaper", "off");
-  }
-
   bool keyboard_driven_oobe =
       system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
   localized_strings->SetString("highlightStrength",

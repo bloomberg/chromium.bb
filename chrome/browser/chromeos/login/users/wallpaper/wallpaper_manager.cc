@@ -423,8 +423,6 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
   if (user_manager::UserManager::Get()->IsUserLoggedIn())
     return;
 
-  bool disable_boot_animation =
-      GetCommandLine()->HasSwitch(switches::kDisableBootAnimation);
   bool show_users = true;
   bool result = CrosSettings::Get()->GetBoolean(
       kAccountsPrefShowUserNamesOnSignIn, &show_users);
@@ -440,13 +438,9 @@ void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
     return;
   }
 
-  if (!disable_boot_animation) {
-    int index = public_session_user_index != -1 ? public_session_user_index : 0;
-    // Normal boot, load user wallpaper.
-    // If normal boot animation is disabled wallpaper would be set
-    // asynchronously once user pods are loaded.
-    ShowUserWallpaper(users[index]->GetAccountId());
-  }
+  // Normal boot, load user wallpaper.
+  int index = public_session_user_index != -1 ? public_session_user_index : 0;
+  ShowUserWallpaper(users[index]->GetAccountId());
 }
 
 bool WallpaperManager::GetUserWallpaperInfo(const AccountId& account_id,

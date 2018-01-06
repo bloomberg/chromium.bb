@@ -771,7 +771,6 @@ void UserManagerScreenHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON));
   localized_strings->SetString("passwordFieldAccessibleName",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME));
-  localized_strings->SetString("bootIntoWallpaper", "off");
 
   // For AccountPickerScreen, the remove user warning overlay.
   localized_strings->SetString("removeUserWarningButtonTitle",

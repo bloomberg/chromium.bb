@@ -1475,11 +1475,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnableUnifiedDesktopName,
      flag_descriptions::kAshEnableUnifiedDesktopDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableUnifiedDesktop)},
-    {
-        "disable-boot-animation", flag_descriptions::kBootAnimationName,
-        flag_descriptions::kBootAnimationDescription, kOsCrOSOwnerOnly,
-        SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
-    },
     {"disable-easy-unlock-bluetooth-low-energy-detection",
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryName,
      flag_descriptions::kEasyUnlockBluetoothLowEnergyDiscoveryDescription,

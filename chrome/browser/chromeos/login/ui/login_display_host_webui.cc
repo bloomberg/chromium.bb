@@ -452,22 +452,12 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
       new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
                           KeepAliveRestartOption::DISABLED));
 
-  bool is_registered = StartupUtils::IsDeviceRegistered();
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   // Mash always runs login screen with zero delay
   if (ash_util::IsRunningInMash())
     zero_delay_enabled = true;
-  bool disable_boot_animation =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBootAnimation);
 
-  waiting_for_wallpaper_load_ =
-      !zero_delay_enabled && (!is_registered || !disable_boot_animation);
-
-  // For slower hardware we have boot animation disabled so
-  // we'll be initializing WebUI hidden, waiting for user pods to load and then
-  // show WebUI at once.
-  waiting_for_user_pods_ = !zero_delay_enabled && !waiting_for_wallpaper_load_;
+  waiting_for_wallpaper_load_ = !zero_delay_enabled;
 
   // Initializing hidden is not supported in Mash
   if (!ash_util::IsRunningInMash()) {
@@ -500,8 +490,7 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
 
   // When we wait for WebUI to be initialized we wait for one of
   // these notifications.
-  if ((waiting_for_user_pods_ || waiting_for_wallpaper_load_) &&
-      initialize_webui_hidden_) {
+  if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
@@ -510,7 +499,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI(const gfx::Rect& wallpaper_bounds)
   VLOG(1) << "Login WebUI >> "
           << "zero_delay: " << zero_delay_enabled
           << " wait_for_wp_load_: " << waiting_for_wallpaper_load_
-          << " wait_for_pods_: " << waiting_for_user_pods_
           << " init_webui_hidden_: " << initialize_webui_hidden_;
 
   media::SoundsManager* manager = media::SoundsManager::Get();
@@ -840,10 +828,7 @@ void LoginDisplayHostWebUI::Observe(
   if (chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE == type ||
       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN == type) {
     VLOG(1) << "Login WebUI >> WEBUI_VISIBLE";
-    if (waiting_for_user_pods_ && initialize_webui_hidden_) {
-      waiting_for_user_pods_ = false;
-      ShowWebUI();
-    } else if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
+    if (waiting_for_wallpaper_load_ && initialize_webui_hidden_) {
       // Reduce time till login UI is shown - show it as soon as possible.
       waiting_for_wallpaper_load_ = false;
       ShowWebUI();
@@ -1145,8 +1130,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   // If WebUI is initialized in hidden state, show it only if we're no
   // longer waiting for wallpaper animation/user images loading. Otherwise,
   // always show it.
-  if (!initialize_webui_hidden_ ||
-      (!waiting_for_wallpaper_load_ && !waiting_for_user_pods_)) {
+  if (!initialize_webui_hidden_ || !waiting_for_wallpaper_load_) {
     VLOG(1) << "Login WebUI >> show login wnd on create";
     login_window_->Show();
   } else {

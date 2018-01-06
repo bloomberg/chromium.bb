@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
@@ -64,17 +63,6 @@ class WallpaperDelegate : public ash::WallpaperDelegate {
   bool ShouldShowInitialAnimation() override {
     if (IsNormalWallpaperChange() || boot_animation_finished_)
       return false;
-
-    // It is a first boot case now. If kDisableBootAnimation flag
-    // is passed, it only disables any transition after OOBE.
-    bool is_registered = StartupUtils::IsDeviceRegistered();
-    const base::CommandLine* command_line =
-        base::CommandLine::ForCurrentProcess();
-    bool disable_boot_animation =
-        command_line->HasSwitch(switches::kDisableBootAnimation);
-    if (is_registered && disable_boot_animation)
-      return false;
-
     return true;
   }
 

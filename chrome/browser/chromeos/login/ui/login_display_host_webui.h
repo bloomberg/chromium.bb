@@ -246,10 +246,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHost,
   // wallpaper load animation to finish.
   bool waiting_for_wallpaper_load_;
 
-  // True if WebUI is initialized in hidden state and we're waiting for user
-  // pods to load.
-  bool waiting_for_user_pods_;
-
   // How many times renderer has crashed.
   int crash_count_ = 0;
 
