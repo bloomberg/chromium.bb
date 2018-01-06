@@ -15,6 +15,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -142,12 +143,20 @@ void HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection direction) {
   if (!window)
     return;
 
-  // When |window_list| is not empty, |window| can only be the first one of the
-  // fresh built list if it is in the list.
-  MruWindowTracker::WindowList window_list =
-      Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
-  if (window_list.empty() || window_list.front() != window)
-    return;
+  // If |window| is transient window, move its first non-transient
+  // transient-parent window instead. Otherwise, it should be the first one in
+  // window cycle list.
+  if (::wm::GetTransientParent(window)) {
+    while (::wm::GetTransientParent(window))
+      window = ::wm::GetTransientParent(window);
+    if (window == window->GetRootWindow())
+      return;
+  } else {
+    MruWindowTracker::WindowList window_list =
+        Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
+    if (window_list.empty() || window_list.front() != window)
+      return;
+  }
 
   display::Display origin_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
