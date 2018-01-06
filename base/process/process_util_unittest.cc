@@ -1024,21 +1024,19 @@ MULTIPROCESS_TEST_MAIN(process_util_test_die_immediately) {
   return kSuccess;
 }
 
-#if !defined(OS_ANDROID)
-class ReadFromPipeDelegate : public LaunchOptions::PreExecDelegate {
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+class WriteToPipeDelegate : public LaunchOptions::PreExecDelegate {
  public:
-  explicit ReadFromPipeDelegate(int fd) : fd_(fd) {}
-  ~ReadFromPipeDelegate() override = default;
+  explicit WriteToPipeDelegate(int fd) : fd_(fd) {}
+  ~WriteToPipeDelegate() override = default;
   void RunAsyncSafe() override {
-    char c;
-    RAW_CHECK(HANDLE_EINTR(read(fd_, &c, 1)) == 1);
+    RAW_CHECK(HANDLE_EINTR(write(fd_, &kPipeValue, 1)) == 1);
     RAW_CHECK(IGNORE_EINTR(close(fd_)) == 0);
-    RAW_CHECK(c == kPipeValue);
   }
 
  private:
   int fd_;
-  DISALLOW_COPY_AND_ASSIGN(ReadFromPipeDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WriteToPipeDelegate);
 };
 
 TEST_F(ProcessUtilTest, PreExecHook) {
@@ -1048,21 +1046,23 @@ TEST_F(ProcessUtilTest, PreExecHook) {
   ScopedFD read_fd(pipe_fds[0]);
   ScopedFD write_fd(pipe_fds[1]);
 
-  ReadFromPipeDelegate read_from_pipe_delegate(read_fd.get());
+  WriteToPipeDelegate write_to_pipe_delegate(write_fd.get());
   LaunchOptions options;
-  options.fds_to_remap.emplace_back(read_fd.get(), read_fd.get());
-  options.pre_exec_delegate = &read_from_pipe_delegate;
+  options.fds_to_remap.emplace_back(write_fd.get(), write_fd.get());
+  options.pre_exec_delegate = &write_to_pipe_delegate;
   Process process(SpawnChildWithOptions("SimpleChildProcess", options));
   ASSERT_TRUE(process.IsValid());
 
-  read_fd.reset();
-  ASSERT_EQ(1, HANDLE_EINTR(write(write_fd.get(), &kPipeValue, 1)));
+  write_fd.reset();
+  char c;
+  ASSERT_EQ(1, HANDLE_EINTR(read(read_fd.get(), &c, 1)));
+  EXPECT_EQ(c, kPipeValue);
 
   int exit_code = 42;
   EXPECT_TRUE(process.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #endif  // defined(OS_POSIX)
 
