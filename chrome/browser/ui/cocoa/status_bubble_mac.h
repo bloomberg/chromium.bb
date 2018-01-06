@@ -23,7 +23,6 @@ class Point;
 }
 
 class StatusBubbleMacTest;
-@class StatusBubbleWindow;
 
 class StatusBubbleMac : public StatusBubble {
  public:
@@ -154,7 +153,7 @@ class StatusBubbleMac : public StatusBubble {
   id delegate_;  // WEAK
 
   // The window we own.
-  StatusBubbleWindow* window_;
+  NSWindow* window_;
 
   // The status text we want to display when there are no URLs to display.
   NSString* status_text_;

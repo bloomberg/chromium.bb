@@ -133,9 +133,7 @@ class StatusBubbleMacTest : public CocoaTest {
     BubbleView* bubbleView = [bubble_->window_ contentView];
     return [bubbleView content];
   }
-  StatusBubbleWindow* GetWindow() {
-    return bubble_->window_;
-  }
+  NSWindow* GetWindow() { return bubble_->window_; }
   NSWindow* parent() {
     return bubble_->parent_;
   }
@@ -534,7 +532,7 @@ TEST_F(StatusBubbleMacTest, MovingWindowUpdatesPosition) {
 
   // Show the bubble and make sure it has the same origin as |window|.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
-  StatusBubbleWindow* child = GetWindow();
+  NSWindow* child = GetWindow();
   EXPECT_NSEQ([window frame].origin, [child frame].origin);
 
   // Hide the bubble, move the window, and show it again.
@@ -554,7 +552,7 @@ TEST_F(StatusBubbleMacTest, StatuBubbleRespectsBaseFrameLimits) {
 
   // Show the bubble and make sure it has the same origin as |window|.
   bubble_->SetStatus(UTF8ToUTF16("Showing"));
-  StatusBubbleWindow* child = GetWindow();
+  NSWindow* child = GetWindow();
   EXPECT_NSEQ([window frame].origin, [child frame].origin);
 
   // Hide the bubble, change base frame offset, and show it again.
