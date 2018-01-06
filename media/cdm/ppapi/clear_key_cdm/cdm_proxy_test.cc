@@ -4,8 +4,13 @@
 
 #include "media/cdm/ppapi/clear_key_cdm/cdm_proxy_test.h"
 
+#include <stdint.h>
+#include <algorithm>
+
 #include "base/logging.h"
+#include "base/macros.h"
 #include "media/cdm/ppapi/clear_key_cdm/cdm_host_proxy.h"
+#include "media/cdm/ppapi/clear_key_cdm/cdm_proxy_common.h"
 
 namespace media {
 
@@ -34,22 +39,46 @@ void CdmProxyTest::OnInitialized(Status status,
                                  Protocol protocol,
                                  uint32_t crypto_session_id) {
   DVLOG(1) << __func__ << ": status = " << status;
-  // Ignore the |status| for now.
-  // TODO(xhwang): Add a test CdmProxy and test all APIs.
-  OnTestComplete(true);
+
+  if (status != Status::kOk ||
+      crypto_session_id != kClearKeyCdmProxyCryptoSessionId) {
+    OnTestComplete(false);
+    return;
+  }
+
+  cdm_proxy_->Process(cdm::CdmProxy::kIntelNegotiateCryptoSessionKeyExchange,
+                      crypto_session_id, kClearKeyCdmProxyInputData.data(),
+                      kClearKeyCdmProxyInputData.size(), 0);
 }
+
 void CdmProxyTest::OnProcessed(Status status,
                                const uint8_t* output_data,
                                uint32_t output_data_size) {
   DVLOG(1) << __func__ << ": status = " << status;
-  NOTREACHED();
+
+  if (status != Status::kOk ||
+      !std::equal(output_data, output_data + output_data_size,
+                  kClearKeyCdmProxyOutputData.begin())) {
+    OnTestComplete(false);
+    return;
+  }
+
+  cdm_proxy_->CreateMediaCryptoSession(kClearKeyCdmProxyInputData.data(),
+                                       kClearKeyCdmProxyInputData.size());
 }
 
 void CdmProxyTest::OnMediaCryptoSessionCreated(Status status,
                                                uint32_t crypto_session_id,
                                                uint64_t output_data) {
   DVLOG(1) << __func__ << ": status = " << status;
-  NOTREACHED();
+
+  if (status != Status::kOk ||
+      crypto_session_id != kClearKeyCdmProxyMediaCryptoSessionId) {
+    OnTestComplete(false);
+    return;
+  }
+
+  OnTestComplete(true);
 }
 
 void CdmProxyTest::NotifyHardwareReset() {

@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
+#include "media/cdm/cdm_proxy.h"
 #include "media/mojo/services/mojo_media_client.h"
 
 namespace media {
@@ -23,11 +24,14 @@ class GpuMojoMediaClient : public MojoMediaClient {
  public:
   // |media_gpu_channel_manager| must only be used on |gpu_task_runner|, which
   // is expected to be the GPU main thread task runner.
+  // |cdm_proxy_factory_cb| can be used to create a CdmProxy. May be null if
+  // CdmProxy is not supported on the platform.
   GpuMojoMediaClient(
       const gpu::GpuPreferences& gpu_preferences,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
-      AndroidOverlayMojoFactoryCB android_overlay_factory_cb);
+      AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
+      CdmProxyFactoryCB cdm_proxy_factory_cb);
   ~GpuMojoMediaClient() final;
 
   // MojoMediaClient implementation.
@@ -42,7 +46,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* interface_provider) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::unique_ptr<CdmProxy> CreateCdmProxy() final;
+  std::unique_ptr<CdmProxy> CreateCdmProxy(const std::string& cdm_guid) final;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
  private:
@@ -50,6 +54,7 @@ class GpuMojoMediaClient : public MojoMediaClient {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
+  CdmProxyFactoryCB cdm_proxy_factory_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMojoMediaClient);
 };

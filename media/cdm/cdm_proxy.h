@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -114,6 +115,9 @@ class MEDIA_EXPORT CdmProxy {
  private:
   DISALLOW_COPY_AND_ASSIGN(CdmProxy);
 };
+
+using CdmProxyFactoryCB = base::RepeatingCallback<std::unique_ptr<CdmProxy>(
+    const std::string& cdm_guid)>;
 
 }  // namespace media
 

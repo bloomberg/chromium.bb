@@ -35,10 +35,6 @@
 #include "media/gpu/windows/d3d11_video_decoder.h"
 #endif  // BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#include "media/cdm/cdm_proxy.h"
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 namespace media {
 
 namespace {
@@ -89,11 +85,13 @@ GpuMojoMediaClient::GpuMojoMediaClient(
     const gpu::GpuPreferences& gpu_preferences,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
-    AndroidOverlayMojoFactoryCB android_overlay_factory_cb)
+    AndroidOverlayMojoFactoryCB android_overlay_factory_cb,
+    CdmProxyFactoryCB cdm_proxy_factory_cb)
     : gpu_preferences_(gpu_preferences),
       gpu_task_runner_(std::move(gpu_task_runner)),
       media_gpu_channel_manager_(std::move(media_gpu_channel_manager)),
-      android_overlay_factory_cb_(std::move(android_overlay_factory_cb)) {}
+      android_overlay_factory_cb_(std::move(android_overlay_factory_cb)),
+      cdm_proxy_factory_cb_(std::move(cdm_proxy_factory_cb)) {}
 
 GpuMojoMediaClient::~GpuMojoMediaClient() = default;
 
@@ -148,8 +146,11 @@ std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
 }
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy() {
-  // TODO(rkuroiwa): Create the CdmProxy here.
+std::unique_ptr<CdmProxy> GpuMojoMediaClient::CreateCdmProxy(
+    const std::string& cdm_guid) {
+  if (cdm_proxy_factory_cb_)
+    return cdm_proxy_factory_cb_.Run(cdm_guid);
+
   return nullptr;
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

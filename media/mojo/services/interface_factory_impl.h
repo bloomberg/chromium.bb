@@ -39,7 +39,8 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
                       mojom::RendererRequest request) final;
   void CreateCdm(const std::string& key_system,
                  mojom::ContentDecryptionModuleRequest request) final;
-  void CreateCdmProxy(mojom::CdmProxyRequest request) final;
+  void CreateCdmProxy(const std::string& cdm_guid,
+                      mojom::CdmProxyRequest request) final;
 
  private:
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)

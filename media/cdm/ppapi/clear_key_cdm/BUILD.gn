@@ -32,6 +32,7 @@ shared_library("clear_key_cdm") {
   defines = [ "CDM_IMPLEMENTATION" ]
 
   deps = [
+    ":cdm_proxy_common",
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//media",  # For media::AudioTimestampHelper
@@ -54,4 +55,23 @@ shared_library("clear_key_cdm") {
   if (is_mac) {
     ldflags = [ "-Wl,-install_name,@loader_path/libclearkeycdm.dylib" ]
   }
+}
+
+source_set("clear_key_cdm_proxy") {
+  sources = [
+    "clear_key_cdm_proxy.cc",
+    "clear_key_cdm_proxy.h",
+  ]
+
+  deps = [
+    ":cdm_proxy_common",
+    "//base",
+    "//media",
+  ]
+}
+
+source_set("cdm_proxy_common") {
+  sources = [
+    "cdm_proxy_common.h",
+  ]
 }

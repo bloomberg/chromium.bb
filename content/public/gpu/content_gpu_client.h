@@ -5,8 +5,12 @@
 #ifndef CONTENT_PUBLIC_GPU_CONTENT_GPU_CLIENT_H_
 #define CONTENT_PUBLIC_GPU_CONTENT_GPU_CLIENT_H_
 
+#include <memory>
+#include <string>
+
 #include "base/metrics/field_trial.h"
 #include "content/public/common/content_client.h"
+#include "media/media_features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace gpu {
@@ -14,6 +18,10 @@ struct GpuFeatureInfo;
 struct GPUInfo;
 struct GpuPreferences;
 class SyncPointManager;
+}
+
+namespace media {
+class CdmProxy;
 }
 
 namespace content {
@@ -42,6 +50,13 @@ class CONTENT_EXPORT ContentGpuClient {
   // Allows client to re-use GPUInfo and GpuFeatureInfo if already computed.
   virtual const gpu::GPUInfo* GetGPUInfo();
   virtual const gpu::GpuFeatureInfo* GetGpuFeatureInfo();
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  // Creates a media::CdmProxy for the type of Content Decryption Module (CDM)
+  // identified by |cdm_guid|.
+  virtual std::unique_ptr<media::CdmProxy> CreateCdmProxy(
+      const std::string& cdm_guid);
+#endif
 };
 
 }  // namespace content

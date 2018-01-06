@@ -48,7 +48,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
                       media::mojom::RendererRequest request) final;
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;
-  void CreateCdmProxy(media::mojom::CdmProxyRequest request) final;
+  void CreateCdmProxy(const std::string& cdm_guid,
+                      media::mojom::CdmProxyRequest request) final;
 
  private:
   using InterfaceFactoryPtr = media::mojom::InterfaceFactoryPtr;
@@ -57,6 +58,7 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // mojo media (or CDM) service running remotely. |cdm_file_system_id| is
   // used to register the appropriate CdmStorage interface needed by the CDM.
   service_manager::mojom::InterfaceProviderPtr GetFrameServices(
+      const std::string& cdm_guid,
       const std::string& cdm_file_system_id);
 
   // Gets the MediaService |interface_factory_ptr_|. Returns null if unexpected
@@ -92,7 +94,8 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Creates a CdmProxy for the CDM in CdmService. Not implemented in
   // CreateCdmProxy() because we don't want any client to be able to create
   // a CdmProxy.
-  void CreateCdmProxyInternal(media::mojom::CdmProxyRequest request);
+  void CreateCdmProxyInternal(const std::string& cdm_guid,
+                              media::mojom::CdmProxyRequest request);
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
