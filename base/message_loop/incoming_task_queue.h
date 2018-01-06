@@ -77,6 +77,9 @@ class BASE_EXPORT IncomingTaskQueue
                           TimeDelta delay,
                           Nestable nestable);
 
+  // Returns true if the message loop is "idle". Provided for testing.
+  bool IsIdleForTesting();
+
   // Disconnects |this| from the parent message loop.
   void WillDestroyCurrentMessageLoop();
 
@@ -106,9 +109,8 @@ class BASE_EXPORT IncomingTaskQueue
   // maintaining three queue queues to process tasks:
   //
   // TriageQueue
-  // The first queue to receive all tasks for the processing sequence (when
-  // reloading from the thread-safe |incoming_queue_|). Tasks are generally
-  // either dispatched immediately or sent to the queues below.
+  // The first queue to receive all tasks for the processing sequence. Tasks are
+  // generally either dispatched immediately or sent to the queues below.
   //
   // DelayedQueue
   // The queue for holding tasks that should be run later and sorted by expected
@@ -240,7 +242,7 @@ class BASE_EXPORT IncomingTaskQueue
 
   // An incoming queue of tasks that are acquired under a mutex for processing
   // on this instance's thread. These tasks have not yet been been pushed to
-  // |triage_tasks_|.
+  // |message_loop_|.
   TaskQueue incoming_queue_;
 
   // True if new tasks should be accepted.
