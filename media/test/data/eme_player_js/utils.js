@@ -192,10 +192,6 @@ Utils.installTitleEventHandler = function(element, event) {
   }, false);
 };
 
-Utils.isRenewalMessage = function(message) {
-  return (message.messageType == 'license-renewal');
-};
-
 Utils.resetTitleChange = function() {
   this.titleChanged = false;
   document.title = '';

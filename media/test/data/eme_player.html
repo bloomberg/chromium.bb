@@ -75,13 +75,6 @@
       if (video.currentTime < 1)
         return;
 
-      // Renewal message may be fired around the start of playback; check for it
-      // after a delay to avoid timing issues.
-      if (testConfig.keySystem == EXTERNAL_CLEARKEY_RENEWAL &&
-          !video.receivedRenewalMessage) {
-        Utils.failTest('license-renewal message not received.');
-      }
-
       Utils.timeLog('waiting for video to end.');
       video.removeEventListener('ended', Utils.failTest);
       Utils.installTitleEventHandler(video, 'ended');

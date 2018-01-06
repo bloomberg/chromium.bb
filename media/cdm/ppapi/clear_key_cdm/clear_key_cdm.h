@@ -141,6 +141,8 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   void StartCdmProxyTest();
   void OnCdmProxyTestComplete(bool success);
 
+  int host_interface_version_ = 0;
+
   std::unique_ptr<CdmHostProxy> cdm_host_proxy_;
   scoped_refptr<ContentDecryptionModule> cdm_;
 
@@ -155,7 +157,9 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
 
   // Indicates whether a renewal timer has been set to prevent multiple timers
   // from running.
-  bool renewal_timer_set_ = false;
+  bool has_set_renewal_timer_ = false;
+
+  bool has_sent_individualization_request_ = false;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   std::unique_ptr<FFmpegCdmAudioDecoder> audio_decoder_;

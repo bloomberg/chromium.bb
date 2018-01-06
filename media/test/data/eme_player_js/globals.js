@@ -39,7 +39,8 @@ var UNIT_TEST_RESULT_HEADER = 'UNIT_TEST_RESULT';
 var WIDEVINE_KEYSYSTEM = 'com.widevine.alpha';
 var CLEARKEY = 'org.w3.clearkey';
 var EXTERNAL_CLEARKEY = 'org.chromium.externalclearkey';
-var EXTERNAL_CLEARKEY_RENEWAL = 'org.chromium.externalclearkey.renewal';
+var MESSAGE_TYPE_TEST_KEYSYSTEM =
+    'org.chromium.externalclearkey.messagetypetest';
 var FILE_IO_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.fileiotest';
 var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.outputprotectiontest';
