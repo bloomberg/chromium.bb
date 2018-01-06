@@ -61,14 +61,14 @@ static void* prevent_overcommit(int fill, size_t size, void* p) {
     return p;
 }
 
-void* sk_malloc_throw(size_t size) {
-    return prevent_overcommit(0x42, size, throw_on_failure(size, malloc(size)));
+static void* malloc_throw(size_t size) {
+  return prevent_overcommit(0x42, size, throw_on_failure(size, malloc(size)));
 }
 
-static void* sk_malloc_nothrow(size_t size) {
-    // TODO(b.kelemen): we should always use UncheckedMalloc but currently it
-    // doesn't work as intended everywhere.
-    void* result;
+static void* malloc_nothrow(size_t size) {
+  // TODO(b.kelemen): we should always use UncheckedMalloc but currently it
+  // doesn't work as intended everywhere.
+  void* result;
 #if  defined(OS_IOS)
     result = malloc(size);
 #else
@@ -81,21 +81,14 @@ static void* sk_malloc_nothrow(size_t size) {
     return result;
 }
 
-void* sk_malloc_flags(size_t size, unsigned flags) {
-    if (flags & SK_MALLOC_THROW) {
-        return sk_malloc_throw(size);
-    }
-    return sk_malloc_nothrow(size);
+static void* calloc_throw(size_t size) {
+  return prevent_overcommit(0, size, throw_on_failure(size, calloc(size, 1)));
 }
 
-void* sk_calloc_throw(size_t size) {
-    return prevent_overcommit(0, size, throw_on_failure(size, calloc(size, 1)));
-}
-
-void* sk_calloc(size_t size) {
-    // TODO(b.kelemen): we should always use UncheckedCalloc but currently it
-    // doesn't work as intended everywhere.
-    void* result;
+static void* calloc_nothrow(size_t size) {
+  // TODO(b.kelemen): we should always use UncheckedCalloc but currently it
+  // doesn't work as intended everywhere.
+  void* result;
 #if  defined(OS_IOS)
     result = calloc(1, size);
 #else
@@ -106,4 +99,20 @@ void* sk_calloc(size_t size) {
         prevent_overcommit(0, size, result);
     }
     return result;
+}
+
+void* sk_malloc_flags(size_t size, unsigned flags) {
+  if (flags & SK_MALLOC_ZERO_INITIALIZE) {
+    if (flags & SK_MALLOC_THROW) {
+      return calloc_throw(size);
+    } else {
+      return calloc_nothrow(size);
+    }
+  } else {
+    if (flags & SK_MALLOC_THROW) {
+      return malloc_throw(size);
+    } else {
+      return malloc_nothrow(size);
+    }
+  }
 }
