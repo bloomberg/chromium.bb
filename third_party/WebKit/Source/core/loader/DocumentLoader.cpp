@@ -775,16 +775,15 @@ void DocumentLoader::DetachFromFrame() {
   // It never makes sense to have a document loader that is detached from its
   // frame have any loads active, so go ahead and kill all the loads.
   fetcher_->StopFetching();
-
   if (frame_ && !SentDidFinishLoad())
     LoadFailed(ResourceError::CancelledError(Url()));
+  fetcher_->ClearContext();
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
   if (!frame_)
     return;
 
-  fetcher_->ClearContext();
   application_cache_host_->DetachFromDocumentLoader();
   application_cache_host_.Clear();
   service_worker_network_provider_ = nullptr;
