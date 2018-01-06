@@ -5,17 +5,27 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_WIRED_DISPLAY_WIRED_DISPLAY_MEDIA_ROUTE_PROVIDER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_WIRED_DISPLAY_WIRED_DISPLAY_MEDIA_ROUTE_PROVIDER_H_
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 
 class Profile;
 
 namespace media_router {
+
+class WiredDisplayPresentationReceiver;
 
 // A MediaRouteProvider class that provides wired displays as media sinks.
 // A display can be used as a sink if it is secondary and does not mirror a
@@ -100,6 +110,20 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   virtual display::Display GetPrimaryDisplay() const;
 
  private:
+  struct Presentation {
+   public:
+    Presentation(const MediaRoute& route,
+                 std::unique_ptr<WiredDisplayPresentationReceiver> receiver);
+    Presentation(Presentation&& other);
+    ~Presentation();
+
+    MediaRoute route;
+    std::unique_ptr<WiredDisplayPresentationReceiver> receiver;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Presentation);
+  };
+
   // Sends the current list of routes to each query in |route_queries_|.
   void NotifyRouteObservers() const;
 
@@ -108,6 +132,26 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
   // Notifies |media_router_| of the current sink availability.
   void ReportSinkAvailability(const std::vector<MediaSinkInternal>& sinks);
+
+  // Removes the presentation from |presentations_| and notifies route
+  // observers.
+  void RemovePresentationById(const std::string& presentation_id);
+
+  // Updates the description for the route associated with |presentation_id|,
+  // and notifies route observers if the description changed.
+  void UpdateRouteDescription(const std::string& presentation_id,
+                              const std::string& title);
+
+  Presentation CreatePresentation(const std::string& presentation_id,
+                                  const display::Display& display,
+                                  const MediaRoute& media_route);
+
+  // Terminates all presentation receivers on |display|.
+  void TerminatePresentationsOnDisplay(const display::Display& display);
+
+  // Returns a display associated with |sink_id|, or a nullopt if not found.
+  base::Optional<display::Display> GetDisplayBySinkId(
+      const std::string& sink_id) const;
 
   // Returns a list of available sinks. A display can be a sink if it is
   // secondary and does not mirror a primary display.
@@ -122,8 +166,12 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   // Mojo pointer to the Media Router.
   mojom::MediaRouterPtr media_router_;
 
-  // Active routes managed by this provider.
-  base::flat_map<MediaRoute::Id, MediaRoute> routes_;
+  // Presentation profiles are created based on this original profile. This
+  // profile is not owned by |this|.
+  Profile* profile_;
+
+  // Map from presentation IDs to active presentations managed by this provider.
+  std::map<std::string, Presentation> presentations_;
 
   // A set of MediaSource IDs associated with queries for MediaRoute updates.
   base::flat_set<std::string> route_queries_;
@@ -133,6 +181,8 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
 
   // Used for recording UMA metrics for the number of sinks available.
   WiredDisplayDeviceCountMetrics device_count_metrics_;
+
+  DISALLOW_COPY_AND_ASSIGN(WiredDisplayMediaRouteProvider);
 };
 
 }  // namespace media_router

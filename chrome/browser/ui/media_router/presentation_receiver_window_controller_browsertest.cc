@@ -45,6 +45,10 @@ constexpr char kPresentationId[] = "test_id";
 const base::FilePath::StringPieceType kResourcePath =
     FILE_PATH_LITERAL("media/router/");
 
+base::RepeatingCallback<void(const std::string&)> GetNoopTitleChangeCallback() {
+  return base::BindRepeating([](const std::string& title) {});
+}
+
 base::FilePath GetResourceFile(base::FilePath::StringPieceType relative_path) {
   base::FilePath base_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &base_dir))
@@ -183,7 +187,8 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       PresentationReceiverWindowController::CreateFromOriginalProfile(
           browser()->profile(), gfx::Rect(100, 100),
           base::BindOnce(&ReceiverWindowDestroyer::OnTerminate,
-                         base::Unretained(&destroyer)));
+                         base::Unretained(&destroyer)),
+          GetNoopTitleChangeCallback());
   receiver_window->Start(kPresentationId, GURL("about:blank"));
   base::RunLoop().RunUntilIdle();
 
@@ -220,7 +225,8 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       PresentationReceiverWindowController::CreateFromOriginalProfile(
           browser()->profile(), target_display.bounds(),
           base::BindOnce(&ReceiverWindowDestroyer::OnTerminate,
-                         base::Unretained(&destroyer)));
+                         base::Unretained(&destroyer)),
+          GetNoopTitleChangeCallback());
   receiver_window->Start(kPresentationId, GURL("about:blank"));
   ASSERT_TRUE(content::WaitForLoadStop(receiver_window->web_contents()));
 
@@ -249,7 +255,8 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       PresentationReceiverWindowController::CreateFromOriginalProfile(
           browser()->profile(), gfx::Rect(100, 100),
           base::BindOnce(&ReceiverWindowDestroyer::OnTerminate,
-                         base::Unretained(&destroyer)));
+                         base::Unretained(&destroyer)),
+          GetNoopTitleChangeCallback());
   receiver_window->Start(kPresentationId, presentation_url);
   ASSERT_TRUE(content::WaitForLoadStop(receiver_window->web_contents()));
 
@@ -276,7 +283,8 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       PresentationReceiverWindowController::CreateFromOriginalProfile(
           browser()->profile(), gfx::Rect(100, 100),
           base::BindOnce(&ReceiverWindowDestroyer::OnTerminate,
-                         base::Unretained(&destroyer)));
+                         base::Unretained(&destroyer)),
+          GetNoopTitleChangeCallback());
   receiver_window->Start(kPresentationId, presentation_url);
 
   // Register controller with LocalPresentationManager using test-local
@@ -328,7 +336,8 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       PresentationReceiverWindowController::CreateFromOriginalProfile(
           browser()->profile(), gfx::Rect(100, 100),
           base::BindOnce(&ReceiverWindowDestroyer::OnTerminate,
-                         base::Unretained(&destroyer)));
+                         base::Unretained(&destroyer)),
+          GetNoopTitleChangeCallback());
   receiver_window->Start(kPresentationId, GURL("about:blank"));
   ASSERT_TRUE(content::WaitForLoadStop(receiver_window->web_contents()));
 

@@ -89,6 +89,9 @@ static_library("router") {
       "providers/extension/extension_media_route_provider_proxy.h",
       "providers/wired_display/wired_display_media_route_provider.cc",
       "providers/wired_display/wired_display_media_route_provider.h",
+      "providers/wired_display/wired_display_presentation_receiver.h",
+      "providers/wired_display/wired_display_presentation_receiver_factory.cc",
+      "providers/wired_display/wired_display_presentation_receiver_factory.h",
     ]
   }
 }
