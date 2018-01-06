@@ -27,7 +27,7 @@
  *            title: string,
  *            url: string}}
  */
-var HistoryEntry;
+let HistoryEntry;
 
 /**
  * The type of the history results info object. The definition is based on
@@ -36,7 +36,7 @@ var HistoryEntry;
  * @typedef {{finished: boolean,
  *            term: string}}
  */
-var HistoryQuery;
+let HistoryQuery;
 
 /**
  * The type of the foreign session tab object. This definition is based on
@@ -48,7 +48,7 @@ var HistoryQuery;
  *            type: string,
  *            url: string}}
  */
-var ForeignSessionTab;
+let ForeignSessionTab;
 
 /**
  * The type of the foreign session tab object. This definition is based on
@@ -58,7 +58,7 @@ var ForeignSessionTab;
  *            sessionId: number,
  *            tabs: Array<ForeignSessionTab>}}
  */
-var ForeignSessionWindow;
+let ForeignSessionWindow;
 
 /**
  * The type of the foreign session info object. This definition is based on
@@ -71,27 +71,27 @@ var ForeignSessionWindow;
  *            timestamp: number,
  *            windows: Array<ForeignSessionWindow>}}
  */
-var ForeignSession;
+let ForeignSession;
 
 /**
  * @typedef {{incremental: boolean,
  *            querying: boolean,
  *            searchTerm: string}}
  */
-var QueryState;
+let QueryState;
 
 /**
  * @typedef {{info: ?HistoryQuery,
  *            results: ?Array<!HistoryEntry>,
  *            sessionList: ?Array<!ForeignSession>}}
  */
-var QueryResult;
+let QueryResult;
 
 /**
  * @constructor
  * @extends {MouseEvent}
  */
-var DomRepeatClickEvent = function() {};
+const DomRepeatClickEvent = function() {};
 
 /** @type {Object} */
 DomRepeatClickEvent.prototype.model;

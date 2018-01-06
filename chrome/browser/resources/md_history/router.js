@@ -40,7 +40,7 @@ Polymer({
    * Write all relevant page state to the URL.
    */
   serializeUrl: function() {
-    var path = this.selectedPage;
+    let path = this.selectedPage;
 
     if (path == 'history')
       path = '';
@@ -62,9 +62,9 @@ Polymer({
   /** @private */
   parseUrl_: function() {
     this.parsing_ = true;
-    var changes = {};
-    var sections = this.path_.substr(1).split('/');
-    var page = sections[0] || 'history';
+    const changes = {};
+    const sections = this.path_.substr(1).split('/');
+    const page = sections[0] || 'history';
 
     changes.search = this.queryParams_.q || '';
 

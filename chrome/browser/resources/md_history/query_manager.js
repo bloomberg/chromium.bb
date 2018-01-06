@@ -41,13 +41,13 @@ Polymer({
     this.documentListeners_['change-query'] = this.onChangeQuery_.bind(this);
     this.documentListeners_['query-history'] = this.onQueryHistory_.bind(this);
 
-    for (var e in this.documentListeners_)
+    for (const e in this.documentListeners_)
       document.addEventListener(e, this.documentListeners_[e]);
   },
 
   /** @override */
   detached: function() {
-    for (var e in this.documentListeners_)
+    for (const e in this.documentListeners_)
       document.removeEventListener(e, this.documentListeners_[e]);
   },
 
@@ -56,7 +56,7 @@ Polymer({
    * @private
    */
   queryHistory_: function(incremental) {
-    var queryState = this.queryState;
+    const queryState = this.queryState;
 
     if (queryState.queryingDisabled)
       return;
@@ -79,8 +79,8 @@ Polymer({
    * @private
    */
   onChangeQuery_: function(e) {
-    var changes = /** @type {{search: ?string}} */ (e.detail);
-    var needsUpdate = false;
+    const changes = /** @type {{search: ?string}} */ (e.detail);
+    let needsUpdate = false;
 
     if (changes.search != null &&
         changes.search != this.queryState.searchTerm) {
