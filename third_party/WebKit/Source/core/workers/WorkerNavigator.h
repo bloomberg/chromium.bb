@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/NavigatorConcurrentHardware.h"
+#include "core/frame/NavigatorDeviceMemory.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/NavigatorOnLine.h"
 #include "platform/Supplementable.h"
@@ -40,6 +41,7 @@ namespace blink {
 class CORE_EXPORT WorkerNavigator final
     : public ScriptWrappable,
       public NavigatorConcurrentHardware,
+      public NavigatorDeviceMemory,
       public NavigatorID,
       public NavigatorOnLine,
       public Supplementable<WorkerNavigator> {

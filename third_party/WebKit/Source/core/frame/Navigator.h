@@ -23,6 +23,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/NavigatorConcurrentHardware.h"
+#include "core/frame/NavigatorDeviceMemory.h"
 #include "core/frame/NavigatorID.h"
 #include "core/frame/NavigatorLanguage.h"
 #include "core/frame/NavigatorOnLine.h"
@@ -37,6 +38,7 @@ class LocalFrame;
 
 class CORE_EXPORT Navigator final : public ScriptWrappable,
                                     public NavigatorConcurrentHardware,
+                                    public NavigatorDeviceMemory,
                                     public NavigatorID,
                                     public NavigatorLanguage,
                                     public NavigatorOnLine,
@@ -53,7 +55,6 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
 
   bool webdriver() const { return true; }
 
-  float deviceMemory() const;
   String productSub() const;
   String vendor() const;
   String vendorSub() const;
