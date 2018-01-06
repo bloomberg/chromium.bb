@@ -83,6 +83,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void LoadWallpaper(const AccountId& account_id);
   void SignOutUser();
   void CancelAddUser();
+  void LoginAsGuest();
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
   void FocusLockScreenApps(bool reverse);
 

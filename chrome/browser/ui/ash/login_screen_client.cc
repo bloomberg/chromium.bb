@@ -114,6 +114,11 @@ void LoginScreenClient::CancelAddUser() {
   chromeos::UserAddingScreen::Get()->Cancel();
 }
 
+void LoginScreenClient::LoginAsGuest() {
+  if (delegate_)
+    delegate_->HandleLoginAsGuest();
+}
+
 void LoginScreenClient::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
   RecordReauthReason(account_id,

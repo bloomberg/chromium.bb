@@ -303,6 +303,12 @@ TEST_F(LoginShelfViewTest, ClickCancelButton) {
   Click(LoginShelfView::kCancel);
 }
 
+TEST_F(LoginShelfViewTest, ClickBrowseAsGuestButton) {
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, LoginAsGuest());
+  Click(LoginShelfView::kBrowseAsGuest);
+}
+
 TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
   NotifySessionStateChanged(SessionState::LOCKED);
   EXPECT_TRUE(

@@ -238,6 +238,12 @@ void LoginScreenController::CancelAddUser() {
   login_screen_client_->CancelAddUser();
 }
 
+void LoginScreenController::LoginAsGuest() {
+  if (!login_screen_client_)
+    return;
+  login_screen_client_->LoginAsGuest();
+}
+
 void LoginScreenController::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
   if (!login_screen_client_)

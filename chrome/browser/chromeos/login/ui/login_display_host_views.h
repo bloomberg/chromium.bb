@@ -56,6 +56,7 @@ class LoginDisplayHostViews : public LoginDisplayHost,
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
+  void HandleLoginAsGuest() override;
 
   // AuthStatusConsumer:
   void OnAuthFailure(const AuthFailure& error) override;
