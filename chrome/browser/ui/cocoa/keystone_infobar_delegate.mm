@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -25,7 +24,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
@@ -33,54 +31,11 @@
 
 class SkBitmap;
 
-namespace {
-
 // KeystonePromotionInfoBarDelegate -------------------------------------------
 
-class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // If there's an active tab, creates a keystone promotion delegate and adds it
-  // to the InfoBarService associated with that tab.
-  static void Create();
-
- private:
-  explicit KeystonePromotionInfoBarDelegate(PrefService* prefs);
-  ~KeystonePromotionInfoBarDelegate() override;
-
-  // Sets this info bar to be able to expire.  Called a predetermined amount
-  // of time after this object is created.
-  void SetCanExpire() { can_expire_ = true; }
-
-  // ConfirmInfoBarDelegate
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-  bool Cancel() override;
-
-  // The prefs to use.
-  PrefService* prefs_;  // weak
-
-  // Whether the info bar should be dismissed on the next navigation.
-  bool can_expire_;
-
-  // Used to delay the expiration of the info bar.
-  base::WeakPtrFactory<KeystonePromotionInfoBarDelegate> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeystonePromotionInfoBarDelegate);
-};
-
 // static
-void KeystonePromotionInfoBarDelegate::Create() {
-  Browser* browser = chrome::GetLastActiveBrowser();
-  if (!browser)
-    return;
-  content::WebContents* webContents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!webContents)
-    return;
+void KeystonePromotionInfoBarDelegate::Create(
+    content::WebContents* webContents) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(webContents);
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
@@ -141,9 +96,6 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
   prefs_->SetBoolean(prefs::kShowUpdatePromotionInfoBar, false);
   return true;
 }
-
-}  // namespace
-
 
 // KeystonePromotionInfoBar ---------------------------------------------------
 
@@ -213,7 +165,13 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
 
   if (status != kAutoupdateRegisterFailed &&
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
-    KeystonePromotionInfoBarDelegate::Create();
+    Browser* browser = chrome::GetLastActiveBrowser();
+    if (browser) {
+      content::WebContents* webContents =
+          browser->tab_strip_model()->GetActiveWebContents();
+      if (webContents)
+        KeystonePromotionInfoBarDelegate::Create(webContents);
+    }
   }
 
   [self release];
