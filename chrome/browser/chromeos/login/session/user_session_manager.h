@@ -37,6 +37,10 @@ class PrefRegistrySimple;
 class Profile;
 class TokenHandleFetcher;
 
+namespace base {
+class CommandLine;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -114,6 +118,10 @@ class UserSessionManager
 
   // Registers session related preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Appends additional command switches to the given command line if
+  // SitePerProcess/IsolateOrigins policy is present.
+  static void MaybeAppendPolicySwitches(base::CommandLine* user_flags);
 
   // Invoked after the tmpfs is successfully mounted.
   // Asks session_manager to restart Chrome in Guest session mode.
