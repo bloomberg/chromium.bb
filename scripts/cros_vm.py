@@ -139,8 +139,6 @@ class VM(object):
 
   def _GetBuiltVMImagePath(self):
     """Get path of a locally built VM image."""
-    if not cros_build_lib.IsInsideChroot():
-      return None
     return os.path.join(constants.SOURCE_ROOT, 'src/build/images',
                         cros_build_lib.GetBoard(self.board),
                         'latest', constants.VM_IMAGE_BIN)
