@@ -1355,7 +1355,7 @@ public class ContextualSearchManager
     public void handleSuppressedTap() {
         if (mIsAccessibilityModeEnabled) return;
 
-        hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
+        hideContextualSearch(StateChangeReason.TAP_SUPPRESS);
     }
 
     @Override
@@ -1400,7 +1400,6 @@ public class ContextualSearchManager
         mQuickAnswersHeuristic = tapHeuristics.getQuickAnswersHeuristic();
         if (mSearchPanel != null) {
             mSearchPanel.getPanelMetrics().setResultsSeenExperiments(tapHeuristics);
-            mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
         }
     }
 
@@ -1498,11 +1497,10 @@ public class ContextualSearchManager
 
                 // Make sure we write to Ranker and reset at the end of every search, even if the
                 // panel was not showing because it was a suppressed tap.
+                mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
                 if (isSearchPanelShowing()) {
-                    mSearchPanel.getPanelMetrics().writeRankerLoggerOutcomesAndReset();
                     mSearchPanel.closePanel(reason, false);
                 } else {
-                    mTapSuppressionRankerLogger.writeLogAndReset();
                     if (mSelectionController.getSelectionType() == SelectionType.TAP) {
                         mSelectionController.clearSelection();
                     }
@@ -1560,6 +1558,7 @@ public class ContextualSearchManager
                 }
                 // Set up the next batch of Ranker logging.
                 mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
+                mSearchPanel.getPanelMetrics().setRankerLogger(mTapSuppressionRankerLogger);
                 mInternalStateController.notifyFinishedWorkOn(InternalState.TAP_GESTURE_COMMIT);
             }
 
