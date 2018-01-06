@@ -624,10 +624,9 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = std::make_unique<viz::Display>(
-      viz::ServerSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
-      renderer_settings_, compositor->frame_sink_id(),
-      std::move(display_output_surface), std::move(scheduler),
-      compositor->task_runner());
+      viz::ServerSharedBitmapManager::current(), renderer_settings_,
+      compositor->frame_sink_id(), std::move(display_output_surface),
+      std::move(scheduler), compositor->task_runner());
   data->display_client =
       std::make_unique<InProcessDisplayClient>(compositor->widget());
   GetFrameSinkManager()->RegisterBeginFrameSource(begin_frame_source,

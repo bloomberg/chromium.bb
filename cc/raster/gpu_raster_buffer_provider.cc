@@ -43,7 +43,7 @@ static void RasterizeSourceOOP(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    ResourceProvider::ScopedWriteLockRaster* resource_lock,
+    LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
     bool use_distance_field_text,
     int msaa_sample_count) {
   gpu::raster::RasterInterface* ri = context_provider->RasterInterface();
@@ -95,7 +95,7 @@ static void RasterizeSource(
     const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     viz::RasterContextProvider* context_provider,
-    ResourceProvider::ScopedWriteLockRaster* resource_lock,
+    LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
     bool use_distance_field_text,
     int msaa_sample_count) {
   ScopedGrContextAccess gr_context_access(context_provider);
@@ -275,7 +275,7 @@ void GpuRasterBufferProvider::Shutdown() {
 }
 
 void GpuRasterBufferProvider::PlaybackOnWorkerThread(
-    ResourceProvider::ScopedWriteLockRaster* resource_lock,
+    LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
     const gpu::SyncToken& sync_token,
     bool resource_has_previous_content,
     const RasterSource* raster_source,

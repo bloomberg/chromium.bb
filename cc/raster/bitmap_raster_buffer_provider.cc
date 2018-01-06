@@ -58,7 +58,7 @@ class BitmapRasterBufferImpl : public RasterBuffer {
   }
 
  private:
-  ResourceProvider::ScopedWriteLockSoftware lock_;
+  LayerTreeResourceProvider::ScopedWriteLockSoftware lock_;
   const Resource* resource_;
   bool resource_has_previous_content_;
 

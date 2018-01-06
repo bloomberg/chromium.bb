@@ -24,18 +24,20 @@ const unsigned int kDisplayInitialResourceId = 2;
 DisplayResourceProvider::DisplayResourceProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const viz::ResourceSettings& resource_settings)
     : ResourceProvider(compositor_context_provider,
                        shared_bitmap_manager,
-                       gpu_memory_buffer_manager,
                        false,
-                       resource_settings,
-                       kDisplayInitialResourceId) {}
+                       resource_settings),
+      next_id_(kDisplayInitialResourceId) {}
 
 DisplayResourceProvider::~DisplayResourceProvider() {
   while (!children_.empty())
     DestroyChildInternal(children_.begin(), FOR_SHUTDOWN);
+
+  GLES2Interface* gl = ContextGL();
+  if (gl)
+    gl->Finish();
 }
 
 #if defined(OS_ANDROID)

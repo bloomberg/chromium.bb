@@ -7967,7 +7967,7 @@ class BlendStateCheckLayer : public LayerImpl {
  public:
   BlendStateCheckLayer(LayerTreeImpl* tree_impl,
                        int id,
-                       ResourceProvider* resource_provider)
+                       LayerTreeResourceProvider* resource_provider)
       : LayerImpl(tree_impl, id),
         blend_(false),
         has_render_surface_(false),

@@ -30,10 +30,6 @@ class DisplayResourceProvider;
 class RendererSettings;
 }  // namespace cc
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace gfx {
 class Size;
 }
@@ -64,7 +60,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // The |current_task_runner| may be null if the Display is on a thread without
   // a MessageLoop.
   Display(SharedBitmapManager* bitmap_manager,
-          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
@@ -128,7 +123,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void OnContextLost() override;
 
   SharedBitmapManager* const bitmap_manager_;
-  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
   const RendererSettings settings_;
 
   DisplayClient* client_ = nullptr;

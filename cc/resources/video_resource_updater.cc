@@ -261,7 +261,8 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
     gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 
     gl->GenMailboxCHROMIUM(mailbox.name);
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_, resource_id);
+    LayerTreeResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                                      resource_id);
     gl->ProduceTextureDirectCHROMIUM(
         lock.GetTexture(),
         mailbox.name);
@@ -399,7 +400,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         if (!video_renderer_)
           video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
-        ResourceProvider::ScopedWriteLockSoftware lock(
+        LayerTreeResourceProvider::ScopedWriteLockSoftware lock(
             resource_provider_, plane_resource.resource_id());
         SkiaPaintCanvas canvas(lock.sk_bitmap());
         // This is software path, so canvas and video_frame are always backed
@@ -817,8 +818,8 @@ void VideoResourceUpdater::CopyHardwarePlane(
                                 no_plane_index);
   resource->add_ref();
 
-  ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                           resource->resource_id());
+  LayerTreeResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                                    resource->resource_id());
   DCHECK_EQ(
       resource_provider_->GetResourceTextureTarget(resource->resource_id()),
       (GLenum)GL_TEXTURE_2D);

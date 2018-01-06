@@ -22,7 +22,6 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   DisplayResourceProvider(
       viz::ContextProvider* compositor_context_provider,
       viz::SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const viz::ResourceSettings& resource_settings);
   ~DisplayResourceProvider() override;
 
@@ -209,6 +208,7 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   scoped_refptr<viz::ResourceFence> current_read_lock_fence_;
   ChildMap children_;
   base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
+  viz::ResourceId next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
 };
