@@ -7,7 +7,7 @@ PASS Request interface: existence and properties of interface prototype object's
 PASS Request interface: attribute method
 PASS Request interface: attribute url
 PASS Request interface: attribute headers
-FAIL Request interface: attribute destination assert_true: The prototype object must have a property "destination" expected true got false
+PASS Request interface: attribute destination
 PASS Request interface: attribute referrer
 PASS Request interface: attribute referrerPolicy
 PASS Request interface: attribute mode
@@ -28,7 +28,7 @@ PASS Stringification of new Request("")
 PASS Request interface: new Request("") must inherit property "method" with the proper type
 PASS Request interface: new Request("") must inherit property "url" with the proper type
 PASS Request interface: new Request("") must inherit property "headers" with the proper type
-FAIL Request interface: new Request("") must inherit property "destination" with the proper type assert_inherits: property "destination" not found in prototype chain
+PASS Request interface: new Request("") must inherit property "destination" with the proper type
 PASS Request interface: new Request("") must inherit property "referrer" with the proper type
 PASS Request interface: new Request("") must inherit property "referrerPolicy" with the proper type
 PASS Request interface: new Request("") must inherit property "mode" with the proper type

@@ -505,65 +505,44 @@ KURL Request::url() const {
   return request_->Url();
 }
 
-String Request::Context() const {
-  // "The context attribute's getter must return request's context"
+String Request::destination() const {
+  // "The destination attribute’s getter must return request’s destination."
   switch (request_->Context()) {
     case WebURLRequest::kRequestContextUnspecified:
+    case WebURLRequest::kRequestContextBeacon:
+    case WebURLRequest::kRequestContextDownload:
+    case WebURLRequest::kRequestContextEventSource:
+    case WebURLRequest::kRequestContextFetch:
+    case WebURLRequest::kRequestContextPing:
+    case WebURLRequest::kRequestContextXMLHttpRequest:
+    case WebURLRequest::kRequestContextSubresource:
       return "";
+    case WebURLRequest::kRequestContextCSPReport:
+      return "report";
     case WebURLRequest::kRequestContextAudio:
       return "audio";
-    case WebURLRequest::kRequestContextBeacon:
-      return "beacon";
-    case WebURLRequest::kRequestContextCSPReport:
-      return "cspreport";
-    case WebURLRequest::kRequestContextDownload:
-      return "download";
     case WebURLRequest::kRequestContextEmbed:
       return "embed";
-    case WebURLRequest::kRequestContextEventSource:
-      return "eventsource";
-    case WebURLRequest::kRequestContextFavicon:
-      return "favicon";
-    case WebURLRequest::kRequestContextFetch:
-      return "fetch";
     case WebURLRequest::kRequestContextFont:
       return "font";
-    case WebURLRequest::kRequestContextForm:
-      return "form";
     case WebURLRequest::kRequestContextFrame:
-      return "frame";
     case WebURLRequest::kRequestContextHyperlink:
-      return "hyperlink";
     case WebURLRequest::kRequestContextIframe:
-      return "iframe";
-    case WebURLRequest::kRequestContextImage:
-      return "image";
-    case WebURLRequest::kRequestContextImageSet:
-      return "imageset";
-    case WebURLRequest::kRequestContextImport:
-      return "import";
-    case WebURLRequest::kRequestContextInternal:
-      return "internal";
     case WebURLRequest::kRequestContextLocation:
-      return "location";
+    case WebURLRequest::kRequestContextForm:
+      return "document";
+    case WebURLRequest::kRequestContextImage:
+    case WebURLRequest::kRequestContextFavicon:
+    case WebURLRequest::kRequestContextImageSet:
+      return "image";
     case WebURLRequest::kRequestContextManifest:
       return "manifest";
     case WebURLRequest::kRequestContextObject:
       return "object";
-    case WebURLRequest::kRequestContextPing:
-      return "ping";
-    case WebURLRequest::kRequestContextPlugin:
-      return "plugin";
-    case WebURLRequest::kRequestContextPrefetch:
-      return "prefetch";
     case WebURLRequest::kRequestContextScript:
       return "script";
-    case WebURLRequest::kRequestContextServiceWorker:
-      return "serviceworker";
     case WebURLRequest::kRequestContextSharedWorker:
       return "sharedworker";
-    case WebURLRequest::kRequestContextSubresource:
-      return "subresource";
     case WebURLRequest::kRequestContextStyle:
       return "style";
     case WebURLRequest::kRequestContextTrack:
@@ -572,10 +551,14 @@ String Request::Context() const {
       return "video";
     case WebURLRequest::kRequestContextWorker:
       return "worker";
-    case WebURLRequest::kRequestContextXMLHttpRequest:
-      return "xmlhttprequest";
     case WebURLRequest::kRequestContextXSLT:
       return "xslt";
+    case WebURLRequest::kRequestContextImport:
+    case WebURLRequest::kRequestContextInternal:
+    case WebURLRequest::kRequestContextPlugin:
+    case WebURLRequest::kRequestContextPrefetch:
+    case WebURLRequest::kRequestContextServiceWorker:
+      return "unknown";
   }
   NOTREACHED();
   return "";

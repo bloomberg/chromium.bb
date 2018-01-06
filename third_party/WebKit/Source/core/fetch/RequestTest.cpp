@@ -85,7 +85,7 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   DCHECK(request);
   EXPECT_EQ(url, request->url());
   EXPECT_EQ(method, request->method());
-  EXPECT_EQ("audio", request->Context());
+  EXPECT_EQ("audio", request->destination());
   EXPECT_EQ(referrer, request->referrer());
   EXPECT_EQ("navigate", request->mode());
 

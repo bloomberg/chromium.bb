@@ -6,6 +6,8 @@
 
 typedef (Request or USVString) RequestInfo;
 
+enum RequestDestination { "", "audio", "audioworklet", "document", "embed", "font", "image", "manifest", "object", "paintworklet", "report",
+    "script", "sharedworker", "style",  "track", "video", "worker", "xslt" };
 enum RequestMode { "navigate", "same-origin", "no-cors", "cors" };
 enum RequestCredentials { "omit", "same-origin", "include" };
 enum RequestRedirect { "follow", "error", "manual" };
@@ -33,6 +35,7 @@ enum ReferrerPolicy {
     readonly attribute ByteString method;
     readonly attribute USVString url;
     [ImplementedAs=getHeaders, SameObject] readonly attribute Headers headers;
+    readonly attribute RequestDestination destination;
     readonly attribute DOMString referrer;
     [ImplementedAs=getReferrerPolicy] readonly attribute ReferrerPolicy referrerPolicy;
     readonly attribute RequestMode mode;

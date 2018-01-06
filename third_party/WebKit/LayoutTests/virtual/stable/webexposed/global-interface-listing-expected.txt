@@ -4485,6 +4485,7 @@ interface Request
     getter bodyUsed
     getter cache
     getter credentials
+    getter destination
     getter headers
     getter integrity
     getter method
