@@ -495,41 +495,51 @@ TEST_F(PaintCanvasVideoRendererTest, Video_Translate_Rotation_270) {
   EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(PaintCanvasVideoRendererTest, HighBits) {
-  // Copy cropped_frame into a highbit frame.
-  scoped_refptr<VideoFrame> frame(VideoFrame::CreateFrame(
-      PIXEL_FORMAT_YUV420P10, cropped_frame()->coded_size(),
-      cropped_frame()->visible_rect(), cropped_frame()->natural_size(),
-      cropped_frame()->timestamp()));
-  for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane; ++plane) {
-    int width = cropped_frame()->row_bytes(plane);
-    uint16_t* dst = reinterpret_cast<uint16_t*>(frame->data(plane));
-    uint8_t* src = cropped_frame()->data(plane);
-    for (int row = 0; row < cropped_frame()->rows(plane); row++) {
-      for (int col = 0; col < width; col++) {
-        dst[col] = src[col] << 2;
+TEST_F(PaintCanvasVideoRendererTest, HighBitDepth) {
+  struct params {
+    int bit_depth;
+    VideoPixelFormat format;
+  } kBitDepthAndFormats[] = {{9, PIXEL_FORMAT_YUV420P9},
+                             {10, PIXEL_FORMAT_YUV420P10},
+                             {12, PIXEL_FORMAT_YUV420P12}};
+  for (const auto param : kBitDepthAndFormats) {
+    // Copy cropped_frame into a highbit frame.
+    scoped_refptr<VideoFrame> frame(VideoFrame::CreateFrame(
+        param.format, cropped_frame()->coded_size(),
+        cropped_frame()->visible_rect(), cropped_frame()->natural_size(),
+        cropped_frame()->timestamp()));
+    for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
+         ++plane) {
+      int width = cropped_frame()->row_bytes(plane);
+      uint16_t* dst = reinterpret_cast<uint16_t*>(frame->data(plane));
+      uint8_t* src = cropped_frame()->data(plane);
+      for (int row = 0; row < cropped_frame()->rows(plane); row++) {
+        for (int col = 0; col < width; col++) {
+          dst[col] = src[col] << (param.bit_depth - 8);
+        }
+        src += cropped_frame()->stride(plane);
+        dst += frame->stride(plane) / 2;
       }
-      src += cropped_frame()->stride(plane);
-      dst += frame->stride(plane) / 2;
     }
-  }
 
-  Paint(frame, target_canvas(), kNone);
-  // Check the corners.
-  EXPECT_EQ(SK_ColorBLACK, bitmap()->getColor(0, 0));
-  EXPECT_EQ(SK_ColorRED, bitmap()->getColor(kWidth - 1, 0));
-  EXPECT_EQ(SK_ColorGREEN, bitmap()->getColor(0, kHeight - 1));
-  EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth - 1, kHeight - 1));
-  // Check the interior along the border between color regions.  Note that we're
-  // bilinearly upscaling, so we'll need to take care to pick sample points that
-  // are just outside the "zone of resampling".
-  EXPECT_EQ(SK_ColorBLACK,
-            bitmap()->getColor(kWidth * 1 / 8 - 1, kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorRED,
-            bitmap()->getColor(kWidth * 3 / 8, kHeight * 1 / 6 - 1));
-  EXPECT_EQ(SK_ColorGREEN,
-            bitmap()->getColor(kWidth * 1 / 8 - 1, kHeight * 3 / 6));
-  EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth * 3 / 8, kHeight * 3 / 6));
+    Paint(frame, target_canvas(), kNone);
+    // Check the corners.
+    EXPECT_EQ(SK_ColorBLACK, bitmap()->getColor(0, 0));
+    EXPECT_EQ(SK_ColorRED, bitmap()->getColor(kWidth - 1, 0));
+    EXPECT_EQ(SK_ColorGREEN, bitmap()->getColor(0, kHeight - 1));
+    EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth - 1, kHeight - 1));
+    // Check the interior along the border between color regions.  Note that
+    // we're bilinearly upscaling, so we'll need to take care to pick sample
+    // points that are just outside the "zone of resampling".
+    EXPECT_EQ(SK_ColorBLACK,
+              bitmap()->getColor(kWidth * 1 / 8 - 1, kHeight * 1 / 6 - 1));
+    EXPECT_EQ(SK_ColorRED,
+              bitmap()->getColor(kWidth * 3 / 8, kHeight * 1 / 6 - 1));
+    EXPECT_EQ(SK_ColorGREEN,
+              bitmap()->getColor(kWidth * 1 / 8 - 1, kHeight * 3 / 6));
+    EXPECT_EQ(SK_ColorBLUE,
+              bitmap()->getColor(kWidth * 3 / 8, kHeight * 3 / 6));
+  }
 }
 
 TEST_F(PaintCanvasVideoRendererTest, Y16) {

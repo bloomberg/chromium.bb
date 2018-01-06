@@ -39,6 +39,8 @@
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToARGB
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToARGB
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToARGB
+#define LIBYUV_I010_TO_ARGB libyuv::I010ToARGB
+#define LIBYUV_H010_TO_ARGB libyuv::H010ToARGB
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
@@ -47,6 +49,8 @@
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToABGR
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToABGR
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToABGR
+#define LIBYUV_I010_TO_ARGB libyuv::I010ToABGR
+#define LIBYUV_H010_TO_ARGB libyuv::H010ToABGR
 #else
 #error Unexpected Skia ARGB_8888 layout!
 #endif
@@ -478,55 +482,26 @@ void PaintCanvasVideoRenderer::Copy(
 
 namespace {
 
-// libyuv doesn't support 9- and 10-bit video frames yet. This function
-// creates a regular 8-bit video frame which we can give to libyuv.
+// libyuv doesn't support all 9-, 10- nor 12-bit pixel formats yet. This
+// function creates a regular 8-bit video frame which we can give to libyuv.
 scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
     const VideoFrame* video_frame) {
   VideoPixelFormat format;
-  int shift = 1;
   switch (video_frame->format()) {
     case PIXEL_FORMAT_YUV420P12:
-      shift = 4;
-      format = PIXEL_FORMAT_I420;
-      break;
-
-    case PIXEL_FORMAT_YUV420P10:
-      shift = 2;
-      format = PIXEL_FORMAT_I420;
-      break;
-
     case PIXEL_FORMAT_YUV420P9:
-      shift = 1;
       format = PIXEL_FORMAT_I420;
       break;
 
     case PIXEL_FORMAT_YUV422P12:
-      shift = 4;
-      format = PIXEL_FORMAT_I422;
-      break;
-
     case PIXEL_FORMAT_YUV422P10:
-      shift = 2;
-      format = PIXEL_FORMAT_I422;
-      break;
-
     case PIXEL_FORMAT_YUV422P9:
-      shift = 1;
       format = PIXEL_FORMAT_I422;
       break;
 
     case PIXEL_FORMAT_YUV444P12:
-      shift = 4;
-      format = PIXEL_FORMAT_I444;
-      break;
-
     case PIXEL_FORMAT_YUV444P10:
-      shift = 2;
-      format = PIXEL_FORMAT_I444;
-      break;
-
     case PIXEL_FORMAT_YUV444P9:
-      shift = 1;
       format = PIXEL_FORMAT_I444;
       break;
 
@@ -534,6 +509,7 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
       NOTREACHED();
       return nullptr;
   }
+  const int shift = video_frame->BitDepth() - 8;
   scoped_refptr<VideoFrame> ret = VideoFrame::CreateFrame(
       format, video_frame->coded_size(), video_frame->visible_rect(),
       video_frame->natural_size(), video_frame->timestamp());
@@ -771,10 +747,39 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
                           video_frame->visible_rect().height());
       break;
 
+    case PIXEL_FORMAT_YUV420P10:
+      if (CheckColorSpace(video_frame, COLOR_SPACE_HD_REC709)) {
+        LIBYUV_H010_TO_ARGB(reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kYPlane)),
+                            video_frame->stride(VideoFrame::kYPlane) / 2,
+                            reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kUPlane)),
+                            video_frame->stride(VideoFrame::kUPlane) / 2,
+                            reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kVPlane)),
+                            video_frame->stride(VideoFrame::kVPlane) / 2,
+                            static_cast<uint8_t*>(rgb_pixels), row_bytes,
+                            video_frame->visible_rect().width(),
+                            video_frame->visible_rect().height());
+      } else {
+        LIBYUV_I010_TO_ARGB(reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kYPlane)),
+                            video_frame->stride(VideoFrame::kYPlane) / 2,
+                            reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kUPlane)),
+                            video_frame->stride(VideoFrame::kUPlane) / 2,
+                            reinterpret_cast<const uint16_t*>(
+                                video_frame->visible_data(VideoFrame::kVPlane)),
+                            video_frame->stride(VideoFrame::kVPlane) / 2,
+                            static_cast<uint8_t*>(rgb_pixels), row_bytes,
+                            video_frame->visible_rect().width(),
+                            video_frame->visible_rect().height());
+      }
+      break;
+
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV420P10:
     case PIXEL_FORMAT_YUV422P10:
     case PIXEL_FORMAT_YUV444P10:
     case PIXEL_FORMAT_YUV420P12:
