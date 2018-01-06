@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/laser/laser_pointer_view.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
@@ -50,14 +52,14 @@ void LaserPointerController::CreatePointerView(
       base::TimeDelta::FromMilliseconds(kPointLifeDurationMs),
       presentation_delay,
       base::TimeDelta::FromMilliseconds(kAddStationaryPointsDelayMs),
-      root_window);
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
 }
 
 void LaserPointerController::UpdatePointerView(ui::TouchEvent* event) {
   laser_pointer_view_->AddNewPoint(event->root_location_f(),
                                    event->time_stamp());
   if (event->type() == ui::ET_TOUCH_RELEASED) {
-    laser_pointer_view_->FadeOut(base::Bind(
+    laser_pointer_view_->FadeOut(base::BindOnce(
         &LaserPointerController::DestroyPointerView, base::Unretained(this)));
   }
 }

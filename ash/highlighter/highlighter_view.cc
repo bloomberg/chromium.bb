@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/highlighter/highlighter_gesture_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/window.h"
@@ -69,11 +70,12 @@ const SkColor HighlighterView::kPenColor =
 const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
 HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
-                                 aura::Window* root_window)
-    : FastInkView(root_window),
+                                 aura::Window* container)
+    : FastInkView(container),
       points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
-      presentation_delay_(presentation_delay) {}
+      presentation_delay_(presentation_delay),
+      weak_ptr_factory_(this) {}
 
 HighlighterView::~HighlighterView() = default;
 
@@ -89,26 +91,30 @@ void HighlighterView::AddNewPoint(const gfx::PointF& point,
           : 0);
   // The new segment needs to be drawn.
   if (!points_.IsEmpty()) {
-    UpdateDamageRect(InflateDamageRect(gfx::ToEnclosingRect(
+    highlighter_damage_rect_.Union(InflateDamageRect(gfx::ToEnclosingRect(
         gfx::BoundingRect(points_.GetNewest().location, point))));
   }
 
   // Previous prediction needs to be erased.
-  if (!predicted_points_.IsEmpty())
-    UpdateDamageRect(InflateDamageRect(predicted_points_.GetBoundingBox()));
+  if (!predicted_points_.IsEmpty()) {
+    highlighter_damage_rect_.Union(
+        InflateDamageRect(predicted_points_.GetBoundingBox()));
+  }
 
   points_.AddPoint(point, time);
 
   base::TimeTicks current_time = ui::EventTimeForNow();
-  predicted_points_.Predict(
-      points_, current_time, presentation_delay_,
-      GetWidget()->GetNativeView()->GetBoundsInScreen().size());
+  gfx::Rect screen_bounds = GetWidget()->GetNativeView()->GetBoundsInScreen();
+  predicted_points_.Predict(points_, current_time, presentation_delay_,
+                            screen_bounds.size());
 
   // New prediction needs to be drawn.
-  if (!predicted_points_.IsEmpty())
-    UpdateDamageRect(InflateDamageRect(predicted_points_.GetBoundingBox()));
+  if (!predicted_points_.IsEmpty()) {
+    highlighter_damage_rect_.Union(
+        InflateDamageRect(predicted_points_.GetBoundingBox()));
+  }
 
-  RequestRedraw();
+  ScheduleUpdateBuffer();
 }
 
 void HighlighterView::AddGap() {
@@ -121,8 +127,8 @@ void HighlighterView::Animate(const gfx::PointF& pivot,
   animation_timer_ = std::make_unique<base::OneShotTimer>();
   animation_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kStrokeFadeoutDelayMs),
-      base::Bind(&HighlighterView::FadeOut, base::Unretained(this), pivot,
-                 gesture_type, done));
+      base::BindRepeating(&HighlighterView::FadeOut, base::Unretained(this),
+                          pivot, gesture_type, done));
 }
 
 void HighlighterView::FadeOut(const gfx::PointF& pivot,
@@ -162,7 +168,36 @@ void HighlighterView::FadeOut(const gfx::PointF& pivot,
   animation_timer_->Start(FROM_HERE, duration, done);
 }
 
-void HighlighterView::OnRedraw(gfx::Canvas& canvas) {
+void HighlighterView::ScheduleUpdateBuffer() {
+  if (pending_update_buffer_)
+    return;
+
+  pending_update_buffer_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&HighlighterView::UpdateBuffer,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HighlighterView::UpdateBuffer() {
+  TRACE_EVENT1("ui", "FastInkView::UpdateBuffer", "damage",
+               highlighter_damage_rect_.ToString());
+
+  DCHECK(pending_update_buffer_);
+  pending_update_buffer_ = false;
+
+  {
+    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
+                      highlighter_damage_rect_);
+
+    Draw(paint.canvas());
+  }
+
+  gfx::Rect screen_bounds = GetWidget()->GetNativeView()->GetBoundsInScreen();
+  UpdateSurface(screen_bounds, highlighter_damage_rect_, /*auto_refresh=*/true);
+  highlighter_damage_rect_ = gfx::Rect();
+}
+
+void HighlighterView::Draw(gfx::Canvas& canvas) {
   const int num_points =
       points_.GetNumberOfPoints() + predicted_points_.GetNumberOfPoints();
   if (num_points < 2)
