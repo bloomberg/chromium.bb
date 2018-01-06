@@ -47,7 +47,7 @@ Polymer({
    * @private
    */
   onClearBrowsingDataTap_: function(e) {
-    var browserService = md_history.BrowserService.getInstance();
+    const browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
     /** @type {PaperRippleElement} */ (this.$['cbd-ripple']).upAction();
