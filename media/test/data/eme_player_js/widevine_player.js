@@ -19,7 +19,6 @@ WidevinePlayer.prototype.registerEventListeners = function() {
 };
 
 WidevinePlayer.prototype.onMessage = function(message) {
-  Utils.timeLog('MediaKeySession onMessage', message);
   var mediaKeySession = message.target;
   function onSuccess(response) {
     var key = new Uint8Array(response);

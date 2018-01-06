@@ -76,8 +76,8 @@ static void AddExternalClearKey(
       "org.chromium.externalclearkey";
   static const char kExternalClearKeyDecryptOnlyKeySystem[] =
       "org.chromium.externalclearkey.decryptonly";
-  static const char kExternalClearKeyRenewalKeySystem[] =
-      "org.chromium.externalclearkey.renewal";
+  static const char kExternalClearKeyMessageTypeTestKeySystem[] =
+      "org.chromium.externalclearkey.messagetypetest";
   static const char kExternalClearKeyFileIOTestKeySystem[] =
       "org.chromium.externalclearkey.fileiotest";
   static const char kExternalClearKeyOutputProtectionTestKeySystem[] =
@@ -110,9 +110,9 @@ static void AddExternalClearKey(
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
       kExternalClearKeyDecryptOnlyKeySystem));
 
-  // A key system that triggers renewal message in ClearKeyCdm.
-  concrete_key_systems->emplace_back(
-      new cdm::ExternalClearKeyProperties(kExternalClearKeyRenewalKeySystem));
+  // A key system that triggers various types of messages in ClearKeyCdm.
+  concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(
+      kExternalClearKeyMessageTypeTestKeySystem));
 
   // A key system that triggers the FileIO test in ClearKeyCdm.
   concrete_key_systems->emplace_back(new cdm::ExternalClearKeyProperties(

@@ -52,8 +52,8 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 // - media/test/data/eme_player_js/player_utils.js
 // - AddExternalClearKey() in chrome_key_systems.cc
 // - CreateCdmInstance() in clear_key_cdm.cc
-const char kExternalClearKeyRenewalKeySystem[] =
-    "org.chromium.externalclearkey.renewal";
+const char kExternalClearKeyMessageTypeTestKeySystem[] =
+    "org.chromium.externalclearkey.messagetypetest";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyInitializeFailKeySystem[] =
@@ -399,6 +399,8 @@ class EncryptedMediaTestExperimentalCdmInterface
  public:
   // We use special |key_system| names to do non-playback related tests,
   // e.g. kExternalClearKeyFileIOTestKeySystem is used to test file IO.
+  // TODO(xhwang): Deduplicate EncryptedMediaTestExperimentalCdmInterface and
+  // ECKEncryptedMediaTest.
   void TestNonPlaybackCases(const std::string& key_system,
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
@@ -406,6 +408,15 @@ class EncryptedMediaTestExperimentalCdmInterface
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
                           kWebMVorbisAudioOnly, key_system, SrcType::SRC,
                           kNoSessionToLoad, false, PlayCount::ONCE,
+                          expected_title);
+  }
+
+  void TestPlaybackCase(const std::string& key_system,
+                        const std::string& session_to_load,
+                        const std::string& expected_title) {
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
+                          kWebMVP8VideoOnly, key_system, SrcType::MSE,
+                          session_to_load, false, PlayCount::ONCE,
                           expected_title);
   }
 
@@ -810,22 +821,23 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
 
 #if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
 // Flaky with ASan enabled: crbug.com/798563.
-#define MAYBE_Renewal DISABLED_Renewal
+#define MAYBE_MessageTypeTest DISABLED_MessageTypeTest
 #else
-#define MAYBE_Renewal Renewal
+#define MAYBE_MessageTypeTest MessageTypeTest
 #endif
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_Renewal) {
-  TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad,
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MAYBE_MessageTypeTest) {
+  TestPlaybackCase(kExternalClearKeyMessageTypeTestKeySystem, kNoSessionToLoad,
                    media::kEnded);
 
-  // Check renewal message received.
-  bool receivedRenewalMessage = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+  // Check whether all 2 expected message types are received ('license-request'
+  // and 'license-renewal').
+  int num_received_message_types = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
       browser()->tab_strip_model()->GetActiveWebContents(),
       "window.domAutomationController.send("
-      "document.querySelector('video').receivedRenewalMessage);",
-      &receivedRenewalMessage));
-  EXPECT_TRUE(receivedRenewalMessage);
+      "document.querySelector('video').receivedMessageTypes.size);",
+      &num_received_message_types));
+  EXPECT_EQ(2, num_received_message_types);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
@@ -882,6 +894,22 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface, CdmProxy) {
   TestNonPlaybackCases(kExternalClearKeyCdmProxyTestKeySystem,
                        kUnitTestSuccess);
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTestExperimentalCdmInterface,
+                       MessageTypeTest) {
+  TestPlaybackCase(kExternalClearKeyMessageTypeTestKeySystem, kNoSessionToLoad,
+                   media::kEnded);
+
+  // Check whether all 3 expected message types are received ('license-request',
+  // 'license-renewal' and 'individualization-request').
+  int num_received_message_types = 0;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "window.domAutomationController.send("
+      "document.querySelector('video').receivedMessageTypes.size);",
+      &num_received_message_types));
+  EXPECT_EQ(3, num_received_message_types);
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

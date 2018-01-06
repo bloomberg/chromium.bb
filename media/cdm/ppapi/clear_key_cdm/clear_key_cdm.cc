@@ -57,8 +57,8 @@ const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 // Variants of External Clear Key key system to test different scenarios.
 const char kExternalClearKeyDecryptOnlyKeySystem[] =
     "org.chromium.externalclearkey.decryptonly";
-const char kExternalClearKeyRenewalKeySystem[] =
-    "org.chromium.externalclearkey.renewal";
+const char kExternalClearKeyMessageTypeTestKeySystem[] =
+    "org.chromium.externalclearkey.messagetypetest";
 const char kExternalClearKeyFileIOTestKeySystem[] =
     "org.chromium.externalclearkey.fileiotest";
 const char kExternalClearKeyOutputProtectionTestKeySystem[] =
@@ -83,6 +83,8 @@ const int64_t kMaxTimerDelayMs = 1 * kSecondsPerMinute * kMsPerSecond;
 // CDM unit test result header. Must be in sync with UNIT_TEST_RESULT_HEADER in
 // media/test/data/eme_player_js/globals.js.
 const char kUnitTestResultHeader[] = "UNIT_TEST_RESULT";
+
+const char kDummyIndividualizationRequest[] = "dummy individualization request";
 
 static bool g_is_cdm_module_initialized = false;
 
@@ -256,7 +258,7 @@ void* CreateCdmInstance(int cdm_interface_version,
   std::string key_system_string(key_system, key_system_size);
   if (key_system_string != kExternalClearKeyKeySystem &&
       key_system_string != kExternalClearKeyDecryptOnlyKeySystem &&
-      key_system_string != kExternalClearKeyRenewalKeySystem &&
+      key_system_string != kExternalClearKeyMessageTypeTestKeySystem &&
       key_system_string != kExternalClearKeyFileIOTestKeySystem &&
       key_system_string != kExternalClearKeyOutputProtectionTestKeySystem &&
       key_system_string != kExternalClearKeyPlatformVerificationTestKeySystem &&
@@ -358,7 +360,8 @@ namespace media {
 
 template <typename HostInterface>
 ClearKeyCdm::ClearKeyCdm(HostInterface* host, const std::string& key_system)
-    : cdm_host_proxy_(new CdmHostProxyImpl<HostInterface>(host)),
+    : host_interface_version_(HostInterface::kVersion),
+      cdm_host_proxy_(new CdmHostProxyImpl<HostInterface>(host)),
       cdm_(new ClearKeyPersistentSessionCdm(
           cdm_host_proxy_.get(),
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
@@ -477,14 +480,25 @@ void ClearKeyCdm::OnUpdateSuccess(uint32_t promise_id,
   // Now create the expiration changed event.
   cdm::Time expiration = 0.0;  // Never expires.
 
-  if (key_system_ == kExternalClearKeyRenewalKeySystem) {
+  if (key_system_ == kExternalClearKeyMessageTypeTestKeySystem) {
     // For renewal key system, set a non-zero expiration that is approximately
     // 100 years after 01 January 1970 UTC.
     expiration = 3153600000.0;  // 100 * 365 * 24 * 60 * 60;
 
-    if (!renewal_timer_set_) {
+    if (!has_set_renewal_timer_) {
       ScheduleNextRenewal();
-      renewal_timer_set_ = true;
+      has_set_renewal_timer_ = true;
+    }
+
+    // Also send an individualization request if never sent before. Only
+    // supported on Host_10 and later.
+    if (host_interface_version_ >= cdm::Host_10::kVersion &&
+        !has_sent_individualization_request_) {
+      has_sent_individualization_request_ = true;
+      const std::string request = kDummyIndividualizationRequest;
+      cdm_host_proxy_->OnSessionMessage(session_id.data(), session_id.length(),
+                                        cdm::kIndividualizationRequest,
+                                        request.data(), request.size());
     }
   }
 
@@ -544,7 +558,7 @@ void ClearKeyCdm::SetServerCertificate(uint32_t promise_id,
 
 void ClearKeyCdm::TimerExpired(void* context) {
   DVLOG(1) << __func__;
-  DCHECK(renewal_timer_set_);
+  DCHECK(has_set_renewal_timer_);
   std::string renewal_message;
   if (!next_renewal_message_.empty() &&
       context == &next_renewal_message_[0]) {

@@ -19,8 +19,6 @@ ClearKeyPlayer.prototype.registerEventListeners = function() {
 };
 
 ClearKeyPlayer.prototype.onMessage = function(message) {
-  Utils.timeLog('MediaKeySession onMessage', message);
-
   const mediaKeySession = message.target;
   const keyId = Utils.extractFirstLicenseKeyId(message.message);
   const key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
@@ -36,12 +34,12 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
   mediaKeySession.update(jwkSet).then(function() {
     // Check session expiration.
     // - For CLEARKEY, expiration is not set and is the default value NaN.
-    // - For EXTERNAL_CLEARKEY_RENEWAL, expiration is set to
+    // - For MESSAGE_TYPE_TEST_KEYSYSTEM, expiration is set to
     //   ECK_RENEWAL_EXPIRATION milliseconds after 01 January 1970 UTC.
     // - For other EXTERNAL_CLEARKEY variants, expiration is explicitly set to
     //   NaN.
     var expiration = mediaKeySession.expiration;
-    if (keySystem == EXTERNAL_CLEARKEY_RENEWAL) {
+    if (keySystem == MESSAGE_TYPE_TEST_KEYSYSTEM) {
       if (isNaN(expiration) || expiration != ECK_RENEWAL_EXPIRATION) {
         Utils.timeLog('Unexpected expiration: ', expiration);
         Utils.failTest(error, EME_UPDATE_FAILED);
