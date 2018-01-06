@@ -8,7 +8,7 @@ subdir = po-conf
 top_builddir = ..
 
 # These options get passed to xgettext.
-XGETTEXT_OPTIONS = --keyword=_ --keyword=N_ --its=$(top_srcdir)/src/fontconfig.its
+XGETTEXT_OPTIONS = --keyword=_ --keyword=N_
 
 # This is the copyright holder that gets inserted into the header of the
 # $(DOMAIN).pot file.  Set this to the copyright holder of the surrounding
@@ -77,4 +77,4 @@ PO_DEPENDS_ON_POT = yes
 # externally.
 DIST_DEPENDS_ON_UPDATE_PO = yes
 
-
+$(DOMAIN).pot-update: export GETTEXTDATADIR = $(top_srcdir)

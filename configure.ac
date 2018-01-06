@@ -778,6 +778,7 @@ fc-scan/Makefile
 fc-validate/Makefile
 doc/Makefile
 doc/version.sgml
+its/Makefile
 po/Makefile.in
 po-conf/Makefile.in
 test/Makefile
