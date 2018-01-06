@@ -2304,13 +2304,12 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues_wrapped.html [ Failure ]
 crbug.com/626703 external/wpt/workers/name-property.html [ Timeout ]
-crbug.com/626703 external/wpt/XMLHttpRequest/abort-after-stop.htm [ Timeout ]
-crbug.com/626703 external/wpt/XMLHttpRequest/event-readystatechange-loaded.htm [ Failure Timeout ]
-crbug.com/626703 external/wpt/XMLHttpRequest/open-url-redirected-worker-origin.htm [ Failure ]
-crbug.com/626703 external/wpt/XMLHttpRequest/preserve-ua-header-on-redirect.htm [ Failure ]
-crbug.com/626703 external/wpt/XMLHttpRequest/send-entity-body-document.htm [ Failure ]
-crbug.com/626703 external/wpt/XMLHttpRequest/setrequestheader-header-allowed.htm [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/XMLHttpRequest/send-content-type-string.htm [ Failure ]
+crbug.com/626703 external/wpt/xhr/abort-after-stop.htm [ Timeout ]
+crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
+crbug.com/626703 external/wpt/xhr/open-url-redirected-worker-origin.htm [ Failure ]
+crbug.com/626703 external/wpt/xhr/preserve-ua-header-on-redirect.htm [ Failure ]
+crbug.com/626703 external/wpt/xhr/send-entity-body-document.htm [ Failure ]
+crbug.com/626703 external/wpt/xhr/setrequestheader-header-allowed.htm [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-placeholder-shown-type-change-001.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-read-write-type-change-002.html [ Failure ]
 crbug.com/626703 [ Linux Win ] external/wpt/css/selectors/selector-required-type-change-002.html [ Failure ]
@@ -2823,10 +2822,10 @@ crbug.com/705490 virtual/outofblink-cors/external/wpt/fetch/api/basic/error-afte
 # This test has device ID strings in failure messages which change on every test run.
 crbug.com/679742 external/wpt/mediacapture-streams/MediaStreamTrack-getSettings.https.html [ Failure ]
 
-crbug.com/765116 external/wpt/XMLHttpRequest/responsexml-document-properties.htm [ Failure ]
+crbug.com/765116 external/wpt/xhr/responsexml-document-properties.htm [ Failure ]
 
 # This is a manual test.
-crbug.com/711493 external/wpt/XMLHttpRequest/send-authentication-prompt-2-manual.htm [ Failure ]
+crbug.com/711493 external/wpt/xhr/send-authentication-prompt-2-manual.htm [ Failure ]
 
 # Sheriff failures 2017-02-03
 crbug.com/688515 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Pass Failure ]
@@ -2889,8 +2888,7 @@ crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass 
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/XMLHttpRequest/FormData-append.html [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/XMLHttpRequest/timeout-multiple-fetches.html [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/xhr/FormData-append.html [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/align-items-004.htm [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure Pass ]
 crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
