@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_views.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/user_manager/user_names.h"
 
 namespace chromeos {
 
@@ -158,6 +159,12 @@ void LoginDisplayHostViews::HandleOnNoPodFocused() {
 bool LoginDisplayHostViews::HandleFocusLockScreenApps(bool reverse) {
   NOTIMPLEMENTED();
   return false;
+}
+
+void LoginDisplayHostViews::HandleLoginAsGuest() {
+  existing_user_controller_->Login(UserContext(user_manager::USER_TYPE_GUEST,
+                                               user_manager::GuestAccountId()),
+                                   chromeos::SigninSpecifics());
 }
 
 void LoginDisplayHostViews::OnAuthFailure(const AuthFailure& error) {

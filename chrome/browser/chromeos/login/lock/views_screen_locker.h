@@ -59,6 +59,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
+  void HandleLoginAsGuest() override;
 
   // PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;

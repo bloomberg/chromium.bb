@@ -38,6 +38,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     // focus has been handed over to a lock screen app. For example, this might
     // fail if a hander for lock screen apps focus has not been set.
     virtual bool HandleFocusLockScreenApps(bool reverse) = 0;
+    virtual void HandleLoginAsGuest() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -59,6 +60,7 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void LoadWallpaper(const AccountId& account_id) override;
   void SignOutUser() override;
   void CancelAddUser() override;
+  void LoginAsGuest() override;
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
   void FocusLockScreenApps(bool reverse) override;
 
