@@ -183,6 +183,19 @@ void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
       infobar_text);
 }
 
+// static
+void PluginObserver::CreatePluginObserverInfoBar(
+    InfoBarService* infobar_service,
+    const base::string16& plugin_name) {
+  SimpleAlertInfoBarDelegate::Create(
+      infobar_service,
+      infobars::InfoBarDelegate::PLUGIN_OBSERVER_INFOBAR_DELEGATE,
+      &kExtensionCrashedIcon,
+      l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
+                                 plugin_name),
+      true);
+}
+
 void PluginObserver::BlockedOutdatedPlugin(
     chrome::mojom::PluginRendererPtr plugin_renderer,
     const std::string& identifier) {
@@ -237,11 +250,6 @@ void PluginObserver::CouldNotLoadPlugin(const base::FilePath& plugin_path) {
       plugin_path);
   base::string16 plugin_name =
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
-  SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()),
-      infobars::InfoBarDelegate::PLUGIN_OBSERVER_INFOBAR_DELEGATE,
-      &kExtensionCrashedIcon,
-      l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
-                                 plugin_name),
-      true);
+  CreatePluginObserverInfoBar(InfoBarService::FromWebContents(web_contents()),
+                              plugin_name);
 }
