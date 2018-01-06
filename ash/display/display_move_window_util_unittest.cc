@@ -22,6 +22,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -438,6 +439,45 @@ TEST_F(DisplayMoveWindowUtilTest, WindowWithTransientChild) {
             screen->GetDisplayNearestWindow(child.get()).id());
   EXPECT_EQ(gfx::Rect(410, 20, 200, 100), window->GetBoundsInScreen());
   EXPECT_EQ(gfx::Rect(430, 50, 40, 50), child->GetBoundsInScreen());
+}
+
+// Test that when operating move window between displays on activated transient
+// child window, its first non-transient transient-parent window should be the
+// target instead.
+TEST_F(DisplayMoveWindowUtilTest, ActiveTransientChildWindow) {
+  UpdateDisplay("400x300,400x300");
+  std::unique_ptr<views::Widget> window = CreateTestWidget();
+  window->SetBounds(gfx::Rect(10, 20, 200, 100));
+
+  // Create a |child| transient widget of |window|. When |child| is shown, it is
+  // activated.
+  std::unique_ptr<views::Widget> child(new views::Widget);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = nullptr;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(20, 30, 40, 50);
+  params.parent = window->GetNativeWindow();
+  child->Init(params);
+  child->Show();
+  display::Screen* screen = display::Screen::GetScreen();
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
+            screen->GetDisplayNearestWindow(window->GetNativeWindow()).id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
+            screen->GetDisplayNearestWindow(child->GetNativeWindow()).id());
+  // Ensure |child| window is activated.
+  EXPECT_FALSE(wm::IsActiveWindow(window->GetNativeWindow()));
+  EXPECT_TRUE(wm::IsActiveWindow(child->GetNativeWindow()));
+
+  // Operate moving window to right display. Check display and bounds.
+  HandleMoveActiveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
+            screen->GetDisplayNearestWindow(window->GetNativeWindow()).id());
+  EXPECT_EQ(display_manager()->GetDisplayAt(1).id(),
+            screen->GetDisplayNearestWindow(child->GetNativeWindow()).id());
+  EXPECT_EQ(gfx::Rect(410, 20, 200, 100),
+            window->GetNativeWindow()->GetBoundsInScreen());
+  EXPECT_EQ(gfx::Rect(420, 30, 40, 50),
+            child->GetNativeWindow()->GetBoundsInScreen());
 }
 
 }  // namespace ash
