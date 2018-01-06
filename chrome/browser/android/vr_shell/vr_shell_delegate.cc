@@ -12,7 +12,7 @@
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
-#include "chrome/browser/vr/assets.h"
+#include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics_helper.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
@@ -301,7 +301,7 @@ static void JNI_VrShellDelegate_RegisterVrAssetsComponent(
 static void JNI_VrShellDelegate_OnChromeStarted(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  vr::Assets::GetInstance()->GetMetricsHelper()->OnChromeStarted();
+  vr::AssetsLoader::GetInstance()->GetMetricsHelper()->OnChromeStarted();
 }
 
 }  // namespace vr_shell

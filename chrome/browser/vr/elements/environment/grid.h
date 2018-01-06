@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_ELEMENTS_GRID_H_
-#define CHROME_BROWSER_VR_ELEMENTS_GRID_H_
+#ifndef CHROME_BROWSER_VR_ELEMENTS_ENVIRONMENT_GRID_H_
+#define CHROME_BROWSER_VR_ELEMENTS_ENVIRONMENT_GRID_H_
 
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
@@ -67,4 +67,4 @@ class Grid : public Rect {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_ELEMENTS_GRID_H_
+#endif  // CHROME_BROWSER_VR_ELEMENTS_ENVIRONMENT_GRID_H_

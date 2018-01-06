@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_ASSETS_H_
-#define CHROME_BROWSER_VR_ASSETS_H_
+#ifndef CHROME_BROWSER_VR_ASSETS_LOADER_H_
+#define CHROME_BROWSER_VR_ASSETS_LOADER_H_
 
 #include <stdint.h>
 #include <memory>
@@ -13,8 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_load_status.h"
-
-class SkBitmap;
 
 namespace base {
 class DictionaryValue;
@@ -27,7 +25,8 @@ namespace vr {
 constexpr uint32_t kCompatibleMajorVrAssetsComponentVersion = 1;
 
 class MetricsHelper;
-struct AssetsSingletonTrait;
+struct AssetsLoaderSingletonTrait;
+struct Assets;
 
 // Manages VR assets such as the environment. Gets updated by the VR assets
 // component.
@@ -36,16 +35,16 @@ struct AssetsSingletonTrait;
 // component will be made available on a different thread than the asset load
 // request. Internally, the function calls will be posted on the main thread.
 // The asset load may be performed on a worker thread.
-class Assets {
+class AssetsLoader {
  public:
   typedef base::OnceCallback<void(AssetsLoadStatus status,
-                                  std::unique_ptr<SkBitmap> background_image,
+                                  std::unique_ptr<Assets> assets,
                                   const base::Version& component_version)>
       OnAssetsLoadedCallback;
   typedef base::RepeatingCallback<void()> OnComponentReadyCallback;
 
   // Returns the single assets instance and creates it on first call.
-  static Assets* GetInstance();
+  static AssetsLoader* GetInstance();
 
   // Tells VR assets that a new VR assets component version is ready for use.
   void OnComponentReady(const base::Version& version,
@@ -75,8 +74,8 @@ class Assets {
       const base::FilePath& component_install_dir,
       OnAssetsLoadedCallback on_loaded);
 
-  Assets();
-  ~Assets();
+  AssetsLoader();
+  ~AssetsLoader();
   void OnComponentReadyInternal(const base::Version& version,
                                 const base::FilePath& install_dir);
   void LoadInternal(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -89,11 +88,11 @@ class Assets {
   std::unique_ptr<MetricsHelper> metrics_helper_;
   OnComponentReadyCallback on_component_ready_callback_;
 
-  base::WeakPtrFactory<Assets> weak_ptr_factory_;
+  base::WeakPtrFactory<AssetsLoader> weak_ptr_factory_;
 
-  friend struct AssetsSingletonTrait;
+  friend struct AssetsLoaderSingletonTrait;
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_ASSETS_H_
+#endif  // CHROME_BROWSER_VR_ASSETS_LOADER_H_
