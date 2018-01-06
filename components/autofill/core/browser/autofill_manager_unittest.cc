@@ -287,8 +287,7 @@ class MockAutocompleteHistoryManager : public AutocompleteHistoryManager {
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
-  MockAutofillDriver()
-      : is_incognito_(false), did_interact_with_credit_card_form_(false) {}
+  MockAutofillDriver() {}
 
   // Mock methods to enable testability.
   MOCK_METHOD3(SendFormDataToRenderer,
@@ -299,25 +298,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   MOCK_METHOD1(SendAutofillTypePredictionsToRenderer,
                void(const std::vector<FormStructure*>& forms));
 
-  void SetIsIncognito(bool is_incognito) { is_incognito_ = is_incognito; }
-
-  bool IsIncognito() const override { return is_incognito_; }
-
-  void DidInteractWithCreditCardForm() override {
-    did_interact_with_credit_card_form_ = true;
-  }
-
-  void ClearDidInteractWithCreditCardForm() {
-    did_interact_with_credit_card_form_ = false;
-  }
-
-  bool did_interact_with_credit_card_form() const {
-    return did_interact_with_credit_card_form_;
-  }
-
  private:
-  bool is_incognito_;
-  bool did_interact_with_credit_card_form_;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
 };
 
@@ -5749,12 +5730,12 @@ TEST_F(AutofillManagerTest, NotifyDriverOfCreditCardInteraction) {
   form.fields.push_back(field);
   std::vector<FormData> forms(1, form);
   FormsSeen(forms);
-  EXPECT_FALSE(autofill_driver_->did_interact_with_credit_card_form());
+  EXPECT_FALSE(autofill_driver_->GetDidInteractWithCreditCardForm());
 
   // The driver should always be notified.
   for (const FormFieldData& field : form.fields) {
     GetAutofillSuggestions(form, field);
-    EXPECT_TRUE(autofill_driver_->did_interact_with_credit_card_form());
+    EXPECT_TRUE(autofill_driver_->GetDidInteractWithCreditCardForm());
     autofill_driver_->ClearDidInteractWithCreditCardForm();
   }
 }

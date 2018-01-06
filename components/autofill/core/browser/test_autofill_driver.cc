@@ -13,7 +13,7 @@ TestAutofillDriver::TestAutofillDriver() : url_request_context_(nullptr) {}
 TestAutofillDriver::~TestAutofillDriver() {}
 
 bool TestAutofillDriver::IsIncognito() const {
-  return false;
+  return is_incognito_;
 }
 
 net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
@@ -47,11 +47,6 @@ void TestAutofillDriver::RendererShouldClearFilledForm() {
 void TestAutofillDriver::RendererShouldClearPreviewedForm() {
 }
 
-void TestAutofillDriver::SetURLRequestContext(
-    net::URLRequestContextGetter* url_request_context) {
-  url_request_context_ = url_request_context;
-}
-
 void TestAutofillDriver::RendererShouldFillFieldWithValue(
     const base::string16& value) {
 }
@@ -68,6 +63,25 @@ gfx::RectF TestAutofillDriver::TransformBoundingBoxToViewportCoordinates(
   return bounding_box;
 }
 
-void TestAutofillDriver::DidInteractWithCreditCardForm() {}
+void TestAutofillDriver::DidInteractWithCreditCardForm() {
+  did_interact_with_credit_card_form_ = true;
+}
+
+void TestAutofillDriver::ClearDidInteractWithCreditCardForm() {
+  did_interact_with_credit_card_form_ = false;
+}
+
+bool TestAutofillDriver::GetDidInteractWithCreditCardForm() const {
+  return did_interact_with_credit_card_form_;
+}
+
+void TestAutofillDriver::SetIsIncognito(bool is_incognito) {
+  is_incognito_ = is_incognito;
+}
+
+void TestAutofillDriver::SetURLRequestContext(
+    net::URLRequestContextGetter* url_request_context) {
+  url_request_context_ = url_request_context;
+}
 
 }  // namespace autofill

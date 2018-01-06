@@ -17,7 +17,7 @@ class TestAutofillDriver : public AutofillDriver {
   TestAutofillDriver();
   ~TestAutofillDriver() override;
 
-  // AutofillDriver implementation.
+  // AutofillDriver implementation overrides.
   bool IsIncognito() const override;
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
@@ -42,7 +42,14 @@ class TestAutofillDriver : public AutofillDriver {
       const gfx::RectF& bounding_box) override;
   void DidInteractWithCreditCardForm() override;
 
-  // Methods that tests can use to specialize functionality.
+  // Methods unique to TestAutofillDriver that tests can use to specialize
+  // functionality.
+
+  void ClearDidInteractWithCreditCardForm();
+
+  bool GetDidInteractWithCreditCardForm() const;
+
+  void SetIsIncognito(bool is_incognito);
 
   // Sets the URL request context for this instance. |url_request_context|
   // should outlive this instance.
@@ -50,6 +57,8 @@ class TestAutofillDriver : public AutofillDriver {
 
  private:
   net::URLRequestContextGetter* url_request_context_;
+  bool is_incognito_ = false;
+  bool did_interact_with_credit_card_form_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDriver);
 };
