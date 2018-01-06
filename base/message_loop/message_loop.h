@@ -266,10 +266,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   void AddTaskObserver(TaskObserver* task_observer);
   void RemoveTaskObserver(TaskObserver* task_observer);
 
-  // Returns true if the message loop is idle (same condition which triggers
-  // RunLoop::RunUntilIdle() to return: i.e. out of tasks which can be processed
-  // at the current run-level -- there might be deferred non-nestable tasks
-  // remaining if currently in a nested run level). Provided for testing.
+  // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
   // Runs the specified PendingTask.

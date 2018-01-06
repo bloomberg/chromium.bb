@@ -258,12 +258,9 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
 }
 
 bool MessageLoop::IsIdleForTesting() {
-  return !incoming_task_queue_->triage_tasks().HasTasks() &&
-         (!incoming_task_queue_->deferred_tasks().HasTasks() ||
-          RunLoop::IsNestedOnCurrentThread()) &&
-         (!incoming_task_queue_->delayed_tasks().HasTasks() ||
-          incoming_task_queue_->delayed_tasks().Peek().delayed_run_time >
-              TimeTicks::Now());
+  // We only check the incoming queue, since we don't want to lock the work
+  // queue.
+  return incoming_task_queue_->IsIdleForTesting();
 }
 
 //------------------------------------------------------------------------------
