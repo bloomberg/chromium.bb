@@ -78,9 +78,8 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
         begin_frame_source_.get(), task_runner_.get(), max_frames_pending);
 
     display_ = std::make_unique<Display>(
-        &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
-        kArbitraryFrameSinkId, std::move(display_output_surface),
-        std::move(scheduler), task_runner_);
+        &bitmap_manager_, RendererSettings(), kArbitraryFrameSinkId,
+        std::move(display_output_surface), std::move(scheduler), task_runner_);
     layer_tree_frame_sink_ = std::make_unique<TestDirectLayerTreeFrameSink>(
         kArbitraryFrameSinkId, &support_manager_, &frame_sink_manager_,
         display_.get(), nullptr /* display_client */, context_provider_,

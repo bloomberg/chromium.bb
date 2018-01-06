@@ -827,9 +827,9 @@ void CompositorImpl::InitializeDisplay(
   const bool should_register_begin_frame_source = !display_;
 
   display_ = std::make_unique<viz::Display>(
-      viz::ServerSharedBitmapManager::current(), gpu_memory_buffer_manager,
-      renderer_settings, frame_sink_id_, std::move(display_output_surface),
-      std::move(scheduler), task_runner);
+      viz::ServerSharedBitmapManager::current(), renderer_settings,
+      frame_sink_id_, std::move(display_output_surface), std::move(scheduler),
+      task_runner);
 
   auto layer_tree_frame_sink =
       vulkan_context_provider

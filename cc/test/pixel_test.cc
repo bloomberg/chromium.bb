@@ -173,7 +173,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       std::make_unique<viz::TestGpuMemoryBufferManager>();
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), settings_.resource_settings);
+      settings_.resource_settings);
 
   child_context_provider_ =
       base::MakeRefCounted<TestInProcessContextProvider>(nullptr);
@@ -204,8 +204,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
-      nullptr, shared_bitmap_manager_.get(), nullptr,
-      settings_.resource_settings);
+      nullptr, shared_bitmap_manager_.get(), settings_.resource_settings);
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), nullptr, true,
       settings_.resource_settings);

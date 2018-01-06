@@ -24,9 +24,8 @@ class FakeResourceProvider : public ResourceProvider {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     resource_settings.high_bit_for_testing = high_bit_for_testing;
-    return base::WrapUnique(
-        new FakeResourceProvider(context_provider, shared_bitmap_manager,
-                                 nullptr, true, resource_settings));
+    return base::WrapUnique(new FakeResourceProvider(
+        context_provider, shared_bitmap_manager, true, resource_settings));
   }
 
   static std::unique_ptr<LayerTreeResourceProvider>
@@ -45,40 +44,22 @@ class FakeResourceProvider : public ResourceProvider {
 
   static std::unique_ptr<DisplayResourceProvider> CreateDisplayResourceProvider(
       viz::ContextProvider* context_provider,
-      viz::SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr) {
+      viz::SharedBitmapManager* shared_bitmap_manager) {
     viz::ResourceSettings resource_settings;
     resource_settings.texture_id_allocation_chunk_size = 1;
     return std::make_unique<DisplayResourceProvider>(
-        context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
-        resource_settings);
-  }
-
-  static std::unique_ptr<FakeResourceProvider> Create(
-      viz::ContextProvider* context_provider,
-      viz::SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      bool high_bit_for_testing = false) {
-    viz::ResourceSettings resource_settings;
-    resource_settings.texture_id_allocation_chunk_size = 1;
-    resource_settings.high_bit_for_testing = high_bit_for_testing;
-    return base::WrapUnique(new FakeResourceProvider(
-        context_provider, shared_bitmap_manager, gpu_memory_buffer_manager,
-        true, resource_settings));
+        context_provider, shared_bitmap_manager, resource_settings);
   }
 
  private:
   FakeResourceProvider(viz::ContextProvider* context_provider,
                        viz::SharedBitmapManager* shared_bitmap_manager,
-                       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                        bool delegated_sync_points_required,
                        const viz::ResourceSettings resource_settings)
       : ResourceProvider(context_provider,
                          shared_bitmap_manager,
-                         gpu_memory_buffer_manager,
                          delegated_sync_points_required,
-                         resource_settings,
-                         1) {}
+                         resource_settings) {}
 };
 
 }  // namespace cc

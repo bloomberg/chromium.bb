@@ -153,9 +153,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   *out_begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return std::make_unique<Display>(
-      ServerSharedBitmapManager::current(), gpu_memory_buffer_manager_.get(),
-      renderer_settings, frame_sink_id, std::move(output_surface),
-      std::move(scheduler), task_runner_);
+      ServerSharedBitmapManager::current(), renderer_settings, frame_sink_id,
+      std::move(output_surface), std::move(scheduler), task_runner_);
 }
 
 std::unique_ptr<SoftwareOutputDevice>

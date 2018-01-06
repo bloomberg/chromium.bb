@@ -179,8 +179,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   if (context_provider) {
     ScopedGpuRaster gpu_raster(context_provider);
 
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider,
-                                             resources_.back()->id());
+    LayerTreeResourceProvider::ScopedWriteLockGL lock(resource_provider,
+                                                      resources_.back()->id());
 
     ResourceProvider::ScopedSkSurface scoped_surface(
         context_provider->GrContext(), lock.GetTexture(), lock.target(),

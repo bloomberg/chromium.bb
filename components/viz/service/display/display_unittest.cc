@@ -136,9 +136,8 @@ class DisplayTest : public testing::Test {
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<OutputSurface> output_surface) {
     auto display = std::make_unique<Display>(
-        &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
-        settings, frame_sink_id, std::move(output_surface),
-        std::move(scheduler), task_runner_);
+        &shared_bitmap_manager_, settings, frame_sink_id,
+        std::move(output_surface), std::move(scheduler), task_runner_);
     display->SetVisible(true);
     return display;
   }

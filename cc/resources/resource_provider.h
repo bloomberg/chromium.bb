@@ -50,7 +50,6 @@
 
 namespace gpu {
 struct Capabilities;
-class GpuMemoryBufferManager;
 namespace gles2 {
 class GLES2Interface;
 }
@@ -65,7 +64,6 @@ class SharedBitmapManager;
 }  // namespace viz
 
 namespace cc {
-class TextureIdAllocator;
 
 // This class provides abstractions for allocating and transferring resources
 // between modules/threads/processes. It abstracts away GL textures vs
@@ -88,10 +86,8 @@ class CC_EXPORT ResourceProvider
 
   ResourceProvider(viz::ContextProvider* compositor_context_provider,
                    viz::SharedBitmapManager* shared_bitmap_manager,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    bool delegated_sync_points_required,
-                   const viz::ResourceSettings& resource_settings,
-                   viz::ResourceId next_id);
+                   const viz::ResourceSettings& resource_settings);
   ~ResourceProvider() override;
 
   void Initialize();
@@ -112,9 +108,6 @@ class CC_EXPORT ResourceProvider
   }
   viz::ResourceFormat YuvResourceFormat(int bits) const;
   bool use_sync_query() const { return settings_.use_sync_query; }
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager() {
-    return gpu_memory_buffer_manager_;
-  }
   size_t num_resources() const { return resources_.size(); }
 
   bool IsTextureFormatSupported(viz::ResourceFormat format) const;
@@ -138,121 +131,11 @@ class CC_EXPORT ResourceProvider
   viz::ResourceType GetResourceType(viz::ResourceId id);
   GLenum GetResourceTextureTarget(viz::ResourceId id);
 
-  viz::ResourceId CreateGpuTextureResource(const gfx::Size& size,
-                                           viz::ResourceTextureHint hint,
-                                           viz::ResourceFormat format,
-                                           const gfx::ColorSpace& color_space);
-  viz::ResourceId CreateGpuMemoryBufferResource(
-      const gfx::Size& size,
-      viz::ResourceTextureHint hint,
-      viz::ResourceFormat format,
-      gfx::BufferUsage usage,
-      const gfx::ColorSpace& color_space);
-  viz::ResourceId CreateBitmapResource(const gfx::Size& size,
-                                       const gfx::ColorSpace& color_space);
-
   void DeleteResource(viz::ResourceId id);
   // In the case of GPU resources, we may need to flush the GL context to ensure
   // that texture deletions are seen in a timely fashion. This function should
   // be called after texture deletions that may happen during an idle state.
   void FlushPendingDeletions() const;
-
-  // Update pixels from image, copying source_rect (in image) to dest_offset (in
-  // the resource).
-  void CopyToResource(viz::ResourceId id,
-                      const uint8_t* image,
-                      const gfx::Size& image_size);
-
-
-  // The following lock classes are part of the ResourceProvider API and are
-  // needed to read and write the resource contents. The user must ensure
-  // that they only use GL locks on GL resources, etc, and this is enforced
-  // by assertions.
-  class CC_EXPORT ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockGpu(ResourceProvider* resource_provider,
-                       viz::ResourceId resource_id);
-    ~ScopedWriteLockGpu();
-
-    GLenum target() const { return target_; }
-    viz::ResourceFormat format() const { return format_; }
-    const gfx::Size& size() const { return size_; }
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-    GrPixelConfig PixelConfig() const;
-
-    void set_allocated() { allocated_ = true; }
-
-    void set_sync_token(const gpu::SyncToken& sync_token) {
-      sync_token_ = sync_token;
-      has_sync_token_ = true;
-    }
-
-    void set_synchronized() { synchronized_ = true; }
-
-    void set_generate_mipmap() { generate_mipmap_ = true; }
-
-    // Creates mailbox on compositor context that can be consumed on another
-    // context.
-    void CreateMailbox();
-
-   protected:
-    ResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-
-    // The following are copied from the resource.
-    gfx::Size size_;
-    viz::ResourceFormat format_;
-    gfx::ColorSpace color_space_;
-    GLuint texture_id_;
-    GLenum target_;
-    viz::ResourceTextureHint hint_;
-    gpu::Mailbox mailbox_;
-    bool is_overlay_;
-    bool allocated_;
-
-    // Set by the user.
-    gpu::SyncToken sync_token_;
-    bool has_sync_token_ = false;
-    bool synchronized_ = false;
-    bool generate_mipmap_ = false;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpu);
-  };
-
-  class CC_EXPORT ScopedWriteLockGL : public ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockGL(ResourceProvider* resource_provider,
-                      viz::ResourceId resource_id);
-    ~ScopedWriteLockGL();
-
-    // Returns texture id on compositor context, allocating if necessary.
-    GLuint GetTexture();
-
-   private:
-    void LazyAllocate(gpu::gles2::GLES2Interface* gl, GLuint texture_id);
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
-  };
-
-  class CC_EXPORT ScopedWriteLockRaster : public ScopedWriteLockGpu {
-   public:
-    ScopedWriteLockRaster(ResourceProvider* resource_provider,
-                          viz::ResourceId resource_id);
-    ~ScopedWriteLockRaster();
-
-    // Creates a texture id, allocating if necessary, on the given context. The
-    // texture id must be deleted by the caller.
-    GLuint ConsumeTexture(gpu::raster::RasterInterface* ri);
-
-   private:
-    void LazyAllocate(gpu::raster::RasterInterface* gl, GLuint texture_id);
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockRaster);
-  };
 
   // TODO(sunnyps): Move to //components/viz/common/gl_helper.h ?
   class CC_EXPORT ScopedSkSurface {
@@ -273,27 +156,6 @@ class CC_EXPORT ResourceProvider
     sk_sp<SkSurface> surface_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedSkSurface);
-  };
-
-  class CC_EXPORT ScopedWriteLockSoftware {
-   public:
-    ScopedWriteLockSoftware(ResourceProvider* resource_provider,
-                            viz::ResourceId resource_id);
-    ~ScopedWriteLockSoftware();
-
-    SkBitmap& sk_bitmap() { return sk_bitmap_; }
-    bool valid() const { return !!sk_bitmap_.getPixels(); }
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-   private:
-    ResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-    gfx::ColorSpace color_space_;
-    SkBitmap sk_bitmap_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
   };
 
   class CC_EXPORT SynchronousFence : public viz::ResourceFence {
@@ -318,16 +180,6 @@ class CC_EXPORT ResourceProvider
 
     DISALLOW_COPY_AND_ASSIGN(SynchronousFence);
   };
-
-  // For tests only! This prevents detecting uninitialized reads.
-  // Use SetPixels or LockForWrite to allocate implicitly.
-  void AllocateForTesting(viz::ResourceId id);
-
-  // For tests only!
-  void CreateForTesting(viz::ResourceId id);
-
-  // Indicates if we can currently lock this resource for write.
-  bool CanLockForWrite(viz::ResourceId id);
 
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(viz::ResourceId id);
@@ -369,16 +221,7 @@ class CC_EXPORT ResourceProvider
 
   viz::internal::Resource* InsertResource(viz::ResourceId id,
                                           viz::internal::Resource resource);
-
   viz::internal::Resource* GetResource(viz::ResourceId id);
-
-  viz::internal::Resource* LockForWrite(viz::ResourceId id);
-  void UnlockForWrite(viz::internal::Resource* resource);
-
-  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
-                                    const viz::internal::Resource* resource);
-
-  void CreateAndBindImage(viz::internal::Resource* resource);
 
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
@@ -387,8 +230,8 @@ class CC_EXPORT ResourceProvider
                          GLenum unit,
                          GLenum filter);
 
-  gfx::ColorSpace GetResourceColorSpaceForRaster(
-      const viz::internal::Resource* resource) const;
+  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
+                                    const viz::internal::Resource* resource);
 
   enum DeleteStyle {
     NORMAL,
@@ -397,7 +240,6 @@ class CC_EXPORT ResourceProvider
 
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
 
-  void CreateMailbox(viz::internal::Resource* resource);
   void WaitSyncTokenInternal(viz::internal::Resource* resource);
 
   bool ReadLockFenceHasPassed(const viz::internal::Resource* resource) {
@@ -440,8 +282,6 @@ class CC_EXPORT ResourceProvider
 
   viz::ContextProvider* compositor_context_provider_;
   viz::SharedBitmapManager* shared_bitmap_manager_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  viz::ResourceId next_id_;
   int next_child_;
 
   bool lost_context_provider_;
@@ -454,11 +294,7 @@ class CC_EXPORT ResourceProvider
 #endif
 
  private:
-  void CreateTexture(viz::internal::Resource* resource);
-
   bool IsGLContextLost() const;
-
-  std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
 
   // A process-unique ID used for disambiguating memory dumps from different
   // resource providers.

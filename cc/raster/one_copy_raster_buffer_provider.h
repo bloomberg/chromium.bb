@@ -55,7 +55,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   // Playback raster source and copy result into |resource|.
   void PlaybackAndCopyOnWorkerThread(
       const Resource* resource,
-      ResourceProvider::ScopedWriteLockRaster* resource_lock,
+      LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
       const gpu::SyncToken& sync_token,
       const RasterSource* raster_source,
       const gfx::Rect& raster_full_rect,
@@ -90,7 +90,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
    private:
     OneCopyRasterBufferProvider* client_;
     const Resource* resource_;
-    ResourceProvider::ScopedWriteLockRaster lock_;
+    LayerTreeResourceProvider::ScopedWriteLockRaster lock_;
     uint64_t previous_content_id_;
 
     gpu::SyncToken sync_token_;
@@ -112,7 +112,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       uint64_t new_content_id);
   void CopyOnWorkerThread(
       StagingBuffer* staging_buffer,
-      ResourceProvider::ScopedWriteLockRaster* resource_lock,
+      LayerTreeResourceProvider::ScopedWriteLockRaster* resource_lock,
       const RasterSource* raster_source,
       const gfx::Rect& rect_to_copy);
   gfx::BufferUsage StagingBufferUsage() const;
