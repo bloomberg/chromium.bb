@@ -500,6 +500,7 @@ core_dependency_idl_files =
                     "frame/NavigatorAutomationInformation.idl",
                     "frame/NavigatorConcurrentHardware.idl",
                     "frame/NavigatorCookies.idl",
+                    "frame/NavigatorDeviceMemory.idl",
                     "frame/NavigatorID.idl",
                     "frame/NavigatorLanguage.idl",
                     "frame/NavigatorOnLine.idl",

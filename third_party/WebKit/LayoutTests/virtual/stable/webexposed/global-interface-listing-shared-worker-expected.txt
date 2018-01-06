@@ -939,6 +939,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter appVersion
 [Worker]     getter budget
 [Worker]     getter connection
+[Worker]     getter deviceMemory
 [Worker]     getter hardwareConcurrency
 [Worker]     getter onLine
 [Worker]     getter permissions
