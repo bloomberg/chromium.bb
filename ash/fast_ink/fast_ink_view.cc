@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "ash/public/cpp/config.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,7 +26,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -36,11 +34,65 @@
 namespace ash {
 namespace {
 
-// The outset used to expand the surface damage rectangle in order to
-// allow single buffer updates while a frame is in-flight.
-const int kSurfaceDamageOutsetDIP = 100;
+gfx::Rect BufferRectFromScreenRect(
+    const gfx::Transform& screen_to_buffer_transform,
+    const gfx::Size& buffer_size,
+    const gfx::Rect& screen_rect) {
+  gfx::Rect buffer_rect = cc::MathUtil::MapEnclosingClippedRect(
+      screen_to_buffer_transform, screen_rect);
+  buffer_rect.Intersect(gfx::Rect(buffer_size));
+  return buffer_rect;
+}
 
 }  // namespace
+
+FastInkView::ScopedPaint::ScopedPaint(
+    gfx::GpuMemoryBuffer* gpu_memory_buffer,
+    const gfx::Transform& screen_to_buffer_transform,
+    const gfx::Rect& screen_rect)
+    : gpu_memory_buffer_(gpu_memory_buffer),
+      buffer_rect_(BufferRectFromScreenRect(screen_to_buffer_transform,
+                                            gpu_memory_buffer->GetSize(),
+                                            screen_rect)),
+      canvas_(buffer_rect_.size(), 1.0f, false) {
+  canvas_.Translate(-buffer_rect_.OffsetFromOrigin());
+  canvas_.Transform(screen_to_buffer_transform);
+}
+
+FastInkView::ScopedPaint::~ScopedPaint() {
+  if (buffer_rect_.IsEmpty())
+    return;
+
+  {
+    TRACE_EVENT0("ui", "FastInkView::ScopedPaint::Map");
+
+    if (!gpu_memory_buffer_->Map()) {
+      LOG(ERROR) << "Failed to map GPU memory buffer";
+      return;
+    }
+  }
+
+  // Copy result to GPU memory buffer. This is effectively a memcpy and unlike
+  // drawing to the buffer directly this ensures that the buffer is never in a
+  // state that would result in flicker.
+  {
+    TRACE_EVENT1("ui", "FastInkView::ScopedPaint::Copy", "buffer_rect",
+                 buffer_rect_.ToString());
+
+    uint8_t* data = static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
+    int stride = gpu_memory_buffer_->stride(0);
+    canvas_.GetBitmap().readPixels(
+        SkImageInfo::MakeN32Premul(buffer_rect_.width(), buffer_rect_.height()),
+        data + buffer_rect_.y() * stride + buffer_rect_.x() * 4, stride, 0, 0);
+  }
+
+  {
+    TRACE_EVENT0("ui", "FastInkView::UpdateBuffer::Unmap");
+
+    // Unmap to flush writes to buffer.
+    gpu_memory_buffer_->Unmap();
+  }
+}
 
 struct FastInkView::Resource {
   Resource() = default;
@@ -63,6 +115,7 @@ struct FastInkView::Resource {
   uint32_t image = 0;
   gpu::Mailbox mailbox;
   gpu::SyncToken sync_token;
+  bool damaged = true;
 };
 
 class FastInkView::LayerTreeFrameSinkHolder
@@ -124,6 +177,11 @@ class FastInkView::LayerTreeFrameSinkHolder
     last_frame_size_in_pixels_ = frame.size_in_pixels();
     last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
     frame_sink_->SubmitCompositorFrame(std::move(frame));
+  }
+
+  void DamageExportedResources() {
+    for (auto& entry : exported_resources_)
+      entry.second->damaged = true;
   }
 
   // Overridden from cc::LayerTreeFrameSinkClient:
@@ -196,7 +254,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
 };
 
-FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
+FastInkView::FastInkView(aura::Window* container) : weak_ptr_factory_(this) {
   widget_.reset(new views::Widget);
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -205,14 +263,14 @@ FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
+  params.parent = container;
   params.layer_type = ui::LAYER_SOLID_COLOR;
 
+  gfx::Rect screen_bounds = container->GetRootWindow()->GetBoundsInScreen();
   widget_->Init(params);
   widget_->Show();
   widget_->SetContentsView(this);
-  widget_->SetBounds(root_window->GetBoundsInScreen());
+  widget_->SetBounds(screen_bounds);
   set_owned_by_client();
 
   // Take the root transform and apply this during buffer update instead of
@@ -224,6 +282,28 @@ FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
   screen_to_buffer_transform_ =
       widget_->GetNativeWindow()->GetHost()->GetRootTransform();
 
+  buffer_size_ = gfx::ToEnclosedRect(cc::MathUtil::MapClippedRect(
+                                         screen_to_buffer_transform_,
+                                         gfx::RectF(screen_bounds.width(),
+                                                    screen_bounds.height())))
+                     .size();
+
+  // Create a single GPU memory buffer. Content will be written into this
+  // buffer without any buffering. The result is that we might be modifying
+  // the buffer while it's being displayed. This provides minimal latency
+  // but with potential tearing. Note that we have to draw into a temporary
+  // surface and copy it into GPU memory buffer to avoid flicker.
+  gpu_memory_buffer_ =
+      aura::Env::GetInstance()
+          ->context_factory()
+          ->GetGpuMemoryBufferManager()
+          ->CreateGpuMemoryBuffer(buffer_size_,
+                                  SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
+                                               : gfx::BufferFormat::BGRA_8888,
+                                  gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
+                                  gpu::kNullSurfaceHandle);
+  LOG_IF(ERROR, !gpu_memory_buffer_) << "Failed to create GPU memory buffer";
+
   frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, widget_->GetNativeView()->CreateLayerTreeFrameSink());
 }
@@ -233,133 +313,50 @@ FastInkView::~FastInkView() {
       std::move(frame_sink_holder_));
 }
 
-void FastInkView::UpdateDamageRect(const gfx::Rect& rect) {
-  buffer_damage_rect_.Union(rect);
+void FastInkView::UpdateSurface(const gfx::Rect& content_rect,
+                                const gfx::Rect& damage_rect,
+                                bool auto_refresh) {
+  content_rect_ = content_rect;
+  damage_rect_.Union(damage_rect);
+  auto_refresh_ = auto_refresh;
+  pending_compositor_frame_ = true;
+
+  if (!damage_rect.IsEmpty()) {
+    frame_sink_holder_->DamageExportedResources();
+    for (auto& resource : returned_resources_)
+      resource->damaged = true;
+  }
+
+  if (!pending_compositor_frame_ack_)
+    SubmitCompositorFrame();
 }
 
-void FastInkView::RequestRedraw() {
-  if (pending_redraw_)
-    return;
+void FastInkView::SubmitCompositorFrame() {
+  TRACE_EVENT1("ui", "FastInkView::SubmitCompositorFrame", "damage",
+               damage_rect_.ToString());
 
-  pending_redraw_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FastInkView::Redraw, weak_ptr_factory_.GetWeakPtr()));
-}
+  float device_scale_factor = widget_->GetLayer()->device_scale_factor();
+  gfx::Rect output_rect(gfx::ConvertSizeToPixel(
+      device_scale_factor,
+      widget_->GetNativeView()->GetBoundsInScreen().size()));
 
-void FastInkView::Redraw() {
-  DCHECK(pending_redraw_);
-  pending_redraw_ = false;
-
-  if (!buffer_damage_rect_.IsEmpty()) {
-    // Defer buffer update if damage exceeds the bounds of the pending
-    // draw surface rectangle. This prevents visible artifacts at the
-    // border of the draw surface rectangle when compositing.
-    // Note: Draw surface rectangle is expanded to prevent this from
-    // causing a performance problem during normal usage.
-    if (pending_draw_surface_rect_.IsEmpty() ||
-        pending_draw_surface_rect_.Contains(buffer_damage_rect_)) {
-      UpdateBuffer();
-    }
+  gfx::Rect quad_rect;
+  gfx::Rect damage_rect;
+  // Continuously redraw the full output rectangle when in auto-refresh mode.
+  // This is necessary in order to allow single buffered updates without having
+  // buffer changes outside the contents area cause artifacts.
+  if (auto_refresh_) {
+    quad_rect = gfx::Rect(buffer_size_);
+    damage_rect = gfx::Rect(output_rect);
+  } else {
+    // Use minimal quad and damage rectangles when auto-refresh mode is off.
+    quad_rect = BufferRectFromScreenRect(screen_to_buffer_transform_,
+                                         buffer_size_, content_rect_);
+    damage_rect = gfx::ConvertRectToPixel(device_scale_factor, damage_rect_);
+    damage_rect.Intersect(output_rect);
+    pending_compositor_frame_ = false;
   }
-
-  if (!surface_damage_rect_.IsEmpty()) {
-    // Defer surface update if a frame is already in-flight.
-    if (!pending_draw_surface_)
-      UpdateSurface();
-  }
-}
-
-void FastInkView::UpdateBuffer() {
-  TRACE_EVENT1("ui", "FastInkView::UpdateBuffer", "damage",
-               buffer_damage_rect_.ToString());
-
-  gfx::Rect screen_bounds = widget_->GetNativeView()->GetBoundsInScreen();
-  gfx::Rect update_rect = buffer_damage_rect_;
-  buffer_damage_rect_ = gfx::Rect();
-
-  // Create and map a single GPU memory buffer. The fast ink will be
-  // written into this buffer without any buffering. The result is that we
-  // might be modifying the buffer while it's being displayed. This provides
-  // minimal latency but potential tearing. Note that we have to draw into
-  // a temporary surface and copy it into GPU memory buffer to avoid flicker.
-  if (!gpu_memory_buffer_) {
-    TRACE_EVENT0("ui", "FastInkView::UpdateBuffer::Create");
-
-    gpu_memory_buffer_ =
-        aura::Env::GetInstance()
-            ->context_factory()
-            ->GetGpuMemoryBufferManager()
-            ->CreateGpuMemoryBuffer(
-                gfx::ToEnclosedRect(cc::MathUtil::MapClippedRect(
-                                        screen_to_buffer_transform_,
-                                        gfx::RectF(screen_bounds.width(),
-                                                   screen_bounds.height())))
-                    .size(),
-                SK_B32_SHIFT ? gfx::BufferFormat::RGBA_8888
-                             : gfx::BufferFormat::BGRA_8888,
-                gfx::BufferUsage::SCANOUT_CPU_READ_WRITE,
-                gpu::kNullSurfaceHandle);
-    if (!gpu_memory_buffer_) {
-      LOG(ERROR) << "Failed to allocate GPU memory buffer";
-      return;
-    }
-
-    // Make sure the first update rectangle covers the whole buffer.
-    update_rect = gfx::Rect(screen_bounds.size());
-  }
-
-  // Convert update rectangle to pixel coordinates.
-  gfx::Rect pixel_rect = cc::MathUtil::MapEnclosingClippedRect(
-      screen_to_buffer_transform_, update_rect);
-
-  // Constrain pixel rectangle to buffer size and early out if empty.
-  pixel_rect.Intersect(gfx::Rect(gpu_memory_buffer_->GetSize()));
-  if (pixel_rect.IsEmpty())
-    return;
-
-  // Map buffer for writing.
-  if (!gpu_memory_buffer_->Map()) {
-    LOG(ERROR) << "Failed to map GPU memory buffer";
-    return;
-  }
-
-  // Create a temporary canvas for update rectangle.
-  gfx::Canvas canvas(pixel_rect.size(), 1.0f, false);
-  canvas.Translate(-pixel_rect.OffsetFromOrigin());
-  canvas.Transform(screen_to_buffer_transform_);
-
-  {
-    TRACE_EVENT1("ui", "FastInkView::UpdateBuffer::Paint", "pixel_rect",
-                 pixel_rect.ToString());
-
-    OnRedraw(canvas);
-  }
-
-  // Copy result to GPU memory buffer. This is effectively a memcpy and unlike
-  // drawing to the buffer directly this ensures that the buffer is never in a
-  // state that would result in flicker.
-  {
-    TRACE_EVENT1("ui", "FastInkView::UpdateBuffer::Copy", "pixel_rect",
-                 pixel_rect.ToString());
-
-    uint8_t* data = static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
-    int stride = gpu_memory_buffer_->stride(0);
-    canvas.GetBitmap().readPixels(
-        SkImageInfo::MakeN32Premul(pixel_rect.width(), pixel_rect.height()),
-        data + pixel_rect.y() * stride + pixel_rect.x() * 4, stride, 0, 0);
-  }
-
-  // Unmap to flush writes to buffer.
-  gpu_memory_buffer_->Unmap();
-
-  // Update surface damage rectangle.
-  surface_damage_rect_.Union(update_rect);
-}
-
-void FastInkView::UpdateSurface() {
-  TRACE_EVENT1("ui", "FastInkView::UpdateSurface", "damage",
-               surface_damage_rect_.ToString());
+  damage_rect_ = gfx::Rect();
 
   std::unique_ptr<Resource> resource;
   // Reuse returned resource if available.
@@ -372,78 +369,79 @@ void FastInkView::UpdateSurface() {
   if (!resource)
     resource = std::make_unique<Resource>();
 
-  // Acquire context provider for resource if needed.
-  // Note: We make no attempts to recover if the context provider is later
-  // lost. It is expected that this class is short-lived and requiring a
-  // new instance to be created in lost context situations is acceptable and
-  // keeps the code simple.
-  if (!resource->context_provider) {
-    resource->context_provider = aura::Env::GetInstance()
-                                     ->context_factory()
-                                     ->SharedMainThreadContextProvider();
+  if (resource->damaged) {
+    // Acquire context provider for resource if needed.
+    // Note: We make no attempts to recover if the context provider is later
+    // lost. It is expected that this class is short-lived and requiring a
+    // new instance to be created in lost context situations is acceptable and
+    // keeps the code simple.
     if (!resource->context_provider) {
-      LOG(ERROR) << "Failed to acquire a context provider";
-      return;
+      resource->context_provider = aura::Env::GetInstance()
+                                       ->context_factory()
+                                       ->SharedMainThreadContextProvider();
+      if (!resource->context_provider) {
+        LOG(ERROR) << "Failed to acquire a context provider";
+        return;
+      }
     }
-  }
 
-  gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
+    gpu::gles2::GLES2Interface* gles2 = resource->context_provider->ContextGL();
 
-  if (resource->sync_token.HasData()) {
-    gles2->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
-    resource->sync_token = gpu::SyncToken();
-  }
-
-  if (resource->texture) {
-    gles2->ActiveTexture(GL_TEXTURE0);
-    gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
-  } else {
-    gles2->GenTextures(1, &resource->texture);
-    gles2->ActiveTexture(GL_TEXTURE0);
-    gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
-    gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gles2->GenMailboxCHROMIUM(resource->mailbox.name);
-    gles2->ProduceTextureDirectCHROMIUM(resource->texture,
-                                        resource->mailbox.name);
-  }
-
-  gfx::Size buffer_size = gpu_memory_buffer_->GetSize();
-
-  if (resource->image) {
-    gles2->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
-  } else {
-    resource->image = gles2->CreateImageCHROMIUM(
-        gpu_memory_buffer_->AsClientBuffer(), buffer_size.width(),
-        buffer_size.height(), SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT);
-    if (!resource->image) {
-      LOG(ERROR) << "Failed to create image";
-      return;
+    if (resource->sync_token.HasData()) {
+      gles2->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
+      resource->sync_token = gpu::SyncToken();
     }
-  }
-  gles2->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
 
-  gpu::SyncToken sync_token;
-  // For mus and mash, the compositor isn't sharing the GPU channel with
-  // FastInkView, so it cannot consume unverified sync token generated here.
-  // We need generate verified sync token for mus and mash.
-  if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
-    gles2->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-  else
-    gles2->GenSyncTokenCHROMIUM(sync_token.GetData());
+    if (resource->texture) {
+      gles2->ActiveTexture(GL_TEXTURE0);
+      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
+    } else {
+      gles2->GenTextures(1, &resource->texture);
+      gles2->ActiveTexture(GL_TEXTURE0);
+      gles2->BindTexture(GL_TEXTURE_2D, resource->texture);
+      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      gles2->GenMailboxCHROMIUM(resource->mailbox.name);
+      gles2->ProduceTextureDirectCHROMIUM(resource->texture,
+                                          resource->mailbox.name);
+    }
+
+    if (resource->image) {
+      gles2->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
+    } else {
+      resource->image = gles2->CreateImageCHROMIUM(
+          gpu_memory_buffer_->AsClientBuffer(), buffer_size_.width(),
+          buffer_size_.height(), SK_B32_SHIFT ? GL_RGBA : GL_BGRA_EXT);
+      if (!resource->image) {
+        LOG(ERROR) << "Failed to create image";
+        return;
+      }
+    }
+    gles2->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, resource->image);
+
+    // For mus and mash, the compositor isn't sharing the GPU channel with
+    // FastInkView, so it cannot consume unverified sync token generated here.
+    // We need generate verified sync token for mus and mash.
+    if (ash::Shell::GetAshConfig() == ash::Config::CLASSIC)
+      gles2->GenUnverifiedSyncTokenCHROMIUM(resource->sync_token.GetData());
+    else
+      gles2->GenSyncTokenCHROMIUM(resource->sync_token.GetData());
+
+    resource->damaged = false;
+  }
 
   viz::TransferableResource transferable_resource;
   transferable_resource.id = next_resource_id_++;
   transferable_resource.format = viz::RGBA_8888;
   transferable_resource.filter = GL_LINEAR;
-  transferable_resource.size = buffer_size;
-  transferable_resource.mailbox_holder =
-      gpu::MailboxHolder(resource->mailbox, sync_token, GL_TEXTURE_2D);
-  transferable_resource.is_overlay_candidate = true;
+  transferable_resource.size = buffer_size_;
+  transferable_resource.mailbox_holder = gpu::MailboxHolder(
+      resource->mailbox, resource->sync_token, GL_TEXTURE_2D);
+  // Use HW overlay if continuous updates are expected.
+  transferable_resource.is_overlay_candidate = auto_refresh_;
 
-  float device_scale_factor = widget_->GetLayer()->device_scale_factor();
   gfx::Transform target_to_buffer_transform(screen_to_buffer_transform_);
   target_to_buffer_transform.Scale(1.f / device_scale_factor,
                                    1.f / device_scale_factor);
@@ -451,24 +449,6 @@ void FastInkView::UpdateSurface() {
   gfx::Transform buffer_to_target_transform;
   bool rv = target_to_buffer_transform.GetInverse(&buffer_to_target_transform);
   DCHECK(rv);
-
-  gfx::Rect output_rect(gfx::ConvertSizeToPixel(
-      device_scale_factor,
-      widget_->GetNativeView()->GetBoundsInScreen().size()));
-  gfx::Rect quad_rect(buffer_size);
-  bool needs_blending = true;
-
-  // Expand surface damage to allow single buffer updates while frame
-  // is in-flight.
-  surface_damage_rect_.Inset(-kSurfaceDamageOutsetDIP,
-                             -kSurfaceDamageOutsetDIP);
-  pending_draw_surface_rect_ = surface_damage_rect_;
-
-  gfx::Rect damage_rect =
-      gfx::ConvertRectToPixel(device_scale_factor, surface_damage_rect_);
-  surface_damage_rect_ = gfx::Rect();
-  // Constrain damage rectangle to output rectangle.
-  damage_rect.Intersect(output_rect);
 
   const int kRenderPassId = 1;
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
@@ -491,43 +471,47 @@ void FastInkView::UpdateSurface() {
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
   frame.metadata.device_scale_factor = device_scale_factor;
+
   viz::TextureDrawQuad* texture_quad =
       render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-  float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-  gfx::PointF uv_top_left(0.f, 0.f);
-  gfx::PointF uv_bottom_right(1.f, 1.f);
-  texture_quad->SetNew(quad_state, quad_rect, quad_rect, needs_blending,
-                       transferable_resource.id, true, uv_top_left,
-                       uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                       false, false, false);
+  float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+  gfx::RectF uv_crop(quad_rect);
+  uv_crop.Scale(1.f / buffer_size_.width(), 1.f / buffer_size_.height());
+  texture_quad->SetNew(quad_state, quad_rect, quad_rect,
+                       /*needs_blending=*/true, transferable_resource.id,
+                       /*premultiplied_alpha=*/true, uv_crop.origin(),
+                       uv_crop.bottom_right(),
+                       /*background_color=*/SK_ColorTRANSPARENT, vertex_opacity,
+                       /*y_flipped=*/false,
+                       /*nearest_neighbor=*/false,
+                       /*secure_output_only=*/false);
   texture_quad->set_resource_size_in_pixels(transferable_resource.size);
   frame.resource_list.push_back(transferable_resource);
-  frame.render_pass_list.push_back(std::move(render_pass));
 
+  DCHECK(!pending_compositor_frame_ack_);
+  pending_compositor_frame_ack_ = true;
+
+  frame.render_pass_list.push_back(std::move(render_pass));
   frame_sink_holder_->SubmitCompositorFrame(
       std::move(frame), transferable_resource.id, std::move(resource));
+}
 
-  DCHECK(!pending_draw_surface_);
-  pending_draw_surface_ = true;
+void FastInkView::SubmitPendingCompositorFrame() {
+  if (pending_compositor_frame_ && !pending_compositor_frame_ack_)
+    SubmitCompositorFrame();
 }
 
 void FastInkView::DidReceiveCompositorFrameAck() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FastInkView::OnDidDrawSurface,
-                            weak_ptr_factory_.GetWeakPtr()));
+  pending_compositor_frame_ack_ = false;
+  if (pending_compositor_frame_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&FastInkView::SubmitPendingCompositorFrame,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void FastInkView::ReclaimResource(std::unique_ptr<Resource> resource) {
   returned_resources_.push_back(std::move(resource));
-}
-
-void FastInkView::OnDidDrawSurface() {
-  pending_draw_surface_ = false;
-  pending_draw_surface_rect_ = gfx::Rect();
-  if (!buffer_damage_rect_.IsEmpty())
-    UpdateBuffer();
-  if (!surface_damage_rect_.IsEmpty())
-    UpdateSurface();
 }
 
 }  // namespace ash

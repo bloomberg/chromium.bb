@@ -5,6 +5,7 @@
 #include "ash/laser/laser_pointer_view.h"
 
 #include "ash/laser/laser_segment_utils.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkTypes.h"
 #include "ui/aura/window.h"
@@ -158,16 +159,18 @@ class LaserSegment {
 LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                    base::TimeDelta presentation_delay,
                                    base::TimeDelta stationary_point_delay,
-                                   aura::Window* root_window)
-    : FastInkView(root_window),
+                                   aura::Window* container)
+    : FastInkView(container),
       laser_points_(life_duration),
       predicted_laser_points_(life_duration),
       presentation_delay_(presentation_delay),
-      stationary_timer_(new base::Timer(
-          FROM_HERE,
-          stationary_point_delay,
-          base::Bind(&LaserPointerView::UpdateTime, base::Unretained(this)),
-          true /* is_repeating */)) {}
+      stationary_timer_(
+          new base::Timer(FROM_HERE,
+                          stationary_point_delay,
+                          base::BindRepeating(&LaserPointerView::UpdateTime,
+                                              base::Unretained(this)),
+                          /*is_repeating=*/true)),
+      weak_ptr_factory_(this) {}
 
 LaserPointerView::~LaserPointerView() = default;
 
@@ -186,9 +189,12 @@ void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
   stationary_timer_->Reset();
 }
 
+void LaserPointerView::FadeOut(base::OnceClosure done) {
+  fadeout_done_ = std::move(done);
+}
+
 void LaserPointerView::AddPoint(const gfx::PointF& point,
                                 const base::TimeTicks& time) {
-  UpdateDamageRect(GetBoundingBox());
   laser_points_.AddPoint(point, time);
 
   // Current time is needed to determine presentation time and the number of
@@ -203,12 +209,37 @@ void LaserPointerView::AddPoint(const gfx::PointF& point,
   laser_points_.MoveForwardToTime(next_presentation_time);
   predicted_laser_points_.MoveForwardToTime(next_presentation_time);
 
-  UpdateDamageRect(GetBoundingBox());
-  RequestRedraw();
+  ScheduleUpdateBuffer();
 }
 
-void LaserPointerView::FadeOut(const base::Closure& done) {
-  fadeout_done_ = done;
+void LaserPointerView::ScheduleUpdateBuffer() {
+  if (pending_update_buffer_)
+    return;
+
+  pending_update_buffer_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&LaserPointerView::UpdateBuffer,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void LaserPointerView::UpdateBuffer() {
+  DCHECK(pending_update_buffer_);
+  pending_update_buffer_ = false;
+
+  gfx::Rect damage_rect = laser_content_rect_;
+  laser_content_rect_ = GetBoundingBox();
+  damage_rect.Union(laser_content_rect_);
+
+  {
+    TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer::Paint", "damage",
+                 damage_rect.ToString());
+
+    ScopedPaint paint(gpu_memory_buffer_.get(), screen_to_buffer_transform_,
+                      damage_rect);
+    Draw(paint.canvas());
+  }
+
+  UpdateSurface(laser_content_rect_, damage_rect, /*auto_refresh=*/true);
 }
 
 void LaserPointerView::UpdateTime() {
@@ -220,20 +251,18 @@ void LaserPointerView::UpdateTime() {
 
   if (laser_points_.IsEmpty() && predicted_laser_points_.IsEmpty()) {
     // No points left to show, complete the fadeout.
-    fadeout_done_.Run();  // this will delete this LaserPointerView instance.
+    std::move(fadeout_done_).Run();  // This will delete the LaserPointerView.
     return;
   }
 
-  // Continue fading out the existing points
-  UpdateDamageRect(GetBoundingBox());
   // Do not add the point but advance the time if the view is in process of
   // fading away.
   base::TimeTicks next_presentation_time =
       ui::EventTimeForNow() + presentation_delay_;
   laser_points_.MoveForwardToTime(next_presentation_time);
   predicted_laser_points_.MoveForwardToTime(next_presentation_time);
-  UpdateDamageRect(GetBoundingBox());
-  RequestRedraw();
+
+  ScheduleUpdateBuffer();
 }
 
 gfx::Rect LaserPointerView::GetBoundingBox() {
@@ -265,7 +294,7 @@ gfx::Rect LaserPointerView::GetBoundingBox() {
   return bounding_box;
 }
 
-void LaserPointerView::OnRedraw(gfx::Canvas& canvas) {
+void LaserPointerView::Draw(gfx::Canvas& canvas) {
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
