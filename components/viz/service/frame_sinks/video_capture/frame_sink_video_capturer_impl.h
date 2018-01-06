@@ -26,33 +26,50 @@
 #include "components/viz/service/viz_service_export.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
-class Rect;
 class Size;
 }  // namespace gfx
 
 namespace viz {
 
 class FrameSinkVideoCapturerManager;
-class FrameSinkVideoConsumer;
 class CopyOutputResult;
 
-// Captures the frames of a CompositorFrameSink's surface as a video stream.
+// Captures the frames of a CompositorFrameSink's surface as a video stream. See
+// mojom for usage details.
 //
-// The capturer works with FrameSinkVideoCapturerManager to resolve the capture
-// target, a CapturableFrameSink, from a given FrameSinkId. Once the
-// target is resolved, this capturer attaches to it to receive events of
-// interest regarding the frame flow, display timiming, and changes to the frame
-// sink's surface. For some subset of frames, decided by
+// FrameSinkVideoCapturerImpl is owned by FrameSinkManagerImpl. An instance is
+// destroyed either: 1) just after the Mojo binding has closed; or 2) when the
+// FrameSinkManagerImpl is shutting down.
+//
+// The capturer also works with FrameSinkManagerImpl to resolve the capture
+// target, a CapturableFrameSink, from a given FrameSinkId. Since there is a
+// possible race between when the capturer learns of a new FrameSinkId and when
+// FrameSinkManagerImpl learns of it (e.g., because Mojo method invocations can
+// be out-of-order), the capturer allows for the possibility that a requested
+// target will resolve at a later point. In this case, it is the responsibility
+// of FrameSinkManagerImpl to call SetResolvedTarget() once the target becomes
+// known to it.
+//
+// Once the target is resolved, this capturer attaches to it to receive events
+// of interest regarding the frame flow, display timiming, and changes to the
+// frame sink's surface. For some subset of frames, decided by
 // media::VideoCaptureOracle, this capturer will make a CopyOutputRequest on the
-// surface.
+// surface. Successful CopyOutputResults are then copied into pooled shared
+// memory for efficient transport to the consumer.
 class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
-    : public CapturableFrameSink::Client {
+    : public CapturableFrameSink::Client,
+      public mojom::FrameSinkVideoCapturer {
  public:
-  // |frame_sink_manager| must outlive this instance.
-  explicit FrameSinkVideoCapturerImpl(
-      FrameSinkVideoCapturerManager* frame_sink_manager);
+  // |frame_sink_manager| must outlive this instance. Binds this instance to the
+  // Mojo message pipe endpoint in |request|, but |request| may be empty for
+  // unit testing.
+  FrameSinkVideoCapturerImpl(FrameSinkVideoCapturerManager* frame_sink_manager,
+                             mojom::FrameSinkVideoCapturerRequest request);
 
   ~FrameSinkVideoCapturerImpl() final;
 
@@ -73,16 +90,17 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // frame sink manager.
   void OnTargetWillGoAway();
 
-  // TODO(crbug.com/754872): mojom::FrameSinkVideoCapturer implementation:
-  void SetFormat(media::VideoPixelFormat format, media::ColorSpace color_space);
-  void SetMinCapturePeriod(base::TimeDelta min_capture_period);
+  // mojom::FrameSinkVideoCapturer implementation:
+  void SetFormat(media::VideoPixelFormat format,
+                 media::ColorSpace color_space) final;
+  void SetMinCapturePeriod(base::TimeDelta min_capture_period) final;
   void SetResolutionConstraints(const gfx::Size& min_size,
                                 const gfx::Size& max_size,
-                                bool use_fixed_aspect_ratio);
-  void ChangeTarget(const FrameSinkId& frame_sink_id);
-  void Start(std::unique_ptr<FrameSinkVideoConsumer> consumer);
-  void Stop();
-  void RequestRefreshFrame();
+                                bool use_fixed_aspect_ratio) final;
+  void ChangeTarget(const FrameSinkId& frame_sink_id) final;
+  void Start(mojom::FrameSinkVideoConsumerPtr consumer) final;
+  void Stop() final;
+  void RequestRefreshFrame() final;
 
   // Default configuration.
   static constexpr media::VideoPixelFormat kDefaultPixelFormat =
@@ -143,17 +161,22 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // completed, but unsuccessful capture.
   void DidCaptureFrame(int64_t frame_number,
                        OracleFrameNumber oracle_frame_number,
-                       scoped_refptr<media::VideoFrame> frame);
+                       scoped_refptr<media::VideoFrame> frame,
+                       const gfx::Rect& content_rect);
 
   // Delivers a |frame| to the consumer, if the VideoCaptureOracle allows
   // it. |frame| can be null to indicate a completed, but unsuccessful capture.
   // In this case, some state will be updated, but nothing will be sent to the
   // consumer.
   void MaybeDeliverFrame(OracleFrameNumber oracle_frame_number,
-                         scoped_refptr<media::VideoFrame> frame);
+                         scoped_refptr<media::VideoFrame> frame,
+                         const gfx::Rect& content_rect);
 
   // Owner/Manager of this instance.
   FrameSinkVideoCapturerManager* const frame_sink_manager_;
+
+  // Mojo binding for this instance.
+  mojo::Binding<mojom::FrameSinkVideoCapturer> binding_;
 
   // Represents this instance as an issuer of CopyOutputRequests. The Surface
   // uses this to auto-cancel stale requests (i.e., prior requests that did not
@@ -183,7 +206,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // The current video frame consumer. This is set when Start() is called and
   // cleared when Stop() is called.
-  std::unique_ptr<FrameSinkVideoConsumer> consumer_;
+  mojom::FrameSinkVideoConsumerPtr consumer_;
 
   // A cache of recently-recorded future frame display times, according to the
   // BeginFrameArgs passed to OnBeginFrame() calls. This array is a ring buffer
@@ -217,9 +240,11 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
     int64_t frame_number;
     OracleFrameNumber oracle_frame_number;
     scoped_refptr<media::VideoFrame> frame;
+    gfx::Rect content_rect;
     CapturedFrame(int64_t frame_number,
                   OracleFrameNumber oracle_frame_number,
-                  scoped_refptr<media::VideoFrame> frame);
+                  scoped_refptr<media::VideoFrame> frame,
+                  const gfx::Rect& content_rect);
     CapturedFrame(const CapturedFrame& other);
     ~CapturedFrame();
     bool operator<(const CapturedFrame& other) const;
