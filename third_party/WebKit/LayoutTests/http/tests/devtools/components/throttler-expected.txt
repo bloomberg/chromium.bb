@@ -85,3 +85,9 @@ Process 'operation #1' STARTED.
 error: Error: Exception during process execution.
 Throttler is in IDLE state (doesn't have any timers set up)
 
+Running: testPromise
+SCHEDULED: 'operation #1' asSoonAsPossible: undefined
+Process 'operation #1' STARTED.
+Process 'operation #1' FINISHED.
+The promise resolved.
+

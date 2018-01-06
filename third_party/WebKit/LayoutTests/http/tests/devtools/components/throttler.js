@@ -222,6 +222,19 @@
       function processBody() {
         throw new Error('Exception during process execution.');
       }
+    },
+
+    async function testPromise(next) {
+      var process = ProcessMock.create('operation #1', () => 1);
+      var schedulePromse = throttler.schedule(process.run).then(() => TestRunner.addResult('The promise resolved.'));
+      await Promise.resolve();
+      timeoutMock.fireAllTimers();
+      await Promise.resolve();
+      process.finish();
+
+      await schedulePromse;
+      next();
+
     }
   ]);
 
@@ -272,7 +285,11 @@
         'Throttler is in TIMEOUT state. Scheduled timers timeouts: [' + timeouts.sort().join(', ') + ']');
   }
 
-  function logSchedule(operation, asSoonAsPossible) {
+  function logSchedule(operation, asSoonAsPossible, returnValue) {
+    if (returnValue === undefined) {
+      returnValue = asSoonAsPossible;
+      asSoonAsPossible = undefined;
+    }
     TestRunner.addResult('SCHEDULED: \'' + operation.processName + '\' asSoonAsPossible: ' + asSoonAsPossible);
   }
 })();
