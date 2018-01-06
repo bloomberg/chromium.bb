@@ -301,9 +301,17 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
       DLOG(WARNING) << "No camera found";
       return nullptr;
     }
+#if defined(OS_WIN)
+    // Dump the camera model to help debugging.
+    // TODO(alaoui.rda@gmail.com): remove after http://crbug.com/730068 is
+    // fixed.
+    LOG(INFO) << "Using camera "
+              << device_descriptors_->front().GetNameAndModel();
+#else
     DLOG(INFO) << "Using camera "
                << device_descriptors_->front().GetNameAndModel();
-    ;
+#endif
+
     return base::MakeUnique<VideoCaptureDeviceDescriptor>(
         device_descriptors_->front());
   }
