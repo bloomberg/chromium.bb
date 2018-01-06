@@ -125,7 +125,34 @@ ScreenLayoutObserverTest::GetDisplayNotification() const {
   return nullptr;
 }
 
-TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
+class ScreenLayoutObserverTestMultiMirroring
+    : public ScreenLayoutObserverTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ScreenLayoutObserverTestMultiMirroring() = default;
+  ~ScreenLayoutObserverTestMultiMirroring() override = default;
+
+ protected:
+  void SetUp() override {
+    bool should_disable_multi_mirroring = GetParam();
+    if (should_disable_multi_mirroring) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          ::switches::kDisableMultiMirroring);
+    }
+    ScreenLayoutObserverTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserverTestMultiMirroring);
+};
+
+// Instantiate the boolean which is used to enable/disable multi-mirroring in
+// the parameterized tests.
+INSTANTIATE_TEST_CASE_P(,
+                        ScreenLayoutObserverTestMultiMirroring,
+                        testing::Bool());
+
+TEST_P(ScreenLayoutObserverTestMultiMirroring, DisplayNotifications) {
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
       true);
 
@@ -227,10 +254,15 @@ TEST_F(ScreenLayoutObserverTest, DisplayNotifications) {
   // Turn off mirror mode.
   CloseNotification();
   display_manager()->SetMirrorMode(false);
-  display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
-                                       GetSecondDisplayName()),
-            GetDisplayNotificationText());
+  if (display_manager()->is_multi_mirroring_enabled()) {
+    EXPECT_EQ(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT),
+        GetDisplayNotificationText());
+  } else {
+    EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
+                                         GetSecondDisplayName()),
+              GetDisplayNotificationText());
+  }
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Resize the first display.
@@ -351,7 +383,13 @@ TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfDockedModeMessage) {
 // default.
 // Tests that exiting mirror mode because of adding a third display shows the
 // correct "3+ displays mirror mode is not supported" message.
-TEST_F(ScreenLayoutObserverTest, ExitMirrorModeBecauseOfThirdDisplayMessage) {
+TEST_P(ScreenLayoutObserverTestMultiMirroring,
+       ExitMirrorModeBecauseOfThirdDisplayMessage) {
+  if (display_manager()->is_multi_mirroring_enabled()) {
+    // This test is not neccessary when mirroring across 3+ displays is
+    // supported.
+    return;
+  }
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
       true);
   UpdateDisplay("400x400,200x200");
@@ -548,25 +586,7 @@ TEST_F(ScreenLayoutObserverTest, RotationNotification) {
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 
-// Test ScreenLayoutObserver with multi-mirroring enabled.
-class ScreenLayoutObserverMultiMirroringTest : public ScreenLayoutObserverTest {
- public:
-  ScreenLayoutObserverMultiMirroringTest() = default;
-  ~ScreenLayoutObserverMultiMirroringTest() override = default;
-
-  // ScreenLayoutObserverTest:
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableMultiMirroring);
-    ScreenLayoutObserverTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserverMultiMirroringTest);
-};
-
-TEST_F(ScreenLayoutObserverMultiMirroringTest,
-       MirrorModeAddOrRemoveDisplayMessage) {
+TEST_F(ScreenLayoutObserverTest, MirrorModeAddOrRemoveDisplayMessage) {
   Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
       true);
 

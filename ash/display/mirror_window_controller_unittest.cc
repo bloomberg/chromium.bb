@@ -55,9 +55,24 @@ class MirrorOnBootTest : public AshTestBase {
 
 using MirrorWindowControllerTest = AshTestBase;
 
+class MirrorWindowControllerTestDisableMultiMirroring : public AshTestBase {
+ public:
+  MirrorWindowControllerTestDisableMultiMirroring() = default;
+  ~MirrorWindowControllerTestDisableMultiMirroring() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kDisableMultiMirroring);
+    AshTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MirrorWindowControllerTestDisableMultiMirroring);
+};
+
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
-TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
+TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorBasic) {
   // MirrorWindowController is not used in the MUS or MASH configs.
   if (Shell::GetAshConfig() != Config::CLASSIC)
     return;
@@ -110,7 +125,7 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
 
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
-TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
+TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorRotate) {
   // MirrorWindowController is not used in the MUS or MASH configs.
   if (Shell::GetAshConfig() != Config::CLASSIC)
     return;
@@ -171,7 +186,7 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
 // coordinates.
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
-TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
+TEST_F(MirrorWindowControllerTestDisableMultiMirroring, MirrorCursorLocations) {
   // MirrorWindowController is not used in the MUS or MASH configs.
   if (Shell::GetAshConfig() != Config::CLASSIC)
     return;
@@ -212,7 +227,8 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
 // cursor's display.
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
-TEST_F(MirrorWindowControllerTest, MirrorCursorMoveOnEnter) {
+TEST_F(MirrorWindowControllerTestDisableMultiMirroring,
+       MirrorCursorMoveOnEnter) {
   // MirrorWindowController is not used in the MUS or MASH configs.
   if (Shell::GetAshConfig() != Config::CLASSIC)
     return;

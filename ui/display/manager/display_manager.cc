@@ -304,8 +304,8 @@ DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
     : screen_(std::move(screen)),
       layout_store_(new DisplayLayoutStore),
       is_multi_mirroring_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kEnableMultiMirroring)),
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              ::switches::kDisableMultiMirroring)),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
   configure_displays_ = chromeos::IsRunningAsSystemCompositor();

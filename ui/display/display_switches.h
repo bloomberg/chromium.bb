@@ -13,7 +13,7 @@
 namespace switches {
 
 // Keep sorted.
-DISPLAY_EXPORT extern const char kEnableMultiMirroring[];
+DISPLAY_EXPORT extern const char kDisableMultiMirroring[];
 DISPLAY_EXPORT extern const char kEnableSoftwareMirroring[];
 DISPLAY_EXPORT extern const char kEnsureForcedColorProfile[];
 DISPLAY_EXPORT extern const char kForceColorProfile[];
