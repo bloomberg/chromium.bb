@@ -339,23 +339,14 @@ void SurfaceHitTestTestHelper(
 
   WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
-  float scale_factor = GetPageScaleFactor(shell);
-
-  // Get the view bounds of the child iframe, which should account for the
-  // relative offset of its direct parent within the root frame, for use in
-  // targeting the input event.
-  gfx::Rect bounds = rwhv_child->GetViewBounds();
-
   // Target input event to child frame.
+  gfx::PointF child_location(5, 5);
+  child_location = rwhv_child->TransformPointToRootCoordSpaceF(child_location);
   blink::WebMouseEvent child_event(blink::WebInputEvent::kMouseDown,
                                    blink::WebInputEvent::kNoModifiers,
                                    blink::WebInputEvent::kTimeStampForTesting);
   child_event.button = blink::WebPointerProperties::Button::kLeft;
-  child_event.SetPositionInWidget(
-      gfx::ToCeiledInt((bounds.x() - root_view->GetViewBounds().x() + 5) *
-                       scale_factor),
-      gfx::ToCeiledInt((bounds.y() - root_view->GetViewBounds().y() + 5) *
-                       scale_factor));
+  child_event.SetPositionInWidget(child_location.x(), child_location.y());
   child_event.click_count = 1;
 
   // Check the renderer hit-test API return the correct frame for
@@ -364,12 +355,9 @@ void SurfaceHitTestTestHelper(
   viz::FrameSinkId received_frame_sink_id;
   base::Closure quit_closure =
       content::GetDeferredQuitTaskForRunLoop(&run_loop);
-  // TODO(crbug.com/793018): There is a confusion here about scale_factor.
   DCHECK_NE(root->current_frame_host()->GetInputTargetClient(), nullptr);
   root->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-      gfx::ScaleToCeiledPoint(
-          gfx::ToCeiledPoint(child_event.PositionInWidget()), scale_factor,
-          scale_factor),
+      gfx::ToCeiledPoint(child_event.PositionInWidget()),
       base::BindLambdaForTesting([&](const viz::FrameSinkId& id) {
         received_frame_sink_id = id;
         quit_closure.Run();
@@ -12876,17 +12864,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, HitTestNestedFrames) {
 
   WaitForChildFrameSurfaceReady(grandchild_node->current_frame_host());
 
-  float scale_factor = GetPageScaleFactor(shell());
-  gfx::Rect child_bounds = rwhv_child->GetViewBounds();
-  gfx::Rect nested_child_bounds = rwhv_grandchild->GetViewBounds();
-
   // Create two points to hit test: One in the child of the main frame, and
   // one in the frame nested within that. The hit test request is sent to the
   // child's renderer.
   gfx::Point point_in_child(1, 1);
-  gfx::Point point_in_nested_child(
-      (nested_child_bounds.x() - child_bounds.x() + 5) * scale_factor,
-      (nested_child_bounds.y() - child_bounds.y() + 5) * scale_factor);
+  gfx::PointF point_in_nested_child(5, 5);
+  rwhv_grandchild->TransformPointToCoordSpaceForView(
+      point_in_nested_child, rwhv_child, &point_in_nested_child);
 
   {
     base::RunLoop run_loop;
@@ -12917,7 +12901,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, HitTestNestedFrames) {
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
-        point_in_nested_child,
+        gfx::ToCeiledPoint(point_in_nested_child),
         base::BindLambdaForTesting([&](const viz::FrameSinkId& id) {
           received_frame_sink_id = id;
           quit_closure.Run();
