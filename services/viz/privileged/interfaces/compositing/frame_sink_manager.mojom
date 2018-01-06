@@ -7,6 +7,7 @@ module viz.mojom;
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
 import "services/viz/privileged/interfaces/compositing/display_private.mojom";
+import "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom";
 import "services/viz/privileged/interfaces/compositing/renderer_settings.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
@@ -91,6 +92,9 @@ interface FrameSinkManager {
   // Requests viz to notify |observer| whenever video activity is detected in
   // one of the clients. See viz::VideoDetector.
   AddVideoDetectorObserver(VideoDetectorObserver observer);
+
+  // Creates a FrameSinkVideoCapturer instance.
+  CreateVideoCapturer(FrameSinkVideoCapturer& request);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

@@ -7,16 +7,18 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
-#include "components/viz/service/frame_sinks/video_capture/frame_sink_video_consumer.h"
 #include "media/base/limits.h"
 #include "media/base/video_util.h"
+#include "media/capture/mojo/video_capture_types.mojom.h"
+#include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/gfx/color_space.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::VideoCaptureOracle;
@@ -51,8 +53,10 @@ constexpr base::TimeDelta
     FrameSinkVideoCapturerImpl::kRefreshFrameRetryInterval;
 
 FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
-    FrameSinkVideoCapturerManager* frame_sink_manager)
+    FrameSinkVideoCapturerManager* frame_sink_manager,
+    mojom::FrameSinkVideoCapturerRequest request)
     : frame_sink_manager_(frame_sink_manager),
+      binding_(this),
       copy_request_source_(base::UnguessableToken::Create()),
       clock_(base::DefaultTickClock::GetInstance()),
       oracle_(true /* enable_auto_throttling */),
@@ -60,6 +64,13 @@ FrameSinkVideoCapturerImpl::FrameSinkVideoCapturerImpl(
       feedback_weak_factory_(&oracle_),
       capture_weak_factory_(this) {
   DCHECK(frame_sink_manager_);
+
+  if (request.is_pending()) {
+    binding_.Bind(std::move(request));
+    binding_.set_connection_error_handler(
+        base::BindOnce(&FrameSinkVideoCapturerManager::OnCapturerConnectionLost,
+                       base::Unretained(frame_sink_manager_), this));
+  }
 }
 
 FrameSinkVideoCapturerImpl::~FrameSinkVideoCapturerImpl() {
@@ -191,11 +202,16 @@ void FrameSinkVideoCapturerImpl::ChangeTarget(
 }
 
 void FrameSinkVideoCapturerImpl::Start(
-    std::unique_ptr<FrameSinkVideoConsumer> consumer) {
+    mojom::FrameSinkVideoConsumerPtr consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(consumer);
 
   Stop();
   consumer_ = std::move(consumer);
+  // In the future, if the connection to the consumer is lost before a call to
+  // Stop(), make that call on its behalf.
+  consumer_.set_connection_error_handler(base::BindOnce(
+      &FrameSinkVideoCapturerImpl::Stop, base::Unretained(this)));
   MaybeCaptureFrame(VideoCaptureOracle::kActiveRefreshRequest,
                     gfx::Rect(oracle_.source_size()), clock_->NowTicks());
 }
@@ -356,7 +372,6 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   metadata->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
                          clock_->NowTicks());
   // See TODO in SetFormat(). For now, always assume Rec. 709.
-  frame->set_color_space(gfx::ColorSpace::CreateREC709());
   metadata->SetInteger(VideoFrameMetadata::COLOR_SPACE,
                        media::COLOR_SPACE_HD_REC709);
   metadata->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
@@ -376,19 +391,22 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   const gfx::Size& source_size = oracle_.source_size();
   if (!resolved_target_ || source_size.IsEmpty()) {
     media::FillYUV(frame.get(), 0x00, 0x80, 0x80);
-    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame));
+    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
+                    gfx::Rect());
     return;
   }
 
+  const gfx::Rect content_rect =
+      media::ComputeLetterboxRegionForI420(frame->visible_rect(), source_size);
+
   // For passive refresh requests, just deliver the resurrected frame.
   if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
-    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame));
+    DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
+                    content_rect);
     return;
   }
 
   // Request a copy of the next frame from the frame sink.
-  const gfx::Rect content_rect =
-      media::ComputeLetterboxRegionForI420(frame->visible_rect(), source_size);
   std::unique_ptr<CopyOutputRequest> request(new CopyOutputRequest(
       CopyOutputRequest::ResultFormat::I420_PLANES,
       base::BindOnce(&FrameSinkVideoCapturerImpl::DidCopyFrame,
@@ -422,7 +440,7 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
   DCHECK(result);
 
   // Stop() should have canceled any outstanding copy requests. So, by reaching
-  // this point, there should be a |consumer_| present.
+  // this point, |consumer_| should be bound.
   DCHECK(consumer_);
 
   // Populate the VideoFrame from the CopyOutputResult.
@@ -449,13 +467,15 @@ void FrameSinkVideoCapturerImpl::DidCopyFrame(
     frame = nullptr;
   }
 
-  DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame));
+  DidCaptureFrame(frame_number, oracle_frame_number, std::move(frame),
+                  content_rect);
 }
 
 void FrameSinkVideoCapturerImpl::DidCaptureFrame(
     int64_t frame_number,
     OracleFrameNumber oracle_frame_number,
-    scoped_refptr<VideoFrame> frame) {
+    scoped_refptr<VideoFrame> frame,
+    const gfx::Rect& content_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(frame_number, next_delivery_frame_number_);
 
@@ -466,10 +486,12 @@ void FrameSinkVideoCapturerImpl::DidCaptureFrame(
 
   // Ensure frames are delivered in-order by using a min-heap, and only
   // deliver the next frame(s) in-sequence when they are found at the top.
-  delivery_queue_.emplace(frame_number, oracle_frame_number, std::move(frame));
+  delivery_queue_.emplace(frame_number, oracle_frame_number, std::move(frame),
+                          content_rect);
   while (delivery_queue_.top().frame_number == next_delivery_frame_number_) {
-    MaybeDeliverFrame(delivery_queue_.top().oracle_frame_number,
-                      std::move(delivery_queue_.top().frame));
+    auto& next = delivery_queue_.top();
+    MaybeDeliverFrame(next.oracle_frame_number, std::move(next.frame),
+                      next.content_rect);
     ++next_delivery_frame_number_;
     delivery_queue_.pop();
     if (delivery_queue_.empty()) {
@@ -480,7 +502,8 @@ void FrameSinkVideoCapturerImpl::DidCaptureFrame(
 
 void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
     OracleFrameNumber oracle_frame_number,
-    scoped_refptr<VideoFrame> frame) {
+    scoped_refptr<VideoFrame> frame,
+    const gfx::Rect& content_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // The Oracle has the final say in whether frame delivery will proceed. It
@@ -508,22 +531,56 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   }
   frame->set_timestamp(media_ticks - *first_frame_media_ticks_);
 
-  // Construct a new InFlightFrameDelivery instance, to provide the done signal
-  // for this frame and deliver the frame to the consumer.
+  // Clone a handle to the shared memory backing the populated video frame, to
+  // send to the consumer. The handle is READ_WRITE because the consumer is free
+  // to modify the content further (so long as it undoes its changes before the
+  // InFlightFrameDelivery::Done() call).
+  DCHECK_EQ(frame->storage_type(),
+            media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER);
+  auto* const mojo_frame =
+      static_cast<media::MojoSharedBufferVideoFrame*>(frame.get());
+  mojo::ScopedSharedBufferHandle buffer = mojo_frame->Handle().Clone(
+      mojo::SharedBufferHandle::AccessMode::READ_WRITE);
+  const uint32_t buffer_size = static_cast<uint32_t>(mojo_frame->MappedSize());
+
+  // Assemble frame layout, format, and metadata into a mojo struct to send to
+  // the consumer.
+  media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
+  info->timestamp = frame->timestamp();
+  info->metadata = frame->metadata()->CopyInternalValues();
+  info->pixel_format = frame->format();
+  info->storage_type = media::VideoPixelStorage::CPU;
+  info->coded_size = frame->coded_size();
+  info->visible_rect = frame->visible_rect();
   const gfx::Rect update_rect = frame->visible_rect();
-  auto delivery = std::make_unique<InFlightFrameDelivery>(
-      frame_pool_.HoldFrameForDelivery(frame.get()),
-      base::BindOnce(&VideoCaptureOracle::RecordConsumerFeedback,
-                     feedback_weak_factory_.GetWeakPtr(), oracle_frame_number));
-  consumer_->OnFrameCaptured(std::move(frame), update_rect,
-                             std::move(delivery));
+
+  // Create an InFlightFrameDelivery for this frame, owned by its mojo binding.
+  // It responds to the consumer's Done() notification by returning the video
+  // frame to the |frame_pool_|. It responds to the optional ProvideFeedback()
+  // by forwarding the measurement to the |oracle_|.
+  mojom::FrameSinkVideoConsumerFrameCallbacksPtr callbacks;
+  mojo::MakeStrongBinding(
+      std::make_unique<InFlightFrameDelivery>(
+          frame_pool_.HoldFrameForDelivery(frame.get()),
+          base::BindOnce(&VideoCaptureOracle::RecordConsumerFeedback,
+                         feedback_weak_factory_.GetWeakPtr(),
+                         oracle_frame_number)),
+      mojo::MakeRequest(&callbacks));
+
+  // Send the frame to the consumer.
+  consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
+                             update_rect, content_rect, std::move(callbacks));
 }
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(
     int64_t fn,
     OracleFrameNumber ofn,
-    scoped_refptr<VideoFrame> fr)
-    : frame_number(fn), oracle_frame_number(ofn), frame(std::move(fr)) {}
+    scoped_refptr<VideoFrame> fr,
+    const gfx::Rect& cr)
+    : frame_number(fn),
+      oracle_frame_number(ofn),
+      frame(std::move(fr)),
+      content_rect(cr) {}
 
 FrameSinkVideoCapturerImpl::CapturedFrame::CapturedFrame(
     const CapturedFrame& other) = default;

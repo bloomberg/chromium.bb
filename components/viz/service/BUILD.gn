@@ -120,7 +120,6 @@ viz_component("service") {
     "frame_sinks/video_capture/frame_sink_video_capturer_impl.cc",
     "frame_sinks/video_capture/frame_sink_video_capturer_impl.h",
     "frame_sinks/video_capture/frame_sink_video_capturer_manager.h",
-    "frame_sinks/video_capture/frame_sink_video_consumer.h",
     "frame_sinks/video_capture/in_flight_frame_delivery.cc",
     "frame_sinks/video_capture/in_flight_frame_delivery.h",
     "frame_sinks/video_capture/interprocess_frame_pool.cc",

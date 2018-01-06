@@ -127,6 +127,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // Asks viz to send updates regarding video activity to |observer|.
   void AddVideoDetectorObserver(mojom::VideoDetectorObserverPtr observer);
 
+  // Creates a FrameSinkVideoCapturer instance.
+  void CreateVideoCapturer(mojom::FrameSinkVideoCapturerRequest request);
+
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,

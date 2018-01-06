@@ -49,6 +49,8 @@ class TestFrameSinkManagerImpl : public mojom::FrameSinkManager {
   void DropTemporaryReference(const SurfaceId& surface_id) override {}
   void AddVideoDetectorObserver(
       mojom::VideoDetectorObserverPtr observer) override {}
+  void CreateVideoCapturer(
+      mojom::FrameSinkVideoCapturerRequest request) override {}
 
   mojo::Binding<mojom::FrameSinkManager> binding_;
   mojom::FrameSinkManagerClientPtr client_;

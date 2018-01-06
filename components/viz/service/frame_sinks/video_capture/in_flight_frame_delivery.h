@@ -8,25 +8,24 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/viz/service/viz_service_export.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
 
 namespace viz {
 
 // Represents an in-flight frame delivery to the consumer. Its main purpose is
 // to proxy callbacks from the consumer back to the relevant capturer
 // components owned and operated by FrameSinkVideoCapturerImpl.
-//
-// TODO(crbug.com/754872): This will extend a mojo-generated interface in an
-// upcoming change.
-class VIZ_SERVICE_EXPORT InFlightFrameDelivery {
+class VIZ_SERVICE_EXPORT InFlightFrameDelivery
+    : public mojom::FrameSinkVideoConsumerFrameCallbacks {
  public:
   InFlightFrameDelivery(base::OnceClosure post_delivery_callback,
                         base::OnceCallback<void(double)> feedback_callback);
 
-  virtual ~InFlightFrameDelivery();
+  ~InFlightFrameDelivery() final;
 
-  // TODO(crbug.com/754872): mojom::FrameSinkVideoFrameCallbacks implementation:
-  void Done();
-  void ProvideFeedback(double utilization);
+  // mojom::FrameSinkVideoConsumerFrameCallbacks implementation:
+  void Done() final;
+  void ProvideFeedback(double utilization) final;
 
  private:
   base::OnceClosure post_delivery_callback_;

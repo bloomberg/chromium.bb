@@ -202,6 +202,16 @@ void HostFrameSinkManager::AssignTemporaryReference(
   frame_sink_manager_->AssignTemporaryReference(surface_id, frame_sink_id);
 }
 
+void HostFrameSinkManager::AddVideoDetectorObserver(
+    mojom::VideoDetectorObserverPtr observer) {
+  frame_sink_manager_->AddVideoDetectorObserver(std::move(observer));
+}
+
+void HostFrameSinkManager::CreateVideoCapturer(
+    mojom::FrameSinkVideoCapturerRequest request) {
+  frame_sink_manager_->CreateVideoCapturer(std::move(request));
+}
+
 std::unique_ptr<CompositorFrameSinkSupport>
 HostFrameSinkManager::CreateCompositorFrameSinkSupport(
     mojom::CompositorFrameSinkClient* client,
@@ -382,10 +392,5 @@ HostFrameSinkManager::FrameSinkData::~FrameSinkData() = default;
 
 HostFrameSinkManager::FrameSinkData& HostFrameSinkManager::FrameSinkData::
 operator=(FrameSinkData&& other) = default;
-
-void HostFrameSinkManager::AddVideoDetectorObserver(
-    mojom::VideoDetectorObserverPtr observer) {
-  frame_sink_manager_->AddVideoDetectorObserver(std::move(observer));
-}
 
 }  // namespace viz
