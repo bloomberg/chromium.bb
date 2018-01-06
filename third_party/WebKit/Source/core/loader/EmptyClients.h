@@ -37,7 +37,6 @@
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EditorClient.h"
 #include "core/page/Page.h"
 #include "platform/DragImage.h"
 #include "platform/WebFrameScheduler.h"
@@ -400,28 +399,6 @@ class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {
   void UpdateSpellingUIWithMisspelledWord(const WebString&) override {}
 
   DISALLOW_COPY_AND_ASSIGN(EmptySpellCheckPanelHostClient);
-};
-
-class EmptyEditorClient final : public EditorClient {
-  USING_FAST_MALLOC(EmptyEditorClient);
-
- public:
-  EmptyEditorClient() : EditorClient() {}
-  ~EmptyEditorClient() override {}
-
-  void RespondToChangedContents() override {}
-  void RespondToChangedSelection(LocalFrame*, SelectionType) override {}
-
-  bool CanCopyCut(LocalFrame*, bool default_value) const override {
-    return default_value;
-  }
-  bool CanPaste(LocalFrame*, bool default_value) const override {
-    return default_value;
-  }
-
-  bool HandleKeyboardEvent(LocalFrame*) override { return false; }
-
-  DISALLOW_COPY_AND_ASSIGN(EmptyEditorClient);
 };
 
 class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {

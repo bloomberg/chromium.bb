@@ -530,6 +530,7 @@ class BLINK_EXPORT WebFrameClient {
   // These methods allow the client to intercept and overrule editing
   // operations.
   virtual void DidChangeSelection(bool is_selection_empty) {}
+  virtual void DidChangeContents() {}
 
   // This method is called in response to handleInputEvent() when the
   // default action for the current keyboard event is not suppressed by the

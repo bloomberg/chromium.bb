@@ -112,12 +112,6 @@ class WebViewClient : protected WebWidgetClient {
   // in screen coordinates.
   virtual WebRect RootWindowRect() { return WebRect(); }
 
-  // Editing -------------------------------------------------------------
-
-  // These methods allow the client to intercept and overrule editing
-  // operations.
-  virtual void DidChangeContents() {}
-
   // Dialogs -------------------------------------------------------------
 
   // Ask users to choose date/time for the specified parameters. When a user

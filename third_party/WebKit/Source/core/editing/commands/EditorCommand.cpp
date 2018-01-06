@@ -57,6 +57,7 @@
 #include "core/editing/commands/UnlinkCommand.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
@@ -68,7 +69,6 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/EditorClient.h"
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/KillRing.h"
@@ -657,7 +657,9 @@ static bool CanWriteClipboard(LocalFrame& frame, EditorCommandSource source) {
   bool default_value =
       (settings && settings->GetJavaScriptCanAccessClipboard()) ||
       Frame::HasTransientUserActivation(&frame);
-  return frame.GetEditor().Client().CanCopyCut(&frame, default_value);
+  if (!frame.GetContentSettingsClient())
+    return default_value;
+  return frame.GetContentSettingsClient()->AllowWriteToClipboard(default_value);
 }
 
 static bool ExecuteCopy(LocalFrame& frame,
@@ -1701,7 +1703,10 @@ static bool CanReadClipboard(LocalFrame& frame, EditorCommandSource source) {
   bool default_value = settings &&
                        settings->GetJavaScriptCanAccessClipboard() &&
                        settings->GetDOMPasteAllowed();
-  return frame.GetEditor().Client().CanPaste(&frame, default_value);
+  if (!frame.GetContentSettingsClient())
+    return default_value;
+  return frame.GetContentSettingsClient()->AllowReadFromClipboard(
+      default_value);
 }
 
 static bool ExecutePaste(LocalFrame& frame,
@@ -2076,7 +2081,10 @@ static bool PasteSupported(LocalFrame* frame) {
   const bool default_value = settings &&
                              settings->GetJavaScriptCanAccessClipboard() &&
                              settings->GetDOMPasteAllowed();
-  return frame->GetEditor().Client().CanPaste(frame, default_value);
+  if (!frame->GetContentSettingsClient())
+    return default_value;
+  return frame->GetContentSettingsClient()->AllowReadFromClipboard(
+      default_value);
 }
 
 static bool SupportedFromMenuOrKeyBinding(LocalFrame*) {

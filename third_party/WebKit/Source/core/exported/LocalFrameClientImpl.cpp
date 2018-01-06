@@ -1136,4 +1136,20 @@ String LocalFrameClientImpl::evaluateInInspectorOverlayForTesting(
   return g_empty_string;
 }
 
+bool LocalFrameClientImpl::HandleCurrentKeyboardEvent() {
+  if (web_frame_->Client())
+    return web_frame_->Client()->HandleCurrentKeyboardEvent();
+  return false;
+}
+
+void LocalFrameClientImpl::DidChangeSelection(bool is_selection_empty) {
+  if (web_frame_->Client())
+    web_frame_->Client()->DidChangeSelection(is_selection_empty);
+}
+
+void LocalFrameClientImpl::DidChangeContents() {
+  if (web_frame_->Client())
+    web_frame_->Client()->DidChangeContents();
+}
+
 }  // namespace blink

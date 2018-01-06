@@ -39,7 +39,6 @@
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuProvider.h"
-#include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
 #include "core/page/ScopedPagePauser.h"
@@ -565,7 +564,6 @@ class CORE_EXPORT WebViewImpl final
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
 
   Persistent<ChromeClient> chrome_client_;
-  EditorClient editor_client_;
 
   WebSize size_;
   // If true, automatically resize the layout view around its content.

@@ -350,6 +350,12 @@ void WebFrameTestClient::DidChangeSelection(bool is_empty_callback) {
         "webViewDidChangeSelection:WebViewDidChangeSelectionNotification\n");
 }
 
+void WebFrameTestClient::DidChangeContents() {
+  if (test_runner()->shouldDumpEditingCallbacks())
+    delegate_->PrintMessage(
+        "EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification\n");
+}
+
 blink::WebPlugin* WebFrameTestClient::CreatePlugin(
     const blink::WebPluginParams& params) {
   blink::WebLocalFrame* frame = web_frame_test_proxy_base_->web_frame();

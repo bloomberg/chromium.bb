@@ -383,6 +383,12 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       WebScopedVirtualTimePauser virtual_time_pauser) {}
 
   virtual String evaluateInInspectorOverlayForTesting(const String& script) = 0;
+
+  virtual bool HandleCurrentKeyboardEvent() { return false; }
+
+  virtual void DidChangeSelection(bool is_selection_empty) {}
+
+  virtual void DidChangeContents() {}
 };
 
 }  // namespace blink

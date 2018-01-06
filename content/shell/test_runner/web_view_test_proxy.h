@@ -181,10 +181,6 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }
-  void DidChangeContents() override {
-    view_test_client()->DidChangeContents();
-    Base::DidChangeContents();
-  }
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,
                              const blink::WebWindowFeatures& features,

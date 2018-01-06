@@ -89,7 +89,6 @@
 #include "core/loader/EmptyClients.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/DragData.h"
-#include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/svg/SVGImageElement.h"
@@ -215,17 +214,6 @@ EditingBehavior Editor::Behavior() const {
     return EditingBehavior(kEditingMacBehavior);
 
   return EditingBehavior(GetFrame().GetSettings()->GetEditingBehaviorType());
-}
-
-static EditorClient& GetEmptyEditorClient() {
-  DEFINE_STATIC_LOCAL(EmptyEditorClient, client, ());
-  return client;
-}
-
-EditorClient& Editor::Client() const {
-  if (Page* page = GetFrame().GetPage())
-    return page->GetEditorClient();
-  return GetEmptyEditorClient();
 }
 
 static bool IsCaretAtStartOfWrappedLine(const FrameSelection& selection) {
@@ -800,7 +788,7 @@ void Editor::RespondToChangedContents(const Position& position) {
   }
 
   GetSpellChecker().RespondToChangedContents();
-  Client().RespondToChangedContents();
+  frame_->Client()->DidChangeContents();
 }
 
 void Editor::RemoveFormattingAndStyle() {
@@ -1526,12 +1514,12 @@ void Editor::ChangeSelectionAfterCommand(
   // WebCore inserts <div><br></div> *before* the current block, which correctly
   // moves the paragraph down but which doesn't change the caret's DOM position
   // (["hello", 0]). In these situations the above FrameSelection::setSelection
-  // call does not call EditorClient::respondToChangedSelection(), which, on the
+  // call does not call LocalFrameClient::DidChangeSelection(), which, on the
   // Mac, sends selection change notifications and starts a new kill ring
   // sequence, but we want to do these things (matches AppKit).
   if (selection_did_not_change_dom_position) {
-    Client().RespondToChangedSelection(
-        frame_, GetFrameSelection().GetSelectionInDOMTree().Type());
+    frame_->Client()->DidChangeSelection(
+        GetFrameSelection().GetSelectionInDOMTree().Type() != kRangeSelection);
   }
 }
 
@@ -1778,8 +1766,8 @@ void Editor::SetMarkedTextMatchesAreHighlighted(bool flag) {
 
 void Editor::RespondToChangedSelection() {
   GetSpellChecker().RespondToChangedSelection();
-  Client().RespondToChangedSelection(
-      frame_, GetFrameSelection().GetSelectionInDOMTree().Type());
+  frame_->Client()->DidChangeSelection(
+      GetFrameSelection().GetSelectionInDOMTree().Type() != kRangeSelection);
   SetStartNewKillRingSequence(true);
 }
 

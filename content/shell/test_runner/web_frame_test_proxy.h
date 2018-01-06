@@ -168,6 +168,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidChangeSelection(is_selection_empty);
   }
 
+  void DidChangeContents() override {
+    test_client()->DidChangeContents();
+    Base::DidChangeContents();
+  }
+
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override {
     if (test_client()->GetEffectiveConnectionType() !=
         blink::WebEffectiveConnectionType::kTypeUnknown) {

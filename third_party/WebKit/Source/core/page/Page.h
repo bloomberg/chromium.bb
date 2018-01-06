@@ -58,7 +58,6 @@ class Document;
 class DOMRectList;
 class DragCaret;
 class DragController;
-class EditorClient;
 class EventHandlerRegistry;
 class FocusController;
 class Frame;
@@ -101,7 +100,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     ~PageClients();
 
     Member<ChromeClient> chrome_client;
-    EditorClient* editor_client;
     DISALLOW_COPY_AND_ASSIGN(PageClients);
   };
 
@@ -142,8 +140,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // Resets the plugin data for all pages in the renderer process and notifies
   // PluginsChangedObservers.
   static void ResetPluginData();
-
-  EditorClient& GetEditorClient() const { return *editor_client_; }
 
   void SetMainFrame(Frame*);
   Frame* MainFrame() const { return main_frame_; }
@@ -354,7 +350,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   Member<PluginData> plugin_data_;
 
-  EditorClient* const editor_client_;
   Member<ValidationMessageClient> validation_message_client_;
 
   UseCounter use_counter_;

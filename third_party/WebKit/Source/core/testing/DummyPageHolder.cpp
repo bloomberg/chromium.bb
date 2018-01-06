@@ -57,12 +57,10 @@ DummyPageHolder::DummyPageHolder(
     LocalFrameClient* local_frame_client,
     FrameSettingOverrideFunction setting_overrider) {
   Page::PageClients page_clients;
-  if (!page_clients_argument) {
+  if (!page_clients_argument)
     FillWithEmptyClients(page_clients);
-  } else {
+  else
     page_clients.chrome_client = page_clients_argument->chrome_client;
-    page_clients.editor_client = page_clients_argument->editor_client;
-  }
   page_ = Page::Create(page_clients);
   Settings& settings = page_->GetSettings();
   // FIXME: http://crbug.com/363843. This needs to find a better way to

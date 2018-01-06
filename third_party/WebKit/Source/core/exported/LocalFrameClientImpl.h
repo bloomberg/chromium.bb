@@ -261,6 +261,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   String evaluateInInspectorOverlayForTesting(const String& script) override;
 
+  bool HandleCurrentKeyboardEvent() override;
+
+  void DidChangeSelection(bool is_selection_empty) override;
+
+  void DidChangeContents() override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 
