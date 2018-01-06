@@ -61,7 +61,7 @@ class CORE_EXPORT Request final : public Body {
   String method() const;
   KURL url() const;
   Headers* getHeaders() const { return headers_; }
-  String Context() const;
+  String destination() const;
   String referrer() const;
   String getReferrerPolicy() const;
   String mode() const;

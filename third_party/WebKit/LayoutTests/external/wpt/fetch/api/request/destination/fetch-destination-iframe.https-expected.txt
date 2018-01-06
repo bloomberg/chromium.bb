@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Initialize global state
-FAIL iframe fetches with a "document" Request.destination assert_unreached: Wrong destination. Reached unreachable code
-Harness: the test ran to completion.
-
