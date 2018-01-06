@@ -82,6 +82,9 @@ class DownloadTask {
   // the total size is unknown.
   virtual int64_t GetTotalBytes() const = 0;
 
+  // Total number of bytes that have been received.
+  virtual int64_t GetReceivedBytes() const = 0;
+
   // Rough percent complete. Returns -1 if progress is unknown. 100 if the
   // download is already complete.
   virtual int GetPercentComplete() const = 0;

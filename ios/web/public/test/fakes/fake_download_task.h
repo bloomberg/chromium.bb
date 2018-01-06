@@ -31,6 +31,7 @@ class FakeDownloadTask : public DownloadTask {
   int GetErrorCode() const override;
   int GetHttpCode() const override;
   int64_t GetTotalBytes() const override;
+  int64_t GetReceivedBytes() const override;
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
   std::string GetMimeType() const override;
@@ -43,6 +44,7 @@ class FakeDownloadTask : public DownloadTask {
   void SetErrorCode(int error_code);
   void SetHttpCode(int http_code);
   void SetTotalBytes(int64_t total_bytes);
+  void SetReceivedBytes(int64_t received_bytes);
   void SetPercentComplete(int percent_complete);
   void SetContentDisposition(const std::string& content_disposition);
   void SetMimeType(const std::string& mime_type);
@@ -61,6 +63,7 @@ class FakeDownloadTask : public DownloadTask {
   int http_code_ = -1;
   std::string content_disposition_;
   int64_t total_bytes_ = -1;
+  int64_t received_bytes_ = 0;
   int percent_complete_ = -1;
   std::string mime_type_;
   base::string16 suggested_file_name_;

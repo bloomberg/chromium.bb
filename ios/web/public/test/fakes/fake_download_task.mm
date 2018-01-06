@@ -62,6 +62,10 @@ int64_t FakeDownloadTask::GetTotalBytes() const {
   return total_bytes_;
 }
 
+int64_t FakeDownloadTask::GetReceivedBytes() const {
+  return received_bytes_;
+}
+
 int FakeDownloadTask::GetPercentComplete() const {
   return percent_complete_;
 }
@@ -105,6 +109,11 @@ void FakeDownloadTask::SetHttpCode(int http_code) {
 
 void FakeDownloadTask::SetTotalBytes(int64_t total_bytes) {
   total_bytes_ = total_bytes;
+  OnDownloadUpdated();
+}
+
+void FakeDownloadTask::SetReceivedBytes(int64_t received_bytes) {
+  received_bytes_ = received_bytes;
   OnDownloadUpdated();
 }
 
