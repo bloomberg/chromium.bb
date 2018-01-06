@@ -74,17 +74,16 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
             _mm256_loadu_si256((__m256i *)&src_ptr[i * src_stride + j]),
             _MM_SHUFFLE(2, 1, 1, 0));
 
+        const __m256i src_lo = _mm256_unpacklo_epi8(data, zero);
+        const __m256i src_hi = _mm256_unpackhi_epi8(data, zero);
+
         // Filter even-index pixels
-        const __m256i src_0 = _mm256_unpacklo_epi8(data, zero);
-        const __m256i res_0 = _mm256_madd_epi16(src_0, coeff_01);
-        const __m256i src_2 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 2), zero);
+        const __m256i res_0 = _mm256_madd_epi16(src_lo, coeff_01);
+        const __m256i src_2 = _mm256_alignr_epi8(src_hi, src_lo, 4);
         const __m256i res_2 = _mm256_madd_epi16(src_2, coeff_23);
-        const __m256i src_4 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 4), zero);
+        const __m256i src_4 = _mm256_alignr_epi8(src_hi, src_lo, 8);
         const __m256i res_4 = _mm256_madd_epi16(src_4, coeff_45);
-        const __m256i src_6 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 6), zero);
+        const __m256i src_6 = _mm256_alignr_epi8(src_hi, src_lo, 12);
         const __m256i res_6 = _mm256_madd_epi16(src_6, coeff_67);
 
         __m256i res_even = _mm256_add_epi32(_mm256_add_epi32(res_0, res_4),
@@ -93,17 +92,13 @@ void av1_convolve_2d_avx2(const uint8_t *src, int src_stride, uint8_t *dst0,
                                     round_shift);
 
         // Filter odd-index pixels
-        const __m256i src_1 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 1), zero);
+        const __m256i src_1 = _mm256_alignr_epi8(src_hi, src_lo, 2);
         const __m256i res_1 = _mm256_madd_epi16(src_1, coeff_01);
-        const __m256i src_3 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 3), zero);
+        const __m256i src_3 = _mm256_alignr_epi8(src_hi, src_lo, 6);
         const __m256i res_3 = _mm256_madd_epi16(src_3, coeff_23);
-        const __m256i src_5 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 5), zero);
+        const __m256i src_5 = _mm256_alignr_epi8(src_hi, src_lo, 10);
         const __m256i res_5 = _mm256_madd_epi16(src_5, coeff_45);
-        const __m256i src_7 =
-            _mm256_unpacklo_epi8(_mm256_srli_si256(data, 7), zero);
+        const __m256i src_7 = _mm256_alignr_epi8(src_hi, src_lo, 14);
         const __m256i res_7 = _mm256_madd_epi16(src_7, coeff_67);
 
         __m256i res_odd = _mm256_add_epi32(_mm256_add_epi32(res_1, res_5),

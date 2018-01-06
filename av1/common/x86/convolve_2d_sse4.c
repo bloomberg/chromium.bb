@@ -80,14 +80,16 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
         const __m128i data =
             _mm_loadu_si128((__m128i *)&src_ptr[i * src_stride + j]);
 
+        const __m128i src_lo = _mm_unpacklo_epi8(data, zero);
+        const __m128i src_hi = _mm_unpackhi_epi8(data, zero);
+
         // Filter even-index pixels
-        const __m128i src_0 = _mm_unpacklo_epi8(data, zero);
-        const __m128i res_0 = _mm_madd_epi16(src_0, coeff_01);
-        const __m128i src_2 = _mm_unpacklo_epi8(_mm_srli_si128(data, 2), zero);
+        const __m128i res_0 = _mm_madd_epi16(src_lo, coeff_01);
+        const __m128i src_2 = _mm_alignr_epi8(src_hi, src_lo, 4);
         const __m128i res_2 = _mm_madd_epi16(src_2, coeff_23);
-        const __m128i src_4 = _mm_unpacklo_epi8(_mm_srli_si128(data, 4), zero);
+        const __m128i src_4 = _mm_alignr_epi8(src_hi, src_lo, 8);
         const __m128i res_4 = _mm_madd_epi16(src_4, coeff_45);
-        const __m128i src_6 = _mm_unpacklo_epi8(_mm_srli_si128(data, 6), zero);
+        const __m128i src_6 = _mm_alignr_epi8(src_hi, src_lo, 12);
         const __m128i res_6 = _mm_madd_epi16(src_6, coeff_67);
 
         __m128i res_even = _mm_add_epi32(_mm_add_epi32(res_0, res_4),
@@ -96,13 +98,13 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
             _mm_sra_epi32(_mm_add_epi32(res_even, round_const), round_shift);
 
         // Filter odd-index pixels
-        const __m128i src_1 = _mm_unpacklo_epi8(_mm_srli_si128(data, 1), zero);
+        const __m128i src_1 = _mm_alignr_epi8(src_hi, src_lo, 2);
         const __m128i res_1 = _mm_madd_epi16(src_1, coeff_01);
-        const __m128i src_3 = _mm_unpacklo_epi8(_mm_srli_si128(data, 3), zero);
+        const __m128i src_3 = _mm_alignr_epi8(src_hi, src_lo, 6);
         const __m128i res_3 = _mm_madd_epi16(src_3, coeff_23);
-        const __m128i src_5 = _mm_unpacklo_epi8(_mm_srli_si128(data, 5), zero);
+        const __m128i src_5 = _mm_alignr_epi8(src_hi, src_lo, 10);
         const __m128i res_5 = _mm_madd_epi16(src_5, coeff_45);
-        const __m128i src_7 = _mm_unpacklo_epi8(_mm_srli_si128(data, 7), zero);
+        const __m128i src_7 = _mm_alignr_epi8(src_hi, src_lo, 14);
         const __m128i res_7 = _mm_madd_epi16(src_7, coeff_67);
 
         __m128i res_odd = _mm_add_epi32(_mm_add_epi32(res_1, res_5),
