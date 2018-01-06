@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,6 +48,7 @@ namespace {
 
 const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
 const char kStandaloneAppId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+const char kStandaloneChildAppId[] = "hcglmfcclpfgljeaiahehebeoaiicbko";
 
 class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
@@ -57,7 +59,17 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   ~ExternalProviderImplChromeOSTest() override {}
 
   void InitServiceWithExternalProviders(bool standalone) {
+    InitServiceWithExternalProvidersAndUserType(standalone,
+                                                false /* is_child */);
+  }
+
+  void InitServiceWithExternalProvidersAndUserType(bool standalone,
+                                                   bool is_child) {
     InitializeEmptyExtensionService();
+
+    if (is_child)
+      profile_.get()->SetSupervisedUserId(supervised_users::kChildAccountSUID);
+
     service_->Init();
 
     if (standalone) {
@@ -84,6 +96,18 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
 
   void TearDown() override {
     chromeos::KioskAppManager::Shutdown();
+  }
+
+  // Waits until all possible standalone extensions are installed.
+  void WaitForPendingStandaloneExtensionsInstalled() {
+    service_->CheckForExternalUpdates();
+    base::RunLoop().RunUntilIdle();
+    extensions::PendingExtensionManager* const pending_extension_manager =
+        service_->pending_extension_manager();
+    while (pending_extension_manager->IsIdPending(kStandaloneAppId) ||
+           pending_extension_manager->IsIdPending(kStandaloneChildAppId)) {
+      base::RunLoop().RunUntilIdle();
+    }
   }
 
  private:
@@ -128,12 +152,23 @@ TEST_F(ExternalProviderImplChromeOSTest, AppMode) {
 TEST_F(ExternalProviderImplChromeOSTest, Standalone) {
   InitServiceWithExternalProviders(true);
 
-  service_->CheckForExternalUpdates();
-  content::WindowedNotificationObserver(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources()).Wait();
+  WaitForPendingStandaloneExtensionsInstalled();
 
   EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneAppId));
+  // Also include apps available for child.
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneChildAppId));
+}
+
+// Should include only subset of default apps
+TEST_F(ExternalProviderImplChromeOSTest, StandaloneChild) {
+  InitServiceWithExternalProvidersAndUserType(true /* standalone */,
+                                              true /* is_child */);
+
+  WaitForPendingStandaloneExtensionsInstalled();
+
+  // kStandaloneAppId is not available for child.
+  EXPECT_FALSE(service_->GetInstalledExtension(kStandaloneAppId));
+  EXPECT_TRUE(service_->GetInstalledExtension(kStandaloneChildAppId));
 }
 
 // Normal mode, standalone app should be installed, because sync is disabled.

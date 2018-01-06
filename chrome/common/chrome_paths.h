@@ -133,6 +133,9 @@ enum {
 #if defined(OS_CHROMEOS)
   FILE_CHROME_OS_COMPONENT_FLASH,  // The location of component updated Flash on
                                    // Chrome OS.
+  DIR_CHILD_USERS_DEFAULT_APPS,    // Directory where installer places .crx
+                                   // files to be installed when child user
+                                   // session starts.
 #endif  // defined(OS_CHROMEOS)
   PATH_END
 };
