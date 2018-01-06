@@ -401,6 +401,12 @@ typedef enum ATTRIBUTE_PACKED {
   CFL_SIGNS
 } CFL_SIGN_TYPE;
 
+typedef enum ATTRIBUTE_PACKED {
+  CFL_DISALLOWED,
+  CFL_ALLOWED,
+  CFL_ALLOWED_TYPES
+} CFL_ALLOWED_TYPE;
+
 // CFL_SIGN_ZERO,CFL_SIGN_ZERO is invalid
 #define CFL_JOINT_SIGNS (CFL_SIGNS * CFL_SIGNS - 1)
 // CFL_SIGN_U is equivalent to (js + 1) / 3 for js in 0 to 8

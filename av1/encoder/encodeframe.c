@@ -852,10 +852,22 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   }
 #endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
 #if CONFIG_ENTROPY_STATS
+#if CONFIG_CFL
+  ++counts->uv_mode[is_cfl_allowed(mbmi)][y_mode][uv_mode];
+#else
   ++counts->uv_mode[y_mode][uv_mode];
+#endif  // CONFIG_CFL
 #endif  // CONFIG_ENTROPY_STATS
+#if CONFIG_CFL
+  if (allow_update_cdf) {
+    const CFL_ALLOWED_TYPE cfl_allowed = is_cfl_allowed(mbmi);
+    update_cdf(fc->uv_mode_cdf[cfl_allowed][y_mode], uv_mode,
+               UV_INTRA_MODES - !cfl_allowed);
+  }
+#else
   if (allow_update_cdf)
     update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
+#endif  // CONFIG_CFL
 }
 
 // TODO(anybody) We can add stats accumulation here to train entropy models for

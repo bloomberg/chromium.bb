@@ -5133,7 +5133,8 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
 
   xd->cfl.use_dc_pred_cache = 1;
   const int64_t mode_rd =
-      RDCOST(x->rdmult, x->intra_uv_mode_cost[mbmi->mode][UV_CFL_PRED], 0);
+      RDCOST(x->rdmult,
+             x->intra_uv_mode_cost[CFL_ALLOWED][mbmi->mode][UV_CFL_PRED], 0);
   int64_t best_rd_uv[CFL_JOINT_SIGNS][CFL_PRED_PLANES];
   int best_c[CFL_JOINT_SIGNS][CFL_PRED_PLANES];
 #if CONFIG_DEBUG
@@ -5211,7 +5212,7 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
     best_rate_overhead = x->cfl_cost[best_joint_sign][CFL_PRED_U][u] +
                          x->cfl_cost[best_joint_sign][CFL_PRED_V][v];
 #if CONFIG_DEBUG
-    xd->cfl.rate = x->intra_uv_mode_cost[mbmi->mode][UV_CFL_PRED] +
+    xd->cfl.rate = x->intra_uv_mode_cost[CFL_ALLOWED][mbmi->mode][UV_CFL_PRED] +
                    best_rate_overhead +
                    best_rate_uv[best_joint_sign][CFL_PRED_U] +
                    best_rate_uv[best_joint_sign][CFL_PRED_V];
@@ -5273,9 +5274,14 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTRA
     mbmi->angle_delta[1] = 0;
     if (is_directional_mode && av1_use_angle_delta(mbmi->sb_type)) {
+#if CONFIG_CFL
+      const int rate_overhead =
+          x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][mode] +
+#else
       const int rate_overhead = x->intra_uv_mode_cost[mbmi->mode][mode] +
+#endif  // CONFIG_CFL
 #if CONFIG_EXT_INTRA_MOD
-                                0;
+          0;
 #else
                                 write_uniform_cost(2 * MAX_ANGLE_DELTA + 1, 0);
 #endif  // CONFIG_EXT_INTRA_MOD
@@ -5290,13 +5296,17 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTRA
     }
 #endif  // CONFIG_EXT_INTRA
-    this_rate =
-        tokenonly_rd_stats.rate + x->intra_uv_mode_cost[mbmi->mode][mode];
+    this_rate = tokenonly_rd_stats.rate +
+#if CONFIG_CFL
+                x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][mode] +
+                cfl_alpha_rate;
+#else
+                x->intra_uv_mode_cost[mbmi->mode][mode];
+#endif
 
 #if CONFIG_CFL
     if (mode == UV_CFL_PRED) {
       assert(is_cfl_allowed(mbmi));
-      this_rate += cfl_alpha_rate;
 #if CONFIG_DEBUG
       if (!xd->lossless[mbmi->segment_id]) assert(xd->cfl.rate == this_rate);
 #endif  // CONFIG_DEBUG
@@ -5331,10 +5341,15 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (try_palette) {
     uint8_t *best_palette_color_map = x->palette_buffer->best_palette_color_map;
-    rd_pick_palette_intra_sbuv(cpi, x,
-                               x->intra_uv_mode_cost[mbmi->mode][UV_DC_PRED],
-                               best_palette_color_map, &best_mbmi, &best_rd,
-                               rate, rate_tokenonly, distortion, skippable);
+    rd_pick_palette_intra_sbuv(
+        cpi, x,
+#if CONFIG_CFL
+        x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode][UV_DC_PRED],
+#else
+        x->intra_uv_mode_cost[mbmi->mode][UV_DC_PRED],
+#endif
+        best_palette_color_map, &best_mbmi, &best_rd, rate, rate_tokenonly,
+        distortion, skippable);
   }
 
   *mbmi = best_mbmi;
@@ -9674,7 +9689,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       rate2 = rate_y + intra_mode_cost[mbmi->mode];
       if (!x->skip_chroma_rd)
-        rate2 += rate_uv + x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
+        rate2 += rate_uv +
+#if CONFIG_CFL
+                 x->intra_uv_mode_cost[is_cfl_allowed(mbmi)][mbmi->mode]
+                                      [mbmi->uv_mode];
+#else
+                 x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
+#endif
 
       if (try_palette && mbmi->mode == DC_PRED) {
         const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);

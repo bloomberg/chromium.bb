@@ -356,13 +356,23 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob\n"
       "default_if_y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)]");
 
-  /* Intra mode (chroma) */
+/* Intra mode (chroma) */
+#if CONFIG_CFL
+  cts_each_dim[0] = CFL_ALLOWED_TYPES;
+  cts_each_dim[1] = INTRA_MODES;
+  cts_each_dim[2] = UV_INTRA_MODES;
+  optimize_cdf_table(&fc.uv_mode[0][0][0], probsfile, 3, cts_each_dim,
+                     "static const aom_cdf_prob\n"
+                     "default_uv_mode_cdf[CFL_ALLOWED_TYPES][INTRA_MODES]"
+                     "[CDF_SIZE(UV_INTRA_MODES)]");
+#else
   cts_each_dim[0] = INTRA_MODES;
   cts_each_dim[1] = UV_INTRA_MODES;
   optimize_cdf_table(
       &fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)]");
+#endif
 
   /* Partition */
   cts_each_dim[0] = PARTITION_CONTEXTS;
