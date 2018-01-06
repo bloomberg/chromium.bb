@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -63,7 +64,7 @@ void NaClBrowserDelegateImpl::ShowMissingArchInfobar(int render_process_id,
                                                      int render_view_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&NaClInfoBarDelegate::Create, render_process_id,
+      base::BindOnce(&CreateInfoBarOnUiThread, render_process_id,
                      render_view_id));
 }
 
@@ -188,6 +189,23 @@ bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(
 #else
   return false;
 #endif
+}
+
+// static
+void NaClBrowserDelegateImpl::CreateInfoBarOnUiThread(int render_process_id,
+                                                      int render_view_id) {
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh)
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!web_contents)
+    return;
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  if (infobar_service)
+    NaClInfoBarDelegate::Create(infobar_service);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

@@ -8,28 +8,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 
 // static
-void NaClInfoBarDelegate::Create(int render_process_id, int render_view_id) {
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh)
-    return;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return;
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_service) {
-    infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-        std::unique_ptr<ConfirmInfoBarDelegate>(new NaClInfoBarDelegate())));
-  }
+void NaClInfoBarDelegate::Create(InfoBarService* infobar_service) {
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate>(new NaClInfoBarDelegate())));
 }
 
 NaClInfoBarDelegate::NaClInfoBarDelegate() : ConfirmInfoBarDelegate() {
