@@ -43,6 +43,32 @@ cr.define('extensions', function() {
     return url.startsWith(fullUrl) ? url.substring(fullUrl.length) : url;
   }
 
+  /**
+   * Given 3 strings, this function returns the correct one for the type of
+   * error that |item| is.
+   * @param {!ManifestError|!RuntimeError} item
+   * @param {string} log
+   * @param {string} warn
+   * @param {string} error
+   * @return {string}
+   * @private
+   */
+  function getErrorSeverityText_(item, log, warn, error) {
+    if (item.type == chrome.developerPrivate.ErrorType.RUNTIME) {
+      switch (item.severity) {
+        case chrome.developerPrivate.ErrorLevel.LOG:
+          return log;
+        case chrome.developerPrivate.ErrorLevel.WARN:
+          return warn;
+        case chrome.developerPrivate.ErrorLevel.ERROR:
+          return error;
+      }
+      assertNotReached();
+    }
+    assert(item.type == chrome.developerPrivate.ErrorType.MANIFEST);
+    return warn;
+  }
+
   const ErrorPage = Polymer({
     is: 'extensions-error-page',
 
@@ -131,19 +157,20 @@ cr.define('extensions', function() {
      * @private
      */
     computeErrorIcon_: function(error) {
-      if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
-        switch (error.severity) {
-          case chrome.developerPrivate.ErrorLevel.LOG:
-            return 'info';
-          case chrome.developerPrivate.ErrorLevel.WARN:
-            return 'warning';
-          case chrome.developerPrivate.ErrorLevel.ERROR:
-            return 'error';
-        }
-        assertNotReached();
-      }
-      assert(error.type == chrome.developerPrivate.ErrorType.MANIFEST);
-      return 'warning';
+      // Do not i18n these strings, they're CSS classes.
+      return getErrorSeverityText_(error, 'info', 'warning', 'error');
+    },
+
+    /**
+     * @param {!ManifestError|!RuntimeError} error
+     * @return {string}
+     * @private
+     */
+    computeErrorTypeLabel_: function(error) {
+      return getErrorSeverityText_(
+          error, loadTimeData.getString('logLevel'),
+          loadTimeData.getString('warnLevel'),
+          loadTimeData.getString('errorLevel'));
     },
 
     /**
