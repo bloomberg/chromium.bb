@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/test_autofill_download_manager.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
@@ -102,24 +103,11 @@ class MockAutofillClient : public TestAutofillClient {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
-class TestAutofillDownloadManager : public AutofillDownloadManager {
+class MockAutofillDownloadManager : public TestAutofillDownloadManager {
  public:
-  TestAutofillDownloadManager(AutofillDriver* driver,
+  MockAutofillDownloadManager(AutofillDriver* driver,
                               AutofillDownloadManager::Observer* observer)
-      : AutofillDownloadManager(driver, observer) {}
-
-  bool StartQueryRequest(const std::vector<FormStructure*>& forms) override {
-    last_queried_forms_ = forms;
-    return true;
-  }
-
-  // Verify that the last queried forms equal |expected_forms|.
-  void VerifyLastQueriedForms(const std::vector<FormData>& expected_forms) {
-    ASSERT_EQ(expected_forms.size(), last_queried_forms_.size());
-    for (size_t i = 0; i < expected_forms.size(); ++i) {
-      EXPECT_EQ(*last_queried_forms_[i], expected_forms[i]);
-    }
-  }
+      : TestAutofillDownloadManager(driver, observer) {}
 
   MOCK_METHOD5(StartUploadRequest,
                bool(const FormStructure&,
@@ -129,9 +117,7 @@ class TestAutofillDownloadManager : public AutofillDownloadManager {
                     bool));
 
  private:
-  std::vector<FormStructure*> last_queried_forms_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillDownloadManager);
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillDownloadManager);
 };
 
 void ExpectFilledField(const char* expected_label,
@@ -433,7 +419,7 @@ class AutofillManagerTest : public testing::Test {
     autofill_driver_->SetURLRequestContext(request_context_.get());
     autofill_manager_.reset(new TestAutofillManager(
         autofill_driver_.get(), &autofill_client_, &personal_data_));
-    download_manager_ = new TestAutofillDownloadManager(
+    download_manager_ = new MockAutofillDownloadManager(
         autofill_driver_.get(), autofill_manager_.get());
     // AutofillManager takes ownership of |download_manager_|.
     autofill_manager_->set_download_manager(download_manager_);
@@ -666,7 +652,7 @@ class AutofillManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillManager> autofill_manager_;
   std::unique_ptr<TestAutofillExternalDelegate> external_delegate_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  TestAutofillDownloadManager* download_manager_;
+  MockAutofillDownloadManager* download_manager_;
   TestPersonalDataManager personal_data_;
   base::test::ScopedFeatureList scoped_feature_list_;
   variations::testing::VariationParamsManager variation_params_;
