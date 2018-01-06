@@ -17,7 +17,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     ReferrerPolicy referrer_policy,
     const SecurityOrigin* starter_origin,
     WorkerClients* worker_clients,
-    WebAddressSpace address_space,
+    mojom::IPAddressSpace address_space,
     const Vector<String>* origin_trial_tokens,
     std::unique_ptr<WorkerSettings> worker_settings,
     V8CacheOptions v8_cache_options,

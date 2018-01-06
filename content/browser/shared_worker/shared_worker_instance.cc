@@ -14,7 +14,7 @@ SharedWorkerInstance::SharedWorkerInstance(
     const url::Origin& constructor_origin,
     const std::string& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
-    blink::WebAddressSpace creation_address_space,
+    blink::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
     : url_(url),
       name_(name),
@@ -22,8 +22,7 @@ SharedWorkerInstance::SharedWorkerInstance(
       content_security_policy_(content_security_policy),
       content_security_policy_type_(security_policy_type),
       creation_address_space_(creation_address_space),
-      creation_context_type_(creation_context_type) {
-}
+      creation_context_type_(creation_context_type) {}
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
     default;

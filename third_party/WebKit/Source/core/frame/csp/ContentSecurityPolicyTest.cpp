@@ -4,6 +4,7 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/Document.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/html/HTMLScriptElement.h"
@@ -16,7 +17,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,26 +99,26 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
   ScopedCorsRFC1918ForTest cors_rfc1918(false);
-  execution_context->SetAddressSpace(kWebAddressSpacePrivate);
-  EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
+  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
+  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
 
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   csp->BindToExecutionContext(execution_context.Get());
-  EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
+  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
   ScopedCorsRFC1918ForTest cors_rfc1918(true);
-  execution_context->SetAddressSpace(kWebAddressSpacePrivate);
-  EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
+  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
+  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
 
   csp->DidReceiveHeader("treat-as-public-address",
                         kContentSecurityPolicyHeaderTypeEnforce,
                         kContentSecurityPolicyHeaderSourceHTTP);
   csp->BindToExecutionContext(execution_context.Get());
-  EXPECT_EQ(kWebAddressSpacePublic, execution_context->AddressSpace());
+  EXPECT_EQ(mojom::IPAddressSpace::kPublic, execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {

@@ -39,12 +39,12 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/RefCounted.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/interfaces/cors.mojom-blink.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom-shared.h"
+#include "third_party/WebKit/common/net/ip_address_space.mojom-blink.h"
 
 namespace blink {
 
@@ -326,7 +326,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   // https://wicg.github.io/cors-rfc1918/#external-request
   bool IsExternalRequest() const { return is_external_request_; }
-  void SetExternalRequestStateFromRequestorAddressSpace(WebAddressSpace);
+  void SetExternalRequestStateFromRequestorAddressSpace(mojom::IPAddressSpace);
 
   network::mojom::CORSPreflightPolicy CORSPreflightPolicy() const {
     return cors_preflight_policy_;

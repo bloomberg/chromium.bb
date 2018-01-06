@@ -32,9 +32,9 @@
 #define WebSharedWorker_h
 
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebContentSecurityPolicy.h"
+#include "third_party/WebKit/common/net/ip_address_space.mojom-shared.h"
 
 namespace blink {
 
@@ -56,7 +56,7 @@ class BLINK_EXPORT WebSharedWorker {
       const WebString& name,
       const WebString& content_security_policy,
       WebContentSecurityPolicyType,
-      WebAddressSpace,
+      mojom::IPAddressSpace,
       const WebString& instrumentation_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider) = 0;

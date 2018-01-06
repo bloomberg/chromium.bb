@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
@@ -40,7 +41,6 @@
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
@@ -64,7 +64,7 @@ class CORE_EXPORT WorkerScriptLoader final
   void LoadSynchronously(ExecutionContext&,
                          const KURL&,
                          WebURLRequest::RequestContext,
-                         WebAddressSpace);
+                         mojom::IPAddressSpace);
 
   // Note that callbacks could be invoked before loadAsynchronously() returns.
   void LoadAsynchronously(ExecutionContext&,
@@ -72,7 +72,7 @@ class CORE_EXPORT WorkerScriptLoader final
                           WebURLRequest::RequestContext,
                           network::mojom::FetchRequestMode,
                           network::mojom::FetchCredentialsMode,
-                          WebAddressSpace,
+                          mojom::IPAddressSpace,
                           base::OnceClosure response_callback,
                           base::OnceClosure finished_callback);
 
@@ -102,7 +102,7 @@ class CORE_EXPORT WorkerScriptLoader final
 
   const String& GetReferrerPolicy() const { return referrer_policy_; }
 
-  WebAddressSpace ResponseAddressSpace() const {
+  mojom::IPAddressSpace ResponseAddressSpace() const {
     return response_address_space_;
   }
 
@@ -152,7 +152,7 @@ class CORE_EXPORT WorkerScriptLoader final
   std::unique_ptr<Vector<char>> cached_metadata_;
   Persistent<ContentSecurityPolicy> content_security_policy_;
   Persistent<ExecutionContext> execution_context_;
-  WebAddressSpace response_address_space_;
+  mojom::IPAddressSpace response_address_space_;
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
 };

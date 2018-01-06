@@ -27,12 +27,12 @@
 #include "platform/loader/fetch/ResourceRequest.h"
 
 #include <memory>
+
 #include "platform/network/NetworkUtils.h"
 #include "platform/network/http_names.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -377,13 +377,14 @@ void ResourceRequest::ClearHTTPHeaderField(const AtomicString& name) {
 }
 
 void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
-    WebAddressSpace requestor_space) {
-  static_assert(kWebAddressSpaceLocal < kWebAddressSpacePrivate,
+    mojom::IPAddressSpace requestor_space) {
+  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPrivate,
                 "Local is inside Private");
-  static_assert(kWebAddressSpaceLocal < kWebAddressSpacePublic,
+  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPublic,
                 "Local is inside Public");
-  static_assert(kWebAddressSpacePrivate < kWebAddressSpacePublic,
-                "Private is inside Public");
+  static_assert(
+      mojom::IPAddressSpace::kPrivate < mojom::IPAddressSpace::kPublic,
+      "Private is inside Public");
 
   // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all
   // this up to //net and //content in order to have any real impact on gateway
@@ -393,11 +394,11 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
     return;
   }
 
-  WebAddressSpace target_space = kWebAddressSpacePublic;
+  mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
   if (NetworkUtils::IsReservedIPAddress(url_.Host()))
-    target_space = kWebAddressSpacePrivate;
+    target_space = mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(url_)->IsLocalhost())
-    target_space = kWebAddressSpaceLocal;
+    target_space = mojom::IPAddressSpace::kLocal;
 
   is_external_request_ = requestor_space > target_space;
 }

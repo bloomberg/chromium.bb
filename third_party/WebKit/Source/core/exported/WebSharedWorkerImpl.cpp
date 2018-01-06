@@ -77,7 +77,7 @@ namespace blink {
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       client_(client),
-      creation_address_space_(kWebAddressSpacePublic) {
+      creation_address_space_(mojom::IPAddressSpace::kPublic) {
   DCHECK(IsMainThread());
 }
 
@@ -218,7 +218,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& name,
     const WebString& content_security_policy,
     WebContentSecurityPolicyType policy_type,
-    WebAddressSpace creation_address_space,
+    mojom::IPAddressSpace creation_address_space,
     const WebString& instrumentation_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {

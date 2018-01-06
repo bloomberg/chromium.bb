@@ -35,13 +35,13 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "common/net/ip_address_space.mojom-shared.h"
 #include "core/CoreExport.h"
 #include "core/exported/WorkerShadowPage.h"
 #include "core/workers/SharedWorkerReportingProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/WebTaskRunner.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebSharedWorkerClient.h"
@@ -87,7 +87,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       const WebString& name,
       const WebString& content_security_policy,
       WebContentSecurityPolicyType,
-      WebAddressSpace,
+      mojom::IPAddressSpace,
       const WebString& instrumentation_token,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider) override;
@@ -146,7 +146,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   WebURL url_;
   WebString name_;
-  WebAddressSpace creation_address_space_;
+  mojom::IPAddressSpace creation_address_space_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;

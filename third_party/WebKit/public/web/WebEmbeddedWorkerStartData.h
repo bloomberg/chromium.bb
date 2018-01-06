@@ -31,11 +31,11 @@
 #ifndef WebEmbeddedWorkerStartData_h
 #define WebEmbeddedWorkerStartData_h
 
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebSettings.h"
+#include "third_party/WebKit/common/net/ip_address_space.mojom-shared.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ struct WebEmbeddedWorkerStartData {
   WebString instrumentation_token;
   WebSettings::V8CacheOptions v8_cache_options;
 
-  WebAddressSpace address_space;
+  mojom::IPAddressSpace address_space;
 
   WebEmbeddedWorkerStartData()
       : pause_after_download_mode(kDontPauseAfterDownload),

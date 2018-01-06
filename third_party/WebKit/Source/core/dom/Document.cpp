@@ -38,6 +38,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "bindings/core/v8/string_or_dictionary.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/PendingAnimations.h"
@@ -257,7 +258,6 @@
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
@@ -6084,16 +6084,16 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   // https://wicg.github.io/cors-rfc1918/#csp).
   if (initializer.IsHostedInReservedIPRange()) {
     SetAddressSpace(GetSecurityOrigin()->IsLocalhost()
-                        ? kWebAddressSpaceLocal
-                        : kWebAddressSpacePrivate);
+                        ? mojom::IPAddressSpace::kLocal
+                        : mojom::IPAddressSpace::kPrivate);
   } else if (GetSecurityOrigin()->IsLocal()) {
     // "Local" security origins (like 'file://...') are treated as having
     // a local address space.
     //
     // TODO(mkwst): It's not entirely clear that this is a good idea.
-    SetAddressSpace(kWebAddressSpaceLocal);
+    SetAddressSpace(mojom::IPAddressSpace::kLocal);
   } else {
-    SetAddressSpace(kWebAddressSpacePublic);
+    SetAddressSpace(mojom::IPAddressSpace::kPublic);
   }
 
   if (ImportsController()) {

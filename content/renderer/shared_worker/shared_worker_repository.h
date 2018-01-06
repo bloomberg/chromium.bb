@@ -41,7 +41,7 @@ class SharedWorkerRepository final
       DocumentID document_id,
       const blink::WebString& content_security_policy,
       blink::WebContentSecurityPolicyType,
-      blink::WebAddressSpace,
+      blink::mojom::IPAddressSpace,
       blink::mojom::SharedWorkerCreationContextType,
       blink::MessagePortChannel channel,
       std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) override;

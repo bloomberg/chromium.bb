@@ -30,7 +30,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
