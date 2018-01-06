@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/media_router/presentation_receiver_window_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/media_router/presentation_receiver_window.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebPresentationReceiverFlags.h"
 #include "ui/views/widget/widget.h"
@@ -31,12 +35,14 @@ std::unique_ptr<PresentationReceiverWindowController>
 PresentationReceiverWindowController::CreateFromOriginalProfile(
     Profile* profile,
     const gfx::Rect& bounds,
-    base::OnceClosure termination_callback) {
+    base::OnceClosure termination_callback,
+    TitleChangeCallback title_change_callback) {
   DCHECK(profile);
   DCHECK(!profile->IsOffTheRecord());
   DCHECK(termination_callback);
   return base::WrapUnique(new PresentationReceiverWindowController(
-      profile, bounds, std::move(termination_callback)));
+      profile, bounds, std::move(termination_callback),
+      std::move(title_change_callback)));
 }
 
 PresentationReceiverWindowController::~PresentationReceiverWindowController() {
@@ -94,7 +100,8 @@ WebContents* PresentationReceiverWindowController::web_contents() const {
 PresentationReceiverWindowController::PresentationReceiverWindowController(
     Profile* profile,
     const gfx::Rect& bounds,
-    base::OnceClosure termination_callback)
+    base::OnceClosure termination_callback,
+    TitleChangeCallback title_change_callback)
     : otr_profile_registration_(
           IndependentOTRProfileManager::GetInstance()
               ->CreateFromOriginalProfile(
@@ -105,7 +112,8 @@ PresentationReceiverWindowController::PresentationReceiverWindowController(
       web_contents_(WebContents::Create(
           CreateWebContentsParams(otr_profile_registration_->profile()))),
       window_(PresentationReceiverWindow::Create(this, bounds)),
-      termination_callback_(std::move(termination_callback)) {
+      termination_callback_(std::move(termination_callback)),
+      title_change_callback_(std::move(title_change_callback)) {
   DCHECK(otr_profile_registration_->profile());
   DCHECK(otr_profile_registration_->profile()->IsOffTheRecord());
   content::WebContentsObserver::Observe(web_contents_.get());
@@ -134,6 +142,8 @@ void PresentationReceiverWindowController::DidStartNavigation(
 void PresentationReceiverWindowController::TitleWasSet(
     content::NavigationEntry* entry) {
   window_->UpdateWindowTitle();
+  if (entry)
+    title_change_callback_.Run(base::UTF16ToUTF8(entry->GetTitle()));
 }
 
 void PresentationReceiverWindowController::NavigationStateChanged(

@@ -5,6 +5,9 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
+#include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
+#include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
@@ -40,6 +43,66 @@ std::string GetSinkId(const Display& display) {
   return WiredDisplayMediaRouteProvider::kSinkPrefix +
          std::to_string(display.id());
 }
+
+class MockPresentationReceiver : public WiredDisplayPresentationReceiver {
+ public:
+  MOCK_METHOD2(Start,
+               void(const std::string& presentation_id, const GURL& start_url));
+  void Terminate() override { TerminateInternal(); }
+  MOCK_METHOD0(TerminateInternal, void());
+
+  void SetTerminationCallback(base::OnceClosure termination_callback) {
+    termination_callback_ = std::move(termination_callback);
+  }
+
+  void SetTitleChangeCallback(
+      base::RepeatingCallback<void(const std::string&)> title_change_callback) {
+    title_change_callback_ = std::move(title_change_callback);
+  }
+
+  void RunTerminationCallback() { std::move(termination_callback_).Run(); }
+
+  void RunTitleChangeCallback(const std::string& new_title) {
+    title_change_callback_.Run(new_title);
+  }
+
+ private:
+  base::OnceClosure termination_callback_;
+  base::RepeatingCallback<void(const std::string&)> title_change_callback_;
+};
+
+class MockReceiverCreator {
+ public:
+  MockReceiverCreator()
+      : unique_receiver_(std::make_unique<MockPresentationReceiver>()),
+        receiver_(unique_receiver_.get()) {}
+  ~MockReceiverCreator() = default;
+
+  // This should be called only once in the lifetime of this object.
+  std::unique_ptr<WiredDisplayPresentationReceiver> CreateReceiver(
+      Profile* profile,
+      const gfx::Rect& bounds,
+      base::OnceClosure termination_callback,
+      base::RepeatingCallback<void(const std::string&)> title_change_callback) {
+    CHECK(unique_receiver_);
+    unique_receiver_->SetTerminationCallback(std::move(termination_callback));
+    unique_receiver_->SetTitleChangeCallback(std::move(title_change_callback));
+    return std::move(unique_receiver_);
+  }
+
+  MockPresentationReceiver* receiver() { return receiver_; }
+
+ private:
+  // Initialized in the ctor instead of CreateReceiver() so that the receiver()
+  // getter is valid even before CreateReceiver() is called.
+  // When CreateReceiver() is called, the ownership of |unique_receiver_| gets
+  // transferred to the caller.
+  std::unique_ptr<MockPresentationReceiver> unique_receiver_;
+
+  // Retains a reference to |unique_receiver_| even after |this| loses its
+  // ownership.
+  MockPresentationReceiver* const receiver_;
+};
 
 const char kPresentationSource[] = "https://www.example.com/presentation";
 const char kNonPresentationSource[] = "not://a.valid.presentation/source";
@@ -105,6 +168,9 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
         mojo::MakeRequest(&provider_pointer_), std::move(router_pointer),
         &profile_);
     provider_->set_primary_display(primary_display_);
+    WiredDisplayPresentationReceiverFactory::SetCreateReceiverCallbackForTest(
+        base::BindRepeating(&MockReceiverCreator::CreateReceiver,
+                            base::Unretained(&receiver_creator_)));
   }
 
   void TearDown() override {
@@ -128,6 +194,8 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   // The displays below do not meet the criteria for being used as sinks.
   Display primary_display_;
   Display mirror_display_;  // Has the same bounds as |primary_display_|.
+
+  MockReceiverCreator receiver_creator_;
 
  private:
   content::TestBrowserThreadBundle test_thread_bundle_;
@@ -198,10 +266,13 @@ TEST_F(WiredDisplayMediaRouteProviderTest, NoSinksForNonPresentationSource) {
   base::RunLoop().RunUntilIdle();
 }
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
+// TODO(https://crbug.com/777654): Support presenting to macOS as well.
 TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   const std::string presentation_id = "presentationId";
   MockCallback callback;
 
+  provider_->set_all_displays({sink_display1_, primary_display_});
   provider_pointer_->StartObservingMediaRoutes(kPresentationSource);
   base::RunLoop().RunUntilIdle();
 
@@ -220,6 +291,8 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
             EXPECT_EQ(routes.size(), 1u);
             EXPECT_EQ(routes[0].media_route_id(), presentation_id);
           })));
+  EXPECT_CALL(*receiver_creator_.receiver(),
+              Start(presentation_id, GURL(kPresentationSource)));
   provider_pointer_->CreateRoute(
       kPresentationSource, GetSinkId(sink_display1_), presentation_id,
       url::Origin::Create(GURL(kPresentationSource)), 0,
@@ -227,15 +300,31 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
       base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 
+  const std::string new_description = "New Page Description";
+  EXPECT_CALL(router_, OnRoutesUpdated(kProviderId, _, kPresentationSource, _))
+      .WillOnce(WithArg<1>(
+          Invoke([&new_description](const std::vector<MediaRoute>& routes) {
+            EXPECT_EQ(routes.size(), 1u);
+            EXPECT_EQ(routes[0].description(), new_description);
+          })));
+  receiver_creator_.receiver()->RunTitleChangeCallback(new_description);
+  base::RunLoop().RunUntilIdle();
+
   // Terminate the route.
   EXPECT_CALL(callback, TerminateRoute(base::Optional<std::string>(),
                                        RouteRequestResult::OK));
-  EXPECT_CALL(router_, OnRoutesUpdated(kProviderId, IsEmpty(),
-                                       kPresentationSource, IsEmpty()));
+  EXPECT_CALL(*receiver_creator_.receiver(), TerminateInternal());
   provider_pointer_->TerminateRoute(
       presentation_id, base::BindOnce(&MockCallback::TerminateRoute,
                                       base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
+
+  // The presentation should not be removed until the receiver's termination
+  // callback is called.
+  EXPECT_CALL(router_, OnRoutesUpdated(kProviderId, IsEmpty(),
+                                       kPresentationSource, IsEmpty()));
+  receiver_creator_.receiver()->RunTerminationCallback();
 }
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 
 }  // namespace media_router
