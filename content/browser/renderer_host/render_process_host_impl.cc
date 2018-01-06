@@ -2825,7 +2825,9 @@ bool RenderProcessHostImpl::Shutdown(int exit_code, bool wait) {
 
 bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
                                                    bool skip_unload_handlers) {
-  if (page_count && GetActiveViewCount() != page_count)
+  // Do not shut down the process if there are active or pending views other
+  // than the ones we're shutting down.
+  if (page_count && page_count != (GetActiveViewCount() + pending_views_))
     return false;
 
   if (run_renderer_in_process())

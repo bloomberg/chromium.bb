@@ -685,6 +685,52 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PrintIgnoredInUnloadHandler) {
   EXPECT_TRUE(renderer_alive);
 }
 
+// Ensure that when a window closes itself via window.close(), its process does
+// not get destroyed if there's a pending cross-process navigation in the same
+// process from another tab.  See https://crbug.com/799399.
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       ClosePopupWithPendingNavigationInOpener) {
+  // Start on a.com and open a popup to b.com.
+  GURL opener_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), opener_url);
+  content::WebContents* opener_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  content::WindowedNotificationObserver popup_observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  EXPECT_TRUE(ExecuteScript(opener_contents,
+                            "window.open('" + popup_url.spec() + "');"));
+  popup_observer.Wait();
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  content::WebContents* popup_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(opener_contents, popup_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
+
+  // From the popup, start a navigation in the opener to b.com, but don't
+  // commit.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  content::TestNavigationManager manager(opener_contents, b_url);
+  EXPECT_TRUE(
+      ExecuteScript(popup_contents, "opener.location='" + b_url.spec() + "';"));
+
+  // Close the popup.  This should *not* kill the b.com process, as it still
+  // has a pending navigation in the opener window.
+  content::RenderProcessHost* b_com_rph =
+      popup_contents->GetMainFrame()->GetProcess();
+  content::WebContentsDestroyedWatcher destroyed_watcher(popup_contents);
+  EXPECT_TRUE(ExecuteScript(popup_contents, "window.close();"));
+  destroyed_watcher.Wait();
+  EXPECT_TRUE(b_com_rph->HasConnection());
+
+  // Resume the pending navigation in the original tab and ensure it finishes
+  // loading successfully.
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(b_url, opener_contents->GetMainFrame()->GetLastCommittedURL());
+}
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 // Class to sniff incoming spellcheck IPC / Mojo SpellCheckHost messages.
 class TestSpellCheckMessageFilter : public content::BrowserMessageFilter,
