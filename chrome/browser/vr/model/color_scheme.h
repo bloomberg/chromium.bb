@@ -114,6 +114,13 @@ struct ColorScheme {
   SkColor snackbar_foreground;
   ButtonColors snackbar_button_colors;
 
+  // These are used for blending between colors that are available only in
+  // shaders. They are, as you might expect, one for a given mode, but zero
+  // otherwise.
+  float normal_factor = 0.0f;
+  float incognito_factor = 0.0f;
+  float fullscreen_factor = 0.0f;
+
   SkColor cursor;
 };
 

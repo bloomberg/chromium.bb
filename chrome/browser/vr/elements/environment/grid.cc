@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/elements/grid.h"
+#include "chrome/browser/vr/elements/environment/grid.h"
 
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui_element_renderer.h"

@@ -24,8 +24,9 @@
 #include "chrome/browser/android/vr_shell/vr_metrics_util.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
-#include "chrome/browser/vr/assets.h"
+#include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/pose_util.h"
@@ -420,9 +421,10 @@ void VrShellGl::OnSwapContents(int new_content_id) {
   ui_->OnSwapContents(new_content_id);
 }
 
-void VrShellGl::OnAssetsLoaded(std::unique_ptr<SkBitmap> background_image,
+void VrShellGl::OnAssetsLoaded(vr::AssetsLoadStatus status,
+                               std::unique_ptr<vr::Assets> assets,
                                const base::Version& component_version) {
-  ui_->SetBackgroundImage(std::move(background_image));
+  ui_->OnAssetsLoaded(status, std::move(assets), component_version);
 }
 
 void VrShellGl::OnContentFrameAvailable() {
