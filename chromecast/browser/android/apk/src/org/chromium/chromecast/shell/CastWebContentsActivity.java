@@ -401,6 +401,7 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "detachWebContentsIfAny");
         if (mContentView != null) {
             mCastWebContentsLayout.removeView(mContentView);
+            mCastWebContentsLayout.removeView(mContentViewRenderView);
             mContentViewCore.destroy();
             mContentViewRenderView.destroy();
             mWindow.destroy();
