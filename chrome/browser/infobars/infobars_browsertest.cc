@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
+#include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_ui.h"
 #include "chrome/common/chrome_switches.h"
@@ -215,6 +216,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
       {"alternate_nav", IBD::ALTERNATE_NAV_INFOBAR_DELEGATE},
       {"default_browser", IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE},
+      {"obsolete_system", IBD::OBSOLETE_SYSTEM_INFOBAR_DELEGATE},
       {"session_crashed", IBD::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS},
       {"page_info", IBD::PAGE_INFO_INFOBAR_DELEGATE},
       {"translate", IBD::TRANSLATE_INFOBAR_DELEGATE_NON_AURA},
@@ -271,6 +273,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       chrome::DefaultBrowserInfoBarDelegate::Create(GetInfoBarService(),
                                                     browser()->profile());
 #endif
+      break;
+    case IBD::OBSOLETE_SYSTEM_INFOBAR_DELEGATE:
+      ObsoleteSystemInfoBarDelegate::Create(GetInfoBarService());
       break;
     case IBD::SESSION_CRASHED_INFOBAR_DELEGATE_MAC_IOS:
 #if defined(OS_MACOSX)
@@ -377,6 +382,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_default_browser) {
   ShowAndVerifyUi();
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_obsolete_system) {
+  ShowAndVerifyUi();
+}
 
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_session_crashed) {
