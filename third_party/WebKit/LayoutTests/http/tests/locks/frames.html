@@ -4,14 +4,10 @@
 <link rel=help href="https://github.com/inexorabletash/web-locks">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
 <style>iframe { display: none; }</style>
 <script>
 'use strict';
-
-let res_num = 0;
-function uniqueName(testCase) {
-  return `${self.location.pathname}-${testCase.name}-${++res_num}`;
-}
 
 function iframe(url) {
   return new Promise(resolve => {

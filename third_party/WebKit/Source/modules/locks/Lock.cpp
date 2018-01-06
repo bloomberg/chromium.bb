@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/locks/LockManager.h"
 #include "platform/bindings/ScriptState.h"
 
 namespace blink {
@@ -59,18 +60,21 @@ class Lock::ThenFunction final : public ScriptFunction {
 Lock* Lock::Create(ScriptState* script_state,
                    const String& name,
                    mojom::blink::LockMode mode,
-                   mojom::blink::LockHandlePtr handle) {
-  return new Lock(script_state, name, mode, std::move(handle));
+                   mojom::blink::LockHandlePtr handle,
+                   LockManager* manager) {
+  return new Lock(script_state, name, mode, std::move(handle), manager);
 }
 
 Lock::Lock(ScriptState* script_state,
            const String& name,
            mojom::blink::LockMode mode,
-           mojom::blink::LockHandlePtr handle)
+           mojom::blink::LockHandlePtr handle,
+           LockManager* manager)
     : PausableObject(ExecutionContext::From(script_state)),
       name_(name),
       mode_(mode),
-      handle_(std::move(handle)) {
+      handle_(std::move(handle)),
+      manager_(manager) {
   PauseIfNeeded();
 }
 
@@ -121,10 +125,17 @@ void Lock::Trace(blink::Visitor* visitor) {
   PausableObject::Trace(visitor);
   ScriptWrappable::Trace(visitor);
   visitor->Trace(resolver_);
+  visitor->Trace(manager_);
 }
 
 void Lock::ReleaseIfHeld() {
-  handle_.reset();
+  if (handle_) {
+    // Drop the mojo pipe; this releases the lock on the back end.
+    handle_.reset();
+
+    // Let the lock manager know that this instance can be collected.
+    manager_->OnLockReleased(this);
+  }
 }
 
 }  // namespace blink
