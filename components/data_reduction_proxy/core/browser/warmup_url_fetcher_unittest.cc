@@ -18,7 +18,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/http/http_status_code.h"
-#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_fetcher.h"
@@ -90,10 +89,6 @@ TEST(WarmupURLFetcherTest, TestGetWarmupURLWithQueryParam) {
   base::MessageLoopForIO message_loop;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner());
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
-
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
 
   GURL gurl_original;
@@ -148,9 +143,6 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner(),
                                            std::move(test_request_context));
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -210,9 +202,6 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner(),
                                            std::move(test_request_context));
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -270,9 +259,6 @@ TEST(WarmupURLFetcherTest,
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner(),
                                            std::move(test_request_context));
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   warmup_url_fetcher.FetchWarmupURL(0);
@@ -322,9 +308,6 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner(),
                                            std::move(test_request_context));
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -380,9 +363,6 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(message_loop.task_runner(),
                                            std::move(test_request_context));
-  net::TestNetworkQualityEstimator estimator;
-  request_context_getter->GetURLRequestContext()->set_network_quality_estimator(
-      &estimator);
 
   WarmupURLFetcherTest warmup_url_fetcher(request_context_getter);
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
