@@ -275,6 +275,9 @@ base::CommandLine CreatePerSessionCommandLine(Profile* profile) {
   flags_ui::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
   about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
                                       flags_ui::kAddSentinels);
+
+  UserSessionManager::MaybeAppendPolicySwitches(&user_flags);
+
   return user_flags;
 }
 
@@ -290,9 +293,20 @@ bool NeedRestartToApplyPerSessionFlags(
   if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
     return false;
 
-  if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
-          user_flags, *base::CommandLine::ForCurrentProcess(),
-          out_command_line_difference)) {
+  // TODO: Remove this special handling for site isolation and isolate origins.
+  auto* current_command_line = base::CommandLine::ForCurrentProcess();
+  if (current_command_line->HasSwitch(::switches::kSitePerProcess) !=
+      user_flags.HasSwitch(::switches::kSitePerProcess)) {
+    out_command_line_difference->insert(::switches::kSitePerProcess);
+  }
+  if (current_command_line->GetSwitchValueASCII(::switches::kIsolateOrigins) !=
+      user_flags.GetSwitchValueASCII(::switches::kIsolateOrigins)) {
+    out_command_line_difference->insert(::switches::kIsolateOrigins);
+  }
+
+  if (out_command_line_difference->empty() &&
+      about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+          user_flags, *current_command_line, out_command_line_difference)) {
     return false;
   }
 
@@ -390,6 +404,22 @@ void UserSessionManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kRLZBrand, std::string());
   registry->RegisterBooleanPref(prefs::kRLZDisabled, false);
   registry->RegisterBooleanPref(prefs::kCanShowOobeGoodiesPage, true);
+}
+
+// static
+void UserSessionManager::MaybeAppendPolicySwitches(
+    base::CommandLine* user_flags) {
+  // Inject site isolation and isolate origins command line switch from
+  // user policy.
+  auto* local_state = g_browser_process->local_state();
+  if (local_state->GetBoolean(prefs::kSitePerProcess)) {
+    user_flags->AppendSwitch(::switches::kSitePerProcess);
+  }
+  if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
+    user_flags->AppendSwitchASCII(
+        ::switches::kIsolateOrigins,
+        local_state->GetString(prefs::kIsolateOrigins));
+  }
 }
 
 UserSessionManager::UserSessionManager()
