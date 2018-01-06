@@ -222,6 +222,11 @@ int64_t DownloadTaskImpl::GetTotalBytes() const {
   return total_bytes_;
 }
 
+int64_t DownloadTaskImpl::GetReceivedBytes() const {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return received_bytes_;
+}
+
 int DownloadTaskImpl::GetPercentComplete() const {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return percent_complete_;
@@ -271,6 +276,7 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
         error_code_ = GetNetErrorCodeFromNSError(error);
         percent_complete_ = GetTaskPercentComplete(task);
         total_bytes_ = task.countOfBytesExpectedToReceive;
+        received_bytes_ = task.countOfBytesReceived;
         if (task.response.MIMEType) {
           mime_type_ = base::SysNSStringToUTF8(task.response.MIMEType);
         }

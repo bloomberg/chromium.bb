@@ -200,6 +200,7 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(-1, task_->GetHttpCode());
   EXPECT_EQ(-1, task_->GetTotalBytes());
+  EXPECT_EQ(0, task_->GetReceivedBytes());
   EXPECT_EQ(-1, task_->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task_->GetContentDisposition());
   EXPECT_EQ(kMimeType, task_->GetMimeType());
@@ -226,6 +227,7 @@ TEST_F(DownloadTaskImplTest, EmptyContentDownload) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(0, task_->GetTotalBytes());
+  EXPECT_EQ(0, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
 
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
@@ -345,6 +347,7 @@ TEST_F(DownloadTaskImplTest, SmallResponseDownload) {
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kDataSize, task_->GetTotalBytes());
+  EXPECT_EQ(kDataSize, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_EQ(kData, task_->GetResponseWriter()->AsStringWriter()->data());
 
@@ -358,6 +361,7 @@ TEST_F(DownloadTaskImplTest, SmallResponseDownload) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kDataSize, task_->GetTotalBytes());
+  EXPECT_EQ(kDataSize, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_EQ(kData, task_->GetResponseWriter()->AsStringWriter()->data());
 
@@ -385,6 +389,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
+  EXPECT_EQ(kData1Size, task_->GetReceivedBytes());
   EXPECT_EQ(42, task_->GetPercentComplete());
   net::URLFetcherStringWriter* writer =
       task_->GetResponseWriter()->AsStringWriter();
@@ -398,6 +403,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
+  EXPECT_EQ(kData1Size + kData2Size, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_EQ(std::string(kData1) + kData2, writer->data());
 
@@ -411,6 +417,7 @@ TEST_F(DownloadTaskImplTest, LargeResponseDownload) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kData1Size + kData2Size, task_->GetTotalBytes());
+  EXPECT_EQ(kData1Size + kData2Size, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_EQ(std::string(kData1) + kData2, writer->data());
 
@@ -437,6 +444,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheBeginning) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_TRUE(task_->GetErrorCode() == net::ERR_INTERNET_DISCONNECTED);
   EXPECT_EQ(0, task_->GetTotalBytes());
+  EXPECT_EQ(0, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
 
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
@@ -462,6 +470,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(kExpectedDataSize, task_->GetTotalBytes());
+  EXPECT_EQ(kReceivedDataSize, task_->GetReceivedBytes());
   EXPECT_EQ(23, task_->GetPercentComplete());
   net::URLFetcherStringWriter* writer =
       task_->GetResponseWriter()->AsStringWriter();
@@ -479,6 +488,7 @@ TEST_F(DownloadTaskImplTest, FailureInTheMiddle) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_TRUE(task_->GetErrorCode() == net::ERR_INTERNET_DISCONNECTED);
   EXPECT_EQ(kExpectedDataSize, task_->GetTotalBytes());
+  EXPECT_EQ(kReceivedDataSize, task_->GetReceivedBytes());
   EXPECT_EQ(23, task_->GetPercentComplete());
   EXPECT_EQ(kReceivedData, writer->data());
 

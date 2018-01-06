@@ -65,6 +65,7 @@ class DownloadTaskImpl : public DownloadTask {
   int GetErrorCode() const override;
   int GetHttpCode() const override;
   int64_t GetTotalBytes() const override;
+  int64_t GetReceivedBytes() const override;
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
   std::string GetMimeType() const override;
@@ -107,6 +108,7 @@ class DownloadTaskImpl : public DownloadTask {
   int error_code_ = 0;
   int http_code_ = -1;
   int64_t total_bytes_ = -1;
+  int64_t received_bytes_ = 0;
   int percent_complete_ = -1;
   std::string content_disposition_;
   std::string mime_type_;
