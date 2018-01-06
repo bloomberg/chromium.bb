@@ -21,8 +21,8 @@ function postAndWait(worker, data) {
   });
 }
 
-async function postAndConfirm(frame, data) {
-  const response = await postAndWait(frame, data);
+async function postAndConfirm(worker, data) {
+  const response = await postAndWait(worker, data);
   assert_equals(response.ack, data.op);
   assert_equals(response.id, data.lock_id);
   return response;

@@ -7,6 +7,7 @@
 
 #include "bindings/modules/v8/string_or_string_sequence.h"
 #include "modules/ModulesExport.h"
+#include "modules/locks/Lock.h"
 #include "modules/locks/LockOptions.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/HeapAllocator.h"
@@ -50,6 +51,14 @@ class LockManager final : public ScriptWrappable,
   // this can unblock requests by other contexts.
   void ContextDestroyed(ExecutionContext*) override;
 
+  // Called by a lock when it is released. The lock is dropped from the
+  // |held_locks_| list. Held locks are tracked until explicitly released (or
+  // context is destroyed) to handle the case where both the lock and the
+  // promise holding it open have no script references and are potentially
+  // collectable. In that case, the lock should be held until the context
+  // is destroyed. See https://crbug.com/798500 for an example.
+  void OnLockReleased(Lock*);
+
  private:
   class LockRequestImpl;
 
@@ -59,6 +68,7 @@ class LockManager final : public ScriptWrappable,
   void RemovePendingRequest(LockRequestImpl*);
 
   HeapHashSet<TraceWrapperMember<LockRequestImpl>> pending_requests_;
+  HeapHashSet<Member<Lock>> held_locks_;
 
   mojom::blink::LockManagerPtr service_;
 };

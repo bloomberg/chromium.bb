@@ -17,6 +17,8 @@
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperMember.h"
+#include "platform/heap/Persistent.h"
+#include "platform/wtf/Functional.h"
 #include "platform/wtf/Vector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -125,7 +127,9 @@ class LockManager::LockRequestImpl final
       return;
     }
 
-    Lock* lock = Lock::Create(script_state, name_, mode_, std::move(handle));
+    Lock* lock =
+        Lock::Create(script_state, name_, mode_, std::move(handle), manager_);
+    manager_->held_locks_.insert(lock);
 
     ScriptState::Scope scope(script_state);
     v8::TryCatch try_catch(script_state->GetIsolate());
@@ -268,6 +272,7 @@ void LockManager::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);
+  visitor->Trace(held_locks_);
 }
 
 void LockManager::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
@@ -279,6 +284,13 @@ void LockManager::ContextDestroyed(ExecutionContext*) {
   for (auto request : pending_requests_)
     request->Cancel();
   pending_requests_.clear();
+  held_locks_.clear();
+}
+
+void LockManager::OnLockReleased(Lock* lock) {
+  // Lock may be removed by an explicit call and/or when the context is
+  // destroyed, so this must be idempotent.
+  held_locks_.erase(lock);
 }
 
 }  // namespace blink
