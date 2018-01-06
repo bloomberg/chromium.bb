@@ -4,6 +4,7 @@
 
 #include "media/mojo/services/interface_factory_impl.h"
 
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
@@ -189,9 +190,15 @@ void InterfaceFactoryImpl::CreateCdm(
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 }
 
-void InterfaceFactoryImpl::CreateCdmProxy(mojom::CdmProxyRequest request) {
+void InterfaceFactoryImpl::CreateCdmProxy(const std::string& cdm_guid,
+                                          mojom::CdmProxyRequest request) {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  auto cdm_proxy = mojo_media_client_->CreateCdmProxy();
+  if (!base::IsValidGUID(cdm_guid)) {
+    DLOG(ERROR) << "Invalid CDM GUID: " << cdm_guid;
+    return;
+  }
+
+  auto cdm_proxy = mojo_media_client_->CreateCdmProxy(cdm_guid);
   if (!cdm_proxy) {
     DLOG(ERROR) << "CdmProxy creation failed.";
     return;

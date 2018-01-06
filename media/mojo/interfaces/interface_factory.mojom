@@ -30,8 +30,10 @@ interface InterfaceFactory {
   CreateCdm(string key_system, ContentDecryptionModule& cdm);
 
   // Creates a CdmProxy that proxies part of CDM functionalities to a different
-  // entity, e.g. hardware CDM modules.
+  // entity, e.g. hardware CDM modules. The created |cdm_proxy| must match the
+  // type of the CDM, identified by |cdm_guid|.
   // TODO(crbug.com/676224): Conditionally enable this when EnabledIf attribute
   // is supported in mojom files.
-  CreateCdmProxy(CdmProxy& cdm_proxy);
+  // TODO(xhwang): Add a helper type for GUID to avoid passing string here.
+  CreateCdmProxy(string cdm_guid, CdmProxy& cdm_proxy);
 };

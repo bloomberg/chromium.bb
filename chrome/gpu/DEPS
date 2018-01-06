@@ -5,5 +5,6 @@ include_rules = [
   "+components/metrics",
   "+content/public/child",
   "+content/public/gpu",
+  "+media/cdm",
   "+services/service_manager/public/cpp",
 ]

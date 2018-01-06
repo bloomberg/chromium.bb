@@ -4,6 +4,10 @@
 
 #include "content/public/gpu/content_gpu_client.h"
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "media/cdm/cdm_proxy.h"
+#endif
+
 namespace content {
 
 gpu::SyncPointManager* ContentGpuClient::GetSyncPointManager() {
@@ -17,5 +21,12 @@ const gpu::GPUInfo* ContentGpuClient::GetGPUInfo() {
 const gpu::GpuFeatureInfo* ContentGpuClient::GetGpuFeatureInfo() {
   return nullptr;
 }
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+std::unique_ptr<media::CdmProxy> ContentGpuClient::CreateCdmProxy(
+    const std::string& cdm_guid) {
+  return nullptr;
+}
+#endif
 
 }  // namespace content

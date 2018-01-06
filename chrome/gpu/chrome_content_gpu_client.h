@@ -32,6 +32,11 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   void GpuServiceInitialized(
       const gpu::GpuPreferences& gpu_preferences) override;
 
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  std::unique_ptr<media::CdmProxy> CreateCdmProxy(
+      const std::string& cdm_guid) override;
+#endif
+
  private:
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAccelerator(

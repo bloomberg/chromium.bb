@@ -66,6 +66,7 @@ target(link_target_type, "gpu_sources") {
     "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/service",
     "//ipc",
+    "//media:media_features",
     "//media/gpu",
     "//media/mojo:features",
 

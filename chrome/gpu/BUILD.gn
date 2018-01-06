@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/media_options.gni")
+
 static_library("gpu") {
   deps = [
     "//components/metrics:child_call_stacks",
@@ -13,6 +15,13 @@ static_library("gpu") {
     "chrome_content_gpu_client.cc",
     "chrome_content_gpu_client.h",
   ]
+
+  if (enable_library_cdms) {
+    deps += [
+      "//media/cdm:cdm_paths",
+      "//media/cdm/ppapi/clear_key_cdm:clear_key_cdm_proxy",
+    ]
+  }
 
   if (is_chromeos) {
     deps += [

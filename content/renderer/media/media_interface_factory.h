@@ -36,7 +36,9 @@ class CONTENT_EXPORT MediaInterfaceFactory
                       media::mojom::RendererRequest request) final;
   void CreateCdm(const std::string& key_system,
                  media::mojom::ContentDecryptionModuleRequest request) final;
-  void CreateCdmProxy(media::mojom::CdmProxyRequest request) final;
+  // TODO(xhwang): We should not expose this here.
+  void CreateCdmProxy(const std::string& cdm_guid,
+                      media::mojom::CdmProxyRequest request) final;
 
  private:
   media::mojom::InterfaceFactory* GetMediaInterfaceFactory();
