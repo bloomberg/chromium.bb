@@ -2,6 +2,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/offline_items_collection",
   "+components/ukm",
+  "+crypto",
   "+services/metrics/public/cpp",
   "+sql",
 ]

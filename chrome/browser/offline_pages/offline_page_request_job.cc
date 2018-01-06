@@ -21,6 +21,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -323,7 +324,7 @@ void ValidateFileOnBackgroundThread(
     const base::Callback<void(bool)>& callback) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::Bind(&OfflinePageUtils::ValidateFile, file_path, expected_file_size,
+      base::Bind(&ArchiveValidator::ValidateFile, file_path, expected_file_size,
                  expected_digest),
       callback);
 }
