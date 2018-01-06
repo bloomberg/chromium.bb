@@ -15,6 +15,7 @@
 #include "chrome/browser/task_manager/providers/task_provider_observer.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
 #include "content/public/common/result_codes.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace task_manager {
 
@@ -188,6 +189,17 @@ blink::WebCache::ResourceTypeStats Task::GetWebCacheStats() const {
 
 int Task::GetKeepaliveCount() const {
   return -1;
+}
+
+// static
+gfx::ImageSkia* Task::FetchIcon(int id, gfx::ImageSkia** result_image) {
+  if (!*result_image && ui::ResourceBundle::HasSharedInstance()) {
+    *result_image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+    if (*result_image)
+      (*result_image)->MakeThreadSafe();
+  }
+  return *result_image;
 }
 
 }  // namespace task_manager

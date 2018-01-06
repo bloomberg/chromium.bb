@@ -40,6 +40,8 @@ class ChildProcessTask : public Task {
   int64_t GetV8MemoryUsed() const override;
 
  private:
+  static gfx::ImageSkia* s_icon_;
+
   // The Mojo service wrapper that will provide us with the V8 memory usage of
   // the browser child process represented by this object.
   std::unique_ptr<ProcessResourceUsage> process_resources_sampler_;

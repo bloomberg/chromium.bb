@@ -27,22 +27,10 @@
 #include "extensions/common/extension_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace task_manager {
 
 namespace {
-
-gfx::ImageSkia* g_default_icon = nullptr;
-
-gfx::ImageSkia* GetDefaultIcon() {
-  if (!g_default_icon && ui::ResourceBundle::HasSharedInstance()) {
-    g_default_icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_PLUGINS_FAVICON);
-  }
-
-  return g_default_icon;
-}
 
 base::string16 GetLocalizedTitle(const base::string16& title,
                                  int process_type) {
@@ -163,18 +151,19 @@ bool UsesV8Memory(int process_type) {
 
 }  // namespace
 
+gfx::ImageSkia* ChildProcessTask::s_icon_ = nullptr;
+
 ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
     : Task(GetLocalizedTitle(data.name, data.process_type),
            base::UTF16ToUTF8(data.name),
-           GetDefaultIcon(),
+           FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
            data.handle),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),
       v8_memory_allocated_(-1),
       v8_memory_used_(-1),
       unique_child_process_id_(data.id),
       process_type_(data.process_type),
-      uses_v8_memory_(UsesV8Memory(process_type_)) {
-}
+      uses_v8_memory_(UsesV8Memory(process_type_)) {}
 
 ChildProcessTask::~ChildProcessTask() {
 }

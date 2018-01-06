@@ -28,6 +28,8 @@ class BrowserProcessTask : public Task {
   int64_t GetSqliteMemoryUsed() const override;
 
  private:
+  static gfx::ImageSkia* s_icon_;
+
   int64_t used_sqlite_memory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessTask);

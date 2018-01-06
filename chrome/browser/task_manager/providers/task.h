@@ -175,6 +175,10 @@ class Task {
   const base::ProcessId& process_id() const { return process_id_; }
 
  protected:
+  // If |*result_image| is not already set, fetch the image with id
+  // |id| from the resource database and put in |*result_image|.
+  // Returns |*result_image|.
+  static gfx::ImageSkia* FetchIcon(int id, gfx::ImageSkia** result_image);
   void set_title(const base::string16& new_title) { title_ = new_title; }
   void set_rappor_sample_name(const std::string& sample) {
     rappor_sample_name_ = sample;
