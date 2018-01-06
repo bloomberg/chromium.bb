@@ -147,6 +147,7 @@ public abstract class ChromeFeatureList {
     }
 
     // Alphabetical:
+    public static final String ADJUST_WEBAPK_INSTALLATION_SPACE = "AdjustWebApkInstallationSpace";
     public static final String ALLOW_READER_FOR_ACCESSIBILITY = "AllowReaderForAccessibility";
     public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";

@@ -54,6 +54,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kVrBrowsing,
     &features::kWebPayments,
     &features::kTabsInCbd,
+    &kAdjustWebApkInstallationSpace,
     &kAllowReaderForAccessibility,
     &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
@@ -156,6 +157,9 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 }  // namespace
 
 // Alphabetical:
+const base::Feature kAdjustWebApkInstallationSpace = {
+    "AdjustWebApkInstallationSpace", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAllowReaderForAccessibility = {
     "AllowReaderForAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
