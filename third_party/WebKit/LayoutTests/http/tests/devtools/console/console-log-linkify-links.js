@@ -8,25 +8,46 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
   await TestRunner.evaluateInPagePromise(`
+    console.log("www.chromium.org");
     console.log("http://www.chromium.org/");
     console.log("follow http://www.chromium.org/");
     console.log("string", "http://www.chromium.org/");
     console.log(123, "http://www.chromium.org/");
     console.log("http://www.chromium.org/some?v=114:56:57");
+    console.log("http://www.example.com/düsseldorf?neighbourhood=Lörick");
+    console.log("http://👓.ws");
+    console.log("http:/www.example.com/молодец");
+    console.log("http://ar.wikipedia.org/wiki/نجيب_محفوظ/");
+    console.log("http://example.com/スター・ウォーズ/");
+    console.log("data:text/plain;a");
+    console.log("'www.chromium.org'");
+    console.log("(www.chromium.org)");
+    console.log("\\"www.chromium.org\\"");
+    console.log("{www.chromium.org}");
+    console.log("[www.chromium.org]");
+    console.log("www.chromium.org\\u00a0");
+    console.log("www.chromium.org~");
+    console.log("www.chromium.org,");
+    console.log("www.chromium.org:");
+    console.log("www.chromium.org;");
+    console.log("www.chromium.org.");
+    console.log("www.chromium.org...");
+    console.log("www.chromium.org!");
+    console.log("www.chromium.org?");
   `);
-
-  ConsoleTestRunner.dumpConsoleMessages(false, true);
 
   TestRunner.addResult('Dump urls in messages');
   var consoleView = Console.ConsoleView.instance();
   var viewMessages = consoleView._visibleViewMessages;
   for (var i = 0; i < viewMessages.length; ++i) {
     var uiMessage = viewMessages[i];
-    var element = uiMessage.contentElement();
+    var element = uiMessage.element().querySelector('.console-message-text');
+    TestRunner.addResult('\nText: ' + element.deepTextContent());
     var links = element.querySelectorAll('.devtools-link');
     for (var link of links) {
       var info = Components.Linkifier._linkInfo(link);
-      TestRunner.addResult('linked url:' + (info && info.url));
+      if (info && info.url)
+        TestRunner.addResult('Linked url: ' + info.url);
     }
   }
 

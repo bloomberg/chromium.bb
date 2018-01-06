@@ -1,21 +1,84 @@
 Test that console.log() would linkify the links. Bug 231074.
 
-console-log-linkify-links.js:11 http://www.chromium.org/ console-message > source-code > console-message-anchor > devtools-link > hidden console-message-badge > hide-badge-title > console-message-text > devtools-link
-console-log-linkify-links.js:12 follow http://www.chromium.org/ console-message > source-code > console-message-anchor > devtools-link > hidden console-message-badge > hide-badge-title > console-message-text > devtools-link
-console-log-linkify-links.js:13 string http://www.chromium.org/ console-message > source-code > console-message-anchor > devtools-link > hidden console-message-badge > hide-badge-title > console-message-text > devtools-link
-console-log-linkify-links.js:14 123 "http://www.chromium.org/" console-message > source-code > console-message-anchor > devtools-link > hidden console-message-badge > hide-badge-title > console-message-text > object-value-number source-code > object-value-string source-code > object-value-string-quote > devtools-link > object-value-string-quote
-console-log-linkify-links.js:15 http://www.chromium.org/some?v=114:56:57 console-message > source-code > console-message-anchor > devtools-link > hidden console-message-badge > hide-badge-title > console-message-text > devtools-link
 Dump urls in messages
-linked url:null
-linked url:http://www.chromium.org/
-linked url:null
-linked url:http://www.chromium.org/
-linked url:null
-linked url:http://www.chromium.org/
-linked url:null
-linked url:http://www.chromium.org/
-linked url:null
-linked url:http://www.chromium.org/some?v=114
+
+Text: www.chromium.org
+Linked url: http://www.chromium.org
+
+Text: http://www.chromium.org/
+Linked url: http://www.chromium.org/
+
+Text: follow http://www.chromium.org/
+Linked url: http://www.chromium.org/
+
+Text: string http://www.chromium.org/
+Linked url: http://www.chromium.org/
+
+Text: 123 "http://www.chromium.org/"
+Linked url: http://www.chromium.org/
+
+Text: http://www.chromium.org/some?v=114:56:57
+Linked url: http://www.chromium.org/some?v=114
+
+Text: http://www.example.com/düsseldorf?neighbourhood=Lörick
+Linked url: http://www.example.com/düsseldorf?neighbourhood=Lörick
+
+Text: http://👓.ws
+Linked url: http://👓.ws
+
+Text: http:/www.example.com/молодец
+Linked url: http://www.example.com/молодец
+
+Text: http://ar.wikipedia.org/wiki/نجيب_محفوظ/
+Linked url: http://ar.wikipedia.org/wiki/نجيب_محفوظ/
+
+Text: http://example.com/スター・ウォーズ/
+Linked url: http://example.com/スター・ウォーズ/
+
+Text: data:text/plain;a
+Linked url: data:text/plain;a
+
+Text: 'www.chromium.org'
+Linked url: http://www.chromium.org
+
+Text: (www.chromium.org)
+Linked url: http://www.chromium.org
+
+Text: "www.chromium.org"
+Linked url: http://www.chromium.org
+
+Text: {www.chromium.org}
+Linked url: http://www.chromium.org
+
+Text: [www.chromium.org]
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org 
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org~
+Linked url: http://www.chromium.org~
+
+Text: www.chromium.org,
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org:
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org;
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org.
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org...
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org!
+Linked url: http://www.chromium.org
+
+Text: www.chromium.org?
+Linked url: http://www.chromium.org
 The string "at triggerError (http://localhost/show/:22:11) " linkifies to url: http://localhost/show/
 The lineNumber is 21
 The columnNumber is 10
