@@ -290,8 +290,8 @@ extern const char kEnableMaterialDesignExtensionsDescription[];
 extern const char kEnablePolicyToolName[];
 extern const char kEnablePolicyToolDescription[];
 
-extern const char kEnableMultiMirroringName[];
-extern const char kEnableMultiMirroringDescription[];
+extern const char kDisableMultiMirroringName[];
+extern const char kDisableMultiMirroringDescription[];
 
 extern const char kEnableNavigationTracingName[];
 extern const char kEnableNavigationTracingDescription[];

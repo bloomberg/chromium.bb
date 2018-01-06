@@ -511,8 +511,8 @@ DisplayConfigurator::DisplayConfigurator()
       displays_suspended_(false),
       layout_manager_(new DisplayLayoutManagerImpl(this)),
       is_multi_mirroring_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kEnableMultiMirroring)),
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              ::switches::kDisableMultiMirroring)),
       weak_ptr_factory_(this) {}
 
 DisplayConfigurator::~DisplayConfigurator() {

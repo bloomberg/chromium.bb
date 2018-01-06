@@ -436,10 +436,10 @@ const char kEnablePWAFullCodeCacheDescription[] =
     "Generate V8 code cache in Cache Storage while installing Service Worker "
     "for PWAs.";
 
-const char kEnableMultiMirroringName[] =
+const char kDisableMultiMirroringName[] =
     "Display mirroring across multiple displays.";
-const char kEnableMultiMirroringDescription[] =
-    "Enable Display mirroring across multiple displays.";
+const char kDisableMultiMirroringDescription[] =
+    "Disable Display mirroring across multiple displays.";
 
 const char kEnableNavigationTracingName[] = "Enable navigation tracing";
 const char kEnableNavigationTracingDescription[] =

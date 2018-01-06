@@ -26116,8 +26116,8 @@ from previous Chrome versions.
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1479248574" label="disable-voice-input"/>
-  <int value="1480998407" label="enable-multi-mirroring"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1488700164" label="password-import:disabled"/>

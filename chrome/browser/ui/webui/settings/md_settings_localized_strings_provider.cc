@@ -651,8 +651,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
                           base::CommandLine::ForCurrentProcess()->HasSwitch(
                               ::switches::kEnableUnifiedDesktop));
   html_source->AddBoolean("multiMirroringAvailable",
-                          base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kEnableMultiMirroring));
+                          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                              ::switches::kDisableMultiMirroring));
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",
