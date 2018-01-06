@@ -127,7 +127,6 @@ source_set("blink_headers") {
     "platform/TaskType.h",
     "platform/URLConversion.h",
     "platform/UserMetricsAction.h",
-    "platform/WebAddressSpace.h",
     "platform/WebApplicationCacheHost.h",
     "platform/WebApplicationCacheHostClient.h",
     "platform/WebAudioBus.h",
@@ -745,7 +744,6 @@ mojom("mojo_bindings") {
     "//third_party/WebKit/Source/platform:blink_platform_public_deps",
   ]
   sources = [
-    "platform/address_space.mojom",
     "platform/content_security_policy.mojom",
     "platform/dedicated_worker_factory.mojom",
     "platform/display_mode.mojom",

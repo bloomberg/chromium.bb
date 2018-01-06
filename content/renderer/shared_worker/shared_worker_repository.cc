@@ -23,7 +23,7 @@ void SharedWorkerRepository::Connect(
     DocumentID document_id,
     const blink::WebString& content_security_policy,
     blink::WebContentSecurityPolicyType content_security_policy_type,
-    blink::WebAddressSpace creation_address_space,
+    blink::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     blink::MessagePortChannel channel,
     std::unique_ptr<blink::WebSharedWorkerConnectListener> listener) {

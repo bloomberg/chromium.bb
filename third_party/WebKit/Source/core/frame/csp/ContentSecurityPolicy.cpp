@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "bindings/core/v8/ScriptController.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -70,7 +71,6 @@
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -189,7 +189,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
   }
   if (treat_as_public_address_) {
     execution_context_->GetSecurityContext().SetAddressSpace(
-        kWebAddressSpacePublic);
+        mojom::IPAddressSpace::kPublic);
   }
   if (require_safe_types_)
     execution_context_->GetSecurityContext().SetRequireTrustedTypes();

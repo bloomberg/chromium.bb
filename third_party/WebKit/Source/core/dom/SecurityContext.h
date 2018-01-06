@@ -29,6 +29,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
@@ -36,7 +37,6 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
@@ -73,8 +73,8 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   bool IsSandboxed(SandboxFlags mask) const { return sandbox_flags_ & mask; }
   virtual void EnforceSandboxFlags(SandboxFlags mask);
 
-  void SetAddressSpace(WebAddressSpace space) { address_space_ = space; }
-  WebAddressSpace AddressSpace() const { return address_space_; }
+  void SetAddressSpace(mojom::IPAddressSpace space) { address_space_ = space; }
+  mojom::IPAddressSpace AddressSpace() const { return address_space_; }
   String addressSpaceForBindings() const;
 
   void SetRequireTrustedTypes() { require_safe_types_ = true; }
@@ -120,7 +120,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   Member<ContentSecurityPolicy> content_security_policy_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
 
-  WebAddressSpace address_space_;
+  mojom::IPAddressSpace address_space_;
   WebInsecureRequestPolicy insecure_request_policy_;
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_;

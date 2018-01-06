@@ -11,6 +11,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -34,7 +35,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
-#include "public/platform/WebAddressSpace.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "v8/include/v8.h"
 
@@ -102,7 +102,7 @@ class WorkerThreadForTest : public WorkerThread {
 
     auto creation_params = std::make_unique<GlobalScopeCreationParams>(
         script_url, "fake user agent", headers.get(), kReferrerPolicyDefault,
-        security_origin, worker_clients, kWebAddressSpaceLocal, nullptr,
+        security_origin, worker_clients, mojom::IPAddressSpace::kLocal, nullptr,
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
 

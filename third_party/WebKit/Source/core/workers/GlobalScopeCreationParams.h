@@ -8,6 +8,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "bindings/core/v8/V8CacheOptions.h"
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerClients.h"
@@ -19,7 +20,6 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/WebAddressSpace.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       WorkerClients*,
-      WebAddressSpace,
+      mojom::IPAddressSpace,
       const Vector<String>* origin_trial_tokens,
       std::unique_ptr<WorkerSettings>,
       V8CacheOptions,
@@ -87,7 +87,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // supplies no extra 'clients', m_workerClients can be left as empty/null.
   CrossThreadPersistent<WorkerClients> worker_clients;
 
-  WebAddressSpace address_space;
+  mojom::IPAddressSpace address_space;
 
   std::unique_ptr<WorkerSettings> worker_settings;
 

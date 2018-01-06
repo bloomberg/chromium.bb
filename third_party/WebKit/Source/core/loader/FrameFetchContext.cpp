@@ -185,21 +185,20 @@ bool IsClientHintsAllowed(const KURL& url) {
 
 struct FrameFetchContext::FrozenState final
     : GarbageCollectedFinalized<FrozenState> {
-  FrozenState(
-      ReferrerPolicy referrer_policy,
-      const String& outgoing_referrer,
-      const KURL& url,
-      scoped_refptr<const SecurityOrigin> security_origin,
-      scoped_refptr<const SecurityOrigin> parent_security_origin,
-      const Optional<WebAddressSpace>& address_space,
-      const ContentSecurityPolicy* content_security_policy,
-      KURL site_for_cookies,
-      scoped_refptr<const SecurityOrigin> requestor_origin,
-      const ClientHintsPreferences& client_hints_preferences,
-      float device_pixel_ratio,
-      const String& user_agent,
-      bool is_main_frame,
-      bool is_svg_image_chrome_client)
+  FrozenState(ReferrerPolicy referrer_policy,
+              const String& outgoing_referrer,
+              const KURL& url,
+              scoped_refptr<const SecurityOrigin> security_origin,
+              scoped_refptr<const SecurityOrigin> parent_security_origin,
+              const Optional<mojom::IPAddressSpace>& address_space,
+              const ContentSecurityPolicy* content_security_policy,
+              KURL site_for_cookies,
+              scoped_refptr<const SecurityOrigin> requestor_origin,
+              const ClientHintsPreferences& client_hints_preferences,
+              float device_pixel_ratio,
+              const String& user_agent,
+              bool is_main_frame,
+              bool is_svg_image_chrome_client)
       : referrer_policy(referrer_policy),
         outgoing_referrer(outgoing_referrer),
         url(url),
@@ -220,7 +219,7 @@ struct FrameFetchContext::FrozenState final
   const KURL url;
   const scoped_refptr<const SecurityOrigin> security_origin;
   const scoped_refptr<const SecurityOrigin> parent_security_origin;
-  const Optional<WebAddressSpace> address_space;
+  const Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
   const scoped_refptr<const SecurityOrigin> requestor_origin;
@@ -1076,7 +1075,7 @@ const SecurityOrigin* FrameFetchContext::GetParentSecurityOrigin() const {
   return parent->GetSecurityContext()->GetSecurityOrigin();
 }
 
-Optional<WebAddressSpace> FrameFetchContext::GetAddressSpace() const {
+Optional<mojom::IPAddressSpace> FrameFetchContext::GetAddressSpace() const {
   if (IsDetached())
     return frozen_state_->address_space;
   if (!document_)

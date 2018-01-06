@@ -134,17 +134,17 @@ bool ShouldBlockCORSPreflight(ExecutionContext* execution_context,
   }
 
   if (RuntimeEnabledFeatures::CorsRFC1918Enabled()) {
-    WebAddressSpace requestor_space =
+    mojom::IPAddressSpace requestor_space =
         execution_context->GetSecurityContext().AddressSpace();
 
     // TODO(mkwst): This only checks explicit IP addresses. We'll have to move
     // all this up to //net and //content in order to have any real impact on
     // gateway attacks. That turns out to be a TON of work (crbug.com/378566).
-    WebAddressSpace target_space = kWebAddressSpacePublic;
+    mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
     if (NetworkUtils::IsReservedIPAddress(request_url.Host()))
-      target_space = kWebAddressSpacePrivate;
+      target_space = mojom::IPAddressSpace::kPrivate;
     if (SecurityOrigin::Create(request_url)->IsLocalhost())
-      target_space = kWebAddressSpaceLocal;
+      target_space = mojom::IPAddressSpace::kLocal;
 
     bool is_external_request = requestor_space > target_space;
     if (is_external_request)

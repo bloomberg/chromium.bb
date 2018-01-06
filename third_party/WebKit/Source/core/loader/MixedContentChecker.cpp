@@ -28,6 +28,7 @@
 
 #include "core/loader/MixedContentChecker.h"
 
+#include "common/net/ip_address_space.mojom-blink.h"
 #include "core/dom/Document.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Frame.h"
@@ -45,7 +46,6 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -599,7 +599,7 @@ void MixedContentChecker::CheckMixedPrivatePublic(
 
   // Just count these for the moment, don't block them.
   if (NetworkUtils::IsReservedIPAddress(resource_ip_address) &&
-      frame->GetDocument()->AddressSpace() == kWebAddressSpacePublic) {
+      frame->GetDocument()->AddressSpace() == mojom::IPAddressSpace::kPublic) {
     UseCounter::Count(frame->GetDocument(),
                       WebFeature::kMixedContentPrivateHostnameInPublicHostname);
     // We can simplify the IP checks here, as we've already verified that
