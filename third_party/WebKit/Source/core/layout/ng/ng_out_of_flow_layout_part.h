@@ -27,10 +27,12 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   STACK_ALLOCATED();
 
  public:
-  NGOutOfFlowLayoutPart(const NGBlockNode container,
+  NGOutOfFlowLayoutPart(NGFragmentBuilder* container_builder,
+                        bool contains_absolute,
+                        bool contains_fixed,
+                        const NGBoxStrut& scrollbar_sizes,
                         const NGConstraintSpace& container_space,
-                        const ComputedStyle& container_style,
-                        NGFragmentBuilder* container_builder);
+                        const ComputedStyle& container_style);
 
   // update_legacy will place NG OOF descendants into their Legacy container.
   // It should be false if OOF descendants have already been placed into Legacy.
