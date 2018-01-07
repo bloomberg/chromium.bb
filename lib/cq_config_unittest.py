@@ -207,8 +207,8 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
     osutils.WriteFile(changed_file, '#test#', makedirs=True)
     return os.path.relpath(changed_file, root_dir)
 
-  def testGetUnionedOptionsFromSubConfigs(self):
-    """Test GetUnionedOptionsFromSubConfigs."""
+  def testGetUnionedPreCQConfigs(self):
+    """Test GetUnionedPreCQConfigs."""
     mock_checkout = mock.Mock()
     with osutils.TempDir(set_global=True) as tempdir:
       root_dir = os.path.join(tempdir, 'overlays')
@@ -235,27 +235,14 @@ class CQConfigParserTest(cros_test_lib.MockTestCase):
       change = self._patch_factory.MockPatch()
       self.PatchObject(cros_patch.GerritPatch, 'GetDiffStatus',
                        return_value=diff_dict)
+
       parser = self.CreateCQConfigParser(
           change=change, common_config_file=root_ini, checkout=mock_checkout)
-      union_options = parser.GetUnionedOptionsFromSubConfigs(
-          constants.CQ_CONFIG_SECTION_GENERAL,
-          constants.CQ_CONFIG_PRE_CQ_CONFIGS)
+      pre_cq_configs = parser.GetUnionedPreCQConfigs()
 
-      self.assertItemsEqual(union_options,
-                            ['default lumpy-pre-cq', 'lakitu-pre-cq',
-                             'stumpy-pre-cq'])
-
-  def testGetUnionedPreCQConfigs(self):
-    """Test GetUnionedPreCQConfigs."""
-    self.PatchObject(
-        cq_config.CQConfigParser, 'GetUnionedOptionsFromSubConfigs',
-        return_value={'default lumpy-pre-cq', 'lakitu-pre-cq', 'stumpy-pre-cq'})
-    parser = self.CreateCQConfigParser()
-    pre_cq_configs = parser.GetUnionedPreCQConfigs()
-
-    self.assertItemsEqual(pre_cq_configs,
-                          {'default', 'lumpy-pre-cq', 'lakitu-pre-cq',
-                           'stumpy-pre-cq'})
+      self.assertItemsEqual(pre_cq_configs,
+                            {'default', 'lumpy-pre-cq', 'lakitu-pre-cq',
+                            'stumpy-pre-cq'})
 
   def GetOption(self, path, section='a', option='b'):
     # pylint: disable=protected-access

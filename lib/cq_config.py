@@ -144,7 +144,39 @@ class CQConfigParser(object):
         constants.CQ_CONFIG_SECTION_GENERAL,
         constants.CQ_CONFIG_UNION_PRE_CQ_SUB_CONFIGS)
 
-  def GetUnionedOptionsFromSubConfigs(self, section, option):
+  def GetUnionedPreCQConfigs(self):
+    """Get Pre-CQ configs from unioned options of sub configs.
+
+    Returns:
+      A list of Pre-CQ configs (strings).
+    """
+    unioned_pre_cq_config_options = self._GetUnionedOptionFromSubConfigs(
+        constants.CQ_CONFIG_SECTION_GENERAL,
+        constants.CQ_CONFIG_PRE_CQ_CONFIGS)
+
+    pre_cq_configs = set()
+    for option in unioned_pre_cq_config_options:
+      if option:
+        pre_cq_configs.update(option.split())
+
+    return pre_cq_configs
+
+  @classmethod
+  def GetCheckout(cls, build_root, change):
+    """Get the ProjectCheckout associated with change.
+
+    Args:
+      build_root: The path to the build root.
+      change: An instance of cros_patch.GerritPatch.
+
+    Returns:
+      A ProjectCheckout instance of |change| or None (See more details in
+      patch.GitRepoPatch.GetCheckout)
+    """
+    manifest = git.ManifestCheckout.Cached(build_root)
+    return change.GetCheckout(manifest)
+
+  def _GetUnionedOptionFromSubConfigs(self, section, option):
     """Get unioned options from sub dir configs for change.
 
     This method looks for the config file for each diff file in the change,
@@ -179,38 +211,6 @@ class CQConfigParser(object):
           union_options.add(result)
 
       return union_options
-
-  def GetUnionedPreCQConfigs(self):
-    """Get Pre-CQ configs from unioned options of sub configs.
-
-    Returns:
-      A list of Pre-CQ configs (strings).
-    """
-    unioned_pre_cq_config_options = self.GetUnionedOptionsFromSubConfigs(
-        constants.CQ_CONFIG_SECTION_GENERAL,
-        constants.CQ_CONFIG_PRE_CQ_CONFIGS)
-
-    pre_cq_configs = set()
-    for option in unioned_pre_cq_config_options:
-      if option:
-        pre_cq_configs.update(option.split())
-
-    return pre_cq_configs
-
-  @classmethod
-  def GetCheckout(cls, build_root, change):
-    """Get the ProjectCheckout associated with change.
-
-    Args:
-      build_root: The path to the build root.
-      change: An instance of cros_patch.GerritPatch.
-
-    Returns:
-      A ProjectCheckout instance of |change| or None (See more details in
-      patch.GitRepoPatch.GetCheckout)
-    """
-    manifest = git.ManifestCheckout.Cached(build_root)
-    return change.GetCheckout(manifest)
 
   @classmethod
   def _GetOptionFromConfigFile(cls, config_path, section, option):
