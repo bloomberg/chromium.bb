@@ -172,13 +172,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
-  viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate* delegate,
-                                      const gfx::PointF& point,
-                                      gfx::PointF* transformed_point,
-                                      bool* out_query_renderer) override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
                                        gfx::PointF* transformed_point) override;
+  viz::SurfaceId GetCurrentSurfaceId() const override;
   bool TransformPointToCoordSpaceForView(
       const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
@@ -315,9 +312,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               RenderWidgetHostViewBase* updated_view) override;
 
   ImeAdapterAndroid* ime_adapter_for_testing() { return ime_adapter_android_; }
-
-  // Exposed for tests.
-  viz::SurfaceId SurfaceIdForTesting() const override;
 
   ui::TouchSelectionControllerClient*
   GetSelectionControllerClientManagerForTesting();

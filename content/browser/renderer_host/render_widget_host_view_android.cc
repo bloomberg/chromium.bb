@@ -845,45 +845,9 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
     ClearBeginFrameRequest(PERSISTENT_BEGIN_FRAME);
 }
 
-viz::SurfaceId RenderWidgetHostViewAndroid::SurfaceIdForTesting() const {
+viz::SurfaceId RenderWidgetHostViewAndroid::GetCurrentSurfaceId() const {
   return delegated_frame_host_ ? delegated_frame_host_->SurfaceId()
                                : viz::SurfaceId();
-}
-
-viz::FrameSinkId RenderWidgetHostViewAndroid::FrameSinkIdAtPoint(
-    viz::SurfaceHittestDelegate* delegate,
-    const gfx::PointF& point,
-    gfx::PointF* transformed_point,
-    bool* out_query_renderer) {
-  if (!delegated_frame_host_)
-    return viz::FrameSinkId();
-
-  float scale_factor = view_.GetDipScale();
-  DCHECK_GT(scale_factor, 0);
-  // The surface hittest happens in device pixels, so we need to convert the
-  // |point| from DIPs to pixels before hittesting.
-  gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
-
-  viz::SurfaceId surface_id = delegated_frame_host_->SurfaceId();
-  if (surface_id.is_valid()) {
-    viz::SurfaceHittest hittest(delegate,
-                                GetFrameSinkManager()->surface_manager());
-    gfx::Transform target_transform;
-    surface_id = hittest.GetTargetSurfaceAtPoint(
-        surface_id, gfx::ToFlooredPoint(point_in_pixels), &target_transform,
-        out_query_renderer);
-    *transformed_point = point_in_pixels;
-    if (surface_id.is_valid())
-      target_transform.TransformPoint(transformed_point);
-    *transformed_point =
-        gfx::ConvertPointToDIP(scale_factor, *transformed_point);
-  }
-
-  // It is possible that the renderer has not yet produced a surface, in which
-  // case we return our current namespace.
-  if (!surface_id.is_valid())
-    return GetFrameSinkId();
-  return surface_id.frame_sink_id();
 }
 
 bool RenderWidgetHostViewAndroid::TransformPointToLocalCoordSpace(

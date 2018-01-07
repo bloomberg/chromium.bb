@@ -735,6 +735,10 @@ void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
   RenderWidgetHostViewBase::ProcessGestureEvent(event, latency);
 }
 
+viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
+  return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
+}
+
 gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
@@ -989,10 +993,6 @@ void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
     return;
   support_->EvictCurrentSurface();
   has_frame_ = false;
-}
-
-viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
-  return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {

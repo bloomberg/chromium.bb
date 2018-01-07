@@ -119,6 +119,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void UnlockMouse() override;
   RenderWidgetHostImpl* GetRenderWidgetHostImpl() const override;
   viz::FrameSinkId GetFrameSinkId() override;
+  viz::SurfaceId GetCurrentSurfaceId() const override;
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }

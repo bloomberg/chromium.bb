@@ -143,6 +143,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void PreProcessTouchEvent(const blink::WebTouchEvent& event) override;
   void ProcessGestureEvent(const blink::WebGestureEvent& event,
                            const ui::LatencyInfo& latency) override;
+  viz::SurfaceId GetCurrentSurfaceId() const override;
   gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) override;
   bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
@@ -195,8 +196,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-  // Exposed for tests.
-  viz::SurfaceId SurfaceIdForTesting() const override;
   FrameConnectorDelegate* FrameConnectorForTesting() const {
     return frame_connector_;
   }
