@@ -1395,23 +1395,15 @@ class PreCQLauncherStage(SyncStage):
   def CanSubmitChangeInPreCQ(self, change):
     """Look up whether |change| is configured to be submitted in the pre-CQ.
 
-    This looks up the "submit-in-pre-cq" setting inside the project in
-    COMMIT-QUEUE.ini and checks whether it is set to "yes".
-
-    [GENERAL]
-      submit-in-pre-cq: yes
-
     Args:
       change: Change to examine.
 
     Returns:
-      Boolean indicating if this change is configured to be submitted
-      in the pre-CQ.
+      Boolean indicating if this change is configured to be submitted in the
+      pre-CQ.
     """
     cq_config_parser = cq_config.CQConfigParser(self._build_root, change)
-    result = cq_config_parser.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
-                                        constants.CQ_CONFIG_SUBMIT_IN_PRE_CQ)
-    return bool(result and result.lower() == 'yes')
+    return cq_config_parser.CanSubmitChangeInPreCQ()
 
   def GetConfigBuildbucketIdMap(self, output):
     """Get a config:buildbucket_id map.

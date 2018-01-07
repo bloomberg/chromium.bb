@@ -871,7 +871,7 @@ pre-cq-configs: link-pre-cq
     # Create a pre-cq submittable change, let it be screened,
     # and have the trybot mark it as verified.
     change = self._PrepareChangesWithPendingVerifications()[0]
-    self.PatchObject(sync_stages.PreCQLauncherStage,
+    self.PatchObject(cq_config.CQConfigParser,
                      'CanSubmitChangeInPreCQ',
                      return_value=True)
     change[0].approval_timestamp = 0

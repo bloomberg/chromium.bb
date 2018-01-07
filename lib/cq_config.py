@@ -161,6 +161,30 @@ class CQConfigParser(object):
 
     return pre_cq_configs
 
+  def CanSubmitChangeInPreCQ(self):
+    """Infer if the Pre-CQ config lets this change to be submitted in pre-cq.
+
+    This looks up the "submit-in-pre-cq" setting inside all the relevant
+    COMMIT-QUEUE.ini files for the current change and checks whether it is set
+    to "yes".
+
+    [GENERAL]
+      submit-in-pre-cq: yes
+
+    Returns:
+      True if current change may be submitted from pre-cq, False otherwise.
+    """
+    if not self.GetUnionPreCQSubConfigsFlag():
+      option = self.GetOption(constants.CQ_CONFIG_SECTION_GENERAL,
+                              constants.CQ_CONFIG_SUBMIT_IN_PRE_CQ)
+      return bool(option and option.lower() == 'yes')
+
+    return self._AllSubConfigsAgreeOnOption(
+        constants.CQ_CONFIG_SECTION_GENERAL,
+        constants.CQ_CONFIG_SUBMIT_IN_PRE_CQ,
+        'yes'
+    )
+
   @classmethod
   def GetCheckout(cls, build_root, change):
     """Get the ProjectCheckout associated with change.
@@ -189,28 +213,62 @@ class CQConfigParser(object):
     Returns:
       A set of options (strings) from sub-dir configs.
     """
+    options = self._GetAllValuesForOptionFromSubConfigs(section, option)
+    return set(options)
+
+  def _AllSubConfigsAgreeOnOption(self, section, option, value):
+    """Determines if all sub-configs have the given value for the option.
+
+    Args:
+      section: The section header (string) of the option.
+      option: The option name (string) to get.
+      value: The option value (string) to compare with all options. Comparison
+          is case insensitive.
+
+    Returns:
+      True if all sub-configs agree on the option, False otherwise.
+    """
+    options = self._GetAllValuesForOptionFromSubConfigs(section, option,
+                                                        'not-%s' % value)
+    return set(o.lower() for o in options) == {value.lower()}
+
+  def _GetAllValuesForOptionFromSubConfigs(self, section, option, default=None):
+    """Get a list of all values for the given option from relevant sub-configs.
+
+    This method looks for the config file for each diff file in the change, gets
+    the option from each config file and returns the list of all values found.
+
+    Args:
+      section: The section header (string) of the option.
+      option: The option name (string) to get.
+      default: If not None, this value is assumed for a sub-config with the
+          option missing.
+
+    Returns:
+      A list of options (strings) from sub-dir configs.
+    """
     checkout = self.GetCheckout(self.build_root, self.change)
-    if checkout:
-      checkout_path = checkout.GetPath(absolute=True)
-      affected_paths = [os.path.join(checkout_path, path)
-                        for path in self.change.GetDiffStatus(checkout_path)]
+    if not checkout:
+      return []
 
-      config_paths = set()
-      for affected_path in affected_paths:
-        config_path = self._GetConfigFileForAffectedPath(
-            affected_path, checkout_path)
+    checkout_path = checkout.GetPath(absolute=True)
+    affected_paths = [os.path.join(checkout_path, path)
+                      for path in self.change.GetDiffStatus(checkout_path)]
+    config_paths = set()
+    for affected_path in affected_paths:
+      config_path = self._GetConfigFileForAffectedPath(
+          affected_path, checkout_path)
+      if config_path:
+        config_paths.add(config_path)
 
-        if config_path:
-          config_paths.add(config_path)
-
-      union_options = set()
-      for config_path in config_paths:
-        result = self.GetOption(section, option, config_path=config_path)
-
-        if result:
-          union_options.add(result)
-
-      return union_options
+    options = []
+    for config_path in config_paths:
+      result = self.GetOption(section, option, config_path=config_path)
+      if result:
+        options.append(result)
+      elif default is not None:
+        options.append(default)
+    return options
 
   @classmethod
   def _GetOptionFromConfigFile(cls, config_path, section, option):
