@@ -8,8 +8,8 @@
 
 namespace media {
 
-CdmPromiseAdapter::CdmPromiseAdapter() : next_promise_id_(1) {
-}
+CdmPromiseAdapter::CdmPromiseAdapter()
+    : next_promise_id_(kInvalidPromiseId + 1) {}
 
 CdmPromiseAdapter::~CdmPromiseAdapter() {
   DCHECK(promises_.empty());
@@ -19,7 +19,12 @@ CdmPromiseAdapter::~CdmPromiseAdapter() {
 
 uint32_t CdmPromiseAdapter::SavePromise(std::unique_ptr<CdmPromise> promise) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(kInvalidPromiseId, next_promise_id_);
+
   uint32_t promise_id = next_promise_id_++;
+  if (next_promise_id_ == kInvalidPromiseId)
+    next_promise_id_++;
+
   promises_[promise_id] = std::move(promise);
   return promise_id;
 }

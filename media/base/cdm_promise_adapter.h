@@ -25,6 +25,8 @@ class MEDIA_EXPORT CdmPromiseAdapter {
   CdmPromiseAdapter();
   ~CdmPromiseAdapter();
 
+  enum : uint32_t { kInvalidPromiseId = 0 };
+
   // Takes ownership of |promise| and returns an integer promise ID.
   uint32_t SavePromise(std::unique_ptr<media::CdmPromise> promise);
 

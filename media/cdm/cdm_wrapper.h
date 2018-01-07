@@ -66,6 +66,9 @@ typedef void* (*CreateCdmFunc)(int cdm_interface_version,
 //
 // Since this file is highly templated and default implementations are short
 // (just a shim layer in most cases), everything is done in this header file.
+//
+// TODO(crbug.com/799169): After pepper CDM support is removed, this file can
+// depend on media/ and we can clean this class up, e.g. pass in CdmConfig.
 class CdmWrapper {
  public:
   static CdmWrapper* Create(CreateCdmFunc create_cdm_func,
@@ -79,8 +82,13 @@ class CdmWrapper {
   // Returns the version of the CDM interface that the created CDM uses.
   virtual int GetInterfaceVersion() = 0;
 
-  virtual void Initialize(bool allow_distinctive_identifier,
-                          bool allow_persistent_state) = 0;
+  // Initializes the CDM instance and returns whether OnInitialized() will be
+  // called on the host. The caller should NOT wait for OnInitialized() if false
+  // is returned.
+  virtual bool Initialize(bool allow_distinctive_identifier,
+                          bool allow_persistent_state,
+                          bool use_hw_secure_codecs) = 0;
+
   virtual void SetServerCertificate(uint32_t promise_id,
                                     const uint8_t* server_certificate_data,
                                     uint32_t server_certificate_data_size) = 0;
@@ -170,9 +178,12 @@ class CdmWrapperImpl : public CdmWrapper {
 
   int GetInterfaceVersion() override { return CdmInterface::kVersion; }
 
-  void Initialize(bool allow_distinctive_identifier,
-                  bool allow_persistent_state) override {
-    cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
+  bool Initialize(bool allow_distinctive_identifier,
+                  bool allow_persistent_state,
+                  bool use_hw_secure_codecs) override {
+    cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state,
+                     use_hw_secure_codecs);
+    return true;
   }
 
   void SetServerCertificate(uint32_t promise_id,
@@ -288,9 +299,29 @@ class CdmWrapperImpl : public CdmWrapper {
   DISALLOW_COPY_AND_ASSIGN(CdmWrapperImpl);
 };
 
+// Specialization for cdm::ContentDecryptionModule_9 methods.
+// TODO(crbug.com/799219): Remove when CDM_9 no longer supported.
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_9>::Initialize(
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
+    bool /* use_hw_secure_codecs*/) {
+  cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
+  return false;
+}
+
 // Specialization for cdm::ContentDecryptionModule_8 methods.
-// TODO(jrummell): Remove when CDM_8 no longer supported.
-// https://crbug.com/737296.
+// TODO(crbug.com/737296): Remove when CDM_8 no longer supported.
+
+template <>
+bool CdmWrapperImpl<cdm::ContentDecryptionModule_8>::Initialize(
+    bool allow_distinctive_identifier,
+    bool allow_persistent_state,
+    bool /* use_hw_secure_codecs*/) {
+  cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
+  return false;
+}
 
 template <>
 bool CdmWrapperImpl<cdm::ContentDecryptionModule_8>::GetStatusForPolicy(

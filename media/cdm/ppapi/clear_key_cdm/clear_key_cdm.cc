@@ -282,7 +282,7 @@ void* CreateCdmInstance(int cdm_interface_version,
       return nullptr;
 
     DVLOG(1) << __func__ << ": Create ClearKeyCdm with CDM_9::Host.";
-    return new media::ClearKeyCdm(host, key_system_string);
+    return static_cast<CDM_9*>(new media::ClearKeyCdm(host, key_system_string));
   }
 
   if (cdm_interface_version == CDM_10::kVersion) {
@@ -292,7 +292,8 @@ void* CreateCdmInstance(int cdm_interface_version,
       return nullptr;
 
     DVLOG(1) << __func__ << ": Create ClearKeyCdm with CDM_10::Host.";
-    return new media::ClearKeyCdm(host, key_system_string);
+    return static_cast<CDM_10*>(
+        new media::ClearKeyCdm(host, key_system_string));
   }
 
   return nullptr;
@@ -380,6 +381,14 @@ void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
   // Implementation doesn't use distinctive identifier and will only need
   // to check persistent state permission.
   allow_persistent_state_ = allow_persistent_state;
+
+  cdm_host_proxy_->OnInitialized(true);
+}
+
+void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
+                             bool allow_persistent_state,
+                             bool use_hw_secure_codecs) {
+  Initialize(allow_distinctive_identifier, allow_persistent_state);
 }
 
 void ClearKeyCdm::GetStatusForPolicy(uint32_t promise_id,
