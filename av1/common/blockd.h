@@ -970,13 +970,8 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 
   const struct macroblockd_plane *const pd = &xd->plane[plane_type];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
-  // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a
-  // follow up refactor to make the actual value of reduced_tx_set_used
-  // within this function.
   const TxSetType tx_set_type =
       get_ext_tx_set_type(tx_size, plane_bsize, is_inter_block(mbmi), 0);
-  if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
-    return DCT_DCT;
 
 #if CONFIG_TXK_SEL
   TX_TYPE tx_type;
@@ -1000,6 +995,12 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   if (!av1_ext_tx_used[tx_set_type][tx_type]) return DCT_DCT;
   return tx_type;
 #endif  // CONFIG_TXK_SEL
+
+  // TODO(sarahparker) This assumes reduced_tx_set_used == 0. I will do a
+  // follow up refactor to make the actual value of reduced_tx_set_used
+  // within this function.
+  if (is_inter_block(mbmi) && !av1_ext_tx_used[tx_set_type][mbmi->tx_type])
+    return DCT_DCT;
 
 #if FIXED_TX_TYPE
   return get_default_tx_type(plane_type, xd, tx_size);
