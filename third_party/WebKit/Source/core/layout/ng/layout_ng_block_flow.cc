@@ -173,8 +173,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position,
       css_container->IsBox() ? nullptr : css_container);
 
-  NGOutOfFlowLayoutPart(NGBlockNode(container), *constraint_space,
-                        *container_style, &container_builder)
+  NGBoxStrut scrollbar_sizes;
+  if (css_container->IsBox())
+    scrollbar_sizes =
+        NGBlockNode(ToLayoutBox(css_container)).GetScrollbarSizes();
+  NGOutOfFlowLayoutPart(&container_builder,
+                        css_container->CanContainAbsolutePositionObjects(),
+                        css_container->CanContainFixedPositionObjects(),
+                        scrollbar_sizes, *constraint_space, *container_style)
       .Run(/* update_legacy */ false);
   scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.
