@@ -575,6 +575,17 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetMixed) {
                                           include_partial_glyphs));
 }
 
+TEST_F(HarfBuzzShaperTest, PositionForOffsetMissingGlyph) {
+  String string(u"\u0633\u0644\u0627\u0645");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kRtl);
+  // Because the offset 1 and 2 should form a ligature, SubRange(2, 4) creates a
+  // ShapeResult that does not have its first glyph.
+  result = result->SubRange(2, 4);
+  result->PositionForOffset(0);
+  // Pass if |PositionForOffset| does not crash.
+}
+
 static struct ShapeResultCopyRangeTestData {
   const char16_t* string;
   TextDirection direction;

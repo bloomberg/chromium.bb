@@ -93,11 +93,15 @@ float ShapeResult::RunInfo::XPositionForOffset(
       position += glyph_data_[glyph_index].advance;
       ++glyph_index;
     }
+    // If |glyph_index| is at the end, the glyph for |offset| is missing, along
+    // with all glyphs before it. We can't adjust position to the start
+    // direction.
+    if (glyph_index == num_glyphs)
+      return position;
     // Adjust offset if it's not on the cluster boundary. In RTL, this means
     // that the adjusted position is the left side of the character.
     if (adjust_mid_cluster == kAdjustToEnd &&
-        (glyph_index < num_glyphs ? glyph_data_[glyph_index].character_index
-                                  : num_characters_) < offset) {
+        glyph_data_[glyph_index].character_index < offset) {
       return position;
     }
     // For RTL, we need to return the right side boundary of the character.
