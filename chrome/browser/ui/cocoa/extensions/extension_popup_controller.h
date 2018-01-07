@@ -61,9 +61,9 @@ class ExtensionViewHost;
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a
 // host for the popup created by the extension process manager specific to the
-// browser profile and the remaining arguments |anchoredAt| and |arrowLocation|.
-// |anchoredAt| is expected to be in the window's coordinates at the bottom
-// center of the browser action button.
+// browser profile and the remaining arguments |anchoredAt| and with an
+// appropriate arrow. |anchoredAt| is expected to be in the window's coordinates
+// along the bottom edge of the browser action button.
 // The actual display of the popup is delayed until the page contents finish
 // loading in order to minimize UI flashing and resizing.
 // Passing YES to |devMode| will launch the webkit inspector for the popup,
@@ -73,7 +73,6 @@ class ExtensionViewHost;
          host:(std::unique_ptr<extensions::ExtensionViewHost>)host
     inBrowser:(Browser*)browser
    anchoredAt:(NSPoint)anchoredAt
-arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
       devMode:(BOOL)devMode;
 
 // Returns the controller used to display the popup being shown. If no popup is
