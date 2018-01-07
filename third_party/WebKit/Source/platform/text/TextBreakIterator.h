@@ -93,22 +93,23 @@ enum class LineBreakType {
 // Determines break opportunities around collapsible space characters (space,
 // newline, and tabulation characters.)
 enum class BreakSpaceType {
-  // Break before collapsible space characters.
+  // Break before every collapsible space character.
   // This is a specialized optimization for CSS, where leading/trailing spaces
   // in each line are removed, and thus breaking before spaces can save
   // computing hanging spaces.
-  kBefore,
+  // Callers are expected to handle spaces by themselves. Because a run of
+  // spaces can include different types of spaces, break opportunity is given
+  // for every space character.
+  // Pre-LayoutNG line breaker uses this type.
+  kBeforeEverySpace,
 
-  // Break before space characters, but after newline and tabulation characters.
-  // This is for CSS line breaking as in |kBefore|, but when whitespace
-  // collapsing is already applied to the target string.
-  kBeforeSpace,
-
-  // Break after collapsible space characters.
-  // When 'white-space:pre-wrap', or when in editing, leaging/trailing spaces
-  // need to be preserved, and that the |kBefore| optimization cannot work.
-  // This mode is compatible with UAX#14/ICU. http://unicode.org/reports/tr14/
-  kAfter,
+  // Break before a run of white space characters.
+  // This is for CSS line breaking as in |kBeforeEverySpace|, but when
+  // whitespace collapsing is already applied to the target string. In this
+  // case, a run of white spaces are preserved spaces. There should not be break
+  // opportunities between white spaces.
+  // LayoutNG line breaker uses this type.
+  kBeforeSpaceRun,
 };
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, LineBreakType);
@@ -294,7 +295,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   mutable const UChar* cached_prior_context_;
   mutable unsigned cached_prior_context_length_;
   LineBreakType break_type_;
-  BreakSpaceType break_space_ = BreakSpaceType::kBefore;
+  BreakSpaceType break_space_ = BreakSpaceType::kBeforeEverySpace;
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.

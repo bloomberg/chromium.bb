@@ -277,23 +277,19 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
 
     is_space = IsBreakableSpace(ch);
     switch (break_space) {
-      case BreakSpaceType::kBefore:
+      case BreakSpaceType::kBeforeEverySpace:
         if (is_space)
           return i;
         break;
-      case BreakSpaceType::kBeforeSpace:
-        if (ch == kSpaceCharacter)
-          return i;
-        if (is_space)
+      case BreakSpaceType::kBeforeSpaceRun:
+        // Theoritically, preserved newline characters are different from space
+        // and tab characters. The difference is not implemented because the
+        // LayoutNG line breaker handles preserved newline characters by itself.
+        if (is_space) {
+          if (!is_last_space)
+            return i;
           continue;
-        if (is_last_space && last_ch != kSpaceCharacter)
-          return i;
-        break;
-      case BreakSpaceType::kAfter:
-        if (is_space)
-          continue;
-        if (is_last_space)
-          return i;
+        }
         break;
     }
 
@@ -329,20 +325,8 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
           }
         }
       }
-      if (i == next_break) {
-        switch (break_space) {
-          case BreakSpaceType::kBefore:
-            if (!is_last_space)
-              return i;
-            break;
-          case BreakSpaceType::kBeforeSpace:
-            if (last_ch != kSpaceCharacter)
-              return i;
-            break;
-          case BreakSpaceType::kAfter:
-            return i;
-        }
-      }
+      if (i == next_break && !is_last_space)
+        return i;
     }
   }
 
@@ -354,19 +338,16 @@ inline int LazyLineBreakIterator::NextBreakablePosition(
     int pos,
     const CharacterType* str) const {
   switch (break_space_) {
-    case BreakSpaceType::kBefore:
+    case BreakSpaceType::kBeforeEverySpace:
       return NextBreakablePosition<CharacterType, lineBreakType,
-                                   BreakSpaceType::kBefore>(pos, str);
-    case BreakSpaceType::kBeforeSpace:
+                                   BreakSpaceType::kBeforeEverySpace>(pos, str);
+    case BreakSpaceType::kBeforeSpaceRun:
       return NextBreakablePosition<CharacterType, lineBreakType,
-                                   BreakSpaceType::kBeforeSpace>(pos, str);
-    case BreakSpaceType::kAfter:
-      return NextBreakablePosition<CharacterType, lineBreakType,
-                                   BreakSpaceType::kAfter>(pos, str);
+                                   BreakSpaceType::kBeforeSpaceRun>(pos, str);
   }
   NOTREACHED();
   return NextBreakablePosition<CharacterType, lineBreakType,
-                               BreakSpaceType::kBefore>(pos, str);
+                               BreakSpaceType::kBeforeEverySpace>(pos, str);
 }
 
 template <LineBreakType lineBreakType>
@@ -438,12 +419,10 @@ std::ostream& operator<<(std::ostream& ostream, LineBreakType line_break_type) {
 
 std::ostream& operator<<(std::ostream& ostream, BreakSpaceType break_space) {
   switch (break_space) {
-    case BreakSpaceType::kBefore:
-      return ostream << "Before";
-    case BreakSpaceType::kBeforeSpace:
-      return ostream << "BeforeSpace";
-    case BreakSpaceType::kAfter:
-      return ostream << "After";
+    case BreakSpaceType::kBeforeEverySpace:
+      return ostream << "kBeforeEverySpace";
+    case BreakSpaceType::kBeforeSpaceRun:
+      return ostream << "kBeforeSpaceRun";
   }
   NOTREACHED();
   return ostream << "BreakSpaceType::" << static_cast<int>(break_space);
