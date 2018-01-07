@@ -253,10 +253,10 @@ CU_TestInfo basic_tests[] = {
 
 
 
-#define SWAP_32(num) ((num>>24)&0xff) | \
-			((num<<8)&0xff0000) | \
-			((num>>8)&0xff00) | \
-			((num<<24)&0xff000000)
+#define SWAP_32(num) (((num & 0xff000000) >> 24) | \
+		      ((num & 0x0000ff00) << 8) | \
+		      ((num & 0x00ff0000) >> 8) | \
+		      ((num & 0x000000ff) << 24))
 
 
 /* Shader code
