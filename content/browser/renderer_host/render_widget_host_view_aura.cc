@@ -1647,36 +1647,6 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   event_handler_->OnMouseEvent(event);
 }
 
-viz::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
-    viz::SurfaceHittestDelegate* delegate,
-    const gfx::PointF& point,
-    gfx::PointF* transformed_point,
-    bool* out_query_renderer) {
-  DCHECK(device_scale_factor_ != 0.0f);
-
-  // TODO: this shouldn't be used with aura-mus, so that the null check so
-  // go away and become a DCHECK.
-  if (!delegated_frame_host_) {
-    *transformed_point = point;
-    return GetFrameSinkId();
-  }
-
-  // The surface hittest happens in device pixels, so we need to convert the
-  // |point| from DIPs to pixels before hittesting.
-  gfx::PointF point_in_pixels =
-      gfx::ConvertPointToPixel(device_scale_factor_, point);
-  viz::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
-      delegate, point_in_pixels, transformed_point, out_query_renderer);
-  *transformed_point =
-      gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
-
-  // It is possible that the renderer has not yet produced a surface, in which
-  // case we return our current FrameSinkId.
-  if (!id.is_valid())
-    return GetFrameSinkId();
-  return id.frame_sink_id();
-}
-
 bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
@@ -1716,6 +1686,11 @@ viz::FrameSinkId RenderWidgetHostViewAura::GetRootFrameSinkId() {
   if (window_->GetHost()->compositor())
     return window_->GetHost()->compositor()->frame_sink_id();
   return viz::FrameSinkId();
+}
+
+viz::SurfaceId RenderWidgetHostViewAura::GetCurrentSurfaceId() const {
+  return delegated_frame_host_ ? delegated_frame_host_->GetCurrentSurfaceId()
+                               : viz::SurfaceId();
 }
 
 void RenderWidgetHostViewAura::FocusedNodeChanged(
@@ -2357,11 +2332,6 @@ viz::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
 
 viz::LocalSurfaceId RenderWidgetHostViewAura::GetLocalSurfaceId() const {
   return window_->GetLocalSurfaceId();
-}
-
-viz::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
-  return delegated_frame_host_ ? delegated_frame_host_->SurfaceIdForTesting()
-                               : viz::SurfaceId();
 }
 
 void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(

@@ -1530,7 +1530,7 @@ SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
 
 void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
     RenderWidgetHostViewBase* root_view) {
-  viz::SurfaceId root_surface_id = root_view->SurfaceIdForTesting();
+  viz::SurfaceId root_surface_id = root_view->GetCurrentSurfaceId();
   while (!ContainsSurfaceId(root_surface_id)) {
     // TODO(kenrb): Need a better way to do this. Needs investigation on
     // whether we can add a callback through RenderWidgetHostViewBaseObserver
@@ -1556,7 +1556,7 @@ bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
 
   for (const viz::SurfaceId& id :
        *container_surface->active_referenced_surfaces()) {
-    if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
+    if (id == target_view_->GetCurrentSurfaceId() || ContainsSurfaceId(id))
       return true;
   }
   return false;

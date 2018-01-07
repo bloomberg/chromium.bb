@@ -160,7 +160,7 @@ uint64_t FrameIndexForView(RenderWidgetHostViewAura* view) {
       ->GetContextFactoryPrivate()
       ->GetFrameSinkManager()
       ->surface_manager()
-      ->GetSurfaceForId(view->SurfaceIdForTesting())
+      ->GetSurfaceForId(view->GetCurrentSurfaceId())
       ->GetActiveFrameIndex();
 }
 
@@ -169,7 +169,7 @@ const gfx::Rect& DamageRectForView(RenderWidgetHostViewAura* view) {
       ->GetContextFactoryPrivate()
       ->GetFrameSinkManager()
       ->surface_manager()
-      ->GetSurfaceForId(view->SurfaceIdForTesting())
+      ->GetSurfaceForId(view->GetCurrentSurfaceId())
       ->GetActiveFrame()
       .render_pass_list.back()
       ->damage_rect;
@@ -388,7 +388,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   }
 
   viz::SurfaceId surface_id() const {
-    return GetDelegatedFrameHost()->SurfaceIdForTesting();
+    return GetDelegatedFrameHost()->GetCurrentSurfaceId();
   }
 
   bool HasPrimarySurface() const {
@@ -3708,7 +3708,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
         kArbitraryLocalSurfaceId,
         MakeDelegatedFrame(1.f, view_rect_.size(), view_rect_), nullptr);
     viz::SurfaceId surface_id =
-        view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
+        view_->GetDelegatedFrameHost()->GetCurrentSurfaceId();
     if (surface_id.is_valid())
       view_->GetDelegatedFrameHost()->OnAggregatedSurfaceDamage(
           surface_id.local_surface_id(), view_rect_);

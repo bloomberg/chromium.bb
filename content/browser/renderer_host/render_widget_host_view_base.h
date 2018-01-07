@@ -365,6 +365,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Obtains the root window FrameSinkId.
   virtual viz::FrameSinkId GetRootFrameSinkId();
 
+  // Returns the SurfaceId currently in use by the renderer to submit compositor
+  // frames.
+  virtual viz::SurfaceId GetCurrentSurfaceId() const = 0;
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME
@@ -502,9 +506,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
       ui::mojom::WindowTreeClientPtr renderer_window_tree_client);
   void OnChildFrameDestroyed(int routing_id);
 #endif
-
-  // Exposed for testing.
-  virtual viz::SurfaceId SurfaceIdForTesting() const;
 
  protected:
   // Interface class only, do not construct.
