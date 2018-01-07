@@ -20,6 +20,10 @@ class CdmHostProxyImpl : public CdmHostProxy {
   explicit CdmHostProxyImpl(HostInterface* host) : host_(host) {}
   ~CdmHostProxyImpl() override {}
 
+  void OnInitialized(bool success) final {
+    return host_->OnInitialized(success);
+  }
+
   cdm::Buffer* Allocate(uint32_t capacity) final {
     return host_->Allocate(capacity);
   }
@@ -119,6 +123,11 @@ class CdmHostProxyImpl : public CdmHostProxy {
 };
 
 // Specialization for cdm::Host_9 methods.
+
+template <>
+void CdmHostProxyImpl<cdm::Host_9>::OnInitialized(bool success) {
+  // OnInitialized() doesn't exist on Host_9.
+}
 
 template <>
 cdm::CdmProxy* CdmHostProxyImpl<cdm::Host_9>::CreateCdmProxy() {

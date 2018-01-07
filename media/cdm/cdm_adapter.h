@@ -148,6 +148,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   void RequestStorageId(uint32_t version) override;
 
   // cdm::Host_10 specific implementation.
+  void OnInitialized(bool success) override;
   cdm::CdmProxy* CreateCdmProxy() override;
 
   // cdm::Host_8 specific implementation.
@@ -235,6 +236,9 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<AudioBufferMemoryPool> pool_;
+
+  // Callback for Initialize().
+  uint32_t init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 
   // Callbacks for deferred initialization.
   DecoderInitCB audio_init_cb_;

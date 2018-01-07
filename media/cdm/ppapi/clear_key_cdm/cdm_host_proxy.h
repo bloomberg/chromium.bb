@@ -15,6 +15,7 @@ class CdmHostProxy {
   virtual ~CdmHostProxy() = default;
 
   // This needs to be a superset of all Host interfaces supported.
+  virtual void OnInitialized(bool success) = 0;
   virtual cdm::Buffer* Allocate(uint32_t capacity) = 0;
   virtual void SetTimer(int64_t delay_ms, void* context) = 0;
   virtual cdm::Time GetCurrentWallTime() = 0;

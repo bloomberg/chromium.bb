@@ -461,7 +461,7 @@ void PpapiCdmAdapter::Initialize(uint32_t promise_id,
   key_system_ = key_system;
   allow_distinctive_identifier_ = allow_distinctive_identifier;
   allow_persistent_state_ = allow_persistent_state;
-  cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state);
+  cdm_->Initialize(allow_distinctive_identifier, allow_persistent_state, false);
   OnResolvePromise(promise_id);
 }
 

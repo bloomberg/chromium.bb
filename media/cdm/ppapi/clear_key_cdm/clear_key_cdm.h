@@ -38,9 +38,16 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule_9,
   ClearKeyCdm(HostInterface* host, const std::string& key_system);
   ~ClearKeyCdm() override;
 
-  // cdm::ContentDecryptionModule implementation.
+  // cdm::ContentDecryptionModule_9 implementation.
   void Initialize(bool allow_distinctive_identifier,
                   bool allow_persistent_state) override;
+
+  // cdm::ContentDecryptionModule_10 implementation.
+  void Initialize(bool allow_distinctive_identifier,
+                  bool allow_persistent_state,
+                  bool use_hw_secure_codecs) override;
+
+  // Common cdm::ContentDecryptionModule_* implementation.
   void GetStatusForPolicy(uint32_t promise_id,
                           const cdm::Policy& policy) override;
   void CreateSessionAndGenerateRequest(uint32_t promise_id,
