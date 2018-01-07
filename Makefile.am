@@ -638,7 +638,6 @@ nodist_weston_simple_dmabuf_drm_SOURCES =		\
 	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_simple_dmabuf_drm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_DRM_CLIENT_CFLAGS)
 weston_simple_dmabuf_drm_LDADD = $(SIMPLE_DMABUF_DRM_CLIENT_LIBS) $(LIBDRM_PLATFORM_LIBS) libshared.la
-BUILT_SOURCES += protocol/linux-dmabuf-unstable-v1-client-protocol.h
 endif
 
 if BUILD_SIMPLE_DMABUF_V4L_CLIENT
@@ -653,7 +652,6 @@ nodist_weston_simple_dmabuf_v4l_SOURCES =		\
 	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 weston_simple_dmabuf_v4l_CFLAGS = $(AM_CFLAGS) $(SIMPLE_DMABUF_V4L_CLIENT_CFLAGS)
 weston_simple_dmabuf_v4l_LDADD = $(SIMPLE_DMABUF_V4L_CLIENT_LIBS) libshared.la
-BUILT_SOURCES += protocol/linux-dmabuf-unstable-v1-client-protocol.h
 endif
 
 noinst_LTLIBRARIES += libtoytoolkit.la
@@ -894,7 +892,9 @@ BUILT_SOURCES +=					\
 	protocol/ivi-hmi-controller-protocol.c		\
 	protocol/ivi-hmi-controller-client-protocol.h	\
 	protocol/ivi-application-protocol.c		\
-	protocol/ivi-application-client-protocol.h
+	protocol/ivi-application-client-protocol.h	\
+	protocol/linux-dmabuf-unstable-v1-protocol.c	\
+	protocol/linux-dmabuf-unstable-v1-client-protocol.h
 
 westondatadir = $(datadir)/weston
 dist_westondata_DATA =				\
