@@ -1283,8 +1283,8 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     // sufficient to make the child fit right here in the current fragment.
     NGFragment fragment(ConstraintSpace().GetWritingMode(),
                         *layout_result.PhysicalFragment());
-    LayoutUnit block_end_offset = block_offset + fragment.BlockSize();
-    space_shortage = block_end_offset - space_available;
+    LayoutUnit space_left = space_available - block_offset;
+    space_shortage = fragment.BlockSize() - space_left;
   } else {
     // However, if space shortage was reported inside the child, use that. If we
     // broke inside the child, we didn't complete layout, so calculating space
