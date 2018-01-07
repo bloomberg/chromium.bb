@@ -83,13 +83,15 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
     statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
   }
 
+  // Deletes the global recorder if there is any. This is used by test
+  // NotInitialized to ensure a clean global state.
   void UninitializeStatisticsRecorder() {
     statistics_recorder_.reset();
-    // TODO(fdegros): Clean that up. This is needed by test NotInitialized that
-    // requires no global recorder to be present.
     delete StatisticsRecorder::top_;
     DCHECK(!StatisticsRecorder::top_);
   }
+
+  bool HasGlobalRecorder() { return StatisticsRecorder::top_ != nullptr; }
 
   Histogram* CreateHistogram(const char* name,
                              HistogramBase::Sample min,
@@ -101,8 +103,6 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges);
     return new Histogram(name, min, max, registered_ranges);
   }
-
-  void DeleteHistogram(HistogramBase* histogram) { delete histogram; }
 
   void InitLogOnShutdown() { StatisticsRecorder::InitLogOnShutdown(); }
 
@@ -129,30 +129,27 @@ INSTANTIATE_TEST_CASE_P(Allocator, StatisticsRecorderTest, testing::Bool());
 
 TEST_P(StatisticsRecorderTest, NotInitialized) {
   UninitializeStatisticsRecorder();
+  EXPECT_FALSE(HasGlobalRecorder());
 
-  ASSERT_FALSE(StatisticsRecorder::IsActive());
+  HistogramBase* histogram = CreateHistogram("TestHistogram", 1, 1000, 10);
+  EXPECT_TRUE(StatisticsRecorder::RegisterOrDeleteDuplicate(histogram));
+  EXPECT_TRUE(HasGlobalRecorder());
 
   StatisticsRecorder::Histograms registered_histograms;
-  std::vector<const BucketRanges*> registered_ranges;
-
   StatisticsRecorder::GetHistograms(&registered_histograms);
-  EXPECT_EQ(0u, registered_histograms.size());
+  EXPECT_GT(registered_histograms.size(), 0u);
 
-  Histogram* histogram = CreateHistogram("TestHistogram", 1, 1000, 10);
+  UninitializeStatisticsRecorder();
+  EXPECT_FALSE(HasGlobalRecorder());
 
-  // When StatisticsRecorder is not initialized, register is a noop.
-  EXPECT_EQ(histogram,
-            StatisticsRecorder::RegisterOrDeleteDuplicate(histogram));
-  // Manually delete histogram that was not registered.
-  DeleteHistogram(histogram);
-
-  // RegisterOrDeleteDuplicateRanges is a no-op.
   BucketRanges* ranges = new BucketRanges(3);
   ranges->ResetChecksum();
-  EXPECT_EQ(ranges,
-            StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges));
+  EXPECT_TRUE(StatisticsRecorder::RegisterOrDeleteDuplicateRanges(ranges));
+  EXPECT_TRUE(HasGlobalRecorder());
+
+  std::vector<const BucketRanges*> registered_ranges;
   StatisticsRecorder::GetBucketRanges(&registered_ranges);
-  EXPECT_EQ(0u, registered_ranges.size());
+  EXPECT_GT(registered_ranges.size(), 0u);
 }
 
 TEST_P(StatisticsRecorderTest, RegisterBucketRanges) {

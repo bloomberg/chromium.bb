@@ -57,8 +57,8 @@ StatisticsRecorder::~StatisticsRecorder() {
 }
 
 // static
-void StatisticsRecorder::Initialize() {
-  const AutoLock auto_lock(lock_.Get());
+void StatisticsRecorder::EnsureGlobalRecorderWhileLocked() {
+  lock_.Get().AssertAcquired();
   if (top_)
     return;
 
@@ -69,15 +69,10 @@ void StatisticsRecorder::Initialize() {
 }
 
 // static
-bool StatisticsRecorder::IsActive() {
-  const AutoLock auto_lock(lock_.Get());
-  return top_ != nullptr;
-}
-
-// static
 void StatisticsRecorder::RegisterHistogramProvider(
     const WeakPtr<HistogramProvider>& provider) {
   const AutoLock auto_lock(lock_.Get());
+  EnsureGlobalRecorderWhileLocked();
   top_->providers_.push_back(provider);
 }
 
@@ -87,16 +82,7 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
   // Declared before |auto_lock| to ensure correct destruction order.
   std::unique_ptr<HistogramBase> histogram_deleter;
   const AutoLock auto_lock(lock_.Get());
-
-  if (!top_) {
-    // As per crbug.com/79322 the histograms are intentionally leaked, so we
-    // need to annotate them. Because ANNOTATE_LEAKING_OBJECT_PTR may be used
-    // only once for an object, the duplicates should not be annotated.
-    // Callers are responsible for not calling RegisterOrDeleteDuplicate(ptr)
-    // twice |if (!top_)|.
-    ANNOTATE_LEAKING_OBJECT_PTR(histogram);  // see crbug.com/79322
-    return histogram;
-  }
+  EnsureGlobalRecorderWhileLocked();
 
   const char* const name = histogram->histogram_name();
   HistogramBase*& registered = top_->histograms_[name];
@@ -136,11 +122,7 @@ const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
   // Declared before |auto_lock| to ensure correct destruction order.
   std::unique_ptr<const BucketRanges> ranges_deleter;
   const AutoLock auto_lock(lock_.Get());
-
-  if (!top_) {
-    ANNOTATE_LEAKING_OBJECT_PTR(ranges);
-    return ranges;
-  }
+  EnsureGlobalRecorderWhileLocked();
 
   const BucketRanges* const registered = *top_->ranges_.insert(ranges).first;
   if (registered == ranges) {
@@ -202,8 +184,7 @@ std::string StatisticsRecorder::ToJSON(JSONVerbosityLevel verbosity_level) {
 // static
 void StatisticsRecorder::GetHistograms(Histograms* output) {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return;
+  EnsureGlobalRecorderWhileLocked();
 
   for (const auto& entry : top_->histograms_) {
     output->push_back(entry.second);
@@ -214,8 +195,7 @@ void StatisticsRecorder::GetHistograms(Histograms* output) {
 void StatisticsRecorder::GetBucketRanges(
     std::vector<const BucketRanges*>* output) {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return;
+  EnsureGlobalRecorderWhileLocked();
 
   for (const BucketRanges* const p : top_->ranges_) {
     output->push_back(p);
@@ -230,8 +210,7 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
   ImportGlobalPersistentHistograms();
 
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return nullptr;
+  EnsureGlobalRecorderWhileLocked();
 
   const HistogramMap::const_iterator it = top_->histograms_.find(name);
   return it != top_->histograms_.end() ? it->second : nullptr;
@@ -241,9 +220,7 @@ HistogramBase* StatisticsRecorder::FindHistogram(base::StringPiece name) {
 StatisticsRecorder::HistogramProviders
 StatisticsRecorder::GetHistogramProviders() {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return {};
-
+  EnsureGlobalRecorderWhileLocked();
   return top_->providers_;
 }
 
@@ -287,11 +264,10 @@ void StatisticsRecorder::GetSnapshot(const std::string& query,
   ImportGlobalPersistentHistograms();
 
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return;
+  EnsureGlobalRecorderWhileLocked();
 
-  // Need a c-string query for comparisons against c-string histogram name.
-  const char* query_string = query.c_str();
+  // Need a C-string query for comparisons against C-string histogram name.
+  const char* const query_string = query.c_str();
 
   for (const auto& entry : top_->histograms_) {
     if (strstr(entry.second->histogram_name(), query_string) != nullptr)
@@ -305,8 +281,7 @@ bool StatisticsRecorder::SetCallback(
     const StatisticsRecorder::OnSampleCallback& cb) {
   DCHECK(!cb.is_null());
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return false;
+  EnsureGlobalRecorderWhileLocked();
 
   if (!top_->callbacks_.insert({name, cb}).second)
     return false;
@@ -321,8 +296,7 @@ bool StatisticsRecorder::SetCallback(
 // static
 void StatisticsRecorder::ClearCallback(const std::string& name) {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return;
+  EnsureGlobalRecorderWhileLocked();
 
   top_->callbacks_.erase(name);
 
@@ -336,9 +310,7 @@ void StatisticsRecorder::ClearCallback(const std::string& name) {
 StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
     const std::string& name) {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return OnSampleCallback();
-
+  EnsureGlobalRecorderWhileLocked();
   const auto it = top_->callbacks_.find(name);
   return it != top_->callbacks_.end() ? it->second : OnSampleCallback();
 }
@@ -346,14 +318,14 @@ StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
 // static
 size_t StatisticsRecorder::GetHistogramCount() {
   const AutoLock auto_lock(lock_.Get());
-  return top_ ? top_->histograms_.size() : 0;
+  EnsureGlobalRecorderWhileLocked();
+  return top_->histograms_.size();
 }
 
 // static
 void StatisticsRecorder::ForgetHistogramForTesting(base::StringPiece name) {
   const AutoLock auto_lock(lock_.Get());
-  if (!top_)
-    return;
+  EnsureGlobalRecorderWhileLocked();
 
   const HistogramMap::iterator found = top_->histograms_.find(name);
   if (found == top_->histograms_.end())
@@ -382,13 +354,15 @@ StatisticsRecorder::CreateTemporaryForTesting() {
 void StatisticsRecorder::SetRecordChecker(
     std::unique_ptr<RecordHistogramChecker> record_checker) {
   const AutoLock auto_lock(lock_.Get());
+  EnsureGlobalRecorderWhileLocked();
   top_->record_checker_ = std::move(record_checker);
 }
 
 // static
 bool StatisticsRecorder::ShouldRecordHistogram(uint64_t histogram_hash) {
   const AutoLock auto_lock(lock_.Get());
-  return !top_ || !top_->record_checker_ ||
+  EnsureGlobalRecorderWhileLocked();
+  return !top_->record_checker_ ||
          top_->record_checker_->ShouldRecord(histogram_hash);
 }
 
@@ -397,9 +371,7 @@ StatisticsRecorder::Histograms StatisticsRecorder::GetKnownHistograms(
     bool include_persistent) {
   Histograms known;
   const AutoLock auto_lock(lock_.Get());
-  if (!top_ || top_->histograms_.empty())
-    return known;
-
+  EnsureGlobalRecorderWhileLocked();
   known.reserve(top_->histograms_.size());
   for (const auto& h : top_->histograms_) {
     if (include_persistent ||
