@@ -15,39 +15,39 @@ const char* MainThreadTaskQueue::NameForQueueType(
     MainThreadTaskQueue::QueueType queue_type) {
   switch (queue_type) {
     case MainThreadTaskQueue::QueueType::kControl:
-      return "ControlTQ";
+      return "control_tq";
     case MainThreadTaskQueue::QueueType::kDefault:
-      return "DefaultTQ";
+      return "default_tq";
     case MainThreadTaskQueue::QueueType::kDefaultLoading:
-      return "DefaultLoadingTQ";
+      return "default_loading_tq";
     case MainThreadTaskQueue::QueueType::kDefaultTimer:
-      return "DefaultTimerTQ";
+      return "default_timer_tq";
     case MainThreadTaskQueue::QueueType::kUnthrottled:
-      return "UnthrottledTQ";
+      return "unthrottled_tq";
     case MainThreadTaskQueue::QueueType::kFrameLoading:
-      return "FrameLoadingTQ";
+      return "frame_loading_tq";
     case MainThreadTaskQueue::QueueType::kFrameThrottleable:
-      return "FrameThrottleableTQ";
+      return "frame_throttleable_tq";
     case MainThreadTaskQueue::QueueType::kFrameDeferrable:
-      return "FrameDeferrableTQ";
+      return "frame_deferrable_tq";
     case MainThreadTaskQueue::QueueType::kFramePausable:
-      return "FramePausableTQ";
+      return "frame_pausable_tq";
     case MainThreadTaskQueue::QueueType::kFrameUnpausable:
-      return "FrameUnpausableTQ";
+      return "frame_unpausable_tq";
     case MainThreadTaskQueue::QueueType::kCompositor:
-      return "CompositorTQ";
+      return "compositor_tq";
     case MainThreadTaskQueue::QueueType::kIdle:
-      return "IdleTQ";
+      return "idle_tq";
     case MainThreadTaskQueue::QueueType::kTest:
-      return "TestTQ";
+      return "test_tq";
     case MainThreadTaskQueue::QueueType::kFrameLoading_kControl:
-      return "FrameLoadingControlTQ";
+      return "frame_loading_control_tq";
     case MainThreadTaskQueue::QueueType::kV8:
-      return "V8TQ";
+      return "v8_tq";
     case MainThreadTaskQueue::QueueType::kIPC:
-      return "IPCTQ";
+      return "ipc_tq";
     case MainThreadTaskQueue::QueueType::kOther:
-      return "OtherTQ";
+      return "other_tq";
     case MainThreadTaskQueue::QueueType::kCount:
       NOTREACHED();
       return nullptr;
