@@ -359,7 +359,10 @@ double StyleBuilderConverter::ConvertValueToNumber(
     case CSSValueBrightness:
     case CSSValueContrast:
     case CSSValueOpacity: {
-      double amount = (filter->FunctionType() == CSSValueBrightness) ? 0 : 1;
+      double amount = (filter->FunctionType() == CSSValueBrightness ||
+                       filter->FunctionType() == CSSValueInvert)
+                          ? 0
+                          : 1;
       if (filter->length() == 1) {
         amount = value->GetDoubleValue();
         if (value->IsPercentage())
