@@ -23,6 +23,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
@@ -452,9 +453,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         maybePrefetchDnsInBackground();
 
         // Create and fire a launch intent.
-        mActivity.startActivity(createCustomTabActivityIntent(mActivity, mIntent,
-                                        !isCustomTabIntent(mIntent) && mIsHerbIntent),
-                getStartActivityIntentOptions());
+        Intent launchIntent = createCustomTabActivityIntent(
+                mActivity, mIntent, !isCustomTabIntent(mIntent) && mIsHerbIntent);
+        // Allow disk writes during startActivity() to avoid strict mode violations on some
+        // Samsung devices, see https://crbug.com/796548.
+        try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
+            mActivity.startActivity(launchIntent, getStartActivityIntentOptions());
+        }
         if (mIsHerbIntent) {
             mActivity.overridePendingTransition(R.anim.activity_open_enter, R.anim.no_anim);
         }
