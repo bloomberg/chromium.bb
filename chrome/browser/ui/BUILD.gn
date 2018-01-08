@@ -909,8 +909,6 @@ split_static_library("ui") {
       "tabs/tab_activity_watcher.cc",
       "tabs/tab_activity_watcher.h",
       "tabs/tab_change_type.h",
-      "tabs/tab_features.cc",
-      "tabs/tab_features.h",
       "tabs/tab_menu_model.cc",
       "tabs/tab_menu_model.h",
       "tabs/tab_metrics_logger.h",
@@ -2672,10 +2670,6 @@ split_static_library("ui") {
       "autofill/save_card_bubble_view.h",
       "bubble_anchor_util.h",
       "desktop_ios_promotion/desktop_ios_promotion_footnote_delegate.h",
-      "tabs/tab_data_experimental.cc",
-      "tabs/tab_data_experimental.h",
-      "tabs/tab_strip_model_experimental.cc",
-      "tabs/tab_strip_model_experimental.h",
 
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
@@ -2864,12 +2858,6 @@ split_static_library("ui") {
       "views/sync/bubble_sync_promo_view.h",
       "views/sync/profile_signin_confirmation_dialog_views.cc",
       "views/sync/profile_signin_confirmation_dialog_views.h",
-      "views/tabs/tab_experimental.cc",
-      "views/tabs/tab_experimental.h",
-      "views/tabs/tab_experimental_paint.cc",
-      "views/tabs/tab_experimental_paint.h",
-      "views/tabs/tab_strip_experimental.cc",
-      "views/tabs/tab_strip_experimental.h",
       "views/task_manager_view.cc",
       "views/task_manager_view.h",
       "views/toolbar/toolbar_actions_bar_bubble_views.cc",

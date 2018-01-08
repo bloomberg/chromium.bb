@@ -7,7 +7,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_impl.h"

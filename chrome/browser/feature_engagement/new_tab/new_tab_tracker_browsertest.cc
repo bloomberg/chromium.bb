@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/views/feature_promos/new_tab_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -79,10 +78,6 @@ class NewTabTrackerBrowserTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
-  // This test reaches into the tab strip internals.
-  if (IsExperimentalTabStripEnabled())
-    return;
-
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Bypassing the 2 hour active session time requirement.
