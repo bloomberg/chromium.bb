@@ -2764,8 +2764,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
       // TODO(710873): Make sure that these get fixed:
       // Not deleted but should be deleted with history?
       CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
-      // Deprecated and should be removed after M60.
-      CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
       // Is cleared in PasswordProtectionService::CleanUpExpiredVerdicts()
       // but not when CBD is executed.
       CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
