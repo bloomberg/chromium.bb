@@ -530,9 +530,7 @@ void {{v8_class_or_partial}}::{{method.name}}MethodCallback{{world_suffix}}(cons
   {% endif %}
   V8PerContextData* contextData = scriptState->PerContextData();
   if (contextData && contextData->ActivityLogger()) {
-    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
-    Vector<v8::Local<v8::Value>> loggerArgs = ToImplArguments<Vector<v8::Local<v8::Value>>>(info, 0, exceptionState);
-    contextData->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info.Length(), loggerArgs.data());
+    contextData->ActivityLogger()->LogMethod("{{interface_name}}.{{method.name}}", info);
   }
   {% endif %}
   {% if method.is_custom %}

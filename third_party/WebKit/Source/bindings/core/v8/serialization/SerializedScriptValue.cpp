@@ -403,15 +403,16 @@ bool SerializedScriptValue::ExtractTransferables(
   if (value.IsEmpty() || value->IsUndefined())
     return true;
 
-  Vector<v8::Local<v8::Value>> transferable_array =
-      NativeValueTraits<IDLSequence<v8::Local<v8::Value>>>::NativeValue(
-          isolate, value, exception_state);
+  Vector<ScriptValue> transferable_array =
+      NativeValueTraits<IDLSequence<ScriptValue>>::NativeValue(isolate, value,
+                                                               exception_state);
   if (exception_state.HadException())
     return false;
 
   // Validate the passed array of transferables.
   uint32_t i = 0;
-  for (const auto& transferable_object : transferable_array) {
+  for (const auto& script_value : transferable_array) {
+    v8::Local<v8::Value> transferable_object = script_value.V8Value();
     // Validation of non-null objects, per HTML5 spec 10.3.3.
     if (IsUndefinedOrNull(transferable_object)) {
       exception_state.ThrowTypeError(

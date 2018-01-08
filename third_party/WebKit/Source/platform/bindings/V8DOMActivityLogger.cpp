@@ -33,6 +33,18 @@ DomActivityLoggersForIsolatedWorld() {
   return map;
 }
 
+void V8DOMActivityLogger::LogMethod(const char* api_name,
+                                    v8::FunctionCallbackInfo<v8::Value> info) {
+  DCHECK(static_cast<size_t>(info.Length()) <=
+         Vector<v8::Local<v8::Value>>::MaxCapacity());
+  Vector<v8::Local<v8::Value>> loggerArgs;
+  loggerArgs.ReserveInitialCapacity(info.Length());
+  for (int i = 0; i < info.Length(); ++i) {
+    loggerArgs.UncheckedAppend(info[i]);
+  }
+  LogMethod(api_name, info.Length(), loggerArgs.data());
+}
+
 void V8DOMActivityLogger::SetActivityLogger(
     int world_id,
     const String& extension_id,

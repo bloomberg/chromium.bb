@@ -447,17 +447,6 @@ struct NativeValueTraits<String> {
   }
 };
 
-template <>
-struct NativeValueTraits<v8::Local<v8::Value>>
-    : public NativeValueTraitsBase<v8::Local<v8::Value>> {
-  static inline v8::Local<v8::Value> NativeValue(
-      v8::Isolate* isolate,
-      v8::Local<v8::Value> value,
-      ExceptionState& exception_state) {
-    return value;
-  }
-};
-
 CORE_EXPORT v8::Isolate* ToIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* ToIsolate(LocalFrame*);
 
