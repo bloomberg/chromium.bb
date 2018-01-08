@@ -137,7 +137,7 @@ CSSInterpolationType::CSSInterpolationType(
     const PropertyRegistration* registration)
     : InterpolationType(property), registration_(registration) {
   DCHECK(!GetProperty().IsCSSCustomProperty() || registration);
-  DCHECK(!CSSProperty::Get(CssProperty()).IsShorthand());
+  DCHECK(!CssProperty().IsShorthand());
 }
 
 InterpolationValue CSSInterpolationType::MaybeConvertSingle(
@@ -179,13 +179,13 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     bool omit_animation_tainted = false;
     const CSSValue* resolved_value =
         CSSVariableResolver(state).ResolveVariableReferences(
-            CssProperty(), *value, omit_animation_tainted);
-    conversion_checkers.push_back(
-        ResolvedVariableChecker::Create(CssProperty(), value, resolved_value));
+            CssProperty().PropertyID(), *value, omit_animation_tainted);
+    conversion_checkers.push_back(ResolvedVariableChecker::Create(
+        CssProperty().PropertyID(), value, resolved_value));
     value = resolved_value;
   }
 
-  bool is_inherited = CSSProperty::Get(CssProperty()).IsInherited();
+  bool is_inherited = CssProperty().IsInherited();
   if (value->IsInitialValue() || (value->IsUnsetValue() && !is_inherited)) {
     return MaybeConvertInitial(state, conversion_checkers);
   }

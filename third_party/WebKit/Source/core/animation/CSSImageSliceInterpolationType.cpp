@@ -108,14 +108,14 @@ class InheritedSliceTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedSliceTypesChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       const SliceTypes& inherited_types) {
     return WTF::WrapUnique(
         new InheritedSliceTypesChecker(property, inherited_types));
   }
 
  private:
-  InheritedSliceTypesChecker(CSSPropertyID property,
+  InheritedSliceTypesChecker(const CSSProperty& property,
                              const SliceTypes& inherited_types)
       : property_(property), inherited_types_(inherited_types) {}
 
@@ -126,7 +126,7 @@ class InheritedSliceTypesChecker
                property_, *state.ParentStyle()));
   }
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   const SliceTypes inherited_types_;
 };
 

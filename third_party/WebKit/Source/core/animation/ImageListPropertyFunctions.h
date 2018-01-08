@@ -15,15 +15,15 @@ using StyleImageList = PersistentHeapVector<Member<StyleImage>, 1>;
 
 class ImageListPropertyFunctions {
  public:
-  static void GetInitialImageList(CSSPropertyID, StyleImageList& result) {
+  static void GetInitialImageList(const CSSProperty&, StyleImageList& result) {
     result.clear();
   }
 
-  static void GetImageList(CSSPropertyID property,
+  static void GetImageList(const CSSProperty& property,
                            const ComputedStyle& style,
                            StyleImageList& result) {
     const FillLayer* fill_layer = nullptr;
-    switch (property) {
+    switch (property.PropertyID()) {
       case CSSPropertyBackgroundImage:
         fill_layer = &style.BackgroundLayers();
         break;
@@ -42,11 +42,11 @@ class ImageListPropertyFunctions {
     }
   }
 
-  static void SetImageList(CSSPropertyID property,
+  static void SetImageList(const CSSProperty& property,
                            ComputedStyle& style,
                            const StyleImageList& image_list) {
     FillLayer* fill_layer = nullptr;
-    switch (property) {
+    switch (property.PropertyID()) {
       case CSSPropertyBackgroundImage:
         fill_layer = &style.AccessBackgroundLayers();
         break;

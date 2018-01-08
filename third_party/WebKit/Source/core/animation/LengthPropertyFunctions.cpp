@@ -8,8 +8,8 @@
 
 namespace blink {
 
-ValueRange LengthPropertyFunctions::GetValueRange(CSSPropertyID property) {
-  switch (property) {
+ValueRange LengthPropertyFunctions::GetValueRange(const CSSProperty& property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBorderBottomWidth:
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
@@ -43,14 +43,14 @@ ValueRange LengthPropertyFunctions::GetValueRange(CSSPropertyID property) {
   }
 }
 
-bool LengthPropertyFunctions::IsZoomedLength(CSSPropertyID property) {
-  return property != CSSPropertyStrokeWidth;
+bool LengthPropertyFunctions::IsZoomedLength(const CSSProperty& property) {
+  return property.PropertyID() != CSSPropertyStrokeWidth;
 }
 
-bool LengthPropertyFunctions::GetPixelsForKeyword(CSSPropertyID property,
+bool LengthPropertyFunctions::GetPixelsForKeyword(const CSSProperty& property,
                                                   CSSValueID value_id,
                                                   double& result) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBaselineShift:
       if (value_id == CSSValueBaseline) {
         result = 0;
@@ -88,9 +88,9 @@ bool LengthPropertyFunctions::GetPixelsForKeyword(CSSPropertyID property,
   }
 }
 
-bool LengthPropertyFunctions::GetInitialLength(CSSPropertyID property,
+bool LengthPropertyFunctions::GetInitialLength(const CSSProperty& property,
                                                Length& result) {
-  switch (property) {
+  switch (property.PropertyID()) {
     // The computed value of "initial" for the following properties is 0px if
     // the associated *-style property resolves to "none" or "hidden".
     // - border-width:
@@ -121,10 +121,10 @@ bool LengthPropertyFunctions::GetInitialLength(CSSPropertyID property,
   }
 }
 
-bool LengthPropertyFunctions::GetLength(CSSPropertyID property,
+bool LengthPropertyFunctions::GetLength(const CSSProperty& property,
                                         const ComputedStyle& style,
                                         Length& result) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBottom:
       result = style.Bottom();
       return true;
@@ -287,7 +287,7 @@ bool LengthPropertyFunctions::GetLength(CSSPropertyID property,
       result = Length(style.Perspective(), kFixed);
       return true;
     case CSSPropertyStrokeWidth:
-      DCHECK(!IsZoomedLength(CSSPropertyStrokeWidth));
+      DCHECK(!IsZoomedLength(CSSProperty::Get(CSSPropertyStrokeWidth)));
       result = style.StrokeWidth().length();
       return true;
     case CSSPropertyVerticalAlign:
@@ -305,10 +305,10 @@ bool LengthPropertyFunctions::GetLength(CSSPropertyID property,
   }
 }
 
-bool LengthPropertyFunctions::SetLength(CSSPropertyID property,
+bool LengthPropertyFunctions::SetLength(const CSSProperty& property,
                                         ComputedStyle& style,
                                         const Length& value) {
-  switch (property) {
+  switch (property.PropertyID()) {
     // Setters that take a Length value.
     case CSSPropertyBaselineShift:
       style.SetBaselineShiftValue(value);

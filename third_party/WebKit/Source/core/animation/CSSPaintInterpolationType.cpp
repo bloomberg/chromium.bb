@@ -30,10 +30,10 @@ static bool GetColorFromPaint(const SVGPaintType type,
   }
 }
 
-bool GetColor(CSSPropertyID property,
+bool GetColor(const CSSProperty& property,
               const ComputedStyle& style,
               StyleColor& result) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyFill:
       return GetColorFromPaint(style.SvgStyle().FillPaintType(),
                                style.SvgStyle().FillPaintColor(), result);
@@ -68,18 +68,19 @@ class InheritedPaintChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedPaintChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       const StyleColor& color) {
     return WTF::WrapUnique(new InheritedPaintChecker(property, color));
   }
-  static std::unique_ptr<InheritedPaintChecker> Create(CSSPropertyID property) {
+  static std::unique_ptr<InheritedPaintChecker> Create(
+      const CSSProperty& property) {
     return WTF::WrapUnique(new InheritedPaintChecker(property));
   }
 
  private:
-  InheritedPaintChecker(CSSPropertyID property)
+  InheritedPaintChecker(const CSSProperty& property)
       : property_(property), valid_color_(false) {}
-  InheritedPaintChecker(CSSPropertyID property, const StyleColor& color)
+  InheritedPaintChecker(const CSSProperty& property, const StyleColor& color)
       : property_(property), valid_color_(true), color_(color) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -90,7 +91,7 @@ class InheritedPaintChecker
     return valid_color_ && parent_color == color_;
   }
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   const bool valid_color_;
   const StyleColor color_;
 };
@@ -140,7 +141,7 @@ void CSSPaintInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   Color color = CSSColorInterpolationType::ResolveInterpolableColor(
       interpolable_color, state);
-  switch (CssProperty()) {
+  switch (CssProperty().PropertyID()) {
     case CSSPropertyFill:
       state.Style()->AccessSVGStyle().SetFillPaint(SVG_PAINTTYPE_RGBCOLOR,
                                                    color, String(), true, true);

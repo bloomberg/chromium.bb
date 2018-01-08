@@ -9,14 +9,14 @@
 namespace blink {
 
 OptionalStyleColor ColorPropertyFunctions::GetInitialColor(
-    CSSPropertyID property) {
+    const CSSProperty& property) {
   return GetUnvisitedColor(property, ComputedStyle::InitialStyle());
 }
 
 OptionalStyleColor ColorPropertyFunctions::GetUnvisitedColor(
-    CSSPropertyID property,
+    const CSSProperty& property,
     const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundColor:
       return style.BackgroundColor();
     case CSSPropertyBorderLeftColor:
@@ -60,9 +60,9 @@ OptionalStyleColor ColorPropertyFunctions::GetUnvisitedColor(
 }
 
 OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
-    CSSPropertyID property,
+    const CSSProperty& property,
     const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundColor:
       return style.VisitedLinkBackgroundColor();
     case CSSPropertyBorderLeftColor:
@@ -107,10 +107,10 @@ OptionalStyleColor ColorPropertyFunctions::GetVisitedColor(
   }
 }
 
-void ColorPropertyFunctions::SetUnvisitedColor(CSSPropertyID property,
+void ColorPropertyFunctions::SetUnvisitedColor(const CSSProperty& property,
                                                ComputedStyle& style,
                                                const Color& color) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundColor:
       style.SetBackgroundColor(color);
       return;
@@ -158,10 +158,10 @@ void ColorPropertyFunctions::SetUnvisitedColor(CSSPropertyID property,
   }
 }
 
-void ColorPropertyFunctions::SetVisitedColor(CSSPropertyID property,
+void ColorPropertyFunctions::SetVisitedColor(const CSSProperty& property,
                                              ComputedStyle& style,
                                              const Color& color) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundColor:
       style.SetVisitedLinkBackgroundColor(color);
       return;

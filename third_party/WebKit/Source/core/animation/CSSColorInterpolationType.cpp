@@ -125,12 +125,15 @@ Color CSSColorInterpolationType::ResolveInterpolableColor(
     StyleColor current_style_color = StyleColor::CurrentColor();
     if (is_text_decoration) {
       current_style_color =
-          current_color_getter(CSSPropertyWebkitTextFillColor, *state.Style())
+          current_color_getter(CSSProperty::Get(CSSPropertyWebkitTextFillColor),
+                               *state.Style())
               .Access();
     }
     if (current_style_color.IsCurrentColor()) {
       current_style_color =
-          current_color_getter(CSSPropertyColor, *state.Style()).Access();
+          current_color_getter(CSSProperty::Get(CSSPropertyColor),
+                               *state.Style())
+              .Access();
     }
     AddPremultipliedColor(red, green, blue, alpha, currentcolor_fraction,
                           current_style_color.GetColor());
@@ -162,13 +165,14 @@ class InheritedColorChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedColorChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       const OptionalStyleColor& color) {
     return WTF::WrapUnique(new InheritedColorChecker(property, color));
   }
 
  private:
-  InheritedColorChecker(CSSPropertyID property, const OptionalStyleColor& color)
+  InheritedColorChecker(const CSSProperty& property,
+                        const OptionalStyleColor& color)
       : property_(property), color_(color) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -177,7 +181,7 @@ class InheritedColorChecker
                          property_, *state.ParentStyle());
   }
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   const OptionalStyleColor color_;
 };
 
@@ -223,7 +227,8 @@ InterpolationValue CSSColorInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
-  if (CssProperty() == CSSPropertyColor && value.IsIdentifierValue() &&
+  if (CssProperty().PropertyID() == CSSPropertyColor &&
+      value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
     DCHECK(state);
     return MaybeConvertInherit(*state, conversion_checkers);
@@ -272,12 +277,12 @@ void CSSColorInterpolationType::ApplyStandardPropertyValue(
       CssProperty(), *state.Style(),
       ResolveInterpolableColor(
           *color_pair.Get(kUnvisited), state, false,
-          CssProperty() == CSSPropertyTextDecorationColor));
+          CssProperty().PropertyID() == CSSPropertyTextDecorationColor));
   ColorPropertyFunctions::SetVisitedColor(
       CssProperty(), *state.Style(),
       ResolveInterpolableColor(
           *color_pair.Get(kVisited), state, true,
-          CssProperty() == CSSPropertyTextDecorationColor));
+          CssProperty().PropertyID() == CSSPropertyTextDecorationColor));
 }
 
 const CSSValue* CSSColorInterpolationType::CreateCSSValue(

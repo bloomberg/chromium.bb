@@ -53,14 +53,14 @@ class InheritedSizeListChecker
   ~InheritedSizeListChecker() final {}
 
   static std::unique_ptr<InheritedSizeListChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       const SizeList& inherited_size_list) {
     return WTF::WrapUnique(
         new InheritedSizeListChecker(property, inherited_size_list));
   }
 
  private:
-  InheritedSizeListChecker(CSSPropertyID property,
+  InheritedSizeListChecker(const CSSProperty& property,
                            const SizeList& inherited_size_list)
       : property_(property), inherited_size_list_(inherited_size_list) {}
 
@@ -70,7 +70,7 @@ class InheritedSizeListChecker
                                        property_, *state.ParentStyle());
   }
 
-  CSSPropertyID property_;
+  const CSSProperty& property_;
   SizeList inherited_size_list_;
 };
 

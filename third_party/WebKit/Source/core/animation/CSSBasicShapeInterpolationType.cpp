@@ -18,9 +18,9 @@ namespace blink {
 
 namespace {
 
-const BasicShape* GetBasicShape(CSSPropertyID property,
+const BasicShape* GetBasicShape(const CSSProperty& property,
                                 const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyShapeOutside:
       if (!style.ShapeOutside())
         return nullptr;
@@ -70,14 +70,14 @@ class InheritedShapeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedShapeChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       scoped_refptr<BasicShape> inherited_shape) {
     return WTF::WrapUnique(
         new InheritedShapeChecker(property, std::move(inherited_shape)));
   }
 
  private:
-  InheritedShapeChecker(CSSPropertyID property,
+  InheritedShapeChecker(const CSSProperty& property,
                         scoped_refptr<BasicShape> inherited_shape)
       : property_(property), inherited_shape_(std::move(inherited_shape)) {}
 
@@ -87,7 +87,7 @@ class InheritedShapeChecker
                           GetBasicShape(property_, *state.ParentStyle()));
   }
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   scoped_refptr<BasicShape> inherited_shape_;
 };
 
@@ -181,7 +181,7 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
       BasicShapeInterpolationFunctions::CreateBasicShape(
           interpolable_value, *non_interpolable_value,
           state.CssToLengthConversionData());
-  switch (CssProperty()) {
+  switch (CssProperty().PropertyID()) {
     case CSSPropertyShapeOutside:
       state.Style()->SetShapeOutside(
           ShapeValue::CreateShapeValue(std::move(shape), kBoxMissing));

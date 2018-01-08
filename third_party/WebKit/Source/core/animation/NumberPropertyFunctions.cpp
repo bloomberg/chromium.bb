@@ -8,15 +8,15 @@
 
 namespace blink {
 
-bool NumberPropertyFunctions::GetInitialNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::GetInitialNumber(const CSSProperty& property,
                                                double& result) {
   return GetNumber(property, ComputedStyle::InitialStyle(), result);
 }
 
-bool NumberPropertyFunctions::GetNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::GetNumber(const CSSProperty& property,
                                         const ComputedStyle& style,
                                         double& result) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyFillOpacity:
       result = style.FillOpacity();
       return true;
@@ -88,9 +88,9 @@ bool NumberPropertyFunctions::GetNumber(CSSPropertyID property,
   }
 }
 
-double NumberPropertyFunctions::ClampNumber(CSSPropertyID property,
+double NumberPropertyFunctions::ClampNumber(const CSSProperty& property,
                                             double value) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyStrokeMiterlimit:
       return clampTo<float>(value, 1);
 
@@ -130,11 +130,11 @@ double NumberPropertyFunctions::ClampNumber(CSSPropertyID property,
   }
 }
 
-bool NumberPropertyFunctions::SetNumber(CSSPropertyID property,
+bool NumberPropertyFunctions::SetNumber(const CSSProperty& property,
                                         ComputedStyle& style,
                                         double value) {
   DCHECK_EQ(value, ClampNumber(property, value));
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyFillOpacity:
       style.SetFillOpacity(value);
       return true;

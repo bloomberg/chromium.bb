@@ -38,7 +38,7 @@ class CSSImageInterpolationType : public CSSInterpolationType {
   static PairwiseInterpolationValue StaticMergeSingleConversions(
       InterpolationValue&& start,
       InterpolationValue&& end);
-  static StyleImage* ResolveStyleImage(CSSPropertyID,
+  static StyleImage* ResolveStyleImage(const CSSProperty&,
                                        const InterpolableValue&,
                                        const NonInterpolableValue*,
                                        StyleResolverState&);
