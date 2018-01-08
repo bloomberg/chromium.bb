@@ -26,6 +26,41 @@ using SigninManagerForTest = FakeSigninManager;
 const char kTestGaiaId[] = "dummyId";
 const char kTestEmail[] = "me@dummy.com";
 
+// Subclass of FakeProfileOAuth2TokenService with bespoke behavior.
+class CustomFakeProfileOAuth2TokenService
+    : public FakeProfileOAuth2TokenService {
+ public:
+  void set_on_access_token_invalidated_info(
+      std::string expected_account_id_to_invalidate,
+      std::set<std::string> expected_scopes_to_invalidate,
+      std::string expected_access_token_to_invalidate,
+      base::OnceClosure callback) {
+    expected_account_id_to_invalidate_ = expected_account_id_to_invalidate;
+    expected_scopes_to_invalidate_ = expected_scopes_to_invalidate;
+    expected_access_token_to_invalidate_ = expected_access_token_to_invalidate;
+    on_access_token_invalidated_callback_ = std::move(callback);
+  }
+
+ private:
+  // OAuth2TokenService:
+  void InvalidateAccessTokenImpl(const std::string& account_id,
+                                 const std::string& client_id,
+                                 const ScopeSet& scopes,
+                                 const std::string& access_token) override {
+    if (on_access_token_invalidated_callback_) {
+      EXPECT_EQ(expected_account_id_to_invalidate_, account_id);
+      EXPECT_EQ(expected_scopes_to_invalidate_, scopes);
+      EXPECT_EQ(expected_access_token_to_invalidate_, access_token);
+      std::move(on_access_token_invalidated_callback_).Run();
+    }
+  }
+
+  std::string expected_account_id_to_invalidate_;
+  std::set<std::string> expected_scopes_to_invalidate_;
+  std::string expected_access_token_to_invalidate_;
+  base::OnceClosure on_access_token_invalidated_callback_;
+};
+
 class TestIdentityManagerObserver : IdentityManager::Observer {
  public:
   explicit TestIdentityManagerObserver(IdentityManager* identity_manager)
@@ -109,7 +144,9 @@ class IdentityManagerTest : public testing::Test {
   }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   SigninManagerForTest* signin_manager() { return &signin_manager_; }
-  FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
+  CustomFakeProfileOAuth2TokenService* token_service() {
+    return &token_service_;
+  }
 
  private:
   base::MessageLoop message_loop_;
@@ -117,7 +154,7 @@ class IdentityManagerTest : public testing::Test {
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
   SigninManagerForTest signin_manager_;
-  FakeProfileOAuth2TokenService token_service_;
+  CustomFakeProfileOAuth2TokenService token_service_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
 
@@ -187,6 +224,28 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   EXPECT_EQ("", primary_account_info.email);
 }
 #endif  // !defined(OS_CHROMEOS)
+
+TEST_F(IdentityManagerTest, RemoveAccessTokenFromCache) {
+  std::set<std::string> scopes{"scope"};
+  std::string access_token = "access_token";
+
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  std::string account_id = signin_manager()->GetAuthenticatedAccountId();
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+
+  base::RunLoop run_loop;
+  token_service()->set_on_access_token_invalidated_info(
+      account_id, scopes, access_token, run_loop.QuitClosure());
+
+  AccountInfo account_info;
+  account_info.account_id = account_id;
+  account_info.gaia = kTestGaiaId;
+  account_info.email = kTestEmail;
+  identity_manager()->RemoveAccessTokenFromCache(account_info, scopes,
+                                                 access_token);
+
+  run_loop.Run();
+}
 
 TEST_F(IdentityManagerTest, CreateAccessTokenFetcherForPrimaryAccount) {
   std::set<std::string> scopes{"scope"};
