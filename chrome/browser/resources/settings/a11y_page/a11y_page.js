@@ -32,7 +32,7 @@ Polymer({
     focusConfig_: {
       type: Object,
       value: function() {
-        var map = new Map();
+        const map = new Map();
         // <if expr="chromeos">
         if (settings.routes.MANAGE_ACCESSIBILITY) {
           map.set(

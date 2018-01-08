@@ -13,7 +13,7 @@ cr.exportPath('settings');
 /**
  * The name of the event fired from this element when the "Edit" option is
  * tapped.
- * @const {string}
+ * @type {string}
  */
 settings.EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
 
@@ -63,7 +63,7 @@ Polymer({
 
   /** @private */
   onDotsTap_: function() {
-    var actionMenu =
+    const actionMenu =
         /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
     actionMenu.showAt(assert(this.$$('#dots')));
   },

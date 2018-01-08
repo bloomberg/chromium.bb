@@ -52,7 +52,7 @@ Polymer({
       this.currentChannel_ = info.currentChannel;
       this.targetChannel_ = info.targetChannel;
       // Pre-populate radio group with target channel.
-      var radioGroup = this.$$('paper-radio-group');
+      const radioGroup = this.$$('paper-radio-group');
       radioGroup.select(this.targetChannel_);
       radioGroup.focus();
     });
@@ -70,7 +70,7 @@ Polymer({
 
   /** @private */
   onChangeChannelTap_: function() {
-    var selectedChannel = this.$$('paper-radio-group').selected;
+    const selectedChannel = this.$$('paper-radio-group').selected;
     this.browserProxy_.setChannel(selectedChannel, false);
     this.$.dialog.close();
     this.fire('target-channel-changed', selectedChannel);
@@ -78,7 +78,7 @@ Polymer({
 
   /** @private */
   onChangeChannelAndPowerwashTap_: function() {
-    var selectedChannel = this.$$('paper-radio-group').selected;
+    const selectedChannel = this.$$('paper-radio-group').selected;
     this.browserProxy_.setChannel(selectedChannel, true);
     this.$.dialog.close();
     this.fire('target-channel-changed', selectedChannel);
@@ -121,7 +121,7 @@ Polymer({
 
   /** @private */
   onChannelSelectionChanged_: function() {
-    var selectedChannel = this.$$('paper-radio-group').selected;
+    const selectedChannel = this.$$('paper-radio-group').selected;
 
     // Selected channel is the same as the target channel so only show 'cancel'.
     if (selectedChannel == this.targetChannel_) {

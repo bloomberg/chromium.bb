@@ -12,7 +12,7 @@ Polymer({
   behaviors: [Polymer.NeonAnimationBehavior],
 
   configure: function(config) {
-    var node = config.node;
+    const node = config.node;
     this._effect = new KeyframeEffect(
         node,
         [
@@ -34,7 +34,7 @@ Polymer({
   behaviors: [Polymer.NeonAnimationBehavior],
 
   configure: function(config) {
-    var node = config.node;
+    const node = config.node;
     this._effect = new KeyframeEffect(
         node,
         [

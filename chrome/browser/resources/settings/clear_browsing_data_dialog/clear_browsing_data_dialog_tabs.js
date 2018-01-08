@@ -223,7 +223,7 @@ Polymer({
   updateCounterText_: function(prefName, text) {
     // Data type deletion preferences are named "browser.clear_data.<datatype>".
     // Strip the common prefix, i.e. use only "<datatype>".
-    var matches = prefName.match(/^browser\.clear_data\.(\w+)$/);
+    const matches = prefName.match(/^browser\.clear_data\.(\w+)$/);
     this.set('counters_.' + assert(matches[1]), text);
   },
 
@@ -234,12 +234,12 @@ Polymer({
   shouldShowImportantSites_: function() {
     if (!this.importantSitesFlagEnabled_)
       return false;
-    var tab = this.$.tabs.selectedItem;
+    const tab = this.$.tabs.selectedItem;
     if (!tab.querySelector('.cookies-checkbox').checked) {
       return false;
     }
 
-    var haveImportantSites = this.importantSites_.length > 0;
+    const haveImportantSites = this.importantSites_.length > 0;
     chrome.send(
         'metricsHandler:recordBooleanHistogram',
         ['History.ClearBrowsingData.ImportantDialogShown', haveImportantSites]);
@@ -252,7 +252,7 @@ Polymer({
    */
   onClearBrowsingDataTap_: function() {
     if (this.shouldShowImportantSites_()) {
-      var tab = this.$.tabs.selectedItem;
+      const tab = this.$.tabs.selectedItem;
       this.showImportantSitesDialog_ = true;
       this.showImportantSitesCacheSubtitle_ =
           tab.querySelector('.cache-checkbox').checked;
@@ -281,16 +281,16 @@ Polymer({
    */
   clearBrowsingData_: function() {
     this.clearingInProgress_ = true;
-    var tab = this.$.tabs.selectedItem;
+    const tab = this.$.tabs.selectedItem;
 
     checkboxes = tab.querySelectorAll('settings-checkbox');
-    var dataTypes = [];
+    const dataTypes = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked)
         dataTypes.push(checkbox.pref.key);
     });
 
-    var timePeriod = tab.querySelector('.time-range-select').pref.value;
+    const timePeriod = tab.querySelector('.time-range-select').pref.value;
 
     if (tab.id == 'basic-tab') {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_BasicTab');

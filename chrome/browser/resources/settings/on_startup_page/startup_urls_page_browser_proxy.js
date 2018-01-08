@@ -10,7 +10,7 @@
  *   url: string
  * }}
  */
-var StartupPageInfo;
+let StartupPageInfo;
 
 cr.define('settings', function() {
   /** @interface */

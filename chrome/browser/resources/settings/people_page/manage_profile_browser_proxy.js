@@ -12,7 +12,7 @@
  * in sync with the C++ Manage Profile handler.
  * @enum {string}
  */
-var ProfileShortcutStatus = {
+const ProfileShortcutStatus = {
   PROFILE_SHORTCUT_SETTING_HIDDEN: 'profileShortcutSettingHidden',
   PROFILE_SHORTCUT_NOT_FOUND: 'profileShortcutNotFound',
   PROFILE_SHORTCUT_FOUND: 'profileShortcutFound',

@@ -13,10 +13,10 @@
  *   y: number
  * }}
  */
-var DragPosition;
+let DragPosition;
 
 /** @polymerBehavior */
-var DragBehavior = {
+const DragBehavior = {
   properties: {
     /** Whether or not drag is enabled (e.g. not mirrored). */
     dragEnabled: Boolean,
@@ -81,7 +81,7 @@ var DragBehavior = {
 
   /** @private */
   addListeners_: function() {
-    var container = this.container_;
+    const container = this.container_;
     if (!container || this.mouseDownListener_)
       return;
     this.mouseDownListener_ = this.onMouseDown_.bind(this);
@@ -103,7 +103,7 @@ var DragBehavior = {
 
   /** @private */
   removeListeners_: function() {
-    var container = this.container_;
+    const container = this.container_;
     if (!container || !this.mouseDownListener_)
       return;
     container.removeEventListener('mousedown', this.mouseDownListener_);
@@ -129,7 +129,7 @@ var DragBehavior = {
     if (e.button != 0 || !e.target.getAttribute('draggable'))
       return true;
     e.preventDefault();
-    var target = assertInstanceof(e.target, HTMLElement);
+    const target = assertInstanceof(e.target, HTMLElement);
     return this.startDrag_(target, {x: e.pageX, y: e.pageY});
   },
 
@@ -153,9 +153,9 @@ var DragBehavior = {
       return false;
 
     e.preventDefault();
-    var touch = e.touches[0];
+    const touch = e.touches[0];
     this.lastTouchLocation_ = {x: touch.pageX, y: touch.pageY};
-    var target = assertInstanceof(e.target, HTMLElement);
+    const target = assertInstanceof(e.target, HTMLElement);
     return this.startDrag_(target, this.lastTouchLocation_);
   },
 
@@ -168,13 +168,13 @@ var DragBehavior = {
     if (e.touches.length != 1)
       return true;
 
-    var touchLocation = {x: e.touches[0].pageX, y: e.touches[0].pageY};
+    const touchLocation = {x: e.touches[0].pageX, y: e.touches[0].pageY};
     // Touch move events can happen even if the touch location doesn't change
     // and on small unintentional finger movements. Ignore these small changes.
     if (this.lastTouchLocation_) {
-      /** @const */ var IGNORABLE_TOUCH_MOVE_PX = 1;
-      var xDiff = Math.abs(touchLocation.x - this.lastTouchLocation_.x);
-      var yDiff = Math.abs(touchLocation.y - this.lastTouchLocation_.y);
+      const IGNORABLE_TOUCH_MOVE_PX = 1;
+      const xDiff = Math.abs(touchLocation.x - this.lastTouchLocation_.x);
+      const yDiff = Math.abs(touchLocation.y - this.lastTouchLocation_.y);
       if (xDiff <= IGNORABLE_TOUCH_MOVE_PX && yDiff <= IGNORABLE_TOUCH_MOVE_PX)
         return true;
     }
@@ -221,7 +221,7 @@ var DragBehavior = {
     if (!this.dragId_)
       return true;
     if (this.callback_) {
-      var delta = {
+      const delta = {
         x: eventLocation.x - this.dragStartLocation_.x,
         y: eventLocation.y - this.dragStartLocation_.y,
       };

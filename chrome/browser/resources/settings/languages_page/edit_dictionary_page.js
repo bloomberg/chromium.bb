@@ -70,14 +70,14 @@ Polymer({
    * @param {!Array<string>} removed
    */
   onCustomDictionaryChanged_: function(added, removed) {
-    var wasEmpty = this.words_.length == 0;
+    const wasEmpty = this.words_.length == 0;
 
-    for (var i = 0; i < removed.length; i++)
-      this.arrayDelete('words_', removed[i]);
+    for (const word of removed)
+      this.arrayDelete('words_', word);
 
-    for (var i = 0; i < added.length; i++) {
-      if (this.words_.indexOf(added[i]) == -1)
-        this.unshift('words_', added[i]);
+    for (const word of added) {
+      if (this.words_.indexOf(word) == -1)
+        this.unshift('words_', word);
     }
 
     // When adding a word to an _empty_ list, the template is expanded. This
@@ -123,12 +123,12 @@ Polymer({
    */
   addWordFromInput_: function() {
     // Spaces are allowed, but removing leading and trailing whitespace.
-    var word = this.newWordValue_.trim();
+    const word = this.newWordValue_.trim();
     this.newWordValue_ = '';
     if (!word)
       return;
 
-    var index = this.words_.indexOf(word);
+    const index = this.words_.indexOf(word);
     if (index == -1) {
       this.languageSettingsPrivate.addSpellcheckWord(word);
     }

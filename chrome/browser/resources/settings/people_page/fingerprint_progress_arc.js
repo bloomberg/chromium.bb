@@ -6,46 +6,46 @@
 
 /**
  * The time in milliseconds of the animation updates.
- * @const {number}
+ * @type {number}
  */
-var ANIMATE_TICKS_MS = 20;
+const ANIMATE_TICKS_MS = 20;
 
 /**
  * The duration in milliseconds of the animation of the progress circle when the
  * user is touching the scanner.
- * @const {number}
+ * @type {number}
  */
-var ANIMATE_DURATION_MS = 200;
+const ANIMATE_DURATION_MS = 200;
 
 /**
  * The radius of the add fingerprint progress circle.
- * @const {number}
+ * @type {number}
  */
-var CANVAS_CIRCLE_RADIUS = 50;
+const CANVAS_CIRCLE_RADIUS = 50;
 
 /**
  * The thickness of the add fingerprint progress circle.
- * @const {number}
+ * @type {number}
  */
-var CANVAS_CIRCLE_STROKE_WIDTH = 4;
+const CANVAS_CIRCLE_STROKE_WIDTH = 4;
 
 /**
  * The color of the canvas circle background.
- * @const {string}
+ * @type {string}
  */
-var CANVAS_CIRCLE_BACKGROUND_COLOR = 'rgba(66, 66, 66, 1.0)';
+const CANVAS_CIRCLE_BACKGROUND_COLOR = 'rgba(66, 66, 66, 1.0)';
 
 /**
  * The color of the arc/circle which indicates setup progress.
- * @const {string}
+ * @type {string}
  */
-var CANVAS_CIRCLE_PROGRESS_COLOR = 'rgba(53, 103, 214, 1.0)';
+const CANVAS_CIRCLE_PROGRESS_COLOR = 'rgba(53, 103, 214, 1.0)';
 
 /**
  * The color of the canvas circle shadow.
- * @const {string}
+ * @type {string}
  */
-var CANVAS_CIRCLE_SHADOW_COLOR = 'rgba(0, 0, 0, 0.5)';
+const CANVAS_CIRCLE_SHADOW_COLOR = 'rgba(0, 0, 0, 0.5)';
 
 Polymer({
   is: 'settings-fingerprint-progress-arc',
@@ -73,8 +73,8 @@ Polymer({
    *     and a' is a value from [0-1].
    */
   drawArc: function(startAngle, endAngle, color) {
-    var c = this.$.canvas;
-    var ctx = c.getContext('2d');
+    const c = this.$.canvas;
+    const ctx = c.getContext('2d');
 
     ctx.beginPath();
     ctx.arc(
@@ -101,8 +101,8 @@ Polymer({
    * @param {number} offsetY
    */
   drawShadow: function(blur, offsetX, offsetY) {
-    var c = this.$.canvas;
-    var ctx = c.getContext('2d');
+    const c = this.$.canvas;
+    const ctx = c.getContext('2d');
 
     ctx.beginPath();
     ctx.translate(-c.width, 0);
@@ -126,15 +126,15 @@ Polymer({
    * @param {number} endAngle The end angle of the arc we want to draw.
    */
   animate: function(startAngle, endAngle) {
-    var currentAngle = startAngle;
+    let currentAngle = startAngle;
     // The value to update the angle by each tick.
-    var step =
+    const step =
         (endAngle - startAngle) / (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
-    var id = setInterval(doAnimate.bind(this), ANIMATE_TICKS_MS);
+    const id = setInterval(doAnimate.bind(this), ANIMATE_TICKS_MS);
     // Circles on html canvas have 0 radians on the positive x-axis and go in
     // clockwise direction. We want to start at the top of the circle which is
     // 3pi/2.
-    var start = 3 * Math.PI / 2;
+    const start = 3 * Math.PI / 2;
 
     // Function that is called every tick of the interval, draws the arc a bit
     // closer to the final destination each tick, until it reaches the final
@@ -163,8 +163,8 @@ Polymer({
    * Clear the canvas of any renderings.
    */
   clearCanvas: function() {
-    var c = this.$.canvas;
-    var ctx = c.getContext('2d');
+    const c = this.$.canvas;
+    const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
   },
 });

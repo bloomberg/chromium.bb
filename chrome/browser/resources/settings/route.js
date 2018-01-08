@@ -93,7 +93,7 @@
  *   TRIGGERED_RESET_DIALOG: (undefined|!settings.Route),
  * }}
  */
-var SettingsRoutes;
+let SettingsRoutes;
 
 cr.define('settings', function() {
 
@@ -137,9 +137,9 @@ cr.define('settings', function() {
 
       // |path| extends this route's path if it doesn't have a leading slash.
       // If it does have a leading slash, it's just set as the new route's URL.
-      var newUrl = path[0] == '/' ? path : `${this.path}/${path}`;
+      const newUrl = path[0] == '/' ? path : `${this.path}/${path}`;
 
-      var route = new Route(newUrl);
+      const route = new Route(newUrl);
       route.parent = this;
       route.section = this.section;
       route.depth = this.depth + 1;
@@ -156,7 +156,7 @@ cr.define('settings', function() {
      * @private
      */
     createSection(path, section) {
-      var route = this.createChild(path);
+      const route = this.createChild(path);
       route.section = section;
       return route;
     }
@@ -176,7 +176,7 @@ cr.define('settings', function() {
      * @return {boolean}
      */
     contains(route) {
-      for (var r = route; r != null; r = r.parent) {
+      for (let r = route; r != null; r = r.parent) {
         if (this == r)
           return true;
       }
@@ -197,11 +197,11 @@ cr.define('settings', function() {
    * Computes and return all available routes based on settings.pageVisibility.
    * @return {!SettingsRoutes}
    */
-  var computeAvailableRoutes = function() {
-    var pageVisibility = settings.pageVisibility || {};
+  const computeAvailableRoutes = function() {
+    const pageVisibility = settings.pageVisibility || {};
 
     /** @type {!SettingsRoutes} */
-    var r = {};
+    const r = {};
 
     // Root pages.
     r.BASIC = new Route('/');
@@ -451,7 +451,7 @@ cr.define('settings', function() {
     setCurrentRoute(route, queryParameters, isPopstate) {
       this.recordMetrics(route.path);
 
-      var oldRoute = this.currentRoute;
+      const oldRoute = this.currentRoute;
       this.currentRoute = route;
       this.currentQueryParameters_ = queryParameters;
       this.wasLastRouteChangePopstate_ = isPopstate;
@@ -483,10 +483,10 @@ cr.define('settings', function() {
      */
     getRouteForPath(path) {
       // Allow trailing slash in paths.
-      var canonicalPath = path.replace(CANONICAL_PATH_REGEX, '$1$2');
+      const canonicalPath = path.replace(CANONICAL_PATH_REGEX, '$1$2');
 
       // TODO(tommycli): Use Object.values once Closure compilation supports it.
-      var matchingKey =
+      const matchingKey =
           Object.keys(this.routes_)
               .find((key) => this.routes_[key].path == canonicalPath);
 
@@ -507,17 +507,17 @@ cr.define('settings', function() {
       if (route == this.routes_.ADVANCED)
         route = /** @type {!settings.Route} */ (this.routes_.BASIC);
 
-      var params = opt_dynamicParameters || new URLSearchParams();
-      var removeSearch = !!opt_removeSearch;
+      const params = opt_dynamicParameters || new URLSearchParams();
+      const removeSearch = !!opt_removeSearch;
 
-      var oldSearchParam = this.getQueryParameters().get('search') || '';
-      var newSearchParam = params.get('search') || '';
+      const oldSearchParam = this.getQueryParameters().get('search') || '';
+      const newSearchParam = params.get('search') || '';
 
       if (!removeSearch && oldSearchParam && !newSearchParam)
         params.append('search', oldSearchParam);
 
-      var url = route.path;
-      var queryString = params.toString();
+      let url = route.path;
+      const queryString = params.toString();
       if (queryString)
         url += '?' + queryString;
 
@@ -532,7 +532,7 @@ cr.define('settings', function() {
      * this navigates to the immediate parent. This will never exit Settings.
      */
     navigateToPreviousRoute() {
-      var previousRoute = window.history.state &&
+      const previousRoute = window.history.state &&
           assert(this.getRouteForPath(
               /** @type {string} */ (window.history.state)));
 
@@ -553,7 +553,7 @@ cr.define('settings', function() {
       assert(!this.initializeRouteFromUrlCalled_);
       this.initializeRouteFromUrlCalled_ = true;
 
-      var route = this.getRouteForPath(window.location.pathname);
+      const route = this.getRouteForPath(window.location.pathname);
       // Never allow direct navigation to ADVANCED.
       if (route && route != this.routes_.ADVANCED) {
         this.currentRoute = route;
@@ -584,12 +584,12 @@ cr.define('settings', function() {
     }
   }
 
-  var routerInstance = new Router();
+  const routerInstance = new Router();
 
-  var routeObservers = new Set();
+  const routeObservers = new Set();
 
   /** @polymerBehavior */
-  var RouteObserverBehavior = {
+  const RouteObserverBehavior = {
     /** @override */
     attached: function() {
       assert(!routeObservers.has(this));
@@ -617,9 +617,9 @@ cr.define('settings', function() {
   /**
    * Regular expression that captures the leading slash, the content and the
    * trailing slash in three different groups.
-   * @const {!RegExp}
+   * @type {!RegExp}
    */
-  var CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+  const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
 
   window.addEventListener('popstate', function(event) {
     // On pop state, do not push the state onto the window.history again.
@@ -632,22 +632,22 @@ cr.define('settings', function() {
 
   // TODO(scottchen): Change to 'get routes() {}' in export when we fix a bug in
   // ChromePass that limits the syntax of what can be returned from cr.define().
-  var routes = routerInstance.getRoutes();
+  const routes = routerInstance.getRoutes();
 
   // TODO(scottchen): Stop exposing all those methods directly on settings.*,
   // and instead update all clients to use the singleton instance directly
-  var getCurrentRoute = routerInstance.getCurrentRoute.bind(routerInstance);
-  var getRouteForPath = routerInstance.getRouteForPath.bind(routerInstance);
-  var initializeRouteFromUrl =
+  const getCurrentRoute = routerInstance.getCurrentRoute.bind(routerInstance);
+  const getRouteForPath = routerInstance.getRouteForPath.bind(routerInstance);
+  const initializeRouteFromUrl =
       routerInstance.initializeRouteFromUrl.bind(routerInstance);
-  var resetRouteForTesting =
+  const resetRouteForTesting =
       routerInstance.resetRouteForTesting.bind(routerInstance);
-  var getQueryParameters =
+  const getQueryParameters =
       routerInstance.getQueryParameters.bind(routerInstance);
-  var lastRouteChangeWasPopstate =
+  const lastRouteChangeWasPopstate =
       routerInstance.lastRouteChangeWasPopstate.bind(routerInstance);
-  var navigateTo = routerInstance.navigateTo.bind(routerInstance);
-  var navigateToPreviousRoute =
+  const navigateTo = routerInstance.navigateTo.bind(routerInstance);
+  const navigateToPreviousRoute =
       routerInstance.navigateToPreviousRoute.bind(routerInstance);
 
   return {

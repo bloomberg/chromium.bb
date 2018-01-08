@@ -60,7 +60,7 @@ Polymer({
    * @private
    */
   checkIfCardExpired_: function(expirationMonth_, expirationYear_) {
-    var now = new Date();
+    const now = new Date();
     return (
         expirationYear_ < now.getFullYear() ||
         (expirationYear_ == now.getFullYear() &&
@@ -79,10 +79,10 @@ Polymer({
     if (this.creditCard.expirationMonth.length == 1)
       this.creditCard.expirationMonth = '0' + this.creditCard.expirationMonth;
 
-    var date = new Date();
-    var firstYear = date.getFullYear();
-    var lastYear = firstYear + 9;  // Show next 9 years (10 total).
-    var selectedYear = parseInt(this.creditCard.expirationYear, 10);
+    const date = new Date();
+    let firstYear = date.getFullYear();
+    let lastYear = firstYear + 9;  // Show next 9 years (10 total).
+    let selectedYear = parseInt(this.creditCard.expirationYear, 10);
 
     // |selectedYear| must be valid and between first and last years.
     if (!selectedYear)
@@ -92,8 +92,8 @@ Polymer({
     else if (selectedYear > lastYear)
       lastYear = selectedYear;
 
-    var yearList = [];
-    for (var i = firstYear; i <= lastYear; ++i) {
+    const yearList = [];
+    for (let i = firstYear; i <= lastYear; ++i) {
       yearList.push(i.toString());
     }
     this.yearList_ = yearList;

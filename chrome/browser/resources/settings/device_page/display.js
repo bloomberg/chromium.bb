@@ -12,14 +12,15 @@
  * are synced with the pref "prefs.ash.night_light.schedule_type".
  * @enum {number}
  */
-var NightLightScheduleType = {
+const NightLightScheduleType = {
   NEVER: 0,
   SUNSET_TO_SUNRISE: 1,
   CUSTOM: 2,
 };
 
 cr.define('settings.display', function() {
-  var systemDisplayApi = /** @type {!SystemDisplay} */ (chrome.system.display);
+  const systemDisplayApi =
+      /** @type {!SystemDisplay} */ (chrome.system.display);
 
   return {
     systemDisplayApi: systemDisplayApi,
@@ -204,7 +205,7 @@ Polymer({
 
   /** @private */
   getDisplayInfo_: function() {
-    /** @type {chrome.system.display.GetInfoFlags} */ var flags = {
+    /** @type {chrome.system.display.GetInfoFlags} */ const flags = {
       singleUnified: true
     };
     settings.display.systemDisplayApi.getInfo(
@@ -243,7 +244,7 @@ Polymer({
    * @private
    */
   getSelectedModeIndex_: function(selectedDisplay) {
-    for (var i = 0; i < selectedDisplay.modes.length; ++i) {
+    for (let i = 0; i < selectedDisplay.modes.length; ++i) {
       if (selectedDisplay.modes[i].isSelected)
         return i;
     }
@@ -259,7 +260,7 @@ Polymer({
   setSelectedDisplay_: function(selectedDisplay) {
     // Set |currentSelectedModeIndex_| and |modeValues_| first since these
     // are not used directly in data binding.
-    var numModes = selectedDisplay.modes.length;
+    const numModes = selectedDisplay.modes.length;
     if (numModes == 0) {
       this.modeValues_ = [];
       this.currentSelectedModeIndex_ = 0;
@@ -420,13 +421,13 @@ Polymer({
           'displayResolutionText', this.selectedDisplay.bounds.width.toString(),
           this.selectedDisplay.bounds.height.toString());
     }
-    var mode = this.selectedDisplay.modes[
+    const mode = this.selectedDisplay.modes[
         /** @type {number} */ (this.selectedModePref_.value)];
     assert(mode);
-    var best =
+    const best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
-    var widthStr = mode.width.toString();
-    var heightStr = mode.height.toString();
+    const widthStr = mode.width.toString();
+    const heightStr = mode.height.toString();
     if (best)
       return this.i18n('displayResolutionTextBest', widthStr, heightStr);
     else if (mode.isNative)
@@ -439,9 +440,9 @@ Polymer({
    * @private
    */
   onSelectDisplay_: function(e) {
-    var id = e.detail;
-    for (var i = 0; i < this.displays.length; ++i) {
-      var display = this.displays[i];
+    const id = e.detail;
+    for (let i = 0; i < this.displays.length; ++i) {
+      const display = this.displays[i];
       if (id == display.id) {
         if (this.selectedDisplay != display)
           this.setSelectedDisplay_(display);
@@ -475,7 +476,7 @@ Polymer({
    * @private
    */
   updatePrimaryDisplay_: function(e) {
-    /** @const {number} */ var PRIMARY_DISP_IDX = 0;
+    /** @type {number} */ const PRIMARY_DISP_IDX = 0;
     if (!this.selectedDisplay)
       return;
     if (this.selectedDisplay.id == this.primaryDisplayId)
@@ -483,7 +484,7 @@ Polymer({
     if (e.target.value != PRIMARY_DISP_IDX)
       return;
 
-    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+    /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       isPrimary: true
     };
     settings.display.systemDisplayApi.setDisplayProperties(
@@ -504,7 +505,7 @@ Polymer({
       // from Chrome and the mode differs from the current mode.
       return;
     }
-    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+    /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       displayMode: this.selectedDisplay.modes[
           /** @type {number} */ (this.selectedModePref_.value)]
     };
@@ -518,8 +519,8 @@ Polymer({
    * @private
    */
   onOrientationChange_: function(event) {
-    var target = /** @type {!HTMLSelectElement} */ (event.target);
-    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+    const target = /** @type {!HTMLSelectElement} */ (event.target);
+    /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       rotation: parseInt(target.value, 10)
     };
     settings.display.systemDisplayApi.setDisplayProperties(
@@ -532,15 +533,16 @@ Polymer({
     // Blur the control so that when the transition animation completes and the
     // UI is focused, the control does not receive focus. crbug.com/785070
     event.target.blur();
-    var id = '';
-    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {};
+    let id = '';
+    /** @type {!chrome.system.display.DisplayProperties} */
+    const properties = {};
     if (this.isMirrored_(this.displays)) {
       id = this.primaryDisplayId;
       properties.mirroringSourceId = '';
     } else {
       // Set the mirroringSourceId of the secondary (first non-primary) display.
-      for (var i = 0; i < this.displays.length; ++i) {
-        var display = this.displays[i];
+      for (let i = 0; i < this.displays.length; ++i) {
+        const display = this.displays[i];
         if (display.id != this.primaryDisplayId) {
           id = display.id;
           break;
@@ -554,7 +556,7 @@ Polymer({
 
   /** @private */
   onUnifiedDesktopTap_: function() {
-    /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
+    /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       isUnified: !this.unifiedDesktopMode_,
     };
     settings.display.systemDisplayApi.setDisplayProperties(
@@ -579,11 +581,11 @@ Polymer({
 
   /** @private */
   updateDisplayInfo_: function() {
-    var displayIds = '';
-    var primaryDisplay = undefined;
-    var selectedDisplay = undefined;
-    for (var i = 0; i < this.displays.length; ++i) {
-      var display = this.displays[i];
+    let displayIds = '';
+    let primaryDisplay = undefined;
+    let selectedDisplay = undefined;
+    for (let i = 0; i < this.displays.length; ++i) {
+      const display = this.displays[i];
       if (displayIds)
         displayIds += ',';
       displayIds += display.id;
@@ -619,12 +621,12 @@ Polymer({
    * @private
    */
   updateNightLightScheduleSettings_: function() {
-    var scheduleType = this.getPref('ash.night_light.schedule_type').value;
+    const scheduleType = this.getPref('ash.night_light.schedule_type').value;
     this.shouldOpenCustomScheduleCollapse_ =
         scheduleType == NightLightScheduleType.CUSTOM;
 
     if (scheduleType == NightLightScheduleType.SUNSET_TO_SUNRISE) {
-      var nightLightStatus = this.getPref('ash.night_light.enabled').value;
+      const nightLightStatus = this.getPref('ash.night_light.enabled').value;
       this.nightLightScheduleSubLabel_ = nightLightStatus ?
           this.i18n('displayNightLightOffAtSunrise') :
           this.i18n('displayNightLightOnAtSunset');

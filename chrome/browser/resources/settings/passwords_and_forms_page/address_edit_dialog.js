@@ -90,7 +90,7 @@ Polymer({
    */
   updateAddressWrapper_: function() {
     // Default to the last country used if no country code is provided.
-    var countryCode = this.countryCode_ || this.countries_[0].countryCode;
+    const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo.getAddressFormat(countryCode).then(format => {
       this.addressWrapper_ = format.components.map(
           component => component.row.map(
@@ -103,16 +103,16 @@ Polymer({
 
       this.fire('on-update-address-wrapper');  // For easier testing.
 
-      var dialog = /** @type {HTMLDialogElement} */ (this.$.dialog);
+      const dialog = /** @type {HTMLDialogElement} */ (this.$.dialog);
       if (!dialog.open)
         dialog.showModal();
     });
   },
 
   updateCanSave_: function() {
-    var inputs = this.$.dialog.querySelectorAll('.address-column, select');
+    const inputs = this.$.dialog.querySelectorAll('.address-column, select');
 
-    for (var i = 0; i < inputs.length; ++i) {
+    for (let i = 0; i < inputs.length; ++i) {
       if (inputs[i].value) {
         this.canSave_ = true;
         this.fire('on-update-can-save');  // For easier testing.
@@ -189,7 +189,7 @@ Polymer({
 
   /** @private */
   onCountryChange_: function() {
-    var countrySelect = /** @type {!HTMLSelectElement} */ (this.$$('select'));
+    const countrySelect = /** @type {!HTMLSelectElement} */ (this.$$('select'));
     this.countryCode_ = countrySelect.value;
   },
 });
@@ -225,7 +225,7 @@ cr.define('settings.address', function() {
      * @private
      */
     getValue_() {
-      var address = this.address_;
+      const address = this.address_;
       switch (this.component.field) {
         case chrome.autofillPrivate.AddressField.FULL_NAME:
           // |fullNames| is a single item array. See crbug.com/497934 for
@@ -258,7 +258,7 @@ cr.define('settings.address', function() {
      * @private
      */
     setValue_(value) {
-      var address = this.address_;
+      const address = this.address_;
       switch (this.component.field) {
         case chrome.autofillPrivate.AddressField.FULL_NAME:
           address.fullNames = [value];

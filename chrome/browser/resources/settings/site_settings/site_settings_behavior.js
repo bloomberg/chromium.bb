@@ -13,7 +13,7 @@
  * TODO(dschuyler): Can they be unified (and this dictionary removed)?
  * @type {!Object}
  */
-var kControlledByLookup = {
+const kControlledByLookup = {
   'extension': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'HostedApp': chrome.settingsPrivate.ControlledBy.EXTENSION,
   'platform_app': chrome.settingsPrivate.ControlledBy.EXTENSION,
@@ -22,7 +22,7 @@ var kControlledByLookup = {
 
 
 /** @polymerBehavior */
-var SiteSettingsBehaviorImpl = {
+const SiteSettingsBehaviorImpl = {
   properties: {
     /**
      * The string ID of the category this element is displaying data for.
@@ -67,7 +67,7 @@ var SiteSettingsBehaviorImpl = {
    * @return {string} The URL without redundant ports, if any.
    */
   sanitizePort: function(url) {
-    var urlWithScheme = this.ensureUrlHasScheme(url);
+    const urlWithScheme = this.ensureUrlHasScheme(url);
     if (urlWithScheme.startsWith('https://') &&
         urlWithScheme.endsWith(':443')) {
       return url.slice(0, -4);
@@ -101,7 +101,7 @@ var SiteSettingsBehaviorImpl = {
    * @private
    */
   computeSiteIcon: function(site) {
-    var url = this.ensureUrlHasScheme(site);
+    const url = this.ensureUrlHasScheme(site);
     return 'background-image: ' + cr.icon.getFavicon(url);
   },
 
@@ -142,18 +142,18 @@ var SiteSettingsBehaviorImpl = {
    * @private
    */
   expandSiteException: function(exception) {
-    var origin = exception.origin;
-    var embeddingOrigin = exception.embeddingOrigin;
+    const origin = exception.origin;
+    const embeddingOrigin = exception.embeddingOrigin;
 
     // TODO(patricialor): |exception.source| should be one of the values defined
     // in |settings.SiteSettingSource|.
-    var enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
+    let enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
     if (exception.source == 'extension' || exception.source == 'HostedApp' ||
         exception.source == 'platform_app' || exception.source == 'policy') {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
     }
 
-    var controlledBy = /** @type {!chrome.settingsPrivate.ControlledBy} */ (
+    const controlledBy = /** @type {!chrome.settingsPrivate.ControlledBy} */ (
         kControlledByLookup[exception.source] ||
         chrome.settingsPrivate.ControlledBy.PRIMARY_USER);
 
@@ -172,4 +172,4 @@ var SiteSettingsBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-var SiteSettingsBehavior = [SiteSettingsBehaviorImpl];
+const SiteSettingsBehavior = [SiteSettingsBehaviorImpl];

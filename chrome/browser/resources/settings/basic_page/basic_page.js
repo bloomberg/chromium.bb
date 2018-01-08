@@ -174,7 +174,7 @@ Polymer({
    *     searching finished.
    */
   searchContents: function(query) {
-    var whenSearchDone = [
+    const whenSearchDone = [
       settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
     ];
 
@@ -230,7 +230,7 @@ Polymer({
    * @private
    */
   shouldShowAndroidApps_: function() {
-    var visibility = /** @type {boolean|undefined} */ (
+    const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.androidApps'));
     if (!this.showAndroidApps || !this.showPage_(visibility)) {
       return false;
@@ -251,7 +251,7 @@ Polymer({
    * @private
    */
   shouldShowMultidevice_: function() {
-    var visibility = /** @type {boolean|undefined} */ (
+    const visibility = /** @type {boolean|undefined} */ (
         this.get('pageVisibility.multidevice'));
     return this.showMultidevice && this.showPage_(visibility);
   },

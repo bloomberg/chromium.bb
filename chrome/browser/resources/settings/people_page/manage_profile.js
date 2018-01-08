@@ -67,7 +67,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    var setIcons = icons => {
+    const setIcons = icons => {
       this.availableIcons = icons;
     };
 

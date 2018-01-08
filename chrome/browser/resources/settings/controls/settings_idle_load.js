@@ -53,7 +53,7 @@ Polymer({
         this.templatize(this);
         assert(this.ctor);
 
-        var instance = this.stamp({});
+        const instance = this.stamp({});
 
         assert(!this.child_);
         this.child_ = instance.root.firstElementChild;

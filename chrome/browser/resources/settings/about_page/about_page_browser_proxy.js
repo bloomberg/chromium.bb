@@ -14,7 +14,7 @@
  *   url: string,
  * }}
  */
-var RegulatoryInfo;
+let RegulatoryInfo;
 
 /**
  * @typedef {{
@@ -23,7 +23,7 @@ var RegulatoryInfo;
  *   canChangeChannel: boolean,
  * }}
  */
-var ChannelInfo;
+let ChannelInfo;
 
 /**
  * @typedef {{
@@ -32,7 +32,7 @@ var ChannelInfo;
  *   osVersion: string,
  * }}
  */
-var VersionInfo;
+let VersionInfo;
 
 /**
  * @typedef {{
@@ -40,13 +40,13 @@ var VersionInfo;
  *   size: (string|undefined),
  * }}
  */
-var AboutPageUpdateInfo;
+let AboutPageUpdateInfo;
 
 /**
  * Enumeration of all possible browser channels.
  * @enum {string}
  */
-var BrowserChannel = {
+const BrowserChannel = {
   BETA: 'beta-channel',
   CANARY: 'canary-channel',
   DEV: 'dev-channel',
@@ -58,7 +58,7 @@ var BrowserChannel = {
  *   updateAvailable: boolean,
  * }}
  */
-var TPMFirmwareUpdateStatusChangedEvent;
+let TPMFirmwareUpdateStatusChangedEvent;
 // </if>
 
 /**
@@ -66,7 +66,7 @@ var TPMFirmwareUpdateStatusChangedEvent;
  * the ones defined at |AboutHandler::UpdateStatusToString|.
  * @enum {string}
  */
-var UpdateStatus = {
+const UpdateStatus = {
   CHECKING: 'checking',
   UPDATING: 'updating',
   NEARLY_UPDATED: 'nearly_updated',
@@ -86,7 +86,7 @@ var UpdateStatus = {
  *   text: (string|undefined)
  * }}
  */
-var PromoteUpdaterStatus;
+let PromoteUpdaterStatus;
 // </if>
 
 /**
@@ -99,7 +99,7 @@ var PromoteUpdaterStatus;
  *   size: (string|undefined),
  * }}
  */
-var UpdateStatusChangedEvent;
+let UpdateStatusChangedEvent;
 
 cr.define('settings', function() {
   /**
@@ -129,14 +129,14 @@ cr.define('settings', function() {
    */
   function isTargetChannelMoreStable(currentChannel, targetChannel) {
     // List of channels in increasing stability order.
-    var channelList = [
+    const channelList = [
       BrowserChannel.CANARY,
       BrowserChannel.DEV,
       BrowserChannel.BETA,
       BrowserChannel.STABLE,
     ];
-    var currentIndex = channelList.indexOf(currentChannel);
-    var targetIndex = channelList.indexOf(targetChannel);
+    const currentIndex = channelList.indexOf(currentChannel);
+    const targetIndex = channelList.indexOf(targetChannel);
     return currentIndex < targetIndex;
   }
 

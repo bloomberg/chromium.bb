@@ -43,7 +43,7 @@ Polymer({
    * @private
    */
   removeZoomLevel_: function(event) {
-    var site = this.sites_[event.model.index];
+    const site = this.sites_[event.model.index];
     this.browserProxy.removeZoomLevel(site.origin);
   },
 });

@@ -66,7 +66,7 @@ Polymer({
   /** @override */
   ready: function() {
     // Omnibox search engine
-    var updateSearchEngines = searchEngines => {
+    const updateSearchEngines = searchEngines => {
       this.set('searchEngines_', searchEngines.defaults);
     };
     this.browserProxy_.getSearchEnginesList().then(updateSearchEngines);
@@ -89,8 +89,8 @@ Polymer({
 
   /** @private */
   onChange_: function() {
-    var select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
-    var searchEngine = this.searchEngines_[select.selectedIndex];
+    const select = /** @type {!HTMLSelectElement} */ (this.$$('select'));
+    const searchEngine = this.searchEngines_[select.selectedIndex];
     this.browserProxy_.setDefaultSearchEngine(searchEngine.modelIndex);
   },
 

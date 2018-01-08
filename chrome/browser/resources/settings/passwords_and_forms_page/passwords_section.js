@@ -158,7 +158,7 @@ class PasswordManagerImpl {
 
   /** @override */
   getPlaintextPassword(index, callback) {
-    var listener = function(reply) {
+    const listener = function(reply) {
       // Only handle the reply for our loginPair request.
       if (reply.index == index) {
         chrome.passwordsPrivate.onPlaintextPasswordRetrieved.removeListener(
@@ -184,10 +184,10 @@ class PasswordManagerImpl {
 cr.addSingletonGetter(PasswordManagerImpl);
 
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.PasswordUiEntry}}} */
-var PasswordUiEntryEvent;
+let PasswordUiEntryEvent;
 
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} */
-var ExceptionEntryEntryEvent;
+let ExceptionEntryEntryEvent;
 
 (function() {
 'use strict';
@@ -322,7 +322,7 @@ Polymer({
   /** @override */
   attached: function() {
     // Create listener functions.
-    var setSavedPasswordsListener = list => {
+    const setSavedPasswordsListener = list => {
       this.savedPasswords = list.map(entry => {
         return {
           entry: entry,
@@ -331,7 +331,7 @@ Polymer({
       });
     };
 
-    var setPasswordExceptionsListener = list => {
+    const setPasswordExceptionsListener = list => {
       this.passwordExceptions = list;
     };
 
@@ -457,8 +457,8 @@ Polymer({
    * @private
    */
   onPasswordMenuTap_: function(event) {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.menu);
-    var target = /** @type {!HTMLElement} */ (event.detail.target);
+    const menu = /** @type {!CrActionMenuElement} */ (this.$.menu);
+    const target = /** @type {!HTMLElement} */ (event.detail.target);
 
     this.activePassword =
         /** @type {!PasswordListItemElement} */ (event.detail.listItem);
@@ -471,8 +471,8 @@ Polymer({
    * @private
    */
   onImportExportMenuTap_: function() {
-    var menu = /** @type {!CrActionMenuElement} */ (this.$.exportImportMenu);
-    var target =
+    const menu = /** @type {!CrActionMenuElement} */ (this.$.exportImportMenu);
+    const target =
         /** @type {!HTMLElement} */ (this.$$('#exportImportMenuButton'));
 
     menu.showAt(target);

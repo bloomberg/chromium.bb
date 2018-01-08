@@ -28,7 +28,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    var browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+    const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.pageReady();
 
     browserProxy.getVersionInfo().then(versionInfo => {
@@ -40,7 +40,7 @@ Polymer({
 
   /** @private */
   updateChannelInfo_: function() {
-    var browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
+    const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.getChannelInfo().then(info => {
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(

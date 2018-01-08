@@ -10,13 +10,13 @@
  * Name of the pin unlock setup uma histogram.
  * @type {string}
  */
-var PinUnlockUmaHistogramName = 'Settings.PinUnlockSetup';
+const PinUnlockUmaHistogramName = 'Settings.PinUnlockSetup';
 
 /**
  * Stages the user can enter while setting up pin unlock.
  * @enum {number}
  */
-var LockScreenProgress = {
+const LockScreenProgress = {
   START_SCREEN_LOCK: 0,
   ENTER_PASSWORD_CORRECTLY: 1,
   CHOOSE_PIN_OR_PASSWORD: 2,
@@ -31,7 +31,7 @@ cr.define('settings', function() {
    * histogram.
    * @param {LockScreenProgress} currentProgress
    */
-  var recordLockScreenProgress = function(currentProgress) {
+  const recordLockScreenProgress = function(currentProgress) {
     if (currentProgress >= LockScreenProgress.MAX_BUCKET) {
       console.error(
           'Expected a enumeration value of ' + LockScreenProgress.MAX_BUCKET +

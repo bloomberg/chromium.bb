@@ -9,8 +9,8 @@
 /**
  * Global state for prefs status.
  */
-var CrSettingsPrefs = (function() {
-  var CrSettingsPrefsInternal = {
+const CrSettingsPrefs = (function() {
+  const CrSettingsPrefsInternal = {
     /**
      * Resolves the CrSettingsPrefs.initialized promise.
      */

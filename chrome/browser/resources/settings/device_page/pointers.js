@@ -22,7 +22,7 @@ Polymer({
     /**
      * TODO(michaelpg): settings-slider should optionally take a min and max so
      * we don't have to generate a simple range of natural numbers ourselves.
-     * @const {!Array<number>}
+     * @type {!Array<number>}
      * @private
      */
     sensitivityValues_: {

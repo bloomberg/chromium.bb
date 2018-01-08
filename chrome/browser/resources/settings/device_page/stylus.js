@@ -7,7 +7,7 @@
  * 'settings-stylus' is the settings subpage with stylus-specific settings.
  */
 
-/** @const */ var FIND_MORE_APPS_URL = 'https://play.google.com/store/apps/' +
+const FIND_MORE_APPS_URL = 'https://play.google.com/store/apps/' +
     'collection/promotion_30023cb_stylus_apps';
 
 Polymer({
@@ -24,7 +24,7 @@ Polymer({
      * Policy indicator type for user policy - used for policy indicator UI
      * shown when an app that is not allowed to run on lock screen by policy is
      * selected.
-     * @const {CrPolicyIndicatorType}
+     * @type {CrPolicyIndicatorType}
      * @private
      */
     userPolicyIndicator_: {
@@ -156,7 +156,7 @@ Polymer({
 
   /** @private */
   onSelectedAppChanged_: function() {
-    var app = this.findApp_(this.$.menu.value);
+    const app = this.findApp_(this.$.menu.value);
     this.selectedApp_ = app;
 
     if (app && !app.preferred)

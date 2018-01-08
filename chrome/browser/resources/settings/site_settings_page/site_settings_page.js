@@ -87,7 +87,7 @@ Polymer({
     // Populate the |focusConfig| map of the parent <settings-animated-pages>
     // element, with additional entries that correspond to subpage trigger
     // elements residing in this element's Shadow DOM.
-    var R = settings.routes;
+    const R = settings.routes;
     [[R.SITE_SETTINGS_COOKIES, 'cookies'],
      [R.SITE_SETTINGS_LOCATION, 'location'], [R.SITE_SETTINGS_CAMERA, 'camera'],
      [R.SITE_SETTINGS_MICROPHONE, 'microphone'],
@@ -104,10 +104,10 @@ Polymer({
      [R.SITE_SETTINGS_USB_DEVICES, 'usb-devices'],
      [R.SITE_SETTINGS_PDF_DOCUMENTS, 'pdf-documents'],
      [R.SITE_SETTINGS_PROTECTED_CONTENT, 'protected-content'],
-     [R.SITE_SETTINGS_CLIPBOARD, "clipboard"],
+     [R.SITE_SETTINGS_CLIPBOARD, 'clipboard'],
     ].forEach(pair => {
-      var route = pair[0];
-      var id = pair[1];
+      const route = pair[0];
+      const id = pair[1];
       this.focusConfig.set(route.path, '* /deep/ #' + id + ' .subpage-arrow');
     });
   },
@@ -117,9 +117,9 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
     this.ALL_SITES = settings.ALL_SITES;
 
-    var keys = Object.keys(settings.ContentSettingsTypes);
-    for (var i = 0; i < keys.length; ++i) {
-      var key = settings.ContentSettingsTypes[keys[i]];
+    const keys = Object.keys(settings.ContentSettingsTypes);
+    for (let i = 0; i < keys.length; ++i) {
+      const key = settings.ContentSettingsTypes[keys[i]];
       // Default labels are not applicable to USB and ZOOM.
       if (key == settings.ContentSettingsTypes.USB_DEVICES ||
           key == settings.ContentSettingsTypes.ZOOM_LEVELS)
@@ -181,7 +181,7 @@ Polymer({
    * @private
    */
   updateHandlersEnabled_: function(enabled) {
-    var category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
+    const category = settings.ContentSettingsTypes.PROTOCOL_HANDLERS;
     this.set(
         'default_.' + Polymer.CaseMap.dashToCamelCase(category),
         enabled ? settings.ContentSetting.ALLOW :
@@ -194,7 +194,8 @@ Polymer({
    * @private
    */
   onTapNavigate_: function(event) {
-    var dataSet = /** @type {{route: string}} */ (event.currentTarget.dataset);
+    const dataSet =
+        /** @type {{route: string}} */ (event.currentTarget.dataset);
     settings.navigateTo(settings.routes[dataSet.route]);
   },
 });

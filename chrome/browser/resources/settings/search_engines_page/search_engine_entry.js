@@ -99,7 +99,7 @@ Polymer({
 
     this.showEditSearchEngineDialog_ = true;
     this.async(() => {
-      var dialog = this.$$('settings-search-engine-dialog');
+      const dialog = this.$$('settings-search-engine-dialog');
       // Register listener to detect when the dialog is closed. Flip the boolean
       // once closed to force a restamp next time it is shown such that the
       // previous dialog's contents are cleared.

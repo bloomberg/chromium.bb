@@ -9,7 +9,7 @@
  */
 
 /** @polymerBehavior SettingsBooleanControlBehavior */
-var SettingsBooleanControlBehaviorImpl = {
+const SettingsBooleanControlBehaviorImpl = {
   properties: {
     /** Whether the control should represent the inverted value. */
     inverted: {
@@ -130,7 +130,7 @@ var SettingsBooleanControlBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-var SettingsBooleanControlBehavior = [
+const SettingsBooleanControlBehavior = [
   CrPolicyPrefBehavior,
   PrefControlBehavior,
   SettingsBooleanControlBehaviorImpl,

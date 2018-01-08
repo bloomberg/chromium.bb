@@ -15,7 +15,7 @@
  *   isUnknownError: boolean,
  * }};
  */
-var DefaultBrowserInfo;
+let DefaultBrowserInfo;
 
 cr.define('settings', function() {
   /** @interface */

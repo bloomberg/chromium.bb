@@ -77,7 +77,7 @@ Polymer({
    * @private
    */
   handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
-    var dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
+    const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
     if (!easyUnlockEnabled && dialog.open)
       this.onCancelTap_();
   },

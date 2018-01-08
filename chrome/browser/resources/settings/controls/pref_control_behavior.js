@@ -6,7 +6,7 @@
  * @polymerBehavior Tracks the initialization of a specified preference and
  * logs an error if the pref is not defined after prefs have been fetched.
  */
-var PrefControlBehavior = {
+const PrefControlBehavior = {
   properties: {
     /**
      * The Preference object being tracked.
@@ -31,7 +31,7 @@ var PrefControlBehavior = {
   validatePref_: function() {
     CrSettingsPrefs.initialized.then(() => {
       if (!this.pref) {
-        var error = 'Pref not found for element ' + this.tagName;
+        let error = 'Pref not found for element ' + this.tagName;
         if (this.id)
           error += '#' + this.id;
         error += ' in ' + this.domHost.tagName;

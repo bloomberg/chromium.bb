@@ -79,7 +79,7 @@ Polymer({
 
     // If auto-detect is enabled, we only need the current time zone.
     if (this.timeZoneAutoDetect) {
-      var isPerUserTimezone =
+      const isPerUserTimezone =
           this.getPref('cros.flags.per_user_timezone_enabled').value;
       if (this.timeZoneList_[0].value ==
           (isPerUserTimezone ? this.getPref('settings.timezone').value :
@@ -129,7 +129,7 @@ Polymer({
    * @private
    */
   updateActiveTimeZoneName_: function(activeTimeZoneId) {
-    var activeTimeZone = this.timeZoneList_.find(
+    const activeTimeZone = this.timeZoneList_.find(
         (timeZone) => timeZone.value == activeTimeZoneId);
     if (activeTimeZone)
       this.activeTimeZoneDisplayName = activeTimeZone.name;
