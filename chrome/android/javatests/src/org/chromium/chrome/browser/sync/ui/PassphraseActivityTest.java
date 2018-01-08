@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -22,7 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -57,9 +56,10 @@ public class PassphraseActivityTest {
      * This is a regression test for http://crbug.com/469890.
      */
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    // @SmallTest
+    // @Feature({"Sync"})
     @RetryOnFailure
+    @DisabledTest
     public void testCallbackAfterBackgrounded() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         SigninTestUtil.addAndSignInTestAccount();
