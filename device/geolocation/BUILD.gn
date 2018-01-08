@@ -53,7 +53,6 @@ component("geolocation") {
     "wifi_data_provider_manager.h",
     "wifi_data_provider_win.cc",
     "wifi_data_provider_win.h",
-    "wifi_polling_policy.cc",
     "wifi_polling_policy.h",
   ]
 
