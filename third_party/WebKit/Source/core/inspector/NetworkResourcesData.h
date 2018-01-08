@@ -253,8 +253,6 @@ class NetworkResourcesData final
 
   Deque<String> request_ids_deque_;
 
-  typedef HashMap<String, String> ReusedRequestIds;
-  ReusedRequestIds reused_xhr_replay_data_request_ids_;
   typedef HeapHashMap<String, Member<ResourceData>> ResourceDataMap;
   ResourceDataMap request_id_to_resource_data_map_;
   size_t content_size_;
