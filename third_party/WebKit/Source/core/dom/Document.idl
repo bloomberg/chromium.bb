@@ -40,9 +40,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     ConstructorCallWith=Document
 ] interface Document : Node {
     [SameObject] readonly attribute DOMImplementation implementation;
-    [ImplementedAs=urlForBinding] readonly attribute DOMString URL;
+    [ImplementedAs=urlForBinding] readonly attribute USVString URL;
     // FIXME: documentURI should not be nullable.
-    [ImplementedAs=urlForBinding] readonly attribute DOMString? documentURI;
+    [ImplementedAs=urlForBinding] readonly attribute USVString? documentURI;
     [MeasureAs=DocumentOrigin] readonly attribute DOMString origin;
     [RuntimeEnabled=Suborigins] readonly attribute DOMString suborigin;
     readonly attribute DOMString compatMode;
