@@ -265,20 +265,34 @@ class LitePage(IntegrationTest):
 
       # This page is long and has many media resources.
       test_driver.LoadURL('http://check.googlezip.net/metrics/index.html')
+      time.sleep(2)
 
-      # Verify that a Lite Page response for the main frame was seen.
       lite_page_responses = 0
+      btf_response = 0
+      image_responses = 0
       for response in test_driver.GetHTTPResponses():
-        # Check main frame for Lite Page response.
+        # Verify that a Lite Page response for the main frame was seen.
         if response.url.endswith('html'):
           if (self.checkLitePageResponse(response)):
              lite_page_responses = lite_page_responses + 1
+        # Keep track of BTF responses.
+        if response.url.startswith("http://googleweblight.com/b"):
+          btf_response = btf_response + 1
+        # Keep track of image responses.
+        if response.url.startswith("data:image"):
+          image_responses = image_responses + 1
+        # Some video requests don't go through Flywheel.
         if 'content-type' in response.response_headers and ('video/mp4'
             in response.response_headers['content-type']):
           continue
         # Make sure non-video requests are proxied.
         self.assertHasChromeProxyViaHeader(response)
+        # Make sure there are no 4XX or 5xx status codes.
+        self.assertLess(response.status, 400)
+
       self.assertEqual(1, lite_page_responses)
+      self.assertEqual(1, btf_response)
+      self.assertGreater(1, image_responses)
 
   # Lo-Fi fallback is not supported without the
   # DataReductionProxyDecidesTransform feature. Check that no Lo-Fi response
