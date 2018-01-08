@@ -121,7 +121,7 @@ class TestConfigurator : public Configurator {
   GURL update_check_url_;
   GURL ping_url_;
 
-  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
 

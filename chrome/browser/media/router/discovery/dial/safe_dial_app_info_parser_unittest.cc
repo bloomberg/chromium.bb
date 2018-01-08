@@ -97,9 +97,9 @@ class SafeDialAppInfoParserTest : public testing::Test {
  public:
   SafeDialAppInfoParserTest()
       : connector_factory_(
-            std::make_unique<data_decoder::DataDecoderService>()) {
-    connector_ = connector_factory_.CreateConnector();
-  }
+            service_manager::TestConnectorFactory::CreateForUniqueService(
+                std::make_unique<data_decoder::DataDecoderService>())),
+        connector_(connector_factory_->CreateConnector()) {}
 
   std::unique_ptr<ParsedDialAppInfo> Parse(
       const std::string& xml,
@@ -122,8 +122,8 @@ class SafeDialAppInfoParserTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
-  service_manager::TestConnectorFactory connector_factory_;
   std::unique_ptr<ParsedDialAppInfo> app_info_;
   DISALLOW_COPY_AND_ASSIGN(SafeDialAppInfoParserTest);
 };
