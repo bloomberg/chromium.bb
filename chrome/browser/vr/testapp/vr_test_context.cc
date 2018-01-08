@@ -10,12 +10,16 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/version.h"
+#include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/toolbar_state.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/test/constants.h"
+#include "chrome/browser/vr/testapp/assets_component_version.h"
 #include "chrome/browser/vr/testapp/test_keyboard_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui.h"
@@ -23,6 +27,7 @@
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/grit/vr_testapp_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
@@ -63,7 +68,7 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   base::FilePath pak_path;
   PathService::Get(base::DIR_MODULE, &pak_path);
   ui::ResourceBundle::InitSharedInstanceWithPakPath(
-      pak_path.AppendASCII("vr_test.pak"));
+      pak_path.AppendASCII("vr_testapp.pak"));
 
   base::i18n::InitializeICU();
 
@@ -502,8 +507,27 @@ void VrTestContext::CycleOrigin() {
 }
 
 void VrTestContext::LoadAssets() {
-  // TODO(793380): Load asset files once they are available for development.
-  model_->can_apply_new_background = false;
+  base::Version assets_component_version(VR_ASSETS_COMPONENT_VERSION);
+#if defined(GOOGLE_CHROME_BUILD)
+  base::StringPiece data =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_VR_BACKGROUND_IMAGE);
+  auto assets = base::MakeUnique<Assets>();
+  assets->background = base::MakeUnique<SkBitmap>();
+  if (!gfx::PNGCodec::Decode(
+          reinterpret_cast<const unsigned char*>(data.data()), data.size(),
+          assets->background.get())) {
+    ui_->OnAssetsLoaded(AssetsLoadStatus::kInvalidContent, nullptr,
+                        assets_component_version);
+    return;
+  }
+  ui_->OnAssetsLoaded(AssetsLoadStatus::kSuccess, std::move(assets),
+                      assets_component_version);
+#else   // defined(GOOGLE_CHROME_BUILD)
+  LOG(ERROR) << "Cannot load assets. Make testapp Chrome branded.";
+  ui_->OnAssetsLoaded(AssetsLoadStatus::kNotFound, nullptr,
+                      assets_component_version);
+#endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
 }  // namespace vr

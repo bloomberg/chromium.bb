@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
+import("//build/util/process_version.gni")
+
 executable("vr_testapp") {
   testonly = true
 
@@ -18,6 +22,8 @@ executable("vr_testapp") {
   ]
 
   deps = [
+    ":assets_component_version_header",
+    ":vr_testapp_pak",
     "//build/config:exe_and_shlib_deps",
     "//chrome/browser/vr:vr_gl_test_support",
     "//chrome/browser/vr:vr_test_support",
@@ -29,5 +35,37 @@ executable("vr_testapp") {
     "//ui/events/ozone:events_ozone_layout",
     "//ui/ozone",
     "//ui/platform_window",
+  ]
+}
+
+process_version("assets_component_version_header") {
+  sources = [
+    "../../resources/vr/assets/VERSION",
+  ]
+  template_file = "assets_component_version.h.in"
+  output = "$target_gen_dir/assets_component_version.h"
+}
+
+grit("vr_testapp_resources") {
+  source = "vr_testapp_resources.grd"
+  defines = [ "background_image_available=$is_chrome_branded" ]
+  outputs = [
+    "grit/vr_testapp_resources.h",
+    "vr_testapp_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+}
+
+repack("vr_testapp_pak") {
+  sources = [
+    "$root_gen_dir/chrome/vr_testapp_resources.pak",
+    "$root_out_dir/vr_test.pak",
+  ]
+
+  output = "$root_out_dir/vr_testapp.pak"
+
+  deps = [
+    ":vr_testapp_resources",
+    "//chrome/browser/vr:vr_test_pak",
   ]
 }
