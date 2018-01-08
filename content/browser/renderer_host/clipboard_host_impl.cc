@@ -177,7 +177,7 @@ void ClipboardHostImpl::ReadAndEncodeImage(const SkBitmap& bitmap,
     std::vector<uint8_t> png_data;
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(bitmap, false, &png_data)) {
       BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
+          BrowserThread::IO, FROM_HERE,
           base::BindOnce(&ClipboardHostImpl::OnReadAndEncodeImageFinished,
                          base::Unretained(this), std::move(png_data),
                          std::move(callback)));
@@ -196,28 +196,38 @@ void ClipboardHostImpl::ReadAndEncodeImage(const SkBitmap& bitmap,
 void ClipboardHostImpl::OnReadAndEncodeImageFinished(
     std::vector<uint8_t> png_data,
     ReadImageCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // |blob_storage_context_| must be accessed only on the IO thread.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  std::string blob_uuid;
+  std::string mime_type;
+  int64_t size = -1;
   if (png_data.size() < std::numeric_limits<uint32_t>::max()) {
     std::unique_ptr<content::BlobHandle> blob_handle =
         blob_storage_context_->CreateMemoryBackedBlob(
             reinterpret_cast<char*>(png_data.data()), png_data.size(), "");
     if (blob_handle) {
-      std::move(callback).Run(blob_handle->GetUUID(),
-                              ui::Clipboard::kMimeTypePNG,
-                              static_cast<int64_t>(png_data.size()));
+      blob_uuid = blob_handle->GetUUID();
+      mime_type = ui::Clipboard::kMimeTypePNG;
+      size = static_cast<int64_t>(png_data.size());
       // Give the renderer a minute to pick up a reference to the blob before
       // giving up.
       // TODO(dmurph): There should be a better way of transferring ownership of
       // a blob from the browser to the renderer, rather than relying on this
       // timeout to clean up eventually. See https://crbug.com/604800.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
+      BrowserThread::PostDelayedTask(
+          BrowserThread::IO, FROM_HERE,
           base::BindOnce(&CleanupReadImageBlob, base::Passed(&blob_handle)),
           base::TimeDelta::FromMinutes(1));
-      return;
     }
   }
-  std::move(callback).Run(std::string(), std::string(), -1);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          [](ReadImageCallback callback, const std::string& blob_uuid,
+             const std::string& mime_type, int64_t size) {
+            std::move(callback).Run(blob_uuid, mime_type, size);
+          },
+          std::move(callback), blob_uuid, mime_type, size));
 }
 
 void ClipboardHostImpl::ReadCustomData(ui::ClipboardType clipboard_type,
