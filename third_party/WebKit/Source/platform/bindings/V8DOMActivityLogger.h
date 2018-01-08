@@ -57,6 +57,8 @@ class PLATFORM_EXPORT V8DOMActivityLogger {
                         int argc,
                         const String* argv) {}
 
+  void LogMethod(const char* api_name, v8::FunctionCallbackInfo<v8::Value>);
+
   // Associates a logger with the world identified by worldId (worlId may be 0
   // identifying the main world) and extension ID. Extension ID is used to
   // identify a logger for main world only (worldId == 0). If the world is not
