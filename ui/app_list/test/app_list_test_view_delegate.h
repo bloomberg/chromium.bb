@@ -66,6 +66,8 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
   bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {}
+  void ActivateItem(const std::string& id, int event_flags) override;
+  ui::MenuModel* GetContextMenuModel(const std::string& id) override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {}
   void RemoveObserver(
       app_list::AppListViewDelegateObserver* observer) override {}

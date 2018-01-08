@@ -145,7 +145,7 @@ void AppListMainView::ActivateApp(AppListItem* item, int event_flags) {
                               kMaxFolderOpened);
   } else {
     base::RecordAction(base::UserMetricsAction("AppList_ClickOnApp"));
-    item->Activate(event_flags);
+    delegate_->ActivateItem(item->id(), event_flags);
     UMA_HISTOGRAM_BOOLEAN(features::IsFullscreenAppListEnabled()
                               ? kAppListAppLaunchedFullscreen
                               : kAppListAppLaunched,

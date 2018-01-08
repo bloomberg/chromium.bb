@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -56,11 +57,13 @@ constexpr int kTouchLongpressDelayInMs = 300;
 const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
-                                 AppListItem* item)
+                                 AppListItem* item,
+                                 AppListViewDelegate* delegate)
     : Button(apps_grid_view),
       is_folder_(item->GetItemType() == AppListFolderItem::kItemType),
       is_in_folder_(item->IsInFolder()),
       item_weak_(item),
+      delegate_(delegate),
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new views::Label),
@@ -268,8 +271,7 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
   if (context_menu_runner_ && context_menu_runner_->IsRunning())
     return;
 
-  ui::MenuModel* menu_model =
-      item_weak_ ? item_weak_->GetContextMenuModel() : NULL;
+  ui::MenuModel* menu_model = delegate_->GetContextMenuModel(item_weak_->id());
   if (!menu_model)
     return;
 

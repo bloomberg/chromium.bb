@@ -28,6 +28,7 @@ class ProgressBar;
 namespace app_list {
 
 class AppListItem;
+class AppListViewDelegate;
 class AppsGridView;
 
 class APP_LIST_EXPORT AppListItemView : public views::Button,
@@ -38,7 +39,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
   // Internal class name.
   static const char kViewClassName[];
 
-  AppListItemView(AppsGridView* apps_grid_view, AppListItem* item);
+  AppListItemView(AppsGridView* apps_grid_view,
+                  AppListItem* item,
+                  AppListViewDelegate* delegate);
   ~AppListItemView() override;
 
   // Set the icon of this image, adding a drop shadow if |has_shadow|.
@@ -158,6 +161,7 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItem* item_weak_;  // Owned by AppListModel. Can be NULL.
 
+  AppListViewDelegate* delegate_;     // Unowned.
   AppsGridView* apps_grid_view_;      // Parent view, owns this.
   views::ImageView* icon_;            // Strongly typed child view.
   views::Label* title_;               // Strongly typed child view.

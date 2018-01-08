@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -83,6 +83,8 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
   bool IsSpeechRecognitionEnabled() override;
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override;
+  void ActivateItem(const std::string& id, int event_flags) override;
+  ui::MenuModel* GetContextMenuModel(const std::string& id) override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override;
   void RemoveObserver(app_list::AppListViewDelegateObserver* observer) override;
 
@@ -122,7 +124,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.
-  AppListModelUpdater* model_updater_;
+  ChromeAppListModelUpdater* model_updater_;
 
   // Note: order ensures |search_resource_manager_| is destroyed before
   // |speech_ui_|.

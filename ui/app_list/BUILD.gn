@@ -158,6 +158,7 @@ static_library("test_support") {
   deps = [
     ":app_list",
     "//base",
+    "//ui/base:base",
     "//ui/events",
     "//ui/gfx",
     "//ui/gfx/geometry",

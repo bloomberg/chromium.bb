@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
@@ -185,7 +186,7 @@ class AppListSyncableServiceTest : public AppListTestBase {
 
   void TearDown() override { app_list_syncable_service_.reset(); }
 
-  AppListModelUpdater* model_updater() {
+  ChromeAppListModelUpdater* model_updater() {
     return app_list_syncable_service_->GetModelUpdater();
   }
 

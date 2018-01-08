@@ -20,10 +20,6 @@
 class FastShowPickler;
 class ChromeAppListModelUpdater;
 
-namespace ui {
-class MenuModel;
-}
-
 namespace app_list {
 
 class AppListItemList;
@@ -77,17 +73,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   void AddObserver(AppListItemObserver* observer);
   void RemoveObserver(AppListItemObserver* observer);
 
-  // Activates (opens) the item. Does nothing by default.
-  virtual void Activate(int event_flags);
-
   // Returns a static const char* identifier for the subclass (defaults to "").
   // Pointers can be compared for quick type checking.
   virtual const char* GetItemType() const;
-
-  // Returns the context menu model for this item, or NULL if there is currently
-  // no menu for the item (e.g. during install).
-  // Note the returned menu model is owned by this item.
-  virtual ui::MenuModel* GetContextMenuModel();
 
   // Returns the item matching |id| contained in this item (e.g. if the item is
   // a folder), or NULL if the item was not found or this is not a container.
