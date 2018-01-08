@@ -545,6 +545,15 @@ cr.define('settings_people_page_quick_unlock', function() {
         pinKeyboard.value = '11';
         assertFalse(continueButton.disabled);
       });
+
+      test('BackspaceDisabledWhenNothingEntered', function() {
+        let backspaceButton = pinKeyboard.$$(
+            'paper-icon-button[class="digit-button backspace-button"]');
+        assertTrue(backspaceButton.disabled);
+
+        pinKeyboard.value = '11';
+        assertFalse(backspaceButton.disabled);
+      });
     });
   }
 
