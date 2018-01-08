@@ -643,6 +643,10 @@ group("gn_all") {
     }
   }
 
+  if (is_mac || is_linux) {
+    deps += [ "//third_party/perfetto:all" ]
+  }
+
   if (is_linux && !is_chromeos && !is_chromecast) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
