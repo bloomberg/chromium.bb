@@ -172,6 +172,19 @@ void SiteEngagementService::Helper::MediaTracker::TrackingStarted() {
   Pause();
 }
 
+void SiteEngagementService::Helper::MediaTracker::DidFinishNavigation(
+    content::NavigationHandle* handle) {
+  // Ignore subframe navigation to avoid clearing main frame active media
+  // players when they navigate.
+  if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
+      handle->IsSameDocument()) {
+    return;
+  }
+
+  // Media stops playing on navigation, so clear our state.
+  active_media_players_.clear();
+}
+
 void SiteEngagementService::Helper::MediaTracker::MediaStartedPlaying(
     const MediaPlayerInfo& media_info,
     const MediaPlayerId& id) {
