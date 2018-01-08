@@ -230,9 +230,9 @@ void DomainReliabilityScheduler::MaybeScheduleUpload() {
   callback_.Run(min_delay, max_delay);
 }
 
-// TODO(ttuttle): Add min and max interval to config, use that instead.
+// TODO(juliatuttle): Add min and max interval to config, use that instead.
 
-// TODO(ttuttle): Cap min and max intervals received from config.
+// TODO(juliatuttle): Cap min and max intervals received from config.
 
 void DomainReliabilityScheduler::GetNextUploadTimeAndCollector(
     base::TimeTicks now,
