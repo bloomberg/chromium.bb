@@ -4,9 +4,20 @@
 
 module chrome.mojom;
 
+import "url/mojo/url.mojom";
+
 interface PrerenderCanceler {
   // Message sent from the renderer to the browser to notify it of a
   // window.print() call which should cancel the prerender. The message is sent
   // only when the renderer is prerendering.
   CancelPrerenderForPrinting();
+
+  // Cancels prerendering because of an unsupported method.
+  CancelPrerenderForUnsupportedMethod();
+
+  // Cancels prerendering because of an unsupported scheme.
+  CancelPrerenderForUnsupportedScheme(url.mojom.Url url);
+
+  // Cancels prerendering because of a synchronous deferred redirect.
+  CancelPrerenderForSyncDeferredRedirect();
 };

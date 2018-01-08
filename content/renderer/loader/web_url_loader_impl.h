@@ -106,6 +106,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
  private:
   class Context;
   class RequestPeerImpl;
+  class SinkPeer;
   scoped_refptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderImpl);
