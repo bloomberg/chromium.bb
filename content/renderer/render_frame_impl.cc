@@ -4268,15 +4268,8 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
 
-  for (auto& observer : render_view_->observers_)
-    observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
-  {
-    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidCommitProvisionalLoad");
-    for (auto& observer : observers_) {
-      observer.DidCommitProvisionalLoad(
-          is_new_navigation, navigation_state->WasWithinSameDocument());
-    }
-  }
+  NotifyObserversOfNavigationCommit(is_new_navigation,
+                                    navigation_state->WasWithinSameDocument());
 
   // Notify the MediaPermissionDispatcher that its connection will be closed
   // due to a navigation to a different document.
@@ -5600,6 +5593,18 @@ bool RenderFrameImpl::UpdateNavigationHistory(
     render_view_->DidCommitProvisionalHistoryLoad();
 
   return is_new_navigation;
+}
+
+void RenderFrameImpl::NotifyObserversOfNavigationCommit(bool is_new_navigation,
+                                                        bool is_same_document) {
+  for (auto& observer : render_view_->observers_)
+    observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("RenderFrameObservers.DidCommitProvisionalLoad");
+    for (auto& observer : observers_) {
+      observer.DidCommitProvisionalLoad(is_new_navigation, is_same_document);
+    }
+  }
 }
 
 bool RenderFrameImpl::SwapIn() {
