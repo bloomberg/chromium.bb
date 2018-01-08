@@ -531,14 +531,13 @@ void IOThread::Init() {
                         CRYPTO_needs_hwcap2_workaround());
 #endif
 
+  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
+      net::ct::CreateLogVerifiersForKnownLogs());
+  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
+
   ConstructSystemRequestContext();
 
   UpdateDnsClientEnabled();
-
-  std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs(
-      net::ct::CreateLogVerifiersForKnownLogs());
-
-  globals_->ct_logs.assign(ct_logs.begin(), ct_logs.end());
 
   ct_tree_tracker_ =
       std::make_unique<certificate_transparency::TreeStateTracker>(
