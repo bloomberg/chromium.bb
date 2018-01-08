@@ -4,15 +4,17 @@ Tests that audits panel works when only performance category is selected.
 ========== Audits2 Dialog State ==========
 Dialog is visible
 
-[ ] Progressive Web App
 [x] Performance
+[ ] Progressive Web App
 [ ] Best practices
 [ ] Accessibility
+[ ] SEO
 Run audit: enabled visible
 Cancel: enabled visible
 
 
 =============== Lighthouse Results ===============
+bootup-time: true
 consistently-interactive: false
 critical-request-chains: true
 dom-size: true
@@ -20,13 +22,16 @@ estimated-input-latency: false
 first-interactive: false
 first-meaningful-paint: false
 link-blocking-first-paint: false
+mainthread-work-breakdown: true
 offscreen-images: false
+redirects: false
 screenshot-thumbnails: false
 script-blocking-first-paint: false
 speed-index-metric: false
 time-to-first-byte: true
 total-byte-weight: true
 user-timings: true
+uses-long-cache-ttl: false
 uses-optimized-images: false
 uses-request-compression: false
 uses-responsive-images: false
