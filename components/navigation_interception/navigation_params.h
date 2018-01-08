@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_H_
 #define COMPONENTS_NAVIGATION_INTERCEPTION_NAVIGATION_PARAMS_H_
 
+#include "base/optional.h"
 #include "content/public/common/referrer.h"
-#include "ui/base/page_transition_types.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -22,7 +22,9 @@ class NavigationParams {
                    bool is_redirect,
                    bool is_external_protocol,
                    bool is_main_frame,
-                   const GURL& base_url_for_data_url);
+                   const GURL& base_url_for_data_url,
+                   const base::Optional<std::string>& suggested_filename);
+  ~NavigationParams();
   NavigationParams(const NavigationParams&);
   NavigationParams& operator=(const NavigationParams&) = delete;
 
@@ -36,6 +38,9 @@ class NavigationParams {
   bool is_external_protocol() const { return is_external_protocol_; }
   bool is_main_frame() const { return is_main_frame_; }
   const GURL& base_url_for_data_url() const { return base_url_for_data_url_; }
+  const base::Optional<std::string>& suggested_filename() const {
+    return suggested_filename_;
+  }
 
  private:
 
@@ -48,6 +53,7 @@ class NavigationParams {
   bool is_external_protocol_;
   bool is_main_frame_;
   GURL base_url_for_data_url_;
+  base::Optional<std::string> suggested_filename_;
 };
 
 }  // namespace navigation_interception

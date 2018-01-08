@@ -154,6 +154,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetBaseURLForDataURL() override;
   const GlobalRequestID& GetGlobalRequestID() override;
   bool IsDownload() override;
+  const base::Optional<std::string>& GetSuggestedFilename() override;
 
   // Resume and CancelDeferredNavigation must only be called by the
   // NavigationThrottle that is currently deferring the navigation.
@@ -361,10 +362,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // This is used to inform the RenderProcessHost to expect a navigation to the
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
-
-  const base::Optional<std::string>& suggested_filename() const {
-    return suggested_filename_;
-  }
 
  private:
   friend class NavigationHandleImplTest;
