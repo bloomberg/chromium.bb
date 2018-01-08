@@ -18,7 +18,7 @@ Bug(none) external/wpt/css/cssom-view/scrolling-quirks-vs-nonquirks.html [ Failu
 Bug(none) external/wpt/css/cssom-view/scrollingElement.html [ Failure Timeout Crash ]
 Bug(none) external/wpt/css/css-fonts/font-display/font-display.html [ Failure Timeout ]
 Bug(none) external/wpt/fetch/api/cors/cors-cookies.any.html [ Failure Pass ]
-Bug(none) external/wpt/fetch/api/request/destination/fetch-destination-iframe.https.html [ Timeout ]
+Bug(none) external/wpt/fetch/api/request/destination/fetch-destination-iframe.https.html [ Failure ]
 Bug(none) external/wpt/fetch/api/request/destination/fetch-destination-no-load-event.https.html [ Timeout ]
 Bug(none) external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Timeout ]
 Bug(none) external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken-weird.html [ Failure Timeout Failure ]
