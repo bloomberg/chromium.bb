@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/text_constants.h"
 
 namespace gfx {
 
@@ -25,13 +26,16 @@ GFX_EXPORT base::string16 RemoveAcceleratorChar(const base::string16& s,
                                                 int* accelerated_char_span);
 
 // Returns the number of horizontal pixels needed to display the specified
-// |text| with |font_list|.
+// |text| with |font_list|. |typesetter| indicates where the text will be
+// displayed.
 GFX_EXPORT int GetStringWidth(const base::string16& text,
-                              const FontList& font_list);
+                              const FontList& font_list,
+                              Typesetter Typesetter = Typesetter::DEFAULT);
 
 // This is same as GetStringWidth except that fractional width is returned.
 GFX_EXPORT float GetStringWidthF(const base::string16& text,
-                                 const FontList& font_list);
+                                 const FontList& font_list,
+                                 Typesetter Typesetter = Typesetter::DEFAULT);
 
 // Returns a valid cut boundary at or before |index|. The surrogate pair and
 // combining characters should not be separated.

@@ -376,8 +376,9 @@ using content::DownloadItem;
 }
 
 - (NSString*)elideTitle:(int)availableWidth {
-  return base::SysUTF16ToNSString(gfx::ElideFilename(
-      downloadPath_, gfx::FontList(gfx::Font([self font])), availableWidth));
+  return base::SysUTF16ToNSString(
+      gfx::ElideFilename(downloadPath_, gfx::FontList(gfx::Font([self font])),
+                         availableWidth, gfx::Typesetter::PLATFORM));
 }
 
 - (NSString*)elideStatus:(int)availableWidth {

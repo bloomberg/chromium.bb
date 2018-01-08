@@ -207,8 +207,11 @@ TEST(TextEliderTest, MAYBE_TestFilenameEliding) {
     base::FilePath filepath(testcases[i].input);
     base::string16 expected = UTF8ToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
-    EXPECT_EQ(expected, ElideFilename(filepath, font_list,
-        GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list)));
+    EXPECT_EQ(expected,
+              ElideFilename(
+                  filepath, font_list,
+                  GetStringWidthF(UTF8ToUTF16(testcases[i].output), font_list),
+                  Typesetter::DEFAULT));
   }
 }
 

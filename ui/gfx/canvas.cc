@@ -67,28 +67,31 @@ void Canvas::SizeStringInt(const base::string16& text,
                            int* width,
                            int* height,
                            int line_height,
-                           int flags) {
+                           int flags,
+                           Typesetter typesetter) {
   float fractional_width = static_cast<float>(*width);
   float factional_height = static_cast<float>(*height);
-  SizeStringFloat(text, font_list, &fractional_width,
-                  &factional_height, line_height, flags);
+  SizeStringFloat(text, font_list, &fractional_width, &factional_height,
+                  line_height, flags, typesetter);
   *width = ToCeiledInt(fractional_width);
   *height = ToCeiledInt(factional_height);
 }
 
 // static
 int Canvas::GetStringWidth(const base::string16& text,
-                           const FontList& font_list) {
+                           const FontList& font_list,
+                           Typesetter typesetter) {
   int width = 0, height = 0;
-  SizeStringInt(text, font_list, &width, &height, 0, NO_ELLIPSIS);
+  SizeStringInt(text, font_list, &width, &height, 0, NO_ELLIPSIS, typesetter);
   return width;
 }
 
 // static
 float Canvas::GetStringWidthF(const base::string16& text,
-                              const FontList& font_list) {
+                              const FontList& font_list,
+                              Typesetter typesetter) {
   float width = 0, height = 0;
-  SizeStringFloat(text, font_list, &width, &height, 0, NO_ELLIPSIS);
+  SizeStringFloat(text, font_list, &width, &height, 0, NO_ELLIPSIS, typesetter);
   return width;
 }
 

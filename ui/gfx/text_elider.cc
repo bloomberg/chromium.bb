@@ -146,7 +146,8 @@ base::string16 StringSlicer::CutString(size_t length,
 
 base::string16 ElideFilename(const base::FilePath& filename,
                              const FontList& font_list,
-                             float available_pixel_width) {
+                             float available_pixel_width,
+                             Typesetter typesetter) {
 #if defined(OS_WIN)
   base::string16 filename_utf16 = filename.value();
   base::string16 extension = filename.Extension();
@@ -166,12 +167,13 @@ base::string16 ElideFilename(const base::FilePath& filename,
 
   if (rootname.empty() || extension.empty()) {
     const base::string16 elided_name =
-        ElideText(filename_utf16, font_list, available_pixel_width, ELIDE_TAIL);
+        ElideText(filename_utf16, font_list, available_pixel_width, ELIDE_TAIL,
+                  typesetter);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
-  const float ext_width = GetStringWidthF(extension, font_list);
-  const float root_width = GetStringWidthF(rootname, font_list);
+  const float ext_width = GetStringWidthF(extension, font_list, typesetter);
+  const float root_width = GetStringWidthF(rootname, font_list, typesetter);
 
   // We may have trimmed the path.
   if (root_width + ext_width <= available_pixel_width) {
@@ -180,14 +182,15 @@ base::string16 ElideFilename(const base::FilePath& filename,
   }
 
   if (ext_width >= available_pixel_width) {
-    const base::string16 elided_name = ElideText(
-        rootname + extension, font_list, available_pixel_width, ELIDE_MIDDLE);
+    const base::string16 elided_name =
+        ElideText(rootname + extension, font_list, available_pixel_width,
+                  ELIDE_MIDDLE, typesetter);
     return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   float available_root_width = available_pixel_width - ext_width;
-  base::string16 elided_name =
-      ElideText(rootname, font_list, available_root_width, ELIDE_TAIL);
+  base::string16 elided_name = ElideText(
+      rootname, font_list, available_root_width, ELIDE_TAIL, typesetter);
   elided_name += extension;
   return base::i18n::GetDisplayStringInLTRDirectionality(elided_name);
 }
@@ -195,12 +198,11 @@ base::string16 ElideFilename(const base::FilePath& filename,
 base::string16 ElideText(const base::string16& text,
                          const FontList& font_list,
                          float available_pixel_width,
-                         ElideBehavior behavior) {
+                         ElideBehavior behavior,
+                         Typesetter typesetter) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   DCHECK_NE(behavior, FADE_TAIL);
-  // TODO(tapted): Update callers of this that draw into Cocoa UI to use
-  // RenderText directly. See http://crbug.com/791391.
-  auto render_text = RenderText::CreateInstanceDeprecated();
+  auto render_text = RenderText::CreateFor(typesetter);
 
   render_text->SetCursorEnabled(false);
   // TODO(bshe): 5000 is out dated. We should remove it. See crbug.com/551660.
