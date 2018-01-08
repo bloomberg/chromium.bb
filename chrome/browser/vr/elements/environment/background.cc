@@ -29,15 +29,27 @@ constexpr char const* kVertexShader = SHADER(
 
   void main() {
     vec4 sphereVertex;
+    // The x coordinate maps linearly to yaw, so we just need to scale the input
+    // range 0..1 to 0..2*pi.
     float theta = a_TexCoordinate.x * 6.28319;
-    float phi = a_TexCoordinate.y * 3.14159;
+
+    // The projection we use maps the y axis of the source image to sphere
+    // altitude, not the pitch. If it were pitch, we would scale the y
+    // coordinates from 0..1 to 0..pi, where 0 corresponds to the head pointing
+    // straight down and pi is the head pointing straight up. But, if our source
+    // is altitude, then we've roughly been given the cosine of the pitch - we
+    // just need to remap the range 0..1 to 1..-1. And because the sine of the
+    // pitch angle is always positive, we can easily compute it using the
+    // sin^2(x) + cos^2(x) = 1 identity without worrying about sign.
+    float cos_phi = 1.0 - 2.0 * a_TexCoordinate.y;
+    float sin_phi = sqrt(1.0 - cos_phi * cos_phi);
 
     // Place the background at 1000 m, an arbitrary large distance. This
     // nullifies the translational portion of eye transforms, which is what we
     // want for ODS backgrounds.
-    sphereVertex.x = 1000. * -cos(theta) * sin(phi);
-    sphereVertex.y = 1000. * cos(phi);
-    sphereVertex.z = 1000. * -sin(theta) * sin(phi);
+    sphereVertex.x = 1000. * -cos(theta) * sin_phi;
+    sphereVertex.y = 1000. * cos_phi;
+    sphereVertex.z = 1000. * -sin(theta) * sin_phi;
     sphereVertex.w = 1.0;
 
     gl_Position = u_ModelViewProjMatrix * sphereVertex;
