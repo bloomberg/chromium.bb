@@ -813,7 +813,7 @@ int av1_get_pred_context_brfarf2_or_arf(const MACROBLOCKD *xd) {
   const int pred_context =
       (brfarf2_count == arf_count) ? 1 : ((brfarf2_count < arf_count) ? 0 : 2);
 
-  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
+  assert(pred_context >= 0 && pred_context < COMP_BWDREF_CONTEXTS);
   return pred_context;
 }
 
@@ -858,7 +858,7 @@ int av1_get_pred_context_brf_or_arf2(const MACROBLOCKD *xd) {
   const int pred_context =
       (brf_count == arf2_count) ? 1 : ((brf_count < arf2_count) ? 0 : 2);
 
-  assert(pred_context >= 0 && pred_context < REF_CONTEXTS);
+  assert(pred_context >= 0 && pred_context < COMP_BWDREF_CONTEXTS);
   return pred_context;
 }
 

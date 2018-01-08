@@ -1436,12 +1436,10 @@ static const aom_cdf_prob
     };
 
 static const aom_cdf_prob
-    default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)] = {
+    default_comp_bwdref_cdf[COMP_BWDREF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)] = {
       { { AOM_CDF2(2762) }, { AOM_CDF2(1614) } },
       { { AOM_CDF2(17976) }, { AOM_CDF2(15912) } },
       { { AOM_CDF2(30894) }, { AOM_CDF2(30639) } },
-      { { AOM_CDF2(16384) }, { AOM_CDF2(16384) } },
-      { { AOM_CDF2(16384) }, { AOM_CDF2(16384) } }
     };
 
 static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
