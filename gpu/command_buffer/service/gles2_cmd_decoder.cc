@@ -14834,6 +14834,34 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
+  // If fbo's read buffer and the target texture are the same texture, but
+  // different levels, and if the read buffer is non-base texture level,
+  // then following internal glTexImage2D() calls may change the target texture
+  // and make the originally mipmap complete texture mipmap incomplete, which
+  // in turn make the fbo incomplete.
+  // In order to avoid that, we clamp the BASE_LEVEL and MAX_LEVEL to the same
+  // texture level that's attached to the fbo's read buffer.
+  bool reset_source_texture_base_level_max_level = false;
+  GLint attached_texture_level = -1;
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
+  if (framebuffer) {
+    const Framebuffer::Attachment* attachment =
+        framebuffer->GetReadBufferAttachment();
+    if (attachment->IsTexture(texture_ref)) {
+      DCHECK(attachment->IsTextureAttachment());
+      attached_texture_level = attachment->level();
+      DCHECK_GE(attached_texture_level, 0);
+      if (attached_texture_level != texture->base_level())
+        reset_source_texture_base_level_max_level = true;
+    }
+  }
+  if (reset_source_texture_base_level_max_level) {
+    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
+                             attached_texture_level);
+    api()->glTexParameteriFn(target, GL_TEXTURE_MAX_LEVEL,
+                             attached_texture_level);
+  }
+
   // Clip to size to source dimensions
   gfx::Rect src(x, y, width, height);
   const gfx::Rect dst(0, 0, size.width(), size.height());
@@ -14975,6 +15003,12 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       api()->glCopyTexImage2DFn(target, level, final_internal_format, x, y,
                                 width, height, border);
     }
+  }
+  if (reset_source_texture_base_level_max_level) {
+    api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
+                             texture->base_level());
+    api()->glTexParameteriFn(target, GL_TEXTURE_MAX_LEVEL,
+                             texture->max_level());
   }
   GLenum error = LOCAL_PEEK_GL_ERROR(func_name);
   if (error == GL_NO_ERROR) {
