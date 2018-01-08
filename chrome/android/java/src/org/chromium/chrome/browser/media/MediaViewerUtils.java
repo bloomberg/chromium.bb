@@ -34,14 +34,16 @@ public class MediaViewerUtils {
 
     /**
      * Creates an Intent that allows viewing the given file in an internal media viewer.
-     * @param displayUri URI to display to the user, ideally in file:// form.
-     * @param contentUri content:// URI pointing at the file.
-     * @param mimeType   MIME type of the file.
+     * @param displayUri               URI to display to the user, ideally in file:// form.
+     * @param contentUri               content:// URI pointing at the file.
+     * @param mimeType                 MIME type of the file.
+     * @param allowExternalAppHandlers Whether the viewer should allow the user to open with another
+     *                                 app.
      * @return Intent that can be fired to open the file.
      */
-    public static Intent getMediaViewerIntent(Uri displayUri, Uri contentUri, String mimeType) {
+    public static Intent getMediaViewerIntent(
+            Uri displayUri, Uri contentUri, String mimeType, boolean allowExternalAppHandlers) {
         Context context = ContextUtils.getApplicationContext();
-        Intent viewIntent = createViewIntentForUri(contentUri, mimeType, null, null);
 
         Bitmap closeIcon = BitmapFactory.decodeResource(
                 context.getResources(), R.drawable.ic_arrow_back_white_24dp);
@@ -53,16 +55,19 @@ public class MediaViewerUtils {
         builder.setCloseButtonIcon(closeIcon);
         builder.setShowTitle(true);
 
-        // Create a PendingIntent that can be used to view the file externally.
-        // TODO(https://crbug.com/795968): Check if this is problematic in multi-window mode,
-        //                                 where two different viewers could be visible at the
-        //                                 same time.
-        Intent chooserIntent = Intent.createChooser(viewIntent, null);
-        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        String openWithStr = context.getString(R.string.download_manager_open_with);
-        PendingIntent pendingViewIntent = PendingIntent.getActivity(
-                context, 0, chooserIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.addMenuItem(openWithStr, pendingViewIntent);
+        if (allowExternalAppHandlers) {
+            // Create a PendingIntent that can be used to view the file externally.
+            // TODO(https://crbug.com/795968): Check if this is problematic in multi-window mode,
+            //                                 where two different viewers could be visible at the
+            //                                 same time.
+            Intent viewIntent = createViewIntentForUri(contentUri, mimeType, null, null);
+            Intent chooserIntent = Intent.createChooser(viewIntent, null);
+            chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            String openWithStr = context.getString(R.string.download_manager_open_with);
+            PendingIntent pendingViewIntent = PendingIntent.getActivity(
+                    context, 0, chooserIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            builder.addMenuItem(openWithStr, pendingViewIntent);
+        }
 
         // Create a PendingIntent that shares the file with external apps.
         PendingIntent pendingShareIntent = PendingIntent.getActivity(context, 0,
