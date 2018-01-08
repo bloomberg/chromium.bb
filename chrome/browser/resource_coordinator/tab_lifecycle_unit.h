@@ -79,18 +79,16 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // TabLifecycleUnitExternal:
   content::WebContents* GetWebContents() const override;
+  bool IsMediaTab() const override;
   bool IsAutoDiscardable() const override;
   void SetAutoDiscardable(bool auto_discardable) override;
   void DiscardTab() override;
   bool IsDiscarded() const override;
+  int GetDiscardCount() const override;
 
  private:
   // Invoked when the state goes from DISCARDED to non-DISCARDED and vice-versa.
   void OnDiscardedStateChange();
-
-  // Whether the tab is playing audio, has played audio recently, is accessing
-  // the microphone, is accessing the camera or is being mirrored.
-  bool IsMediaTab() const;
 
   // Returns the RenderProcessHost associated with this tab.
   content::RenderProcessHost* GetRenderProcessHost() const;
