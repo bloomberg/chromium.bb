@@ -41,6 +41,7 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual GLenum texture_type() const = 0;
     virtual GLsizei samples() const = 0;
     virtual GLuint object_name() const = 0;
+    virtual GLint level() const = 0;
     virtual bool cleared() const = 0;
     virtual void SetCleared(
         RenderbufferManager* renderbuffer_manager,
