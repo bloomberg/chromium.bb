@@ -9,8 +9,10 @@
 namespace data_decoder {
 
 TestDataDecoderService::TestDataDecoderService()
-    : connector_factory_(std::make_unique<DataDecoderService>()),
-      connector_(connector_factory_.CreateConnector()) {}
+    : connector_factory_(
+          service_manager::TestConnectorFactory::CreateForUniqueService(
+              std::make_unique<DataDecoderService>())),
+      connector_(connector_factory_->CreateConnector()) {}
 
 TestDataDecoderService::~TestDataDecoderService() = default;
 

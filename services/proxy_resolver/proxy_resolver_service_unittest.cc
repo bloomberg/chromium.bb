@@ -17,7 +17,7 @@ class ProxyResolverServiceTest : public testing::Test {
  public:
   ProxyResolverServiceTest()
       : connector_factory_(
-            std::make_unique<service_manager::TestConnectorFactory>(
+            service_manager::TestConnectorFactory::CreateForUniqueService(
                 std::make_unique<ProxyResolverService>())),
         connector_(connector_factory_->CreateConnector()) {}
 

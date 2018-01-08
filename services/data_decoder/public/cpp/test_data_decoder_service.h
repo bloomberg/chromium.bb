@@ -28,7 +28,7 @@ class TestDataDecoderService {
   service_manager::Connector* connector() const { return connector_.get(); }
 
  private:
-  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataDecoderService);

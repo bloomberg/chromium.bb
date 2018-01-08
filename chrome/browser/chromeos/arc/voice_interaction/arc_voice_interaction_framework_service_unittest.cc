@@ -123,7 +123,7 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
     voice_interaction_controller_client_ =
         std::make_unique<VoiceInteractionControllerClient>();
     connector_factory_ =
-        std::make_unique<service_manager::TestConnectorFactory>(
+        service_manager::TestConnectorFactory::CreateForUniqueService(
             std::move(highlighter_controller_ptr));
     connector_ = connector_factory_->CreateConnector();
     framework_service_ = std::make_unique<ArcVoiceInteractionFrameworkService>(

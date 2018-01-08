@@ -40,7 +40,7 @@ class ArcPowerBridgeTest : public testing::Test {
     wake_lock_provider_ = wake_lock_provider_ptr.get();
 
     connector_factory_ =
-        std::make_unique<service_manager::TestConnectorFactory>(
+        service_manager::TestConnectorFactory::CreateForUniqueService(
             std::move(wake_lock_provider_ptr));
     connector_ = connector_factory_->CreateConnector();
 

@@ -74,8 +74,10 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 
   SandboxedZipAnalyzerTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        test_connector_factory_(std::make_unique<FileUtilService>()),
-        connector_(test_connector_factory_.CreateConnector()) {}
+        test_connector_factory_(
+            service_manager::TestConnectorFactory::CreateForUniqueService(
+                std::make_unique<FileUtilService>())),
+        connector_(test_connector_factory_->CreateConnector()) {}
 
   void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
@@ -184,7 +186,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
-  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::TestConnectorFactory>
+      test_connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
 };
 
