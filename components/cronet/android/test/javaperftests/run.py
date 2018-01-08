@@ -206,6 +206,11 @@ class CronetPerfTestMeasurement(
       results.AddValue(scalar.ScalarValue(results.current_page, test,
           'ms', jsonResults[test]))
 
+  def DidRunStory(self, platform, results):
+    # Skip parent implementation which calls into tracing_controller which this
+    # doesn't have.
+    pass
+
 
 class CronetPerfTestBenchmark(benchmark.Benchmark):
   # Benchmark implementation spawning off Cronet perf test measurement and
