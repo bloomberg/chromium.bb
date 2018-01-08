@@ -52,11 +52,12 @@ void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
     dst += dst_stride;
   }
 }
-
+// TODO(yaowu: remove "const" from pass-by-value params in this and other funcs)
 void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
                                     const int16_t *x_filters, int interp_taps,
-                                    int x0_qn, int x_step_qn, int bd) {
+                                    const int x0_qn, const int x_step_qn,
+                                    int bd) {
   src -= interp_taps / 2 - 1;
   for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;
