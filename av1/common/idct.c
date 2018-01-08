@@ -2095,8 +2095,8 @@ static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
 #endif  // CONFIG_TX64X64
 #endif  // !CONFIG_DAALA_TX
 
-void av1_inv_txfm_add_txmg(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
-                           TxfmParam *txfm_param) {
+void av1_inv_txfm_add(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
+                      TxfmParam *txfm_param) {
   const TX_SIZE tx_size = txfm_param->tx_size;
   DECLARE_ALIGNED(16, uint16_t, tmp[MAX_TX_SQUARE]);
   int tmp_stride = MAX_TX_SIZE;
@@ -2138,10 +2138,6 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
 typedef void (*InvTxfmFunc)(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
                             TxfmParam *txfm_param);
 
-static InvTxfmFunc inv_txfm_func[2] = {
-  av1_inv_txfm_add_txmg, av1_highbd_inv_txfm_add,
-};
-
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  const tran_low_t *dqcoeff, int plane,
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
@@ -2154,6 +2150,11 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   init_txfm_param(xd, plane, tx_size, tx_type, eob, reduced_tx_set,
                   &txfm_param);
   assert(av1_ext_tx_used[txfm_param.tx_set_type][txfm_param.tx_type]);
+
+  static const InvTxfmFunc inv_txfm_func[2] = {
+    av1_inv_txfm_add, av1_highbd_inv_txfm_add,
+  };
+
   inv_txfm_func[txfm_param.is_hbd](dqcoeff, dst, stride, &txfm_param);
 }
 
