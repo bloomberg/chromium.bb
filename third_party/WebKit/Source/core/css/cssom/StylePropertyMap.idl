@@ -13,6 +13,5 @@ callback UpdateFunction = CSSStyleValue (CSSStyleValue oldValue);
     [RaisesException, CallWith=ExecutionContext] void append(DOMString property, (CSSStyleValue or DOMString)... values);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);
     [RaisesException, CallWith=ExecutionContext] void set(DOMString property, (CSSStyleValue or DOMString)... values);
-    // FIXME(785132): This shouldn't need a ExecutionContext.
-    [RaisesException, CallWith=ExecutionContext] void update(DOMString property, UpdateFunction updateFunction);
+    [RaisesException] void update(DOMString property, UpdateFunction updateFunction);
 };

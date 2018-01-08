@@ -207,26 +207,34 @@ void StylePropertyMap::remove(const String& property_name,
   }
 }
 
-void StylePropertyMap::update(const ExecutionContext* execution_context,
-                              const String& property_name,
+void StylePropertyMap::update(const String& property_name,
                               V8UpdateFunction* update_function,
                               ExceptionState& exception_state) {
   CSSStyleValue* old_value = get(property_name, exception_state);
-  if (exception_state.HadException())
+  if (exception_state.HadException()) {
+    exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
+  }
+
+  const CSSPropertyID property_id = cssPropertyID(property_name);
 
   const auto& new_value = update_function->Invoke(this, old_value);
-  if (new_value.IsNothing())
+  if (new_value.IsNothing() || !new_value.ToChecked()) {
+    exception_state.ThrowTypeError("Invalid type for property");
     return;
+  }
 
-  HeapVector<CSSStyleValueOrString> new_value_vector;
-  new_value_vector.push_back(
-      CSSStyleValueOrString::FromCSSStyleValue(new_value.ToChecked()));
+  const CSSValue* result = StyleValueToCSSValue(CSSProperty::Get(property_id),
+                                                *new_value.ToChecked());
+  if (!result) {
+    exception_state.ThrowTypeError("Invalid type for property");
+    return;
+  }
 
-  // FIXME(785132): We shouldn't need an execution_context here, but
-  // CSSUnsupportedStyleValue currently requires parsing.
-  set(execution_context, property_name, std::move(new_value_vector),
-      exception_state);
+  if (property_id == CSSPropertyVariable)
+    SetCustomProperty(AtomicString(property_name), *result);
+  else
+    SetProperty(property_id, *result);
 }
 
 }  // namespace blink
