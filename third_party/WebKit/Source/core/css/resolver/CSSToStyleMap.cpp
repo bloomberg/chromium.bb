@@ -386,9 +386,9 @@ EAnimPlayState CSSToStyleMap::MapAnimationPlayState(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSAnimationData::InitialPlayState();
   if (ToCSSIdentifierValue(value).GetValueID() == CSSValuePaused)
-    return kAnimPlayStatePaused;
+    return EAnimPlayState::kPaused;
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueRunning);
-  return kAnimPlayStatePlaying;
+  return EAnimPlayState::kPlaying;
 }
 
 CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(

@@ -148,7 +148,7 @@ enum class EMaskSourceType : unsigned { kAlpha, kLuminance };
 // CSS3 Image Values
 enum class QuoteType : unsigned { kOpen, kClose, kNoOpen, kNoClose };
 
-enum EAnimPlayState { kAnimPlayStatePlaying, kAnimPlayStatePaused };
+enum class EAnimPlayState : unsigned { kPlaying, kPaused };
 
 enum OffsetRotationType { kOffsetRotationAuto, kOffsetRotationFixed };
 

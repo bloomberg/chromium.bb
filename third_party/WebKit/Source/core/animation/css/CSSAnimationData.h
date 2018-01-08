@@ -56,7 +56,7 @@ class CSSAnimationData final : public CSSTimingData {
   }
   static Timing::FillMode InitialFillMode() { return Timing::FillMode::NONE; }
   static double InitialIterationCount() { return 1.0; }
-  static EAnimPlayState InitialPlayState() { return kAnimPlayStatePlaying; }
+  static EAnimPlayState InitialPlayState() { return EAnimPlayState::kPlaying; }
 
  private:
   CSSAnimationData();

@@ -330,7 +330,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
       const bool is_paused =
           CSSTimingData::GetRepeated(animation_data->PlayStateList(), i) ==
-          kAnimPlayStatePaused;
+          EAnimPlayState::kPaused;
 
       Timing timing = animation_data->ConvertToTiming(i);
       Timing specified_timing = timing;
