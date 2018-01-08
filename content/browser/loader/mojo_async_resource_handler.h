@@ -56,7 +56,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
                            mojom::URLLoaderRequest mojo_request,
                            mojom::URLLoaderClientPtr url_loader_client,
                            ResourceType resource_type,
-                           bool defer_on_response_started);
+                           uint32_t url_loader_options);
   ~MojoAsyncResourceHandler() override;
 
   // ResourceHandler implementation:
@@ -133,7 +133,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
   ResourceDispatcherHostImpl* rdh_;
   mojo::Binding<mojom::URLLoader> binding_;
 
-  bool defer_on_response_started_;
+  uint32_t url_loader_options_;
 
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;

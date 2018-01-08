@@ -41,8 +41,8 @@ interface URLLoader {
 
   // Resumes loading the response body if the URLLoader paused the request upon
   // receiving the final response headers.
-  // Note: this is a configuration option for the URLLoader. By default, the
-  // loading isn't paused.
+  // The URLLoader pauses the request when kURLLoadOptionPauseOnResponseStarted
+  // is used.
   // TODO(arthursonzogni): This is a temporary feature. Remove this as soon as
   // the InterceptingResourceHandler is removed. See https://crbug.com/791049.
   ProceedWithResponse();

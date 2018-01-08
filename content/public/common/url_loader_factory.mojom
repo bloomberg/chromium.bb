@@ -17,6 +17,11 @@ const uint32 kURLLoadOptionSynchronous = 4;
 // Sends the net::SSLInfo struct in OnComplete when the connection had a major
 // certificate error.
 const uint32 kURLLoadOptionSendSSLInfoForCertificateError = 8;
+// Pause the request upon receiving the final response header. The request can
+// be resumed by using URLLoader::ProceedWithResponse.
+// TODO(arthursonzogni): This is a temporary feature. Remove this as soon as
+// the InterceptingResourceHandler is removed. See https://crbug.com/791049.
+const uint32 kURLLoadOptionPauseOnResponseStarted = 16;
 
 interface URLLoaderFactory {
   // Creats a URLLoader and starts loading with the given |request|. |client|'s
