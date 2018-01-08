@@ -68,10 +68,12 @@ void FeedbackPresented(void* data,
 void FeedbackDiscarded(void* data, struct wp_presentation_feedback* feedback) {
   Presentation* presentation = static_cast<Presentation*>(data);
   DCHECK_GT(presentation->submitted_frames.size(), 0u);
-
-  Frame& frame = presentation->submitted_frames.front();
-  DCHECK_EQ(frame.feedback.get(), feedback);
-  presentation->submitted_frames.pop_front();
+  auto it = std::find_if(
+      presentation->submitted_frames.begin(),
+      presentation->submitted_frames.end(),
+      [feedback](Frame& frame) { return frame.feedback.get() == feedback; });
+  DCHECK(it != presentation->submitted_frames.end());
+  presentation->submitted_frames.erase(it);
 }
 
 }  // namespace

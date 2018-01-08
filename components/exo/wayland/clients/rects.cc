@@ -196,9 +196,14 @@ void FeedbackDiscarded(void* data,
                        struct wp_presentation_feedback* presentation_feedback) {
   Presentation* presentation = static_cast<Presentation*>(data);
   DCHECK_GT(presentation->scheduled_frames.size(), 0u);
-  std::unique_ptr<Frame> frame =
-      std::move(presentation->scheduled_frames.front());
-  presentation->scheduled_frames.pop_front();
+  auto it =
+      std::find_if(presentation->scheduled_frames.begin(),
+                   presentation->scheduled_frames.end(),
+                   [presentation_feedback](std::unique_ptr<Frame>& frame) {
+                     return frame->feedback.get() == presentation_feedback;
+                   });
+  DCHECK(it != presentation->scheduled_frames.end());
+  presentation->scheduled_frames.erase(it);
   LOG(WARNING) << "Frame discarded";
 }
 
