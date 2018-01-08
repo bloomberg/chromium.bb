@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/WebkitBoxOrdinalGroup.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +15,16 @@ const CSSValue* WebkitBoxOrdinalGroup::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumePositiveInteger(range);
+}
+
+const CSSValue* WebkitBoxOrdinalGroup::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

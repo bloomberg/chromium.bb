@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/FillOpacity.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -17,6 +18,16 @@ const CSSValue* FillOpacity::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+}
+
+const CSSValue* FillOpacity::CSSValueFromComputedStyleInternal(
+    const ComputedStyle&,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(svg_style.FillOpacity(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

@@ -7,6 +7,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -35,6 +36,16 @@ const CSSValue* Zoom::ParseSingleValue(CSSParserTokenRange& range,
       context.Count(WebFeature::kCSSZoomNotEqualToOne);
   }
   return zoom;
+}
+
+const CSSValue* Zoom::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(style.Zoom(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

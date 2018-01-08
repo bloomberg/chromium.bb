@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/StrokeMiterlimit.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +15,16 @@ const CSSValue* StrokeMiterlimit::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+}
+
+const CSSValue* StrokeMiterlimit::CSSValueFromComputedStyleInternal(
+    const ComputedStyle&,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(svg_style.StrokeMiterLimit(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

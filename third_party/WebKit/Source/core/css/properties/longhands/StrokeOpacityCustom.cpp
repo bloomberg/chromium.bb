@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/StrokeOpacity.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -17,6 +18,16 @@ const CSSValue* StrokeOpacity::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeAll);
+}
+
+const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
+    const ComputedStyle&,
+    const SVGComputedStyle& svg_style,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand
