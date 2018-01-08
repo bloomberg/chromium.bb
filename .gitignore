@@ -98,6 +98,7 @@ vs-chromium-project.txt
 /chrome/browser/resources/media_router_internal/
 /chrome/browser/resources/settings_internal/
 /chrome/browser/resources/software_rendering_list
+/chrome/browser/resources/vr/assets/background.png
 /chrome/browser/spellchecker/internal
 /chrome/browser_tests_run.xml
 /chrome/chrome_run.xml

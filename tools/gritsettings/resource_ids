@@ -126,6 +126,9 @@
   "chrome/browser/resources/webapks_ui_resources.grd": {
     "includes": [12700],
   },
+  "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
+    "includes": [12710],
+  },
   # END chrome/browser section.
 
   # START chrome/ miscellaneous section.
