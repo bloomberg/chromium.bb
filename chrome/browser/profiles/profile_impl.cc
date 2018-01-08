@@ -270,17 +270,6 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
-PrefStore* CreateExtensionPrefStore(Profile* profile,
-                                    bool incognito_pref_store) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return new ExtensionPrefStore(
-      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
-      incognito_pref_store);
-#else
-  return NULL;
-#endif
-}
-
 }  // namespace
 
 // static

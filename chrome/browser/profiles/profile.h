@@ -24,6 +24,7 @@ class ChromeZoomLevelPrefs;
 
 class ExtensionSpecialStoragePolicy;
 class PrefService;
+class PrefStore;
 class TestingProfile;
 
 namespace base {
@@ -344,6 +345,11 @@ class Profile : public content::BrowserContext {
   void set_is_system_profile(bool is_system_profile) {
     is_system_profile_ = is_system_profile;
   }
+
+  // Returns a newly created ExtensionPrefStore suitable for the supplied
+  // Profile.
+  static PrefStore* CreateExtensionPrefStore(Profile*,
+                                             bool incognito_pref_store);
 
  private:
   bool restored_last_session_;
