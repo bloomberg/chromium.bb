@@ -18,11 +18,31 @@ class PrefService;
 namespace chrome {
 namespace android {
 
-base::Time GetMainEntryPointTime() {
+base::Time GetMainEntryPointTimeWallClock() {
   JNIEnv* env = base::android::AttachCurrentThread();
   int64_t startTimeUnixMs = Java_UmaUtils_getMainEntryPointWallTime(env);
   return base::Time::UnixEpoch() +
          base::TimeDelta::FromMilliseconds(startTimeUnixMs);
+}
+
+base::TimeTicks GetMainEntryPointTimeTicks() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  // Generally the use of base::TimeTicks::FromInternalValue() is discouraged.
+  //
+  // The implementation of the SystemClock.uptimeMillis() in AOSP uses the same
+  // clock as base::TimeTicks::Now(): clock_gettime(CLOCK_MONOTONIC), see in
+  // platform/system/code:
+  // 1. libutils/SystemClock.cpp
+  // 2. libutils/Timers.cpp
+  //
+  // We are not aware of any motivations for Android OEMs to modify the AOSP
+  // implementation of either uptimeMillis() or clock_gettime(CLOCK_MONOTONIC),
+  // so we assume that there are no such customizations.
+  //
+  // Under these assumptions the conversion is as safe as copying the value of
+  // base::TimeTicks::Now() with a loss of sub-millisecond precision.
+  return base::TimeTicks::FromInternalValue(
+      Java_UmaUtils_getMainEntryPointTicks(env) * 1000);
 }
 
 static jboolean JNI_UmaUtils_IsClientInMetricsReportingSample(

@@ -12,7 +12,8 @@
 namespace chrome {
 namespace android {
 
-base::Time GetMainEntryPointTime();
+base::Time GetMainEntryPointTimeWallClock();
+base::TimeTicks GetMainEntryPointTimeTicks();
 
 }  // namespace android
 }  // namespace chrome

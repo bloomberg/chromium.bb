@@ -30,6 +30,7 @@ constexpr const char* kStartupMetrics[] = {
     // "Startup.BrowserMessageLoopStartHardFaultCount",
     // "Startup.BrowserMessageLoopStartTime",
     // "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
+    // "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
     // "Startup.LoadTime.ExeMainToDllMain2",
     // "Startup.LoadTime.ProcessCreateToDllMain2",
     // "Startup.LoadTime.ProcessCreateToExeMain2",
