@@ -4221,43 +4221,12 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // before updating the current history item.
   SendUpdateState();
 
-  // Update the current history item for this frame.
-  current_history_item_ = item;
-  // Note: don't reference |item| after this point, as its value may not match
-  // |current_history_item_|.
-  current_history_item_.SetTarget(
-      blink::WebString::FromUTF8(unique_name_helper_.value()));
-
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
   if (internal_data->must_reset_scroll_and_scale_state()) {
     render_view_->webview()->ResetScrollAndScaleState();
     internal_data->set_must_reset_scroll_and_scale_state(false);
-  }
-
-  const RequestNavigationParams& request_params =
-      navigation_state->request_params();
-  bool is_new_navigation = commit_type == blink::kWebStandardCommit;
-  if (is_new_navigation) {
-    DCHECK(!navigation_state->common_params().should_replace_current_entry ||
-           render_view_->history_list_length_ > 0);
-    if (!navigation_state->common_params().should_replace_current_entry) {
-      // Advance our offset in session history, applying the length limit.
-      // There is now no forward history.
-      render_view_->history_list_offset_++;
-      if (render_view_->history_list_offset_ >= kMaxSessionHistoryEntries)
-        render_view_->history_list_offset_ = kMaxSessionHistoryEntries - 1;
-      render_view_->history_list_length_ =
-          render_view_->history_list_offset_ + 1;
-    }
-  } else {
-    if (request_params.nav_entry_id != 0 &&
-        !request_params.intended_as_new_entry) {
-      // This is a successful session history navigation!
-      render_view_->history_list_offset_ =
-          request_params.pending_history_list_offset;
-    }
   }
 
   service_manager::mojom::InterfaceProviderRequest
@@ -4297,8 +4266,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     }
   }
 
-  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
-    render_view_->DidCommitProvisionalHistoryLoad();
+  bool is_new_navigation = UpdateNavigationHistory(item, commit_type);
 
   for (auto& observer : render_view_->observers_)
     observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
@@ -5591,6 +5559,47 @@ void RenderFrameImpl::UpdateZoomLevel() {
     // Subframes should match the zoom level of the main frame.
     render_view_->SetZoomLevel(render_view_->page_zoom_level());
   }
+}
+
+bool RenderFrameImpl::UpdateNavigationHistory(
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  DocumentState* document_state =
+      DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
+  NavigationStateImpl* navigation_state =
+      static_cast<NavigationStateImpl*>(document_state->navigation_state());
+  const RequestNavigationParams& request_params =
+      navigation_state->request_params();
+
+  // Update the current history item for this frame.
+  current_history_item_ = item;
+  // Note: don't reference |item| after this point, as its value may not match
+  // |current_history_item_|.
+  current_history_item_.SetTarget(
+      blink::WebString::FromUTF8(unique_name_helper_.value()));
+  bool is_new_navigation = commit_type == blink::kWebStandardCommit;
+  if (is_new_navigation) {
+    DCHECK(!navigation_state->common_params().should_replace_current_entry ||
+           render_view_->history_list_length_ > 0);
+    if (!navigation_state->common_params().should_replace_current_entry) {
+      // Advance our offset in session history, applying the length limit.
+      // There is now no forward history.
+      render_view_->history_list_offset_++;
+      if (render_view_->history_list_offset_ >= kMaxSessionHistoryEntries)
+        render_view_->history_list_offset_ = kMaxSessionHistoryEntries - 1;
+      render_view_->history_list_length_ =
+          render_view_->history_list_offset_ + 1;
+    }
+  } else if (request_params.nav_entry_id != 0 &&
+             !request_params.intended_as_new_entry) {
+    render_view_->history_list_offset_ =
+        navigation_state->request_params().pending_history_list_offset;
+  }
+
+  if (commit_type == blink::WebHistoryCommitType::kWebBackForwardCommit)
+    render_view_->DidCommitProvisionalHistoryLoad();
+
+  return is_new_navigation;
 }
 
 bool RenderFrameImpl::SwapIn() {
