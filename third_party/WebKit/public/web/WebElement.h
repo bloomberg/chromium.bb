@@ -80,6 +80,7 @@ class BLINK_EXPORT WebElement : public WebNode {
   // Returns the image contents of this element or a null WebImage
   // if there isn't any.
   WebImage ImageContents();
+  void RequestFullscreen();
 
 #if INSIDE_BLINK
   WebElement(Element*);

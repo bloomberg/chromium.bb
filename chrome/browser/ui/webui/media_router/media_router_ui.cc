@@ -50,12 +50,16 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/fullscreen_video_element.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/WebKit/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -179,6 +183,113 @@ class MediaRouterUI::UIIssuesObserver : public IssuesObserver {
   DISALLOW_COPY_AND_ASSIGN(UIIssuesObserver);
 };
 
+// Observes a WebContents and requests fullscreening of its first
+// video element.  The request is sent after the WebContents is loaded and tab
+// capture has begun. Marked final to prevent inheritance so delete calls are
+// contained to scenarios documented below.
+class MediaRouterUI::WebContentsFullscreenOnLoadedObserver final
+    : public content::WebContentsObserver {
+ public:
+  WebContentsFullscreenOnLoadedObserver(const GURL& file_url,
+                                        content::WebContents* web_contents)
+      : file_url_(file_url), capture_poll_timer_(false, false) {
+    DCHECK(file_url_.SchemeIsFile());
+    DCHECK(fullscreen_request_time_.is_null());
+
+    // If the WebContents is loading, start listening, otherwise just call the
+    // fullscreen function.
+
+    // This class destroys itself in the following situations (at least one of
+    // which will occur):
+    //   * after loading is complete and,
+    //   ** capture has begun and fullscreen requested,
+    //   ** kMaxSecondsToWaitForCapture seconds have passed without capture,
+    //   * another navigation is started,
+    //   * the WebContents is destroyed.
+    if (web_contents->IsLoading()) {
+      Observe(web_contents);
+    } else {
+      FullScreenFirstVideoElement(web_contents);
+    }
+  }
+  ~WebContentsFullscreenOnLoadedObserver() override {}
+
+  // content::WebContentsObserver implementation.
+  void DidStopLoading() override {
+    FullScreenFirstVideoElement(web_contents());
+  }
+
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    // If the user takes over and navigates away from the file, stop listening.
+    // (It is possible however for this listener to be created before the
+    // navigation to the requested file triggers, so provided we're still on the
+    // same URL, go ahead and keep listening).
+    if (file_url_ != navigation_handle->GetURL()) {
+      delete this;
+    }
+  }
+
+  void WebContentsDestroyed() override {
+    // If the WebContents is destroyed we will never trigger and need to clean
+    // up.
+    delete this;
+  }
+
+ private:
+  const GURL file_url_;
+
+  // Time intervals used by the logic that detects if capture has started.
+  const int kMaxSecondsToWaitForCapture = 10;
+  const int kPollIntervalInSeconds = 1;
+
+  // The time at which fullscreen was requested.
+  base::TimeTicks fullscreen_request_time_;
+
+  // Poll timer to monitor the capturer count when fullscreening local files.
+  //
+  // TODO(crbug.com/540965): Add a method to WebContentsObserver to report
+  // capturer count changes and get rid of this polling-based approach.
+  base::Timer capture_poll_timer_;
+
+  // Sends a request for full screen to the WebContents targeted at the first
+  // video element.  The request is only sent after capture has begun.
+  void FullScreenFirstVideoElement(content::WebContents* web_contents) {
+    if (file_url_ != web_contents->GetLastCommittedURL()) {
+      // The user has navigated before the casting started. Do not attempt to
+      // fullscreen and cleanup.
+      return;
+    }
+
+    fullscreen_request_time_ = base::TimeTicks::Now();
+    FullscreenIfContentCaptured(web_contents);
+  }
+
+  void FullscreenIfContentCaptured(content::WebContents* web_contents) {
+    if (web_contents->IsBeingCaptured()) {
+      content::mojom::FullscreenVideoElementHandlerAssociatedPtr client;
+      web_contents->GetMainFrame()
+          ->GetRemoteAssociatedInterfaces()
+          ->GetInterface(&client);
+      client->RequestFullscreenVideoElement();
+      delete this;
+      return;
+    } else if (base::TimeTicks::Now() - fullscreen_request_time_ >
+               base::TimeDelta::FromSeconds(kMaxSecondsToWaitForCapture)) {
+      // If content capture hasn't started within the timeout skip fullscreen.
+      DLOG(WARNING) << "Capture of local content did not start within timeout";
+      delete this;
+      return;
+    }
+
+    capture_poll_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kPollIntervalInSeconds),
+        base::BindRepeating(
+            &WebContentsFullscreenOnLoadedObserver::FullscreenIfContentCaptured,
+            base::Unretained(this), web_contents));
+  }
+};
+
 MediaRouterUI::UIMediaRoutesObserver::UIMediaRoutesObserver(
     MediaRouter* router,
     const MediaSource::Id& source_id,
@@ -238,11 +349,6 @@ MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
   router_ = MediaRouterFactory::GetApiForBrowserContext(context);
   event_page_request_manager_ =
       EventPageRequestManagerFactory::GetApiForBrowserContext(context);
-
-  // Allows UI to load extensionview.
-  // TODO(haibinlu): limit object-src to current extension once crbug/514866
-  // is fixed.
-  html_source->OverrideContentSecurityPolicyObjectSrc("object-src chrome:;");
 
   AddLocalizedStrings(html_source.get());
   AddMediaRouterUIResources(html_source.get());
@@ -505,8 +611,9 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
     SessionID::id_type tab_id = SessionTabHelper::IdForTab(tab_contents);
     source_id = MediaSourceForTab(tab_id).id();
 
-    SetLocalFileRouteParameters(sink_id, &origin, &route_response_callbacks,
-                                &timeout, &incognito);
+    SetLocalFileRouteParameters(sink_id, &origin, url, tab_contents,
+                                &route_response_callbacks, &timeout,
+                                &incognito);
   } else if (!SetRouteParameters(sink_id, cast_mode, &source_id, &origin,
                                  &route_response_callbacks, &timeout,
                                  &incognito)) {
@@ -604,12 +711,14 @@ bool MediaRouterUI::SetRouteParameters(
   return true;
 }
 
-// TODO(Issue 751317) This function and the above function are messy, this code
-// would be much neater if the route params were combined in a single struct,
-// which will require mojo changes as well.
+// TODO(crbug.com/751317): This function and the above function are messy, this
+// code would be much neater if the route params were combined in a single
+// struct, which will require mojo changes as well.
 bool MediaRouterUI::SetLocalFileRouteParameters(
     const MediaSink::Id& sink_id,
     url::Origin* origin,
+    const GURL& file_url,
+    content::WebContents* tab_contents,
     std::vector<MediaRouteResponseCallback>* route_response_callbacks,
     base::TimeDelta* timeout,
     bool* incognito) {
@@ -628,6 +737,10 @@ bool MediaRouterUI::SetLocalFileRouteParameters(
 
   route_response_callbacks->push_back(base::BindOnce(
       &MediaRouterUI::MaybeReportFileInformation, weak_factory_.GetWeakPtr()));
+
+  route_response_callbacks->push_back(
+      base::BindOnce(&MediaRouterUI::FullScreenFirstVideoElement,
+                     weak_factory_.GetWeakPtr(), file_url, tab_contents));
 
   *timeout = GetRouteRequestTimeout(MediaCastMode::LOCAL_FILE);
   *incognito = Profile::FromWebUI(web_ui())->IsOffTheRecord();
@@ -809,6 +922,17 @@ void MediaRouterUI::MaybeReportCastingSource(MediaCastMode cast_mode,
                                              const RouteRequestResult& result) {
   if (result.result_code() == RouteRequestResult::OK)
     MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
+}
+
+// TODO(crbug.com/792547): Refactor these next two methods into a local media
+// casting specific location instead of here in the main ui.
+void MediaRouterUI::FullScreenFirstVideoElement(
+    const GURL& file_url,
+    content::WebContents* web_contents,
+    const RouteRequestResult& result) {
+  if (result.result_code() == RouteRequestResult::OK) {
+    new WebContentsFullscreenOnLoadedObserver(file_url, web_contents);
+  }
 }
 
 void MediaRouterUI::MaybeReportFileInformation(
