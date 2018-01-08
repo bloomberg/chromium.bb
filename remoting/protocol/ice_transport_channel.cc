@@ -20,6 +20,7 @@
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
 #include "third_party/webrtc/p2p/base/packettransportinterface.h"
 #include "third_party/webrtc/p2p/base/port.h"
+#include "third_party/webrtc/p2p/base/portallocator.h"
 #include "third_party/webrtc/rtc_base/network.h"
 
 namespace remoting {
@@ -87,6 +88,8 @@ void IceTransportChannel::Connect(const std::string& name,
   port_allocator_ =
       transport_context_->port_allocator_factory()->CreatePortAllocator(
           transport_context_);
+  port_allocator_->set_flags(port_allocator_->flags() |
+                             cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI);
 
   // Create P2PTransportChannel, attach signal handlers and connect it.
   // TODO(sergeyu): Specify correct component ID for the channel.
