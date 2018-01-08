@@ -25,7 +25,6 @@ const kLanguageCodeToTranslateCode = {
   'zh-HK': 'zh-TW',
   'zh-MO': 'zh-TW',
   'zh-SG': 'zh-CN',
-  'zh': 'zh-CH',
 };
 
 // Some ISO 639 language codes have been renamed, e.g. "he" to "iw", but
