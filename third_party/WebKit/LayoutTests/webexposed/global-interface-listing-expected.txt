@@ -438,7 +438,6 @@ interface BackgroundFetchRegistration : EventTarget
     getter downloaded
     getter id
     getter onprogress
-    getter totalDownloadSize
     getter uploadTotal
     getter uploaded
     method abort
