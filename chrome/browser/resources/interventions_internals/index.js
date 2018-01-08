@@ -110,27 +110,21 @@ function pushMessagesToTopOfLogsTable(pageId) {
 }
 
 /**
- * Helper method to expand all logs in the message-logs-table.
+ * Helper method to expand or collapse all logs in the message-logs-table.
+ *
+ * @param {boolean} expanding True for expand all log messages, and false to
+ * collapse all log messages.
  */
-function expandAllLogs() {
+function logExpansionHelper(expanding) {
   let rows = $('message-logs-table').rows;
   for (let i = 1; i < rows.length; i++) {
     if (rows[i].className.includes('expansion-row')) {
-      rows[i].className = rows[i].className.replace('hide', 'show');
-      rows[i - 1].querySelector('.arrow').className = 'arrow up';
-    }
-  }
-}
-
-/**
- * Helper method to collapse all logs in the message-logs-table.
- */
-function collapseAllLogs() {
-  let rows = $('message-logs-table').rows;
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i].className.includes('expansion-row')) {
-      rows[i].className = rows[i].className.replace('show', 'hide');
-      rows[i - 1].querySelector('.arrow').className = 'arrow down';
+      rows[i].className = expand ? rows[i].className.replace('hide', 'show') :
+                                   rows[i].className.replace('show', 'hide');
+      let arrowButton = rows[i - 1].querySelector('.arrow');
+      if (arrowButton) {
+        arrowButton.className = expand ? 'arrow up' : 'arrow down';
+      }
     }
   }
 }
@@ -311,7 +305,7 @@ function setupLogSearch() {
   $('log-search-bar').addEventListener('keyup', () => {
     let keyword = $('log-search-bar').value.toUpperCase();
     let rows = $('message-logs-table').rows;
-    expandAllLogs();
+    logExpansionHelper(true /* expanding */);
 
     for (let i = 1; i < rows.length; i++) {
       rows[i].style.display =
@@ -336,7 +330,7 @@ function setupLogSearch() {
 function setupExpandLogs() {
   // Expand all button.
   $('expand-log-button').addEventListener('click', () => {
-    expandAllLogs();
+    logExpansionHelper(true /* expanding */);
     $('collapse-log-button').style.display = '';
     $('expand-log-button').style.display = 'none';
   });
@@ -344,7 +338,7 @@ function setupExpandLogs() {
   // Collapse all button.
   $('collapse-log-button').style.display = 'none';
   $('collapse-log-button').addEventListener('click', () => {
-    collapseAllLogs();
+    logExpansionHelper(false /* expanding */);
     $('collapse-log-button').style.display = 'none';
     $('expand-log-button').style.display = '';
   });
