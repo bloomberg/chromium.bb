@@ -408,12 +408,19 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
 #if CONFIG_DIST_8X8
-  if (extra_cfg->enable_dist_8x8 && extra_cfg->lossless)
-    ERROR("dist-8x8 cannot be used with lossless compression.");
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_DAALA_DIST);
 #else
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR, AOM_TUNE_SSIM);
 #endif
+
+  if (extra_cfg->lossless) {
+    if (extra_cfg->aq_mode != 0)
+      ERROR("Only --aq_mode=0 can be used with --lossless=1.");
+#if CONFIG_DIST_8X8
+    if (extra_cfg->enable_dist_8x8)
+      ERROR("dist-8x8 cannot be used with lossless compression.");
+#endif
+  }
 
   return AOM_CODEC_OK;
 }
