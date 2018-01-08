@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
@@ -26,10 +27,25 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
  public:
   static uintptr_t getId(const webrtc::RtpSenderInterface* webrtc_sender);
 
+  RTCRtpSender(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+               scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
+               scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
+               rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
+               blink::WebMediaStreamTrack web_track,
+               std::vector<blink::WebMediaStream> web_streams);
+  // TODO(hbos): Remove these in favor of the above constructor that creates the
+  // corresponding adapter refs. They won't be needed after
+  // https://crbug.com/738929.
   RTCRtpSender(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
+      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
       rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref);
   RTCRtpSender(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
+      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
       rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
       std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
@@ -44,15 +60,25 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   // TODO(hbos): Remove in favor of constructor. https://crbug.com/790007
   std::unique_ptr<RTCRtpSender> ShallowCopy() const;
 
+  // blink::WebRTCRtpSender.
   uintptr_t Id() const override;
   blink::WebMediaStreamTrack Track() const override;
+  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
+                    blink::WebRTCVoidRequest request) override;
 
   webrtc::RtpSenderInterface* webrtc_sender() const;
   const webrtc::MediaStreamTrackInterface* webrtc_track() const;
+  // The ReplaceTrack() that takes a blink::WebRTCVoidRequest is implemented on
+  // top of this, which returns the result in a callback instead. Allows doing
+  // ReplaceTrack() without having a blink::WebRTCVoidRequest, which can only be
+  // constructed inside of blink.
+  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
+                    base::OnceCallback<void(bool)> callback);
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc);
 
  private:
   class RTCRtpSenderInternal;
+
   scoped_refptr<RTCRtpSenderInternal> internal_;
 };
 

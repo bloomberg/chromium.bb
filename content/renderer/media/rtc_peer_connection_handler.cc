@@ -1866,11 +1866,13 @@ RTCPeerConnectionHandler::GetSenders() {
         track_adapter = track_adapter_map_->GetLocalTrackAdapter(webrtc_track);
         DCHECK(track_adapter);
       }
-      it = rtp_senders_
-               .insert(std::make_pair(
-                   id, std::make_unique<RTCRtpSender>(
-                           webrtc_senders[i].get(), std::move(track_adapter))))
-               .first;
+      it =
+          rtp_senders_
+              .insert(std::make_pair(
+                  id, std::make_unique<RTCRtpSender>(
+                          task_runner_, signaling_thread(), stream_adapter_map_,
+                          webrtc_senders[i].get(), std::move(track_adapter))))
+              .first;
     }
     web_senders[i] = it->second->ShallowCopy();
   }
@@ -1922,9 +1924,10 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
   auto it = rtp_senders_
                 .insert(std::make_pair(
                     webrtc_sender_id,
-                    std::make_unique<RTCRtpSender>(std::move(webrtc_sender),
-                                                   std::move(track_adapter),
-                                                   std::move(stream_adapters))))
+                    std::make_unique<RTCRtpSender>(
+                        task_runner_, signaling_thread(), stream_adapter_map_,
+                        std::move(webrtc_sender), std::move(track_adapter),
+                        std::move(stream_adapters))))
                 .first;
   return it->second->ShallowCopy();
 }
