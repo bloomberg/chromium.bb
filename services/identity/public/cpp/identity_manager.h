@@ -52,6 +52,14 @@ class IdentityManager : public SigninManagerBase::Observer {
       const OAuth2TokenService::ScopeSet& scopes,
       PrimaryAccountAccessTokenFetcher::TokenCallback callback);
 
+  // If an entry exists in the Identity Service's cache corresponding to the
+  // given information, removes that entry; in this case, the next access token
+  // request for |account_id| and |scopes| will fetch a new token from the
+  // network. Otherwise, is a no-op.
+  void RemoveAccessTokenFromCache(const AccountInfo& account_info,
+                                  const OAuth2TokenService::ScopeSet& scopes,
+                                  const std::string& access_token);
+
   // Methods to register or remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

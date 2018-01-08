@@ -40,6 +40,18 @@ IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
       std::move(callback));
 }
 
+void IdentityManager::RemoveAccessTokenFromCache(
+    const AccountInfo& account_info,
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  // Call PO2TS asynchronously to mimic the eventual interaction with the
+  // Identity Service.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&OAuth2TokenService::InvalidateAccessToken,
+                                base::Unretained(token_service_),
+                                account_info.account_id, scopes, access_token));
+}
+
 void IdentityManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
