@@ -1399,21 +1399,6 @@ void LocalFrameView::SetSubtreeNeedsPaintPropertyUpdate() {
     layout_view->SetSubtreeNeedsPaintPropertyUpdate();
 }
 
-IntRect LocalFrameView::ComputeVisibleArea() {
-  // Return our clipping bounds in the root frame.
-  IntRect us(FrameRect());
-  if (LocalFrameView* parent = ParentFrameView()) {
-    us = parent->ContentsToRootFrame(us);
-    IntRect parent_rect = parent->ComputeVisibleArea();
-    if (parent_rect.IsEmpty())
-      return IntRect();
-
-    us.Intersect(parent_rect);
-  }
-
-  return us;
-}
-
 FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
   float zoom = 1;
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())

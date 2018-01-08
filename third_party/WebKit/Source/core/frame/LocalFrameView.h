@@ -838,9 +838,6 @@ class CORE_EXPORT LocalFrameView final
   // e.g. when beginning or finishing printing.
   void SetSubtreeNeedsPaintPropertyUpdate();
 
-  // TODO(ojan): Merge this with IntersectionObserver once it lands.
-  IntRect ComputeVisibleArea();
-
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
   // May include the size of browser controls. See implementation for further
   // documentation.
