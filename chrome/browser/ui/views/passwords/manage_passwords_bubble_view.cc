@@ -640,6 +640,7 @@ void ManagePasswordsBubbleView::PendingView::
       parent_->model()->pending_password().password_value;
   if (username_editable) {
     new_username = static_cast<views::Textfield*>(username_field_)->text();
+    base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
   }
   if (password_editable) {
     new_password =

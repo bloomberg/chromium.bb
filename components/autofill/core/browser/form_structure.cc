@@ -1274,8 +1274,11 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
             field->form_classifier_outcome());
       }
 
-      if (field->username_vote_type())
+      if (field->username_vote_type()) {
         added_field->set_username_vote_type(field->username_vote_type());
+      } else {
+        DCHECK(field_type != autofill::USERNAME);
+      }
 
       added_field->set_signature(field->GetFieldSignature());
 
