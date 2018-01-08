@@ -44,11 +44,10 @@ namespace {
 
 class ScopedPixelUnpackBufferOverride {
  public:
-  explicit ScopedPixelUnpackBufferOverride(
-      bool enable_es3,
-      GLuint binding_override)
+  explicit ScopedPixelUnpackBufferOverride(bool has_pixel_buffers,
+                                           GLuint binding_override)
       : orig_binding_(-1) {
-    if (enable_es3) {
+    if (has_pixel_buffers) {
       GLint orig_binding = 0;
       glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &orig_binding);
       if (static_cast<GLuint>(orig_binding) != binding_override) {
@@ -400,7 +399,16 @@ void FeatureInfo::InitializeFeatures() {
 
   bool enable_es3 = IsWebGL2OrES3Context();
 
-  ScopedPixelUnpackBufferOverride scoped_pbo_override(enable_es3, 0);
+  // Pixel buffer bindings can be manipulated by the client if ES3 is enabled or
+  // the GL_NV_pixel_buffer_object extension is exposed by ANGLE when using the
+  // passthrough command decoder
+  bool pixel_buffers_exposed =
+      enable_es3 || gl::HasExtension(extensions, "GL_NV_pixel_buffer_object");
+
+  // Both decoders may bind pixel buffers if exposing an ES3 or WebGL 2 context
+  // and the passthrough command decoder may also bind PBOs if
+  // NV_pixel_buffer_object is exposed.
+  ScopedPixelUnpackBufferOverride scoped_pbo_override(pixel_buffers_exposed, 0);
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");

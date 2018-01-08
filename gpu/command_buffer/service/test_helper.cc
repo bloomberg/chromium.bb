@@ -517,7 +517,8 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       .WillOnce(Return(reinterpret_cast<const uint8_t*>(gl_renderer)))
       .RetiresOnSaturation();
 
-  if (enable_es3) {
+  if (enable_es3 ||
+      gl::HasExtension(extension_set, "GL_NV_pixel_buffer_object")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, _))
       .WillOnce(SetArgPointee<1>(0))
       .RetiresOnSaturation();
