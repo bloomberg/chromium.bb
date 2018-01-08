@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<title>Tests that a track with the "default" attribute loads automatically.</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<title>A track with the "default" attribute loads automatically</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <video>
-  <track kind="captions" src="captions-webvtt/tc005-default-styles.vtt">
-  <track kind="captions" src="captions-webvtt/tc005-metadata-area.vtt">
-  <track default kind="captions" src="captions-webvtt/tc004-webvtt-file.vtt" id="default">
+  <track kind="captions" src="resources/default-styles.vtt">
+  <track kind="captions" src="resources/metadata-area.vtt">
+  <track kind="captions" src="resources/webvtt-file.vtt" id="default" default>
   <script>
   async_test(function(t) {
     var timer = null;
