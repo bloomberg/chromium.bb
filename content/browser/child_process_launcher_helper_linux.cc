@@ -78,7 +78,8 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     // be created lazily here, or in the delegate GetZygote() implementations.
     // Additionally, the delegate could provide a UseGenericZygote() method.
     base::ProcessHandle handle = zygote_handle->ForkRequest(
-        command_line()->argv(), std::move(files_to_register), GetProcessType());
+        command_line()->argv(), files_to_register->GetMapping(),
+        GetProcessType());
     *launch_result = LAUNCH_RESULT_SUCCESS;
     Process process;
     process.process = base::Process(handle);
