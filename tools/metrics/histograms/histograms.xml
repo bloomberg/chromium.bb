@@ -227,6 +227,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosSelectToSpeak.SpeechPitch"
+    enum="CrosSelectToSpeakSpeechPitch">
+  <owner>katie@chromium.org</owner>
+  <summary>
+    The speech pitch setting when Select-to-Speak was activated. It is stored as
+    a sparse histogram with values (100 * speech_pitch). For example, a speech
+    pitch of 1.0 (default) will be seen as 100.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosSelectToSpeak.SpeechRate"
     enum="CrosSelectToSpeakSpeechRate">
   <owner>katie@chromium.org</owner>
