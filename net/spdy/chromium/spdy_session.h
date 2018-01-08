@@ -487,7 +487,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   bool CloseOneIdleConnection() override;
 
   // Http2PushPromiseIndex::Delegate implementation:
-  bool ValidatePushedStream(const SpdySessionKey& key) const override;
+  bool ValidatePushedStream(const GURL& url,
+                            const SpdySessionKey& key) const override;
   void OnPushedStreamClaimed(const GURL& url, SpdyStreamId stream_id) override;
   base::WeakPtr<SpdySession> GetWeakPtrToSession() override;
 

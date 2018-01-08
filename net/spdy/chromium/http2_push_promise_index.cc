@@ -94,16 +94,12 @@ void Http2PushPromiseIndex::ClaimPushedStream(
   *session = nullptr;
   *stream_id = kNoPushedStreamFound;
 
-  // Do not allow cross-origin push for non-cryptographic schemes.
-  if (!url.SchemeIsCryptographic())
-    return;
-
   // Find the first entry for |url|, if such exists.
   auto it = unclaimed_pushed_streams_.lower_bound(
       UnclaimedPushedStream{url, nullptr, kNoPushedStreamFound});
 
   while (it != unclaimed_pushed_streams_.end() && it->url == url) {
-    if (it->delegate->ValidatePushedStream(key)) {
+    if (it->delegate->ValidatePushedStream(url, key)) {
       *session = it->delegate->GetWeakPtrToSession();
       *stream_id = it->stream_id;
       it->delegate->OnPushedStreamClaimed(it->url, it->stream_id);
