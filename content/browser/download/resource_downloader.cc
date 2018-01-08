@@ -163,8 +163,7 @@ void ResourceDownloader::Start(
         std::move(url_loader_request),
         0,  // routing_id
         0,  // request_id
-        mojom::kURLLoadOptionSendSSLInfoWithResponse |
-            mojom::kURLLoadOptionSniffMimeType,
+        mojom::kURLLoadOptionSendSSLInfoWithResponse,
         *(resource_request_.get()), std::move(url_loader_client_ptr),
         net::MutableNetworkTrafficAnnotationTag(
             download_url_parameters->GetNetworkTrafficAnnotation()));
