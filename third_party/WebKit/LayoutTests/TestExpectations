@@ -3555,3 +3555,7 @@ crbug.com/799164 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass
 
 # Sheriff failures 2018-01-05
 crbug.com/799547 [ Mac ] external/wpt/WebCryptoAPI/generateKey/failures_RSA-PSS.https.worker.html [ Pass Timeout ]
+
+# Sheriff failures 2018-01-08
+# This test fails consistently on Nexus4 - see bug for info.
+crbug.com/799814 [ Android ] fast/beacon/beacon-basic.html [ Pass Failure ]
