@@ -32,7 +32,6 @@ namespace blink {
 
 class CSSValue;
 class ImageResourceContent;
-class IntSize;
 class LayoutSize;
 class SVGImage;
 class Document;
@@ -74,7 +73,9 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   virtual bool ErrorOccurred() const { return false; }
 
   // Determine the concrete object size of this <image>, scaled by multiplier,
-  // using the specified default object size.
+  // using the specified default object size. Return value as a FloatSize
+  // because we want integer sizes to remain integers when zoomed and then
+  // unzoomed. That is, (size * multiplier) / multiplier == size.
   //
   // The default object size is context dependent, see for instance the
   // "Examples of CSS Object Sizing" section of the CSS images specification.
@@ -83,9 +84,9 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   // The |default_object_size| is assumed to be in the effective zoom level
   // given by multiplier, i.e. if multiplier is 1 the |default_object_size| is
   // not zoomed.
-  virtual LayoutSize ImageSize(const Document&,
-                               float multiplier,
-                               const LayoutSize& default_object_size) const = 0;
+  virtual FloatSize ImageSize(const Document&,
+                              float multiplier,
+                              const LayoutSize& default_object_size) const = 0;
 
   // The <image> does not have any intrinsic dimensions.
   virtual bool ImageHasRelativeSize() const = 0;
@@ -107,7 +108,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
       const ImageResourceObserver&,
       const Document&,
       const ComputedStyle&,
-      const IntSize& container_size) const = 0;
+      const LayoutSize& container_size) const = 0;
 
   // Opaque handle representing the underlying value of this <image>.
   virtual WrappedImagePtr Data() const = 0;
@@ -150,10 +151,10 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
   bool is_invalid_image_ : 1;
   bool is_paint_image_ : 1;
 
-  LayoutSize ApplyZoom(const LayoutSize&, float multiplier) const;
-  LayoutSize ImageSizeForSVGImage(SVGImage*,
-                                  float multiplier,
-                                  const LayoutSize& default_object_size) const;
+  FloatSize ApplyZoom(const FloatSize&, float multiplier) const;
+  FloatSize ImageSizeForSVGImage(SVGImage*,
+                                 float multiplier,
+                                 const LayoutSize& default_object_size) const;
 };
 
 #define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function)                   \

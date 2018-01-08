@@ -53,7 +53,7 @@ class CORE_EXPORT LayoutImageResource
   void ResetAnimation();
   bool MaybeAnimated() const;
 
-  virtual scoped_refptr<Image> GetImage(const IntSize&) const;
+  virtual scoped_refptr<Image> GetImage(const LayoutSize&) const;
   virtual bool ErrorOccurred() const {
     return cached_image_ && cached_image_->ErrorOccurred();
   }
@@ -64,7 +64,7 @@ class CORE_EXPORT LayoutImageResource
 
   virtual bool ImageHasRelativeSize() const;
 
-  virtual LayoutSize ImageSize(float multiplier) const;
+  virtual FloatSize ImageSize(float multiplier) const;
 
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 

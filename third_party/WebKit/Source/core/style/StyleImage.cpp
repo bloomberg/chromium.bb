@@ -10,33 +10,34 @@
 
 namespace blink {
 
-LayoutSize StyleImage::ApplyZoom(const LayoutSize& size,
-                                 float multiplier) const {
+FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier) const {
   if (multiplier == 1.0f || ImageHasRelativeSize())
     return size;
 
-  LayoutUnit width(size.Width() * multiplier);
-  LayoutUnit height(size.Height() * multiplier);
+  float width = size.Width() * multiplier;
+  float height = size.Height() * multiplier;
 
   // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-  if (size.Width() > LayoutUnit())
-    width = std::max(LayoutUnit(1), width);
+  if (size.Width() > 0)
+    width = std::max(1.0f, width);
 
-  if (size.Height() > LayoutUnit())
-    height = std::max(LayoutUnit(1), height);
+  if (size.Height() > 0)
+    height = std::max(1.0f, height);
 
-  return LayoutSize(width, height);
+  return FloatSize(width, height);
 }
 
-LayoutSize StyleImage::ImageSizeForSVGImage(
+FloatSize StyleImage::ImageSizeForSVGImage(
     SVGImage* svg_image,
     float multiplier,
     const LayoutSize& default_object_size) const {
   FloatSize unzoomed_default_object_size(default_object_size);
   unzoomed_default_object_size.Scale(1 / multiplier);
-  LayoutSize image_size(RoundedIntSize(
-      svg_image->ConcreteObjectSize(unzoomed_default_object_size)));
-  return ApplyZoom(image_size, multiplier);
+  // FIXME(schenney): Remove this rounding hack once background image
+  // geometry is converted to handle rounding downstream.
+  return FloatSize(RoundedIntSize(
+      ApplyZoom(svg_image->ConcreteObjectSize(unzoomed_default_object_size),
+                multiplier)));
 }
 
 }  // namespace blink

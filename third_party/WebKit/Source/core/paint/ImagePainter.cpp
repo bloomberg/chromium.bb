@@ -150,8 +150,8 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   if (pixel_snapped_dest_rect.IsEmpty())
     return;
 
-  scoped_refptr<Image> image =
-      layout_image_.ImageResource()->GetImage(pixel_snapped_dest_rect.Size());
+  scoped_refptr<Image> image = layout_image_.ImageResource()->GetImage(
+      LayoutSize(pixel_snapped_dest_rect.Size()));
   if (!image || image->IsNull())
     return;
 

@@ -92,19 +92,20 @@ bool LayoutImageResource::ImageHasRelativeSize() const {
   return cached_image_ && cached_image_->GetImage()->HasRelativeSize();
 }
 
-LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
+FloatSize LayoutImageResource::ImageSize(float multiplier) const {
   if (!cached_image_)
-    return LayoutSize();
-  LayoutSize size(cached_image_->IntrinsicSize(
+    return FloatSize();
+  FloatSize size(cached_image_->IntrinsicSize(
       LayoutObject::ShouldRespectImageOrientation(layout_object_)));
   if (multiplier != 1 && !ImageHasRelativeSize()) {
     // Don't let images that have a width/height >= 1 shrink below 1 when
     // zoomed.
-    LayoutSize minimum_size(
-        size.Width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
-        size.Height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit());
+    FloatSize minimum_size(size.Width() > 0 ? 1 : 0, size.Height() > 0 ? 1 : 0);
     size.Scale(multiplier);
-    size.ClampToMinimumSize(minimum_size);
+    if (size.Width() < minimum_size.Width())
+      size.SetWidth(minimum_size.Width());
+    if (size.Height() < minimum_size.Height())
+      size.SetHeight(minimum_size.Height());
   }
   if (layout_object_ && layout_object_->IsLayoutImage() && size.Width() &&
       size.Height())
@@ -136,7 +137,7 @@ void LayoutImageResource::UseBrokenImage() {
 }
 
 scoped_refptr<Image> LayoutImageResource::GetImage(
-    const IntSize& container_size) const {
+    const LayoutSize& container_size) const {
   if (!cached_image_)
     return Image::NullImage();
 

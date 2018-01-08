@@ -94,7 +94,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   IntSize image_size = RoundedIntSize(
       style_image->ImageSize(document, 1, border_image_rect.Size()));
   scoped_refptr<Image> image =
-      style_image->GetImage(observer, document, style, image_size);
+      style_image->GetImage(observer, document, style, LayoutSize(image_size));
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",

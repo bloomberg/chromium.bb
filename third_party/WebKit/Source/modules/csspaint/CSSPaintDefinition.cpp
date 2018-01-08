@@ -126,7 +126,7 @@ scoped_refptr<Image> CSSPaintDefinition::Paint(
   }
 
   return PaintGeneratedImage::Create(rendering_context->GetRecord(),
-                                     container_size);
+                                     FloatSize(container_size));
 }
 
 void CSSPaintDefinition::MaybeCreatePaintInstance() {

@@ -26,7 +26,7 @@
 #ifndef GeneratedImage_h
 #define GeneratedImage_h
 
-#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -39,7 +39,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
   bool UsesContainerSize() const override { return true; }
   bool HasRelativeSize() const override { return true; }
 
-  IntSize Size() const override { return size_; }
+  IntSize Size() const override { return RoundedIntSize(size_); }
 
   // Assume that generated content has no decoded data we need to worry about
   void DestroyDecodedData() override {}
@@ -61,11 +61,11 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
     return false;
   }
 
-  GeneratedImage(const IntSize& size) : size_(size) {}
+  GeneratedImage(const FloatSize& size) : size_(size) {}
 
   virtual void DrawTile(GraphicsContext&, const FloatRect&) = 0;
 
-  IntSize size_;
+  FloatSize size_;
 };
 
 }  // namespace blink

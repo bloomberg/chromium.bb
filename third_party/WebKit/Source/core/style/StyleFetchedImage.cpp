@@ -79,7 +79,7 @@ bool StyleFetchedImage::ErrorOccurred() const {
   return image_->ErrorOccurred();
 }
 
-LayoutSize StyleFetchedImage::ImageSize(
+FloatSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
     const LayoutSize& default_object_size) const {
@@ -93,7 +93,7 @@ LayoutSize StyleFetchedImage::ImageSize(
   // border-image, etc.)
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  LayoutSize size(image_->IntrinsicSize(kDoNotRespectImageOrientation));
+  FloatSize size(image_->IntrinsicSize(kDoNotRespectImageOrientation));
   return ApplyZoom(size, multiplier);
 }
 
@@ -130,7 +130,7 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ImageResourceObserver&,
     const Document&,
     const ComputedStyle& style,
-    const IntSize& container_size) const {
+    const LayoutSize& container_size) const {
   Image* image = image_->GetImage();
   if (!image->IsSVGImage())
     return image;
