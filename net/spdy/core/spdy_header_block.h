@@ -72,6 +72,10 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
     SpdyStringPiece value() const { return as_pair().second; }
     const std::pair<SpdyStringPiece, SpdyStringPiece>& as_pair() const;
 
+    // Size estimate including separators. Used when keys are erased from
+    // SpdyHeaderBlock.
+    size_t SizeEstimate() const { return size_; }
+
    private:
     // May allocate a large contiguous region of memory to hold the concatenated
     // fragments and separators.
@@ -81,6 +85,8 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
     mutable std::vector<SpdyStringPiece> fragments_;
     // The first element is the key; the second is the consolidated value.
     mutable std::pair<SpdyStringPiece, SpdyStringPiece> pair_;
+    size_t size_ = 0;
+    size_t separator_size_ = 0;
   };
 
   typedef linked_hash_map<SpdyStringPiece, HeaderValue, base::StringPieceHash>
@@ -163,7 +169,7 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
   const_iterator find(SpdyStringPiece key) const {
     return const_iterator(block_.find(key));
   }
-  void erase(SpdyStringPiece key) { block_.erase(key); }
+  void erase(SpdyStringPiece key);
 
   // Clears both our MapType member and the memory used to hold headers.
   void clear();
@@ -211,29 +217,37 @@ class SPDY_EXPORT_PRIVATE SpdyHeaderBlock {
     ValueProxy(SpdyHeaderBlock::MapType* block,
                SpdyHeaderBlock::Storage* storage,
                SpdyHeaderBlock::MapType::iterator lookup_result,
-               const SpdyStringPiece key);
+               const SpdyStringPiece key,
+               size_t* spdy_header_block_value_size);
 
     SpdyHeaderBlock::MapType* block_;
     SpdyHeaderBlock::Storage* storage_;
     SpdyHeaderBlock::MapType::iterator lookup_result_;
     SpdyStringPiece key_;
+    size_t* spdy_header_block_value_size_;
     bool valid_;
   };
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
+  size_t TotalBytesUsed() const { return key_size_ + value_size_; }
+
  private:
   friend class test::SpdyHeaderBlockPeer;
 
   void AppendHeader(const SpdyStringPiece key, const SpdyStringPiece value);
   Storage* GetStorage();
+  SpdyStringPiece WriteKey(const SpdyStringPiece key);
   size_t bytes_allocated() const;
 
   // SpdyStringPieces held by |block_| point to memory owned by |*storage_|.
   // |storage_| might be nullptr as long as |block_| is empty.
   MapType block_;
   std::unique_ptr<Storage> storage_;
+
+  size_t key_size_ = 0;
+  size_t value_size_ = 0;
 };
 
 // Writes |fragments| to |dst|, joined by |separator|. |dst| must be large
