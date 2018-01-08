@@ -4,11 +4,11 @@
 
 #include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 
+#include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_positioned_float.h"

@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_container_fragment_builder.h"
 
-#include "core/layout/ng/ng_exclusion_space.h"
+#include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_unpositioned_float.h"

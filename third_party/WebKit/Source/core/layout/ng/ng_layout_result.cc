@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_layout_result.h"
 
-#include "core/layout/ng/ng_exclusion_space.h"
+#include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/ng_positioned_float.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/wtf/PtrUtil.h"

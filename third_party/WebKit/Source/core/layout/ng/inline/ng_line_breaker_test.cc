@@ -46,16 +46,15 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     Vector<NGInlineItemResults> lines;
     NGExclusionSpace exclusion_space;
+    NGLayoutOpportunity opportunity;
+    opportunity.rect =
+        NGBfcRect(NGBfcOffset(), {available_width, LayoutUnit::Max()});
     NGLineInfo line_info;
     while (!break_token || !break_token->IsFinished()) {
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, *space,
                                  &positioned_floats, &unpositioned_floats,
                                  &exclusion_space, 0u, break_token.get());
-      if (!line_breaker.NextLine(
-              NGLayoutOpportunity(
-                  NGBfcOffset(),
-                  NGLogicalSize({available_width, NGSizeIndefinite})),
-              &line_info))
+      if (!line_breaker.NextLine(opportunity, &line_info))
         break;
 
       break_token = line_breaker.CreateBreakToken(nullptr);

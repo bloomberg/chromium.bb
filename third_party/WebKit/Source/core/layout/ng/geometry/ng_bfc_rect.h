@@ -15,40 +15,42 @@ namespace blink {
 // NGBfcRect is the position and size of a rect (typically a fragment)
 // relative to a block formatting context.
 struct CORE_EXPORT NGBfcRect {
-  NGBfcRect() {}
-  NGBfcRect(const NGBfcOffset& offset, const NGLogicalSize& size)
-      : offset(offset), size(size) {}
+  NGBfcRect(const NGBfcOffset& start_offset, const NGBfcOffset& end_offset)
+      : start_offset(start_offset), end_offset(end_offset) {
+    DCHECK_GE(end_offset.line_offset, start_offset.line_offset);
+    DCHECK_GE(end_offset.block_offset, start_offset.block_offset);
+  }
 
   bool IsEmpty() const;
 
-  // Whether this rectangle is contained by the provided rectangle.
-  bool IsContained(const NGBfcRect& other) const;
-
-  LayoutUnit LineStartOffset() const { return offset.line_offset; }
-  LayoutUnit LineEndOffset() const {
-    return offset.line_offset + size.inline_size;
-  }
-  LayoutUnit BlockStartOffset() const { return offset.block_offset; }
-  LayoutUnit BlockEndOffset() const {
-    return offset.block_offset + size.block_size;
-  }
+  LayoutUnit LineStartOffset() const { return start_offset.line_offset; }
+  LayoutUnit LineEndOffset() const { return end_offset.line_offset; }
+  LayoutUnit BlockStartOffset() const { return start_offset.block_offset; }
+  LayoutUnit BlockEndOffset() const { return end_offset.block_offset; }
 
   NGBfcOffset LineEndBlockStartOffset() const {
     return {LineEndOffset(), BlockStartOffset()};
   }
 
-  LayoutUnit BlockSize() const { return size.block_size; }
-  LayoutUnit InlineSize() const { return size.inline_size; }
+  LayoutUnit BlockSize() const {
+    if (end_offset.block_offset == LayoutUnit::Max())
+      return LayoutUnit::Max();
 
-  String ToString() const;
+    return end_offset.block_offset - start_offset.block_offset;
+  }
+  LayoutUnit InlineSize() const {
+    if (end_offset.line_offset == LayoutUnit::Max())
+      return LayoutUnit::Max();
+
+    return end_offset.line_offset - start_offset.line_offset;
+  }
+
   bool operator==(const NGBfcRect& other) const;
   bool operator!=(const NGBfcRect& other) const { return !(*this == other); }
 
-  NGBfcOffset offset;
-  NGLogicalSize size;
+  NGBfcOffset start_offset;
+  NGBfcOffset end_offset;
 };
-
-CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGBfcRect&);
 
 }  // namespace blink
 

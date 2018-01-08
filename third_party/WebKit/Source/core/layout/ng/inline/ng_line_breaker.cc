@@ -152,9 +152,9 @@ void NGLineBreaker::PrepareNextLine(const NGLayoutOpportunity& opportunity,
   line_.position = line_info->TextIndent();
 
   line_.opportunity = opportunity;
-  line_.line_left_bfc_offset = opportunity.LineStartOffset();
-  line_.line_right_bfc_offset = opportunity.LineEndOffset();
-  bfc_block_offset_ = opportunity.BlockStartOffset();
+  line_.line_left_bfc_offset = opportunity.rect.LineStartOffset();
+  line_.line_right_bfc_offset = opportunity.rect.LineEndOffset();
+  bfc_block_offset_ = opportunity.rect.BlockStartOffset();
 }
 
 bool NGLineBreaker::NextLine(const NGLayoutOpportunity& opportunity,

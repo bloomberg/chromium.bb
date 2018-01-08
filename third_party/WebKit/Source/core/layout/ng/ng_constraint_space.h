@@ -6,12 +6,12 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
