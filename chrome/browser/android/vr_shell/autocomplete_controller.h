@@ -18,14 +18,17 @@ class ChromeAutocompleteProviderClient;
 class Profile;
 
 namespace vr {
-class BrowserUiInterface;
+struct OmniboxSuggestions;
 }
 
 namespace vr_shell {
 
 class AutocompleteController : public AutocompleteControllerDelegate {
  public:
-  explicit AutocompleteController(vr::BrowserUiInterface* ui);
+  typedef base::RepeatingCallback<void(std::unique_ptr<vr::OmniboxSuggestions>)>
+      SuggestionCallback;
+
+  explicit AutocompleteController(const SuggestionCallback& callback);
   AutocompleteController();
   ~AutocompleteController() override;
 
@@ -45,7 +48,7 @@ class AutocompleteController : public AutocompleteControllerDelegate {
   Profile* profile_;
   ChromeAutocompleteProviderClient* client_;
   std::unique_ptr<::AutocompleteController> autocomplete_controller_;
-  vr::BrowserUiInterface* ui_;
+  SuggestionCallback suggestion_callback_;
 
   // This is used to throttle the rate at which new suggestions are presented to
   // the user. For example, if a suggestion comes in on frame 1 and frame 2, we

@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics_helper.h"
+#include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/web_contents_event_forwarder.h"
@@ -159,7 +160,9 @@ VrShell::VrShell(JNIEnv* env,
       ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
   toolbar_ = base::MakeUnique<vr::ToolbarHelper>(ui_, this);
-  autocomplete_controller_ = base::MakeUnique<AutocompleteController>(ui_);
+  autocomplete_controller_ = base::MakeUnique<AutocompleteController>(
+      base::BindRepeating(&vr::BrowserUiInterface::SetOmniboxSuggestions,
+                          base::Unretained(ui_)));
 
   gl_thread_->Start();
 
