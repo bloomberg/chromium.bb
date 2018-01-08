@@ -10,11 +10,50 @@
           "object": "LayoutText #text",
           "rect": [10, 68, 836, 190],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 68, 836, 190],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 68, 836, 190],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [10, 68, 836, 190],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
     {
       "object": "LayoutText #text",
       "reason": "style change"

@@ -17,269 +17,53 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [266, 72, 268, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [266, 72, 268, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [533, 72, 267, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [533, 72, 267, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [799, 72, 88, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [799, 72, 88, 185],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 233, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 210, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 187, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 164, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 141, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 118, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 95, 79, 24],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableRow TR",
-          "rect": [8, 72, 79, 24],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [533, 74, 63, 180],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [533, 74, 63, 180],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [266, 74, 63, 180],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [266, 74, 63, 180],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [799, 74, 63, 65],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutMultiColumnFlowThread (anonymous)",
-          "rect": [799, 74, 63, 65],
-          "reason": "chunk uncacheable"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 233, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 210, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 187, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 164, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 141, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 118, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [47, 95, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TH",
-          "rect": [47, 72, 39, 23],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 233, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 210, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 187, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 164, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 141, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 118, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [8, 95, 39, 23],
-          "reason": "appeared"
-        },
-        {
-          "object": "LayoutTableCell TH id='target'",
-          "rect": [8, 72, 39, 23],
-          "reason": "full"
-        },
-        {
-          "object": "InlineTextBox 'Col 2'",
-          "rect": [49, 74, 36, 19],
-          "reason": "full"
-        },
-        {
           "object": "InlineTextBox 'Col 1'",
-          "rect": [10, 74, 36, 19],
+          "rect": [266, 74, 268, 19],
           "reason": "style change"
         },
         {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 235, 16, 19],
-          "reason": "appeared"
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [533, 74, 267, 19],
+          "reason": "style change"
         },
         {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 212, 16, 19],
-          "reason": "appeared"
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [10, 74, 257, 19],
+          "reason": "style change"
         },
         {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 189, 16, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 166, 16, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 143, 16, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 120, 16, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'Te'",
-          "rect": [10, 97, 16, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 235, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 212, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 189, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 166, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 143, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 120, 13, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'xt'",
-          "rect": [49, 97, 13, 19],
-          "reason": "appeared"
+          "object": "InlineTextBox 'Col 1'",
+          "rect": [799, 74, 47, 19],
+          "reason": "style change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Col 1'",
+      "reason": "style change"
+    },
     {
       "object": "LayoutText #text",
       "reason": "style change"

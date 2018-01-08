@@ -101,6 +101,11 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // If the object is fragmented, it will have a fragment clip.
   Optional<LayoutRect> fragment_clip;
   LayoutUnit logical_top_in_flow_thread;
+
+  // A repeating object paints at multiple places in the flow thread, once in
+  // each fragment. The repeated paintings need to add an adjustment to the
+  // calculated paint offset to paint at the desired place.
+  LayoutSize repeating_paint_offset_adjustment;
 };
 
 struct PaintPropertyTreeBuilderContext {
@@ -131,6 +136,16 @@ struct PaintPropertyTreeBuilderContext {
 #endif
 
   PaintLayer* painting_layer = nullptr;
+
+  // In a fragmented context, some objects (e.g. repeating table headers and
+  // footers, fixed-position objects in paged media, and their descendants in
+  // paint order) repeatly paint in all fragments after the fragment where the
+  // object first appears.
+  bool is_repeating_in_fragments = false;
+
+  // The physical bounding box of all appearances of the repeating object
+  // in the flow thread.
+  LayoutRect repeating_bounding_box_in_flow_thread;
 };
 
 // |FrameViewPaintPropertyTreeBuilder| and |ObjectPaintPropertyTreeBuilder|
@@ -169,6 +184,9 @@ class ObjectPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE void UpdateFragments();
   ALWAYS_INLINE void UpdatePaintingLayer();
+  ALWAYS_INLINE void UpdateRepeatingPaintOffsetAdjustment();
+  ALWAYS_INLINE void UpdateRepeatingTableHeaderPaintOffsetAdjustment();
+  ALWAYS_INLINE void UpdateRepeatingTableFooterPaintOffsetAdjustment();
 
   const LayoutObject& object_;
   PaintPropertyTreeBuilderContext& context_;
