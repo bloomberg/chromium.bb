@@ -54,7 +54,7 @@ assert_prefixed_computed_style("filter", "hue-rotate()", "hue-rotate(0deg)"); //
 assert_prefixed_computed_style("filter", "invert(1)"); // Integer value
 assert_prefixed_computed_style("filter", "invert(1.0)", "invert(1)"); // Float value converts to integer
 assert_prefixed_computed_style("filter", "invert(0)"); // Zero value
-assert_prefixed_computed_style("filter", "invert()", "invert(1)"); // No arguments
+assert_prefixed_computed_style("filter", "invert()", "invert(0)"); // No arguments
 assert_prefixed_computed_style("filter", "invert(0.5) invert(0.25)"); // Multiple values
 
 assert_prefixed_computed_style("filter", "opacity(1)"); // Integer value
