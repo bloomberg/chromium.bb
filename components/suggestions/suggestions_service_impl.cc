@@ -404,7 +404,8 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   token_fetcher_ = base::MakeUnique<identity::PrimaryAccountAccessTokenFetcher>(
       "suggestions_service", signin_manager_, token_service_, scopes,
       base::BindOnce(&SuggestionsServiceImpl::AccessTokenAvailable,
-                     base::Unretained(this), url));
+                     base::Unretained(this), url),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void SuggestionsServiceImpl::AccessTokenAvailable(

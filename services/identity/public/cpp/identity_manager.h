@@ -50,7 +50,8 @@ class IdentityManager : public SigninManagerBase::Observer {
   CreateAccessTokenFetcherForPrimaryAccount(
       const std::string& oauth_consumer_name,
       const OAuth2TokenService::ScopeSet& scopes,
-      PrimaryAccountAccessTokenFetcher::TokenCallback callback);
+      PrimaryAccountAccessTokenFetcher::TokenCallback callback,
+      PrimaryAccountAccessTokenFetcher::Mode mode);
 
   // If an entry exists in the Identity Service's cache corresponding to the
   // given information, removes that entry; in this case, the next access token

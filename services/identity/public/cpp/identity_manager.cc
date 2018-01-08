@@ -34,10 +34,11 @@ std::unique_ptr<PrimaryAccountAccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForPrimaryAccount(
     const std::string& oauth_consumer_name,
     const OAuth2TokenService::ScopeSet& scopes,
-    PrimaryAccountAccessTokenFetcher::TokenCallback callback) {
+    PrimaryAccountAccessTokenFetcher::TokenCallback callback,
+    PrimaryAccountAccessTokenFetcher::Mode mode) {
   return base::MakeUnique<PrimaryAccountAccessTokenFetcher>(
       oauth_consumer_name, signin_manager_, token_service_, scopes,
-      std::move(callback));
+      std::move(callback), mode);
 }
 
 void IdentityManager::RemoveAccessTokenFromCache(
