@@ -27,7 +27,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/devtools/devtools_protocol.h"
-#include "chrome/browser/devtools/global_confirm_info_bar.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -40,9 +39,6 @@
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/zoom/page_zoom.h"
@@ -75,7 +71,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "third_party/WebKit/public/public_features.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
 using base::DictionaryValue;
@@ -133,70 +128,6 @@ Browser* FindBrowser(content::WebContents* web_contents) {
       return browser;
   }
   return NULL;
-}
-
-// DevToolsConfirmInfoBarDelegate ---------------------------------------------
-
-typedef base::Callback<void(bool)> InfoBarCallback;
-
-class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  DevToolsConfirmInfoBarDelegate(
-      const InfoBarCallback& callback,
-      const base::string16& message);
-  ~DevToolsConfirmInfoBarDelegate() override;
-
- private:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-  bool Cancel() override;
-
-  InfoBarCallback callback_;
-  const base::string16 message_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsConfirmInfoBarDelegate);
-};
-
-DevToolsConfirmInfoBarDelegate::DevToolsConfirmInfoBarDelegate(
-    const InfoBarCallback& callback,
-    const base::string16& message)
-    : ConfirmInfoBarDelegate(),
-      callback_(callback),
-      message_(message) {
-}
-
-DevToolsConfirmInfoBarDelegate::~DevToolsConfirmInfoBarDelegate() {
-  if (!callback_.is_null())
-    callback_.Run(false);
-}
-
-infobars::InfoBarDelegate::InfoBarIdentifier
-DevToolsConfirmInfoBarDelegate::GetIdentifier() const {
-  return DEV_TOOLS_INFOBAR_DELEGATE;
-}
-
-base::string16 DevToolsConfirmInfoBarDelegate::GetMessageText() const {
-  return message_;
-}
-
-base::string16 DevToolsConfirmInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON : IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON);
-}
-
-bool DevToolsConfirmInfoBarDelegate::Accept() {
-  callback_.Run(true);
-  callback_.Reset();
-  return true;
-}
-
-bool DevToolsConfirmInfoBarDelegate::Cancel() {
-  callback_.Run(false);
-  callback_.Reset();
-  return true;
 }
 
 // DevToolsUIDefaultDelegate --------------------------------------------------
@@ -799,7 +730,7 @@ void DevToolsUIBindings::RequestFileSystems() {
 void DevToolsUIBindings::AddFileSystem(const std::string& type) {
   CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
   file_helper_->AddFileSystem(
-      type, base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
+      type, base::Bind(&DevToolsUIBindings::ShowDevToolsInfoBar,
                        weak_factory_.GetWeakPtr()));
 }
 
@@ -812,9 +743,8 @@ void DevToolsUIBindings::UpgradeDraggedFileSystemPermissions(
     const std::string& file_system_url) {
   CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
   file_helper_->UpgradeDraggedFileSystemPermissions(
-      file_system_url,
-      base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
-                 weak_factory_.GetWeakPtr()));
+      file_system_url, base::Bind(&DevToolsUIBindings::ShowDevToolsInfoBar,
+                                  weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsUIBindings::IndexPath(int index_request_id,
@@ -1264,16 +1194,14 @@ void DevToolsUIBindings::SearchCompleted(
                      &file_system_path_value, &file_paths_value);
 }
 
-void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
+void DevToolsUIBindings::ShowDevToolsInfoBar(
     const base::string16& message,
-    const InfoBarCallback& callback) {
+    const DevToolsInfoBarDelegate::Callback& callback) {
   if (!delegate_->GetInfoBarService()) {
     callback.Run(false);
     return;
   }
-  std::unique_ptr<DevToolsConfirmInfoBarDelegate> delegate(
-      new DevToolsConfirmInfoBarDelegate(callback, message));
-  GlobalConfirmInfoBar::Show(std::move(delegate));
+  DevToolsInfoBarDelegate::Create(message, callback);
 }
 
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
