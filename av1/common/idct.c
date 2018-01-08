@@ -1842,16 +1842,18 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-void av1_highbd_inv_txfm_add_4x8(const tran_low_t *input, uint8_t *dest,
-                                 int stride, const TxfmParam *txfm_param) {
+static void av1_highbd_inv_txfm_add_4x8(const tran_low_t *input, uint8_t *dest,
+                                        int stride,
+                                        const TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
   const int32_t *src = cast_to_int32(input);
   av1_inv_txfm2d_add_4x8_c(src, CONVERT_TO_SHORTPTR(dest), stride,
                            txfm_param->tx_type, txfm_param->bd);
 }
 
-void av1_highbd_inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest,
-                                 int stride, const TxfmParam *txfm_param) {
+static void av1_highbd_inv_txfm_add_8x4(const tran_low_t *input, uint8_t *dest,
+                                        int stride,
+                                        const TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
   const int32_t *src = cast_to_int32(input);
   av1_inv_txfm2d_add_8x4_c(src, CONVERT_TO_SHORTPTR(dest), stride,
@@ -2095,29 +2097,6 @@ static void highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
 #endif  // CONFIG_TX64X64
 #endif  // !CONFIG_DAALA_TX
 
-void av1_inv_txfm_add(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
-                      TxfmParam *txfm_param) {
-  const TX_SIZE tx_size = txfm_param->tx_size;
-  DECLARE_ALIGNED(16, uint16_t, tmp[MAX_TX_SQUARE]);
-  int tmp_stride = MAX_TX_SIZE;
-  int w = tx_size_wide[tx_size];
-  int h = tx_size_high[tx_size];
-  for (int r = 0; r < h; ++r) {
-    for (int c = 0; c < w; ++c) {
-      tmp[r * tmp_stride + c] = dst[r * stride + c];
-    }
-  }
-
-  av1_highbd_inv_txfm_add(dqcoeff, CONVERT_TO_BYTEPTR(tmp), tmp_stride,
-                          txfm_param);
-
-  for (int r = 0; r < h; ++r) {
-    for (int c = 0; c < w; ++c) {
-      dst[r * stride + c] = (uint8_t)tmp[r * tmp_stride + c];
-    }
-  }
-}
-
 static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                             TX_TYPE tx_type, int eob, int reduced_tx_set,
                             TxfmParam *txfm_param) {
@@ -2135,31 +2114,8 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
                           is_inter_block(&xd->mi[0]->mbmi), reduced_tx_set);
 }
 
-typedef void (*InvTxfmFunc)(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
-                            TxfmParam *txfm_param);
-
-void av1_inverse_transform_block(const MACROBLOCKD *xd,
-                                 const tran_low_t *dqcoeff, int plane,
-                                 TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
-                                 int stride, int eob, int reduced_tx_set) {
-  if (!eob) return;
-
-  assert(eob <= av1_get_max_eob(tx_size));
-
-  TxfmParam txfm_param;
-  init_txfm_param(xd, plane, tx_size, tx_type, eob, reduced_tx_set,
-                  &txfm_param);
-  assert(av1_ext_tx_used[txfm_param.tx_set_type][txfm_param.tx_type]);
-
-  static const InvTxfmFunc inv_txfm_func[2] = {
-    av1_inv_txfm_add, av1_highbd_inv_txfm_add,
-  };
-
-  inv_txfm_func[txfm_param.is_hbd](dqcoeff, dst, stride, &txfm_param);
-}
-
-void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
-                             TxfmParam *txfm_param) {
+static void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest,
+                                    int stride, TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);
 #if CONFIG_DAALA_TX
   daala_inv_txfm_add(input, dest, stride, txfm_param);
@@ -2231,4 +2187,49 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
     default: assert(0 && "Invalid transform size"); break;
   }
 #endif  // CONFIG_DAALA_TX
+}
+
+static void av1_inv_txfm_add(const tran_low_t *dqcoeff, uint8_t *dst,
+                             int stride, TxfmParam *txfm_param) {
+  const TX_SIZE tx_size = txfm_param->tx_size;
+  DECLARE_ALIGNED(16, uint16_t, tmp[MAX_TX_SQUARE]);
+  int tmp_stride = MAX_TX_SIZE;
+  int w = tx_size_wide[tx_size];
+  int h = tx_size_high[tx_size];
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
+      tmp[r * tmp_stride + c] = dst[r * stride + c];
+    }
+  }
+
+  av1_highbd_inv_txfm_add(dqcoeff, CONVERT_TO_BYTEPTR(tmp), tmp_stride,
+                          txfm_param);
+
+  for (int r = 0; r < h; ++r) {
+    for (int c = 0; c < w; ++c) {
+      dst[r * stride + c] = (uint8_t)tmp[r * tmp_stride + c];
+    }
+  }
+}
+
+typedef void (*InvTxfmFunc)(const tran_low_t *dqcoeff, uint8_t *dst, int stride,
+                            TxfmParam *txfm_param);
+void av1_inverse_transform_block(const MACROBLOCKD *xd,
+                                 const tran_low_t *dqcoeff, int plane,
+                                 TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
+                                 int stride, int eob, int reduced_tx_set) {
+  if (!eob) return;
+
+  assert(eob <= av1_get_max_eob(tx_size));
+
+  TxfmParam txfm_param;
+  init_txfm_param(xd, plane, tx_size, tx_type, eob, reduced_tx_set,
+                  &txfm_param);
+  assert(av1_ext_tx_used[txfm_param.tx_set_type][txfm_param.tx_type]);
+
+  static const InvTxfmFunc inv_txfm_func[2] = {
+    av1_inv_txfm_add, av1_highbd_inv_txfm_add,
+  };
+
+  inv_txfm_func[txfm_param.is_hbd](dqcoeff, dst, stride, &txfm_param);
 }
