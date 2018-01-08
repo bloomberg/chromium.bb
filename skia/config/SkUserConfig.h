@@ -242,9 +242,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #endif
 
 
-#ifndef SK_SUPPORT_LEGACY_2PT_CONICAL
-#define SK_SUPPORT_LEGACY_2PT_CONICAL
-#endif
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
