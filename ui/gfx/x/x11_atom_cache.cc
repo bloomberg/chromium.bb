@@ -155,6 +155,7 @@ constexpr const char* kAtomsToCache[] = {
     "_NETSCAPE_URL",
     "_NET_SUPPORTED",
     "_NET_SUPPORTING_WM_CHECK",
+    "_NET_WM_BYPASS_COMPOSITOR",
     "_NET_WM_CM_S0",
     "_NET_WM_DESKTOP",
     "_NET_WM_ICON",

@@ -1518,6 +1518,11 @@ void DesktopWindowTreeHostX11::InitX11Window(
                     kDarkGtkThemeVariant, arraysize(kDarkGtkThemeVariant) - 1);
   }
 
+  // Always composite Chromium windows if a compositing WM is used.  Sometimes,
+  // WMs will not composite fullscreen windows as an optimization, but this can
+  // lead to tearing of fullscreen videos.
+  ui::SetIntProperty(xwindow_, "_NET_WM_BYPASS_COMPOSITOR", "CARDINAL", 2);
+
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent
   // window, we also destroy all child windows.
