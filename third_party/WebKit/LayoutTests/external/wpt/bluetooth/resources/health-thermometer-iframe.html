@@ -15,7 +15,6 @@ window.onmessage = messageEvent => {
         device = gatt.device;
         parent.postMessage('Connected', '*');
       }).catch(err => {
-        console.error(err);
         parent.postMessage(`FAIL: ${err}`, '*');
       });
       break;
@@ -24,12 +23,10 @@ window.onmessage = messageEvent => {
       .then(gatt => gatt.getPrimaryServices())
       .then(() => parent.postMessage('DiscoveryComplete', '*'))
       .catch(err => {
-        console.error(err);
         parent.postMessage(`FAIL: ${err}`, '*');
       });
       break;
     default:
-      console.error(`Bad message type: ${messageEvent.data.type}`);
       parent.postMessage(`FAIL: Bad message type: ${messageEvent.data.type}`,
                          '*');
   }

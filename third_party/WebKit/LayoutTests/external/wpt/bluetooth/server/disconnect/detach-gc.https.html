@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/testdriver.js"></script>
-<script src="../../../resources/testdriver-vendor.js"></script>
-<script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script src="/bluetooth/resources/bluetooth-helpers.js"></script>
 <body>
 <script>
 'use strict';
@@ -13,7 +13,7 @@ let iframe = document.createElement('iframe');
 bluetooth_test(() => setUpConnectableHealthThermometerDevice()
   // 1. Load the iframe.
   .then(() => new Promise(resolve => {
-    iframe.src = '../../../resources/bluetooth/health-thermometer-iframe.html';
+    iframe.src = '/bluetooth/resources/health-thermometer-iframe.html';
     document.body.appendChild(iframe);
     iframe.addEventListener('load', resolve);
   }))

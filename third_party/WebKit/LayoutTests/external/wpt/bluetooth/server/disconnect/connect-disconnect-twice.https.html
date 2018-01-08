@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/testdriver.js"></script>
-<script src="../../../resources/testdriver-vendor.js"></script>
-<script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/resources/testdriver.js"></script>
+<script src="/resources/testdriver-vendor.js"></script>
+<script src="/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-const test_desc = 'Calling disconnect twice in a row still results in ' +
+const test_desc = 'Connect + Disconnect twice still results in ' +
   '\'connected\' being false.';
 let device, fake_peripheral;
 
@@ -16,11 +16,14 @@ bluetooth_test(() => getDiscoveredHealthThermometerDevice()
   .then(() => fake_peripheral.setNextGATTConnectionResponse({
     code: HCI_SUCCESS,
   }))
+  .then(() => device.gatt.connect()
+  .then(gattServer => {
+    gattServer.disconnect();
+    assert_false(gattServer.connected);
+  })
   .then(() => device.gatt.connect())
   .then(gattServer => {
     gattServer.disconnect();
     assert_false(gattServer.connected);
-    gattServer.disconnect();
-    assert_false(gattServer.connected);
-}), test_desc);
+  })), test_desc);
 </script>
