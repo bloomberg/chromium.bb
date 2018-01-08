@@ -269,6 +269,8 @@ static_library("extensions") {
     "api/messaging/chrome_messaging_delegate.h",
     "api/messaging/incognito_connectability.cc",
     "api/messaging/incognito_connectability.h",
+    "api/messaging/incognito_connectability_infobar_delegate.cc",
+    "api/messaging/incognito_connectability_infobar_delegate.h",
     "api/messaging/native_message_port.cc",
     "api/messaging/native_message_port.h",
     "api/messaging/native_messaging_host_manifest.cc",
