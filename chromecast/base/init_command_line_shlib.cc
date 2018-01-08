@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chromecast/chromecast_features.h"
 
 namespace chromecast {
 
@@ -18,6 +19,12 @@ void InitCommandLineShlib(const std::vector<std::string>& argv) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(argv);
 
   logging::InitLogging(logging::LoggingSettings());
+#if BUILDFLAG(IS_CAST_DESKTOP_BUILD)
+  logging::SetLogItems(true, true, true, false);
+#else
+  // Timestamp available through logcat -v time.
+  logging::SetLogItems(true, true, false, false);
+#endif  // BUILDFLAG(IS_CAST_DESKTOP_BUILD)
 }
 
 }  // namespace chromecast
