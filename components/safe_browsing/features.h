@@ -24,7 +24,6 @@ extern const base::Feature kAdSamplerTriggerFeature;
 // Gates logging of GaiaPasswordReuse user events.
 extern const base::Feature kGaiaPasswordReuseReporting;
 extern const base::Feature kGoogleBrandedPhishingWarning;
-extern const base::Feature kParallelUrlCheck;
 
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.

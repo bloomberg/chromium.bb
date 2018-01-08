@@ -18,7 +18,6 @@
 namespace safe_browsing {
 namespace {
 
-// TODO(yzshen): Share such value with safe_browsing::BaseResourceThrottle.
 // Maximum time in milliseconds to wait for the SafeBrowsing service reputation
 // check. After this amount of time the outstanding check will be aborted, and
 // the resource will be treated as if it were safe.
@@ -316,9 +315,6 @@ void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {
 }
 
 SBThreatType SafeBrowsingUrlCheckerImpl::CheckWebUIUrls(const GURL& url) {
-  // TODO(yzshen): This duplicates the logic in
-  // safe_browsing::BaseResourceThrottle::CheckWebUIUrls(), which eventually
-  // will go away. crbug.com/715673
   if (url == kChromeUISafeBrowsingMatchMalwareUrl)
     return safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
   if (url == kChromeUISafeBrowsingMatchPhishingUrl)
