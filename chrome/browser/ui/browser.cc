@@ -39,6 +39,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/mixed_content_settings_tab_helper.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -65,6 +66,8 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
+#include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1874,7 +1877,46 @@ bool Browser::RequestPpapiBrokerPermission(
     const GURL& url,
     const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
-  PepperBrokerInfoBarDelegate::Create(web_contents, url, plugin_path, callback);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  // TODO(wad): Add ephemeral device ID support for broker in guest mode.
+  if (profile->IsGuestSession()) {
+    callback.Run(false);
+    return true;
+  }
+
+  TabSpecificContentSettings* tab_content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSetting setting = content_settings->GetContentSetting(
+      url, url, CONTENT_SETTINGS_TYPE_PPAPI_BROKER, std::string());
+
+  if (setting == CONTENT_SETTING_ASK) {
+    base::RecordAction(base::UserMetricsAction("PPAPI.BrokerInfobarDisplayed"));
+
+    content::PluginService* plugin_service =
+        content::PluginService::GetInstance();
+    content::WebPluginInfo plugin;
+    bool success = plugin_service->GetPluginInfoByPath(plugin_path, &plugin);
+    DCHECK(success);
+    std::unique_ptr<PluginMetadata> plugin_metadata(
+        PluginFinder::GetInstance()->GetPluginMetadata(plugin));
+
+    PepperBrokerInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents), url,
+        plugin_metadata->name(), content_settings, tab_content_settings,
+        callback);
+    return true;
+  }
+
+  bool allowed = (setting == CONTENT_SETTING_ALLOW);
+  base::RecordAction(allowed
+                         ? base::UserMetricsAction("PPAPI.BrokerSettingAllow")
+                         : base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
+  tab_content_settings->SetPepperBrokerAllowed(allowed);
+  callback.Run(allowed);
   return true;
 }
 
