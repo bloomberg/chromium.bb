@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "base/strings/string_piece.h"
 #include "content/common/cross_site_document_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -185,6 +188,57 @@ TEST(CrossSiteDocumentClassifierTest, SniffForJSON) {
       << "Lists dictionary are not recognized (since they're valid JS too)";
   EXPECT_EQ(Result::kNo, CrossSiteDocumentClassifier::SniffForJSON(R"({":"})"))
       << "A colon character inside a string does not trigger a match";
+}
+
+TEST(CrossSiteDocumentClassifierTest, GetCanonicalMimeType) {
+  std::vector<std::pair<const char*, CrossSiteDocumentMimeType>> tests = {
+      // Basic tests for things in the original implementation:
+      {"text/html", CROSS_SITE_DOCUMENT_MIME_TYPE_HTML},
+      {"text/xml", CROSS_SITE_DOCUMENT_MIME_TYPE_XML},
+      {"application/rss+xml", CROSS_SITE_DOCUMENT_MIME_TYPE_XML},
+      {"application/xml", CROSS_SITE_DOCUMENT_MIME_TYPE_XML},
+      {"application/json", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"text/json", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"text/x-json", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"text/plain", CROSS_SITE_DOCUMENT_MIME_TYPE_PLAIN},
+
+      // Other mime types:
+      {"application/foobar", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+
+      // Regression tests for https://crbug.com/799155 (prefix/suffix matching):
+      {"application/json+protobuf", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"text/json+protobuf", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"application/activity+json", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"text/foobar+xml", CROSS_SITE_DOCUMENT_MIME_TYPE_XML},
+      // No match without a '+' character:
+      {"application/jsonfoobar", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+      {"application/foobarjson", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+      {"application/xmlfoobar", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+      {"application/foobarxml", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+
+      // Case-insensitive comparison:
+      {"APPLICATION/JSON", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"APPLICATION/JSON+PROTOBUF", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+      {"APPLICATION/ACTIVITY+JSON", CROSS_SITE_DOCUMENT_MIME_TYPE_JSON},
+
+      // Images are allowed cross-site, and SVG is an image, so we should
+      // classify SVG as "other" instead of "xml" (even though it technically is
+      // an xml document).
+      {"image/svg+xml", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+
+      // Javascript should not be blocked.
+      {"application/javascript", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+      {"application/jsonp", CROSS_SITE_DOCUMENT_MIME_TYPE_OTHERS},
+  };
+
+  for (const auto& test : tests) {
+    const char* input = test.first;  // e.g. "text/html"
+    CrossSiteDocumentMimeType expected = test.second;
+    CrossSiteDocumentMimeType actual =
+        CrossSiteDocumentClassifier::GetCanonicalMimeType(input);
+    EXPECT_EQ(expected, actual)
+        << "when testing with the following input: " << input;
+  }
 }
 
 }  // namespace content
