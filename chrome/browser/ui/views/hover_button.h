@@ -67,6 +67,10 @@ class HoverButton : public views::LabelButton {
 
   void SetSubtitleColor(SkColor color);
 
+  void set_auto_compute_tooltip(bool auto_compute_tooltip) {
+    auto_compute_tooltip_ = auto_compute_tooltip;
+  }
+
  protected:
   // views::LabelButton:
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override;
@@ -90,6 +94,10 @@ class HoverButton : public views::LabelButton {
   // The horizontal space the padding and icon take up. Used for calculating the
   // available space for |title_|, if it exists.
   int taken_width_ = 0;
+
+  // Whether this |HoverButton|'s accessible name and tooltip should be computed
+  // from the |title_| and |subtitle_| text.
+  bool auto_compute_tooltip_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HoverButton);
 };

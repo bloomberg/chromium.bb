@@ -29,30 +29,34 @@ std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
 }
 
 // Sets the accessible name of |parent| to the text from |first| and |second|.
-// Also set the combined text as the tooltip for |parent| if either |first| or
-// |second|'s text is cut off or elided.
+// Also set the combined text as the tooltip for |parent| if |set_tooltip| is
+// true and either |first| or |second|'s text is cut off or elided.
 void SetTooltipAndAccessibleName(views::Button* parent,
                                  views::StyledLabel* first,
                                  views::Label* second,
                                  const gfx::Rect& available_space,
-                                 int taken_width) {
+                                 int taken_width,
+                                 bool set_tooltip) {
   const base::string16 accessible_name =
       second == nullptr ? first->text()
                         : base::JoinString({first->text(), second->text()},
                                            base::ASCIIToUTF16("\n"));
+  if (set_tooltip) {
+    const int available_width = available_space.width() - taken_width;
 
-  // |views::StyledLabel|s only add tooltips for any links they may have.
-  // However, since |HoverButton| will never insert a link inside its child
-  // |StyledLabel|, decide whether it needs a tooltip by checking whether the
-  // available space is smaller than its preferred size.
-  bool first_truncated = first->GetPreferredSize().width() >
-                         (available_space.width() - taken_width);
-  base::string16 second_tooltip;
-  if (second != nullptr)
-    second->GetTooltipText(gfx::Point(), &second_tooltip);
-  parent->SetTooltipText(first_truncated || !second_tooltip.empty()
-                             ? accessible_name
-                             : base::string16());
+    // |views::StyledLabel|s only add tooltips for any links they may have.
+    // However, since |HoverButton| will never insert a link inside its child
+    // |StyledLabel|, decide whether it needs a tooltip by checking whether the
+    // available space is smaller than its preferred size.
+    bool first_truncated = first->GetPreferredSize().width() > available_width;
+    bool second_truncated = false;
+    if (second != nullptr)
+      second_truncated = second->GetPreferredSize().width() > available_width;
+
+    parent->SetTooltipText(first_truncated || second_truncated
+                               ? accessible_name
+                               : base::string16());
+  }
   parent->SetAccessibleName(accessible_name);
 }
 
@@ -63,7 +67,6 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     : views::LabelButton(button_listener, text),
       title_(nullptr),
       subtitle_(nullptr) {
-  DCHECK(button_listener);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetFocusPainter(nullptr);
 
@@ -182,7 +185,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
     grid_layout->AddView(subtitle_);
   }
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                              taken_width_);
+                              taken_width_, auto_compute_tooltip_);
 
   // Since this constructor doesn't use the |LabelButton|'s image / label Views,
   // make sure the minimum size is correct according to the |grid_layout|.
@@ -209,7 +212,7 @@ void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
   }
   title_->SizeToFit(0);
   SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                              taken_width_);
+                              taken_width_, auto_compute_tooltip_);
 }
 
 views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
@@ -283,7 +286,7 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
 void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (title_) {
     SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                                taken_width_);
+                                taken_width_, auto_compute_tooltip_);
   }
 }
 
