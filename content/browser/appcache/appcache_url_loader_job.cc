@@ -148,8 +148,8 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       loader_callback_(std::move(loader_callback)),
       appcache_request_(appcache_request->GetWeakPtr()),
-      is_main_resource_load_(IsResourceTypeFrame(
-          appcache_request->GetResourceRequest()->resource_type)),
+      is_main_resource_load_(IsResourceTypeFrame(static_cast<ResourceType>(
+          appcache_request->GetResourceRequest()->resource_type))),
       weak_factory_(this) {}
 
 void AppCacheURLLoaderJob::CallLoaderCallback() {

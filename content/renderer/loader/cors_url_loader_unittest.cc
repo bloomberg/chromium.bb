@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_url_loader_client.h"

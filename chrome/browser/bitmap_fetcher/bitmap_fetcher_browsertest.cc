@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, StartTest) {
   // an image in a callback to OnImageDecoded().
   fetcher.Init(
       std::string(),
-      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, OnURLFetchFailureTest) {
 
   fetcher.Init(
       std::string(),
-      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(BitmapFetcherBrowserTest, HandleImageFailedTest) {
 
   fetcher.Init(
       std::string(),
-      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       net::LOAD_NORMAL);
   fetcher.Start(
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile())

@@ -206,19 +206,20 @@ void ToWebServiceWorkerRequest(const ResourceRequest& request,
                            Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                                request.referrer_policy));
   web_request->SetMode(request.fetch_request_mode);
-  web_request->SetIsMainResourceLoad(
-      ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+  web_request->SetIsMainResourceLoad(ServiceWorkerUtils::IsMainResourceType(
+      static_cast<ResourceType>(request.resource_type)));
   web_request->SetCredentialsMode(request.fetch_credentials_mode);
   web_request->SetCacheMode(
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags));
-  web_request->SetRedirectMode(
-      GetBlinkFetchRedirectMode(request.fetch_redirect_mode));
-  web_request->SetRequestContext(
-      GetBlinkRequestContext(request.fetch_request_context_type));
+  web_request->SetRedirectMode(GetBlinkFetchRedirectMode(
+      static_cast<FetchRedirectMode>(request.fetch_redirect_mode)));
+  web_request->SetRequestContext(GetBlinkRequestContext(
+      static_cast<RequestContextType>(request.fetch_request_context_type)));
   web_request->SetFrameType(request.fetch_frame_type);
   // TODO(falken): Set client id. The browser needs to pass it to us.
   web_request->SetIsReload(ui::PageTransitionCoreTypeIs(
-      request.transition_type, ui::PAGE_TRANSITION_RELOAD));
+      static_cast<ui::PageTransition>(request.transition_type),
+      ui::PAGE_TRANSITION_RELOAD));
   web_request->SetIntegrity(
       blink::WebString::FromUTF8(request.fetch_integrity));
 }

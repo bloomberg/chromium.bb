@@ -261,7 +261,8 @@ AppCacheRequestHandler::InitializeForNavigationNetworkService(
     URLLoaderFactoryGetter* url_loader_factory_getter) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_handle_core->host()->CreateRequestHandler(
-          AppCacheURLLoaderRequest::Create(request), request.resource_type,
+          AppCacheURLLoaderRequest::Create(request),
+          static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
   handler->network_url_loader_factory_getter_ = url_loader_factory_getter;
   handler->appcache_host_ = appcache_handle_core->host()->GetWeakPtr();

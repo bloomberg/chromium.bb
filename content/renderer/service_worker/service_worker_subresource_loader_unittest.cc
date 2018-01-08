@@ -125,7 +125,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
       const ResourceRequest& request,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override {
-    EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+    EXPECT_FALSE(ServiceWorkerUtils::IsMainResourceType(
+        static_cast<ResourceType>(request.resource_type)));
     request_body_ = request.request_body;
 
     fetch_event_count_++;

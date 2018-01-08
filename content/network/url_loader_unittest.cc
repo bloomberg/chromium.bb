@@ -50,6 +50,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "services/network/public/interfaces/data_pipe_getter.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace content {

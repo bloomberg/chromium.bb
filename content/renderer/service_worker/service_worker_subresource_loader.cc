@@ -180,8 +180,8 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
 
-  DCHECK(
-      !ServiceWorkerUtils::IsMainResourceType(resource_request.resource_type));
+  DCHECK(!ServiceWorkerUtils::IsMainResourceType(
+      static_cast<ResourceType>(resource_request.resource_type)));
 
   DCHECK(!inflight_fetch_request_);
   inflight_fetch_request_ = std::make_unique<ResourceRequest>(resource_request);

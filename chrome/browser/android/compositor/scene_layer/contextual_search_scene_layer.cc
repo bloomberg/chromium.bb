@@ -201,7 +201,7 @@ void ContextualSearchSceneLayer::FetchThumbnail(
       base::MakeUnique<BitmapFetcher>(gurl, this, NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->Init(
       std::string(),
-      blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+      net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
       net::LOAD_NORMAL);
   fetcher_->Start(loader_factory);
 }

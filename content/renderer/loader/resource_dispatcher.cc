@@ -412,9 +412,9 @@ int ResourceDispatcher::StartAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer), request->resource_type, request->render_frame_id,
-      frame_origin, request->url, request->method, request->referrer,
-      request->download_to_file);
+      std::move(peer), static_cast<ResourceType>(request->resource_type),
+      request->render_frame_id, frame_origin, request->url, request->method,
+      request->referrer, request->download_to_file);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       loading_task_runner ? loading_task_runner : thread_task_runner_;

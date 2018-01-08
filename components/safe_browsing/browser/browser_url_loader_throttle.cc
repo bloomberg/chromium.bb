@@ -54,7 +54,8 @@ void BrowserURLLoaderThrottle::WillStartRequest(
   original_url_ = request->url;
   pending_checks_++;
   url_checker_ = base::MakeUnique<SafeBrowsingUrlCheckerImpl>(
-      request->headers, request->load_flags, request->resource_type,
+      request->headers, request->load_flags,
+      static_cast<content::ResourceType>(request->resource_type),
       request->has_user_gesture, std::move(url_checker_delegate_),
       web_contents_getter_);
 

@@ -811,7 +811,9 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
     const Extension* extension = registry->GetInstalledExtension(extension_id);
 
     if (!AllowExtensionResourceLoad(
-            request.url, request.resource_type, request.transition_type,
+            request.url,
+            static_cast<content::ResourceType>(request.resource_type),
+            static_cast<ui::PageTransition>(request.transition_type),
             process_host->GetID(), browser_context->IsOffTheRecord(), extension,
             util::IsIncognitoEnabled(extension_id, browser_context),
             registry->enabled_extensions(),

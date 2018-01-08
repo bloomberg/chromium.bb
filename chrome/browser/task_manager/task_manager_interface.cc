@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/common/child_process_host.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/browser_dialogs.h"
