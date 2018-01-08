@@ -7648,7 +7648,7 @@ static int64_t motion_mode_rd(
       best_rd_stats_uv = *rd_stats_uv;
       for (int i = 0; i < MAX_MB_PLANE; ++i)
         memcpy(best_blk_skip[i], x->blk_skip[i],
-               sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+               sizeof(best_blk_skip[i][0]) * xd->n8_h * xd->n8_w * 4);
       best_xskip = x->skip;
       best_disable_skip = *disable_skip;
     }
@@ -7665,7 +7665,7 @@ static int64_t motion_mode_rd(
   *rd_stats_uv = best_rd_stats_uv;
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     memcpy(x->blk_skip[i], best_blk_skip[i],
-           sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+           sizeof(x->blk_skip[i][0]) * xd->n8_h * xd->n8_w * 4);
   x->skip = best_xskip;
   *disable_skip = best_disable_skip;
 
@@ -9421,7 +9421,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
 #if CONFIG_FILTER_INTRA
       uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-      memcpy(best_blk_skip, x->blk_skip[0], sizeof(uint8_t) * ctx->num_4x4_blk);
+      memcpy(best_blk_skip, x->blk_skip[0],
+             sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
 
       if (mbmi->mode == DC_PRED && !xd->lossless[mbmi->segment_id]) {
         RD_STATS rd_stats_y_fi;
@@ -9468,7 +9469,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                        (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
 #endif
             memcpy(best_blk_skip, x->blk_skip[0],
-                   sizeof(uint8_t) * ctx->num_4x4_blk);
+                   sizeof(best_blk_skip[0]) * ctx->num_4x4_blk);
             best_fi_mode = fi_mode;
             rd_stats_y = rd_stats_y_fi;
             rate_y = rd_stats_y_fi.rate;
@@ -9487,7 +9488,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                    (MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)));
 #endif
         memcpy(x->blk_skip[0], best_blk_skip,
-               sizeof(uint8_t) * ctx->num_4x4_blk);
+               sizeof(x->blk_skip[0][0]) * ctx->num_4x4_blk);
 
         if (filter_intra_selected_flag) {
           mbmi->filter_intra_mode_info.use_filter_intra = 1;
