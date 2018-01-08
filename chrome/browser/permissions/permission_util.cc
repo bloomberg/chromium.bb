@@ -224,7 +224,9 @@ PermissionUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
   ContentSetting final_content_setting = settings_map->GetContentSetting(
       primary_url_, secondary_url_, content_type_, std::string());
   if (final_content_setting != CONTENT_SETTING_ALLOW) {
+    // PermissionUmaUtil takes origins, even though they're typed as GURL.
+    GURL requesting_origin = primary_url_.GetOrigin();
     PermissionUmaUtil::PermissionRevoked(content_type_, source_ui_,
-                                         primary_url_, profile_);
+                                         requesting_origin, profile_);
   }
 }

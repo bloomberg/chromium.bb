@@ -205,6 +205,8 @@ void PermissionReporter::SendReport(const PermissionReportInfo& report_info) {
 bool PermissionReporter::BuildReport(const PermissionReportInfo& report_info,
                                      std::string* output) {
   PermissionReport report;
+  // The origin is stored as a GURL, so ensure it's actually an origin.
+  DCHECK_EQ(report_info.origin, report_info.origin.GetOrigin());
   report.set_origin(report_info.origin.spec());
   report.set_permission(PermissionTypeForReport(report_info.permission));
   report.set_action(PermissionActionForReport(report_info.action));
