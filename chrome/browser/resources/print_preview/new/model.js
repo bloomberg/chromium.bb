@@ -51,31 +51,26 @@ Polymer({
           value: [1],
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         copies: {
           value: '1',
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         collate: {
           value: true,
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         layout: {
           value: false, /* portrait */
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         color: {
           value: true, /* color */
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         mediaSize: {
           value: {
@@ -84,67 +79,56 @@ Polymer({
           },
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         margins: {
           value: 0,
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         dpi: {
           value: {},
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         fitToPage: {
           value: false,
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         scaling: {
           value: '100',
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         duplex: {
           value: true,
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         cssBackground: {
           value: false,
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         selectionOnly: {
           value: false,
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         headerFooter: {
           value: true,
           valid: true,
           available: true,
-          updatesPreview: true,
         },
         rasterize: {
           value: false,
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         vendorItems: {
           value: {},
           valid: true,
           available: true,
-          updatesPreview: false,
         },
         // This does not represent a real setting value, and is used only to
         // expose the availability of the other options settings section.
@@ -152,7 +136,6 @@ Polymer({
           value: null,
           valid: true,
           available: true,
-          updatesPreview: false,
         },
       },
     },
