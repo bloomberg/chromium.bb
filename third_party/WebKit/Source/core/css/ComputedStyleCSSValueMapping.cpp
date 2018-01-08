@@ -100,70 +100,6 @@ static CSSValue* PixelValueForUnzoomedLength(
   return CSSValue::Create(length, style.EffectiveZoom());
 }
 
-static CSSValueList* CreatePositionListForLayer(const CSSProperty& property,
-                                                const FillLayer& layer,
-                                                const ComputedStyle& style) {
-  CSSValueList* position_list = CSSValueList::CreateSpaceSeparated();
-  if (layer.IsBackgroundXOriginSet()) {
-    DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
-           property.IDEquals(CSSPropertyWebkitMaskPosition));
-    position_list->Append(
-        *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
-  }
-  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      layer.PositionX(), style));
-  if (layer.IsBackgroundYOriginSet()) {
-    DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
-           property.IDEquals(CSSPropertyWebkitMaskPosition));
-    position_list->Append(
-        *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
-  }
-  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      layer.PositionY(), style));
-  return position_list;
-}
-
-static CSSValue* ValueForFillSize(const FillSize& fill_size,
-                                  const ComputedStyle& style) {
-  if (fill_size.type == EFillSizeType::kContain)
-    return CSSIdentifierValue::Create(CSSValueContain);
-
-  if (fill_size.type == EFillSizeType::kCover)
-    return CSSIdentifierValue::Create(CSSValueCover);
-
-  if (fill_size.size.Height().IsAuto()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        fill_size.size.Width(), style);
-  }
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      fill_size.size.Width(), style));
-  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      fill_size.size.Height(), style));
-  return list;
-}
-
-static CSSValue* ValueForFillRepeat(EFillRepeat x_repeat,
-                                    EFillRepeat y_repeat) {
-  // For backwards compatibility, if both values are equal, just return one of
-  // them. And if the two values are equivalent to repeat-x or repeat-y, just
-  // return the shorthand.
-  if (x_repeat == y_repeat)
-    return CSSIdentifierValue::Create(x_repeat);
-  if (x_repeat == EFillRepeat::kRepeatFill &&
-      y_repeat == EFillRepeat::kNoRepeatFill)
-    return CSSIdentifierValue::Create(CSSValueRepeatX);
-  if (x_repeat == EFillRepeat::kNoRepeatFill &&
-      y_repeat == EFillRepeat::kRepeatFill)
-    return CSSIdentifierValue::Create(CSSValueRepeatY);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*CSSIdentifierValue::Create(x_repeat));
-  list->Append(*CSSIdentifierValue::Create(y_repeat));
-  return list;
-}
-
 static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
   switch (type) {
     case EMaskSourceType::kAlpha:
@@ -618,42 +554,6 @@ static CSSValue* ValuesForFontVariantProperty(const ComputedStyle& style,
       NOTREACHED();
       return nullptr;
   }
-}
-
-static CSSValueList* ValuesForBackgroundShorthand(
-    const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
-    bool allow_visited_style) {
-  CSSValueList* ret = CSSValueList::CreateCommaSeparated();
-  const FillLayer* curr_layer = &style.BackgroundLayers();
-  for (; curr_layer; curr_layer = curr_layer->Next()) {
-    CSSValueList* list = CSSValueList::CreateSlashSeparated();
-    CSSValueList* before_slash = CSSValueList::CreateSpaceSeparated();
-    if (!curr_layer->Next()) {  // color only for final layer
-      const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-          GetCSSPropertyBackgroundColor(), style, layout_object, styled_node,
-          allow_visited_style);
-      DCHECK(value);
-      before_slash->Append(*value);
-    }
-    before_slash->Append(curr_layer->GetImage()
-                             ? *curr_layer->GetImage()->ComputedCSSValue()
-                             : *CSSIdentifierValue::Create(CSSValueNone));
-    before_slash->Append(
-        *ValueForFillRepeat(curr_layer->RepeatX(), curr_layer->RepeatY()));
-    before_slash->Append(*CSSIdentifierValue::Create(curr_layer->Attachment()));
-    before_slash->Append(*CreatePositionListForLayer(
-        GetCSSPropertyBackgroundPosition(), *curr_layer, style));
-    list->Append(*before_slash);
-    CSSValueList* after_slash = CSSValueList::CreateSpaceSeparated();
-    after_slash->Append(*ValueForFillSize(curr_layer->Size(), style));
-    after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Origin()));
-    after_slash->Append(*CSSIdentifierValue::Create(curr_layer->Clip()));
-    list->Append(*after_slash);
-    ret->Append(*list);
-  }
-  return ret;
 }
 
 static CSSValueList*
@@ -2243,45 +2143,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
   const SVGComputedStyle& svg_style = style.SvgStyle();
   const CSSProperty& resolved_property = property.ResolveDirectionAwareProperty(
       style.Direction(), style.GetWritingMode());
+
   switch (resolved_property.PropertyID()) {
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyWebkitMaskImage: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskImage)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next()) {
-        if (curr_layer->GetImage())
-          list->Append(*curr_layer->GetImage()->ComputedCSSValue());
-        else
-          list->Append(*CSSIdentifierValue::Create(CSSValueNone));
-      }
-      return list;
-    }
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyWebkitMaskSize: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskSize)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next())
-        list->Append(*ValueForFillSize(curr_layer->Size(), style));
-      return list;
-    }
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyWebkitMaskRepeat: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskRepeat)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next())
-        list->Append(
-            *ValueForFillRepeat(curr_layer->RepeatX(), curr_layer->RepeatY()));
-      return list;
-    }
     case CSSPropertyMaskSourceType: {
       CSSValueList* list = CSSValueList::CreateCommaSeparated();
       for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
@@ -2321,19 +2184,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       for (; curr_layer; curr_layer = curr_layer->Next()) {
         EFillBox box = is_clip ? curr_layer->Clip() : curr_layer->Origin();
         list->Append(*CSSIdentifierValue::Create(box));
-      }
-      return list;
-    }
-    case CSSPropertyBackgroundPosition:
-    case CSSPropertyWebkitMaskPosition: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskPosition)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next()) {
-        list->Append(
-            *CreatePositionListForLayer(resolved_property, *curr_layer, style));
       }
       return list;
     }
@@ -3297,9 +3147,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         list->Append(*CSSIdentifierValue::Create(curr_layer->BlendMode()));
       return list;
     }
-    case CSSPropertyBackground:
-      return ValuesForBackgroundShorthand(style, layout_object, styled_node,
-                                          allow_visited_style);
     case CSSPropertyBorder: {
       const CSSValue* value =
           Get(GetCSSPropertyBorderTop(), style, layout_object, styled_node,

@@ -9,6 +9,8 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSShorthand {
@@ -41,6 +43,16 @@ bool BackgroundRepeat::ParseShorthand(
       properties);
 
   return true;
+}
+
+const CSSValue* BackgroundRepeat::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::BackgroundRepeatOrWebkitMaskRepeat(
+      &style.BackgroundLayers());
 }
 
 }  // namespace CSSShorthand
