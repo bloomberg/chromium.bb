@@ -211,7 +211,7 @@ void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   if (it == frame_sink_id_dependencies_.end())
     return;
 
-  if (surface_id.local_surface_id().parent_id() >= it->second) {
+  if (surface_id.local_surface_id().parent_sequence_number() >= it->second) {
     frame_sink_id_dependencies_.erase(it);
     surface_manager_->SurfaceDependenciesChanged(this, {},
                                                  {surface_id.frame_sink_id()});
@@ -327,11 +327,13 @@ void Surface::UpdateActivationDependencies(
     // If a activation dependency does not have a corresponding active frame in
     // the display compositor, then it blocks this frame.
     if (!dependency || !dependency->HasActiveFrame()) {
-      // Record the latest |local_id| this surface is interested in observing
-      // for the provided FrameSinkId.
-      uint32_t& local_id =
+      // Record the latest |parent_sequence_number| this surface is interested
+      // in observing for the provided FrameSinkId.
+      uint32_t& parent_sequence_number =
           new_frame_sink_id_dependencies[surface_id.frame_sink_id()];
-      local_id = std::max(local_id, surface_id.local_surface_id().parent_id());
+      parent_sequence_number =
+          std::max(parent_sequence_number,
+                   surface_id.local_surface_id().parent_sequence_number());
       new_activation_dependencies.insert(surface_id);
     }
   }
