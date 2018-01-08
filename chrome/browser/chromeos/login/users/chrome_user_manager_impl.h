@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
+#include "chrome/browser/chromeos/printing/external_printers.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -294,6 +296,10 @@ class ChromeUserManagerImpl
   // Observer for the policy that can be used to manage wallpapers.
   std::unique_ptr<policy::CloudExternalDataPolicyObserver>
       wallpaper_policy_observer_;
+
+  // Observer for the policy that provides policy printers.
+  std::unique_ptr<policy::CloudExternalDataPolicyObserver>
+      printers_policy_observer_;
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_;
 
