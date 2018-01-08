@@ -16,6 +16,7 @@
 #include "chrome/browser/devtools/devtools_embedder_message_dispatcher.h"
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
+#include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -40,13 +41,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                            public net::URLFetcherDelegate,
                            public DevToolsFileHelper::Delegate {
  public:
-  static DevToolsUIBindings* ForWebContents(
-      content::WebContents* web_contents);
-
-  static GURL SanitizeFrontendURL(const GURL& url);
-  static bool IsValidFrontendURL(const GURL& url);
-  static bool IsValidRemoteFrontendURL(const GURL& url);
-
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -70,6 +64,12 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual void RenderProcessGone(bool crashed) = 0;
     virtual void ShowCertificateViewer(const std::string& cert_chain) = 0;
   };
+
+  static DevToolsUIBindings* ForWebContents(content::WebContents* web_contents);
+
+  static GURL SanitizeFrontendURL(const GURL& url);
+  static bool IsValidFrontendURL(const GURL& url);
+  static bool IsValidRemoteFrontendURL(const GURL& url);
 
   explicit DevToolsUIBindings(content::WebContents* web_contents);
   ~DevToolsUIBindings() override;
@@ -215,9 +215,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void SearchCompleted(int request_id,
                        const std::string& file_system_path,
                        const std::vector<std::string>& file_paths);
-  typedef base::Callback<void(bool)> InfoBarCallback;
-  void ShowDevToolsConfirmInfoBar(const base::string16& message,
-                                  const InfoBarCallback& callback);
+  void ShowDevToolsInfoBar(const base::string16& message,
+                           const DevToolsInfoBarDelegate::Callback& callback);
 
   // Extensions support.
   void AddDevToolsExtensionsToClient();

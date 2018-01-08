@@ -176,6 +176,8 @@ static_library("devtools") {
       "devtools_file_system_indexer.h",
       "devtools_file_watcher.cc",
       "devtools_file_watcher.h",
+      "devtools_infobar_delegate.cc",
+      "devtools_infobar_delegate.h",
       "devtools_targets_ui.cc",
       "devtools_targets_ui.h",
       "devtools_toggle_action.cc",
