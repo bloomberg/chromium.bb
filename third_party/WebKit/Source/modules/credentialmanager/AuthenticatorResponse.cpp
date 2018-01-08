@@ -14,7 +14,7 @@ AuthenticatorResponse* AuthenticatorResponse::Create(
 AuthenticatorResponse::AuthenticatorResponse(DOMArrayBuffer* client_data_json)
     : client_data_json_(client_data_json) {}
 
-AuthenticatorResponse::~AuthenticatorResponse() {}
+AuthenticatorResponse::~AuthenticatorResponse() = default;
 
 void AuthenticatorResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_data_json_);

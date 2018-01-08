@@ -166,7 +166,7 @@ class MediaDevicesTest : public ::testing::Test {
  public:
   using MediaDeviceInfos = PersistentHeapVector<Member<MediaDeviceInfo>>;
 
-  MediaDevicesTest() {}
+  MediaDevicesTest() = default;
 
   MediaDevices* GetMediaDevices(ExecutionContext* context) {
     if (!media_devices_) {

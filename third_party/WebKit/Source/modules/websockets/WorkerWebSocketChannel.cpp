@@ -58,8 +58,8 @@ typedef WorkerWebSocketChannel::MainChannelClient MainChannelClient;
 // thread. signalWorkerThread() must be called before any getters are called.
 class WebSocketChannelSyncHelper {
  public:
-  WebSocketChannelSyncHelper() {}
-  ~WebSocketChannelSyncHelper() {}
+  WebSocketChannelSyncHelper() = default;
+  ~WebSocketChannelSyncHelper() = default;
 
   // All setters are called on the main thread.
   void SetConnectRequestResult(bool connect_request_result) {

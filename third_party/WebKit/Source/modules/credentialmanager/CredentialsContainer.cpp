@@ -272,7 +272,7 @@ CredentialsContainer* CredentialsContainer::Create() {
   return new CredentialsContainer();
 }
 
-CredentialsContainer::CredentialsContainer() {}
+CredentialsContainer::CredentialsContainer() = default;
 
 ScriptPromise CredentialsContainer::get(
     ScriptState* script_state,

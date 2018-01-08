@@ -46,7 +46,7 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
     WorkerThread* thread)
     : ThreadedWorkletGlobalScope(std::move(creation_params), isolate, thread) {}
 
-AudioWorkletGlobalScope::~AudioWorkletGlobalScope() {}
+AudioWorkletGlobalScope::~AudioWorkletGlobalScope() = default;
 
 void AudioWorkletGlobalScope::Dispose() {
   DCHECK(IsContextThread());

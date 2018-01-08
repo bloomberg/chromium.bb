@@ -32,7 +32,7 @@ VRController::VRController(NavigatorVR* navigator_vr)
       WTF::Bind(&VRController::OnDisplaysSynced, WrapPersistent(this)));
 }
 
-VRController::~VRController() {}
+VRController::~VRController() = default;
 
 void VRController::GetDisplays(ScriptPromiseResolver* resolver) {
   // If we've previously synced the VRDisplays or no longer have a valid service

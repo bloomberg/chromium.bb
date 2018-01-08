@@ -57,7 +57,7 @@ void SpeechGrammarList::addFromString(const String& string, double weight) {
       SpeechGrammar::Create(KURL(NullURL(), url_string), weight));
 }
 
-SpeechGrammarList::SpeechGrammarList() {}
+SpeechGrammarList::SpeechGrammarList() = default;
 
 void SpeechGrammarList::Trace(blink::Visitor* visitor) {
   visitor->Trace(grammars_);

@@ -221,7 +221,7 @@ MIDIOutput::MIDIOutput(MIDIAccess* access,
     : MIDIPort(access, id, manufacturer, name, kTypeOutput, version, state),
       port_index_(port_index) {}
 
-MIDIOutput::~MIDIOutput() {}
+MIDIOutput::~MIDIOutput() = default;
 
 void MIDIOutput::send(NotShared<DOMUint8Array> array,
                       double timestamp,

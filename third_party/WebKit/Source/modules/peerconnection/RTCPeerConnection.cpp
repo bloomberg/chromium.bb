@@ -221,7 +221,7 @@ class WebRTCCertificateObserver : public WebRTCCertificateCallback {
     return new WebRTCCertificateObserver(resolver);
   }
 
-  ~WebRTCCertificateObserver() override {}
+  ~WebRTCCertificateObserver() override = default;
 
  private:
   explicit WebRTCCertificateObserver(ScriptPromiseResolver* resolver)

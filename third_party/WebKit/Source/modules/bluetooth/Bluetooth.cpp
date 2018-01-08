@@ -224,7 +224,7 @@ void Bluetooth::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-Bluetooth::Bluetooth() {}
+Bluetooth::Bluetooth() = default;
 
 BluetoothDevice* Bluetooth::GetBluetoothDeviceRepresentingDevice(
     mojom::blink::WebBluetoothDevicePtr device_ptr,

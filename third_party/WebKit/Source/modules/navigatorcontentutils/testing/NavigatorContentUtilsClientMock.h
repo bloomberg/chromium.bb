@@ -21,7 +21,7 @@ class NavigatorContentUtilsClientMock final
     return new NavigatorContentUtilsClientMock;
   }
 
-  ~NavigatorContentUtilsClientMock() override {}
+  ~NavigatorContentUtilsClientMock() override = default;
 
   virtual void RegisterProtocolHandler(const String& scheme,
                                        const KURL&,

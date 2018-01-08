@@ -40,7 +40,7 @@ class DOMFileSystem;
 class FileSystemCallback
     : public GarbageCollectedFinalized<FileSystemCallback> {
  public:
-  virtual ~FileSystemCallback() {}
+  virtual ~FileSystemCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(DOMFileSystem*) = 0;
 };

@@ -27,7 +27,7 @@
 
 namespace blink {
 
-WebGLContextEvent::WebGLContextEvent() {}
+WebGLContextEvent::WebGLContextEvent() = default;
 
 WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
                                      bool can_bubble,
@@ -42,7 +42,7 @@ WebGLContextEvent::WebGLContextEvent(const AtomicString& type,
     status_message_ = initializer.statusMessage();
 }
 
-WebGLContextEvent::~WebGLContextEvent() {}
+WebGLContextEvent::~WebGLContextEvent() = default;
 
 const AtomicString& WebGLContextEvent::InterfaceName() const {
   return EventNames::WebGLContextEvent;

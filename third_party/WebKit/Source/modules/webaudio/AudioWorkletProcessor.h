@@ -37,7 +37,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // |AudioWorkletGlobalScope|.
   static AudioWorkletProcessor* Create(ExecutionContext*);
 
-  ~AudioWorkletProcessor() {}
+  ~AudioWorkletProcessor() = default;
 
   // |AudioWorkletHandler| invokes this method to process audio.
   bool Process(

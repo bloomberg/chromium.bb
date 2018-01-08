@@ -49,7 +49,7 @@ BroadcastChannel* BroadcastChannel::Create(ExecutionContext* execution_context,
   return new BroadcastChannel(execution_context, name);
 }
 
-BroadcastChannel::~BroadcastChannel() {}
+BroadcastChannel::~BroadcastChannel() = default;
 
 void BroadcastChannel::Dispose() {
   close();

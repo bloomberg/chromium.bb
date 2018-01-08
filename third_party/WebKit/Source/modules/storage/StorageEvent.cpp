@@ -35,9 +35,9 @@ StorageEvent* StorageEvent::Create() {
   return new StorageEvent;
 }
 
-StorageEvent::StorageEvent() {}
+StorageEvent::StorageEvent() = default;
 
-StorageEvent::~StorageEvent() {}
+StorageEvent::~StorageEvent() = default;
 
 StorageEvent* StorageEvent::Create(const AtomicString& type,
                                    const String& key,

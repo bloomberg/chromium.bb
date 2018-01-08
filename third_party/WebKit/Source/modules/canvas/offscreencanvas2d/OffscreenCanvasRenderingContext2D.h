@@ -25,8 +25,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
  public:
   class Factory : public CanvasRenderingContextFactory {
    public:
-    Factory() {}
-    ~Factory() override {}
+    Factory() = default;
+    ~Factory() override = default;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost* host,

@@ -64,7 +64,7 @@ TextDecoder::TextDecoder(const WTF::TextEncoding& encoding,
       ignore_bom_(ignore_bom),
       bom_seen_(false) {}
 
-TextDecoder::~TextDecoder() {}
+TextDecoder::~TextDecoder() = default;
 
 String TextDecoder::encoding() const {
   String name = String(encoding_.GetName()).DeprecatedLower();

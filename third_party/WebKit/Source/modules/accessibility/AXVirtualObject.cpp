@@ -12,7 +12,7 @@ AXVirtualObject::AXVirtualObject(AXObjectCacheImpl& axObjectCache,
     : AXObject(axObjectCache), accessible_node_(accessible_node) {
 }
 
-AXVirtualObject::~AXVirtualObject() {}
+AXVirtualObject::~AXVirtualObject() = default;
 
 void AXVirtualObject::Detach() {
   AXObject::Detach();

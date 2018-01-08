@@ -35,7 +35,7 @@ class MediaKeyStatusMap final
   using MediaKeyStatusMapType = HeapVector<Member<MapEntry>>;
 
  public:
-  MediaKeyStatusMap() {}
+  MediaKeyStatusMap() = default;
 
   void Clear();
   void AddEntry(WebData key_id, const String& status);

@@ -36,7 +36,7 @@ AXSVGRoot::AXSVGRoot(LayoutObject* layout_object,
                      AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXSVGRoot::~AXSVGRoot() {}
+AXSVGRoot::~AXSVGRoot() = default;
 
 AXSVGRoot* AXSVGRoot::Create(LayoutObject* layout_object,
                              AXObjectCacheImpl& ax_object_cache) {

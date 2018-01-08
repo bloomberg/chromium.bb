@@ -32,7 +32,7 @@ class MockPaymentCompleter
         .WillByDefault(::testing::ReturnPointee(&dummy_promise_));
   }
 
-  ~MockPaymentCompleter() override {}
+  ~MockPaymentCompleter() override = default;
 
   MOCK_METHOD2(Complete, ScriptPromise(ScriptState*, PaymentComplete result));
 

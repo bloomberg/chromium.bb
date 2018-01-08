@@ -26,7 +26,7 @@ class USBIsochronousOutTransferResult final : public ScriptWrappable {
       const HeapVector<Member<USBIsochronousOutTransferPacket>>& packets)
       : packets_(packets) {}
 
-  virtual ~USBIsochronousOutTransferResult() {}
+  virtual ~USBIsochronousOutTransferResult() = default;
 
   const HeapVector<Member<USBIsochronousOutTransferPacket>>& packets() const {
     return packets_;

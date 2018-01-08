@@ -99,7 +99,7 @@ RTCDataChannel::RTCDataChannel(
   handler_->SetClient(this);
 }
 
-RTCDataChannel::~RTCDataChannel() {}
+RTCDataChannel::~RTCDataChannel() = default;
 
 void RTCDataChannel::Dispose() {
   if (stopped_)

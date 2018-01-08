@@ -41,7 +41,7 @@ class ScriptState;
 
 class MODULES_EXPORT MediaStreamObserver : public GarbageCollectedMixin {
  public:
-  virtual ~MediaStreamObserver() {}
+  virtual ~MediaStreamObserver() = default;
 
   // Invoked when |MediaStream::addTrack| is called.
   virtual void OnStreamAddTrack(MediaStream*, MediaStreamTrack*) = 0;

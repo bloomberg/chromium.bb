@@ -48,7 +48,7 @@ BaseRenderingContext2D::BaseRenderingContext2D()
   state_stack_.push_back(CanvasRenderingContext2DState::Create());
 }
 
-BaseRenderingContext2D::~BaseRenderingContext2D() {}
+BaseRenderingContext2D::~BaseRenderingContext2D() = default;
 
 CanvasRenderingContext2DState& BaseRenderingContext2D::ModifiableState() {
   RealizeSaves();

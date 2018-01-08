@@ -54,7 +54,7 @@ BudgetService::BudgetService(
       WTF::Bind(&BudgetService::OnConnectionError, WrapWeakPersistent(this)));
 }
 
-BudgetService::~BudgetService() {}
+BudgetService::~BudgetService() = default;
 
 ScriptPromise BudgetService::getCost(ScriptState* script_state,
                                      const AtomicString& operation) {

@@ -203,7 +203,7 @@ MediaStream::MediaStream(ExecutionContext* context,
   }
 }
 
-MediaStream::~MediaStream() {}
+MediaStream::~MediaStream() = default;
 
 bool MediaStream::EmptyOrOnlyEndedTracks() {
   if (!audio_tracks_.size() && !video_tracks_.size()) {

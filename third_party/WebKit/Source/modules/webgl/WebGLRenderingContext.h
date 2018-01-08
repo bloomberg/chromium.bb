@@ -59,8 +59,8 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
     WTF_MAKE_NONCOPYABLE(Factory);
 
    public:
-    Factory() {}
-    ~Factory() override {}
+    Factory() = default;
+    ~Factory() override = default;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost*,

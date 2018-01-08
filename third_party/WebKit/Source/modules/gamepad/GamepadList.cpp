@@ -27,7 +27,7 @@
 
 namespace blink {
 
-GamepadList::GamepadList() {}
+GamepadList::GamepadList() = default;
 
 void GamepadList::Set(unsigned index, Gamepad* gamepad) {
   if (index >= device::Gamepads::kItemsLengthCap)

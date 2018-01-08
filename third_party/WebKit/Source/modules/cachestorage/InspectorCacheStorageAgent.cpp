@@ -169,7 +169,7 @@ class RequestCacheNames
                     std::unique_ptr<RequestCacheNamesCallback> callback)
       : security_origin_(security_origin), callback_(std::move(callback)) {}
 
-  ~RequestCacheNames() override {}
+  ~RequestCacheNames() override = default;
 
   void OnSuccess(const WebVector<WebString>& caches) override {
     std::unique_ptr<Array<ProtocolCache>> array =
@@ -307,7 +307,7 @@ class GetCacheResponsesForRequestData
                                   const WebServiceWorkerRequest& request,
                                   scoped_refptr<ResponsesAccumulator> accum)
       : params_(params), request_(request), accumulator_(std::move(accum)) {}
-  ~GetCacheResponsesForRequestData() override {}
+  ~GetCacheResponsesForRequestData() override = default;
 
   void OnSuccess(const WebServiceWorkerResponse& response) override {
     accumulator_->AddRequestResponsePair(request_, response);
@@ -337,7 +337,7 @@ class GetCacheKeysForRequestData
       : params_(params),
         cache_(std::move(cache)),
         callback_(std::move(callback)) {}
-  ~GetCacheKeysForRequestData() override {}
+  ~GetCacheKeysForRequestData() override = default;
 
   WebServiceWorkerCache* Cache() { return cache_.get(); }
   void OnSuccess(const WebVector<WebServiceWorkerRequest>& requests) override {
@@ -380,7 +380,7 @@ class GetCacheForRequestData
   GetCacheForRequestData(const DataRequestParams& params,
                          std::unique_ptr<RequestEntriesCallback> callback)
       : params_(params), callback_(std::move(callback)) {}
-  ~GetCacheForRequestData() override {}
+  ~GetCacheForRequestData() override = default;
 
   void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
     auto cache_request = std::make_unique<GetCacheKeysForRequestData>(
@@ -407,7 +407,7 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
  public:
   explicit DeleteCache(std::unique_ptr<DeleteCacheCallback> callback)
       : callback_(std::move(callback)) {}
-  ~DeleteCache() override {}
+  ~DeleteCache() override = default;
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
@@ -427,7 +427,7 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
  public:
   explicit DeleteCacheEntry(std::unique_ptr<DeleteEntryCallback> callback)
       : callback_(std::move(callback)) {}
-  ~DeleteCacheEntry() override {}
+  ~DeleteCacheEntry() override = default;
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
@@ -452,7 +452,7 @@ class GetCacheForDeleteEntry
       : request_spec_(request_spec),
         cache_name_(cache_name),
         callback_(std::move(callback)) {}
-  ~GetCacheForDeleteEntry() override {}
+  ~GetCacheForDeleteEntry() override = default;
 
   void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
     auto delete_request =
@@ -525,7 +525,7 @@ class CachedResponseFileReaderLoaderClient final
     loader_->Start(context, std::move(blob));
   }
 
-  ~CachedResponseFileReaderLoaderClient() {}
+  ~CachedResponseFileReaderLoaderClient() = default;
 
   void dispose() { delete this; }
 

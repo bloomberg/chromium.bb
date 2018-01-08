@@ -25,8 +25,8 @@ class MockPaymentUpdater : public GarbageCollectedFinalized<MockPaymentUpdater>,
   WTF_MAKE_NONCOPYABLE(MockPaymentUpdater);
 
  public:
-  MockPaymentUpdater() {}
-  ~MockPaymentUpdater() override {}
+  MockPaymentUpdater() = default;
+  ~MockPaymentUpdater() override = default;
 
   MOCK_METHOD1(OnUpdatePaymentDetails,
                void(const ScriptValue& detailsScriptValue));

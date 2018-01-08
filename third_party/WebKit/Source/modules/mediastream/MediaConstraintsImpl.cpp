@@ -54,7 +54,7 @@ enum class NakedValueDisposition { kTreatAsIdeal, kTreatAsExact };
 
 // Old type/value form of constraint. Used in parsing old-style constraints.
 struct NameValueStringConstraint {
-  NameValueStringConstraint() {}
+  NameValueStringConstraint() = default;
 
   NameValueStringConstraint(WebString name, WebString value)
       : name_(name), value_(value) {}

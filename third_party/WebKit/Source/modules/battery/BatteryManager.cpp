@@ -19,7 +19,7 @@ BatteryManager* BatteryManager::Create(ExecutionContext* context) {
   return battery_manager;
 }
 
-BatteryManager::~BatteryManager() {}
+BatteryManager::~BatteryManager() = default;
 
 BatteryManager::BatteryManager(ExecutionContext* context)
     : PausableObject(context), PlatformEventController(ToDocument(context)) {}

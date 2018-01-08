@@ -47,7 +47,7 @@ class DirectoryReaderBase : public ScriptWrappable {
     has_more_entries_ = has_more_entries;
   }
 
-  virtual ~DirectoryReaderBase() {}
+  virtual ~DirectoryReaderBase() = default;
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(file_system_);

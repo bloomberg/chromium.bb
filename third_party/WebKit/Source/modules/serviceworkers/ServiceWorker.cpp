@@ -156,7 +156,7 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
   handle_->ServiceWorker()->SetProxy(this);
 }
 
-ServiceWorker::~ServiceWorker() {}
+ServiceWorker::~ServiceWorker() = default;
 
 void ServiceWorker::Trace(blink::Visitor* visitor) {
   AbstractWorker::Trace(visitor);

@@ -50,7 +50,7 @@ class SQLValue;
 class SQLTransactionWrapper
     : public GarbageCollectedFinalized<SQLTransactionWrapper> {
  public:
-  virtual ~SQLTransactionWrapper() {}
+  virtual ~SQLTransactionWrapper() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool PerformPreflight(SQLTransactionBackend*) = 0;
   virtual bool PerformPostflight(SQLTransactionBackend*) = 0;

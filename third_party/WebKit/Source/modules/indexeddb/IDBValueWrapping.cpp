@@ -77,7 +77,7 @@ IDBValueWrapper::IDBValueWrapper(
 
 // Explicit destructor in the .cpp file, to move the dependency on the
 // BlobDataHandle definition away from the header file.
-IDBValueWrapper::~IDBValueWrapper() {}
+IDBValueWrapper::~IDBValueWrapper() = default;
 
 void IDBValueWrapper::Clone(ScriptState* script_state, ScriptValue* clone) {
 #if DCHECK_IS_ON()

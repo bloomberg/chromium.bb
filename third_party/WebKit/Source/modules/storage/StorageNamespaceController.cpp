@@ -30,7 +30,7 @@ const char* StorageNamespaceController::SupplementName() {
 StorageNamespaceController::StorageNamespaceController(WebViewClient* client)
     : inspector_agent_(nullptr), web_view_client_(client) {}
 
-StorageNamespaceController::~StorageNamespaceController() {}
+StorageNamespaceController::~StorageNamespaceController() = default;
 
 void StorageNamespaceController::Trace(blink::Visitor* visitor) {
   Supplement<Page>::Trace(visitor);

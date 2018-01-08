@@ -28,7 +28,7 @@ using mojom::document_metadata::blink::WebPagePtr;
 
 class CopylessPasteExtractorTest : public PageTestBase {
  public:
-  CopylessPasteExtractorTest() {}
+  CopylessPasteExtractorTest() = default;
 
  protected:
   void TearDown() override { ThreadState::Current()->CollectAllGarbage(); }

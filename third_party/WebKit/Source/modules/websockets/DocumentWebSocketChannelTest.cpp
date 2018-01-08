@@ -49,9 +49,9 @@ class MockWebSocketChannelClient
     return new ::testing::StrictMock<MockWebSocketChannelClient>();
   }
 
-  MockWebSocketChannelClient() {}
+  MockWebSocketChannelClient() = default;
 
-  ~MockWebSocketChannelClient() override {}
+  ~MockWebSocketChannelClient() override = default;
 
   MOCK_METHOD2(DidConnect, void(const String&, const String&));
   MOCK_METHOD1(DidReceiveTextMessage, void(const String&));
@@ -78,9 +78,9 @@ class MockWebSocketHandle : public WebSocketHandle {
     return new ::testing::StrictMock<MockWebSocketHandle>();
   }
 
-  MockWebSocketHandle() {}
+  MockWebSocketHandle() = default;
 
-  ~MockWebSocketHandle() override {}
+  ~MockWebSocketHandle() override = default;
 
   MOCK_METHOD1(DoInitialize, void(mojom::blink::WebSocketPtr*));
   void Initialize(mojom::blink::WebSocketPtr websocket) override {
@@ -106,7 +106,7 @@ class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
   static MockWebSocketHandshakeThrottle* Create() {
     return new ::testing::StrictMock<MockWebSocketHandshakeThrottle>();
   }
-  MockWebSocketHandshakeThrottle() {}
+  MockWebSocketHandshakeThrottle() = default;
   ~MockWebSocketHandshakeThrottle() override { Destructor(); }
 
   MOCK_METHOD3(ThrottleHandshake,

@@ -73,7 +73,7 @@ class FakeIDBDatabaseCallbacks final : public IDBDatabaseCallbacks {
   void OnComplete(int64_t transaction_id) override {}
 
  private:
-  FakeIDBDatabaseCallbacks() {}
+  FakeIDBDatabaseCallbacks() = default;
 };
 
 class IDBTransactionTest : public ::testing::Test {

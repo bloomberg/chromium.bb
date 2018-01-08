@@ -24,7 +24,7 @@ ServiceWorkerContainerClient::ServiceWorkerContainerClient(
     std::unique_ptr<WebServiceWorkerProvider> provider)
     : Supplement<WorkerClients>(clients), provider_(std::move(provider)) {}
 
-ServiceWorkerContainerClient::~ServiceWorkerContainerClient() {}
+ServiceWorkerContainerClient::~ServiceWorkerContainerClient() = default;
 
 const char* ServiceWorkerContainerClient::SupplementName() {
   return "ServiceWorkerContainerClient";

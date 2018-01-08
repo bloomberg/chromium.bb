@@ -57,7 +57,7 @@ IDBIndex::IDBIndex(scoped_refptr<IDBIndexMetadata> metadata,
   DCHECK_NE(Id(), IDBIndexMetadata::kInvalidId);
 }
 
-IDBIndex::~IDBIndex() {}
+IDBIndex::~IDBIndex() = default;
 
 void IDBIndex::Trace(blink::Visitor* visitor) {
   visitor->Trace(object_store_);

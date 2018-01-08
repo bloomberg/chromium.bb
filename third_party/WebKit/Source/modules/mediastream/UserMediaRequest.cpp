@@ -430,7 +430,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
   }
 }
 
-UserMediaRequest::~UserMediaRequest() {}
+UserMediaRequest::~UserMediaRequest() = default;
 
 bool UserMediaRequest::Audio() const {
   return !audio_.IsNull();

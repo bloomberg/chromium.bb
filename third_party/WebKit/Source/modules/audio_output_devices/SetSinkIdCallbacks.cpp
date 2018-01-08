@@ -40,7 +40,7 @@ SetSinkIdCallbacks::SetSinkIdCallbacks(ScriptPromiseResolver* resolver,
   DCHECK(resolver_);
 }
 
-SetSinkIdCallbacks::~SetSinkIdCallbacks() {}
+SetSinkIdCallbacks::~SetSinkIdCallbacks() = default;
 
 void SetSinkIdCallbacks::OnSuccess() {
   if (!resolver_->GetExecutionContext() ||

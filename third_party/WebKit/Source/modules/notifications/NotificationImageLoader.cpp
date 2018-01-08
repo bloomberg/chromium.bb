@@ -50,7 +50,7 @@ namespace blink {
 NotificationImageLoader::NotificationImageLoader(Type type)
     : type_(type), stopped_(false), start_time_(0.0) {}
 
-NotificationImageLoader::~NotificationImageLoader() {}
+NotificationImageLoader::~NotificationImageLoader() = default;
 
 // static
 SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,

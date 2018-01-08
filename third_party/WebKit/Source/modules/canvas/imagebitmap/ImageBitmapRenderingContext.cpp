@@ -21,7 +21,7 @@ ImageBitmapRenderingContext::ImageBitmapRenderingContext(
       image_layer_bridge_(
           new ImageLayerBridge(attrs.alpha() ? kNonOpaque : kOpaque)) {}
 
-ImageBitmapRenderingContext::~ImageBitmapRenderingContext() {}
+ImageBitmapRenderingContext::~ImageBitmapRenderingContext() = default;
 
 void ImageBitmapRenderingContext::SetCanvasGetContextResult(
     RenderingContext& result) {

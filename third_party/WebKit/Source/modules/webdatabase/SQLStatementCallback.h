@@ -38,7 +38,7 @@ class SQLResultSet;
 class SQLStatementCallback
     : public GarbageCollectedFinalized<SQLStatementCallback> {
  public:
-  virtual ~SQLStatementCallback() {}
+  virtual ~SQLStatementCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool handleEvent(SQLTransaction*, SQLResultSet*) = 0;
 };

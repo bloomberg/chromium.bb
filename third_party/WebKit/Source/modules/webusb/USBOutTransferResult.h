@@ -27,7 +27,7 @@ class USBOutTransferResult final : public ScriptWrappable {
   USBOutTransferResult(const String& status, unsigned bytes_written)
       : status_(status), bytes_written_(bytes_written) {}
 
-  virtual ~USBOutTransferResult() {}
+  virtual ~USBOutTransferResult() = default;
 
   String status() const { return status_; }
   unsigned bytesWritten() const { return bytes_written_; }

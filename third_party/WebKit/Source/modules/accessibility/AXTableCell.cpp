@@ -41,7 +41,7 @@ AXTableCell::AXTableCell(LayoutObject* layout_object,
                          AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXTableCell::~AXTableCell() {}
+AXTableCell::~AXTableCell() = default;
 
 AXTableCell* AXTableCell::Create(LayoutObject* layout_object,
                                  AXObjectCacheImpl& ax_object_cache) {

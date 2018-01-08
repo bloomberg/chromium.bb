@@ -66,7 +66,7 @@ mojom::ServiceWorkerClientType GetClientType(const String& type) {
 class GetCallback : public WebServiceWorkerClientCallbacks {
  public:
   explicit GetCallback(ScriptPromiseResolver* resolver) : resolver_(resolver) {}
-  ~GetCallback() override {}
+  ~GetCallback() override = default;
 
   void OnSuccess(
       std::unique_ptr<WebServiceWorkerClientInfo> web_client) override {
@@ -101,7 +101,7 @@ ServiceWorkerClients* ServiceWorkerClients::Create() {
   return new ServiceWorkerClients();
 }
 
-ServiceWorkerClients::ServiceWorkerClients() {}
+ServiceWorkerClients::ServiceWorkerClients() = default;
 
 ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
                                         const String& id) {

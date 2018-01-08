@@ -158,7 +158,7 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
   }
 }
 
-MediaStreamTrack::~MediaStreamTrack() {}
+MediaStreamTrack::~MediaStreamTrack() = default;
 
 String MediaStreamTrack::kind() const {
   DEFINE_STATIC_LOCAL(String, audio_kind, ("audio"));

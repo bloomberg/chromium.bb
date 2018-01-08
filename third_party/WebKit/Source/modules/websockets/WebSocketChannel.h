@@ -51,7 +51,7 @@ class MODULES_EXPORT WebSocketChannel
   WTF_MAKE_NONCOPYABLE(WebSocketChannel);
 
  public:
-  WebSocketChannel() {}
+  WebSocketChannel() = default;
   static WebSocketChannel* Create(ExecutionContext*, WebSocketChannelClient*);
 
   enum CloseEventCode {
@@ -102,7 +102,7 @@ class MODULES_EXPORT WebSocketChannel
   // Do not call any methods after calling this method.
   virtual void Disconnect() = 0;  // Will suppress didClose().
 
-  virtual ~WebSocketChannel() {}
+  virtual ~WebSocketChannel() = default;
 
   virtual void Trace(blink::Visitor* visitor) {}
 };

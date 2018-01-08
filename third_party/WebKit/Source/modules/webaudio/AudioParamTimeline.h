@@ -44,7 +44,7 @@ class AudioParamTimeline {
   DISALLOW_NEW();
 
  public:
-  AudioParamTimeline() {}
+  AudioParamTimeline() = default;
 
   void SetValueAtTime(float value, double time, ExceptionState&);
   void LinearRampToValueAtTime(float value,

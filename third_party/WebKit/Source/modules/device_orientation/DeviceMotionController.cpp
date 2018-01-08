@@ -20,7 +20,7 @@ DeviceMotionController::DeviceMotionController(Document& document)
     : DeviceSingleWindowEventController(document),
       Supplement<Document>(document) {}
 
-DeviceMotionController::~DeviceMotionController() {}
+DeviceMotionController::~DeviceMotionController() = default;
 
 const char* DeviceMotionController::SupplementName() {
   return "DeviceMotionController";

@@ -45,7 +45,7 @@ class SQLTransactionClient {
   USING_FAST_MALLOC(SQLTransactionClient);
 
  public:
-  SQLTransactionClient() {}
+  SQLTransactionClient() = default;
   void DidCommitWriteTransaction(Database*);
   bool DidExceedQuota(Database*);
 };

@@ -56,7 +56,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
                                 IDBTransaction* transaction) {
     return new IDBObjectStore(std::move(metadata), transaction);
   }
-  ~IDBObjectStore() {}
+  ~IDBObjectStore() = default;
   void Trace(blink::Visitor*);
 
   const IDBObjectStoreMetadata& Metadata() const { return *metadata_; }

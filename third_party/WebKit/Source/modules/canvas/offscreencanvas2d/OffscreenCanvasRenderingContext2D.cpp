@@ -24,7 +24,8 @@
 
 namespace blink {
 
-OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() {}
+OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() =
+    default;
 
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,

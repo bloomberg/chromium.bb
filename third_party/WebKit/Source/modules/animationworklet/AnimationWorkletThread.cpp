@@ -38,7 +38,7 @@ AnimationWorkletThread::AnimationWorkletThread(
     WorkerReportingProxy& worker_reporting_proxy)
     : WorkerThread(loading_context, worker_reporting_proxy) {}
 
-AnimationWorkletThread::~AnimationWorkletThread() {}
+AnimationWorkletThread::~AnimationWorkletThread() = default;
 
 WorkerBackingThread& AnimationWorkletThread::GetWorkerBackingThread() {
   return *WorkletThreadHolder<AnimationWorkletThread>::GetInstance()

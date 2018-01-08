@@ -98,7 +98,7 @@ TrackDefault* TrackDefault::Create(const AtomicString& type,
   return new TrackDefault(type, language, label, kinds, byte_stream_track_id);
 }
 
-TrackDefault::~TrackDefault() {}
+TrackDefault::~TrackDefault() = default;
 
 TrackDefault::TrackDefault(const AtomicString& type,
                            const String& language,

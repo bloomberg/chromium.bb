@@ -38,7 +38,7 @@ class FileWriterBase;
 class FileWriterBaseCallback
     : public GarbageCollectedFinalized<FileWriterBaseCallback> {
  public:
-  virtual ~FileWriterBaseCallback() {}
+  virtual ~FileWriterBaseCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(FileWriterBase*) = 0;
 };

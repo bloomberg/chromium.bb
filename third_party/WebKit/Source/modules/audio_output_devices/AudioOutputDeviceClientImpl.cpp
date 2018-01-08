@@ -15,7 +15,7 @@ namespace blink {
 AudioOutputDeviceClientImpl::AudioOutputDeviceClientImpl(LocalFrame& frame)
     : AudioOutputDeviceClient(frame) {}
 
-AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl() {}
+AudioOutputDeviceClientImpl::~AudioOutputDeviceClientImpl() = default;
 
 void AudioOutputDeviceClientImpl::CheckIfAudioSinkExistsAndIsAuthorized(
     ExecutionContext* context,

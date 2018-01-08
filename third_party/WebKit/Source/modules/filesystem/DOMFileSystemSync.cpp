@@ -62,7 +62,7 @@ DOMFileSystemSync::DOMFileSystemSync(ExecutionContext* context,
     : DOMFileSystemBase(context, name, type, root_url),
       root_entry_(DirectoryEntrySync::Create(this, DOMFilePath::kRoot)) {}
 
-DOMFileSystemSync::~DOMFileSystemSync() {}
+DOMFileSystemSync::~DOMFileSystemSync() = default;
 
 void DOMFileSystemSync::ReportError(ErrorCallbackBase* error_callback,
                                     FileError::ErrorCode file_error) {
@@ -105,7 +105,7 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
     result_->code_ = code;
   }
 
-  ~CreateFileHelper() override {}
+  ~CreateFileHelper() override = default;
 
   void DidCreateSnapshotFile(const FileMetadata& metadata,
                              scoped_refptr<BlobDataHandle> snapshot) override {
@@ -164,7 +164,7 @@ class ReceiveFileWriterCallback final : public FileWriterBaseCallback {
   void handleEvent(FileWriterBase*) override {}
 
  private:
-  ReceiveFileWriterCallback() {}
+  ReceiveFileWriterCallback() = default;
 };
 
 class LocalErrorCallback final : public ErrorCallbackBase {

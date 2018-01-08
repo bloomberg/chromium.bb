@@ -80,7 +80,7 @@ RTCDTMFSender::RTCDTMFSender(ExecutionContext* context,
   handler_->SetClient(this);
 }
 
-RTCDTMFSender::~RTCDTMFSender() {}
+RTCDTMFSender::~RTCDTMFSender() = default;
 
 void RTCDTMFSender::Dispose() {
   // Promptly clears a raw reference from content/ to an on-heap object

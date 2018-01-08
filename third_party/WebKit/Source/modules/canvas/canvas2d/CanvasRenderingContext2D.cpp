@@ -140,7 +140,7 @@ void CanvasRenderingContext2D::SetCanvasGetContextResult(
   result.SetCanvasRenderingContext2D(this);
 }
 
-CanvasRenderingContext2D::~CanvasRenderingContext2D() {}
+CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
 void CanvasRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()

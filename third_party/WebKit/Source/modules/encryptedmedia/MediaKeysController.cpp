@@ -14,7 +14,7 @@ const char* MediaKeysController::SupplementName() {
   return "MediaKeysController";
 }
 
-MediaKeysController::MediaKeysController() {}
+MediaKeysController::MediaKeysController() = default;
 
 WebEncryptedMediaClient* MediaKeysController::EncryptedMediaClient(
     ExecutionContext* context) {

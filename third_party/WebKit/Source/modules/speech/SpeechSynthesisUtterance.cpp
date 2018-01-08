@@ -42,7 +42,7 @@ SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
   platform_utterance_->SetText(text);
 }
 
-SpeechSynthesisUtterance::~SpeechSynthesisUtterance() {}
+SpeechSynthesisUtterance::~SpeechSynthesisUtterance() = default;
 
 const AtomicString& SpeechSynthesisUtterance::InterfaceName() const {
   return EventTargetNames::SpeechSynthesisUtterance;

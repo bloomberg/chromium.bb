@@ -47,7 +47,7 @@ class MIDIAccessor final : public WebMIDIAccessorClient {
  public:
   static std::unique_ptr<MIDIAccessor> Create(MIDIAccessorClient*);
 
-  ~MIDIAccessor() override {}
+  ~MIDIAccessor() override = default;
 
   void StartSession();
   void SendMIDIData(unsigned port_index,

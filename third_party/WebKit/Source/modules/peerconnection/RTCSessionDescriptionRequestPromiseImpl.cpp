@@ -29,7 +29,7 @@ RTCSessionDescriptionRequestPromiseImpl::
 }
 
 RTCSessionDescriptionRequestPromiseImpl::
-    ~RTCSessionDescriptionRequestPromiseImpl() {}
+    ~RTCSessionDescriptionRequestPromiseImpl() = default;
 
 void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
     const WebRTCSessionDescription& web_session_description) {

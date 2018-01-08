@@ -59,7 +59,7 @@ class WebSocketHandle {
     kMessageTypeBinary,
   };
 
-  virtual ~WebSocketHandle() {}
+  virtual ~WebSocketHandle() = default;
 
   virtual void Initialize(mojom::blink::WebSocketPtr) = 0;
   virtual void Connect(const KURL&,

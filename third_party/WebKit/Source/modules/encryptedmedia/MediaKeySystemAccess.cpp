@@ -40,7 +40,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
       : ContentDecryptionModuleResultPromise(script_state),
         supported_session_types_(supported_session_types) {}
 
-  ~NewCdmResultPromise() override {}
+  ~NewCdmResultPromise() override = default;
 
   // ContentDecryptionModuleResult implementation.
   void CompleteWithContentDecryptionModule(
@@ -115,7 +115,7 @@ MediaKeySystemAccess::MediaKeySystemAccess(
     std::unique_ptr<WebContentDecryptionModuleAccess> access)
     : key_system_(key_system), access_(std::move(access)) {}
 
-MediaKeySystemAccess::~MediaKeySystemAccess() {}
+MediaKeySystemAccess::~MediaKeySystemAccess() = default;
 
 void MediaKeySystemAccess::getConfiguration(
     MediaKeySystemConfiguration& result) {

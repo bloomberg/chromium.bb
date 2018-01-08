@@ -19,7 +19,7 @@ AuthenticatorAttestationResponse::AuthenticatorAttestationResponse(
     : AuthenticatorResponse(client_data_json),
       attestation_object_(attestation_object) {}
 
-AuthenticatorAttestationResponse::~AuthenticatorAttestationResponse() {}
+AuthenticatorAttestationResponse::~AuthenticatorAttestationResponse() = default;
 
 void AuthenticatorAttestationResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(attestation_object_);

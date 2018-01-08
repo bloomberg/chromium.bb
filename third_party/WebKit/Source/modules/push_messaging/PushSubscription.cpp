@@ -44,7 +44,7 @@ PushSubscription::PushSubscription(
                                    subscription.auth.size())),
       service_worker_registration_(service_worker_registration) {}
 
-PushSubscription::~PushSubscription() {}
+PushSubscription::~PushSubscription() = default;
 
 DOMTimeStamp PushSubscription::expirationTime(bool& out_is_null) const {
   // This attribute reflects the time at which the subscription will expire,

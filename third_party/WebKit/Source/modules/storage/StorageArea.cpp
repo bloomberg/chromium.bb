@@ -58,7 +58,7 @@ StorageArea::StorageArea(std::unique_ptr<WebStorageArea> storage_area,
       frame_used_for_can_access_storage_(nullptr),
       can_access_storage_cached_result_(false) {}
 
-StorageArea::~StorageArea() {}
+StorageArea::~StorageArea() = default;
 
 void StorageArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_used_for_can_access_storage_);

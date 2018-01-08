@@ -39,7 +39,7 @@ class Client : public GarbageCollectedFinalized<Client>,
   USING_GARBAGE_COLLECTED_MIXIN(Client);
 
  public:
-  ~Client() override {}
+  ~Client() override = default;
   const Vector<EventOrReconnectionTimeSetting>& Events() const {
     return events_;
   }
@@ -61,7 +61,7 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
   USING_GARBAGE_COLLECTED_MIXIN(StoppingClient);
 
  public:
-  ~StoppingClient() override {}
+  ~StoppingClient() override = default;
   const Vector<EventOrReconnectionTimeSetting>& Events() const {
     return events_;
   }
@@ -92,7 +92,7 @@ class EventSourceParserTest : public ::testing::Test {
   EventSourceParserTest()
       : client_(new Client),
         parser_(new EventSourceParser(AtomicString(), client_)) {}
-  ~EventSourceParserTest() override {}
+  ~EventSourceParserTest() override = default;
 
   void Enqueue(const char* data) { parser_->AddBytes(data, strlen(data)); }
   void EnqueueOneByOne(const char* data) {

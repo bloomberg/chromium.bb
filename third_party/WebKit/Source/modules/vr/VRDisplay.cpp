@@ -67,7 +67,7 @@ class VRDisplayFrameRequestCallback
  public:
   explicit VRDisplayFrameRequestCallback(VRDisplay* vr_display)
       : vr_display_(vr_display) {}
-  ~VRDisplayFrameRequestCallback() override {}
+  ~VRDisplayFrameRequestCallback() override = default;
   void Invoke(double high_res_time_ms) override {
     if (Id() != vr_display_->PendingMagicWindowVSyncId())
       return;
@@ -111,7 +111,7 @@ VRDisplay::VRDisplay(
   PauseIfNeeded();  // Initialize SuspendabaleObject.
 }
 
-VRDisplay::~VRDisplay() {}
+VRDisplay::~VRDisplay() = default;
 
 void VRDisplay::Pause() {}
 

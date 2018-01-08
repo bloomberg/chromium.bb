@@ -23,7 +23,8 @@ class ClipboardPromise final
   WTF_MAKE_NONCOPYABLE(ClipboardPromise);
 
  public:
-  virtual ~ClipboardPromise(){};
+  virtual ~ClipboardPromise() = default;
+  ;
 
   static ScriptPromise CreateForRead(ScriptState*);
   static ScriptPromise CreateForReadText(ScriptState*);

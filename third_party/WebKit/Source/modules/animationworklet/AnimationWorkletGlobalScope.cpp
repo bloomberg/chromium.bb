@@ -72,7 +72,7 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     proxy_client->SetGlobalScope(this);
 }
 
-AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() {}
+AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
 void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(animator_definitions_);

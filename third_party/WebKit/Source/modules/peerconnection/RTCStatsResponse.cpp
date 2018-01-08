@@ -30,7 +30,7 @@ RTCStatsResponse* RTCStatsResponse::Create() {
   return new RTCStatsResponse();
 }
 
-RTCStatsResponse::RTCStatsResponse() {}
+RTCStatsResponse::RTCStatsResponse() = default;
 
 RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name) {
   if (idmap_.find(name) != idmap_.end())

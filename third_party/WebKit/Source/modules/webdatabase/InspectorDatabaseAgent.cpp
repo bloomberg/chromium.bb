@@ -69,7 +69,7 @@ class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
       std::unique_ptr<ExecuteSQLCallback> callback) {
     return base::AdoptRef(new ExecuteSQLCallbackWrapper(std::move(callback)));
   }
-  ~ExecuteSQLCallbackWrapper() {}
+  ~ExecuteSQLCallbackWrapper() = default;
   ExecuteSQLCallback* Get() { return callback_.get(); }
 
   void ReportTransactionFailed(SQLError* error) {
@@ -97,7 +97,7 @@ class StatementCallback final : public SQLStatementCallback {
     return new StatementCallback(std::move(request_callback));
   }
 
-  ~StatementCallback() override {}
+  ~StatementCallback() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     SQLStatementCallback::Trace(visitor);
@@ -148,7 +148,7 @@ class StatementErrorCallback final : public SQLStatementErrorCallback {
     return new StatementErrorCallback(std::move(request_callback));
   }
 
-  ~StatementErrorCallback() override {}
+  ~StatementErrorCallback() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     SQLStatementErrorCallback::Trace(visitor);
@@ -174,7 +174,7 @@ class TransactionCallback final : public SQLTransactionCallback {
     return new TransactionCallback(sql_statement, std::move(request_callback));
   }
 
-  ~TransactionCallback() override {}
+  ~TransactionCallback() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     SQLTransactionCallback::Trace(visitor);
@@ -207,7 +207,7 @@ class TransactionErrorCallback final : public SQLTransactionErrorCallback {
     return new TransactionErrorCallback(std::move(request_callback));
   }
 
-  ~TransactionErrorCallback() override {}
+  ~TransactionErrorCallback() override = default;
 
   virtual void Trace(blink::Visitor* visitor) {
     SQLTransactionErrorCallback::Trace(visitor);
@@ -231,12 +231,12 @@ class TransactionSuccessCallback final : public VoidCallback {
     return new TransactionSuccessCallback();
   }
 
-  ~TransactionSuccessCallback() override {}
+  ~TransactionSuccessCallback() override = default;
 
   void handleEvent() override {}
 
  private:
-  TransactionSuccessCallback() {}
+  TransactionSuccessCallback() = default;
 };
 
 }  // namespace
@@ -277,7 +277,7 @@ void InspectorDatabaseAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
     : page_(page), enabled_(false) {}
 
-InspectorDatabaseAgent::~InspectorDatabaseAgent() {}
+InspectorDatabaseAgent::~InspectorDatabaseAgent() = default;
 
 Response InspectorDatabaseAgent::enable() {
   if (enabled_)

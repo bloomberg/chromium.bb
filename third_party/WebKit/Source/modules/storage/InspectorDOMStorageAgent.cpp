@@ -60,7 +60,7 @@ static Response ToResponse(ExceptionState& exception_state) {
 InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
     : page_(page), is_enabled_(false) {}
 
-InspectorDOMStorageAgent::~InspectorDOMStorageAgent() {}
+InspectorDOMStorageAgent::~InspectorDOMStorageAgent() = default;
 
 void InspectorDOMStorageAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);

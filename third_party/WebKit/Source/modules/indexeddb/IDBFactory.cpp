@@ -53,7 +53,7 @@ namespace blink {
 static const char kPermissionDeniedErrorMessage[] =
     "The user denied permission to access the database.";
 
-IDBFactory::IDBFactory() {}
+IDBFactory::IDBFactory() = default;
 
 static bool IsContextValid(ExecutionContext* context) {
   DCHECK(context->IsDocument() || context->IsWorkerGlobalScope());

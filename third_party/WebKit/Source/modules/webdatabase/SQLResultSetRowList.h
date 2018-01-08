@@ -55,7 +55,7 @@ class SQLResultSetRowList final : public ScriptWrappable {
   ScriptValue item(ScriptState*, unsigned index, ExceptionState&);
 
  private:
-  SQLResultSetRowList() {}
+  SQLResultSetRowList() = default;
 
   Vector<String> columns_;
   Vector<SQLValue> result_;

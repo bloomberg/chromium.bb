@@ -11,7 +11,7 @@ namespace blink {
 VRGetDevicesCallback::VRGetDevicesCallback(ScriptPromiseResolver* resolver)
     : resolver_(resolver) {}
 
-VRGetDevicesCallback::~VRGetDevicesCallback() {}
+VRGetDevicesCallback::~VRGetDevicesCallback() = default;
 
 void VRGetDevicesCallback::OnSuccess(VRDisplayVector displays) {
   bool display_supports_presentation = false;

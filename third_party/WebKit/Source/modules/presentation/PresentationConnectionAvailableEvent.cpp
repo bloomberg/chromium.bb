@@ -8,7 +8,8 @@
 
 namespace blink {
 
-PresentationConnectionAvailableEvent::~PresentationConnectionAvailableEvent() {}
+PresentationConnectionAvailableEvent::~PresentationConnectionAvailableEvent() =
+    default;
 
 PresentationConnectionAvailableEvent::PresentationConnectionAvailableEvent(
     const AtomicString& event_type,

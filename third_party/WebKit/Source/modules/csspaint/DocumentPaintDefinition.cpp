@@ -11,7 +11,7 @@ DocumentPaintDefinition::DocumentPaintDefinition(CSSPaintDefinition* definition)
   DCHECK(definition);
 }
 
-DocumentPaintDefinition::~DocumentPaintDefinition() {}
+DocumentPaintDefinition::~DocumentPaintDefinition() = default;
 
 bool DocumentPaintDefinition::RegisterAdditionalPaintDefinition(
     const CSSPaintDefinition& other) {

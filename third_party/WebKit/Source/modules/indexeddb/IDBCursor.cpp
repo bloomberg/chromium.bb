@@ -74,7 +74,7 @@ IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend,
   DCHECK(transaction_);
 }
 
-IDBCursor::~IDBCursor() {}
+IDBCursor::~IDBCursor() = default;
 
 void IDBCursor::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_);

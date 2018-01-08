@@ -50,7 +50,7 @@ RTCDataChannelEvent::RTCDataChannelEvent(
     const RTCDataChannelEventInit& initializer)
     : Event(type, initializer), channel_(initializer.channel()) {}
 
-RTCDataChannelEvent::~RTCDataChannelEvent() {}
+RTCDataChannelEvent::~RTCDataChannelEvent() = default;
 
 RTCDataChannel* RTCDataChannelEvent::channel() const {
   return channel_.Get();

@@ -24,7 +24,7 @@ InstallEvent* InstallEvent::Create(const AtomicString& type,
   return new InstallEvent(type, event_init, event_id, observer);
 }
 
-InstallEvent::~InstallEvent() {}
+InstallEvent::~InstallEvent() = default;
 
 const AtomicString& InstallEvent::InterfaceName() const {
   return EventNames::InstallEvent;

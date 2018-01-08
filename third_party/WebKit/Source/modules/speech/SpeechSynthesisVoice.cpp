@@ -36,6 +36,6 @@ SpeechSynthesisVoice::SpeechSynthesisVoice(
     scoped_refptr<PlatformSpeechSynthesisVoice> voice)
     : platform_voice_(std::move(voice)) {}
 
-SpeechSynthesisVoice::~SpeechSynthesisVoice() {}
+SpeechSynthesisVoice::~SpeechSynthesisVoice() = default;
 
 }  // namespace blink

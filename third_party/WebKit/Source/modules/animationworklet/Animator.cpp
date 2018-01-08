@@ -20,7 +20,7 @@ Animator::Animator(v8::Isolate* isolate,
       instance_(isolate, this, instance),
       effect_(new EffectProxy()) {}
 
-Animator::~Animator() {}
+Animator::~Animator() = default;
 
 void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);

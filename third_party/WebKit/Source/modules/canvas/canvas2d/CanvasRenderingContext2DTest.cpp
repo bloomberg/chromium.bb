@@ -66,7 +66,7 @@ class FakeImageSource : public CanvasImageSource {
   bool IsOpaque() const override { return is_opaque_; }
   bool IsAccelerated() const { return false; }
 
-  ~FakeImageSource() override {}
+  ~FakeImageSource() override = default;
 
  private:
   IntSize size_;
@@ -266,7 +266,7 @@ class FakeAcceleratedImageBufferSurface : public Canvas2DLayerBridge {
                                     CanvasColorParams color_params)
       : Canvas2DLayerBridge(size, 0, kDisableAcceleration, color_params),
         is_accelerated_(true) {}
-  ~FakeAcceleratedImageBufferSurface() override {}
+  ~FakeAcceleratedImageBufferSurface() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
   void SetIsAccelerated(bool is_accelerated) {
     if (is_accelerated != is_accelerated_)
@@ -287,7 +287,7 @@ class MockImageBufferSurfaceForOverwriteTesting : public Canvas2DLayerBridge {
                             0,
                             Canvas2DLayerBridge::kDisableAcceleration,
                             color_params) {}
-  ~MockImageBufferSurfaceForOverwriteTesting() override {}
+  ~MockImageBufferSurfaceForOverwriteTesting() override = default;
   MOCK_METHOD0(WillOverwriteCanvas, void());
 };
 

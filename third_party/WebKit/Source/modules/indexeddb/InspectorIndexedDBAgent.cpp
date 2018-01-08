@@ -120,7 +120,7 @@ class GetDatabaseNamesCallback final : public EventListener {
                                         security_origin);
   }
 
-  ~GetDatabaseNamesCallback() override {}
+  ~GetDatabaseNamesCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -171,7 +171,7 @@ class DeleteCallback final : public EventListener {
     return new DeleteCallback(std::move(request_callback), security_origin);
   }
 
-  ~DeleteCallback() override {}
+  ~DeleteCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -207,7 +207,7 @@ template <typename RequestCallback>
 class ExecutableWithDatabase
     : public RefCounted<ExecutableWithDatabase<RequestCallback>> {
  public:
-  virtual ~ExecutableWithDatabase() {}
+  virtual ~ExecutableWithDatabase() = default;
   virtual void Execute(IDBDatabase*, ScriptState*) = 0;
   virtual RequestCallback* GetRequestCallback() = 0;
   void Start(LocalFrame* frame, const String& database_name) {
@@ -270,7 +270,7 @@ class OpenDatabaseCallback final : public EventListener {
     return new OpenDatabaseCallback(executable_with_database, script_state);
   }
 
-  ~OpenDatabaseCallback() override {}
+  ~OpenDatabaseCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -318,7 +318,7 @@ class UpgradeDatabaseCallback final : public EventListener {
     return new UpgradeDatabaseCallback(executable_with_database);
   }
 
-  ~UpgradeDatabaseCallback() override {}
+  ~UpgradeDatabaseCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -424,7 +424,7 @@ class DatabaseLoader final
     return base::AdoptRef(new DatabaseLoader(std::move(request_callback)));
   }
 
-  ~DatabaseLoader() override {}
+  ~DatabaseLoader() override = default;
 
   void Execute(IDBDatabase* idb_database, ScriptState*) override {
     const IDBDatabaseMetadata database_metadata = idb_database->Metadata();
@@ -555,7 +555,7 @@ class OpenCursorCallback final : public EventListener {
                                   page_size);
   }
 
-  ~OpenCursorCallback() override {}
+  ~OpenCursorCallback() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -676,7 +676,7 @@ class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
         idb_key_range, skip_count, page_size));
   }
 
-  ~DataLoader() override {}
+  ~DataLoader() override = default;
 
   void Execute(IDBDatabase* idb_database, ScriptState* script_state) override {
     IDBTransaction* idb_transaction =
@@ -750,7 +750,7 @@ InspectorIndexedDBAgent::InspectorIndexedDBAgent(
     v8_inspector::V8InspectorSession* v8_session)
     : inspected_frames_(inspected_frames), v8_session_(v8_session) {}
 
-InspectorIndexedDBAgent::~InspectorIndexedDBAgent() {}
+InspectorIndexedDBAgent::~InspectorIndexedDBAgent() = default;
 
 void InspectorIndexedDBAgent::Restore() {
   if (state_->booleanProperty(IndexedDBAgentState::kIndexedDBAgentEnabled,
@@ -863,7 +863,7 @@ class DeleteObjectStoreEntriesListener final : public EventListener {
     return new DeleteObjectStoreEntriesListener(std::move(request_callback));
   }
 
-  ~DeleteObjectStoreEntriesListener() override {}
+  ~DeleteObjectStoreEntriesListener() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;
@@ -972,7 +972,7 @@ class ClearObjectStoreListener final : public EventListener {
     return new ClearObjectStoreListener(std::move(request_callback));
   }
 
-  ~ClearObjectStoreListener() override {}
+  ~ClearObjectStoreListener() override = default;
 
   bool operator==(const EventListener& other) const override {
     return this == &other;

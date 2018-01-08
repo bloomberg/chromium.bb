@@ -47,7 +47,7 @@ ExtendableEvent* ExtendableEvent::Create(const AtomicString& type,
   return new ExtendableEvent(type, event_init, observer);
 }
 
-ExtendableEvent::~ExtendableEvent() {}
+ExtendableEvent::~ExtendableEvent() = default;
 
 void ExtendableEvent::waitUntil(ScriptState* script_state,
                                 ScriptPromise script_promise,

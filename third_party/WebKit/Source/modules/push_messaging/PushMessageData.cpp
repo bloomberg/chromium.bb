@@ -55,7 +55,7 @@ PushMessageData::PushMessageData(const char* data, unsigned bytes_size) {
   data_.Append(data, bytes_size);
 }
 
-PushMessageData::~PushMessageData() {}
+PushMessageData::~PushMessageData() = default;
 
 DOMArrayBuffer* PushMessageData::arrayBuffer() const {
   return DOMArrayBuffer::Create(data_.data(), data_.size());

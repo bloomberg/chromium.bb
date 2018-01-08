@@ -13,7 +13,7 @@ ServiceWorkerRegistrationSync::ServiceWorkerRegistrationSync(
     ServiceWorkerRegistration* registration)
     : registration_(registration) {}
 
-ServiceWorkerRegistrationSync::~ServiceWorkerRegistrationSync() {}
+ServiceWorkerRegistrationSync::~ServiceWorkerRegistrationSync() = default;
 
 const char* ServiceWorkerRegistrationSync::SupplementName() {
   return "ServiceWorkerRegistrationSync";

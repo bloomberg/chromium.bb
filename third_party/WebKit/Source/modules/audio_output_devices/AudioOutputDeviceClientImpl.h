@@ -33,9 +33,6 @@ class MODULES_EXPORT AudioOutputDeviceClientImpl
   virtual void Trace(blink::Visitor* visitor) {
     AudioOutputDeviceClient::Trace(visitor);
   }
-
- private:
-  AudioOutputDeviceClientImpl();
 };
 
 }  // namespace blink

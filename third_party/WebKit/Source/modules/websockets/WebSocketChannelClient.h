@@ -42,7 +42,7 @@ namespace blink {
 
 class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
  public:
-  virtual ~WebSocketChannelClient() {}
+  virtual ~WebSocketChannelClient() = default;
   virtual void DidConnect(const String& subprotocol, const String& extensions) {
   }
   virtual void DidReceiveTextMessage(const String&) {}
@@ -60,7 +60,7 @@ class MODULES_EXPORT WebSocketChannelClient : public GarbageCollectedMixin {
   void Trace(blink::Visitor* visitor) override {}
 
  protected:
-  WebSocketChannelClient() {}
+  WebSocketChannelClient() = default;
 };
 
 }  // namespace blink

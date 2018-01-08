@@ -39,7 +39,7 @@ class DOMException;
 
 class ErrorCallback : public GarbageCollectedFinalized<ErrorCallback> {
  public:
-  virtual ~ErrorCallback() {}
+  virtual ~ErrorCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(DOMException*) = 0;
 };
