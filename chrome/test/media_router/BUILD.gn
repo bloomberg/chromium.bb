@@ -38,6 +38,7 @@ media_router_integration_test_resources = [
   "resources/fail_reconnect_session.html",
   "resources/fail_reconnect_session.json",
   "resources/local_media_sink.json",
+  "resources/local_media_sink_route_fail.json",
   "resources/no_provider.json",
   "resources/no_sinks.json",
   "resources/no_supported_sinks.json",

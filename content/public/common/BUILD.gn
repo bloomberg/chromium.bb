@@ -358,6 +358,7 @@ mojom("interfaces") {
   sources = [
     "appcache_info.mojom",
     "download_stream.mojom",
+    "fullscreen_video_element.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
     "proxy_config.mojom",

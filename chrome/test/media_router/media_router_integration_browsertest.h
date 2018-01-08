@@ -102,10 +102,11 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // that the presentation has successfully started if |should_succeed| is true.
   content::WebContents* StartSessionWithTestPageAndChooseSink();
 
-  // Opens the MR dialog and clicks through the motions of casting a file.
+  // Opens the MR dialog and clicks through the motions of casting a file. Sets
+  // up the route provider to succeed or otherwise based on |route_success|.
   // Note: The system dialog portion has to be mocked out as it cannot be
   // simulated.
-  void OpenDialogAndCastFile();
+  void OpenDialogAndCastFile(bool route_success = true);
 
   // Opens the MR dialog and clicks through the motions of choosing to cast
   // file, file returns an issue. Note: The system dialog portion has to be
@@ -209,6 +210,9 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   std::string receiver() const { return receiver_; }
 
+  // Enabled features
+  base::test::ScopedFeatureList scoped_feature_list_;
+
  private:
   // Get the full path of the resource file.
   // |relative_path|: The relative path to
@@ -221,9 +225,6 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
 
   // Fields
   std::string receiver_;
-
-  // Enabled features
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MediaRouterIntegrationIncognitoBrowserTest

@@ -7,5 +7,9 @@
       {"id": "id1", "friendlyName": "test-sink-1"},
       {"id": "id2", "friendlyName": "test-sink-2"}
     ]
-  }
+  },
+
+  // Define the return value for canRoute API, the return value should be
+  // either 'true' or 'false'. The default value is 'true'.
+  "canRoute": "false"
 }
