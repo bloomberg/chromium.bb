@@ -194,6 +194,7 @@
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
+#include "ui/keyboard/content/keyboard.h"
 #include "ui/message_center/message_center.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -855,8 +856,14 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
-  // NOTE: Initializes ash::Shell.
+  // NOTE: Calls ChromeBrowserMainParts::PreProfileInit() which calls
+  // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes
+  // ash::Shell.
   ChromeBrowserMainPartsLinux::PreProfileInit();
+
+  // Initialize the keyboard before any session state changes (i.e. before
+  // loading the default profile).
+  keyboard::InitializeKeyboard();
 
   PushProcessCreationTimeToAsh();
 
