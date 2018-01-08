@@ -14,7 +14,8 @@ void Canvas::SizeStringFloat(const base::string16& text,
                              float* width,
                              float* height,
                              int line_height,
-                             int flags) {
+                             int flags,
+                             Typesetter Typesetter) {
   NOTIMPLEMENTED();
 }
 

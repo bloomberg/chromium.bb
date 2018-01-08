@@ -556,7 +556,8 @@ NSTextField* MakeLabel(
   filenameView_.stringValue = base::SysUTF16ToNSString(
       gfx::ElideFilename(downloadModel->download()->GetFileNameToReportUser(),
                          gfx::FontList(gfx::Font(filenameView_.font)),
-                         NSWidth(filenameView_.bounds) - lineFragmentPadding));
+                         NSWidth(filenameView_.bounds) - lineFragmentPadding,
+                         gfx::Typesetter::PLATFORM));
 
   NSString* statusString =
       base::SysUTF16ToNSString(downloadModel->GetStatusText());

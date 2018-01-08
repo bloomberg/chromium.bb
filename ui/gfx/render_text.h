@@ -194,14 +194,14 @@ class GFX_EXPORT RenderText {
   // Creates an instance that renders using HarfBuzz.
   static std::unique_ptr<RenderText> CreateHarfBuzzInstance();
 
-  // Creates an instance that renders text using the native platform typesetter.
-  // CoreText on Mac is the only supported native typesetter, so this should
-  // only be used by text that may be rendered using CoreText (AppKit) on Mac.
-  static std::unique_ptr<RenderText> CreateInstanceForPlatformUI();
+  // Creates an instance by matching a gfx::Typesetter constant to the current
+  // build and runtime configuration. E.g. the result may use CoreText on Mac,
+  // which is the only supported native typesetter.
+  static std::unique_ptr<RenderText> CreateFor(Typesetter typesetter);
 
-  // Returns CreateInstanceForPlatformUI(), but indicates a caller that does not
-  // know whether the text will eventually be drawn by the native typesetter or
-  // by a RenderText instance.
+  // Returns CreateFor(Typesetter::PLATFORM), but indicates a caller that does
+  // not know whether the text will eventually be drawn by the native typesetter
+  // or by a RenderText instance.
   // TODO(tapted): Delete this.
   static std::unique_ptr<RenderText> CreateInstanceDeprecated();
 

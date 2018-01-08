@@ -14,11 +14,15 @@
 
 namespace gfx {
 
-int GetStringWidth(const base::string16& text, const FontList& font_list) {
+int GetStringWidth(const base::string16& text,
+                   const FontList& font_list,
+                   Typesetter typesetter) {
   return std::ceil(GetStringWidthF(text, font_list));
 }
 
-float GetStringWidthF(const base::string16& text, const FontList& font_list) {
+float GetStringWidthF(const base::string16& text,
+                      const FontList& font_list,
+                      Typesetter typesetter) {
   NSString* ns_text = base::SysUTF16ToNSString(text);
   NativeFont native_font = font_list.GetPrimaryFont().GetNativeFont();
   return [ns_text cr_sizeWithFont:native_font].width;
