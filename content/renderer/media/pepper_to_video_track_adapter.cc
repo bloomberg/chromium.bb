@@ -163,7 +163,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
       time_stamp_ns / base::Time::kNanosecondsPerMicrosecond);
 
   scoped_refptr<media::VideoFrame> new_frame =
-      frame_pool_.CreateFrame(media::PIXEL_FORMAT_YV12, frame_size,
+      frame_pool_.CreateFrame(media::PIXEL_FORMAT_I420, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
 
   libyuv::ARGBToI420(src_data,

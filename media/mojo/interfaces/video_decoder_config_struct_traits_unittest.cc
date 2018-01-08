@@ -25,7 +25,7 @@ TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Normal) {
   const uint8_t kExtraData[] = "config extra data";
   const std::vector<uint8_t> kExtraDataVector(
       &kExtraData[0], &kExtraData[0] + arraysize(kExtraData));
-  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0,
                            kCodedSize, kVisibleRect, kNaturalSize,
                            kExtraDataVector, Unencrypted());
@@ -39,7 +39,7 @@ TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Normal) {
 
 TEST(VideoDecoderConfigStructTraitsTest,
      ConvertVideoDecoderConfig_EmptyExtraData) {
-  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0,
                            kCodedSize, kVisibleRect, kNaturalSize,
                            EmptyExtraData(), Unencrypted());
@@ -52,7 +52,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
 }
 
 TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Encrypted) {
-  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0,
                            kCodedSize, kVisibleRect, kNaturalSize,
                            EmptyExtraData(), AesCtrEncryptionScheme());
@@ -66,7 +66,7 @@ TEST(VideoDecoderConfigStructTraitsTest, ConvertVideoDecoderConfig_Encrypted) {
 
 TEST(VideoDecoderConfigStructTraitsTest,
      ConvertVideoDecoderConfig_ColorSpaceInfo) {
-  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0,
                            kCodedSize, kVisibleRect, kNaturalSize,
                            EmptyExtraData(), Unencrypted());
@@ -84,7 +84,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
 
 TEST(VideoDecoderConfigStructTraitsTest,
      ConvertVideoDecoderConfig_HDRMetadata) {
-  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  VideoDecoderConfig input(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                            COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0,
                            kCodedSize, kVisibleRect, kNaturalSize,
                            EmptyExtraData(), Unencrypted());
@@ -126,7 +126,7 @@ TEST(VideoDecoderConfigStructTraitsTest,
 
   // Next try an non-empty invalid config. Natural size must not be zero.
   const gfx::Size kInvalidNaturalSize(0, 0);
-  input.Initialize(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_YV12,
+  input.Initialize(kCodecVP8, VP8PROFILE_ANY, PIXEL_FORMAT_I420,
                    COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, kCodedSize,
                    kVisibleRect, kInvalidNaturalSize, EmptyExtraData(),
                    Unencrypted());

@@ -10,7 +10,7 @@
 
 namespace media {
 
-static const VideoPixelFormat kVideoFormat = PIXEL_FORMAT_YV12;
+static const VideoPixelFormat kVideoFormat = PIXEL_FORMAT_I420;
 static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(320, 240);

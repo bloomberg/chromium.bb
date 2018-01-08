@@ -30,7 +30,7 @@ class SimpleCdmVideoFrame : public VideoFrameImpl {
     gfx::Size frame_size(Size().width, Size().height);
     scoped_refptr<media::VideoFrame> frame =
         media::VideoFrame::WrapExternalYuvData(
-            PIXEL_FORMAT_YV12, frame_size, gfx::Rect(frame_size), natural_size,
+            PIXEL_FORMAT_I420, frame_size, gfx::Rect(frame_size), natural_size,
             Stride(kYPlane), Stride(kUPlane), Stride(kVPlane),
             buffer->Data() + PlaneOffset(kYPlane),
             buffer->Data() + PlaneOffset(kUPlane),

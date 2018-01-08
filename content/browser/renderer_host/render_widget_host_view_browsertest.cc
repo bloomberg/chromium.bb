@@ -674,7 +674,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
             gfx::Rect(output_size.width() / 2 - 1, 0, 2, output_size.height()));
 
         scoped_refptr<media::VideoFrame> video_frame =
-            media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12,
+            media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_I420,
                                            output_size, gfx::Rect(output_size),
                                            output_size, base::TimeDelta());
 

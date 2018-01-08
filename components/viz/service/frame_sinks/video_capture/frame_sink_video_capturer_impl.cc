@@ -127,9 +127,8 @@ void FrameSinkVideoCapturerImpl::SetFormat(media::VideoPixelFormat format,
                                            media::ColorSpace color_space) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (format != media::PIXEL_FORMAT_I420 &&
-      format != media::PIXEL_FORMAT_YV12) {
-    LOG(DFATAL) << "Invalid pixel format: Only I420 or YV12 are supported.";
+  if (format != media::PIXEL_FORMAT_I420) {
+    LOG(DFATAL) << "Invalid pixel format: Only I420 supported.";
   } else {
     pixel_format_ = format;
   }

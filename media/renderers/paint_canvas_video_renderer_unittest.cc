@@ -128,7 +128,7 @@ PaintCanvasVideoRendererTest::PaintCanvasVideoRendererTest()
       smaller_frame_(
           VideoFrame::CreateBlackFrame(gfx::Size(kWidth / 2, kHeight / 2))),
       cropped_frame_(
-          VideoFrame::CreateFrame(PIXEL_FORMAT_YV12,
+          VideoFrame::CreateFrame(PIXEL_FORMAT_I420,
                                   gfx::Size(16, 16),
                                   gfx::Rect(6, 6, 8, 6),
                                   gfx::Size(8, 6),

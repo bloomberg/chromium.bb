@@ -87,8 +87,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         libyuv::kRotate0, source_pixel_format);
   } else {
     DCHECK(frame->IsMappable());
-    DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
-           frame->format() == media::PIXEL_FORMAT_I420A ||
+    DCHECK(frame->format() == media::PIXEL_FORMAT_I420A ||
            frame->format() == media::PIXEL_FORMAT_I420);
     const gfx::Size& coded_size = frame->coded_size();
     new_frame = media::VideoFrame::CreateFrame(

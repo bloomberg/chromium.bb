@@ -65,13 +65,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   VideoPixelFormat pixel_format;
   if (rng() & 1) {
     codec = kCodecVP8;
-    // PIXEL_FORMAT_YV12 disabled for kCodecVP8 on Linux.
+    // PIXEL_FORMAT_I420 disabled for kCodecVP8 on Linux.
     pixel_format = PIXEL_FORMAT_I420A;
   } else {
     codec = kCodecVP9;
     switch (rng() % 3) {
       case 0:
-        pixel_format = PIXEL_FORMAT_YV12;
+        pixel_format = PIXEL_FORMAT_I420;
         break;
       case 1:
         pixel_format = PIXEL_FORMAT_I420A;

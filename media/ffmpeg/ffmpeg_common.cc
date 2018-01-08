@@ -481,21 +481,18 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   switch (codec) {
 #if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
     case kCodecH264:
-      // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627.
-      format = PIXEL_FORMAT_YV12;
+      format = PIXEL_FORMAT_I420;
       profile = H264PROFILE_BASELINE;
       break;
 #endif
     case kCodecVP8:
 #if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
-      // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627.
-      format = PIXEL_FORMAT_YV12;
+      format = PIXEL_FORMAT_I420;
 #endif
       profile = VP8PROFILE_ANY;
       break;
     case kCodecVP9:
-      // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627.
-      format = PIXEL_FORMAT_YV12;
+      format = PIXEL_FORMAT_I420;
       profile = VP9PROFILE_PROFILE0;
       break;
     case kCodecAV1:
@@ -692,11 +689,9 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
     case AV_PIX_FMT_YUVJ444P:
       return PIXEL_FORMAT_I444;
 
-    // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627. This
-    // should actually be PIXEL_FORMAT_I420.
     case AV_PIX_FMT_YUV420P:
     case AV_PIX_FMT_YUVJ420P:
-      return PIXEL_FORMAT_YV12;
+      return PIXEL_FORMAT_I420;
 
     case AV_PIX_FMT_YUV422P:
     case AV_PIX_FMT_YUVJ422P:
@@ -734,11 +729,8 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
 
 AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
   switch (video_format) {
-    // TODO(dalecurtis): This is incorrect; see http://crbug.com/784627.
-    // FFmpeg actually has no YVU format...
-    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
       return AV_PIX_FMT_YUV420P;
-
     case PIXEL_FORMAT_I422:
       return AV_PIX_FMT_YUV422P;
     case PIXEL_FORMAT_I420A:

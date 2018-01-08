@@ -237,9 +237,9 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 
   // These are the combinations of codec-pixel format supported in principle.
   DCHECK(
-      (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_YV12) ||
+      (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_I420) ||
       (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_I420A) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV12) ||
+      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I420) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I420A) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_I444));
 
@@ -506,7 +506,7 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   VideoPixelFormat codec_format;
   switch (vpx_image->fmt) {
     case VPX_IMG_FMT_I420:
-      codec_format = vpx_image_alpha ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_YV12;
+      codec_format = vpx_image_alpha ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_I420;
       break;
 
     case VPX_IMG_FMT_I444:
@@ -601,7 +601,7 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
     return true;
   }
 
-  DCHECK(codec_format == PIXEL_FORMAT_YV12 ||
+  DCHECK(codec_format == PIXEL_FORMAT_I420 ||
          codec_format == PIXEL_FORMAT_I420A);
 
   *video_frame = frame_pool_.CreateFrame(codec_format, visible_size,

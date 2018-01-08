@@ -80,7 +80,7 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
 
   scoped_refptr<VideoFrame> CreateOpaqueFrame() {
     gfx::Size size(8, 8);
-    return VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, size, gfx::Rect(size),
+    return VideoFrame::CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size),
                                    size, base::TimeDelta());
   }
 

@@ -80,7 +80,7 @@ TEST_F(SimpleCdmAllocatorTest, TransformToVideoFrame) {
   // For this test we need to pretend we have valid video data. So create
   // a small video frame of size 2x2.
   gfx::Size size(2, 2);
-  size_t memory_needed = VideoFrame::AllocationSize(PIXEL_FORMAT_YV12, size);
+  size_t memory_needed = VideoFrame::AllocationSize(PIXEL_FORMAT_I420, size);
 
   // Now create a VideoFrameImpl.
   std::unique_ptr<VideoFrameImpl> video_frame =
