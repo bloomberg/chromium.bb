@@ -24,6 +24,7 @@
 #include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common_v2.sb.h"
 #include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
+#include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
 #include "services/service_manager/sandbox/mac/ppapi_v2.sb.h"
 #include "services/service_manager/sandbox/mac/renderer_v2.sb.h"
 #include "services/service_manager/sandbox/mac/utility.sb.h"
@@ -74,6 +75,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     case service_manager::SANDBOX_TYPE_PPAPI:
     case service_manager::SANDBOX_TYPE_RENDERER:
     case service_manager::SANDBOX_TYPE_UTILITY:
+    case service_manager::SANDBOX_TYPE_NACL_LOADER:
       v2_process = true;
       break;
     default:
@@ -94,6 +96,9 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         break;
       case service_manager::SANDBOX_TYPE_GPU:
         profile += service_manager::kSeatbeltPolicyString_gpu_v2;
+        break;
+      case service_manager::SANDBOX_TYPE_NACL_LOADER:
+        profile += service_manager::kSeatbeltPolicyString_nacl_loader;
         break;
       case service_manager::SANDBOX_TYPE_PPAPI:
         profile += service_manager::kSeatbeltPolicyString_ppapi_v2;
@@ -120,6 +125,7 @@ bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
         SetupCDMSandboxParameters(seatbelt_exec_client_.get());
         break;
       case service_manager::SANDBOX_TYPE_GPU:
+      case service_manager::SANDBOX_TYPE_NACL_LOADER:
       case service_manager::SANDBOX_TYPE_PPAPI:
       case service_manager::SANDBOX_TYPE_RENDERER:
         SetupCommonSandboxParameters(seatbelt_exec_client_.get());
