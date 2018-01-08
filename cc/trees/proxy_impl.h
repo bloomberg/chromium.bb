@@ -54,6 +54,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation);
   void SetURLForUkm(const GURL& url);
+  void ClearHistoryOnNavigation();
 
   void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
                                            bool* main_frame_will_happen);

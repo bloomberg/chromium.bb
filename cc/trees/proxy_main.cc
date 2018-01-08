@@ -569,4 +569,11 @@ void ProxyMain::SetURLForUkm(const GURL& url) {
                                 base::Unretained(proxy_impl_.get()), url));
 }
 
+void ProxyMain::ClearHistoryOnNavigation() {
+  // Must only be called from the impl thread during commit.
+  DCHECK(task_runner_provider_->IsImplThread());
+  DCHECK(task_runner_provider_->IsMainThreadBlocked());
+  proxy_impl_->ClearHistoryOnNavigation();
+}
+
 }  // namespace cc

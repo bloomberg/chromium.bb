@@ -62,6 +62,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
     // layout tests. This will still get called in the latter case, but we don't
     // need to record UKM in that case.
   }
+  void ClearHistoryOnNavigation() override;
 
   // Blink layout tests might call into this even though an unthreaded CC
   // doesn't have BrowserControls itself.

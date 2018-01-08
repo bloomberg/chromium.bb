@@ -340,8 +340,10 @@ void LayerTreeHost::FinishCommitOnImplThread(
   // Track the navigation state before pushing properties since it overwrites
   // the |content_source_id_| on the sync tree.
   bool did_navigate = content_source_id_ != sync_tree->content_source_id();
-  if (did_navigate)
+  if (did_navigate) {
+    proxy_->ClearHistoryOnNavigation();
     host_impl->ClearImageCacheOnNavigation();
+  }
 
   {
     TRACE_EVENT0("cc", "LayerTreeHostInProcess::PushProperties");

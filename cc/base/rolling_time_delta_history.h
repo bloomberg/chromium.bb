@@ -26,6 +26,7 @@ class CC_BASE_EXPORT RollingTimeDeltaHistory {
   ~RollingTimeDeltaHistory();
 
   void InsertSample(base::TimeDelta time);
+  size_t sample_count() const { return sample_set_.size(); }
 
   void Clear();
 
