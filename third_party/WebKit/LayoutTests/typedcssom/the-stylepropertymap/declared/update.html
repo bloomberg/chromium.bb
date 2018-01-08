@@ -13,7 +13,7 @@ const gInvalidTestCases = [
   { property: 'lemon', value: 'ade', desc: 'an unsupported property name' },
   { property: null, value: 'foo', desc: 'an null property name' },
   { property: 'width', value: CSS.deg(0), desc: 'an invalid CSSStyleValue' },
-  { property: 'width', value: '10s', desc: 'an invalid String' },
+  { property: 'width', value: '10px', desc: 'a String' },
 ];
 
 for (const {property, value, desc} of gInvalidTestCases) {
