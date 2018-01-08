@@ -430,7 +430,6 @@ CMDLINE_SELECT="
     symbolrate
     lowbitdepth
     experimental
-    adopted_experiments
     colorspace_headers
 "
 
@@ -477,48 +476,45 @@ post_process_cmdline() {
         enabled ${c} && enable_feature ${c##*_}s
     done
 
-    # Enable adopted experiments by default
-    soft_enable adopted_experiments
-    if enabled adopted_experiments; then
-      soft_enable ext_intra
-      soft_enable intra_edge
-      soft_enable mv_compress
-      soft_enable dual_filter
-      soft_enable aom_qm
-      soft_enable dist_8x8
-      soft_enable loop_restoration
-      soft_enable ext_partition
-      soft_enable ext_partition_types
+    # Adopted
+    soft_enable ext_intra
+    soft_enable intra_edge
+    soft_enable mv_compress
+    soft_enable dual_filter
+    soft_enable aom_qm
+    soft_enable dist_8x8
+    soft_enable loop_restoration
+    soft_enable ext_partition
+    soft_enable ext_partition_types
 
-      # Provisional adopted
-      soft_enable reference_buffer
-      soft_enable loopfiltering_across_tiles
-      soft_enable palette_throughput
-      soft_enable tempmv_signaling
-      soft_enable ext_comp_refs
-      soft_enable ext_delta_q
-      soft_enable parallel_deblocking
-      soft_enable obu
-      soft_enable loopfilter_level
-      soft_enable cfl
-      soft_enable deblock_13tap
-      soft_enable max_tile
-      soft_enable frame_marker
-      soft_enable kf_ctx
-      soft_enable striped_loop_restoration
-      soft_enable ext_intra_mod
-      soft_enable frame_size
-      soft_enable segment_globalmv
-      soft_enable short_filter
-      soft_enable simplify_tx_mode
-      soft_enable tx64x64
-      soft_enable rect_tx_ext
-      soft_enable rect_tx_ext_intra
-      soft_enable filter_intra
-      soft_enable ext_skip
-      soft_enable ext_warped_motion
-      soft_enable horzonly_frame_superres
-    fi
+    # Provisional adopted
+    soft_enable reference_buffer
+    soft_enable loopfiltering_across_tiles
+    soft_enable palette_throughput
+    soft_enable tempmv_signaling
+    soft_enable ext_comp_refs
+    soft_enable ext_delta_q
+    soft_enable parallel_deblocking
+    soft_enable obu
+    soft_enable loopfilter_level
+    soft_enable cfl
+    soft_enable deblock_13tap
+    soft_enable max_tile
+    soft_enable frame_marker
+    soft_enable kf_ctx
+    soft_enable striped_loop_restoration
+    soft_enable ext_intra_mod
+    soft_enable frame_size
+    soft_enable segment_globalmv
+    soft_enable short_filter
+    soft_enable simplify_tx_mode
+    soft_enable tx64x64
+    soft_enable rect_tx_ext
+    soft_enable rect_tx_ext_intra
+    soft_enable filter_intra
+    soft_enable ext_skip
+    soft_enable ext_warped_motion
+    soft_enable horzonly_frame_superres
 
     # Enable low-bitdepth pixel pipeline by default
     soft_enable lowbitdepth
