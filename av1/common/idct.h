@@ -32,12 +32,6 @@ typedef struct {
   transform_1d cols, rows;  // vertical and horizontal
 } transform_2d;
 
-typedef void (*highbd_transform_1d)(const tran_low_t *, tran_low_t *, int bd);
-
-typedef struct {
-  highbd_transform_1d cols, rows;  // vertical and horizontal
-} highbd_transform_2d;
-
 #if !CONFIG_DAALA_TX
 #define MAX_TX_SCALE 1
 int av1_get_tx_scale(const TX_SIZE tx_size);
