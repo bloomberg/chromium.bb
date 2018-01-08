@@ -648,7 +648,7 @@ The slowest passing slaves (accounting for CQ self-destruct, relevance detection
 <p>
 The pre-CQ + CQ <b>incorrectly rejected [{patch_flake_rejections}] unique changes a total of [{false_rejection_total}] times</b> this week. (Pre-CQ:[{false_rejection_pre_cq}]; CQ: [{false_rejection_cq}])<br>
 The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ is [{false_rejection_rate[combined]:.2f}]%. (Pre-CQ:[{false_rejection_rate[pre-cq]:.2f}]%; CQ: [{false_rejection_rate[cq]:.2f}])<br>
-The CL exonerated <b>[{unique_exonerations}] unique good changes a total of [{total_exonerations}] times this week</b> saving the need for the developer to CQ+1.
+The CL exonerator retried <b>[{unique_exonerations}] unique good changes a total of [{total_exonerations}] times this week</b> saving the need for the developer to CQ+1.
 
 
 </p>
