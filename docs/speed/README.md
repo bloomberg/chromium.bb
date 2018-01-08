@@ -30,3 +30,10 @@
   * **[Chrome Speed Metrics](https://docs.google.com/document/d/1wBT5fauGf8bqW2Wcg2A5Z-3_ZvgPhE8fbp1Xe6xfGRs/edit#heading=h.8ieoiiwdknwt)**: provides a set of high-quality metrics that represent real-world user experience, and exposes these metrics to both Chrome and Web Developers.
     * General discussion: progressive-web-metrics@chromium.org
     * The actual metrics: [tracking](https://docs.google.com/spreadsheets/d/1gY5hkKPp8RNVqmOw1d-bo-f9EXLqtq4wa3Z7Q8Ek9Tk/edit#gid=0)
+
+## For Googlers
+
+  * We have a bi-weekly meeting to keep everyone in sync. Join chrome-speed@ or
+    contact benhenry@chromium.org for more information.
+  * Have something to include in our Milestone-based Speed report to the Chrome
+    team? Please keep track of it [here](https://goto.google.com/speed-improvement).
