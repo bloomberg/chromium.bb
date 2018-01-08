@@ -18,9 +18,9 @@ namespace blink {
 
 namespace {
 
-const FilterOperations& GetFilterList(CSSPropertyID property,
+const FilterOperations& GetFilterList(const CSSProperty& property,
                                       const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     default:
       NOTREACHED();
     // Fall through.
@@ -31,10 +31,10 @@ const FilterOperations& GetFilterList(CSSPropertyID property,
   }
 }
 
-void SetFilterList(CSSPropertyID property,
+void SetFilterList(const CSSProperty& property,
                    ComputedStyle& style,
                    const FilterOperations& filter_operations) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackdropFilter:
       style.SetBackdropFilter(filter_operations);
       break;
@@ -84,7 +84,7 @@ class InheritedFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedFilterListChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       const FilterOperations& filter_operations) {
     return WTF::WrapUnique(
         new InheritedFilterListChecker(property, filter_operations));
@@ -98,13 +98,13 @@ class InheritedFilterListChecker
   }
 
  private:
-  InheritedFilterListChecker(CSSPropertyID property,
+  InheritedFilterListChecker(const CSSProperty& property,
                              const FilterOperations& filter_operations)
       : property_(property),
         filter_operations_wrapper_(
             FilterOperationsWrapper::Create(filter_operations)) {}
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   Persistent<FilterOperationsWrapper> filter_operations_wrapper_;
 };
 

@@ -16,9 +16,9 @@
 namespace blink {
 
 namespace {
-const StyleImage* GetStyleImage(CSSPropertyID property,
+const StyleImage* GetStyleImage(const CSSProperty& property,
                                 const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBorderImageSource:
       return style.BorderImageSource();
     case CSSPropertyListStyleImage:
@@ -139,13 +139,13 @@ const CSSValue* CSSImageInterpolationType::StaticCreateCSSValue(
 }
 
 StyleImage* CSSImageInterpolationType::ResolveStyleImage(
-    CSSPropertyID property,
+    const CSSProperty& property,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) {
   const CSSValue* image =
       StaticCreateCSSValue(interpolable_value, non_interpolable_value);
-  return state.GetStyleImage(property, *image);
+  return state.GetStyleImage(property.PropertyID(), *image);
 }
 
 bool CSSImageInterpolationType::EqualNonInterpolableValues(
@@ -204,14 +204,15 @@ class InheritedImageChecker
   ~InheritedImageChecker() final {}
 
   static std::unique_ptr<InheritedImageChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       StyleImage* inherited_image) {
     return WTF::WrapUnique(
         new InheritedImageChecker(property, inherited_image));
   }
 
  private:
-  InheritedImageChecker(CSSPropertyID property, StyleImage* inherited_image)
+  InheritedImageChecker(const CSSProperty& property,
+                        StyleImage* inherited_image)
       : property_(property), inherited_image_(inherited_image) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -225,7 +226,7 @@ class InheritedImageChecker
     return *inherited_image_ == *inherited_image;
   }
 
-  CSSPropertyID property_;
+  const CSSProperty& property_;
   Persistent<StyleImage> inherited_image_;
 };
 
@@ -270,7 +271,7 @@ void CSSImageInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   StyleImage* image = ResolveStyleImage(CssProperty(), interpolable_value,
                                         non_interpolable_value, state);
-  switch (CssProperty()) {
+  switch (CssProperty().PropertyID()) {
     case CSSPropertyBorderImageSource:
       state.Style()->SetBorderImageSource(image);
       break;

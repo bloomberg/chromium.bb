@@ -13,7 +13,7 @@ class CSSFontSizeInterpolationType : public CSSInterpolationType {
  public:
   CSSFontSizeInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(CssProperty(), CSSPropertyFontSize);
+    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyFontSize);
   }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(

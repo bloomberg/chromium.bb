@@ -10,9 +10,9 @@ namespace blink {
 
 namespace {
 
-const FillLayer* GetFillLayerForPosition(CSSPropertyID property,
+const FillLayer* GetFillLayerForPosition(const CSSProperty& property,
                                          const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
       return &style.BackgroundLayers();
@@ -25,9 +25,9 @@ const FillLayer* GetFillLayerForPosition(CSSPropertyID property,
   }
 }
 
-FillLayer* AccessFillLayerForPosition(CSSPropertyID property,
+FillLayer* AccessFillLayerForPosition(const CSSProperty& property,
                                       ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
       return &style.AccessBackgroundLayers();
@@ -41,8 +41,8 @@ FillLayer* AccessFillLayerForPosition(CSSPropertyID property,
 }
 
 struct FillLayerMethods {
-  FillLayerMethods(CSSPropertyID property) {
-    switch (property) {
+  FillLayerMethods(const CSSProperty& property) {
+    switch (property.PropertyID()) {
       case CSSPropertyBackgroundPositionX:
       case CSSPropertyWebkitMaskPositionX:
         is_set = &FillLayer::IsPositionXSet;
@@ -74,8 +74,9 @@ struct FillLayerMethods {
 
 }  // namespace
 
-ValueRange LengthListPropertyFunctions::GetValueRange(CSSPropertyID property) {
-  switch (property) {
+ValueRange LengthListPropertyFunctions::GetValueRange(
+    const CSSProperty& property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyObjectPosition:
@@ -100,8 +101,9 @@ ValueRange LengthListPropertyFunctions::GetValueRange(CSSPropertyID property) {
   }
 }
 
-bool LengthListPropertyFunctions::GetInitialLengthList(CSSPropertyID property,
-                                                       Vector<Length>& result) {
+bool LengthListPropertyFunctions::GetInitialLengthList(
+    const CSSProperty& property,
+    Vector<Length>& result) {
   return GetLengthList(property, ComputedStyle::InitialStyle(), result);
 }
 
@@ -125,12 +127,12 @@ static bool AppendToVector(const TransformOrigin& transform_origin,
   return true;
 }
 
-bool LengthListPropertyFunctions::GetLengthList(CSSPropertyID property,
+bool LengthListPropertyFunctions::GetLengthList(const CSSProperty& property,
                                                 const ComputedStyle& style,
                                                 Vector<Length>& result) {
   DCHECK(result.IsEmpty());
 
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyStrokeDasharray: {
       if (style.StrokeDashArray())
         result.AppendVector(style.StrokeDashArray()->GetVector());
@@ -198,10 +200,10 @@ static TransformOrigin TransformOriginFromVector(const Vector<Length>& list) {
   return TransformOrigin(list[0], list[1], list[2].Pixels());
 }
 
-void LengthListPropertyFunctions::SetLengthList(CSSPropertyID property,
+void LengthListPropertyFunctions::SetLengthList(const CSSProperty& property,
                                                 ComputedStyle& style,
                                                 Vector<Length>&& length_list) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyStrokeDasharray:
       style.SetStrokeDashArray(
           length_list.IsEmpty()

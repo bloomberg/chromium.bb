@@ -19,9 +19,9 @@
 namespace blink {
 
 namespace {
-const ShadowList* GetShadowList(CSSPropertyID property,
+const ShadowList* GetShadowList(const CSSProperty& property,
                                 const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBoxShadow:
       return style.BoxShadow();
     case CSSPropertyTextShadow:
@@ -66,14 +66,14 @@ class InheritedShadowListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedShadowListChecker> Create(
-      CSSPropertyID property,
+      const CSSProperty& property,
       scoped_refptr<ShadowList> shadow_list) {
     return WTF::WrapUnique(
         new InheritedShadowListChecker(property, std::move(shadow_list)));
   }
 
  private:
-  InheritedShadowListChecker(CSSPropertyID property,
+  InheritedShadowListChecker(const CSSProperty& property,
                              scoped_refptr<ShadowList> shadow_list)
       : property_(property), shadow_list_(std::move(shadow_list)) {}
 
@@ -88,7 +88,7 @@ class InheritedShadowListChecker
     return *inherited_shadow_list == *shadow_list_;
   }
 
-  const CSSPropertyID property_;
+  const CSSProperty& property_;
   scoped_refptr<ShadowList> shadow_list_;
 };
 
@@ -177,7 +177,7 @@ void CSSShadowListInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   scoped_refptr<ShadowList> shadow_list =
       CreateShadowList(interpolable_value, non_interpolable_value, state);
-  switch (CssProperty()) {
+  switch (CssProperty().PropertyID()) {
     case CSSPropertyBoxShadow:
       state.Style()->SetBoxShadow(std::move(shadow_list));
       return;

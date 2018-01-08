@@ -35,8 +35,8 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
  protected:
   CSSInterpolationType(PropertyHandle, const PropertyRegistration* = nullptr);
 
-  CSSPropertyID CssProperty() const {
-    return GetProperty().GetCSSProperty().PropertyID();
+  const CSSProperty& CssProperty() const {
+    return GetProperty().GetCSSProperty();
   }
 
   InterpolationValue MaybeConvertSingle(const PropertySpecificKeyframe&,

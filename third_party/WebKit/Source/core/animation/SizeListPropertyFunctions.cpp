@@ -8,9 +8,9 @@
 
 namespace blink {
 
-static const FillLayer* GetFillLayerForSize(CSSPropertyID property,
+static const FillLayer* GetFillLayerForSize(const CSSProperty& property,
                                             const ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundSize:
       return &style.BackgroundLayers();
     case CSSPropertyWebkitMaskSize:
@@ -21,9 +21,9 @@ static const FillLayer* GetFillLayerForSize(CSSPropertyID property,
   }
 }
 
-static FillLayer* AccessFillLayerForSize(CSSPropertyID property,
+static FillLayer* AccessFillLayerForSize(const CSSProperty& property,
                                          ComputedStyle& style) {
-  switch (property) {
+  switch (property.PropertyID()) {
     case CSSPropertyBackgroundSize:
       return &style.AccessBackgroundLayers();
     case CSSPropertyWebkitMaskSize:
@@ -34,11 +34,12 @@ static FillLayer* AccessFillLayerForSize(CSSPropertyID property,
   }
 }
 
-SizeList SizeListPropertyFunctions::GetInitialSizeList(CSSPropertyID property) {
+SizeList SizeListPropertyFunctions::GetInitialSizeList(
+    const CSSProperty& property) {
   return GetSizeList(property, ComputedStyle::InitialStyle());
 }
 
-SizeList SizeListPropertyFunctions::GetSizeList(CSSPropertyID property,
+SizeList SizeListPropertyFunctions::GetSizeList(const CSSProperty& property,
                                                 const ComputedStyle& style) {
   SizeList result;
   for (const FillLayer* fill_layer = GetFillLayerForSize(property, style);
@@ -47,7 +48,7 @@ SizeList SizeListPropertyFunctions::GetSizeList(CSSPropertyID property,
   return result;
 }
 
-void SizeListPropertyFunctions::SetSizeList(CSSPropertyID property,
+void SizeListPropertyFunctions::SetSizeList(const CSSProperty& property,
                                             ComputedStyle& style,
                                             const SizeList& size_list) {
   FillLayer* fill_layer = AccessFillLayerForSize(property, style);
