@@ -127,17 +127,6 @@ void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
 }  // namespace
 #endif
 
-PrefStore* CreateExtensionPrefStore(Profile* profile,
-                                    bool incognito_pref_store) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  return new ExtensionPrefStore(
-      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
-      incognito_pref_store);
-#else
-  return NULL;
-#endif
-}
-
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile), start_time_(Time::Now()) {
   // Must happen before we ask for prefs as prefs needs the connection to the

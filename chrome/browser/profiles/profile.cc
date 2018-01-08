@@ -40,6 +40,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_pref_store.h"
+#include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/pref_names.h"
 #endif
 
@@ -288,6 +290,17 @@ void Profile::MaybeSendDestroyedNotification() {
         content::Source<Profile>(this),
         content::NotificationService::NoDetails());
   }
+}
+
+PrefStore* Profile::CreateExtensionPrefStore(Profile* profile,
+                                             bool incognito_pref_store) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return new ExtensionPrefStore(
+      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
+      incognito_pref_store);
+#else
+  return nullptr;
+#endif
 }
 
 bool ProfileCompare::operator()(Profile* a, Profile* b) const {
