@@ -190,8 +190,8 @@ class TestMultiBuffer : public MultiBuffer {
   void SetRangeSupported(bool supported) { range_supported_ = supported; }
 
  protected:
-  std::unique_ptr<DataProvider> CreateWriter(
-      const MultiBufferBlockId& pos) override {
+  std::unique_ptr<DataProvider> CreateWriter(const MultiBufferBlockId& pos,
+                                             bool) override {
     DCHECK(create_ok_);
     writers_created_++;
     CHECK_LT(writers.size(), max_writers_);

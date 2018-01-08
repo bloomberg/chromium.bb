@@ -33,7 +33,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // NUmber of times we'll retry if the connection fails.
   enum { kMaxRetries = 30 };
 
-  ResourceMultiBufferDataProvider(UrlData* url_data, MultiBufferBlockId pos);
+  ResourceMultiBufferDataProvider(UrlData* url_data,
+                                  MultiBufferBlockId pos,
+                                  bool is_client_audio_element);
   ~ResourceMultiBufferDataProvider() override;
 
   // Virtual for testing purposes.
@@ -119,6 +121,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   // If the server tries to gives us more bytes than we want, this how
   // many bytes we need to discard before we get to the right place.
   uint64_t bytes_to_discard_ = 0;
+
+  // Is the client an audio element?
+  bool is_client_audio_element_ = false;
 
   base::WeakPtrFactory<ResourceMultiBufferDataProvider> weak_factory_;
 };

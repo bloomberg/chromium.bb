@@ -97,12 +97,14 @@ RawResource* RawResource::FetchMedia(FetchParameters& params,
                                      RawResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
-  DCHECK(params.GetResourceRequest().GetRequestContext() ==
-             WebURLRequest::kRequestContextAudio ||
-         params.GetResourceRequest().GetRequestContext() ==
-             WebURLRequest::kRequestContextVideo);
-  return ToRawResource(fetcher->RequestResource(
-      params, RawResourceFactory(Resource::kMedia), client));
+  auto context = params.GetResourceRequest().GetRequestContext();
+  DCHECK(context == WebURLRequest::kRequestContextAudio ||
+         context == WebURLRequest::kRequestContextVideo);
+  Resource::Type type = (context == WebURLRequest::kRequestContextAudio)
+                            ? Resource::kAudio
+                            : Resource::kVideo;
+  return ToRawResource(
+      fetcher->RequestResource(params, RawResourceFactory(type), client));
 }
 
 RawResource* RawResource::FetchTextTrack(FetchParameters& params,

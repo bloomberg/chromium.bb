@@ -222,6 +222,7 @@ void MultiBufferReader::UpdateInternalState() {
            << " block_ceil(end_) = " << block_ceil(end_) << " end_ = " << end_
            << " max_preload " << max_preload;
 
+  multibuffer_->SetIsClientAudioElement(is_client_audio_element_);
   if (preload_pos_ < block_ceil(end_)) {
     if (preload_pos_ < max_preload) {
       loading_ = true;

@@ -102,6 +102,11 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
   int64_t preload_high() const { return preload_high_; }
   int64_t preload_low() const { return preload_low_; }
 
+  // Setters
+  void SetIsClientAudioElement(bool is_client_audio_element) {
+    is_client_audio_element_ = is_client_audio_element;
+  }
+
  private:
   friend class MultibufferDataSourceTest;
 
@@ -158,6 +163,9 @@ class MEDIA_BLINK_EXPORT MultiBufferReader : public MultiBuffer::Reader {
 
   // Current position in bytes.
   int64_t pos_;
+
+  // Is the client an audio element?
+  bool is_client_audio_element_ = false;
 
   // [block(pos_)..preload_pos_) are known to be in the cache.
   // preload_pos_ is only allowed to point to a filled

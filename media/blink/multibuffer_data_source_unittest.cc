@@ -46,7 +46,9 @@ std::set<TestMultiBufferDataProvider*> test_data_providers;
 class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
  public:
   TestMultiBufferDataProvider(UrlData* url_data, MultiBuffer::BlockId pos)
-      : ResourceMultiBufferDataProvider(url_data, pos) {
+      : ResourceMultiBufferDataProvider(url_data,
+                                        pos,
+                                        false /* is_client_audio_element */) {
     CHECK(test_data_providers.insert(this).second);
   }
   ~TestMultiBufferDataProvider() override {
@@ -80,8 +82,8 @@ class TestResourceMultiBuffer : public ResourceMultiBuffer {
   explicit TestResourceMultiBuffer(UrlData* url_data, int shift)
       : ResourceMultiBuffer(url_data, shift) {}
 
-  std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(
-      const BlockId& pos) override {
+  std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(const BlockId& pos,
+                                                          bool) override {
     auto writer = base::MakeUnique<TestMultiBufferDataProvider>(url_data_, pos);
     writer->Start();
     return writer;

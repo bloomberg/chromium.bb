@@ -88,7 +88,8 @@ constexpr base::TimeDelta kKeepaliveLoadersTimeout =
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)   \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, MainResource)   \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
-    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Media)          \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Audio)          \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Video)          \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)           \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)            \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)         \
@@ -131,7 +132,8 @@ ResourceLoadPriority TypeToPriority(Resource::Type type) {
       return ResourceLoadPriority::kMedium;
     case Resource::kImage:
     case Resource::kTextTrack:
-    case Resource::kMedia:
+    case Resource::kAudio:
+    case Resource::kVideo:
     case Resource::kSVGDocument:
       // Also async scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kLow;
@@ -261,7 +263,9 @@ WebURLRequest::RequestContext ResourceFetcher::DetermineRequestContext(
       return WebURLRequest::kRequestContextTrack;
     case Resource::kSVGDocument:
       return WebURLRequest::kRequestContextImage;
-    case Resource::kMedia:  // TODO: Split this.
+    case Resource::kAudio:
+      return WebURLRequest::kRequestContextAudio;
+    case Resource::kVideo:
       return WebURLRequest::kRequestContextVideo;
     case Resource::kManifest:
       return WebURLRequest::kRequestContextManifest;
@@ -1643,7 +1647,8 @@ void ResourceFetcher::LogPreloadStats(ClearPreloadsPolicy policy) {
         fonts++;
         font_misses += miss_count;
         break;
-      case Resource::kMedia:
+      case Resource::kAudio:
+      case Resource::kVideo:
         medias++;
         media_misses += miss_count;
         break;

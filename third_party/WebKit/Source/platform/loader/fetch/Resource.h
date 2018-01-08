@@ -89,7 +89,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     kLinkPrefetch,
     kTextTrack,
     kImportResource,
-    kMedia,  // Audio or video file requested by a HTML5 media element
+    kAudio,
+    kVideo,
     kManifest,
     kMock  // Only for testing
   };

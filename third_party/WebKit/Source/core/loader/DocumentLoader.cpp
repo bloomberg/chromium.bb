@@ -216,7 +216,8 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
     case Resource::kFont:
       resource = FontResource::Fetch(params, Fetcher(), nullptr);
       break;
-    case Resource::kMedia:
+    case Resource::kAudio:
+    case Resource::kVideo:
       resource = RawResource::FetchMedia(params, Fetcher(), nullptr);
       break;
     case Resource::kTextTrack:

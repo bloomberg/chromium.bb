@@ -262,9 +262,9 @@ WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
   } else if (as == "style") {
     return Resource::kCSSStyleSheet;
   } else if (as == "video") {
-    return Resource::kMedia;
+    return Resource::kVideo;
   } else if (as == "audio") {
-    return Resource::kMedia;
+    return Resource::kAudio;
   } else if (as == "track") {
     return Resource::kTextTrack;
   } else if (as == "font") {
@@ -292,7 +292,8 @@ static bool IsSupportedType(Resource::Type resource_type,
       return MIMETypeRegistry::IsSupportedStyleSheetMIMEType(mime_type);
     case Resource::kFont:
       return MIMETypeRegistry::IsSupportedFontMIMEType(mime_type);
-    case Resource::kMedia:
+    case Resource::kAudio:
+    case Resource::kVideo:
       return MIMETypeRegistry::IsSupportedMediaMIMEType(mime_type, String());
     case Resource::kTextTrack:
       return MIMETypeRegistry::IsSupportedTextTrackMIMEType(mime_type);
