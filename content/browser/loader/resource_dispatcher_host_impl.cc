@@ -1816,7 +1816,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     mojom::URLLoaderRequest url_loader_request,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
     AppCacheNavigationHandleCore* appcache_handle_core,
-    uint32_t url_loader_options) {
+    uint32_t url_loader_options,
+    GlobalRequestID* global_request_id) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
@@ -1959,6 +1960,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
+
+  *global_request_id = extra_info->GetGlobalRequestID();
 
   if (new_request->url().SchemeIs(url::kBlobScheme)) {
     // Hang on to a reference to ensure the blob is not released prior
