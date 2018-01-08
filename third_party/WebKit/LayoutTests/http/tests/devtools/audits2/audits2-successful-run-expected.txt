@@ -4,10 +4,11 @@ Tests that audits panel works.
 ========== Audits2 Dialog State ==========
 Dialog is visible
 
-[x] Progressive Web App
 [x] Performance
+[x] Progressive Web App
 [x] Best practices
 [x] Accessibility
+[x] SEO
 Run audit: enabled visible
 Cancel: enabled visible
 
@@ -23,6 +24,7 @@ Retrieving: Viewport
 Retrieving: ViewportDimensions
 Retrieving: ThemeColor
 Retrieving: Manifest
+Retrieving: RuntimeExceptions
 Retrieving: ChromeConsoleMessages
 Retrieving: ImageUsage
 Retrieving: Accessibility
@@ -36,6 +38,11 @@ Retrieving: PasswordInputsWithPreventedPaste
 Retrieving: ResponseCompression
 Retrieving: TagsBlockingFirstPaint
 Retrieving: WebSQL
+Retrieving: MetaDescription
+Retrieving: FontSize
+Retrieving: CrawlableLinks
+Retrieving: MetaRobots
+Retrieving: Hreflang
 Loading page & waiting for onload
 Retrieving devtoolsLog and network records
 Retrieving: ServiceWorker
@@ -64,13 +71,16 @@ Evaluating: First Interactive (beta)
 Evaluating: Consistently Interactive (beta)
 Evaluating: User Timing marks and measures
 Evaluating: Critical Request Chains
+Evaluating: Avoids page redirects
 Evaluating: User can be prompted to Install the Web App
 Evaluating: Configured for a custom splash screen
 Evaluating: Address bar matches brand colors
 Evaluating: Manifest's `short_name` won't be truncated when displayed on homescreen
 Evaluating: Content is sized correctly for the viewport
-Evaluating: Uses Images with appropriate aspect ratio
+Evaluating: Displays images with correct aspect ratio
 Evaluating: Avoids deprecated APIs
+Evaluating: Main thread work breakdown
+Evaluating: JavaScript boot-up time
 Evaluating: Site works cross-browser
 Evaluating: Page transitions don't feel like they block on the network
 Evaluating: Each page has a URL
@@ -109,9 +119,20 @@ Evaluating: `<th>` elements and elements with `[role="columnheader"/"rowheader"]
 Evaluating: `[lang]` attributes have a valid value.
 Evaluating: `<video>` elements contain a `<track>` element with `[kind="captions"]`.
 Evaluating: `<video>` elements contain a `<track>` element with `[kind="description"]`.
+Evaluating: Custom controls have associated labels
+Evaluating: Custom controls have ARIA roles
+Evaluating: User focus is not accidentally trapped in a region
+Evaluating: Interactive controls are keyboard focusable
+Evaluating: Headings don't skip levels
+Evaluating: The page has a logical tab order
+Evaluating: The user's focus is directed to new content added to the page
+Evaluating: Offscreen content is hidden from assistive technology
+Evaluating: HTML5 landmark elements are used to improve navigation
+Evaluating: Visual order on the page follows DOM order
+Evaluating: Uses efficient cache policy on static assets
 Evaluating: Avoids enormous network payloads
 Evaluating: Offscreen images
-Evaluating: Serve images as WebP
+Evaluating: Serve images in next-gen formats
 Evaluating: Optimize images
 Evaluating: Enable text compression
 Evaluating: Properly size images
@@ -129,11 +150,17 @@ Evaluating: Allows users to paste into password fields
 Evaluating: Reduce render-blocking scripts
 Evaluating: Uses HTTP/2 for its own resources
 Evaluating: Uses passive listeners to improve scrolling performance
+Evaluating: Document has a meta description
+Evaluating: Page has successful HTTP status code.
+Evaluating: Document uses legible font sizes.
+Evaluating: Links have descriptive text.
+Evaluating: Page isn’t blocked from indexing
+Evaluating: Document has a valid `hreflang`
 Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 2.5.1
+Version: 2.7.0
 
 
 accesskeys: true
@@ -146,12 +173,15 @@ aria-roles: true
 aria-valid-attr: true
 aria-valid-attr-value: true
 audio-caption: true
+bootup-time: true
 button-name: true
 bypass: true
 color-contrast: true
 consistently-interactive: false
 content-width: false
 critical-request-chains: true
+custom-controls-labels: false
+custom-controls-roles: false
 definition-list: true
 deprecations: true
 dlitem: true
@@ -163,22 +193,34 @@ estimated-input-latency: false
 external-anchors-use-rel-noopener: true
 first-interactive: false
 first-meaningful-paint: false
+focus-traps: false
+focusable-controls: false
+font-size: false
 frame-title: true
 geolocation-on-start: true
+heading-levels: false
+hreflang: true
 html-has-lang: false
 html-lang-valid: true
+http-status-code: true
 image-alt: true
-image-aspect-ratio: false
+image-aspect-ratio: true
 input-image-alt: true
+is-crawlable: true
 is-on-https: true
 label: true
 layout-table: true
 link-blocking-first-paint: false
 link-name: true
+link-text: true
 list: true
 listitem: true
 load-fast-enough-for-pwa: false
+logical-tab-order: false
+mainthread-work-breakdown: true
+managed-focus: false
 manifest-short-name-length: false
+meta-description: false
 meta-refresh: true
 meta-viewport: true
 no-document-write: true
@@ -187,11 +229,13 @@ no-vulnerable-libraries: true
 no-websql: true
 notification-on-start: true
 object-alt: true
+offscreen-content-hidden: false
 offscreen-images: false
 password-inputs-can-be-pasted-into: true
 pwa-cross-browser: false
 pwa-each-page-has-url: false
 pwa-page-transitions: false
+redirects: false
 redirects-http: false
 screenshot-thumbnails: false
 script-blocking-first-paint: false
@@ -204,8 +248,10 @@ th-has-data-cells: true
 themed-omnibox: false
 time-to-first-byte: true
 total-byte-weight: true
+use-landmarks: false
 user-timings: true
 uses-http2: false
+uses-long-cache-ttl: false
 uses-optimized-images: false
 uses-passive-event-listeners: true
 uses-request-compression: false
@@ -215,6 +261,7 @@ valid-lang: true
 video-caption: true
 video-description: true
 viewport: false
+visual-order-follows-dom: false
 webapp-install-banner: false
 without-javascript: false
 works-offline: false
