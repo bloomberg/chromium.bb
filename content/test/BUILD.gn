@@ -1788,7 +1788,10 @@ test("content_unittests") {
   }
 
   if (enable_library_cdms) {
-    sources += [ "../browser/media/cdm_storage_impl_unittest.cc" ]
+    sources += [
+      "../browser/media/cdm_storage_impl_unittest.cc",
+      "../browser/media/key_system_support_impl_unittest.cc",
+    ]
   }
 
   if (enable_webrtc) {

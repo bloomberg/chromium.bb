@@ -311,13 +311,7 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    // TODO(crbug.com/764143): Replace RegisterPepperCdm() with
-    // RegisterExternalClearKey() after we migrate key system support query to
-    // use CdmRegistry.
-    RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
-                      media::kClearKeyCdmAdapterFileName,
-                      media::kClearKeyCdmDisplayName,
-                      media::kClearKeyCdmPepperMimeType);
+    RegisterExternalClearKey(command_line);
   }
 
  private:
