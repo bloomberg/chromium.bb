@@ -292,8 +292,11 @@ void SingleThreadProxy::Stop() {
     // Take away the LayerTreeFrameSink before destroying things so it doesn't
     // try to call into its client mid-shutdown.
     host_impl_->ReleaseLayerTreeFrameSink();
-    scheduler_on_impl_thread_ = nullptr;
+
+    // It is important to destroy LTHI before the Scheduler since it can make
+    // callbacks that access it during destruction cleanup.
     host_impl_ = nullptr;
+    scheduler_on_impl_thread_ = nullptr;
   }
   layer_tree_host_ = nullptr;
 }

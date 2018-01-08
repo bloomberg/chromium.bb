@@ -101,8 +101,12 @@ ProxyImpl::~ProxyImpl() {
   // Take away the LayerTreeFrameSink before destroying things so it doesn't
   // try to call into its client mid-shutdown.
   host_impl_->ReleaseLayerTreeFrameSink();
-  scheduler_ = nullptr;
+
+  // It is important to destroy LTHI before the Scheduler since it can make
+  // callbacks that access it during destruction cleanup.
   host_impl_ = nullptr;
+  scheduler_ = nullptr;
+
   // We need to explicitly shutdown the notifier to destroy any weakptrs it is
   // holding while still on the compositor thread. This also ensures any
   // callbacks holding a ProxyImpl pointer are cancelled.
