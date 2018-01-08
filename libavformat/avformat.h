@@ -785,9 +785,9 @@ enum AVStreamParseType {
     AVSTREAM_PARSE_HEADERS,    /**< Only parse headers, do not repack. */
     AVSTREAM_PARSE_TIMESTAMPS, /**< full parsing and interpolation of timestamps for frames not starting on a packet boundary */
     AVSTREAM_PARSE_FULL_ONCE,  /**< full parsing and repack of the first frame only, only implemented for H.264 currently */
-    AVSTREAM_PARSE_FULL_RAW=MKTAG(0,'R','A','W'),       /**< full parsing and repack with timestamp and position generation by parser for raw
-                                                             this assumes that each packet in the file contains no demuxer level headers and
-                                                             just codec level data, otherwise position generation would fail */
+    AVSTREAM_PARSE_FULL_RAW,   /**< full parsing and repack with timestamp and position generation by parser for raw
+                                    this assumes that each packet in the file contains no demuxer level headers and
+                                    just codec level data, otherwise position generation would fail */
 };
 
 typedef struct AVIndexEntry {
@@ -1026,6 +1026,7 @@ typedef struct AVStream {
         double (*duration_error)[2][MAX_STD_TIMEBASES];
         int64_t codec_info_duration;
         int64_t codec_info_duration_fields;
+        int frame_delay_evidence;
 
         /**
          * 0  -> decoder has not been searched for yet.
@@ -1199,8 +1200,6 @@ typedef struct AVStream {
      * - decoding: Set by libavformat to calculate sample_aspect_ratio internally
      */
     AVRational display_aspect_ratio;
-
-    struct FFFrac *priv_pts;
 
     /**
      * An opaque field for libavformat internal usage.
@@ -1450,7 +1449,7 @@ typedef struct AVFormatContext {
 #endif
 #define AVFMT_FLAG_FAST_SEEK   0x80000 ///< Enable fast, but inaccurate seeks for some formats
 #define AVFMT_FLAG_SHORTEST   0x100000 ///< Stop muxing when the shortest stream stops.
-#define AVFMT_FLAG_AUTO_BSF   0x200000 ///< Wait for packet data before writing a header, and add bitstream filters as requested by the muxer
+#define AVFMT_FLAG_AUTO_BSF   0x200000 ///< Add bitstream filters as requested by the muxer
 
     /**
      * Maximum size of the data read from input for determining

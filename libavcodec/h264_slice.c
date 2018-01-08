@@ -399,12 +399,12 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
 
     h->enable_er       = h1->enable_er;
     h->workaround_bugs = h1->workaround_bugs;
+    h->x264_build      = h1->x264_build;
     h->droppable       = h1->droppable;
 
     // extradata/NAL handling
     h->is_avc = h1->is_avc;
     h->nal_length_size = h1->nal_length_size;
-    h->sei.unregistered.x264_build = h1->sei.unregistered.x264_build;
 
     memcpy(&h->poc,        &h1->poc,        sizeof(h->poc));
 
@@ -544,6 +544,9 @@ static int h264_frame_start(H264Context *h)
     h->postpone_filter = 0;
 
     h->mb_aff_frame = h->ps.sps->mb_aff && (h->picture_structure == PICT_FRAME);
+
+    if (h->sei.unregistered.x264_build >= 0)
+        h->x264_build = h->sei.unregistered.x264_build;
 
     assert(h->cur_pic_ptr->long_ref == 0);
 
@@ -754,6 +757,7 @@ static enum AVPixelFormat get_pixel_format(H264Context *h, int force_callback)
 {
 #define HWACCEL_MAX (CONFIG_H264_DXVA2_HWACCEL + \
                      (CONFIG_H264_D3D11VA_HWACCEL * 2) + \
+                     CONFIG_H264_NVDEC_HWACCEL + \
                      CONFIG_H264_VAAPI_HWACCEL + \
                      CONFIG_H264_VIDEOTOOLBOX_HWACCEL + \
                      CONFIG_H264_VDPAU_HWACCEL)
@@ -809,6 +813,9 @@ static enum AVPixelFormat get_pixel_format(H264Context *h, int force_callback)
     case 8:
 #if CONFIG_H264_VDPAU_HWACCEL
         *fmt++ = AV_PIX_FMT_VDPAU;
+#endif
+#if CONFIG_H264_NVDEC_HWACCEL
+        *fmt++ = AV_PIX_FMT_CUDA;
 #endif
         if (CHROMA444(h)) {
             if (h->avctx->colorspace == AVCOL_SPC_RGB)
@@ -912,7 +919,7 @@ static int h264_slice_header_init(H264Context *h)
 
     if (sps->timing_info_present_flag) {
         int64_t den = sps->time_scale;
-        if (h->sei.unregistered.x264_build < 44U)
+        if (h->x264_build < 44U)
             den *= 2;
         av_reduce(&h->avctx->framerate.den, &h->avctx->framerate.num,
                   sps->num_units_in_tick * h->avctx->ticks_per_frame, den, 1 << 30);
@@ -1191,41 +1198,48 @@ static int h264_export_frame_props(H264Context *h)
     }
 
     if (h->sei.frame_packing.present &&
-        h->sei.frame_packing.frame_packing_arrangement_type <= 6 &&
+        h->sei.frame_packing.arrangement_type <= 6 &&
         h->sei.frame_packing.content_interpretation_type > 0 &&
         h->sei.frame_packing.content_interpretation_type < 3) {
         H264SEIFramePacking *fp = &h->sei.frame_packing;
         AVStereo3D *stereo = av_stereo3d_create_side_data(cur->f);
         if (stereo) {
-        switch (fp->frame_packing_arrangement_type) {
-        case 0:
+        switch (fp->arrangement_type) {
+        case H264_SEI_FPA_TYPE_CHECKERBOARD:
             stereo->type = AV_STEREO3D_CHECKERBOARD;
             break;
-        case 1:
+        case H264_SEI_FPA_TYPE_INTERLEAVE_COLUMN:
             stereo->type = AV_STEREO3D_COLUMNS;
             break;
-        case 2:
+        case H264_SEI_FPA_TYPE_INTERLEAVE_ROW:
             stereo->type = AV_STEREO3D_LINES;
             break;
-        case 3:
+        case H264_SEI_FPA_TYPE_SIDE_BY_SIDE:
             if (fp->quincunx_sampling_flag)
                 stereo->type = AV_STEREO3D_SIDEBYSIDE_QUINCUNX;
             else
                 stereo->type = AV_STEREO3D_SIDEBYSIDE;
             break;
-        case 4:
+        case H264_SEI_FPA_TYPE_TOP_BOTTOM:
             stereo->type = AV_STEREO3D_TOPBOTTOM;
             break;
-        case 5:
+        case H264_SEI_FPA_TYPE_INTERLEAVE_TEMPORAL:
             stereo->type = AV_STEREO3D_FRAMESEQUENCE;
             break;
-        case 6:
+        case H264_SEI_FPA_TYPE_2D:
             stereo->type = AV_STEREO3D_2D;
             break;
         }
 
         if (fp->content_interpretation_type == 2)
             stereo->flags = AV_STEREO3D_FLAG_INVERT;
+
+        if (fp->arrangement_type == H264_SEI_FPA_TYPE_INTERLEAVE_TEMPORAL) {
+            if (fp->current_frame_is_frame0_flag)
+                stereo->view = AV_STEREO3D_VIEW_LEFT;
+            else
+                stereo->view = AV_STEREO3D_VIEW_RIGHT;
+        }
         }
     }
 
@@ -1555,6 +1569,12 @@ static int h264_field_start(H264Context *h, const H264SliceContext *sl,
                 /* This and the previous field had different frame_nums.
                  * Consider this field first in pair. Throw away previous
                  * one except for reference purposes. */
+                h->first_field = 1;
+                h->cur_pic_ptr = NULL;
+            } else if (h->cur_pic_ptr->reference & DELAYED_PIC_REF) {
+                /* This frame was already output, we cannot draw into it
+                 * anymore.
+                 */
                 h->first_field = 1;
                 h->cur_pic_ptr = NULL;
             } else {
