@@ -1,14 +1,14 @@
 <table>
   <tr>
-    <td class='column-entry-left'>Path</td>
-    <td class='column-entry'>Line Coverage</td>
-    <td class='column-entry'>Function Coverage</td>
-    <td class='column-entry'>Region Coverage</td>
+    <td class="column-entry-left">Path</td>
+    <td class="column-entry">Line Coverage</td>
+    <td class="column-entry">Function Coverage</td>
+    <td class="column-entry">Region Coverage</td>
   </tr>
   {% for entry in entries %}
-  <tr class='light-row'>
+  <tr class="light-row">
     <td>
-      {% if entry['is_dir'] == True %}
+      {% if entry["is_dir"] == True %}
         <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}/</a></pre>
       {% else %}
         <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}</a></pre>
@@ -21,13 +21,13 @@
     {% endfor %}
   </tr>
   {% endfor %}
-  <tr class='light-row'>
+  <tr class="light-row">
     <td>
       <pre><b>TOTALS</b></pre>
     </td>
     {% for feature in ("lines", "functions", "regions") %}
     <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
-      <pre><b> {{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</b></pre>
+      <pre><b>{{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</b></pre>
     </td>
     {% endfor %}
   </tr>
