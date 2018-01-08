@@ -188,9 +188,7 @@ void ParseHosts(const std::string& contents, DnsHosts* dns_hosts) {
   ParseHostsWithCommaMode(contents, dns_hosts, comma_mode);
 }
 
-bool ParseHostsFile(const base::FilePath& path,
-                    DnsHosts* dns_hosts,
-                    int64_t* file_size) {
+bool ParseHostsFile(const base::FilePath& path, DnsHosts* dns_hosts) {
   dns_hosts->clear();
   // Missing file indicates empty HOSTS.
   if (!base::PathExists(path))
@@ -213,7 +211,6 @@ bool ParseHostsFile(const base::FilePath& path,
     return false;
 
   ParseHosts(contents, dns_hosts);
-  *file_size = size;
   return true;
 }
 
