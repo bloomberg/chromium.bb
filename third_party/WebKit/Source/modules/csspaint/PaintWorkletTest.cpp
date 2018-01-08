@@ -9,7 +9,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/LocalFrame.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 #include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
@@ -38,13 +38,12 @@ class TestPaintWorklet : public PaintWorklet {
   size_t paints_to_switch_;
 };
 
-class PaintWorkletTest : public ::testing::Test {
+class PaintWorkletTest : public PageTestBase {
  public:
-  PaintWorkletTest() : page_(DummyPageHolder::Create()) {}
-
   void SetUp() override {
+    PageTestBase::SetUp(IntSize());
     test_paint_worklet_ =
-        new TestPaintWorklet(page_->GetDocument().domWindow()->GetFrame());
+        new TestPaintWorklet(GetDocument().domWindow()->GetFrame());
     proxy_ = test_paint_worklet_->CreateGlobalScope();
   }
 
@@ -89,13 +88,11 @@ class PaintWorkletTest : public ::testing::Test {
   }
 
   void Terminate() {
-    page_.reset();
     proxy_->TerminateWorkletGlobalScope();
     proxy_ = nullptr;
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> page_;
   Persistent<WorkletGlobalScopeProxy> proxy_;
   Persistent<TestPaintWorklet> test_paint_worklet_;
 };
