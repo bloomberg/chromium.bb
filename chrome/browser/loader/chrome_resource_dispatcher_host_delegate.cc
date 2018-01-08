@@ -77,7 +77,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_response.h"
 #include "extensions/features/features.h"
@@ -674,14 +673,8 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   if (info->IsPrerendering()) {
-    // TODO(jam): remove this throttle once http://crbug.com/740130 is fixed and
-    // PrerendererURLLoaderThrottle can be used for frame requests in the
-    // network-service-disabled mode.
-    if (!base::FeatureList::IsEnabled(features::kNetworkService) &&
-        content::IsResourceTypeFrame(info->GetResourceType())) {
-      throttles->push_back(
-          base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
-    }
+    throttles->push_back(
+        base::MakeUnique<prerender::PrerenderResourceThrottle>(request));
   }
 
   std::unique_ptr<PredictorResourceThrottle> predictor_throttle =

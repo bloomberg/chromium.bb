@@ -23,14 +23,12 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
-#include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"
-#include "chrome/common/prerender_util.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,6 +56,16 @@ using content::WebContents;
 namespace prerender {
 
 namespace {
+
+// Valid HTTP methods for both prefetch and prerendering.
+const char* const kValidHttpMethods[] = {
+    "GET", "HEAD",
+};
+
+// Additional valid HTTP methods for prerendering.
+const char* const kValidHttpMethodsForPrerendering[] = {
+    "OPTIONS", "POST", "TRACE",
+};
 
 void ResumeThrottles(
     std::vector<base::WeakPtr<PrerenderResourceThrottle>> throttles,
@@ -222,6 +230,27 @@ bool PrerenderContents::Init() {
 void PrerenderContents::SetPrerenderMode(PrerenderMode mode) {
   DCHECK(!prerendering_has_started_);
   prerender_mode_ = mode;
+}
+
+bool PrerenderContents::IsValidHttpMethod(const std::string& method) {
+  DCHECK_NE(prerender_mode(), NO_PRERENDER);
+  // |method| has been canonicalized to upper case at this point so we can just
+  // compare them.
+  DCHECK_EQ(method, base::ToUpperASCII(method));
+  for (auto* valid_method : kValidHttpMethods) {
+    if (method == valid_method)
+      return true;
+  }
+
+  if (prerender_mode() == PREFETCH_ONLY)
+    return false;
+
+  for (auto* valid_method : kValidHttpMethodsForPrerendering) {
+    if (method == valid_method)
+      return true;
+  }
+
+  return false;
 }
 
 // static
@@ -509,8 +538,7 @@ void PrerenderContents::RenderFrameCreated(
   // occur.  Note that this is always triggered before the first navigation, so
   // there's no need to send the message just after the WebContents is created.
   render_frame_host->Send(new PrerenderMsg_SetIsPrerendering(
-      render_frame_host->GetRoutingID(), prerender_mode_,
-      PrerenderHistograms::GetHistogramPrefix(origin_)));
+      render_frame_host->GetRoutingID(), prerender_mode_));
 }
 
 void PrerenderContents::DidStopLoading() {
@@ -710,8 +738,8 @@ void PrerenderContents::PrepareForUse() {
   SetFinalStatus(FINAL_STATUS_USED);
 
   if (prerender_contents_.get()) {
-    prerender_contents_->SendToAllFrames(new PrerenderMsg_SetIsPrerendering(
-        MSG_ROUTING_NONE, NO_PRERENDER, std::string()));
+    prerender_contents_->SendToAllFrames(
+        new PrerenderMsg_SetIsPrerendering(MSG_ROUTING_NONE, NO_PRERENDER));
   }
 
   NotifyPrerenderStop();
@@ -725,19 +753,6 @@ void PrerenderContents::PrepareForUse() {
 
 void PrerenderContents::CancelPrerenderForPrinting() {
   Destroy(FINAL_STATUS_WINDOW_PRINT);
-}
-
-void PrerenderContents::CancelPrerenderForUnsupportedMethod() {
-  Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
-}
-
-void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
-  Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
-  ReportUnsupportedPrerenderScheme(url);
-}
-
-void PrerenderContents::CancelPrerenderForSyncDeferredRedirect() {
-  Destroy(FINAL_STATUS_BAD_DEFERRED_REDIRECT);
 }
 
 void PrerenderContents::OnPrerenderCancelerRequest(

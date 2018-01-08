@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/time/time.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "third_party/WebKit/public/platform/WebPrerender.h"
 #include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"
@@ -31,9 +30,6 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
   ~PrerenderDispatcher() override;
 
   bool IsPrerenderURL(const GURL& url) const;
-
-  void IncrementPrefetchCount();
-  void DecrementPrefetchCount();
 
  private:
   friend class PrerenderDispatcherTest;
@@ -61,11 +57,6 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
   // From the browser process, which prerenders are running, indexed by URL.
   // Updated by the browser processes as aliases are discovered.
   std::multiset<GURL> running_prerender_urls_;
-
-  int prefetch_count_ = 0;
-  bool prefetch_finished_ = false;
-  base::TimeTicks process_start_time_;
-  base::TimeTicks prefetch_parsed_time_;
 };
 
 }  // namespace prerender

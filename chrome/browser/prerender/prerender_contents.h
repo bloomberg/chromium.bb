@@ -114,6 +114,9 @@ class PrerenderContents : public content::NotificationObserver,
   void SetPrerenderMode(PrerenderMode mode);
   PrerenderMode prerender_mode() const { return prerender_mode_; }
 
+  // Returns true iff the method given is valid for prerendering.
+  bool IsValidHttpMethod(const std::string& method);
+
   static Factory* CreateFactory();
 
   // Returns a PrerenderContents from the given web_contents, if it's used for
@@ -306,9 +309,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // chrome::mojom::PrerenderCanceler:
   void CancelPrerenderForPrinting() override;
-  void CancelPrerenderForUnsupportedMethod() override;
-  void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
-  void CancelPrerenderForSyncDeferredRedirect() override;
 
   void OnPrerenderCancelerRequest(
       chrome::mojom::PrerenderCancelerRequest request);

@@ -45,10 +45,6 @@ class PrerenderHistograms {
   // PrerenderManager.
   PrerenderHistograms();
 
-  // Return the string to use as a prefix for histograms depending on the origin
-  // of the prerender.
-  static std::string GetHistogramPrefix(Origin origin);
-
   // Record that a first contentful paint occured, and whether we were able to
   // successfuly record the perceived FCP.
   void RecordPerceivedFirstContentfulPaintStatus(Origin origin,
@@ -70,6 +66,19 @@ class PrerenderHistograms {
   void RecordNetworkBytesConsumed(Origin origin,
                                   int64_t prerender_bytes,
                                   int64_t profile_bytes) const;
+
+  // Called when a NoStatePrefetch request has received a response (including
+  // redirects). May be called several times per resource, in case of redirects.
+  void RecordPrefetchResponseReceived(Origin origin,
+                                      bool is_main_resource,
+                                      bool is_redirect,
+                                      bool is_no_store) const;
+
+  // Called when a NoStatePrefetch resource has been loaded. This is called only
+  // once per resource, when all redirects have been resolved.
+  void RecordPrefetchRedirectCount(Origin origin,
+                                   bool is_main_resource,
+                                   int redirect_count) const;
 
   // Records the time to first contentful paint with respect to a possible
   // prefetch of the page. The time to first contentful paint with respect to

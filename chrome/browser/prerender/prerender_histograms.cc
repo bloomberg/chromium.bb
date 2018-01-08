@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/common/prerender_util.h"
 #include "components/google/core/browser/google_util.h"
 #include "net/http/http_cache.h"
 
@@ -21,9 +20,55 @@ namespace prerender {
 
 namespace {
 
+// This enum is used to define the buckets for the
+// "Prerender.NoStatePrefetchResourceCount" histogram family.
+// Hence, existing enumerated constants should never be deleted or reordered,
+// and new constants should only be appended at the end of the enumeration.
+enum NoStatePrefetchResponseType {
+  NO_STORE = 1 << 0,
+  REDIRECT = 1 << 1,
+  MAIN_RESOURCE = 1 << 2,
+  NO_STATE_PREFETCH_RESPONSE_TYPE_COUNT = 1 << 3
+};
+
+int GetResourceType(bool is_main_resource, bool is_redirect, bool is_no_store) {
+  return (is_no_store * NO_STORE) + (is_redirect * REDIRECT) +
+         (is_main_resource * MAIN_RESOURCE);
+}
+
+std::string ComposeHistogramName(const std::string& prefix_type,
+                                 const std::string& name) {
+  if (prefix_type.empty())
+    return std::string("Prerender.") + name;
+  return std::string("Prerender.") + prefix_type + std::string("_") + name;
+}
+
 std::string GetHistogramName(Origin origin, const std::string& name) {
-  return ComposeHistogramName(PrerenderHistograms::GetHistogramPrefix(origin),
-                              name);
+  switch (origin) {
+    case ORIGIN_OMNIBOX:
+      return ComposeHistogramName("omnibox", name);
+    case ORIGIN_NONE:
+      return ComposeHistogramName("none", name);
+    case ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN:
+      return ComposeHistogramName("websame", name);
+    case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
+      return ComposeHistogramName("webcross", name);
+    case ORIGIN_EXTERNAL_REQUEST:
+      return ComposeHistogramName("externalrequest", name);
+    case ORIGIN_LINK_REL_NEXT:
+      return ComposeHistogramName("webnext", name);
+    case ORIGIN_GWS_PRERENDER:
+      return ComposeHistogramName("gws", name);
+    case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
+      return ComposeHistogramName("externalrequestforced", name);
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // Dummy return value to make the compiler happy.
+  NOTREACHED();
+  return ComposeHistogramName("none", name);
 }
 
 const char* FirstContentfulPaintHiddenName(bool was_hidden) {
@@ -33,33 +78,6 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
 }  // namespace
 
 PrerenderHistograms::PrerenderHistograms() {}
-
-std::string PrerenderHistograms::GetHistogramPrefix(Origin origin) {
-  switch (origin) {
-    case ORIGIN_OMNIBOX:
-      return "omnibox";
-    case ORIGIN_NONE:
-      return "none";
-    case ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN:
-      return "websame";
-    case ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN:
-      return "webcross";
-    case ORIGIN_EXTERNAL_REQUEST:
-      return "externalrequest";
-    case ORIGIN_LINK_REL_NEXT:
-      return "webnext";
-    case ORIGIN_GWS_PRERENDER:
-      return "gws";
-    case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
-      return "externalrequestforced";
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  // Dummy return value to make the compiler happy.
-  return "none";
-}
 
 void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
     Origin origin,
@@ -103,6 +121,34 @@ void PrerenderHistograms::RecordNetworkBytesConsumed(
   base::UmaHistogramCustomCounts(ComposeHistogramName("", "NetworkBytesWasted"),
                                  prerender_bytes, kHistogramMin, kHistogramMax,
                                  kBucketCount);
+}
+
+void PrerenderHistograms::RecordPrefetchResponseReceived(
+    Origin origin,
+    bool is_main_resource,
+    bool is_redirect,
+    bool is_no_store) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  int sample = GetResourceType(is_main_resource, is_redirect, is_no_store);
+  std::string histogram_name =
+      GetHistogramName(origin, "NoStatePrefetchResponseTypes");
+  base::UmaHistogramExactLinear(histogram_name, sample,
+                                NO_STATE_PREFETCH_RESPONSE_TYPE_COUNT);
+}
+
+void PrerenderHistograms::RecordPrefetchRedirectCount(
+    Origin origin,
+    bool is_main_resource,
+    int redirect_count) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const int kMaxRedirectCount = 10;
+  std::string histogram_base_name = base::StringPrintf(
+      "NoStatePrefetch%sResourceRedirects", is_main_resource ? "Main" : "Sub");
+  std::string histogram_name = GetHistogramName(origin, histogram_base_name);
+  base::UmaHistogramExactLinear(histogram_name, redirect_count,
+                                kMaxRedirectCount);
 }
 
 void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(

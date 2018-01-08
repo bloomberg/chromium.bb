@@ -86,7 +86,6 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_request.h"
@@ -158,6 +157,13 @@ const int kUserGestureWindowMs = 3500;
 // Ratio of |max_num_in_flight_requests_| that any one renderer is allowed to
 // use. Arbitrarily chosen.
 const double kMaxRequestsPerProcessRatio = 0.45;
+
+// TODO(jkarlin): The value is high to reduce the chance of the detachable
+// request timing out, forcing a blocked second request to open a new connection
+// and start over. Reduce this value once we have a better idea of what it
+// should be and once we stop blocking multiple simultaneous requests for the
+// same resource (see bugs 46104 and 31014).
+const int kDefaultDetachableCancelDelayMs = 30000;
 
 // Aborts a request before an URLRequest has actually been created.
 void AbortRequestBeforeItStarts(
