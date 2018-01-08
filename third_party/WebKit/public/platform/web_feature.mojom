@@ -1828,6 +1828,7 @@ enum WebFeature {
   kCSSSelectorWebkitUnknownPseudo = 2319,
   kFilterAsContainingBlockMayChangeOutput = 2320,
   kDispatchMouseUpDownEventOnDisabledFormControl = 2321,
+  kCSSSelectorPseudoMatches = 2322,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

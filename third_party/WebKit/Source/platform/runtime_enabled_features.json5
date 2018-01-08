@@ -242,6 +242,10 @@
       status: "experimental",
     },
     {
+      name: "CSSMatches",
+      status: "experimental",
+    },
+    {
       name: "CSSOffsetPathRay",
       status: "experimental",
     },
