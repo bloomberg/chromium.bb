@@ -589,7 +589,10 @@ void ManagePasswordsBubbleView::PendingView::CreatePasswordField() {
     password_dropdown_ = CreatePasswordDropdownView(password_form).release();
   } else {
     password_label_ =
-        CreatePasswordLabel(password_form, password_visible_).release();
+        CreatePasswordLabel(password_form,
+                            IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION,
+                            password_visible_)
+            .release();
   }
 }
 
@@ -815,10 +818,13 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
   } else {
     const autofill::PasswordForm& password_form =
         parent_->model()->pending_password();
-    BuildCredentialRows(layout, CreateUsernameLabel(password_form).release(),
-                        CreatePasswordLabel(password_form, false).release(),
-                        nullptr, /* password_view_button */
-                        true /* show_password_label */);
+    BuildCredentialRows(
+        layout, CreateUsernameLabel(password_form).release(),
+        CreatePasswordLabel(password_form,
+                            IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION, false)
+            .release(),
+        nullptr, /* password_view_button */
+        true /* show_password_label */);
   }
   layout->AddPaddingRow(
       0, layout_provider->GetDistanceMetric(

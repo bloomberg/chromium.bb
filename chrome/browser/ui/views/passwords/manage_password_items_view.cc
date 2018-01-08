@@ -119,12 +119,13 @@ std::unique_ptr<views::Textfield> CreateUsernameEditable(
 
 std::unique_ptr<views::Label> CreatePasswordLabel(
     const autofill::PasswordForm& form,
+    int federation_message_id,
     bool is_password_visible) {
   base::string16 text =
       form.federation_origin.unique()
           ? form.password_value
           : l10n_util::GetStringFUTF16(
-                IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION,
+                federation_message_id,
                 base::UTF8ToUTF16(form.federation_origin.host()));
   auto label = std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE,
                                               STYLE_SECONDARY);
@@ -193,7 +194,7 @@ void ManagePasswordItemsView::PasswordRow::AddPasswordRow(
   std::unique_ptr<views::Label> username_label =
       CreateUsernameLabel(*password_form_);
   std::unique_ptr<views::Label> password_label =
-      CreatePasswordLabel(*password_form_, false);
+      CreatePasswordLabel(*password_form_, IDS_PASSWORDS_VIA_FEDERATION, false);
   std::unique_ptr<views::ImageButton> delete_button =
       CreateDeleteButton(this, GetDisplayUsername(*password_form_));
   StartRow(layout, PASSWORD_COLUMN_SET);
