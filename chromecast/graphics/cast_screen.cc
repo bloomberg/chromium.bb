@@ -21,6 +21,7 @@ namespace chromecast {
 namespace {
 
 const int64_t kDisplayId = 1;
+constexpr char kDisplayRotation[] = "display-rotation";
 
 // Helper to return the screen resolution (device pixels)
 // to use.
@@ -34,6 +35,20 @@ gfx::Size GetScreenResolution() {
   } else {
     return gfx::Size(1280, 720);
   }
+}
+
+display::Display::Rotation GetRotationFromCommandLine() {
+  std::string rotation =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          kDisplayRotation);
+  if (rotation == "90")
+    return display::Display::ROTATE_90;
+  else if (rotation == "180")
+    return display::Display::ROTATE_180;
+  else if (rotation == "270")
+    return display::Display::ROTATE_270;
+  else
+    return display::Display::ROTATE_0;
 }
 
 }  // namespace
@@ -71,6 +86,7 @@ void CastScreen::OnDisplayChanged(float device_scale_factor, gfx::Rect bounds) {
           << " bounds=" << bounds.ToString();
   display::Display display(kDisplayId);
   display.SetScaleAndBounds(device_scale_factor, bounds);
+  display.set_rotation(GetRotationFromCommandLine());
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 

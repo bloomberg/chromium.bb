@@ -18,6 +18,32 @@
 #include "ui/display/screen.h"
 
 namespace chromecast {
+namespace {
+
+gfx::Transform GetPrimaryDisplayRotationTransform() {
+  gfx::Transform rotation;
+  display::Display display(display::Screen::GetScreen()->GetPrimaryDisplay());
+  switch (display.rotation()) {
+    case display::Display::ROTATE_0:
+      break;
+    case display::Display::ROTATE_90:
+      rotation.Translate(display.bounds().height(), 0);
+      rotation.Rotate(90);
+      break;
+    case display::Display::ROTATE_180:
+      rotation.Translate(display.bounds().width(), display.bounds().height());
+      rotation.Rotate(180);
+      break;
+    case display::Display::ROTATE_270:
+      rotation.Translate(0, display.bounds().width());
+      rotation.Rotate(270);
+      break;
+  }
+
+  return rotation;
+}
+
+}  // namespace
 
 // An ui::EventTarget that ignores events.
 class CastEventIgnorer : public ui::EventTargeter {
@@ -191,6 +217,7 @@ void CastWindowManagerAura::Setup() {
       new CastWindowTreeHost(enable_input_, gfx::Rect(display_size)));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(new CastLayoutManager());
+  window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
 
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
