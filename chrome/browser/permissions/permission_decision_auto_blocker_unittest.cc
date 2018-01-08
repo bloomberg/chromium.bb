@@ -17,7 +17,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 
 namespace {
@@ -143,14 +142,6 @@ class PermissionDecisionAutoBlockerUnitTest
   bool callback_was_run() { return callback_was_run_; }
 
   base::SimpleTestClock* clock() { return clock_; }
-
-  const char* GetDismissKey() {
-    return PermissionDecisionAutoBlocker::kPromptDismissCountKey;
-  }
-
-  const char* GetIgnoreKey() {
-    return PermissionDecisionAutoBlocker::kPromptIgnoreCountKey;
-  }
 
  private:
   PermissionDecisionAutoBlocker* autoblocker_;
@@ -804,78 +795,6 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, TestSafeBrowsingTimeout) {
       autoblocker()->GetEmbargoResult(url, CONTENT_SETTINGS_TYPE_GEOLOCATION);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
   EXPECT_EQ(PermissionStatusSource::SAFE_BROWSING_BLACKLIST, result.source);
-}
-
-// TODO(raymes): See crbug.com/681709. Remove after M60.
-TEST_F(PermissionDecisionAutoBlockerUnitTest,
-       MigrateNoDecisionCountToPermissionAutoBlockerData) {
-  GURL url("https://www.google.com");
-  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
-
-  // Write to the old content setting.
-  base::DictionaryValue permissions_dict;
-  permissions_dict.SetInteger(GetDismissKey(), 100);
-  permissions_dict.SetInteger(GetIgnoreKey(), 50);
-
-  base::DictionaryValue origin_dict;
-  origin_dict.Set(
-      PermissionUtil::GetPermissionString(CONTENT_SETTINGS_TYPE_GEOLOCATION),
-      permissions_dict.CreateDeepCopy());
-  map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
-      std::string(), origin_dict.CreateDeepCopy());
-
-  // Nothing should be migrated yet, so the current values should be 0.
-  EXPECT_EQ(0, autoblocker()->GetDismissCount(
-                   url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(
-      0, autoblocker()->GetIgnoreCount(url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  // Trigger pref migration which happens at the creation of the
-  // HostContentSettingsMap.
-  {
-    scoped_refptr<HostContentSettingsMap> temp_map(new HostContentSettingsMap(
-        profile()->GetPrefs(), false /* is_incognito_profile */,
-        false /* is_guest_profile */, false /* store_last_modified */));
-    temp_map->ShutdownOnUIThread();
-  }
-
-  // The values should now be migrated.
-  EXPECT_EQ(100, autoblocker()->GetDismissCount(
-                     url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(50, autoblocker()->GetIgnoreCount(
-                    url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-
-  // The old pref should be deleted.
-  std::unique_ptr<base::DictionaryValue> old_dict =
-      base::DictionaryValue::From(map->GetWebsiteSetting(
-          url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
-          std::string(), nullptr));
-  EXPECT_EQ(nullptr, old_dict);
-
-  // Write to the old content setting again, but with different numbers.
-  permissions_dict.SetInteger(GetDismissKey(), 99);
-  permissions_dict.SetInteger(GetIgnoreKey(), 99);
-
-  origin_dict.Set(
-      PermissionUtil::GetPermissionString(CONTENT_SETTINGS_TYPE_GEOLOCATION),
-      permissions_dict.CreateDeepCopy());
-  map->SetWebsiteSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
-      std::string(), origin_dict.CreateDeepCopy());
-
-  // Ensure that migrating again does nothing.
-  {
-    scoped_refptr<HostContentSettingsMap> temp_map(new HostContentSettingsMap(
-        profile()->GetPrefs(), false /* is_incognito_profile */,
-        false /* is_guest_profile */, false /* store_last_modified */));
-    temp_map->ShutdownOnUIThread();
-  }
-
-  EXPECT_EQ(100, autoblocker()->GetDismissCount(
-                     url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
-  EXPECT_EQ(50, autoblocker()->GetIgnoreCount(
-                    url, CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 // Test that a blacklisted permission should not be autoblocked if the database
