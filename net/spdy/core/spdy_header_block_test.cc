@@ -206,5 +206,49 @@ TEST(JoinTest, JoinMultiple) {
   EXPECT_EQ("one, two, three", SpdyStringPiece(buf, written));
 }
 
+namespace {
+size_t SpdyHeaderBlockSize(const SpdyHeaderBlock& block) {
+  size_t size = 0;
+  for (const auto& pair : block) {
+    size += pair.first.size() + pair.second.size();
+  }
+  return size;
+}
+}  // namespace
+
+// Tests SpdyHeaderBlock SizeEstimate().
+TEST(SpdyHeaderBlockTest, TotalBytesUsed) {
+  SpdyHeaderBlock block;
+  const size_t value_size = 300;
+  block["foo"] = SpdyString(value_size, 'x');
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  block.insert(std::make_pair("key", SpdyString(value_size, 'x')));
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  block.AppendValueOrAddHeader("abc", SpdyString(value_size, 'x'));
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+
+  // Replace value for existing key.
+  block["foo"] = SpdyString(value_size, 'x');
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  block.insert(std::make_pair("key", SpdyString(value_size, 'x')));
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+  // Add value for existing key.
+  block.AppendValueOrAddHeader("abc", SpdyString(value_size, 'x'));
+  EXPECT_EQ(block.TotalBytesUsed(), SpdyHeaderBlockSize(block));
+
+  // Copies/clones SpdyHeaderBlock.
+  size_t block_size = block.TotalBytesUsed();
+  SpdyHeaderBlock block_copy = std::move(block);
+  EXPECT_EQ(block_size, block_copy.TotalBytesUsed());
+
+  // Erases key.
+  block_copy.erase("foo");
+  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+  block_copy.erase("key");
+  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+  block_copy.erase("abc");
+  EXPECT_EQ(block_copy.TotalBytesUsed(), SpdyHeaderBlockSize(block_copy));
+}
+
 }  // namespace test
 }  // namespace net
