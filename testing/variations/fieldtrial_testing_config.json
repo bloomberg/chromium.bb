@@ -1212,6 +1212,21 @@
             ]
         }
     ],
+    "DownloadHomeMoreButton": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "show_more_button": "true"
+                    }
+                }
+            ]
+        }
+    ],
     "DownloadableStrings": [
         {
             "platforms": [
