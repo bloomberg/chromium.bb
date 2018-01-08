@@ -297,6 +297,7 @@ void RendererWindowTreeClient::OnWindowInputEvent(
     uint32_t event_id,
     ui::Id window_id,
     int64_t display_id,
+    ui::Id display_root_window_id,
     const gfx::PointF& event_location_in_screen_pixel_layout,
     std::unique_ptr<ui::Event> event,
     bool matches_pointer_watcher) {

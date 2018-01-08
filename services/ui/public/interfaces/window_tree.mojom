@@ -482,6 +482,7 @@ interface WindowTreeClient {
   OnWindowInputEvent(uint32 event_id,
                      uint32 window,
                      int64 display_id,
+                     uint32 display_root_window,
                      gfx.mojom.PointF event_location_in_screen_pixel_layout,
                      ui.mojom.Event event,
                      bool matches_pointer_watcher);
