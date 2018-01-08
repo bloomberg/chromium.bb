@@ -33,6 +33,13 @@ void RegisterExternalClearKey(base::CommandLine* command_line,
   // Append the switch to register the Clear Key CDM path.
   command_line->AppendSwitchNative(switches::kClearKeyCdmPathForTesting,
                                    cdm_path.value());
+
+  // Also register the pepper plugin.
+  // TODO(crbug.com/772160) Remove this when pepper CDM support removed.
+  RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
+                    media::kClearKeyCdmAdapterFileName,
+                    media::kClearKeyCdmDisplayName,
+                    media::kClearKeyCdmPepperMimeType);
 }
 
 bool IsLibraryCdmRegistered(const std::string& cdm_guid) {

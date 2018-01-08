@@ -1967,6 +1967,8 @@ jumbo_source_set("browser") {
       "media/cdm_file_impl.h",
       "media/cdm_storage_impl.cc",
       "media/cdm_storage_impl.h",
+      "media/key_system_support_impl.cc",
+      "media/key_system_support_impl.h",
     ]
   }
 

@@ -137,4 +137,11 @@ target(link_target_type, "renderer_sources") {
   if (enable_plugins) {
     sources += [ "plugin_instance_throttler.h" ]
   }
+
+  if (enable_library_cdms) {
+    sources += [
+      "key_system_support.cc",
+      "key_system_support.h",
+    ]
+  }
 }

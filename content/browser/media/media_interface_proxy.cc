@@ -31,7 +31,7 @@
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/guid.h"
 #include "content/browser/media/cdm_storage_impl.h"
-#include "content/public/browser/cdm_registry.h"
+#include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -260,24 +260,6 @@ void MediaInterfaceProxy::OnMediaServiceConnectionError() {
 
 #if BUILDFLAG(ENABLE_STANDALONE_CDM_SERVICE)
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-// Returns CdmInfo registered for |key_system|. Returns null if no CdmInfo is
-// registered for |key_system|, or if the CdmInfo registered is invalid.
-static std::unique_ptr<CdmInfo> GetCdmInfoForKeySystem(
-    const std::string& key_system) {
-  DVLOG(2) << __func__ << ": key_system = " << key_system;
-  for (const auto& cdm : CdmRegistry::GetInstance()->GetAllRegisteredCdms()) {
-    if (cdm.supported_key_system == key_system ||
-        (cdm.supports_sub_key_systems &&
-         media::IsChildKeySystemOf(key_system, cdm.supported_key_system))) {
-      return std::make_unique<CdmInfo>(cdm);
-    }
-  }
-
-  return nullptr;
-}
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
 media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
     const std::string& key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -287,7 +269,8 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
   std::string cdm_file_system_id;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  std::unique_ptr<CdmInfo> cdm_info = GetCdmInfoForKeySystem(key_system);
+  std::unique_ptr<CdmInfo> cdm_info =
+      KeySystemSupportImpl::GetCdmInfoForKeySystem(key_system);
   if (!cdm_info) {
     NOTREACHED() << "No valid CdmInfo for " << key_system;
     return nullptr;
