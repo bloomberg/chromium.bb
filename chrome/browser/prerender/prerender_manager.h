@@ -166,19 +166,6 @@ class PrerenderManager : public content::NotificationObserver,
   virtual void MoveEntryToPendingDelete(PrerenderContents* entry,
                                         FinalStatus final_status);
 
-  // Called when a NoStatePrefetch request has received a response (including
-  // redirects). May be called several times per resource, in case of redirects.
-  void RecordPrefetchResponseReceived(Origin origin,
-                                      bool is_main_resource,
-                                      bool is_redirect,
-                                      bool is_no_store);
-
-  // Called when a NoStatePrefetch resource has been loaded. This is called only
-  // once per resource, when all redirects have been resolved.
-  void RecordPrefetchRedirectCount(Origin origin,
-                                   bool is_main_resource,
-                                   int redirect_count);
-
   // Called to record the time to First Contentful Paint for all pages that were
   // not prerendered.
   //
@@ -255,13 +242,6 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
-
-  // Returns true iff the scheme of the URL given is valid for prerendering.
-  static bool DoesURLHaveValidScheme(const GURL& url);
-
-  // Returns true iff the scheme of the subresource URL given is valid for
-  // prerendering.
-  static bool DoesSubresourceURLHaveValidScheme(const GURL& url);
 
   // Returns a Value object containing the active pages being prerendered, and
   // a history of pages which were prerendered.

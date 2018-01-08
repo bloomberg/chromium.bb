@@ -43,7 +43,13 @@ void RequestExtraData::CopyToResourceRequest(ResourceRequest* request) const {
   request->originated_from_service_worker = originated_from_service_worker_;
 
   request->initiated_in_secure_context = initiated_in_secure_context_;
+
+  /*
+  TODO(jam): if have agreement that alternate solution of having a dummy sink
+             in the renderer so that notifications are still received, then undo
+             the cl https://codereview.chromium.org/2262183002.
   request->download_to_network_cache_only = download_to_network_cache_only_;
+  */
 }
 
 }  // namespace content

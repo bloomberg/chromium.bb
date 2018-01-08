@@ -813,8 +813,6 @@ Resource* ResourceFetcher::RequestResource(
     InsertAsPreloadIfNecessary(resource, params, resource_type);
   scoped_resource_load_tracker.ResourceLoadContinuesBeyondScope();
 
-  DCHECK(!resource->ErrorOccurred() ||
-         params.Options().synchronous_policy == kRequestSynchronously);
   return resource;
 }
 

@@ -66558,6 +66558,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Prerender.NoStatePrefetchRendererLifetimeExtension" units="ms">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Time a prefetch renderer is kept alive after parsing to wait for
+    subresources to finish loading.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.NoStatePrefetchRendererParseTime" units="ms">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Time between prefetch renderer startup and when parsing is complete.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.NoStatePrefetchResponseTypes"
     enum="NoStatePrefetchResponseType">
   <owner>droger@chromium.org</owner>

@@ -58,7 +58,9 @@ IPC_MESSAGE_CONTROL0(PrerenderHostMsg_PrefetchFinished)
 // Tells a renderer if it's currently being prerendered.  Must only be set
 // before any navigation occurs, and only set to NO_PRERENDER at most once after
 // that.
-IPC_MESSAGE_ROUTED1(PrerenderMsg_SetIsPrerendering, prerender::PrerenderMode)
+IPC_MESSAGE_ROUTED2(PrerenderMsg_SetIsPrerendering,
+                    prerender::PrerenderMode,
+                    std::string /* histogram_prefix */)
 
 // Signals to launcher that a prerender is running.
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStart,

@@ -106,6 +106,9 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
 
   // The request is downloaded to the network cache, but not rendered or
   // executed. The renderer will see this as an aborted request.
+  bool download_to_network_cache_only() const {
+    return download_to_network_cache_only_;
+  }
   void set_download_to_network_cache_only(bool download_to_cache) {
     download_to_network_cache_only_ = download_to_cache;
   }

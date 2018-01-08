@@ -55,7 +55,8 @@ class ChromeRenderFrameObserver
   void OnDestruct() override;
 
   // IPC handlers
-  void OnSetIsPrerendering(prerender::PrerenderMode mode);
+  void OnSetIsPrerendering(prerender::PrerenderMode mode,
+                           const std::string& histogram_prefix);
   void OnRequestThumbnailForContextNode(
       int thumbnail_min_area_pixels,
       const gfx::Size& thumbnail_max_size_pixels,
