@@ -11,10 +11,8 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -39,11 +37,8 @@
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/user_activity_forwarder.h"
-#include "ui/base/class_property.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/keyboard/content/keyboard.h"
-#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/mus/mus_client.h"
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
@@ -135,11 +130,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   volume_controller_ = base::MakeUnique<VolumeController>();
   vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
 
-  // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
-  // initialized. Otherwise, virtual keyboard extension will not load at login
-  // screen.
-  keyboard::InitializeKeyboard();
-
   ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
 
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
@@ -156,17 +146,12 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   media_client_ = base::MakeUnique<MediaClient>();
   login_screen_client_ = base::MakeUnique<LoginScreenClient>();
 
-  // TODO(mash): Port TabScrubber and keyboard initialization.
+  // TODO(mash): Port TabScrubber.
   if (ash_util::IsRunningInMash())
     return;
 
   // Initialize TabScrubber after the Ash Shell has been initialized.
   TabScrubber::GetInstance();
-
-  // Activate virtual keyboard after profile is initialized. It depends on the
-  // default profile.
-  ash::Shell::GetPrimaryRootWindowController()->ActivateKeyboard(
-      keyboard::KeyboardController::GetInstance());
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {

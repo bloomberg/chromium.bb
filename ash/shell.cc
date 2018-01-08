@@ -1283,18 +1283,30 @@ void Shell::OnSessionStateChanged(session_manager::SessionState state) {
       shelf_window_watcher_ =
           std::make_unique<ShelfWindowWatcher>(shelf_model());
   }
-  // Recreates keyboard on user profile change, to refresh keyboard
-  // extensions with the new profile and the extensions call proper IME.
-  // |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual keyboard works on
-  // supervised user creation. crbug.com/712873
-  // |ACTIVE| is also needed for guest user workflow.
+
   // NOTE: keyboard::IsKeyboardEnabled() is false in mash, but may not be in
   // unit tests. crbug.com/646565.
-  if ((state == session_manager::SessionState::LOGGED_IN_NOT_ACTIVE ||
-       state == session_manager::SessionState::ACTIVE) &&
-      keyboard::IsKeyboardEnabled()) {
-    // Recreate the keyboard after initial login and after multiprofile login.
-    CreateKeyboard();
+  if (keyboard::IsKeyboardEnabled()) {
+    switch (state) {
+      case session_manager::SessionState::OOBE:
+      case session_manager::SessionState::LOGIN_PRIMARY:
+        // Ensure that the keyboard controller is activated for the primary
+        // window.
+        GetPrimaryRootWindowController()->ActivateKeyboard(
+            keyboard::KeyboardController::GetInstance());
+        break;
+      case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+      case session_manager::SessionState::ACTIVE:
+        // Recreate the keyboard on user profile change, to refresh keyboard
+        // extensions with the new profile and ensure the extensions call the
+        // proper IME. |LOGGED_IN_NOT_ACTIVE| is needed so that the virtual
+        // keyboard works on supervised user creation, http://crbug.com/712873.
+        // |ACTIVE| is also needed for guest user workflow.
+        CreateKeyboard();
+        break;
+      default:
+        break;
+    }
   }
 
   shell_port_->UpdateSystemModalAndBlockingContainers();

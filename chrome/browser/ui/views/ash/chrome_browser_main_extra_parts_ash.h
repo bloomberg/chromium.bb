@@ -38,8 +38,8 @@ class VpnListForwarder;
 class ExoParts;
 #endif
 
-// Browser initialization for Ash. Only runs on Chrome OS.
-// TODO(jamescook): Fold this into ChromeBrowserMainPartsChromeOS.
+// Browser initialization for Ash UI. Only use this for initialization of
+// chrome/browser/ui/ash classes.
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsAsh();
