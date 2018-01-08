@@ -6,14 +6,23 @@
 
 namespace device {
 
-AbstractHapticGamepad::AbstractHapticGamepad() : sequence_id_(0) {}
+AbstractHapticGamepad::AbstractHapticGamepad()
+    : is_shut_down_(false), sequence_id_(0) {}
 
 AbstractHapticGamepad::~AbstractHapticGamepad() {
+  // Shutdown() must be called to allow the device a chance to stop vibration
+  // and release held resources.
+  DCHECK(is_shut_down_);
+}
+
+void AbstractHapticGamepad::Shutdown() {
   if (playing_effect_callback_) {
     SetZeroVibration();
     RunCallbackOnMojoThread(
         mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
   }
+  DoShutdown();
+  is_shut_down_ = true;
 }
 
 void AbstractHapticGamepad::SetZeroVibration() {
@@ -29,6 +38,7 @@ void AbstractHapticGamepad::PlayEffect(
     mojom::GamepadHapticEffectType type,
     mojom::GamepadEffectParametersPtr params,
     mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  DCHECK(!is_shut_down_);
   if (type !=
       mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble) {
     // Only dual-rumble effects are supported.
@@ -55,6 +65,7 @@ void AbstractHapticGamepad::PlayEffect(
 
 void AbstractHapticGamepad::ResetVibration(
     mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  DCHECK(!is_shut_down_);
   sequence_id_++;
 
   if (playing_effect_callback_) {

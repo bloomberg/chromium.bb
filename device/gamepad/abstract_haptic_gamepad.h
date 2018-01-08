@@ -39,12 +39,19 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
   void ResetVibration(
       mojom::GamepadHapticsManager::ResetVibrationActuatorCallback);
 
+  // Stop vibration and release held resources.
+  void Shutdown();
+
  private:
   // Set the vibration magnitude for the strong and weak vibration actuators.
   virtual void SetVibration(double strong_magnitude, double weak_magnitude) = 0;
 
   // Set the vibration magnitude for both actuators to zero.
   virtual void SetZeroVibration();
+
+  // Override to perform additional shutdown actions after vibration effects
+  // are halted and callbacks are issued.
+  virtual void DoShutdown() {}
 
   // For testing.
   virtual base::TimeDelta TaskDelayFromMilliseconds(double delay_millis);
@@ -66,6 +73,7 @@ class DEVICE_GAMEPAD_EXPORT AbstractHapticGamepad {
       mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback,
       mojom::GamepadHapticsResult);
 
+  bool is_shut_down_;
   int sequence_id_;
   scoped_refptr<base::SequencedTaskRunner> playing_effect_task_runner_;
   mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback

@@ -110,6 +110,7 @@ bool StructTraits<device::mojom::GamepadHapticActuatorDataView,
                   device::GamepadHapticActuator>::
     Read(device::mojom::GamepadHapticActuatorDataView data,
          device::GamepadHapticActuator* out) {
+  out->not_null = true;
   if (!data.ReadType(&out->type))
     return false;
   return true;

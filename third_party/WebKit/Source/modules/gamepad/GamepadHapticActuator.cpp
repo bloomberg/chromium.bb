@@ -22,8 +22,6 @@ const char kGamepadHapticsResultPreempted[] = "preempted";
 const char kGamepadHapticsResultInvalidParameter[] = "invalid-parameter";
 const char kGamepadHapticsResultNotSupported[] = "not-supported";
 
-const double kMaxEffectDurationMillis = 5000.0;  // 5 seconds
-
 GamepadHapticEffectType EffectTypeFromString(const String& type) {
   if (type == kGamepadHapticEffectTypeDualRumble)
     return GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble;
@@ -96,7 +94,8 @@ ScriptPromise GamepadHapticActuator::playEffect(
 
   // Limit the total effect duration.
   double effect_duration = params.duration() + params.startDelay();
-  if (effect_duration > kMaxEffectDurationMillis) {
+  if (effect_duration >
+      device::GamepadHapticActuator::kMaxEffectDurationMillis) {
     ScriptPromise promise = resolver->Promise();
     resolver->Resolve(kGamepadHapticsResultInvalidParameter);
     return promise;
