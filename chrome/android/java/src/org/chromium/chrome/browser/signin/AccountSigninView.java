@@ -130,7 +130,7 @@ public class AccountSigninView extends FrameLayout {
     private @UndoBehavior int mUndoBehavior;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
-    private @StringRes int mCancelButtonTextId;
+    private @StringRes int mCancelButtonTextId = R.string.cancel;
     private boolean mIsChildAccount;
     private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
     private AlertDialog mGmsIsUpdatingDialog;
@@ -150,8 +150,6 @@ public class AccountSigninView extends FrameLayout {
         mProfileDataCacheObserver = (String accountId) -> updateProfileData();
         mProfileDataCache = new ProfileDataCache(context,
                 context.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
-
-        mCancelButtonTextId = R.string.no_thanks;
     }
 
     /**
@@ -219,9 +217,9 @@ public class AccountSigninView extends FrameLayout {
     }
 
     private void initAccessPoint(@SigninAccessPoint int accessPoint) {
-        if (accessPoint == SigninAccessPoint.BOOKMARK_MANAGER
-                || accessPoint == SigninAccessPoint.RECENT_TABS) {
-            mCancelButtonTextId = R.string.cancel;
+        if (accessPoint == SigninAccessPoint.START_PAGE
+                || accessPoint == SigninAccessPoint.SIGNIN_PROMO) {
+            mCancelButtonTextId = R.string.no_thanks;
         }
     }
 
