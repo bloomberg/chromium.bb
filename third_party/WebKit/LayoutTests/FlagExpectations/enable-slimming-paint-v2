@@ -990,8 +990,6 @@ Bug(none) compositing/geometry/transformed-abs-position-inside-composited.html [
 Bug(none) fast/table/border-collapsing/001-vertical.html [ Failure ]
 Bug(none) fast/table/border-collapsing/001.html [ Failure ]
 
-crbug.com/768102 fast/pagination/multicol.html [ Crash ]
-
 crbug.com/644358 paint/invalidation/selection/selection-after-delete.html [ Failure ]
 crbug.com/644358 paint/invalidation/selection/selection-after-remove.html [ Failure ]
 crbug.com/644358 paint/invalidation/window-resize/window-resize-background-image-fixed-centered-composited.html [ Failure ]
@@ -1561,6 +1559,9 @@ crbug.com/796768 fast/pagination/div-y-vertical-lr-ltr.html [ Crash ]
 crbug.com/796768 fast/pagination/div-y-vertical-lr-rtl.html [ Crash ]
 crbug.com/796768 fast/pagination/div-y-vertical-rl-ltr.html [ Crash ]
 crbug.com/796768 fast/pagination/div-y-vertical-rl-rtl.html [ Crash ]
+crbug.com/796768 fast/pagination/multicol.html [ Crash ]
+crbug.com/796768 fast/pagination/repeating-thead-tfoot-paged-x.html [ Crash ]
+crbug.com/796768 fast/pagination/repeating-thead-tfoot-paged-y.html [ Crash ]
 crbug.com/796768 fast/pagination/short-pages-tall-content.html [ Crash ]
 crbug.com/796768 fast/text-autosizing/constrained-and-overflow-paged-x-ancestor.html [ Crash ]
 crbug.com/796768 paint/invalidation/overflow/paged-with-overflowing-block-rl.html [ Crash ]
