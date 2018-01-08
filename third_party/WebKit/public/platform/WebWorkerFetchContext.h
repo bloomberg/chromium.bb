@@ -57,8 +57,8 @@ class WebWorkerFetchContext {
   virtual WebURL SiteForCookies() const = 0;
 
   // Reports the certificate error to the browser process.
-  virtual void DidRunContentWithCertificateErrors(const WebURL& url) {}
-  virtual void DidDisplayContentWithCertificateErrors(const WebURL& url) {}
+  virtual void DidRunContentWithCertificateErrors() {}
+  virtual void DidDisplayContentWithCertificateErrors() {}
 
   // Reports that the security origin has run active content from an insecure
   // source.

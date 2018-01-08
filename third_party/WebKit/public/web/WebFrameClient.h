@@ -622,10 +622,10 @@ class BLINK_EXPORT WebFrameClient {
 
   // This frame has displayed inactive content (such as an image) from
   // a connection with certificate errors.
-  virtual void DidDisplayContentWithCertificateErrors(const WebURL& url) {}
+  virtual void DidDisplayContentWithCertificateErrors() {}
   // This frame has run active content (such as a script) from a
   // connection with certificate errors.
-  virtual void DidRunContentWithCertificateErrors(const WebURL& url) {}
+  virtual void DidRunContentWithCertificateErrors() {}
 
   // This frame loaded a resource with an otherwise-valid legacy Symantec
   // certificate that is slated for distrust. Returns true and populates

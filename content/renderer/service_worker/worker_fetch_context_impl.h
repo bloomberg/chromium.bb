@@ -54,9 +54,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   void SetIsOnSubframe(bool) override;
   bool IsOnSubframe() const override;
   blink::WebURL SiteForCookies() const override;
-  void DidRunContentWithCertificateErrors(const blink::WebURL& url) override;
-  void DidDisplayContentWithCertificateErrors(
-      const blink::WebURL& url) override;
+  void DidRunContentWithCertificateErrors() override;
+  void DidDisplayContentWithCertificateErrors() override;
   void DidRunInsecureContent(const blink::WebSecurityOrigin&,
                              const blink::WebURL& insecure_url) override;
   void SetApplicationCacheHostID(int id) override;

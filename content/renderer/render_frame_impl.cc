@@ -4996,15 +4996,12 @@ void RenderFrameImpl::DidRunInsecureContent(
       GURL(origin.ToString().Utf8()));
 }
 
-void RenderFrameImpl::DidDisplayContentWithCertificateErrors(
-    const blink::WebURL& url) {
-  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
-      routing_id_, url));
+void RenderFrameImpl::DidDisplayContentWithCertificateErrors() {
+  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(routing_id_));
 }
 
-void RenderFrameImpl::DidRunContentWithCertificateErrors(
-    const blink::WebURL& url) {
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_, url));
+void RenderFrameImpl::DidRunContentWithCertificateErrors() {
+  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_));
 }
 
 bool RenderFrameImpl::OverrideLegacySymantecCertConsoleMessage(

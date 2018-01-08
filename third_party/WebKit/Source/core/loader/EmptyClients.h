@@ -312,8 +312,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidRunInsecureContent(const SecurityOrigin*, const KURL&) override {}
   void DidDetectXSS(const KURL&, bool) override {}
   void DidDispatchPingLoader(const KURL&) override {}
-  void DidDisplayContentWithCertificateErrors(const KURL&) override {}
-  void DidRunContentWithCertificateErrors(const KURL&) override {}
+  void DidDisplayContentWithCertificateErrors() override {}
+  void DidRunContentWithCertificateErrors() override {}
   void SelectorMatchChanged(const Vector<String>&,
                             const Vector<String>&) override {}
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;

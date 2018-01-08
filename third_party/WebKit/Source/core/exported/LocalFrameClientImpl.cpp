@@ -695,15 +695,14 @@ void LocalFrameClientImpl::DidDispatchPingLoader(const KURL& url) {
     web_frame_->Client()->DidDispatchPingLoader(url);
 }
 
-void LocalFrameClientImpl::DidDisplayContentWithCertificateErrors(
-    const KURL& url) {
+void LocalFrameClientImpl::DidDisplayContentWithCertificateErrors() {
   if (web_frame_->Client())
-    web_frame_->Client()->DidDisplayContentWithCertificateErrors(url);
+    web_frame_->Client()->DidDisplayContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::DidRunContentWithCertificateErrors(const KURL& url) {
+void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
   if (web_frame_->Client())
-    web_frame_->Client()->DidRunContentWithCertificateErrors(url);
+    web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
 void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
