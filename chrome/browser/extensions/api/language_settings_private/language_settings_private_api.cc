@@ -354,7 +354,9 @@ LanguageSettingsPrivateMoveLanguageFunction::Run() {
       NOTREACHED();
   }
 
-  translate_prefs->RearrangeLanguage(language_code, where,
+  // On Desktop we can only move languages by one position.
+  const int offset = 1;
+  translate_prefs->RearrangeLanguage(language_code, where, offset,
                                      supported_language_codes);
 
   return RespondNow(NoArguments());

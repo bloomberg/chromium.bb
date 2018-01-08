@@ -284,7 +284,11 @@ void TranslatePrefs::RemoveFromLanguageList(const std::string& input_language) {
 void TranslatePrefs::RearrangeLanguage(
     const std::string& language,
     const TranslatePrefs::RearrangeSpecifier where,
+    const int offset,
     const std::vector<std::string>& enabled_languages) {
+  // Negative offset is not supported.
+  DCHECK(!(offset < 1 && (where == kUp || where == kDown)));
+
   std::vector<std::string> languages;
   GetLanguageList(&languages);
 
@@ -309,28 +313,39 @@ void TranslatePrefs::RearrangeLanguage(
   // first position.
   int a, r, b;
 
+  // In this block we need to skip languages that are not enabled, unless we're
+  // moving to the top of the list.
   switch (where) {
     case kUp:
-      a = original_position - 1;
+      a = original_position;
       r = original_position;
       b = original_position + 1;
-      while (a >= 0 && enabled.find(languages[a]) == enabled.end()) {
+      for (int steps = offset; steps > 0; --steps) {
         --a;
+        while (a >= 0 && enabled.find(languages[a]) == enabled.end()) {
+          --a;
+        }
       }
-      if (a < 0) {
-        return;
+      // Skip ahead of any non-enabled language that may be before the new
+      // destination.
+      {
+        int prev = a - 1;
+        while (prev >= 0 && enabled.find(languages[prev]) == enabled.end()) {
+          --a;
+          --prev;
+        }
       }
       break;
 
     case kDown:
       a = original_position;
       r = original_position + 1;
-      b = r;
-      while (b < length && enabled.find(languages[b]) == enabled.end()) {
+      b = original_position;
+      for (int steps = offset; steps > 0; --steps) {
         ++b;
-      }
-      if (b >= length) {
-        return;
+        while (b < length && enabled.find(languages[b]) == enabled.end()) {
+          ++b;
+        }
       }
       ++b;
       break;
@@ -352,13 +367,18 @@ void TranslatePrefs::RearrangeLanguage(
       return;
   }
 
-  // All cases can be achieved with a single rotation.
-  std::vector<std::string>::iterator first = languages.begin() + a;
-  std::vector<std::string>::iterator it = languages.begin() + r;
-  std::vector<std::string>::iterator last = languages.begin() + b;
-  std::rotate(first, it, last);
+  // Sanity checks before performing the rotation.
+  a = std::max(0, a);
+  b = std::min(length, b);
+  if (r > a && r < b) {
+    // All cases can be achieved with a single rotation.
+    std::vector<std::string>::iterator first = languages.begin() + a;
+    std::vector<std::string>::iterator it = languages.begin() + r;
+    std::vector<std::string>::iterator last = languages.begin() + b;
+    std::rotate(first, it, last);
 
-  UpdateLanguageList(languages);
+    UpdateLanguageList(languages);
+  }
 }
 
 // static
