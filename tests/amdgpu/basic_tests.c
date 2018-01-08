@@ -1114,9 +1114,10 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 	struct amdgpu_cs_request *ibs_request;
 	uint64_t bo1_mc, bo2_mc;
 	volatile unsigned char *bo1_cpu, *bo2_cpu;
-	int i, j, r, loop1, loop2;
+	int i, j, r, loop1, loop2, ring_id;
 	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 	amdgpu_va_handle bo1_va_handle, bo2_va_handle;
+	struct drm_amdgpu_info_hw_ip hw_ip_info;
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -1127,6 +1128,9 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 	ibs_request = calloc(1, sizeof(*ibs_request));
 	CU_ASSERT_NOT_EQUAL(ibs_request, NULL);
 
+	r = amdgpu_query_hw_ip_info(device_handle, ip_type, 0, &hw_ip_info);
+	CU_ASSERT_EQUAL(r, 0);
+
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	CU_ASSERT_EQUAL(r, 0);
 
@@ -1134,107 +1138,111 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 	resources = calloc(2, sizeof(amdgpu_bo_handle));
 	CU_ASSERT_NOT_EQUAL(resources, NULL);
 
-	loop1 = loop2 = 0;
-	/* run 9 circle to test all mapping combination */
-	while(loop1 < 2) {
-		while(loop2 < 2) {
-			/* allocate UC bo1for sDMA use */
-			r = amdgpu_bo_alloc_and_map(device_handle,
-						    sdma_write_length, 4096,
-						    AMDGPU_GEM_DOMAIN_GTT,
-						    gtt_flags[loop1], &bo1,
-						    (void**)&bo1_cpu, &bo1_mc,
-						    &bo1_va_handle);
-			CU_ASSERT_EQUAL(r, 0);
+	for (ring_id = 0; (1 << ring_id) & hw_ip_info.available_rings; ring_id++) {
+		loop1 = loop2 = 0;
+		/* run 9 circle to test all mapping combination */
+		while(loop1 < 2) {
+			while(loop2 < 2) {
+				/* allocate UC bo1for sDMA use */
+				r = amdgpu_bo_alloc_and_map(device_handle,
+							    sdma_write_length, 4096,
+							    AMDGPU_GEM_DOMAIN_GTT,
+							    gtt_flags[loop1], &bo1,
+							    (void**)&bo1_cpu, &bo1_mc,
+							    &bo1_va_handle);
+				CU_ASSERT_EQUAL(r, 0);
 
-			/* set bo1 */
-			memset((void*)bo1_cpu, 0xaa, sdma_write_length);
+				/* set bo1 */
+				memset((void*)bo1_cpu, 0xaa, sdma_write_length);
 
-			/* allocate UC bo2 for sDMA use */
-			r = amdgpu_bo_alloc_and_map(device_handle,
-						    sdma_write_length, 4096,
-						    AMDGPU_GEM_DOMAIN_GTT,
-						    gtt_flags[loop2], &bo2,
-						    (void**)&bo2_cpu, &bo2_mc,
-						    &bo2_va_handle);
-			CU_ASSERT_EQUAL(r, 0);
+				/* allocate UC bo2 for sDMA use */
+				r = amdgpu_bo_alloc_and_map(device_handle,
+							    sdma_write_length, 4096,
+							    AMDGPU_GEM_DOMAIN_GTT,
+							    gtt_flags[loop2], &bo2,
+							    (void**)&bo2_cpu, &bo2_mc,
+							    &bo2_va_handle);
+				CU_ASSERT_EQUAL(r, 0);
 
-			/* clear bo2 */
-			memset((void*)bo2_cpu, 0, sdma_write_length);
+				/* clear bo2 */
+				memset((void*)bo2_cpu, 0, sdma_write_length);
 
-			resources[0] = bo1;
-			resources[1] = bo2;
+				resources[0] = bo1;
+				resources[1] = bo2;
 
-			/* fulfill PM4: test DMA copy linear */
-			i = j = 0;
-			if (ip_type == AMDGPU_HW_IP_DMA) {
-				if (family_id == AMDGPU_FAMILY_SI) {
-					pm4[i++] = SDMA_PACKET_SI(SDMA_OPCODE_COPY_SI, 0, 0, 0,
-								  sdma_write_length);
-					pm4[i++] = 0xffffffff & bo2_mc;
-					pm4[i++] = 0xffffffff & bo1_mc;
-					pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
-					pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
-				} else {
-					pm4[i++] = SDMA_PACKET(SDMA_OPCODE_COPY, SDMA_COPY_SUB_OPCODE_LINEAR, 0);
-					if (family_id >= AMDGPU_FAMILY_AI)
-						pm4[i++] = sdma_write_length - 1;
-					else
+				/* fulfill PM4: test DMA copy linear */
+				i = j = 0;
+				if (ip_type == AMDGPU_HW_IP_DMA) {
+					if (family_id == AMDGPU_FAMILY_SI) {
+						pm4[i++] = SDMA_PACKET_SI(SDMA_OPCODE_COPY_SI,
+									  0, 0, 0,
+									  sdma_write_length);
+						pm4[i++] = 0xffffffff & bo2_mc;
+						pm4[i++] = 0xffffffff & bo1_mc;
+						pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+						pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
+					} else {
+						pm4[i++] = SDMA_PACKET(SDMA_OPCODE_COPY,
+								       SDMA_COPY_SUB_OPCODE_LINEAR,
+								       0);
+						if (family_id >= AMDGPU_FAMILY_AI)
+							pm4[i++] = sdma_write_length - 1;
+						else
+							pm4[i++] = sdma_write_length;
+						pm4[i++] = 0;
+						pm4[i++] = 0xffffffff & bo1_mc;
+						pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
+						pm4[i++] = 0xffffffff & bo2_mc;
+						pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+					}
+				} else if ((ip_type == AMDGPU_HW_IP_GFX) ||
+					   (ip_type == AMDGPU_HW_IP_COMPUTE)) {
+					if (family_id == AMDGPU_FAMILY_SI) {
+						pm4[i++] = PACKET3(PACKET3_DMA_DATA_SI, 4);
+						pm4[i++] = 0xfffffffc & bo1_mc;
+						pm4[i++] = PACKET3_DMA_DATA_SI_ENGINE(0) |
+							   PACKET3_DMA_DATA_SI_DST_SEL(0) |
+							   PACKET3_DMA_DATA_SI_SRC_SEL(0) |
+							   PACKET3_DMA_DATA_SI_CP_SYNC |
+							   (0xffff00000000 & bo1_mc) >> 32;
+						pm4[i++] = 0xfffffffc & bo2_mc;
+						pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
 						pm4[i++] = sdma_write_length;
-					pm4[i++] = 0;
-					pm4[i++] = 0xffffffff & bo1_mc;
-					pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
-					pm4[i++] = 0xffffffff & bo2_mc;
-					pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+					} else {
+						pm4[i++] = PACKET3(PACKET3_DMA_DATA, 5);
+						pm4[i++] = PACKET3_DMA_DATA_ENGINE(0) |
+							   PACKET3_DMA_DATA_DST_SEL(0) |
+							   PACKET3_DMA_DATA_SRC_SEL(0) |
+							   PACKET3_DMA_DATA_CP_SYNC;
+						pm4[i++] = 0xfffffffc & bo1_mc;
+						pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
+						pm4[i++] = 0xfffffffc & bo2_mc;
+						pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+						pm4[i++] = sdma_write_length;
+					}
 				}
 
-			} else if ((ip_type == AMDGPU_HW_IP_GFX) ||
-				   (ip_type == AMDGPU_HW_IP_COMPUTE)) {
-				if (family_id == AMDGPU_FAMILY_SI) {
-					pm4[i++] = PACKET3(PACKET3_DMA_DATA_SI, 4);
-					pm4[i++] = 0xfffffffc & bo1_mc;
-					pm4[i++] = PACKET3_DMA_DATA_SI_ENGINE(0) |
-						PACKET3_DMA_DATA_SI_DST_SEL(0) |
-						PACKET3_DMA_DATA_SI_SRC_SEL(0) |
-						PACKET3_DMA_DATA_SI_CP_SYNC |
-						(0xffff00000000 & bo1_mc) >> 32;
-					pm4[i++] = 0xfffffffc & bo2_mc;
-					pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
-					pm4[i++] = sdma_write_length;
-				} else {
-					pm4[i++] = PACKET3(PACKET3_DMA_DATA, 5);
-					pm4[i++] = PACKET3_DMA_DATA_ENGINE(0) |
-						PACKET3_DMA_DATA_DST_SEL(0) |
-						PACKET3_DMA_DATA_SRC_SEL(0) |
-						PACKET3_DMA_DATA_CP_SYNC;
-					pm4[i++] = 0xfffffffc & bo1_mc;
-					pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
-					pm4[i++] = 0xfffffffc & bo2_mc;
-					pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
-					pm4[i++] = sdma_write_length;
+				amdgpu_test_exec_cs_helper(context_handle,
+							   ip_type, ring_id,
+							   i, pm4,
+							   2, resources,
+							   ib_info, ibs_request);
+
+				/* verify if SDMA test result meets with expected */
+				i = 0;
+				while(i < sdma_write_length) {
+					CU_ASSERT_EQUAL(bo2_cpu[i++], 0xaa);
 				}
+				r = amdgpu_bo_unmap_and_free(bo1, bo1_va_handle, bo1_mc,
+							     sdma_write_length);
+				CU_ASSERT_EQUAL(r, 0);
+				r = amdgpu_bo_unmap_and_free(bo2, bo2_va_handle, bo2_mc,
+							     sdma_write_length);
+				CU_ASSERT_EQUAL(r, 0);
+				loop2++;
 			}
-
-			amdgpu_test_exec_cs_helper(context_handle,
-						   ip_type, 0,
-						   i, pm4,
-						   2, resources,
-						   ib_info, ibs_request);
-
-			/* verify if SDMA test result meets with expected */
-			i = 0;
-			while(i < sdma_write_length) {
-				CU_ASSERT_EQUAL(bo2_cpu[i++], 0xaa);
-			}
-			r = amdgpu_bo_unmap_and_free(bo1, bo1_va_handle, bo1_mc,
-						     sdma_write_length);
-			CU_ASSERT_EQUAL(r, 0);
-			r = amdgpu_bo_unmap_and_free(bo2, bo2_va_handle, bo2_mc,
-						     sdma_write_length);
-			CU_ASSERT_EQUAL(r, 0);
-			loop2++;
+			loop1++;
 		}
-		loop1++;
 	}
 	/* clean resources */
 	free(resources);
