@@ -203,7 +203,8 @@ void ChromePluginPlaceholder::UpdateFailure() {
 }
 
 void ChromePluginPlaceholder::OnSetPrerenderMode(
-    prerender::PrerenderMode mode) {
+    prerender::PrerenderMode mode,
+    const std::string& histogram_prefix) {
   OnSetIsPrerendering(mode != prerender::NO_PRERENDER);
 }
 

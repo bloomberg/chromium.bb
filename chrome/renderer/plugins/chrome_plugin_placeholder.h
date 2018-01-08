@@ -86,7 +86,8 @@ class ChromePluginPlaceholder final
   void UpdateFailure() override;
 
   // IPC message handlers:
-  void OnSetPrerenderMode(prerender::PrerenderMode mode);
+  void OnSetPrerenderMode(prerender::PrerenderMode mode,
+                          const std::string& histogram_prefix);
 
   chrome::mojom::PluginStatus status_;
 

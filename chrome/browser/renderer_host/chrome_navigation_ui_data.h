@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/common/prerender_types.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
 #include "components/offline_pages/features/features.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -54,6 +55,11 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   }
 #endif
 
+  prerender::PrerenderMode prerender_mode() const { return prerender_mode_; }
+  const std::string& prerender_histogram_prefix() {
+    return prerender_histogram_prefix_;
+  }
+
  private:
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Manages the lifetime of optional ExtensionNavigationUIData information.
@@ -65,6 +71,9 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   std::unique_ptr<offline_pages::OfflinePageNavigationUIData>
       offline_page_data_;
 #endif
+
+  prerender::PrerenderMode prerender_mode_ = prerender::NO_PRERENDER;
+  std::string prerender_histogram_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationUIData);
 };

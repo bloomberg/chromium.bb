@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -483,7 +484,6 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch302Redirect) {
 // Checks that the load flags are set correctly for all resources in a 301
 // redirect chain.
 IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
-  // TODO(jam): override frame URLLoaderFactory.
   std::string redirect_path =
       "/server-redirect/?" + net::EscapeQueryParamValue(kPrefetchPage, false);
   GURL redirect_url = src_server()->GetURL(redirect_path);
@@ -709,22 +709,25 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, HistoryUntouchedByPrefetch) {
 
 // Checks that prefetch requests have net::IDLE priority.
 IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest, IssuesIdlePriorityRequests) {
-  // TODO(jam): use URLLoaderFactory for subresource.
   GURL script_url = src_server()->GetURL(kPrefetchScript);
-  RequestCounter script_counter;
-  prerender::test_utils::InterceptRequestAndCount(
-      script_url, &script_counter, base::Bind([](net::URLRequest* request) {
+  content::URLLoaderInterceptor interceptor(
+      base::BindLambdaForTesting(
+          [=](content::URLLoaderInterceptor::RequestParams* params) {
 #if defined(OS_ANDROID)
-        // On Android requests from prerenders do not get downgraded priority.
-        // See: https://crbug.com/652746.
-        constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
+            // On Android requests from prerenders do not get downgraded
+            // priority. See: https://crbug.com/652746.
+            constexpr net::RequestPriority kExpectedPriority = net::HIGHEST;
 #else
-        constexpr net::RequestPriority kExpectedPriority = net::IDLE;
+            constexpr net::RequestPriority kExpectedPriority = net::IDLE;
 #endif
-        EXPECT_EQ(kExpectedPriority, request->priority());
-      }));
+            if (params->url_request.url == script_url)
+              EXPECT_EQ(kExpectedPriority, params->url_request.priority);
+            return false;
+          }),
+      false, true);
+
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
-  script_counter.WaitForCount(1);
+  WaitForRequestCount(script_url, 1);
 }
 
 // Checks that a registered ServiceWorker (SW) that is not currently running

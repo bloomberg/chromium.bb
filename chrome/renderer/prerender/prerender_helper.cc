@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/prerender_messages.h"
+#include "chrome/common/prerender_url_loader_throttle.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -35,22 +36,21 @@ void UpdateVisibilityState(content::RenderFrame* render_frame) {
 namespace prerender {
 
 PrerenderHelper::PrerenderHelper(content::RenderFrame* render_frame,
-                                 PrerenderMode prerender_mode)
+                                 PrerenderMode prerender_mode,
+                                 const std::string& histogram_prefix)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<PrerenderHelper>(render_frame),
-      prerender_mode_(prerender_mode) {
+      prerender_mode_(prerender_mode),
+      histogram_prefix_(histogram_prefix) {
   DCHECK_NE(prerender_mode_, NO_PRERENDER);
   UpdateVisibilityState(render_frame);
 }
 
-PrerenderHelper::PrerenderHelper(content::RenderFrame* sub_frame)
-    : PrerenderHelper(sub_frame,
-                      GetPrerenderMode(
-                          sub_frame->GetRenderView()->GetMainRenderFrame())) {
-  DCHECK(!render_frame()->IsMainFrame());
-}
+PrerenderHelper::~PrerenderHelper() {}
 
-PrerenderHelper::~PrerenderHelper() {
+void PrerenderHelper::AddThrottle(
+    const base::WeakPtr<PrerenderURLLoaderThrottle>& throttle) {
+  throttles_.push_back(throttle);
 }
 
 // static.
@@ -79,17 +79,25 @@ bool PrerenderHelper::OnMessageReceived(
   return false;
 }
 
-void PrerenderHelper::OnSetIsPrerendering(PrerenderMode mode) {
+void PrerenderHelper::OnSetIsPrerendering(PrerenderMode mode,
+                                          const std::string& histogram_prefix) {
   // Immediately after construction, |this| may receive the message that
   // triggered its creation.  If so, ignore it.
   if (mode != prerender::NO_PRERENDER)
     return;
+
+  auto throttles = std::move(throttles_);
 
   content::RenderFrame* frame = render_frame();
   // |this| must be deleted so PrerenderHelper::IsPrerendering returns false
   // when the visibility state is updated, so the visibility state string will
   // not be "prerendered".
   delete this;
+
+  for (auto resource : throttles) {
+    if (resource)
+      resource->PrerenderUsed();
+  }
 
   UpdateVisibilityState(frame);
 }
