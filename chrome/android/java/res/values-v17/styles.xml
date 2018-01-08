@@ -660,10 +660,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:minHeight">@dimen/list_item_min_height</item>
         <item name="android:orientation">horizontal</item>
-        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:gravity">center_vertical</item>
         <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
-        <item name="android:paddingTop">@dimen/list_item_top_bottom_padding</item>
-        <item name="android:paddingBottom">@dimen/list_item_top_bottom_padding</item>
     </style>
     <style name="ListItemStartIcon">
         <item name="android:layout_width">@dimen/list_item_start_icon_width</item>

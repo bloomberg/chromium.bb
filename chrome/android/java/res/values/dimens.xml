@@ -480,7 +480,6 @@
     <dimen name="list_item_min_height">60dp</dimen>
     <dimen name="list_item_default_margin">16dp</dimen>
     <dimen name="list_item_subsection_margin">40dp</dimen>
-    <dimen name="list_item_top_bottom_padding">10dp</dimen>
     <dimen name="list_item_start_icon_right_margin">20dp</dimen>
     <dimen name="list_item_start_icon_width">36dp</dimen>
     <dimen name="list_item_start_icon_corner_radius">18dp</dimen>
