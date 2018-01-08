@@ -193,6 +193,7 @@ std::unique_ptr<HoverButton> CreateMoreInfoButton(
   }
 
   button->set_id(click_target_id);
+  button->set_auto_compute_tooltip(false);
   button->SetTooltipText(tooltip_text);
   return button;
 }
