@@ -1266,6 +1266,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Updates the Zoom level of the render view to match current content.
   void UpdateZoomLevel();
 
+  // Updates the navigation history depending on the passed parameters.
+  // This could result either in the creation of a new entry or a modification
+  // of the current entry or nothing. If a new entry was created,
+  // returns true, false otherwise.
+  bool UpdateNavigationHistory(const blink::WebHistoryItem& item,
+                               blink::WebHistoryCommitType commit_type);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
