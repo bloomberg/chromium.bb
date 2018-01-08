@@ -7,6 +7,8 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -18,6 +20,17 @@ const CSSValue* BackgroundPositionY::ParseSingleValue(
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSParsingUtils::ConsumePositionLonghand<CSSValueTop, CSSValueBottom>,
       range, context.Mode());
+}
+
+const CSSValue* BackgroundPositionY::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  const FillLayer* curr_layer = &style.BackgroundLayers();
+  return ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
+      style, curr_layer);
 }
 
 }  // namespace CSSLonghand

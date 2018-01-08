@@ -5,12 +5,15 @@
 #ifndef ComputedStyleUtils_h
 #define ComputedStyleUtils_h
 
+#include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
+
+using namespace cssvalue;
 
 class ComputedStyle;
 class CSSValue;
@@ -20,6 +23,10 @@ class ComputedStyleUtils {
   STATIC_ONLY(ComputedStyleUtils);
 
  public:
+  static inline AtomicString SerializeAsFragmentIdentifier(
+      const AtomicString& resource) {
+    return "#" + resource;
+  }
   static CSSValue* CurrentColorOrValidColor(const ComputedStyle&,
                                             const StyleColor&);
   static const blink::Color BorderSideColor(const ComputedStyle&,
@@ -48,6 +55,21 @@ class ComputedStyleUtils {
       const CSSProperty&,
       const ComputedStyle&,
       const FillLayer*);
+  static const CSSValue* BackgroundPositionXOrWebkitMaskPositionX(
+      const ComputedStyle&,
+      const FillLayer*);
+  static const CSSValue* BackgroundPositionYOrWebkitMaskPositionY(
+      const ComputedStyle&,
+      const FillLayer*);
+  static cssvalue::CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
+      const NinePieceImage&);
+  static CSSQuadValue* ValueForNinePieceImageQuad(const BorderImageLengthBox&,
+                                                  const ComputedStyle&);
+  static CSSValue* ValueForNinePieceImageRepeat(const NinePieceImage&);
+  static CSSValue* ValueForNinePieceImage(const NinePieceImage&,
+                                          const ComputedStyle&);
+  static CSSValue* ValueForReflection(const StyleReflection*,
+                                      const ComputedStyle&);
 };
 
 }  // namespace blink

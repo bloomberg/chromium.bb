@@ -4,10 +4,15 @@
 
 #include "core/css/properties/ComputedStyleUtils.h"
 
+#include "core/css/CSSBorderImage.h"
+#include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSQuadValue.h"
+#include "core/css/CSSReflectValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/StyleColor.h"
 #include "core/css/ZoomAdjustedPixelValue.h"
 
@@ -101,16 +106,16 @@ const CSSValueList* ComputedStyleUtils::CreatePositionListForLayer(
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundXOrigin()));
   }
-  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      layer.PositionX(), style));
+  position_list->Append(
+      *ZoomAdjustedPixelValueForLength(layer.PositionX(), style));
   if (layer.IsBackgroundYOriginSet()) {
     DCHECK(property.IDEquals(CSSPropertyBackgroundPosition) ||
            property.IDEquals(CSSPropertyWebkitMaskPosition));
     position_list->Append(
         *CSSIdentifierValue::Create(layer.BackgroundYOrigin()));
   }
-  position_list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      layer.PositionY(), style));
+  position_list->Append(
+      *ZoomAdjustedPixelValueForLength(layer.PositionY(), style));
   return position_list;
 }
 
@@ -190,6 +195,238 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionOrWebkitMaskPosition(
         *CreatePositionListForLayer(resolved_property, *curr_layer, style));
   }
   return list;
+}
+
+const CSSValue* ComputedStyleUtils::BackgroundPositionXOrWebkitMaskPositionX(
+    const ComputedStyle& style,
+    const FillLayer* curr_layer) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (; curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(
+        *ZoomAdjustedPixelValueForLength(curr_layer->PositionX(), style));
+  }
+  return list;
+}
+
+const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
+    const ComputedStyle& style,
+    const FillLayer* curr_layer) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (; curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(
+        *ZoomAdjustedPixelValueForLength(curr_layer->PositionY(), style));
+  }
+  return list;
+}
+
+cssvalue::CSSBorderImageSliceValue*
+ComputedStyleUtils::ValueForNinePieceImageSlice(const NinePieceImage& image) {
+  // Create the slices.
+  CSSPrimitiveValue* top = nullptr;
+  CSSPrimitiveValue* right = nullptr;
+  CSSPrimitiveValue* bottom = nullptr;
+  CSSPrimitiveValue* left = nullptr;
+
+  // TODO(alancutter): Make this code aware of calc lengths.
+  if (image.ImageSlices().Top().IsPercentOrCalc()) {
+    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
+                                    CSSPrimitiveValue::UnitType::kPercentage);
+  } else {
+    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
+                                    CSSPrimitiveValue::UnitType::kNumber);
+  }
+
+  if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
+      image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
+      image.ImageSlices().Left() == image.ImageSlices().Top()) {
+    right = top;
+    bottom = top;
+    left = top;
+  } else {
+    if (image.ImageSlices().Right().IsPercentOrCalc()) {
+      right =
+          CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
+                                    CSSPrimitiveValue::UnitType::kPercentage);
+    } else {
+      right = CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
+    }
+
+    if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
+        image.ImageSlices().Right() == image.ImageSlices().Left()) {
+      bottom = top;
+      left = right;
+    } else {
+      if (image.ImageSlices().Bottom().IsPercentOrCalc()) {
+        bottom =
+            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
+                                      CSSPrimitiveValue::UnitType::kPercentage);
+      } else {
+        bottom =
+            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
+                                      CSSPrimitiveValue::UnitType::kNumber);
+      }
+
+      if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
+        left = right;
+      } else {
+        if (image.ImageSlices().Left().IsPercentOrCalc()) {
+          left = CSSPrimitiveValue::Create(
+              image.ImageSlices().Left().Value(),
+              CSSPrimitiveValue::UnitType::kPercentage);
+        } else {
+          left =
+              CSSPrimitiveValue::Create(image.ImageSlices().Left().Value(),
+                                        CSSPrimitiveValue::UnitType::kNumber);
+        }
+      }
+    }
+  }
+
+  return CSSBorderImageSliceValue::Create(
+      CSSQuadValue::Create(top, right, bottom, left,
+                           CSSQuadValue::kSerializeAsQuad),
+      image.Fill());
+}
+
+CSSValue* ValueForBorderImageLength(
+    const BorderImageLength& border_image_length,
+    const ComputedStyle& style) {
+  if (border_image_length.IsNumber()) {
+    return CSSPrimitiveValue::Create(border_image_length.Number(),
+                                     CSSPrimitiveValue::UnitType::kNumber);
+  }
+  return CSSValue::Create(border_image_length.length(), style.EffectiveZoom());
+}
+
+CSSQuadValue* ComputedStyleUtils::ValueForNinePieceImageQuad(
+    const BorderImageLengthBox& box,
+    const ComputedStyle& style) {
+  // Create the slices.
+  CSSValue* top = nullptr;
+  CSSValue* right = nullptr;
+  CSSValue* bottom = nullptr;
+  CSSValue* left = nullptr;
+
+  top = ValueForBorderImageLength(box.Top(), style);
+
+  if (box.Right() == box.Top() && box.Bottom() == box.Top() &&
+      box.Left() == box.Top()) {
+    right = top;
+    bottom = top;
+    left = top;
+  } else {
+    right = ValueForBorderImageLength(box.Right(), style);
+
+    if (box.Bottom() == box.Top() && box.Right() == box.Left()) {
+      bottom = top;
+      left = right;
+    } else {
+      bottom = ValueForBorderImageLength(box.Bottom(), style);
+
+      if (box.Left() == box.Right())
+        left = right;
+      else
+        left = ValueForBorderImageLength(box.Left(), style);
+    }
+  }
+  return CSSQuadValue::Create(top, right, bottom, left,
+                              CSSQuadValue::kSerializeAsQuad);
+}
+
+CSSValueID ValueForRepeatRule(int rule) {
+  switch (rule) {
+    case kRepeatImageRule:
+      return CSSValueRepeat;
+    case kRoundImageRule:
+      return CSSValueRound;
+    case kSpaceImageRule:
+      return CSSValueSpace;
+    default:
+      return CSSValueStretch;
+  }
+}
+
+CSSValue* ComputedStyleUtils::ValueForNinePieceImageRepeat(
+    const NinePieceImage& image) {
+  CSSIdentifierValue* horizontal_repeat = nullptr;
+  CSSIdentifierValue* vertical_repeat = nullptr;
+
+  horizontal_repeat =
+      CSSIdentifierValue::Create(ValueForRepeatRule(image.HorizontalRule()));
+  if (image.HorizontalRule() == image.VerticalRule()) {
+    vertical_repeat = horizontal_repeat;
+  } else {
+    vertical_repeat =
+        CSSIdentifierValue::Create(ValueForRepeatRule(image.VerticalRule()));
+  }
+  return CSSValuePair::Create(horizontal_repeat, vertical_repeat,
+                              CSSValuePair::kDropIdenticalValues);
+}
+
+CSSValue* ComputedStyleUtils::ValueForNinePieceImage(
+    const NinePieceImage& image,
+    const ComputedStyle& style) {
+  if (!image.HasImage())
+    return CSSIdentifierValue::Create(CSSValueNone);
+
+  // Image first.
+  CSSValue* image_value = nullptr;
+  if (image.GetImage())
+    image_value = image.GetImage()->ComputedCSSValue();
+
+  // Create the image slice.
+  cssvalue::CSSBorderImageSliceValue* image_slices =
+      ValueForNinePieceImageSlice(image);
+
+  // Create the border area slices.
+  CSSValue* border_slices =
+      ValueForNinePieceImageQuad(image.BorderSlices(), style);
+
+  // Create the border outset.
+  CSSValue* outset = ValueForNinePieceImageQuad(image.Outset(), style);
+
+  // Create the repeat rules.
+  CSSValue* repeat = ValueForNinePieceImageRepeat(image);
+
+  return CreateBorderImageValue(image_value, image_slices, border_slices,
+                                outset, repeat);
+}
+
+CSSValue* ComputedStyleUtils::ValueForReflection(
+    const StyleReflection* reflection,
+    const ComputedStyle& style) {
+  if (!reflection)
+    return CSSIdentifierValue::Create(CSSValueNone);
+
+  CSSPrimitiveValue* offset = nullptr;
+  // TODO(alancutter): Make this work correctly for calc lengths.
+  if (reflection->Offset().IsPercentOrCalc()) {
+    offset =
+        CSSPrimitiveValue::Create(reflection->Offset().Percent(),
+                                  CSSPrimitiveValue::UnitType::kPercentage);
+  } else {
+    offset = ZoomAdjustedPixelValue(reflection->Offset().Value(), style);
+  }
+
+  CSSIdentifierValue* direction = nullptr;
+  switch (reflection->Direction()) {
+    case kReflectionBelow:
+      direction = CSSIdentifierValue::Create(CSSValueBelow);
+      break;
+    case kReflectionAbove:
+      direction = CSSIdentifierValue::Create(CSSValueAbove);
+      break;
+    case kReflectionLeft:
+      direction = CSSIdentifierValue::Create(CSSValueLeft);
+      break;
+    case kReflectionRight:
+      direction = CSSIdentifierValue::Create(CSSValueRight);
+      break;
+  }
+
+  return CSSReflectValue::Create(
+      direction, offset, ValueForNinePieceImage(reflection->Mask(), style));
 }
 
 }  // namespace blink

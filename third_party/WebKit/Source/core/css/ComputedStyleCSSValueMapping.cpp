@@ -31,8 +31,6 @@
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSBasicShapeValues.h"
-#include "core/css/CSSBorderImage.h"
-#include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -51,7 +49,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSQuadValue.h"
-#include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSTimingFunctionValue.h"
@@ -98,19 +95,6 @@ static CSSValue* PixelValueForUnzoomedLength(
     return CSSPrimitiveValue::Create(length.Value(),
                                      CSSPrimitiveValue::UnitType::kPixels);
   return CSSValue::Create(length, style.EffectiveZoom());
-}
-
-static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
-  switch (type) {
-    case EMaskSourceType::kAlpha:
-      return CSSIdentifierValue::Create(CSSValueAlpha);
-    case EMaskSourceType::kLuminance:
-      return CSSIdentifierValue::Create(CSSValueLuminance);
-  }
-
-  NOTREACHED();
-
-  return nullptr;
 }
 
 static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
@@ -230,206 +214,6 @@ static CSSValue* ValueForPositionOffset(const ComputedStyle& style,
     return CSSIdentifierValue::Create(CSSValueAuto);
 
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(offset, style);
-}
-
-static cssvalue::CSSBorderImageSliceValue* ValueForNinePieceImageSlice(
-    const NinePieceImage& image) {
-  // Create the slices.
-  CSSPrimitiveValue* top = nullptr;
-  CSSPrimitiveValue* right = nullptr;
-  CSSPrimitiveValue* bottom = nullptr;
-  CSSPrimitiveValue* left = nullptr;
-
-  // TODO(alancutter): Make this code aware of calc lengths.
-  if (image.ImageSlices().Top().IsPercentOrCalc())
-    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
-                                    CSSPrimitiveValue::UnitType::kPercentage);
-  else
-    top = CSSPrimitiveValue::Create(image.ImageSlices().Top().Value(),
-                                    CSSPrimitiveValue::UnitType::kNumber);
-
-  if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
-      image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-      image.ImageSlices().Left() == image.ImageSlices().Top()) {
-    right = top;
-    bottom = top;
-    left = top;
-  } else {
-    if (image.ImageSlices().Right().IsPercentOrCalc())
-      right =
-          CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
-                                    CSSPrimitiveValue::UnitType::kPercentage);
-    else
-      right = CSSPrimitiveValue::Create(image.ImageSlices().Right().Value(),
-                                        CSSPrimitiveValue::UnitType::kNumber);
-
-    if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-        image.ImageSlices().Right() == image.ImageSlices().Left()) {
-      bottom = top;
-      left = right;
-    } else {
-      if (image.ImageSlices().Bottom().IsPercentOrCalc())
-        bottom =
-            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
-                                      CSSPrimitiveValue::UnitType::kPercentage);
-      else
-        bottom =
-            CSSPrimitiveValue::Create(image.ImageSlices().Bottom().Value(),
-                                      CSSPrimitiveValue::UnitType::kNumber);
-
-      if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
-        left = right;
-      } else {
-        if (image.ImageSlices().Left().IsPercentOrCalc())
-          left = CSSPrimitiveValue::Create(
-              image.ImageSlices().Left().Value(),
-              CSSPrimitiveValue::UnitType::kPercentage);
-        else
-          left =
-              CSSPrimitiveValue::Create(image.ImageSlices().Left().Value(),
-                                        CSSPrimitiveValue::UnitType::kNumber);
-      }
-    }
-  }
-
-  return CSSBorderImageSliceValue::Create(
-      CSSQuadValue::Create(top, right, bottom, left,
-                           CSSQuadValue::kSerializeAsQuad),
-      image.Fill());
-}
-
-static CSSValue* ValueForBorderImageLength(
-    const BorderImageLength& border_image_length,
-    const ComputedStyle& style) {
-  if (border_image_length.IsNumber())
-    return CSSPrimitiveValue::Create(border_image_length.Number(),
-                                     CSSPrimitiveValue::UnitType::kNumber);
-  return CSSValue::Create(border_image_length.length(), style.EffectiveZoom());
-}
-
-static CSSQuadValue* ValueForNinePieceImageQuad(const BorderImageLengthBox& box,
-                                                const ComputedStyle& style) {
-  // Create the slices.
-  CSSValue* top = nullptr;
-  CSSValue* right = nullptr;
-  CSSValue* bottom = nullptr;
-  CSSValue* left = nullptr;
-
-  top = ValueForBorderImageLength(box.Top(), style);
-
-  if (box.Right() == box.Top() && box.Bottom() == box.Top() &&
-      box.Left() == box.Top()) {
-    right = top;
-    bottom = top;
-    left = top;
-  } else {
-    right = ValueForBorderImageLength(box.Right(), style);
-
-    if (box.Bottom() == box.Top() && box.Right() == box.Left()) {
-      bottom = top;
-      left = right;
-    } else {
-      bottom = ValueForBorderImageLength(box.Bottom(), style);
-
-      if (box.Left() == box.Right())
-        left = right;
-      else
-        left = ValueForBorderImageLength(box.Left(), style);
-    }
-  }
-  return CSSQuadValue::Create(top, right, bottom, left,
-                              CSSQuadValue::kSerializeAsQuad);
-}
-
-static CSSValueID ValueForRepeatRule(int rule) {
-  switch (rule) {
-    case kRepeatImageRule:
-      return CSSValueRepeat;
-    case kRoundImageRule:
-      return CSSValueRound;
-    case kSpaceImageRule:
-      return CSSValueSpace;
-    default:
-      return CSSValueStretch;
-  }
-}
-
-static CSSValue* ValueForNinePieceImageRepeat(const NinePieceImage& image) {
-  CSSIdentifierValue* horizontal_repeat = nullptr;
-  CSSIdentifierValue* vertical_repeat = nullptr;
-
-  horizontal_repeat =
-      CSSIdentifierValue::Create(ValueForRepeatRule(image.HorizontalRule()));
-  if (image.HorizontalRule() == image.VerticalRule()) {
-    vertical_repeat = horizontal_repeat;
-  } else {
-    vertical_repeat =
-        CSSIdentifierValue::Create(ValueForRepeatRule(image.VerticalRule()));
-  }
-  return CSSValuePair::Create(horizontal_repeat, vertical_repeat,
-                              CSSValuePair::kDropIdenticalValues);
-}
-
-static CSSValue* ValueForNinePieceImage(const NinePieceImage& image,
-                                        const ComputedStyle& style) {
-  if (!image.HasImage())
-    return CSSIdentifierValue::Create(CSSValueNone);
-
-  // Image first.
-  CSSValue* image_value = nullptr;
-  if (image.GetImage())
-    image_value = image.GetImage()->ComputedCSSValue();
-
-  // Create the image slice.
-  cssvalue::CSSBorderImageSliceValue* image_slices =
-      ValueForNinePieceImageSlice(image);
-
-  // Create the border area slices.
-  CSSValue* border_slices =
-      ValueForNinePieceImageQuad(image.BorderSlices(), style);
-
-  // Create the border outset.
-  CSSValue* outset = ValueForNinePieceImageQuad(image.Outset(), style);
-
-  // Create the repeat rules.
-  CSSValue* repeat = ValueForNinePieceImageRepeat(image);
-
-  return CreateBorderImageValue(image_value, image_slices, border_slices,
-                                outset, repeat);
-}
-
-static CSSValue* ValueForReflection(const StyleReflection* reflection,
-                                    const ComputedStyle& style) {
-  if (!reflection)
-    return CSSIdentifierValue::Create(CSSValueNone);
-
-  CSSPrimitiveValue* offset = nullptr;
-  // TODO(alancutter): Make this work correctly for calc lengths.
-  if (reflection->Offset().IsPercentOrCalc())
-    offset =
-        CSSPrimitiveValue::Create(reflection->Offset().Percent(),
-                                  CSSPrimitiveValue::UnitType::kPercentage);
-  else
-    offset = ZoomAdjustedPixelValue(reflection->Offset().Value(), style);
-
-  CSSIdentifierValue* direction = nullptr;
-  switch (reflection->Direction()) {
-    case kReflectionBelow:
-      direction = CSSIdentifierValue::Create(CSSValueBelow);
-      break;
-    case kReflectionAbove:
-      direction = CSSIdentifierValue::Create(CSSValueAbove);
-      break;
-    case kReflectionLeft:
-      direction = CSSIdentifierValue::Create(CSSValueLeft);
-      break;
-    case kReflectionRight:
-      direction = CSSIdentifierValue::Create(CSSValueRight);
-      break;
-  }
-
-  return CSSReflectValue::Create(
-      direction, offset, ValueForNinePieceImage(reflection->Mask(), style));
 }
 
 static CSSValueList* ValueForItemPositionWithOverflowAlignment(
@@ -1778,11 +1562,6 @@ static CSSValue* AdjustSVGPaintForCurrentColor(SVGPaintType paint_type,
   return CSSColorValue::Create(color.Rgb());
 }
 
-static inline AtomicString SerializeAsFragmentIdentifier(
-    const AtomicString& resource) {
-  return "#" + resource;
-}
-
 CSSValue* ComputedStyleCSSValueMapping::ValueForShadowData(
     const ShadowData& shadow,
     const ComputedStyle& style,
@@ -2145,74 +1924,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       style.Direction(), style.GetWritingMode());
 
   switch (resolved_property.PropertyID()) {
-    case CSSPropertyMaskSourceType: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
-           curr_layer = curr_layer->Next())
-        list->Append(*ValueForFillSourceType(curr_layer->MaskSourceType()));
-      return list;
-    }
-    case CSSPropertyWebkitMaskComposite: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskComposite)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next())
-        list->Append(*CSSIdentifierValue::Create(curr_layer->Composite()));
-      return list;
-    }
-    case CSSPropertyBackgroundAttachment: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
-           curr_layer = curr_layer->Next())
-        list->Append(*CSSIdentifierValue::Create(curr_layer->Attachment()));
-      return list;
-    }
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyBackgroundOrigin:
-    case CSSPropertyWebkitMaskClip:
-    case CSSPropertyWebkitMaskOrigin: {
-      bool is_clip = resolved_property.IDEquals(CSSPropertyBackgroundClip) ||
-                     resolved_property.IDEquals(CSSPropertyWebkitMaskClip);
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          (resolved_property.IDEquals(CSSPropertyWebkitMaskClip) ||
-           resolved_property.IDEquals(CSSPropertyWebkitMaskOrigin))
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next()) {
-        EFillBox box = is_clip ? curr_layer->Clip() : curr_layer->Origin();
-        list->Append(*CSSIdentifierValue::Create(box));
-      }
-      return list;
-    }
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyWebkitMaskPositionX: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskPositionX)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next()) {
-        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            curr_layer->PositionX(), style));
-      }
-      return list;
-    }
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyWebkitMaskPositionY: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      const FillLayer* curr_layer =
-          resolved_property.IDEquals(CSSPropertyWebkitMaskPositionY)
-              ? &style.MaskLayers()
-              : &style.BackgroundLayers();
-      for (; curr_layer; curr_layer = curr_layer->Next()) {
-        list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-            curr_layer->PositionY(), style));
-      }
-      return list;
-    }
     case CSSPropertyBorderCollapse:
       if (style.BorderCollapse() == EBorderCollapse::kCollapse)
         return CSSIdentifierValue::Create(CSSValueCollapse);
@@ -2225,10 +1936,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           *ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style));
       return list;
     }
-    case CSSPropertyBorderImageSource:
-      if (style.BorderImageSource())
-        return style.BorderImageSource()->ComputedCSSValue();
-      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyBottom:
       return ValueForPositionOffset(style, resolved_property, layout_object);
     case CSSPropertyWebkitBoxDecorationBreak:
@@ -2244,8 +1951,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyWebkitBoxOrdinalGroup:
       return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyWebkitBoxReflect:
-      return ValueForReflection(style.BoxReflect(), style);
     case CSSPropertyBoxShadow:
       return ValueForShadowList(style.BoxShadow(), style, true);
     case CSSPropertyColumnCount:
@@ -2959,32 +2664,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       list->Append(*CSSIdentifierValue::Create(CSSValueRunning));
       return list;
     }
-    case CSSPropertyWebkitBorderImage:
-      return ValueForNinePieceImage(style.BorderImage(), style);
-    case CSSPropertyBorderImageOutset:
-      return ValueForNinePieceImageQuad(style.BorderImage().Outset(), style);
-    case CSSPropertyBorderImageRepeat:
-      return ValueForNinePieceImageRepeat(style.BorderImage());
-    case CSSPropertyBorderImageSlice:
-      return ValueForNinePieceImageSlice(style.BorderImage());
-    case CSSPropertyBorderImageWidth:
-      return ValueForNinePieceImageQuad(style.BorderImage().BorderSlices(),
-                                        style);
-    case CSSPropertyWebkitMaskBoxImage:
-      return ValueForNinePieceImage(style.MaskBoxImage(), style);
-    case CSSPropertyWebkitMaskBoxImageOutset:
-      return ValueForNinePieceImageQuad(style.MaskBoxImage().Outset(), style);
-    case CSSPropertyWebkitMaskBoxImageRepeat:
-      return ValueForNinePieceImageRepeat(style.MaskBoxImage());
-    case CSSPropertyWebkitMaskBoxImageSlice:
-      return ValueForNinePieceImageSlice(style.MaskBoxImage());
-    case CSSPropertyWebkitMaskBoxImageWidth:
-      return ValueForNinePieceImageQuad(style.MaskBoxImage().BorderSlices(),
-                                        style);
-    case CSSPropertyWebkitMaskBoxImageSource:
-      if (style.MaskBoxImageSource())
-        return style.MaskBoxImageSource()->ComputedCSSValue();
-      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyPerspective:
       if (!style.HasPerspective())
         return CSSIdentifierValue::Create(CSSValueNone);
@@ -3139,14 +2818,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValueForFilter(style, style.Filter());
     case CSSPropertyBackdropFilter:
       return ValueForFilter(style, style.BackdropFilter());
-
-    case CSSPropertyBackgroundBlendMode: {
-      CSSValueList* list = CSSValueList::CreateCommaSeparated();
-      for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
-           curr_layer = curr_layer->Next())
-        list->Append(*CSSIdentifierValue::Create(curr_layer->BlendMode()));
-      return list;
-    }
     case CSSPropertyBorder: {
       const CSSValue* value =
           Get(GetCSSPropertyBorderTop(), style, layout_object, styled_node,
@@ -3173,8 +2844,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValuesForShorthandProperty(borderLeftShorthand(), style,
                                         layout_object, styled_node,
                                         allow_visited_style);
-    case CSSPropertyBorderImage:
-      return ValueForNinePieceImage(style.BorderImage(), style);
     case CSSPropertyBorderRadius:
       return ValueForBorderRadiusShorthand(style);
     case CSSPropertyBorderRight:
@@ -3278,30 +2947,10 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyStrokeOpacity:
       return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
                                        CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyMask:
-      if (!svg_style.MaskerResource().IsEmpty())
-        return CSSURIValue::Create(
-            SerializeAsFragmentIdentifier(svg_style.MaskerResource()));
-      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyFill:
       return AdjustSVGPaintForCurrentColor(
           svg_style.FillPaintType(), svg_style.FillPaintUri(),
           svg_style.FillPaintColor(), style.GetColor());
-    case CSSPropertyMarkerEnd:
-      if (!svg_style.MarkerEndResource().IsEmpty())
-        return CSSURIValue::Create(
-            SerializeAsFragmentIdentifier(svg_style.MarkerEndResource()));
-      return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyMarkerMid:
-      if (!svg_style.MarkerMidResource().IsEmpty())
-        return CSSURIValue::Create(
-            SerializeAsFragmentIdentifier(svg_style.MarkerMidResource()));
-      return CSSIdentifierValue::Create(CSSValueNone);
-    case CSSPropertyMarkerStart:
-      if (!svg_style.MarkerStartResource().IsEmpty())
-        return CSSURIValue::Create(
-            SerializeAsFragmentIdentifier(svg_style.MarkerStartResource()));
-      return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyStroke:
       return AdjustSVGPaintForCurrentColor(
           svg_style.StrokePaintType(), svg_style.StrokePaintUri(),
