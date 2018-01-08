@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "device/u2f/attested_credential_data.h"
 
 namespace device {
@@ -22,15 +23,10 @@ class AuthenticatorData {
     kAttestation = 1u << 6
   };
 
-  static AuthenticatorData Create(std::string relying_party_id,
-                                  uint8_t flags,
-                                  std::vector<uint8_t> counter,
-                                  AttestedCredentialData data);
-
   AuthenticatorData(std::string relying_party_id,
                     uint8_t flags,
                     std::vector<uint8_t> counter,
-                    AttestedCredentialData data);
+                    base::Optional<AttestedCredentialData> data);
 
   // Moveable.
   AuthenticatorData(AuthenticatorData&& other);
@@ -59,8 +55,7 @@ class AuthenticatorData {
 
   // Signature counter, 32-bit unsigned big-endian integer.
   std::vector<uint8_t> counter_;
-
-  AttestedCredentialData attested_data_;
+  base::Optional<AttestedCredentialData> attested_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
 };
