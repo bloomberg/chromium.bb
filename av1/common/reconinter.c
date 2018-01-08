@@ -27,9 +27,7 @@
 #include "av1/common/obmc.h"
 
 // This function will determine whether or not to create a warped
-// prediction and return the appropriate motion model depending
-// on the configuration. Behavior will change with different
-// combinations of GLOBAL_MOTION, WARPED_MOTION and MOTION_VAR.
+// prediction.
 static INLINE int allow_warp(const MODE_INFO *const mi,
                              const WarpTypesAllowed *const warp_types,
                              const WarpedMotionParams *const gm_params,
@@ -43,11 +41,6 @@ static INLINE int allow_warp(const MODE_INFO *const mi,
 
   if (mbmi->wm_params[0].invalid) return 0;
 
-  // Motion var and global motion configured
-
-  // Motion var and warped motion configured
-
-  // Motion var, warped motion and global motion all configured
   if (warp_types->local_warp_allowed) {
     if ((build_for_obmc && WARP_WM_NEIGHBORS_WITH_OBMC) || (!build_for_obmc)) {
       memcpy(final_warp_params, &mbmi->wm_params[0],
