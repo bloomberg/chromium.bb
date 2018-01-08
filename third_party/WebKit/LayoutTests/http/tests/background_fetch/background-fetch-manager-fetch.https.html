@@ -96,9 +96,6 @@ promise_test(function(test) {
       assert_true(backgroundFetchRegistration instanceof BackgroundFetchRegistration);
       assert_equals(backgroundFetchRegistration.id, id);
       assert_equals(backgroundFetchRegistration.downloadTotal, options.downloadTotal);
-
-      // TODO(crbug.com/769770): Remove support for the deprecated attributes.
-      assert_equals(backgroundFetchRegistration.totalDownloadSize, options.downloadTotal);
     });
 
 }, 'BackgroundFetchManager.fetch() returns a BackgroundFetchRegistration object.');
