@@ -57,6 +57,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -1607,6 +1608,12 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   }
 
   DCHECK(gurl.is_valid());
+  if (!gurl.SchemeIs(url::kHttpScheme) && !gurl.SchemeIs(url::kHttpsScheme)) {
+    EnqueueResetStreamFrame(stream_id, request_priority,
+                            ERROR_CODE_REFUSED_STREAM,
+                            "Only http and https resources can be pushed.");
+    return;
+  }
 
   // Cross-origin push validation.
   GURL associated_url(associated_it->second->GetUrlFromHeaders());
@@ -1614,15 +1621,15 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     if (proxy_delegate_ &&
         proxy_delegate_->IsTrustedSpdyProxy(
             ProxyServer(ProxyServer::SCHEME_HTTPS, host_port_pair()))) {
-      // Disallow pushing of HTTPS content by trusted proxy.
-      if (gurl.SchemeIs("https")) {
+      if (!gurl.SchemeIs(url::kHttpScheme)) {
         EnqueueResetStreamFrame(
             stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
-            "Cross origin HTTPS content from trusted proxy.");
+            "Only http scheme allowed for cross origin push by trusted proxy.");
         return;
       }
     } else {
-      if (!gurl.SchemeIs("https") || !associated_url.SchemeIs("https")) {
+      if (!gurl.SchemeIs(url::kHttpsScheme) ||
+          !associated_url.SchemeIs(url::kHttpsScheme)) {
         EnqueueResetStreamFrame(
             stream_id, request_priority, ERROR_CODE_REFUSED_STREAM,
             "Both pushed URL and associated URL must have https scheme.");
@@ -2944,7 +2951,7 @@ void SpdySession::OnAltSvc(
     if (origin.empty())
       return;
     const GURL gurl(origin);
-    if (!gurl.SchemeIs("https"))
+    if (!gurl.SchemeIs(url::kHttpsScheme))
       return;
     SSLInfo ssl_info;
     if (!GetSSLInfo(&ssl_info))
@@ -2961,7 +2968,7 @@ void SpdySession::OnAltSvc(
     if (it == active_streams_.end())
       return;
     const GURL& gurl(it->second->url());
-    if (!gurl.SchemeIs("https"))
+    if (!gurl.SchemeIs(url::kHttpsScheme))
       return;
     scheme_host_port = url::SchemeHostPort(gurl);
   }
