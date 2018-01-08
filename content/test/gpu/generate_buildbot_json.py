@@ -1453,6 +1453,8 @@ COMMON_GTESTS = {
           # On Android, these are already run on the main waterfall.
           # Run them on the one-off Android FYI bots, though.
           'Android Release (Nexus 5X)',
+          # Temporarily disabled due to AMDGPU-PRO issues crbug.com/786219
+          'Linux Release (AMD R7 240)',
         ],
       },
     ],
