@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_FAVICON_CACHE_H_
 #define CHROME_BROWSER_UI_OMNIBOX_FAVICON_CACHE_H_
 
+#include <list>
+#include <map>
+
 #include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
@@ -37,13 +40,14 @@ class FaviconCache {
 
  private:
   void OnFaviconFetched(const GURL& page_url,
-                        FaviconFetchedCallback on_favicon_fetched,
                         const favicon_base::FaviconImageResult& result);
 
   // Non-owning pointer to a KeyedService.
   favicon::FaviconService* favicon_service_;
 
   base::CancelableTaskTracker task_tracker_;
+  std::map<GURL, std::list<FaviconFetchedCallback>> pending_requests_;
+
   base::MRUCache<GURL, gfx::Image> mru_cache_;
   base::WeakPtrFactory<FaviconCache> weak_factory_;
 

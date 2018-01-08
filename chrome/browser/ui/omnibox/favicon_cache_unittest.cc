@@ -30,40 +30,124 @@ favicon_base::FaviconImageResult GetDummyFaviconResult() {
   return result;
 }
 
-void VerifyFetchedFavicon(const gfx::Image& favicon) {
+void VerifyFetchedFavicon(int* count, const gfx::Image& favicon) {
+  DCHECK(count);
   EXPECT_FALSE(favicon.IsEmpty());
+  ++(*count);
 }
 
-void ExpectNoAsyncFavicon(const gfx::Image& favicon) {
+void Fail(const gfx::Image& favicon) {
   FAIL() << "The favicon should have been provided synchronously by the cache, "
             "and this asynchronous callback should never have been called.";
 }
 
 }  // namespace
 
-TEST(FaviconCacheTest, Basic) {
-  GURL page_url("http://a.com/");
-  favicon_base::FaviconImageCallback service_response_callback;
+class FaviconCacheTest : public testing::Test {
+ protected:
+  const GURL kPageURL = GURL("http://www.example.com/");
 
-  testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(page_url, _, _))
-      .WillOnce(DoAll(SaveArg<1>(&service_response_callback),
+  FaviconCacheTest() : cache_(&favicon_service_) {}
+
+  testing::NiceMock<favicon::MockFaviconService> favicon_service_;
+  favicon_base::FaviconImageCallback favicon_service_response_;
+  FaviconCache cache_;
+};
+
+TEST_F(FaviconCacheTest, Basic) {
+  EXPECT_CALL(
+      favicon_service_,
+      GetFaviconImageForPageURL(kPageURL, _ /* callback */, _ /* tracker */))
+      .WillOnce(DoAll(SaveArg<1>(&favicon_service_response_),
                       Return(base::CancelableTaskTracker::kBadTaskId)));
 
-  FaviconCache cache(&favicon_service);
-  gfx::Image result = cache.GetFaviconForPageUrl(
-      page_url, base::BindOnce(&VerifyFetchedFavicon));
+  int response_count = 0;
+  gfx::Image result = cache_.GetFaviconForPageUrl(
+      kPageURL, base::BindOnce(&VerifyFetchedFavicon, &response_count));
 
   // Expect the synchronous result to be empty.
   EXPECT_TRUE(result.IsEmpty());
 
-  // Simulate the favicon service returning the result.
-  service_response_callback.Run(GetDummyFaviconResult());
+  favicon_service_response_.Run(GetDummyFaviconResult());
 
   // Re-request the same favicon and expect a non-empty result now that the
   // cache is populated. The above EXPECT_CALL will also verify that the
   // backing FaviconService is not hit again.
-  result = cache.GetFaviconForPageUrl(page_url,
-                                      base::BindOnce(&ExpectNoAsyncFavicon));
+  result = cache_.GetFaviconForPageUrl(kPageURL, base::BindOnce(&Fail));
+
   EXPECT_FALSE(result.IsEmpty());
+  EXPECT_EQ(1, response_count);
+}
+
+TEST_F(FaviconCacheTest, MultipleRequestsAreCoalesced) {
+  EXPECT_CALL(
+      favicon_service_,
+      GetFaviconImageForPageURL(kPageURL, _ /* callback */, _ /* tracker */))
+      .WillOnce(DoAll(SaveArg<1>(&favicon_service_response_),
+                      Return(base::CancelableTaskTracker::kBadTaskId)));
+
+  int response_count = 0;
+  for (int i = 0; i < 10; ++i) {
+    cache_.GetFaviconForPageUrl(
+        kPageURL, base::BindOnce(&VerifyFetchedFavicon, &response_count));
+  }
+
+  favicon_service_response_.Run(GetDummyFaviconResult());
+
+  EXPECT_EQ(10, response_count);
+}
+
+TEST_F(FaviconCacheTest, SeparateOriginsAreCachedSeparately) {
+  GURL a_site = GURL("http://www.a.com/");
+  GURL b_site = GURL("http://www.b.com/");
+
+  favicon_base::FaviconImageCallback favicon_service_a_site_response_;
+  favicon_base::FaviconImageCallback favicon_service_b_site_response_;
+
+  EXPECT_CALL(favicon_service_, GetFaviconImageForPageURL(
+                                    a_site, _ /* callback */, _ /* tracker */))
+      .WillOnce(DoAll(SaveArg<1>(&favicon_service_a_site_response_),
+                      Return(base::CancelableTaskTracker::kBadTaskId)));
+  EXPECT_CALL(favicon_service_, GetFaviconImageForPageURL(
+                                    b_site, _ /* callback */, _ /* tracker */))
+      .WillOnce(DoAll(SaveArg<1>(&favicon_service_b_site_response_),
+                      Return(base::CancelableTaskTracker::kBadTaskId)));
+
+  int a_site_response_count = 0;
+  int b_site_response_count = 0;
+
+  gfx::Image a_site_return = cache_.GetFaviconForPageUrl(
+      a_site, base::BindOnce(&VerifyFetchedFavicon, &a_site_response_count));
+  gfx::Image b_site_return = cache_.GetFaviconForPageUrl(
+      b_site, base::BindOnce(&VerifyFetchedFavicon, &b_site_response_count));
+
+  EXPECT_TRUE(a_site_return.IsEmpty());
+  EXPECT_TRUE(b_site_return.IsEmpty());
+  EXPECT_EQ(0, a_site_response_count);
+  EXPECT_EQ(0, b_site_response_count);
+
+  favicon_service_b_site_response_.Run(GetDummyFaviconResult());
+
+  EXPECT_EQ(0, a_site_response_count);
+  EXPECT_EQ(1, b_site_response_count);
+
+  a_site_return = cache_.GetFaviconForPageUrl(
+      a_site, base::BindOnce(&VerifyFetchedFavicon, &a_site_response_count));
+  b_site_return = cache_.GetFaviconForPageUrl(b_site, base::BindOnce(&Fail));
+
+  EXPECT_TRUE(a_site_return.IsEmpty());
+  EXPECT_FALSE(b_site_return.IsEmpty());
+  EXPECT_EQ(0, a_site_response_count);
+  EXPECT_EQ(1, b_site_response_count);
+
+  favicon_service_a_site_response_.Run(GetDummyFaviconResult());
+
+  EXPECT_EQ(2, a_site_response_count);
+  EXPECT_EQ(1, b_site_response_count);
+
+  a_site_return = cache_.GetFaviconForPageUrl(a_site, base::BindOnce(&Fail));
+  b_site_return = cache_.GetFaviconForPageUrl(b_site, base::BindOnce(&Fail));
+
+  EXPECT_FALSE(a_site_return.IsEmpty());
+  EXPECT_FALSE(b_site_return.IsEmpty());
 }
