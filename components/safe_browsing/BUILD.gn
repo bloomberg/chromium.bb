@@ -20,12 +20,8 @@ source_set("safe_browsing") {
   sources = [
     "base_blocking_page.cc",
     "base_blocking_page.h",
-    "base_resource_throttle.cc",
-    "base_resource_throttle.h",
     "base_ui_manager.cc",
     "base_ui_manager.h",
-    "net_event_logger.cc",
-    "net_event_logger.h",
   ]
   public_deps = [
     "//components/security_interstitials/content:security_interstitial_page",
