@@ -283,9 +283,9 @@ void WorkerFetchContext::DispatchDidReceiveResponse(
         WebMixedContent::ContextTypeFromRequestContext(
             request_context, false /* strictMixedContentCheckingForPlugin */);
     if (context_type == WebMixedContentContextType::kBlockable) {
-      web_context_->DidRunContentWithCertificateErrors(response.Url());
+      web_context_->DidRunContentWithCertificateErrors();
     } else {
-      web_context_->DidDisplayContentWithCertificateErrors(response.Url());
+      web_context_->DidDisplayContentWithCertificateErrors();
     }
   }
   probe::didReceiveResourceResponse(global_scope_, identifier, nullptr,

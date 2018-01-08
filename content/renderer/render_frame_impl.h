@@ -667,9 +667,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidContainInsecureFormAction() override;
   void DidRunInsecureContent(const blink::WebSecurityOrigin& origin,
                              const blink::WebURL& target) override;
-  void DidDisplayContentWithCertificateErrors(
-      const blink::WebURL& url) override;
-  void DidRunContentWithCertificateErrors(const blink::WebURL& url) override;
+  void DidDisplayContentWithCertificateErrors() override;
+  void DidRunContentWithCertificateErrors() override;
   bool OverrideLegacySymantecCertConsoleMessage(
       const blink::WebURL& url,
       base::Time cert_validity_start,

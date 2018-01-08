@@ -187,16 +187,13 @@ blink::WebURL WorkerFetchContextImpl::SiteForCookies() const {
   return site_for_cookies_;
 }
 
-void WorkerFetchContextImpl::DidRunContentWithCertificateErrors(
-    const blink::WebURL& url) {
-  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(parent_frame_id_,
-                                                           url));
+void WorkerFetchContextImpl::DidRunContentWithCertificateErrors() {
+  Send(new FrameHostMsg_DidRunContentWithCertificateErrors(parent_frame_id_));
 }
 
-void WorkerFetchContextImpl::DidDisplayContentWithCertificateErrors(
-    const blink::WebURL& url) {
-  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(parent_frame_id_,
-                                                               url));
+void WorkerFetchContextImpl::DidDisplayContentWithCertificateErrors() {
+  Send(new FrameHostMsg_DidDisplayContentWithCertificateErrors(
+      parent_frame_id_));
 }
 
 void WorkerFetchContextImpl::DidRunInsecureContent(

@@ -1084,10 +1084,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidRunInsecureContent(RenderFrameHostImpl* source,
                                const GURL& security_origin,
                                const GURL& target_url);
-  void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source,
-                                                const GURL& url);
-  void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source,
-                                            const GURL& url);
+  void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
+  void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
   void OnGoToEntryAtOffset(RenderViewHostImpl* source, int offset);

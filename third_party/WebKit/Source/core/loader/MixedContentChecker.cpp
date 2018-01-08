@@ -648,12 +648,12 @@ void MixedContentChecker::HandleCertificateError(
       WebMixedContent::ContextTypeFromRequestContext(
           request_context, strict_mixed_content_checking_for_plugin);
   if (context_type == WebMixedContentContextType::kBlockable) {
-    client->DidRunContentWithCertificateErrors(response.Url());
+    client->DidRunContentWithCertificateErrors();
   } else {
     // contextTypeFromRequestContext() never returns NotMixedContent (it
     // computes the type of mixed content, given that the content is mixed).
     DCHECK_NE(context_type, WebMixedContentContextType::kNotMixedContent);
-    client->DidDisplayContentWithCertificateErrors(response.Url());
+    client->DidDisplayContentWithCertificateErrors();
   }
 }
 

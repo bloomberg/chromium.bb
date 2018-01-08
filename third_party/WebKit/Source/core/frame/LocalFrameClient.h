@@ -183,9 +183,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidDispatchPingLoader(const KURL&) = 0;
 
   // The frame displayed content with certificate errors with given URL.
-  virtual void DidDisplayContentWithCertificateErrors(const KURL&) = 0;
+  virtual void DidDisplayContentWithCertificateErrors() = 0;
   // The frame ran content with certificate errors with the given URL.
-  virtual void DidRunContentWithCertificateErrors(const KURL&) = 0;
+  virtual void DidRunContentWithCertificateErrors() = 0;
 
   // The frame loaded a resource with an otherwise-valid legacy Symantec
   // certificate that is slated for distrust. Prints a console message (possibly

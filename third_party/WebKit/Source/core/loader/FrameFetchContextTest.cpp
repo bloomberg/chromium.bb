@@ -90,7 +90,7 @@ class StubLocalFrameClientWithParent final : public EmptyLocalFrameClient {
 class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   FrameFetchContextMockLocalFrameClient() : EmptyLocalFrameClient() {}
-  MOCK_METHOD1(DidDisplayContentWithCertificateErrors, void(const KURL&));
+  MOCK_METHOD0(DidDisplayContentWithCertificateErrors, void());
   MOCK_METHOD2(DispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));
   MOCK_METHOD0(UserAgent, String());
@@ -1027,7 +1027,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   response.SetHasMajorCertificateErrors(true);
   Resource* resource = MockResource::Create(resource_request);
   resource->SetResponse(response);
-  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors(url));
+  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors());
   fetch_context->DispatchDidLoadResourceFromMemoryCache(
       CreateUniqueIdentifier(), resource_request, resource->GetResponse());
 }

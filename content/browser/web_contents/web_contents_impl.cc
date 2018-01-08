@@ -4020,15 +4020,12 @@ WebContentsImpl::GetJavaRenderFrameHostDelegate() {
 #endif
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
-    RenderFrameHostImpl* source,
-    const GURL& url) {
-  // TODO(nick): |url| is unused; get rid of it.
+    RenderFrameHostImpl* source) {
   controller_.ssl_manager()->DidDisplayContentWithCertErrors();
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
-    RenderFrameHostImpl* source,
-    const GURL& url) {
+    RenderFrameHostImpl* source) {
   // TODO(nick, estark): Do we need to consider |source| here somehow?
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (!entry)

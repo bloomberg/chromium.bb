@@ -115,8 +115,8 @@ class MixedContentCheckerMockLocalFrameClient : public EmptyLocalFrameClient {
  public:
   MixedContentCheckerMockLocalFrameClient() : EmptyLocalFrameClient() {}
   MOCK_METHOD0(DidContainInsecureFormAction, void());
-  MOCK_METHOD1(DidDisplayContentWithCertificateErrors, void(const KURL&));
-  MOCK_METHOD1(DidRunContentWithCertificateErrors, void(const KURL&));
+  MOCK_METHOD0(DidDisplayContentWithCertificateErrors, void());
+  MOCK_METHOD0(DidRunContentWithCertificateErrors, void());
 };
 
 }  // namespace
@@ -133,7 +133,7 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
 
   dummy_page_holder->GetFrame().GetDocument()->SetURL(main_resource_url);
   ResourceResponse response1(ran_url);
-  EXPECT_CALL(*client, DidRunContentWithCertificateErrors(ran_url));
+  EXPECT_CALL(*client, DidRunContentWithCertificateErrors());
   MixedContentChecker::HandleCertificateError(
       &dummy_page_holder->GetFrame(), response1,
       network::mojom::RequestContextFrameType::kNone,
@@ -148,7 +148,7 @@ TEST(MixedContentCheckerTest, HandleCertificateError) {
           request_context, dummy_page_holder->GetFrame()
                                .GetSettings()
                                ->GetStrictMixedContentCheckingForPlugin()));
-  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors(displayed_url));
+  EXPECT_CALL(*client, DidDisplayContentWithCertificateErrors());
   MixedContentChecker::HandleCertificateError(
       &dummy_page_holder->GetFrame(), response2,
       network::mojom::RequestContextFrameType::kNone, request_context);
