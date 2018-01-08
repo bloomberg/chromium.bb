@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -96,7 +96,7 @@ void RecordUmaEvent(TimeZoneRequestEvent event) {
 }
 
 void RecordUmaResponseCode(int code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("TimeZone.TimeZoneRequest.ResponseCode", code);
+  base::UmaHistogramSparse("TimeZone.TimeZoneRequest.ResponseCode", code);
 }
 
 // Slow timezone resolve leads to bad user experience.
@@ -113,7 +113,7 @@ void RecordUmaResponseTime(base::TimeDelta elapsed, bool success) {
 void RecordUmaResult(TimeZoneRequestResult result, unsigned retries) {
   UMA_HISTOGRAM_ENUMERATION(
       "TimeZone.TimeZoneRequest.Result", result, TIMEZONE_REQUEST_RESULT_COUNT);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("TimeZone.TimeZoneRequest.Retries", retries);
+  base::UmaHistogramSparse("TimeZone.TimeZoneRequest.Retries", retries);
 }
 
 // Creates the request url to send to the server.
