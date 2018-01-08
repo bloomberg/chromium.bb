@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/BackgroundSize.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,6 +17,16 @@ const CSSValue* BackgroundSize::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   return CSSParsingUtils::ParseBackgroundOrMaskSize(range, context,
                                                     local_context);
+}
+
+const CSSValue* BackgroundSize::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  const FillLayer& fill_layer = style.BackgroundLayers();
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
 }
 
 }  // namespace CSSLonghand

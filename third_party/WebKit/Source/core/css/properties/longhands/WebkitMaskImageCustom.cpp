@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/WebkitMaskImage.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,6 +17,16 @@ const CSSValue* WebkitMaskImage::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyParserHelpers::ConsumeImageOrNone, range, &context);
+}
+
+const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  const FillLayer& fill_layer = style.MaskLayers();
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(fill_layer);
 }
 
 }  // namespace CSSLonghand

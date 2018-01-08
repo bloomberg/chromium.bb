@@ -5,7 +5,9 @@
 #ifndef ComputedStyleUtils_h
 #define ComputedStyleUtils_h
 
+#include "core/css/CSSValueList.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -26,6 +28,26 @@ class ComputedStyleUtils {
                                             bool visited_link);
   static CSSValue* ZoomAdjustedPixelValueForLength(const Length&,
                                                    const ComputedStyle&);
+  static const CSSValue* BackgroundImageOrWebkitMaskImage(const FillLayer&);
+  static const CSSValue* ValueForFillSize(const FillSize&,
+                                          const ComputedStyle&);
+  static const CSSValue* BackgroundImageOrWebkitMaskSize(const ComputedStyle&,
+                                                         const FillLayer&);
+  static const CSSValueList* CreatePositionListForLayer(const CSSProperty&,
+                                                        const FillLayer&,
+                                                        const ComputedStyle&);
+  static const CSSValue* ValueForFillRepeat(EFillRepeat x_repeat,
+                                            EFillRepeat y_repeat);
+  static const CSSValueList* ValuesForBackgroundShorthand(
+      const ComputedStyle&,
+      const LayoutObject*,
+      Node*,
+      bool allow_visited_style);
+  static const CSSValue* BackgroundRepeatOrWebkitMaskRepeat(const FillLayer*);
+  static const CSSValue* BackgroundPositionOrWebkitMaskPosition(
+      const CSSProperty&,
+      const ComputedStyle&,
+      const FillLayer*);
 };
 
 }  // namespace blink
