@@ -16,7 +16,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -88,6 +90,11 @@ void ExtensionSettingsUIBrowserTest::SetAutoConfirmUninstall() {
 void ExtensionSettingsUIBrowserTest::EnableErrorConsole() {
   error_console_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::error_console(), true));
+}
+
+void ExtensionSettingsUIBrowserTest::SetDevModeEnabled(bool enabled) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kExtensionsUIDeveloperMode, enabled);
 }
 
 void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
