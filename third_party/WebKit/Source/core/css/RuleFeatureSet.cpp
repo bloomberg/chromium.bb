@@ -42,6 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/BitVector.h"
 
 namespace blink {
@@ -90,6 +91,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoLink:
     case CSSSelector::kPseudoVisited:
     case CSSSelector::kPseudoAny:
+    case CSSSelector::kPseudoMatches:
     case CSSSelector::kPseudoWebkitAnyLink:
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoAutofill:
@@ -181,6 +183,8 @@ bool SupportsInvalidationWithSelectorList(CSSSelector::PseudoType pseudo) {
          pseudo == CSSSelector::kPseudoCue ||
          pseudo == CSSSelector::kPseudoHost ||
          pseudo == CSSSelector::kPseudoHostContext ||
+         ((pseudo == CSSSelector::kPseudoMatches) &&
+          RuntimeEnabledFeatures::CSSMatchesEnabled()) ||
          pseudo == CSSSelector::kPseudoNot ||
          pseudo == CSSSelector::kPseudoSlotted;
 }
