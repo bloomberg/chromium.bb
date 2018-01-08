@@ -112,6 +112,9 @@ void VideoCaptureDeviceFactoryAndroid::GetSupportedFormats(
       case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_NV21:
         pixel_format = PIXEL_FORMAT_NV21;
         break;
+      case VideoCaptureDeviceAndroid::ANDROID_IMAGE_FORMAT_YUV_420_888:
+        pixel_format = PIXEL_FORMAT_I420;
+        break;
       default:
         // TODO(mcasas): break here and let the enumeration continue with
         // UNKNOWN pixel format because the platform doesn't know until capture,
