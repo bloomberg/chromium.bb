@@ -249,9 +249,4 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
     ExternalNavigationDelegateImpl getExternalNavigationDelegate() {
         return mNavigationDelegate;
     }
-
-    @Override
-    public boolean canShowAppBanners(Tab tab) {
-        return false;
-    }
 }
