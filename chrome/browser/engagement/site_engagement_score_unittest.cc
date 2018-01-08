@@ -472,27 +472,13 @@ TEST_F(SiteEngagementScoreTest, GetDetails) {
   mojom::SiteEngagementDetails details = score_.GetDetails();
   EXPECT_DOUBLE_EQ(0.0, details.total_score);
   EXPECT_DOUBLE_EQ(0.0, details.installed_bonus);
-  EXPECT_DOUBLE_EQ(0.0, details.notifications_bonus);
   EXPECT_DOUBLE_EQ(0.0, details.base_score);
   EXPECT_EQ(url, details.origin);
-
-  // Add notifications permission and verify that impacts the correct bonus,
-  // and the total.
-  settings_map->SetContentSettingDefaultScope(
-      url, url, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
-      CONTENT_SETTING_ALLOW);
-  details = score_.GetDetails();
-  EXPECT_DOUBLE_EQ(details.notifications_bonus, details.total_score);
-  EXPECT_DOUBLE_EQ(0.0, details.installed_bonus);
-  EXPECT_LT(0.0, details.notifications_bonus);
-  EXPECT_DOUBLE_EQ(0.0, details.base_score);
 
   // Simulate the app having been launched.
   score_.set_last_shortcut_launch_time(test_clock_.Now());
   details = score_.GetDetails();
-  EXPECT_DOUBLE_EQ(details.installed_bonus + details.notifications_bonus,
-                   details.total_score);
+  EXPECT_DOUBLE_EQ(details.installed_bonus, details.total_score);
   EXPECT_LT(0.0, details.installed_bonus);
-  EXPECT_LT(0.0, details.notifications_bonus);
   EXPECT_DOUBLE_EQ(0.0, details.base_score);
 }

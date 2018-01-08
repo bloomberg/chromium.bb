@@ -293,15 +293,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   PushMessagingServiceImpl* push_service() const { return push_service_; }
 
-  void SetSiteEngagementScore(const GURL& url,
-                              double score,
-                              double expected_score) {
-    // There will be a bonus of 5.0 points for having notification permission
-    // granted, so we assert that the final score is as expected.
+  void SetSiteEngagementScore(const GURL& url, double score) {
     SiteEngagementService* service =
         SiteEngagementService::Get(GetBrowser()->profile());
     service->ResetBaseScoreForURL(url, score);
-    EXPECT_EQ(expected_score, service->GetScore(url));
+    EXPECT_EQ(score, service->GetScore(url));
   }
 
   // Matches |tag| against the notification's ID to see if the notification's
@@ -1333,7 +1329,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   // Set the site engagement score for the site. Setting it to 10 means it
   // should have a budget of 4, enough for two non-shown notification, which
   // cost 2 each.
-  SetSiteEngagementScore(web_contents->GetURL(), 5.0, 10.0);
+  SetSiteEngagementScore(web_contents->GetURL(), 10.0);
 
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
@@ -1436,7 +1432,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   content::WebContents* web_contents =
       GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
-  SetSiteEngagementScore(web_contents->GetURL(), 0.0, 5.0);
+  SetSiteEngagementScore(web_contents->GetURL(), 5.0);
 
   ui_test_utils::NavigateToURLWithDisposition(
       GetBrowser(), GURL("about:blank"),

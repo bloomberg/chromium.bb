@@ -14,7 +14,6 @@ struct SiteEngagementDetails {
   // sum to a value greater than |score| if it exceeds the maximum.
   double base_score;
   double installed_bonus;
-  double notifications_bonus;
 };
 
 interface SiteEngagementDetailsProvider {
