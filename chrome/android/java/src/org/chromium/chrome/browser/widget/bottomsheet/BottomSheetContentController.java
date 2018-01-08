@@ -242,6 +242,7 @@ public class BottomSheetContentController
 
     @Override
     public void onFinishInflate() {
+        super.onFinishInflate();
         BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
                     @Override
