@@ -5593,7 +5593,9 @@ def CMDtry(parser, args):
       help='Host of buildbucket. The default host is %default.')
   parser.add_option_group(group)
   auth.add_auth_options(parser)
+  _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_issue_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
   if options.master and options.master.startswith('luci.'):
@@ -5607,7 +5609,8 @@ def CMDtry(parser, args):
   if args:
     parser.error('Unknown arguments: %s' % args)
 
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(auth_config=auth_config, issue=options.issue,
+                  codereview=options.forced_codereview)
   if not cl.GetIssue():
     parser.error('Need to upload first')
 
