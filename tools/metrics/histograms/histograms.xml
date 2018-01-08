@@ -30565,6 +30565,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.HotspotUsageDuration" units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between the start and end of a Tether connection.
+    Timing starts when the device connects to the Wi-Fi hotspot and ends when
+    the device becomes disconnected from the Wi-Fi hotspot.
+  </summary>
+</histogram>
+
 <histogram
     name="InstantTethering.Performance.AdvertisementToConnectionDuration"
     units="ms">
