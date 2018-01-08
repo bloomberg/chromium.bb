@@ -25,6 +25,7 @@ std::unique_ptr<views::Label> CreateUsernameLabel(
     const autofill::PasswordForm& form);
 std::unique_ptr<views::Label> CreatePasswordLabel(
     const autofill::PasswordForm& form,
+    int federation_message_id,
     bool is_password_visible);
 std::unique_ptr<views::Textfield> CreateUsernameEditable(
     const autofill::PasswordForm& form);
