@@ -342,9 +342,6 @@ NetworkResourcesData::ResourceData const* NetworkResourcesData::Data(
 }
 
 XHRReplayData* NetworkResourcesData::XhrReplayData(const String& request_id) {
-  if (reused_xhr_replay_data_request_ids_.Contains(request_id))
-    return XhrReplayData(reused_xhr_replay_data_request_ids_.at(request_id));
-
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
     return nullptr;
@@ -363,16 +360,8 @@ void NetworkResourcesData::SetCertificate(
 void NetworkResourcesData::SetXHRReplayData(const String& request_id,
                                             XHRReplayData* xhr_replay_data) {
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
-  if (!resource_data) {
-    Vector<String> result;
-    for (auto& request : reused_xhr_replay_data_request_ids_) {
-      if (request.value == request_id)
-        SetXHRReplayData(request.key, xhr_replay_data);
-    }
-    return;
-  }
-
-  resource_data->SetXHRReplayData(xhr_replay_data);
+  if (resource_data)
+    resource_data->SetXHRReplayData(xhr_replay_data);
 }
 
 HeapVector<Member<NetworkResourcesData::ResourceData>>
@@ -419,8 +408,6 @@ void NetworkResourcesData::Clear(const String& preserved_loader_id) {
       preserved_map.Set(resource.key, resource.value);
   }
   request_id_to_resource_data_map_.swap(preserved_map);
-
-  reused_xhr_replay_data_request_ids_.clear();
 }
 
 void NetworkResourcesData::SetResourcesDataSizeLimits(
