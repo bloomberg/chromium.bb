@@ -114,6 +114,9 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   bool GetSize(int64_t* size_out) override;
   bool IsStreaming() override;
   void SetBitrate(int bitrate) override;
+  void SetIsClientAudioElement(bool is_client_audio_element) {
+    is_client_audio_element_ = is_client_audio_element;
+  }
 
  protected:
   void OnRedirect(const scoped_refptr<UrlData>& destination);
@@ -245,6 +248,8 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   double playback_rate_;
 
   MediaLog* media_log_;
+
+  bool is_client_audio_element_ = false;
 
   int buffer_size_update_counter_;
 

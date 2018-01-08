@@ -288,6 +288,11 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
   const DataMap& map() const { return data_; }
   int32_t block_size_shift() const { return block_size_shift_; }
 
+  // Setters.
+  void SetIsClientAudioElement(bool is_client_audio_element) {
+    is_client_audio_element_ = is_client_audio_element;
+  }
+
   // Callback which notifies us that a data provider has
   // some data for us. Also called when it might be appropriate
   // for a provider in a deferred state to wake up.
@@ -296,7 +301,9 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
  protected:
   // Create a new writer at |pos| and return it.
   // Users needs to implemement this method.
-  virtual std::unique_ptr<DataProvider> CreateWriter(const BlockId& pos) = 0;
+  virtual std::unique_ptr<DataProvider> CreateWriter(
+      const BlockId& pos,
+      bool is_client_audio_element) = 0;
 
   virtual bool RangeSupported() const = 0;
 
@@ -339,6 +346,9 @@ class MEDIA_BLINK_EXPORT MultiBuffer {
 
   // log2 of block size.
   int32_t block_size_shift_;
+
+  // Is the client an audio element?
+  bool is_client_audio_element_ = false;
 
   // Stores the actual data.
   DataMap data_;

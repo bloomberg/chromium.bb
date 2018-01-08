@@ -191,6 +191,7 @@ void MultibufferDataSource::Initialize(const InitializeCB& init_cb) {
   init_cb_ = init_cb;
 
   CreateResourceLoader(0, kPositionNotSpecified);
+  reader_->SetIsClientAudioElement(is_client_audio_element_);
 
   // We're not allowed to call Wait() if data is already available.
   if (reader_->Available()) {

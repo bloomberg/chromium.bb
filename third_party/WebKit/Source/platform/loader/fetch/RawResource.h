@@ -121,8 +121,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 inline bool IsRawResource(const Resource& resource) {
   Resource::Type type = resource.GetType();
   return type == Resource::kMainResource || type == Resource::kRaw ||
-         type == Resource::kTextTrack || type == Resource::kMedia ||
-         type == Resource::kManifest || type == Resource::kImportResource;
+         type == Resource::kTextTrack || type == Resource::kAudio ||
+         type == Resource::kVideo || type == Resource::kManifest ||
+         type == Resource::kImportResource;
 }
 inline RawResource* ToRawResource(Resource* resource) {
   SECURITY_DCHECK(!resource || IsRawResource(*resource));

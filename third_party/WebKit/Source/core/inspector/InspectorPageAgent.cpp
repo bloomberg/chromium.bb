@@ -413,7 +413,8 @@ InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(
       return InspectorPageAgent::kImageResource;
     case Resource::kFont:
       return InspectorPageAgent::kFontResource;
-    case Resource::kMedia:
+    case Resource::kAudio:
+    case Resource::kVideo:
       return InspectorPageAgent::kMediaResource;
     case Resource::kManifest:
       return InspectorPageAgent::kManifestResource;

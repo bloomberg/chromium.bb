@@ -213,7 +213,7 @@ void MultiBuffer::AddReader(const BlockId& pos, Reader* reader) {
   }
   if (!provider) {
     DCHECK(writer_index_.find(pos) == writer_index_.end());
-    writer_index_[pos] = CreateWriter(pos);
+    writer_index_[pos] = CreateWriter(pos, is_client_audio_element_);
     provider = writer_index_[pos].get();
   }
   provider->SetDeferred(false);

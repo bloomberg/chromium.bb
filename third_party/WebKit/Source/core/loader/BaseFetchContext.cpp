@@ -192,7 +192,8 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
     case Resource::kLinkPrefetch:
     case Resource::kTextTrack:
     case Resource::kImportResource:
-    case Resource::kMedia:
+    case Resource::kAudio:
+    case Resource::kVideo:
     case Resource::kManifest:
     case Resource::kMock:
       // By default these types of resources can be loaded from any origin.

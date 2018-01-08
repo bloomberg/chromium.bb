@@ -27,9 +27,10 @@ ResourceMultiBuffer::ResourceMultiBuffer(UrlData* url_data, int block_shift)
 ResourceMultiBuffer::~ResourceMultiBuffer() = default;
 
 std::unique_ptr<MultiBuffer::DataProvider> ResourceMultiBuffer::CreateWriter(
-    const MultiBufferBlockId& pos) {
-  auto writer =
-      base::MakeUnique<ResourceMultiBufferDataProvider>(url_data_, pos);
+    const MultiBufferBlockId& pos,
+    bool is_client_audio_element) {
+  auto writer = base::MakeUnique<ResourceMultiBufferDataProvider>(
+      url_data_, pos, is_client_audio_element);
   writer->Start();
   return writer;
 }

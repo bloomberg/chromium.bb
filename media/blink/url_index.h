@@ -38,7 +38,8 @@ class MEDIA_BLINK_EXPORT ResourceMultiBuffer : public MultiBuffer {
 
   // MultiBuffer implementation.
   std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(
-      const BlockId& pos) override;
+      const BlockId& pos,
+      bool is_client_audio_element) override;
   bool RangeSupported() const override;
   void OnEmpty() override;
 
