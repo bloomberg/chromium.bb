@@ -251,6 +251,28 @@ content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
   return web_contents();
 }
 
+bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTab() const {
+  // TODO(fdoray): Consider being notified of audible, capturing and mirrored
+  // state changes via WebContentsDelegate::NavigationStateChanged().
+  // https://crbug.com/775644
+
+  if (recently_audible_time_ == base::TimeTicks::Max() ||
+      (!recently_audible_time_.is_null() &&
+       NowTicks() - recently_audible_time_ < kTabAudioProtectionTime)) {
+    return true;
+  }
+
+  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
+  if (media_indicator->IsCapturingUserMedia(GetWebContents()) ||
+      media_indicator->IsBeingMirrored(GetWebContents())) {
+    return true;
+  }
+
+  return false;
+}
+
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsAutoDiscardable() const {
   return auto_discardable_;
 }
@@ -272,31 +294,13 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
   return GetState() == State::DISCARDED;
 }
 
+int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
+  return discard_count_;
+}
+
 void TabLifecycleUnitSource::TabLifecycleUnit::OnDiscardedStateChange() {
   for (auto& observer : *observers_)
     observer.OnDiscardedStateChange(GetWebContents(), IsDiscarded());
-}
-
-bool TabLifecycleUnitSource::TabLifecycleUnit::IsMediaTab() const {
-  // TODO(fdoray): Consider being notified of audible, capturing and mirrored
-  // state changes via WebContentsDelegate::NavigationStateChanged().
-  // https://crbug.com/775644
-
-  if (recently_audible_time_ == base::TimeTicks::Max() ||
-      (!recently_audible_time_.is_null() &&
-       NowTicks() - recently_audible_time_ < kTabAudioProtectionTime)) {
-    return true;
-  }
-
-  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()
-          ->GetMediaStreamCaptureIndicator();
-  if (media_indicator->IsCapturingUserMedia(GetWebContents()) ||
-      media_indicator->IsBeingMirrored(GetWebContents())) {
-    return true;
-  }
-
-  return false;
 }
 
 content::RenderProcessHost*
