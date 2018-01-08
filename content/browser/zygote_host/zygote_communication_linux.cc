@@ -85,7 +85,7 @@ ssize_t ZygoteCommunication::ReadReply(void* buf, size_t buf_len) {
 
 pid_t ZygoteCommunication::ForkRequest(
     const std::vector<std::string>& argv,
-    std::unique_ptr<PosixFileDescriptorInfo> mapping,
+    const base::FileHandleMappingVector& mapping,
     const std::string& process_type) {
   DCHECK(init_);
 
@@ -111,7 +111,7 @@ pid_t ZygoteCommunication::ForkRequest(
 
   // Fork requests contain one file descriptor for the PID oracle, and one
   // more for each file descriptor mapping for the child process.
-  const size_t num_fds_to_send = 1 + mapping->GetMappingSize();
+  const size_t num_fds_to_send = 1 + mapping.size();
   pickle.WriteInt(num_fds_to_send);
 
   std::vector<int> fds;
@@ -122,9 +122,9 @@ pid_t ZygoteCommunication::ForkRequest(
   fds.push_back(peer_sock.get());
 
   // The rest come from mapping.
-  for (size_t i = 0; i < mapping->GetMappingSize(); ++i) {
-    pickle.WriteUInt32(mapping->GetIDAt(i));
-    fds.push_back(mapping->GetFDAt(i));
+  for (const auto& item : mapping) {
+    fds.push_back(item.first);
+    pickle.WriteUInt32(item.second);
   }
 
   // Sanity check that we've populated |fds| correctly.
@@ -135,7 +135,6 @@ pid_t ZygoteCommunication::ForkRequest(
     base::AutoLock lock(control_lock_);
     if (!SendMessage(pickle, &fds))
       return base::kNullProcessHandle;
-    mapping.reset();
     peer_sock.reset();
 
     {
