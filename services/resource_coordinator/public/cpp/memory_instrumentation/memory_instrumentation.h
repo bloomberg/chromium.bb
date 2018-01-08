@@ -30,9 +30,9 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   using MemoryDumpType = base::trace_event::MemoryDumpType;
   using MemoryDumpLevelOfDetail = base::trace_event::MemoryDumpLevelOfDetail;
   using RequestGlobalDumpCallback =
-      base::Callback<void(bool success, mojom::GlobalMemoryDumpPtr)>;
+      base::RepeatingCallback<void(bool success, mojom::GlobalMemoryDumpPtr)>;
   using RequestGlobalMemoryDumpAndAppendToTraceCallback =
-      base::Callback<void(bool success, uint64_t dump_id)>;
+      base::RepeatingCallback<void(bool success, uint64_t dump_id)>;
 
   static void CreateInstance(service_manager::Connector*,
                              const std::string& service_name);
@@ -45,6 +45,14 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   // The callback (if not null), will be posted on the same thread of the
   // RequestGlobalDump() call.
   void RequestGlobalDump(RequestGlobalDumpCallback);
+
+  // Requests a global memory dump.
+  // Returns asynchronously, via the callback argument, the global memory
+  // dump with the process memory dump for the given pid or null if the dump
+  // failed.
+  // The callback (if not null), will be posted on the same thread of the
+  // RequestGlobalDumpForPid() call.
+  void RequestGlobalDumpForPid(base::ProcessId pid, RequestGlobalDumpCallback);
 
   // Requests a global memory dump and serializes the result into the trace.
   // This requires that both tracing and the memory-infra category have been

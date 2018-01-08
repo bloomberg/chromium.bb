@@ -30,12 +30,14 @@ struct QueuedRequest {
   struct Args {
     Args(MemoryDumpType dump_type,
          MemoryDumpLevelOfDetail level_of_detail,
-         bool add_to_trace);
+         bool add_to_trace,
+         base::ProcessId pid);
     ~Args();
 
     const MemoryDumpType dump_type;
     const MemoryDumpLevelOfDetail level_of_detail;
     const bool add_to_trace;
+    const base::ProcessId pid;
   };
 
   struct PendingResponse {
@@ -62,7 +64,7 @@ struct QueuedRequest {
   };
 
   QueuedRequest(const Args& args,
-                const uint64_t dump_guid,
+                uint64_t dump_guid,
                 const RequestGlobalMemoryDumpInternalCallback& callback);
   ~QueuedRequest();
 

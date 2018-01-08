@@ -95,7 +95,33 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
     callback.Run(success, std::move(global_memory_dump));
   };
 
-  QueuedRequest::Args args(dump_type, level_of_detail, false /* addToTrace */);
+  QueuedRequest::Args args(dump_type, level_of_detail, false /* add_to_trace */,
+                           base::kNullProcessId);
+  RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
+}
+
+void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
+    base::ProcessId pid,
+    const RequestGlobalMemoryDumpForPidCallback& callback) {
+  // Error out early if process id is null to avoid confusing with global
+  // dump for all processes case when pid is kNullProcessId.
+  if (pid == base::kNullProcessId) {
+    callback.Run(false, nullptr);
+    return;
+  }
+
+  // This merely strips out the |dump_guid| argument; this is not relevant
+  // as we are not adding to trace.
+  auto adapter = [](const RequestGlobalMemoryDumpForPidCallback& callback,
+                    bool success, uint64_t,
+                    mojom::GlobalMemoryDumpPtr global_memory_dump) {
+    callback.Run(success, std::move(global_memory_dump));
+  };
+
+  QueuedRequest::Args args(
+      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+      false /* addToTrace */, pid);
   RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
 }
 
@@ -109,7 +135,8 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
          bool success, uint64_t dump_guid,
          mojom::GlobalMemoryDumpPtr) { callback.Run(success, dump_guid); };
 
-  QueuedRequest::Args args(dump_type, level_of_detail, true /* addToTrace */);
+  QueuedRequest::Args args(dump_type, level_of_detail, true /* add_to_trace */,
+                           base::kNullProcessId);
   RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
 }
 
