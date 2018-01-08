@@ -171,11 +171,6 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE void setMaskFilter(sk_sp<SkMaskFilter> mask) {
     mask_filter_ = std::move(mask);
   }
-  // TODO(vmpstr): Remove this from recording calls, since we want to avoid
-  // constructing the shader until rasterization.
-  ALWAYS_INLINE SkShader* getSkShader() const {
-    return shader_ ? shader_->GetSkShader().get() : nullptr;
-  }
 
   ALWAYS_INLINE const PaintShader* getShader() const { return shader_.get(); }
 
