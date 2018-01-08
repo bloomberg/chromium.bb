@@ -493,6 +493,13 @@ bool GetPasswordForm(
 
   std::vector<WebInputElement> possible_usernames;
 
+  // Calculate filtering levels for password and username fields. For details
+  // see to the comment to |FieldFilteringLevel|.
+  FieldFilteringLevel username_fields_level = FieldFilteringLevel::NO_FILTER;
+  FieldFilteringLevel password_fields_level = FieldFilteringLevel::NO_FILTER;
+  GetFieldFilteringLevels(form.control_elements, field_value_and_properties_map,
+                          &username_fields_level, &password_fields_level);
+
   std::map<WebInputElement, PasswordFormFieldPredictionType> predicted_elements;
   if (form_predictions) {
     FindPredictedElements(form, password_form->form_data, *form_predictions,
@@ -503,20 +510,18 @@ bool GetPasswordForm(
 
     // Let server predictions override the selection of the username field. This
     // allows instant adjusting without changing Chromium code.
-    if (map_has_username_prediction) {
+    // If a form already has user input, but the predicted username field has
+    // empty value, then don't trust the prediction (e.g. a <form> actually
+    // contains several forms).
+    if (map_has_username_prediction &&
+        (password_fields_level < FieldFilteringLevel::USER_INPUT ||
+         !predicted_username_element.Value().IsEmpty())) {
       username_element = predicted_username_element;
       password_form->was_parsed_using_autofill_predictions = true;
       username_detection_method =
           UsernameDetectionMethod::SERVER_SIDE_PREDICTION;
     }
   }
-
-  // Calculate filtering levels for password and username fields. For details
-  // see to the comment to |FieldFilteringLevel|.
-  FieldFilteringLevel username_fields_level = FieldFilteringLevel::NO_FILTER;
-  FieldFilteringLevel password_fields_level = FieldFilteringLevel::NO_FILTER;
-  GetFieldFilteringLevels(form.control_elements, field_value_and_properties_map,
-                          &username_fields_level, &password_fields_level);
 
   std::string layout_sequence;
   layout_sequence.reserve(form.control_elements.size());
@@ -594,9 +599,7 @@ bool GetPasswordForm(
 
     // Various input types such as text, url, email can be a username field.
     if (!input_element->IsPasswordFieldForAutofill()) {
-      if (!input_element->Value().IsEmpty()) {
-        possible_usernames.push_back(*input_element);
-      }
+      possible_usernames.push_back(*input_element);
       if (HasAutocompleteAttributeValue(*input_element,
                                         kAutocompleteUsername)) {
         if (password_form->username_marked_by_site) {
@@ -754,21 +757,14 @@ bool GetPasswordForm(
       form_util::GetCanonicalOriginForDocument(form.document);
   password_form->signon_realm = GetSignOnRealm(password_form->origin);
 
-  // Remove |username_element| from the vector |possible_usernames| if the
-  // value presents in the vector.
-  if (!username_element.IsNull()) {
-    possible_usernames.erase(
-        std::remove(possible_usernames.begin(), possible_usernames.end(),
-                    username_element),
-        possible_usernames.end());
-  }
-  // Convert |all_possible_usernames| to PossibleUsernamesVector.
+  // Convert |possible_usernames| to PossibleUsernamesVector.
   autofill::PossibleUsernamesVector other_possible_usernames;
-  for (WebInputElement possible_username : possible_usernames) {
-    if (!possible_username.Value().IsEmpty()) {
-      other_possible_usernames.push_back(
-          MakePossibleUsernamePair(possible_username));
-    }
+  for (const WebInputElement& possible_username : possible_usernames) {
+    if (possible_username == username_element)
+      continue;
+    auto pair = MakePossibleUsernamePair(possible_username);
+    if (!pair.first.empty())
+      other_possible_usernames.push_back(std::move(pair));
   }
   password_form->other_possible_usernames.swap(other_possible_usernames);
 

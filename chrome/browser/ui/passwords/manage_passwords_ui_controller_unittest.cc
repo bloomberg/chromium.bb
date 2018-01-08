@@ -564,6 +564,9 @@ TEST_F(ManagePasswordsUIControllerTest, NormalNavigations) {
 TEST_F(ManagePasswordsUIControllerTest, NormalNavigationsClosedBubble) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      autofill::PasswordForm(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   controller()->SavePassword(test_local_form().username_value,

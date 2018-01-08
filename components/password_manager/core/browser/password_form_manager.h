@@ -597,10 +597,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Make sure to call Init before using |*this|, to ensure it is not null.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
-  // Set if the user has edited username value in prompt. The value is the
-  // matched field name from |PasswordForm.other_possible_usernames| if the
-  // match found.
-  base::Optional<base::string16> corrected_username_element_;
+  // True iff a user edited the username value in a prompt and new username is
+  // the value of another field of the observed form.
+  bool has_username_edited_vote_ = false;
 
   // Tracks if a form with same origin as |observed_form_| found in blacklisted
   // forms.
