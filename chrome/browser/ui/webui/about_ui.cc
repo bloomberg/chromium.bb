@@ -42,8 +42,6 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/tab_stats.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
