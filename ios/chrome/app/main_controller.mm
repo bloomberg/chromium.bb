@@ -2444,7 +2444,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (UIImage*)currentPageScreenshot {
-  UIView* lastView = self.mainViewController.view;
+  UIView* lastView = self.mainViewController.activeViewController.view;
   DCHECK(lastView);
   CGFloat scale = 0.0;
   // For screenshots of the Stack View we need to use a scale of 1.0 to avoid
