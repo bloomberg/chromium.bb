@@ -27,14 +27,6 @@ bool DefaultAccessibilityDelegate::IsMagnifierEnabled() const {
   return screen_magnifier_enabled_;
 }
 
-void DefaultAccessibilityDelegate::SetAutoclickEnabled(bool enabled) {
-  autoclick_enabled_ = enabled;
-}
-
-bool DefaultAccessibilityDelegate::IsAutoclickEnabled() const {
-  return autoclick_enabled_;
-}
-
 void DefaultAccessibilityDelegate::SetVirtualKeyboardEnabled(bool enabled) {
   virtual_keyboard_enabled_ = enabled;
 }
@@ -103,7 +95,7 @@ bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
   return spoken_feedback_enabled_ || screen_magnifier_enabled_ ||
-         autoclick_enabled_ || virtual_keyboard_enabled_ ||
+         controller->IsAutoclickEnabled() || virtual_keyboard_enabled_ ||
          controller->IsMonoAudioEnabled() ||
          controller->IsLargeCursorEnabled() ||
          controller->IsHighContrastEnabled();

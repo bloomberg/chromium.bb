@@ -260,7 +260,6 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilitySwitchAccessEnabled),
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
-      autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::GetDefaultAutoclickDelay()),
       virtual_keyboard_enabled_(false),
       caret_highlight_enabled_(false),
@@ -663,33 +662,11 @@ void AccessibilityManager::EnableAutoclick(bool enabled) {
 }
 
 bool AccessibilityManager::IsAutoclickEnabled() const {
-  return autoclick_enabled_;
+  return profile_ && profile_->GetPrefs()->GetBoolean(
+                         ash::prefs::kAccessibilityAutoclickEnabled);
 }
 
-void AccessibilityManager::UpdateAutoclickFromPref() {
-  if (!profile_)
-    return;
-
-  bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityAutoclickEnabled);
-
-  if (autoclick_enabled_ == enabled)
-    return;
-  autoclick_enabled_ = enabled;
-
-  if (GetAshConfig() == ash::Config::MASH) {
-    service_manager::Connector* connector =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    mash::mojom::LaunchablePtr launchable;
-    connector->BindInterface("accessibility_autoclick", &launchable);
-    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
-    return;
-  }
-
-  ash::Shell::Get()->system_tray_notifier()->NotifyAccessibilityStatusChanged(
-      ash::A11Y_NOTIFICATION_NONE);
-  ash::Shell::Get()->autoclick_controller()->SetEnabled(enabled);
-}
+void AccessibilityManager::OnAutoclickChanged() {}
 
 void AccessibilityManager::SetAutoclickDelay(int delay_ms) {
   if (!profile_)
@@ -1161,7 +1138,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickEnabled,
-        base::Bind(&AccessibilityManager::UpdateAutoclickFromPref,
+        base::Bind(&AccessibilityManager::OnAutoclickChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
         ash::prefs::kAccessibilityAutoclickDelayMs,
@@ -1242,7 +1219,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateAlwaysShowMenuFromPref();
   UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
-  UpdateAutoclickFromPref();
   UpdateAutoclickDelayFromPref();
   UpdateVirtualKeyboardFromPref();
   UpdateCaretHighlightFromPref();

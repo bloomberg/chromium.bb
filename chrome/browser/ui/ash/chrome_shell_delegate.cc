@@ -122,16 +122,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return chromeos::MagnificationManager::Get()->IsMagnifierEnabled();
   }
 
-  void SetAutoclickEnabled(bool enabled) override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->EnableAutoclick(enabled);
-  }
-
-  bool IsAutoclickEnabled() const override {
-    DCHECK(AccessibilityManager::Get());
-    return AccessibilityManager::Get()->IsAutoclickEnabled();
-  }
-
   void SetVirtualKeyboardEnabled(bool enabled) override {
     DCHECK(AccessibilityManager::Get());
     return AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);

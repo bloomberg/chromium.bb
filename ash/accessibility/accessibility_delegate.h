@@ -34,12 +34,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Returns true if the screen magnifier is enabled.
   virtual bool IsMagnifierEnabled() const = 0;
 
-  // Invoked to enable autoclick.
-  virtual void SetAutoclickEnabled(bool enabled) = 0;
-
-  // Returns if autoclick is enabled or not.
-  virtual bool IsAutoclickEnabled() const = 0;
-
   // Invoked to enable or disable the a11y on-screen keyboard.
   virtual void SetVirtualKeyboardEnabled(bool enabled) = 0;
 

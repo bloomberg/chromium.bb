@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
@@ -19,6 +20,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "mash/public/interfaces/launchable.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -56,6 +58,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                                    bool for_test) {
   if (for_test) {
     // In tests there is no remote pref service. Make ash own the prefs.
+    registry->RegisterBooleanPref(prefs::kAccessibilityAutoclickEnabled, false);
     registry->RegisterBooleanPref(prefs::kAccessibilityHighContrastEnabled,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityLargeCursorEnabled,
@@ -70,6 +73,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 
   // In production the prefs are owned by chrome.
   // TODO(jamescook): Move ownership to ash.
+  registry->RegisterForeignPref(prefs::kAccessibilityAutoclickEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityHighContrastEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityLargeCursorDipSize);
@@ -80,6 +84,18 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 void AccessibilityController::BindRequest(
     mojom::AccessibilityControllerRequest request) {
   binding_.Bind(std::move(request));
+}
+
+void AccessibilityController::SetAutoclickEnabled(bool enabled) {
+  PrefService* prefs = GetActivePrefService();
+  if (!prefs)
+    return;
+  prefs->SetBoolean(prefs::kAccessibilityAutoclickEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
+bool AccessibilityController::IsAutoclickEnabled() const {
+  return autoclick_enabled_;
 }
 
 void AccessibilityController::SetHighContrastEnabled(bool enabled) {
@@ -168,6 +184,10 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
   pref_change_registrar_->Add(
+      prefs::kAccessibilityAutoclickEnabled,
+      base::Bind(&AccessibilityController::UpdateAutoclickFromPref,
+                 base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityHighContrastEnabled,
       base::Bind(&AccessibilityController::UpdateHighContrastFromPref,
                  base::Unretained(this)));
@@ -185,9 +205,33 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
                  base::Unretained(this)));
 
   // Load current state.
+  UpdateAutoclickFromPref();
   UpdateHighContrastFromPref();
   UpdateLargeCursorFromPref();
   UpdateMonoAudioFromPref();
+}
+
+void AccessibilityController::UpdateAutoclickFromPref() {
+  PrefService* prefs = GetActivePrefService();
+  const bool enabled = prefs->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
+
+  if (autoclick_enabled_ == enabled)
+    return;
+
+  autoclick_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
+
+  if (Shell::GetAshConfig() == Config::MASH) {
+    if (!connector_)  // Null in tests.
+      return;
+    mash::mojom::LaunchablePtr launchable;
+    connector_->BindInterface("accessibility_autoclick", &launchable);
+    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
+    return;
+  }
+
+  Shell::Get()->autoclick_controller()->SetEnabled(enabled);
 }
 
 void AccessibilityController::UpdateHighContrastFromPref() {

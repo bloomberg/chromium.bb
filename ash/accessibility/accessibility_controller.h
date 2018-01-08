@@ -42,6 +42,9 @@ class ASH_EXPORT AccessibilityController
   // Binds the mojom::AccessibilityController interface to this object.
   void BindRequest(mojom::AccessibilityControllerRequest request);
 
+  void SetAutoclickEnabled(bool enabled);
+  bool IsAutoclickEnabled() const;
+
   void SetHighContrastEnabled(bool enabled);
   bool IsHighContrastEnabled() const;
 
@@ -82,6 +85,7 @@ class ASH_EXPORT AccessibilityController
   // initial settings.
   void ObservePrefs(PrefService* prefs);
 
+  void UpdateAutoclickFromPref();
   void UpdateHighContrastFromPref();
   void UpdateLargeCursorFromPref();
   void UpdateMonoAudioFromPref();
@@ -95,6 +99,7 @@ class ASH_EXPORT AccessibilityController
   // Client interface in chrome browser.
   mojom::AccessibilityControllerClientPtr client_;
 
+  bool autoclick_enabled_ = false;
   bool high_contrast_enabled_ = false;
   bool large_cursor_enabled_ = false;
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
