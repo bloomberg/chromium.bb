@@ -30,7 +30,8 @@ class CastWindowManager {
     INFO_OVERLAY,
     SOFT_KEYBOARD,
     VOLUME,
-    TOP = VOLUME
+    MEDIA_INFO,
+    TOP = MEDIA_INFO
   };
 
   // Creates the platform-specific CastWindowManager.
