@@ -73,14 +73,6 @@ std::set<GURL> GetEngagementOriginsFromContentSettings(Profile* profile) {
     urls.insert(GURL(site.primary_pattern.ToString()));
   }
 
-  // Fetch URLs of sites for which notifications are allowed.
-  for (const auto& site : GetContentSettingsFromProfile(
-           profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
-    if (site.GetContentSetting() != CONTENT_SETTING_ALLOW)
-      continue;
-    urls.insert(GURL(site.primary_pattern.ToString()));
-  }
-
   return urls;
 }
 

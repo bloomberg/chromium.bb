@@ -91,8 +91,6 @@ SiteEngagementScore::ParamValues SiteEngagementScore::BuildParamValues() {
   param_values[MAX_DECAYS_PER_SCORE] = {"max_decays_per_score", 4};
   param_values[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS] = {
       "last_engagement_grace_period_in_hours", 1};
-  param_values[NOTIFICATION_PERMISSION_POINTS] = {
-      "notification_permission_points", 5};
   param_values[NOTIFICATION_INTERACTION_POINTS] = {
       "notification_interaction_points", 1};
   return param_values;
@@ -162,10 +160,6 @@ double SiteEngagementScore::GetLastEngagementGracePeriodInHours() {
   return GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second;
 }
 
-double SiteEngagementScore::GetNotificationPermissionPoints() {
-  return GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second;
-}
-
 double SiteEngagementScore::GetNotificationInteractionPoints() {
   return GetParamValues()[NOTIFICATION_INTERACTION_POINTS].second;
 }
@@ -184,7 +178,6 @@ void SiteEngagementScore::SetParamValuesForTesting() {
   GetParamValues()[HIGH_ENGAGEMENT_BOUNDARY].second = 50;
   GetParamValues()[MAX_DECAYS_PER_SCORE].second = 1;
   GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second = 72;
-  GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second = 5;
   GetParamValues()[NOTIFICATION_INTERACTION_POINTS].second = 1;
 
   // This is set to values that avoid interference with tests and are set when
@@ -272,9 +265,7 @@ void SiteEngagementScore::AddPoints(double points) {
 }
 
 double SiteEngagementScore::GetTotalScore() const {
-  return std::min(
-      DecayedScore() + BonusIfShortcutLaunched() + BonusIfHasNotifications(),
-      kMaxPoints);
+  return std::min(DecayedScore() + BonusIfShortcutLaunched(), kMaxPoints);
 }
 
 mojom::SiteEngagementDetails SiteEngagementScore::GetDetails() const {
@@ -282,7 +273,6 @@ mojom::SiteEngagementDetails SiteEngagementScore::GetDetails() const {
   engagement.origin = origin_;
   engagement.base_score = DecayedScore();
   engagement.installed_bonus = BonusIfShortcutLaunched();
-  engagement.notifications_bonus = BonusIfHasNotifications();
   engagement.total_score = GetTotalScore();
   return engagement;
 }
@@ -418,18 +408,5 @@ double SiteEngagementScore::BonusIfShortcutLaunched() const {
       (clock_->Now() - last_shortcut_launch_time_).InDays();
   if (days_since_shortcut_launch <= kMaxDaysSinceShortcutLaunch)
     return GetWebAppInstalledPoints();
-  return 0;
-}
-
-double SiteEngagementScore::BonusIfHasNotifications() const {
-  // TODO(dominickn, raymes): call PermissionManager::GetPermissionStatus when
-  // the PermissionManager is thread-safe.
-  if (settings_map_ &&
-      settings_map_->GetContentSetting(
-          origin_, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-          content_settings::ResourceIdentifier()) == CONTENT_SETTING_ALLOW) {
-    return GetNotificationPermissionPoints();
-  }
-
   return 0;
 }

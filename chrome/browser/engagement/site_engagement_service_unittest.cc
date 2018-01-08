@@ -541,47 +541,6 @@ TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   EXPECT_DOUBLE_EQ(0.0, service_->GetScore(url2));
 }
 
-TEST_F(SiteEngagementServiceTest, NotificationPermission) {
-  GURL url1("https://www.google.com/");
-  GURL url2("http://www.google.com/");
-  GURL url3("https://drive.google.com/");
-  clock_->SetNow(GetReferenceTime());
-
-  EXPECT_EQ(0, service_->GetScore(url1));
-  EXPECT_EQ(0, service_->GetScore(url2));
-  EXPECT_EQ(0, service_->GetScore(url3));
-
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-
-  settings_map->SetContentSettingDefaultScope(
-      url1, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
-
-  settings_map->SetContentSettingDefaultScope(
-      url2, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
-
-  settings_map->SetContentSettingDefaultScope(
-      url3, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_DEFAULT);
-
-  EXPECT_EQ(5, service_->GetScore(url1));
-  EXPECT_EQ(0, service_->GetScore(url2));
-  EXPECT_EQ(0, service_->GetScore(url3));
-
-  service_->AddPoints(url1, 1.0);
-  service_->AddPoints(url2, 3.0);
-  EXPECT_EQ(6, service_->GetScore(url1));
-  EXPECT_EQ(3, service_->GetScore(url2));
-
-  settings_map->SetContentSettingDefaultScope(
-      url1, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
-
-  EXPECT_EQ(1, service_->GetScore(url1));
-}
-
 TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   base::HistogramTester histograms;
 
@@ -1840,10 +1799,10 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
 }
 
 TEST_F(SiteEngagementServiceTest, GetAllDetailsIncludesBonusOnlyScores) {
+  clock_->SetNow(GetReferenceTime());
+
   GURL url1("http://www.google.com/");
   GURL url2("https://www.google.com/");
-  GURL url3("https://drive.google.com/");
-  GURL url4("https://nothing.google.com/");
 
   std::vector<mojom::SiteEngagementDetails> details = service_->GetAllDetails();
   EXPECT_EQ(0u, details.size());
@@ -1851,24 +1810,11 @@ TEST_F(SiteEngagementServiceTest, GetAllDetailsIncludesBonusOnlyScores) {
   // Add a single site score via explicitly resetting the engagement score.
   service_->ResetBaseScoreForURL(url1, 5);
 
-  // Add a second site indirectly, via notifications permissions.
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  settings_map->SetContentSettingDefaultScope(
-      url2, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_ALLOW);
+  // Add a second site indirectly, via a shortcut launch.
+  service_->SetLastShortcutLaunchTime(web_contents(), url2);
 
-  // Add third and fourth sites with notifications permission explicitly denied,
-  // to verify that they are not included.
-  settings_map->SetContentSettingDefaultScope(
-      url3, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
-  settings_map->SetContentSettingDefaultScope(
-      url4, GURL(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      content_settings::ResourceIdentifier(), CONTENT_SETTING_BLOCK);
-
-  // Verify that the URLs with engagement, and with notifications permission
-  // boosted engagement total, are included.
+  // Verify that the URLs with engagement and a recent shortcut launch are
+  // included.
   details = service_->GetAllDetails();
   EXPECT_EQ(2u, details.size());
 }

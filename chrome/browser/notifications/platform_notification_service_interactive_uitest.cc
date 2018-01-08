@@ -217,8 +217,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithPermission) {
   RequestAndAcceptPermission();
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  // Expect 0.5 engagement for the navigation.
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_none')",
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       base::nullopt /* action_index */, base::nullopt /* reply */);
 
   // We expect +1 engagement for the notification interaction.
-  EXPECT_DOUBLE_EQ(6.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
 
   // Clicking on the notification should not automatically close it.
   notifications = GetDisplayedNotifications(true /* is_persistent */);
@@ -422,11 +422,11 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        WebNotificationSiteSettingsButton) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
+  // Expect 0.5 engagement for the navigation.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL origin = web_contents->GetLastCommittedURL();
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(origin));
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(origin));
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotification('Some title', {})",
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   ASSERT_TRUE(content::WaitForLoadStop(web_contents));
 
   // No engagement should be granted for clicking on the settings link.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(origin));
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(origin));
 
   std::string url = web_contents->GetLastCommittedURL().spec();
   ASSERT_EQ("chrome://settings/content/notifications", url);
@@ -481,8 +481,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        CloseDisplayedPersistentNotification) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  // Expect 0.5 engagement for the navigation.
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotification('action_close')",
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       base::nullopt /* action_index */, base::nullopt /* reply */);
 
   // We have interacted with the button, so expect a notification bump.
-  EXPECT_DOUBLE_EQ(6.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_close", script_result);
@@ -511,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        UserClosesPersistentNotification) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  // Expect 0.5 engagement for the navigation.
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   std::string script_result;
   ASSERT_TRUE(
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       true /* by_user */);
 
   // The user closed this notification so the score should remain the same.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("closing notification: close_test", script_result);
@@ -670,8 +670,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithActionButtons) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  // Expect 0.5 engagement for the navigation.
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotificationWithActionButtons()",
@@ -693,7 +693,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_button_click actionId1", script_result);
-  EXPECT_DOUBLE_EQ(6.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
 
   EXPECT_EQ(1, user_action_tester_.GetActionCount(
                    "Notifications.Persistent.ClickedActionButton"));
@@ -707,7 +707,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_button_click actionId2", script_result);
-  EXPECT_DOUBLE_EQ(7.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(2.5, GetEngagementScore(GetLastCommittedURL()));
 
   EXPECT_EQ(2, user_action_tester_.GetActionCount(
                    "Notifications.Persistent.ClickedActionButton"));
@@ -720,8 +720,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
                        DisplayPersistentNotificationWithReplyButton) {
   ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
 
-  // Expect 5 engagement for notification permission and 0.5 for the navigation.
-  EXPECT_DOUBLE_EQ(5.5, GetEngagementScore(GetLastCommittedURL()));
+  // Expect 0.5 engagement for the navigation.
+  EXPECT_DOUBLE_EQ(0.5, GetEngagementScore(GetLastCommittedURL()));
 
   std::string script_result;
   ASSERT_TRUE(RunScript("DisplayPersistentNotificationWithReplyButton()",
@@ -742,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   ASSERT_TRUE(RunScript("GetMessageFromWorker()", &script_result));
   EXPECT_EQ("action_button_click actionId1 hello", script_result);
-  EXPECT_DOUBLE_EQ(6.5, GetEngagementScore(GetLastCommittedURL()));
+  EXPECT_DOUBLE_EQ(1.5, GetEngagementScore(GetLastCommittedURL()));
 
   EXPECT_EQ(1, user_action_tester_.GetActionCount(
                    "Notifications.Persistent.ClickedActionButton"));

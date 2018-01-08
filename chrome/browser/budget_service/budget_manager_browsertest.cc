@@ -68,21 +68,12 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
         switches::kEnableExperimentalWebPlatformFeatures);
   }
 
-  // Sets the absolute Site Engagement |score| for the testing origin, assuming
-  // that notification permission has been granted.
-  // The |score| must be higher than the bonus points awarded to an origin for
-  // having the Notification permission granted. Should be wrapped in the
-  // ASSERT_NO_FATAL_FAILURE macro because it contains an ASSERT_GE.
+  // Sets the absolute Site Engagement |score| for the testing origin.
   void SetSiteEngagementScore(double score) {
     SiteEngagementService* service =
         SiteEngagementService::Get(browser()->profile());
 
-    double notification_permission_bonus =
-        SiteEngagementScore::GetNotificationPermissionPoints();
-    ASSERT_GE(score, notification_permission_bonus);
-
-    service->ResetBaseScoreForURL(https_server_->GetURL(kTestURL),
-                                  score - notification_permission_bonus);
+    service->ResetBaseScoreForURL(https_server_->GetURL(kTestURL), score);
   }
 
   bool RunScript(const std::string& script, std::string* result) {
@@ -124,7 +115,7 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInDocument) {
   std::string script_result;
 
-  ASSERT_NO_FATAL_FAILURE(SetSiteEngagementScore(5));
+  SetSiteEngagementScore(5);
 
   // Site Engagement score of 5 gives a budget of 2.
   ASSERT_TRUE(RunScript("documentGetBudget()", &script_result));
@@ -157,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(BudgetManagerBrowserTest, BudgetInWorker) {
   ASSERT_EQ("ok - service worker registered", script_result);
 
   LoadTestPage();  // Reload to become controlled.
-  ASSERT_NO_FATAL_FAILURE(SetSiteEngagementScore(12));
+  SetSiteEngagementScore(12);
 
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);

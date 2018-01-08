@@ -225,8 +225,7 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
 }
 
 // Inserts origins with some engagement measure into the map, including a site
-// engagement cutoff, notifications permission, and recent launches from home
-// screen.
+// engagement cutoff and recent launches from home screen.
 void PopulateInfoMapWithEngagement(
     Profile* profile,
     blink::mojom::EngagementLevel minimum_engagement,
@@ -240,13 +239,6 @@ void PopulateInfoMapWithEngagement(
   // We can have multiple origins for a single domain, so we record the one
   // with the highest engagement score.
   for (const auto& detail : engagement_details) {
-    if (detail.notifications_bonus > 0) {
-      // This origin has notifications enabled.
-      MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
-                                          ImportantReason::NOTIFICATIONS,
-                                          output);
-    }
-
     if (detail.installed_bonus > 0) {
       // This origin was recently launched from the home screen.
       MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
@@ -375,6 +367,10 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
 
   PopulateInfoMapWithEngagement(profile, blink::mojom::EngagementLevel::MEDIUM,
                                 &engagement_map, &important_info);
+
+  PopulateInfoMapWithContentTypeAllowed(
+      profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      ImportantReason::NOTIFICATIONS, &important_info);
 
   PopulateInfoMapWithContentTypeAllowed(
       profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, ImportantReason::DURABLE,
