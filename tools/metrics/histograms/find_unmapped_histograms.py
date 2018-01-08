@@ -91,7 +91,7 @@ STANDARD_HISTOGRAM_SUFFIXES = frozenset(['TIMES', 'MEDIUM_TIMES', 'LONG_TIMES',
                                          'MEMORY_KB', 'MEMORY_MB',
                                          'MEMORY_LARGE_MB', 'PERCENTAGE',
                                          'BOOLEAN', 'ENUMERATION',
-                                         'CUSTOM_ENUMERATION', 'SPARSE_SLOWLY'])
+                                         'CUSTOM_ENUMERATION'])
 OTHER_STANDARD_HISTOGRAMS = frozenset(['SCOPED_UMA_HISTOGRAM_TIMER',
                                        'SCOPED_UMA_HISTOGRAM_LONG_TIMER'])
 # The following suffixes are not defined in //base/metrics but the first
@@ -252,6 +252,8 @@ def readChromiumHistograms():
     with open(filename, 'r') as f:
       contents = removeComments(f.read())
 
+    # TODO(isherman): Look for histogram function calls like
+    # base::UmaHistogramSparse() in addition to macro invocations.
     for match in HISTOGRAM_REGEX.finditer(contents):
       line_number = contents[:match.start()].count('\n') + 1
       if (match.group(2) not in all_suffixes and

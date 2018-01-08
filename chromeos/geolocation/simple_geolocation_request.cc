@@ -13,8 +13,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -121,7 +121,7 @@ void RecordUmaEvent(SimpleGeolocationRequestEvent event) {
 }
 
 void RecordUmaResponseCode(int code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleGeolocation.Request.ResponseCode", code);
+  base::UmaHistogramSparse("SimpleGeolocation.Request.ResponseCode", code);
 }
 
 // Slow geolocation resolve leads to bad user experience.
@@ -139,8 +139,8 @@ void RecordUmaResult(SimpleGeolocationRequestResult result, size_t retries) {
   UMA_HISTOGRAM_ENUMERATION("SimpleGeolocation.Request.Result",
                             result,
                             SIMPLE_GEOLOCATION_REQUEST_RESULT_COUNT);
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SimpleGeolocation.Request.Retries",
-                              std::min(retries, kMaxRetriesValueInHistograms));
+  base::UmaHistogramSparse("SimpleGeolocation.Request.Retries",
+                           std::min(retries, kMaxRetriesValueInHistograms));
 }
 
 // Creates the request url to send to the server.

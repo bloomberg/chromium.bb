@@ -709,8 +709,8 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
         verify_job_->BytesRead(num_bytes_read, static_cast<const char*>(data));
     } else {
       net::Error net_error = net::FileErrorToNetError(read_result);
-      UMA_HISTOGRAM_SPARSE_SLOWLY("ExtensionUrlRequest.OnReadCompleteError",
-                                  net_error);
+      base::UmaHistogramSparse("ExtensionUrlRequest.OnReadCompleteError",
+                               net_error);
     }
   }
 
