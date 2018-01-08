@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
+#include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
@@ -222,6 +223,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
       {"keystone_promotion", IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
+      {"installation_error", IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE},
       {"alternate_nav", IBD::ALTERNATE_NAV_INFOBAR_DELEGATE},
       {"bad_flags", IBD::BAD_FLAGS_INFOBAR_DELEGATE},
       {"default_browser", IBD::DEFAULT_BROWSER_INFOBAR_DELEGATE},
@@ -287,6 +289,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
     case IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE:
       CollectedCookiesInfoBarDelegate::Create(GetInfoBarService());
+      break;
+    case IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE:
+      InstallationErrorInfoBarDelegate::Create(GetInfoBarService(),
+                                               extensions::CrxInstallError());
       break;
     case IBD::ALTERNATE_NAV_INFOBAR_DELEGATE: {
       AutocompleteMatch match;
@@ -418,6 +424,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_keystone_promotion) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_collected_cookies) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_installation_error) {
   ShowAndVerifyUi();
 }
 

@@ -21,18 +21,15 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/extensions/installation_error_infobar_delegate.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/extensions/extension_installed_notification.h"
@@ -65,69 +62,6 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
   Browser* browser = FindOrCreateVisibleBrowser(profile);
   if (browser)
     ExtensionInstalledBubble::ShowBubble(extension, browser, icon);
-}
-
-// Helper class to put up an infobar when installation fails.
-class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // Creates an error infobar and delegate and adds the infobar to
-  // |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     const extensions::CrxInstallError& error);
-
- private:
-  explicit ErrorInfoBarDelegate(const extensions::CrxInstallError& error);
-  ~ErrorInfoBarDelegate() override;
-
-  // ConfirmInfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  base::string16 GetMessageText() const override;
-  int GetButtons() const override;
-  base::string16 GetLinkText() const override;
-  GURL GetLinkURL() const override;
-
-  extensions::CrxInstallError error_;
-
-  DISALLOW_COPY_AND_ASSIGN(ErrorInfoBarDelegate);
-};
-
-// static
-void ErrorInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                  const extensions::CrxInstallError& error) {
-  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(
-          new ErrorInfoBarDelegate(error))));
-}
-
-ErrorInfoBarDelegate::ErrorInfoBarDelegate(
-    const extensions::CrxInstallError& error)
-    : ConfirmInfoBarDelegate(), error_(error) {
-}
-
-ErrorInfoBarDelegate::~ErrorInfoBarDelegate() {
-}
-
-infobars::InfoBarDelegate::InfoBarIdentifier
-ErrorInfoBarDelegate::GetIdentifier() const {
-  return INSTALLATION_ERROR_INFOBAR_DELEGATE;
-}
-
-base::string16 ErrorInfoBarDelegate::GetMessageText() const {
-  return error_.message();
-}
-
-int ErrorInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
-base::string16 ErrorInfoBarDelegate::GetLinkText() const {
-  return (error_.type() == extensions::CrxInstallError::ERROR_OFF_STORE)
-             ? l10n_util::GetStringUTF16(IDS_LEARN_MORE)
-             : base::string16();
-}
-
-GURL ErrorInfoBarDelegate::GetLinkURL() const {
-  return GURL("https://support.google.com/chrome_webstore/?p=crx_warning");
 }
 
 }  // namespace
@@ -191,8 +125,8 @@ void ExtensionInstallUIDefault::OnInstallFailure(
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
-  ErrorInfoBarDelegate::Create(InfoBarService::FromWebContents(web_contents),
-                               error);
+  InstallationErrorInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), error);
 }
 
 void ExtensionInstallUIDefault::OpenAppInstalledUI(const std::string& app_id) {
