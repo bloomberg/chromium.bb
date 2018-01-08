@@ -180,8 +180,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
 }
 
 bool DelegatedFrameHost::CanCopyFromCompositingSurface() const {
-  return compositor_ &&
-         client_->DelegatedFrameHostGetLayer()->has_external_content();
+  return compositor_ && HasFallbackSurface();
 }
 
 void DelegatedFrameHost::BeginFrameSubscription(
