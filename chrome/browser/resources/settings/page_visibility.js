@@ -18,7 +18,7 @@
  *   reset:(boolean|undefined),
  * }}
  */
-var GuestModePageVisibility;
+let GuestModePageVisibility;
 
 /**
  * @typedef {{
@@ -29,21 +29,21 @@ var GuestModePageVisibility;
  *   setWallpaper: boolean,
  * }}
  */
-var AppearancePageVisibility;
+let AppearancePageVisibility;
 
 /**
  * @typedef {{
  *   timeZoneSelector: boolean,
  * }}
  */
-var DateTimePageVisibility;
+let DateTimePageVisibility;
 
 /**
  * @typedef {{
  *   googleDrive: boolean
  * }}
  */
-var DownloadsPageVisibility;
+let DownloadsPageVisibility;
 
 /**
  * @typedef {{
@@ -51,14 +51,14 @@ var DownloadsPageVisibility;
  *   searchPrediction: boolean,
  * }}
  */
-var PrivacyPageVisibility;
+let PrivacyPageVisibility;
 
 cr.define('settings', function() {
   /**
    * Dictionary defining page visibility.
    * @type {!GuestModePageVisibility}
    */
-  var pageVisibility;
+  let pageVisibility;
 
   if (loadTimeData.getBoolean('isGuest')) {
     // "if not chromeos" and "if chromeos" in two completely separate blocks

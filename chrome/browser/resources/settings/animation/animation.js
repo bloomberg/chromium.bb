@@ -10,11 +10,8 @@
 cr.define('settings.animation', function() {
   'use strict';
 
-  /**
-   * Default timing constants.
-   * @const
-   */
-  var Timing = {
+  /** Default timing constants. */
+  const Timing = {
     DURATION: 250,
     EASING: 'cubic-bezier(0.4, 0, 0.2, 1)',  // Fast out, slow in.
   };
@@ -36,7 +33,7 @@ cr.define('settings.animation', function() {
     // Disallow direct usage of the underlying animation.
     this.animation_ = el.animate(keyframes, opt_options);
 
-    var self = this;
+    const self = this;
     /** @type {!Promise} */
     this.finished = new Promise(function(resolve, reject) {
       // If we were implementing the full spec, we'd have to support

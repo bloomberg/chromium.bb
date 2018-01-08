@@ -66,7 +66,7 @@ Polymer({
 
     // Only handle iron-select events from neon-animatable elements and the
     // given whitelist of settings-subpage instances.
-    var whitelist = 'settings-subpage#site-settings';
+    let whitelist = 'settings-subpage#site-settings';
 
     if (settings.routes.SITE_SETTINGS_COOKIES) {
       whitelist += ', settings-subpage[route-path=\"' +
@@ -83,7 +83,7 @@ Polymer({
     if (!e.detail.item.matches('neon-animatable, ' + whitelist))
       return;
 
-    var selector = this.focusConfig.get(this.previousRoute_.path);
+    const selector = this.focusConfig.get(this.previousRoute_.path);
     if (selector) {
       // neon-animatable has "display: none" until the animation finishes, so
       // calling focus() on any of its children has no effect until "display:
@@ -150,16 +150,16 @@ Polymer({
 
     if (oldRoute) {
       if (oldRoute.isSubpage() && newRoute.depth > oldRoute.depth) {
-        var isRtl = loadTimeData.getString('textdirection') == 'rtl';
-        var exit = isRtl ? 'right' : 'left';
-        var entry = isRtl ? 'left' : 'right';
+        const isRtl = loadTimeData.getString('textdirection') == 'rtl';
+        const exit = isRtl ? 'right' : 'left';
+        const entry = isRtl ? 'left' : 'right';
         this.$.animatedPages.exitAnimation = 'slide-' + exit + '-animation';
         this.$.animatedPages.entryAnimation =
             'slide-from-' + entry + '-animation';
       } else if (oldRoute.depth > newRoute.depth) {
-        var isRtl = loadTimeData.getString('textdirection') == 'rtl';
-        var exit = isRtl ? 'left' : 'right';
-        var entry = isRtl ? 'right' : 'left';
+        const isRtl = loadTimeData.getString('textdirection') == 'rtl';
+        const exit = isRtl ? 'left' : 'right';
+        const entry = isRtl ? 'right' : 'left';
         this.$.animatedPages.exitAnimation = 'slide-' + exit + '-animation';
         this.$.animatedPages.entryAnimation =
             'slide-from-' + entry + '-animation';
@@ -189,8 +189,8 @@ Polymer({
    * @private
    */
   ensureSubpageInstance_: function() {
-    var routePath = settings.getCurrentRoute().path;
-    var template = Polymer.dom(this).querySelector(
+    const routePath = settings.getCurrentRoute().path;
+    const template = Polymer.dom(this).querySelector(
         'template[route-path="' + routePath + '"]');
 
     // Nothing to do if the subpage isn't wrapped in a <template> or the
@@ -199,8 +199,8 @@ Polymer({
       return;
 
     // Set the subpage's id for use by neon-animated-pages.
-    var subpage = /** @type {{_content: DocumentFragment}} */ (template)
-                      ._content.querySelector('settings-subpage');
+    const subpage = /** @type {{_content: DocumentFragment}} */ (template)
+                        ._content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 
     // Carry over the 'no-search' attribute from the template to the stamped

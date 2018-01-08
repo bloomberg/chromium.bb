@@ -44,7 +44,7 @@ Polymer({
    */
   onOpenActionMenuTap_: function(e) {
     this.activePrinter = e.model.item;
-    var menu = /** @type {!CrActionMenuElement} */ (
+    const menu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     menu.showAt(/** @type {!Element} */ (
         Polymer.dom(/** @type {!Event} */ (e)).localTarget));
@@ -65,7 +65,7 @@ Polymer({
    * @private
    */
   onRemoveTap_: function(event) {
-    var index = this.printers.indexOf(assert(this.activePrinter));
+    const index = this.printers.indexOf(assert(this.activePrinter));
     this.splice('printers', index, 1);
     this.browserProxy_.removeCupsPrinter(
         this.activePrinter.printerId, this.activePrinter.printerName);
@@ -75,7 +75,7 @@ Polymer({
 
   /** @private */
   closeDropdownMenu_: function() {
-    var menu = /** @type {!CrActionMenuElement} */ (
+    const menu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     menu.close();
   },

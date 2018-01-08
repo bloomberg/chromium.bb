@@ -41,11 +41,11 @@ Polymer({
    */
   getAllSitesList_: function() {
     /** @type {!Array<!RawSiteException>} */
-    var promiseList = [];
+    const promiseList = [];
 
-    var types = Object.values(settings.ContentSettingsTypes);
-    for (var i = 0; i < types.length; i++) {
-      var type = types[i];
+    const types = Object.values(settings.ContentSettingsTypes);
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
       // <if expr="not chromeos">
       if (type == settings.ContentSettingsTypes.PROTECTED_CONTENT)
         continue;
@@ -86,10 +86,10 @@ Polymer({
    * @private
    */
   processExceptions_: function(data) {
-    var sites = /** @type {!Array<!RawSiteException>} */ ([]);
-    for (var i = 0; i < data.length; ++i) {
-      var exceptionList = data[i];
-      for (var k = 0; k < exceptionList.length; ++k) {
+    const sites = /** @type {!Array<!RawSiteException>} */ ([]);
+    for (let i = 0; i < data.length; ++i) {
+      const exceptionList = data[i];
+      for (let k = 0; k < exceptionList.length; ++k) {
         sites.push(exceptionList[k]);
       }
     }
@@ -107,19 +107,19 @@ Polymer({
    * @private
    */
   toSiteArray_: function(sites) {
-    var self = this;
+    const self = this;
     sites.sort(function(a, b) {
-      var url1 = self.toUrl(a.origin);
-      var url2 = self.toUrl(b.origin);
-      var comparison = url1.host.localeCompare(url2.host);
+      const url1 = self.toUrl(a.origin);
+      const url2 = self.toUrl(b.origin);
+      let comparison = url1.host.localeCompare(url2.host);
       if (comparison == 0) {
         comparison = url1.protocol.localeCompare(url2.protocol);
         if (comparison == 0) {
           comparison = url1.port.localeCompare(url2.port);
           if (comparison == 0) {
             // Compare hosts for the embedding origins.
-            var host1 = self.toUrl(a.embeddingOrigin);
-            var host2 = self.toUrl(b.embeddingOrigin);
+            let host1 = self.toUrl(a.embeddingOrigin);
+            let host2 = self.toUrl(b.embeddingOrigin);
             host1 = (host1 == null) ? '' : host1.host;
             host2 = (host2 == null) ? '' : host2.host;
             return host1.localeCompare(host2);
@@ -128,17 +128,17 @@ Polymer({
       }
       return comparison;
     });
-    var results = /** @type {!Array<!SiteException>} */ ([]);
-    var lastOrigin = '';
-    var lastEmbeddingOrigin = '';
-    for (var i = 0; i < sites.length; ++i) {
+    const results = /** @type {!Array<!SiteException>} */ ([]);
+    let lastOrigin = '';
+    let lastEmbeddingOrigin = '';
+    for (let i = 0; i < sites.length; ++i) {
       // Remove duplicates.
       if (sites[i].origin == lastOrigin &&
           sites[i].embeddingOrigin == lastEmbeddingOrigin) {
         continue;
       }
       /** @type {!SiteException} */
-      var siteException = this.expandSiteException(sites[i]);
+      const siteException = this.expandSiteException(sites[i]);
       results.push(siteException);
       lastOrigin = siteException.origin;
       lastEmbeddingOrigin = siteException.embeddingOrigin;

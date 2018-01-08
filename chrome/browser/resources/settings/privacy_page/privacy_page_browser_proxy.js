@@ -5,7 +5,7 @@
 /** @fileoverview Handles interprocess communication for the privacy page. */
 
 /** @typedef {{enabled: boolean, managed: boolean}} */
-var MetricsReporting;
+let MetricsReporting;
 
 cr.define('settings', function() {
   /** @interface */

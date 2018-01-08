@@ -80,7 +80,7 @@ Polymer({
     focusConfig_: {
       type: Object,
       value: function() {
-        var map = new Map();
+        const map = new Map();
         if (settings.routes.DETAILED_BUILD_INFO) {
           map.set(
               settings.routes.DETAILED_BUILD_INFO.path,
@@ -309,7 +309,7 @@ Polymer({
         return this.i18nAdvanced('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
         assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
-        var progressPercent = this.currentUpdateStatusEvent_.progress + '%';
+        const progressPercent = this.currentUpdateStatusEvent_.progress + '%';
 
         // <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_) {
@@ -338,11 +338,11 @@ Polymer({
           return parseHtmlSubset('<b>' + msg + '</b>', ['br', 'pre'])
               .firstChild.innerHTML;
         }
-        var result = '';
-        var message = this.currentUpdateStatusEvent_.message;
+        let result = '';
+        const message = this.currentUpdateStatusEvent_.message;
         if (message)
           result += formatMessage(message);
-        var connectMessage = this.currentUpdateStatusEvent_.connectionTypes;
+        const connectMessage = this.currentUpdateStatusEvent_.connectionTypes;
         if (connectMessage)
           result += '<div>' + formatMessage(connectMessage) + '</div>';
         return result;
@@ -442,7 +442,7 @@ Polymer({
   computeShowCheckUpdates_: function() {
     // Enable the update button if we are in a stale 'updated' status or
     // update has failed. Disable it otherwise.
-    var staleUpdatedStatus =
+    const staleUpdatedStatus =
         !this.hasCheckedForUpdates_ && this.checkStatus_(UpdateStatus.UPDATED);
 
     return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED);

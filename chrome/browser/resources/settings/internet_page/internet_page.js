@@ -216,15 +216,15 @@ Polymer({
     if (route == settings.routes.INTERNET_NETWORKS) {
       // Handle direct navigation to the networks page,
       // e.g. chrome://settings/internet/networks?type=WiFi
-      var queryParams = settings.getQueryParameters();
-      var type = queryParams.get('type');
+      const queryParams = settings.getQueryParameters();
+      const type = queryParams.get('type');
       if (type)
         this.subpageType_ = type;
     } else if (route == settings.routes.KNOWN_NETWORKS) {
       // Handle direct navigation to the known networks page,
       // e.g. chrome://settings/internet/knownNetworks?type=WiFi
-      var queryParams = settings.getQueryParameters();
-      var type = queryParams.get('type');
+      const queryParams = settings.getQueryParameters();
+      const type = queryParams.get('type');
       if (type)
         this.knownNetworksType_ = type;
     } else if (
@@ -238,7 +238,7 @@ Polymer({
       return;
 
     // Focus the subpage arrow where appropriate.
-    var selector;
+    let selector;
     if (route == settings.routes.INTERNET_NETWORKS) {
       // iron-list makes the correct timing to focus an item in the list
       // very complicated, and the item may not exist, so just focus the
@@ -271,7 +271,7 @@ Polymer({
    * @private
    */
   onShowConfig_: function(event) {
-    var properties = event.detail;
+    const properties = event.detail;
     this.showConfig_(
         properties.Type, properties.GUID, CrOnc.getNetworkName(properties));
   },
@@ -283,7 +283,7 @@ Polymer({
    * @private
    */
   showConfig_: function(type, guid, name) {
-    var configDialog =
+    const configDialog =
         /** @type {!InternetConfigElement} */ (this.$.configDialog);
     configDialog.type =
         /** @type {chrome.networkingPrivate.NetworkType} */ (type);
@@ -298,7 +298,7 @@ Polymer({
    */
   onShowDetail_: function(event) {
     this.detailType_ = event.detail.Type;
-    var params = new URLSearchParams;
+    const params = new URLSearchParams;
     params.append('guid', event.detail.GUID);
     params.append('type', event.detail.Type);
     if (event.detail.Name)
@@ -358,7 +358,7 @@ Polymer({
    */
   onShowKnownNetworks_: function(event) {
     this.detailType_ = event.detail.Type;
-    var params = new URLSearchParams;
+    const params = new URLSearchParams;
     params.append('type', event.detail.Type);
     this.knownNetworksType_ = event.detail.type;
     settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
@@ -398,7 +398,7 @@ Polymer({
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
-    var provider = event.model.item;
+    const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
   },
 
@@ -413,7 +413,7 @@ Polymer({
    */
   showNetworksSubpage_: function(type) {
     this.detailType_ = type;
-    var params = new URLSearchParams;
+    const params = new URLSearchParams;
     params.append('type', type);
     this.subpageType_ = type;
     settings.navigateTo(settings.routes.INTERNET_NETWORKS, params);
@@ -425,8 +425,8 @@ Polymer({
    * @private
    */
   onGetAllExtensions_: function(extensions) {
-    var vpnProviders = [];
-    for (var i = 0; i < extensions.length; ++i)
+    const vpnProviders = [];
+    for (let i = 0; i < extensions.length; ++i)
       this.addVpnProvider_(vpnProviders, extensions[i]);
     this.thirdPartyVpnProviders_ = vpnProviders;
   },
@@ -448,7 +448,7 @@ Polymer({
         })) {
       return;
     }
-    var newProvider = {
+    const newProvider = {
       ExtensionID: extension.id,
       ProviderName: extension.name,
     };
@@ -463,7 +463,7 @@ Polymer({
    * @private
    */
   onNetworkListChanged_: function(networkIds) {
-    var event = new CustomEvent('network-list-changed', {detail: networkIds});
+    const event = new CustomEvent('network-list-changed', {detail: networkIds});
     this.maybeDispatchEvent_('network-summary', event);
     this.maybeDispatchEvent_('settings-internet-detail-page', event);
     this.maybeDispatchEvent_('settings-internet-known-networks-page', event);
@@ -478,7 +478,7 @@ Polymer({
    * @private
    */
   onNetworksChanged_: function(networkIds) {
-    var event = new CustomEvent('networks-changed', {detail: networkIds});
+    const event = new CustomEvent('networks-changed', {detail: networkIds});
     this.maybeDispatchEvent_('network-summary', event);
     this.maybeDispatchEvent_('settings-internet-detail-page', event);
   },
@@ -488,7 +488,7 @@ Polymer({
    * @private
    */
   maybeDispatchEvent_: function(identifier, event) {
-    var element = this.$$(identifier);
+    const element = this.$$(identifier);
     if (!element)
       return;
     element.dispatchEvent(event);
@@ -509,8 +509,8 @@ Polymer({
    * @private
    */
   onExtensionRemoved_: function(extensionId) {
-    for (var i = 0; i < this.thirdPartyVpnProviders_.length; ++i) {
-      var provider = this.thirdPartyVpnProviders_[i];
+    for (let i = 0; i < this.thirdPartyVpnProviders_.length; ++i) {
+      const provider = this.thirdPartyVpnProviders_[i];
       if (provider.ExtensionID == extensionId) {
         this.splice('thirdPartyVpnProviders_', i, 1);
         break;
@@ -585,10 +585,10 @@ Polymer({
    * @private
    */
   onNetworkConnect_: function(event) {
-    var properties = event.detail.networkProperties;
+    const properties = event.detail.networkProperties;
     if (!event.detail.bypassConnectionDialog &&
         CrOnc.shouldShowTetherDialogBeforeConnection(properties)) {
-      var params = new URLSearchParams;
+      const params = new URLSearchParams;
       params.append('guid', properties.GUID);
       params.append('type', properties.Type);
       params.append('name', CrOnc.getNetworkName(properties));
@@ -600,7 +600,7 @@ Polymer({
 
     this.networkingPrivate.startConnect(properties.GUID, function() {
       if (chrome.runtime.lastError) {
-        var message = chrome.runtime.lastError.message;
+        const message = chrome.runtime.lastError.message;
         if (message == 'connecting' || message == 'connect-canceled' ||
             message == 'connected' || message == 'Error.InvalidNetworkGuid') {
           return;

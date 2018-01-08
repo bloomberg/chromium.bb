@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+(function() {
+'use strict';
 
 /**
  * This is the absolute difference maintained between standard and
  * fixed-width font sizes. http://crbug.com/91922.
- * @const @private {number}
+ * @type {number}
  */
-var SIZE_DIFFERENCE_FIXED_STANDARD_ = 3;
+const SIZE_DIFFERENCE_FIXED_STANDARD = 3;
 
 
 /**
@@ -101,7 +103,7 @@ Polymer({
     focusConfig_: {
       type: Object,
       value: function() {
-        var map = new Map();
+        const map = new Map();
         if (settings.routes.FONTS) {
           map.set(
               settings.routes.FONTS.path, '#customize-fonts-subpage-trigger');
@@ -193,7 +195,7 @@ Polymer({
     // to default_font_size (to simplify the UI).
     this.set(
         'prefs.webkit.webprefs.default_fixed_font_size.value',
-        value - SIZE_DIFFERENCE_FIXED_STANDARD_);
+        value - SIZE_DIFFERENCE_FIXED_STANDARD);
   },
 
   /**
@@ -283,7 +285,7 @@ Polymer({
       return;
     }
 
-    var i18nId;
+    let i18nId;
     // <if expr="is_linux and not chromeos">
     i18nId = useSystemTheme ? 'systemTheme' : 'classicTheme';
     // </if>
@@ -319,3 +321,4 @@ Polymer({
     return Math.abs(zoom1 - zoom2) <= 0.001;
   },
 });
+})();

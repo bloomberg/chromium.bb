@@ -4,9 +4,9 @@
 
 /**
  * Maximum number of bluetooth devices shown in bluetooth subpage.
- * @const {number}
+ * @type {number}
  */
-var MAX_NUMBER_DEVICE_SHOWN = 50;
+const MAX_NUMBER_DEVICE_SHOWN = 50;
 
 /**
  * @fileoverview
@@ -284,12 +284,12 @@ Polymer({
    * @private
    */
   onBluetoothDeviceUpdated_: function(device) {
-    var address = device.address;
+    const address = device.address;
     if (this.dialogShown_ && this.pairingDevice_ &&
         this.pairingDevice_.address == address) {
       this.pairingDevice_ = device;
     }
-    var index = this.deviceList_.findIndex(function(device) {
+    const index = this.deviceList_.findIndex(function(device) {
       return device.address == address;
     });
     if (index >= 0)
@@ -311,8 +311,8 @@ Polymer({
    * @private
    */
   onBluetoothDeviceRemoved_: function(device) {
-    var address = device.address;
-    var index = this.deviceList_.findIndex(function(device) {
+    const address = device.address;
+    const index = this.deviceList_.findIndex(function(device) {
       return device.address == address;
     });
     if (index >= 0)
@@ -325,7 +325,7 @@ Polymer({
       return;
 
     this.bluetooth.startDiscovery(function() {
-      var lastError = chrome.runtime.lastError;
+      const lastError = chrome.runtime.lastError;
       if (lastError) {
         if (lastError.message == 'Starting discovery failed')
           return;  // May happen if also started elsewhere, ignore.
@@ -340,7 +340,7 @@ Polymer({
       return;
 
     this.bluetooth.stopDiscovery(function() {
-      var lastError = chrome.runtime.lastError;
+      const lastError = chrome.runtime.lastError;
       if (lastError) {
         if (lastError.message == 'Failed to stop discovery')
           return;  // May happen if also stopped elsewhere, ignore.
@@ -354,8 +354,8 @@ Polymer({
    * @private
    */
   onDeviceEvent_: function(e) {
-    var action = e.detail.action;
-    var device = e.detail.device;
+    const action = e.detail.action;
+    const device = e.detail.device;
     if (action == 'connect')
       this.connectDevice_(device);
     else if (action == 'disconnect')
@@ -425,13 +425,13 @@ Polymer({
       this.openDialog_();
     }
 
-    var address = device.address;
+    const address = device.address;
     this.bluetoothPrivate.connect(address, result => {
       // If |pairingDevice_| has changed, ignore the connect result.
       if (this.pairingDevice_ && address != this.pairingDevice_.address)
         return;
       // Let the dialog handle any errors, otherwise close the dialog.
-      var dialog = this.$.deviceDialog;
+      const dialog = this.$.deviceDialog;
       if (dialog.handleError(device, chrome.runtime.lastError, result)) {
         this.openDialog_();
       } else if (
@@ -485,7 +485,7 @@ Polymer({
     this.dialogShown_ = false;
     this.pairingDevice_ = undefined;
     // The list is dynamic so focus the first item.
-    var device = this.$$('#unpairedContainer bluetooth-device-list-item');
+    const device = this.$$('#unpairedContainer bluetooth-device-list-item');
     if (device)
       device.focus();
   },
@@ -540,8 +540,8 @@ Polymer({
    * @private
    */
   populateDeviceList_: function(devices) {
-    var tempList = [];
-    var i;
+    const tempList = [];
+    let i;
     for (i = 0; i < devices.length; i++) {
       if (tempList.length == MAX_NUMBER_DEVICE_SHOWN)
         break;

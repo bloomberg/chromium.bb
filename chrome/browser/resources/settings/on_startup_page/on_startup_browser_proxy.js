@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /** @typedef {{id: string, name: string, canBeDisabled: boolean}} */
-var NtpExtension;
+let NtpExtension;
 
 cr.define('settings', function() {
   /** @interface */

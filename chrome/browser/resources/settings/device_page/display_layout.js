@@ -10,7 +10,7 @@
 
 (function() {
 
-/** @const {number} */ var MIN_VISUAL_SCALE = .01;
+/** @type {number} */ const MIN_VISUAL_SCALE = .01;
 
 Polymer({
   is: 'display-layout',
@@ -67,8 +67,8 @@ Polymer({
 
     this.initializeDisplayLayout(displays, layouts);
 
-    var self = this;
-    var retry = 100;  // ms
+    const self = this;
+    const retry = 100;  // ms
     function tryCalcVisualScale() {
       if (!self.calculateVisualScale_())
         setTimeout(tryCalcVisualScale, retry);
@@ -87,23 +87,23 @@ Polymer({
    * @private
    */
   calculateVisualScale_: function() {
-    var displayAreaDiv = this.$.displayArea;
+    const displayAreaDiv = this.$.displayArea;
     if (!displayAreaDiv || !displayAreaDiv.offsetWidth || !this.displays ||
         !this.displays.length) {
       return false;
     }
 
-    var display = this.displays[0];
-    var bounds = this.getCalculatedDisplayBounds(display.id);
-    var boundsBoundingBox = {
+    let display = this.displays[0];
+    let bounds = this.getCalculatedDisplayBounds(display.id);
+    const boundsBoundingBox = {
       left: bounds.left,
       right: bounds.left + bounds.width,
       top: bounds.top,
       bottom: bounds.top + bounds.height,
     };
-    var maxWidth = bounds.width;
-    var maxHeight = bounds.height;
-    for (var i = 1; i < this.displays.length; ++i) {
+    let maxWidth = bounds.width;
+    let maxHeight = bounds.height;
+    for (let i = 1; i < this.displays.length; ++i) {
       display = this.displays[i];
       bounds = this.getCalculatedDisplayBounds(display.id);
       boundsBoundingBox.left = Math.min(boundsBoundingBox.left, bounds.left);
@@ -118,15 +118,15 @@ Polymer({
 
     // Create a margin around the bounding box equal to the size of the
     // largest displays.
-    var boundsWidth = boundsBoundingBox.right - boundsBoundingBox.left;
-    var boundsHeight = boundsBoundingBox.bottom - boundsBoundingBox.top;
+    const boundsWidth = boundsBoundingBox.right - boundsBoundingBox.left;
+    const boundsHeight = boundsBoundingBox.bottom - boundsBoundingBox.top;
 
     // Calculate the scale.
-    var horizontalScale =
+    const horizontalScale =
         displayAreaDiv.offsetWidth / (boundsWidth + maxWidth * 2);
-    var verticalScale =
+    const verticalScale =
         displayAreaDiv.offsetHeight / (boundsHeight + maxHeight * 2);
-    var scale = Math.min(horizontalScale, verticalScale);
+    const scale = Math.min(horizontalScale, verticalScale);
 
     // Calculate the offset.
     this.visualOffset_.left =
@@ -152,20 +152,20 @@ Polymer({
    */
   getDivStyle_: function(id, displayBounds, visualScale, opt_offset) {
     // This matches the size of the box-shadow or border in CSS.
-    /** @const {number} */ var BORDER = 1;
-    /** @const {number} */ var MARGIN = 4;
-    /** @const {number} */ var OFFSET = opt_offset || 0;
-    /** @const {number} */ var PADDING = 3;
-    var bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
+    /** @type {number} */ const BORDER = 1;
+    /** @type {number} */ const MARGIN = 4;
+    /** @type {number} */ const OFFSET = opt_offset || 0;
+    /** @type {number} */ const PADDING = 3;
+    const bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
     if (!bounds)
       return '';
-    var height = Math.round(bounds.height * this.visualScale) - BORDER * 2 -
+    const height = Math.round(bounds.height * this.visualScale) - BORDER * 2 -
         MARGIN * 2 - PADDING * 2;
-    var width = Math.round(bounds.width * this.visualScale) - BORDER * 2 -
+    const width = Math.round(bounds.width * this.visualScale) - BORDER * 2 -
         MARGIN * 2 - PADDING * 2;
-    var left = OFFSET +
+    const left = OFFSET +
         Math.round(this.visualOffset_.left + (bounds.left * this.visualScale));
-    var top = OFFSET +
+    const top = OFFSET +
         Math.round(this.visualOffset_.top + (bounds.top * this.visualScale));
     return 'height: ' + height + 'px; width: ' + width + 'px;' +
         ' left: ' + left + 'px; top: ' + top + 'px';
@@ -219,7 +219,7 @@ Polymer({
   onDrag_: function(id, amount) {
     id = id.substr(1);  // Skip prefix
 
-    var newBounds;
+    let newBounds;
     if (!amount) {
       this.finishUpdateDisplayBounds(id);
       newBounds = this.getCalculatedDisplayBounds(id);
@@ -228,7 +228,7 @@ Polymer({
       if (id != this.selectedDisplay.id)
         this.fire('select-display', id);
 
-      var calculatedBounds = this.getCalculatedDisplayBounds(id);
+      const calculatedBounds = this.getCalculatedDisplayBounds(id);
       newBounds =
           /** @type {chrome.system.display.Bounds} */ (
               Object.assign({}, calculatedBounds));
@@ -238,11 +238,11 @@ Polymer({
       if (this.displays.length >= 2)
         newBounds = this.updateDisplayBounds(id, newBounds);
     }
-    var left =
+    const left =
         this.visualOffset_.left + Math.round(newBounds.left * this.visualScale);
-    var top =
+    const top =
         this.visualOffset_.top + Math.round(newBounds.top * this.visualScale);
-    var div = this.$$('#_' + id);
+    const div = this.$$('#_' + id);
     div.style.left = '' + left + 'px';
     div.style.top = '' + top + 'px';
   },

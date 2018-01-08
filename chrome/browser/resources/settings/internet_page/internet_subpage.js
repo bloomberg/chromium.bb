@@ -210,7 +210,7 @@ Polymer({
   startScanning_: function() {
     if (this.scanIntervalId_ != null)
       return;
-    /** @const */ var INTERVAL_MS = 10 * 1000;
+    const INTERVAL_MS = 10 * 1000;
     this.networkingPrivate.requestNetworkScan();
     this.scanIntervalId_ = window.setInterval(() => {
       this.networkingPrivate.requestNetworkScan();
@@ -229,7 +229,7 @@ Polymer({
   getNetworkStateList_: function() {
     if (!this.deviceState)
       return;
-    var filter = {
+    const filter = {
       networkType: this.deviceState.Type,
       visible: true,
       configured: false
@@ -248,7 +248,7 @@ Polymer({
     // For the Cellular/Mobile subpage, request Tether networks if available.
     if (this.deviceState.Type == CrOnc.Type.CELLULAR &&
         this.tetherDeviceState) {
-      var filter = {
+      const filter = {
         networkType: CrOnc.Type.TETHER,
         visible: true,
         configured: false
@@ -261,17 +261,17 @@ Polymer({
 
     // For VPNs, separate out third party VPNs and Arc VPNs.
     if (this.deviceState.Type == CrOnc.Type.VPN) {
-      var builtinNetworkStates = [];
-      var thirdPartyVpns = {};
-      var arcVpns = {};
-      for (var i = 0; i < networkStates.length; ++i) {
-        var state = networkStates[i];
-        var providerType = this.get('VPN.ThirdPartyVPN.ProviderName', state);
+      const builtinNetworkStates = [];
+      const thirdPartyVpns = {};
+      const arcVpns = {};
+      for (let i = 0; i < networkStates.length; ++i) {
+        const state = networkStates[i];
+        const providerType = this.get('VPN.ThirdPartyVPN.ProviderName', state);
         if (providerType) {
           thirdPartyVpns[providerType] = thirdPartyVpns[providerType] || [];
           thirdPartyVpns[providerType].push(state);
         } else if (this.get('VPN.Type', state) == 'ARCVPN') {
-          var arcProviderName = this.get('VPN.Host', state);
+          const arcProviderName = this.get('VPN.Host', state);
           if (state.ConnectionState != CrOnc.ConnectionState.CONNECTED)
             continue;
           arcVpns[arcProviderName] = arcVpns[arcProviderName] || [];
@@ -401,7 +401,7 @@ Polymer({
   /** @private */
   onAddButtonTap_: function() {
     assert(this.deviceState);
-    var type = this.deviceState.Type;
+    const type = this.deviceState.Type;
     assert(type != CrOnc.Type.CELLULAR);
     if (loadTimeData.getBoolean('networkSettingsConfig'))
       this.fire('show-config', {GUID: '', Type: type});
@@ -416,7 +416,7 @@ Polymer({
    * @private
    */
   onAddThirdPartyVpnTap_: function(event) {
-    var provider = event.model.item;
+    const provider = event.model.item;
     this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
   },
 
@@ -427,7 +427,7 @@ Polymer({
    * @private
    */
   onAddArcVpnTap_: function(event) {
-    var provider = event.model.item;
+    const provider = event.model.item;
     settings.InternetPageBrowserProxyImpl.getInstance().addThirdPartyVpn(
         CrOnc.Type.VPN, provider.AppID);
   },
@@ -482,7 +482,7 @@ Polymer({
    * @private
    */
   haveThirdPartyVpnNetwork_: function(thirdPartyVpns, vpnState) {
-    var list = this.getThirdPartyVpnNetworks_(thirdPartyVpns, vpnState);
+    const list = this.getThirdPartyVpnNetworks_(thirdPartyVpns, vpnState);
     return !!list.length;
   },
 
@@ -503,7 +503,7 @@ Polymer({
    * @private
    */
   haveArcVpnNetwork_: function(arcVpns, arcVpnProvider) {
-    var list = this.getArcVpnNetworks_(arcVpns, arcVpnProvider);
+    const list = this.getArcVpnNetworks_(arcVpns, arcVpnProvider);
     return !!list.length;
   },
 
@@ -515,7 +515,7 @@ Polymer({
   onNetworkSelected_: function(e) {
     assert(this.globalPolicy);
     assert(this.defaultNetwork !== undefined);
-    var state = e.detail;
+    const state = e.detail;
     e.target.blur();
     if (this.canConnect_(state, this.globalPolicy, this.defaultNetwork)) {
       this.fire('network-connect', {networkProperties: state});
@@ -608,7 +608,7 @@ Polymer({
    * @private
    */
   getNoNetworksString_: function(deviceState, tetherDeviceState) {
-    var type = deviceState.Type;
+    const type = deviceState.Type;
     if (type == CrOnc.Type.TETHER ||
         (type == CrOnc.Type.CELLULAR && this.tetherDeviceState)) {
       return this.i18nAdvanced('internetNoNetworksMobileData');

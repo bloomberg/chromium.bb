@@ -5,7 +5,7 @@
 (function() {
 'use strict';
 
-var categoryLabels = {
+const categoryLabels = {
   app_cache: loadTimeData.getString('cookieAppCache'),
   cache_storage: loadTimeData.getString('cookieCacheStorage'),
   channel_id: loadTimeData.getString('cookieChannelId'),
@@ -71,7 +71,7 @@ Polymer({
     if (settings.getCurrentRoute() !=
         settings.routes.SITE_SETTINGS_DATA_DETAILS)
       return;
-    var site = settings.getQueryParameters().get('site');
+    const site = settings.getQueryParameters().get('site');
     if (!site)
       return;
     this.site_ = site;

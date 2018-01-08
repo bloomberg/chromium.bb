@@ -208,7 +208,7 @@ Polymer({
   onAddSiteTap_: function(e) {
     assert(!this.readOnlyList);
     e.preventDefault();
-    var dialog = document.createElement('add-site-dialog');
+    const dialog = document.createElement('add-site-dialog');
     dialog.category = this.category;
     dialog.contentSetting = this.categorySubtype;
     this.shadowRoot.appendChild(dialog);
@@ -239,10 +239,10 @@ Polymer({
    * @private
    */
   processExceptions_: function(data) {
-    var sites = /** @type {!Array<RawSiteException>} */ ([]);
-    for (var i = 0; i < data.length; ++i) {
-      var exceptionList = data[i];
-      for (var k = 0; k < exceptionList.length; ++k) {
+    const sites = /** @type {!Array<RawSiteException>} */ ([]);
+    for (let i = 0; i < data.length; ++i) {
+      const exceptionList = data[i];
+      for (let k = 0; k < exceptionList.length; ++k) {
         if (exceptionList[k].setting == settings.ContentSetting.DEFAULT ||
             exceptionList[k].setting != this.categorySubtype) {
           continue;
@@ -262,12 +262,12 @@ Polymer({
    * @private
    */
   toSiteArray_: function(sites) {
-    var results = /** @type {!Array<SiteException>} */ ([]);
-    var lastOrigin = '';
-    var lastEmbeddingOrigin = '';
-    for (var i = 0; i < sites.length; ++i) {
+    const results = /** @type {!Array<SiteException>} */ ([]);
+    let lastOrigin = '';
+    let lastEmbeddingOrigin = '';
+    for (let i = 0; i < sites.length; ++i) {
       /** @type {!SiteException} */
-      var siteException = this.expandSiteException(sites[i]);
+      const siteException = this.expandSiteException(sites[i]);
 
       results.push(siteException);
       lastOrigin = siteException.origin;
@@ -389,7 +389,7 @@ Polymer({
    * @return {string} The site description.
    */
   computeSiteDescription_: function(item) {
-    var displayName = '';
+    let displayName = '';
     if (item.embeddingOrigin) {
       displayName = loadTimeData.getStringF(
           'embeddedOnHost', this.sanitizePort(item.embeddingOrigin));
@@ -430,7 +430,7 @@ Polymer({
   closeActionMenu_: function() {
     this.actionMenuSite_ = null;
     this.activeDialogAnchor_ = null;
-    var actionMenu = /** @type {!CrActionMenuElement} */ (
+    const actionMenu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     if (actionMenu.open)
       actionMenu.close();

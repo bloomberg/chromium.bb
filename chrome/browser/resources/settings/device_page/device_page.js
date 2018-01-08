@@ -56,7 +56,7 @@ Polymer({
     focusConfig_: {
       type: Object,
       value: function() {
-        var map = new Map();
+        const map = new Map();
         if (settings.routes.POINTERS)
           map.set(settings.routes.POINTERS.path, '#pointersRow .subpage-arrow');
         if (settings.routes.KEYBOARD)

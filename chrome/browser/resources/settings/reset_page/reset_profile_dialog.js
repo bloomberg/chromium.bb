@@ -105,7 +105,7 @@ Polymer({
       // For the non-triggered reset dialog, a '#cct' hash indicates that the
       // reset request came from the Chrome Cleanup Tool by launching Chrome
       // with the startup URL chrome://settings/resetProfileSettings#cct.
-      var origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
+      const origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
           'cct' :
           settings.getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';

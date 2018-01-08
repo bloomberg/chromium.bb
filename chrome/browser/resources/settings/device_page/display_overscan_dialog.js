@@ -120,7 +120,7 @@ Polymer({
    * @private
    */
   move_: function(x, y) {
-    /** @type {!chrome.system.display.Insets} */ var delta = {
+    /** @type {!chrome.system.display.Insets} */ const delta = {
       left: x,
       top: y,
       right: x ? -x : 0,  // negating 0 will produce a double.
@@ -136,7 +136,7 @@ Polymer({
    * @private
    */
   resize_: function(x, y) {
-    /** @type {!chrome.system.display.Insets} */ var delta = {
+    /** @type {!chrome.system.display.Insets} */ const delta = {
       left: x,
       top: y,
       right: x,

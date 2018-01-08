@@ -344,12 +344,12 @@ Polymer({
    */
   toggleExpandButton_: function(e) {
     // The expand button handles toggling itself.
-    var expandButtonTag = 'CR-EXPAND-BUTTON';
+    const expandButtonTag = 'CR-EXPAND-BUTTON';
     if (e.target.tagName == expandButtonTag)
       return;
 
     /** @type {!CrExpandButtonElement} */
-    var expandButton = e.currentTarget.querySelector(expandButtonTag);
+    const expandButton = e.currentTarget.querySelector(expandButtonTag);
     assert(expandButton);
     expandButton.expanded = !expandButton.expanded;
   },
@@ -565,7 +565,7 @@ Polymer({
    * @private
    */
   renderCleanupCard_: function(state) {
-    var components = this.cardStateToComponentsMap_.get(state);
+    const components = this.cardStateToComponentsMap_.get(state);
     assert(components);
 
     this.title_ = components.title || '';
@@ -653,12 +653,9 @@ Polymer({
     };
   },
 
-  /**
-   * @param {boolean} enabled Whether to enable logs upload.
-   * @private
-   */
-  changeLogsPermission_: function(enabled) {
-    var enabled = this.$.chromeCleanupLogsUploadControl.checked;
+  /** @private */
+  changeLogsPermission_: function() {
+    const enabled = this.$.chromeCleanupLogsUploadControl.checked;
     this.browserProxy_.setLogsUploadPermission(enabled);
   },
 
@@ -711,7 +708,7 @@ Polymer({
    * |chromeCleanupLinkShowItems|.
    */
   updateShowItemsLinklabel_: function() {
-    var setShowItemsLabel = text => this.showItemsLinkLabel_ = text;
+    const setShowItemsLabel = text => this.showItemsLinkLabel_ = text;
     if (this.userInitiatedCleanupsEnabled_) {
       this.browserProxy_
           .getItemsToRemovePluralString(
@@ -734,7 +731,7 @@ Polymer({
      * The icons to show on the card.
      * @enum {settings.ChromeCleanupCardIcon}
      */
-    var icons = {
+    const icons = {
       // Card's icon indicates a cleanup offer.
       SYSTEM: {
         statusIcon: 'settings:security',
@@ -758,7 +755,7 @@ Polymer({
      * The action buttons to show on the card.
      * @enum {settings.ChromeCleanupCardActionButton}
      */
-    var actionButtons = {
+    const actionButtons = {
       FIND: {
         label: this.i18n('chromeCleanupFindButtonLable'),
         doAction: this.startScanning_.bind(this),
@@ -799,7 +796,7 @@ Polymer({
     // If user-initiated cleanups are enabled, there is no need for a custom
     // link to the Help Center article, as all settings page sections contain
     // a help link by default.
-    var learnMoreIfUserInitiatedCleanupsDisabled =
+    const learnMoreIfUserInitiatedCleanupsDisabled =
         this.userInitiatedCleanupsEnabled_ ?
         0 :
         settings.ChromeCleanupCardFlags.SHOW_LEARN_MORE;

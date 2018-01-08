@@ -165,14 +165,14 @@ Polymer({
 
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
-    var urlSearchQuery = settings.getQueryParameters().get('search') || '';
+    const urlSearchQuery = settings.getQueryParameters().get('search') || '';
     if (urlSearchQuery == this.lastSearchQuery_)
       return;
 
     this.lastSearchQuery_ = urlSearchQuery;
 
-    var toolbar = /** @type {!CrToolbarElement} */ (this.$$('cr-toolbar'));
-    var searchField =
+    const toolbar = /** @type {!CrToolbarElement} */ (this.$$('cr-toolbar'));
+    const searchField =
         /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
     // If the search was initiated by directly entering a search URL, need to
@@ -191,7 +191,7 @@ Polymer({
    * @private
    */
   onRefreshPref_: function(e) {
-    var prefName = /** @type {string} */ (e.detail);
+    const prefName = /** @type {string} */ (e.detail);
     return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(prefName);
   },
 
@@ -204,7 +204,7 @@ Polymer({
     // Trim leading whitespace only, to prevent searching for empty string. This
     // still allows the user to search for 'foo bar', while taking a long pause
     // after typing 'foo '.
-    var query = e.detail.replace(/^\s+/, '');
+    const query = e.detail.replace(/^\s+/, '');
     // Prevent duplicate history entries.
     if (query == this.lastSearchQuery_)
       return;

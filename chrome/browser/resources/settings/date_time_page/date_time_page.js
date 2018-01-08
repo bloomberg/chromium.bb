@@ -84,7 +84,7 @@ Polymer({
     focusConfig_: {
       type: Object,
       value: function() {
-        var map = new Map();
+        const map = new Map();
         if (settings.routes.DATETIME_TIMEZONE_SUBPAGE)
           map.set(
               settings.routes.DATETIME_TIMEZONE_SUBPAGE.path,
@@ -196,7 +196,7 @@ Polymer({
         return settings.TimeZoneAutoDetectMethod.DISABLED;
       }
 
-      var policyValue = /** @type{settings.SystemTimezoneProto} */ (
+      const policyValue = /** @type{settings.SystemTimezoneProto} */ (
           this.getPref('settings.resolve_device_timezone_by_geolocation_policy')
               .value);
 
@@ -227,7 +227,7 @@ Polymer({
    * @private
    */
   getTimeZoneAutoDetectMethodDisplayName_: function(method) {
-    var id = ([
+    const id = ([
       'setTimeZoneAutomaticallyDisabled',
       'setTimeZoneAutomaticallyIpOnlyDefault',
       'setTimeZoneAutomaticallyWithWiFiAccessPointsData',

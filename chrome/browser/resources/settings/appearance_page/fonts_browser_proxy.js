@@ -11,7 +11,7 @@
  *   extensionUrl: string
  * }}
  */
-var FontsData;
+let FontsData;
 
 cr.define('settings', function() {
   /** @interface */
