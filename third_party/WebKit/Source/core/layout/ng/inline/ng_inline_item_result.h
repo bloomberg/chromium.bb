@@ -75,9 +75,13 @@ struct CORE_EXPORT NGInlineItemResult {
   // Used only during line breaking.
   bool can_break_after = false;
 
-  // Has spaces that hangs beyond the end margin.
-  // Set only for text items.
-  bool has_hanging_spaces = false;
+  // True if this item contains only trailing spaces.
+  // Trailing spaces are measured differently that they are split from other
+  // text items.
+  // Used only when 'white-space: pre-wrap', because collapsible spaces are
+  // removed, and if 'pre', trailing spaces are not different from other
+  // characters.
+  bool has_only_trailing_spaces = false;
 
   // End effects for text items.
   // The effects are included in |shape_result|, but not in text content.
@@ -144,11 +148,9 @@ class CORE_EXPORT NGLineInfo {
                         LayoutUnit available_width,
                         LayoutUnit width);
 
-  // Start/end text offset of this line.
+  // Start text offset of this line.
   unsigned StartOffset() const { return start_offset_; }
-  unsigned EndOffset() const { return end_offset_; }
   void SetStartOffset(unsigned offset) { start_offset_ = offset; }
-  void SetEndOffset(unsigned offset) { end_offset_ = offset; }
 
   // The base direction of this line for the bidi algorithm.
   TextDirection BaseDirection() const { return base_direction_; }
@@ -176,7 +178,6 @@ class CORE_EXPORT NGLineInfo {
   LayoutUnit text_indent_;
 
   unsigned start_offset_;
-  unsigned end_offset_;
 
   TextDirection base_direction_ = TextDirection::kLtr;
 

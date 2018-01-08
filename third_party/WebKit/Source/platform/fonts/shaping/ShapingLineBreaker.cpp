@@ -34,10 +34,6 @@ ShapingLineBreaker::ShapingLineBreaker(
 
 namespace {
 
-inline bool IsHangableSpace(UChar ch) {
-  return ch == kSpaceCharacter || ch == kTabulationCharacter;
-}
-
 // ShapingLineBreaker computes using visual positions. This function flips
 // logical advance to visual, or vice versa.
 LayoutUnit FlipRtl(LayoutUnit value, TextDirection direction) {
@@ -121,11 +117,11 @@ unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
   unsigned previous_break_opportunity =
       break_iterator_->PreviousBreakOpportunity(offset, start);
   unsigned word_start = previous_break_opportunity;
-  if (break_iterator_->BreakSpace() != BreakSpaceType::kAfter) {
-    while (word_start < text.length() &&
-           LazyLineBreakIterator::IsBreakableSpace(text[word_start]))
-      word_start++;
-  }
+  // Skip the leading spaces of this word because the break iterator breaks
+  // before spaces.
+  while (word_start < text.length() &&
+         LazyLineBreakIterator::IsBreakableSpace(text[word_start]))
+    word_start++;
   if (offset >= word_start &&
       ShouldHyphenate(text, previous_break_opportunity, word_end)) {
     unsigned prefix_length = Hyphenate(offset, word_start, word_end, backwards);
@@ -227,7 +223,6 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   DCHECK_GE(start, range_start);
   DCHECK_LT(start, range_end);
   result_out->is_hyphenated = false;
-  result_out->has_hanging_spaces = false;
   const String& text = GetText();
 
   // The start position in the original shape results.
@@ -256,29 +251,17 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   // comparing floats. See ShapeLineZeroAvailableWidth on Linux/Mac.
   candidate_break = std::max(candidate_break, start);
 
-  unsigned break_opportunity;
-  if (break_iterator_->BreakSpace() == BreakSpaceType::kAfter &&
-      IsHangableSpace(text[candidate_break])) {
-    // If BreakAfterSpace, allow spaces to hang over the available space.
-    result_out->has_hanging_spaces = true;
-    break_opportunity = break_iterator_->NextBreakOpportunity(candidate_break);
+  unsigned break_opportunity = PreviousBreakOpportunity(
+      candidate_break, start, &result_out->is_hyphenated);
+  if (break_opportunity <= start) {
+    break_opportunity =
+        NextBreakOpportunity(std::max(candidate_break, start + 1), start,
+                             &result_out->is_hyphenated);
+    // |range_end| may not be a break opportunity, but this function cannot
+    // measure beyond it.
     if (break_opportunity >= range_end) {
       result_out->break_offset = range_end;
       return ShapeToEnd(start, start_position, range_end);
-    }
-  } else {
-    break_opportunity = PreviousBreakOpportunity(candidate_break, start,
-                                                 &result_out->is_hyphenated);
-    if (break_opportunity <= start) {
-      break_opportunity =
-          NextBreakOpportunity(std::max(candidate_break, start + 1), start,
-                               &result_out->is_hyphenated);
-      // |range_end| may not be a break opportunity, but this function cannot
-      // measure beyond it.
-      if (break_opportunity >= range_end) {
-        result_out->break_offset = range_end;
-        return ShapeToEnd(start, start_position, range_end);
-      }
     }
   }
   DCHECK_GT(break_opportunity, start);
