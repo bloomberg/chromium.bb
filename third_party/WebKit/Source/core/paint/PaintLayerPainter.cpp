@@ -1118,8 +1118,8 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                        painting_info.GetGlobalPaintFlags(), paint_flags,
                        &painting_info.root_layer->GetLayoutObject(),
                        fragment.fragment_data
-                           ? fragment.fragment_data->PaginationOffset()
-                           : LayoutPoint());
+                           ? fragment.fragment_data->LogicalTopInFlowThread()
+                           : LayoutUnit());
 
   paint_layer_.GetLayoutObject().Paint(paint_info, paint_offset);
 }

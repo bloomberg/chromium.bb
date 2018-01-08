@@ -38,6 +38,9 @@ class FragmentainerIterator {
   // flowthread to visual coordinates.
   LayoutSize PaginationOffset() const;
 
+  // The logical top of the current fragmentainer in flowthread.
+  LayoutUnit FragmentainerLogicalTopInFlowThread() const;
+
   // Return the physical clip rectangle of the current fragmentainer, relative
   // to the flow thread.
   LayoutRect ClipRectInFlowThread(

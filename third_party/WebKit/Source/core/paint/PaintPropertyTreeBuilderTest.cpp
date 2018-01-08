@@ -3452,7 +3452,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   }
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
+TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }
@@ -3478,6 +3478,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   EXPECT_EQ(4u, NumFragments(relpos));
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(relpos, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(relpos, 0).LogicalTopInFlowThread());
   EXPECT_EQ(FloatRect(-1000000, -1000000, 1000100, 1000030),
             FragmentAt(relpos, 0)
                 .PaintProperties()
@@ -3487,6 +3488,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
 
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(relpos, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(30), FragmentAt(relpos, 1).LogicalTopInFlowThread());
   EXPECT_EQ(FloatRect(100, 0, 1000000, 30), FragmentAt(relpos, 1)
                                                 .PaintProperties()
                                                 ->FragmentClip()
@@ -3495,6 +3497,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
 
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(relpos, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(60), FragmentAt(relpos, 2).LogicalTopInFlowThread());
   EXPECT_EQ(FloatRect(-1000000, 80, 1000100, 30), FragmentAt(relpos, 2)
                                                       .PaintProperties()
                                                       ->FragmentClip()
@@ -3503,6 +3506,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
 
   EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(relpos, 3).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(90), FragmentAt(relpos, 3).LogicalTopInFlowThread());
   EXPECT_EQ(FloatRect(100, 80, 1000000, 999910), FragmentAt(relpos, 3)
                                                      .PaintProperties()
                                                      ->FragmentClip()
@@ -3513,6 +3517,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   EXPECT_EQ(4u, NumFragments(flowthread));
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(flowthread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(flowthread, 0).LogicalTopInFlowThread());
   EXPECT_EQ(
       FragmentAt(flowthread, 0).PaintProperties()->FragmentClip()->ClipRect(),
       FragmentAt(relpos, 0).PaintProperties()->FragmentClip()->ClipRect());
@@ -3520,12 +3525,14 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   EXPECT_EQ(LayoutPoint(100, -30), FragmentAt(flowthread, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -30),
             FragmentAt(flowthread, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(30), FragmentAt(flowthread, 1).LogicalTopInFlowThread());
   EXPECT_EQ(
       FragmentAt(flowthread, 1).PaintProperties()->FragmentClip()->ClipRect(),
       FragmentAt(relpos, 1).PaintProperties()->FragmentClip()->ClipRect());
 
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(flowthread, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(60), FragmentAt(flowthread, 2).LogicalTopInFlowThread());
   EXPECT_EQ(
       FragmentAt(flowthread, 2).PaintProperties()->FragmentClip()->ClipRect(),
       FragmentAt(relpos, 2).PaintProperties()->FragmentClip()->ClipRect());
@@ -3533,6 +3540,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   EXPECT_EQ(LayoutPoint(100, -10), FragmentAt(flowthread, 3).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -10),
             FragmentAt(flowthread, 3).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(90), FragmentAt(flowthread, 3).LogicalTopInFlowThread());
   EXPECT_EQ(
       FragmentAt(flowthread, 3).PaintProperties()->FragmentClip()->ClipRect(),
       FragmentAt(relpos, 3).PaintProperties()->FragmentClip()->ClipRect());
@@ -3577,7 +3585,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       PaintOffsetsUnderMultiColumnVerticalRLWithOverflow) {
+       FragmentsUnderMultiColumnVerticalRLWithOverflow) {
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='multicol' style='columns:2; column-fill:auto; column-gap: 0;
@@ -3594,15 +3602,19 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_EQ(2u, NumFragments(thread));
   EXPECT_EQ(LayoutPoint(100, 0), FragmentAt(thread, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(thread, 0).LogicalTopInFlowThread());
   EXPECT_EQ(LayoutPoint(300, 100), FragmentAt(thread, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(200, 100), FragmentAt(thread, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(thread, 1).LogicalTopInFlowThread());
 
   LayoutObject* content = GetLayoutObjectByElementId("content");
   EXPECT_EQ(2u, NumFragments(content));
   EXPECT_EQ(LayoutPoint(-200, 0), FragmentAt(content, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
   EXPECT_EQ(LayoutPoint(0, 100), FragmentAt(content, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(200, 100), FragmentAt(content, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 1).LogicalTopInFlowThread());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
@@ -3631,10 +3643,13 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
   EXPECT_EQ(3u, NumFragments(thread));
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaintOffset());
   EXPECT_EQ(LayoutPoint(0, 0), FragmentAt(thread, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(thread, 0).LogicalTopInFlowThread());
   EXPECT_EQ(LayoutPoint(100, -200), FragmentAt(thread, 1).PaintOffset());
   EXPECT_EQ(LayoutPoint(100, -200), FragmentAt(thread, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(thread, 1).LogicalTopInFlowThread());
   EXPECT_EQ(LayoutPoint(200, -400), FragmentAt(thread, 2).PaintOffset());
   EXPECT_EQ(LayoutPoint(200, -400), FragmentAt(thread, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(400), FragmentAt(thread, 2).LogicalTopInFlowThread());
 
   LayoutObject* composited = GetLayoutObjectByElementId("composited");
   LayoutObject* non_composited_child =
@@ -3647,40 +3662,163 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedUnderMultiColumn) {
     EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(composited, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(), FragmentAt(composited, 0).LogicalTopInFlowThread());
     EXPECT_EQ(LayoutPoint(200, -100), FragmentAt(composited, 1).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(composited, 1).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(composited, 1).LogicalTopInFlowThread());
     EXPECT_EQ(2u, NumFragments(non_composited_child));
     EXPECT_EQ(LayoutPoint(100, 100),
               FragmentAt(non_composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(non_composited_child, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(),
+              FragmentAt(non_composited_child, 0).LogicalTopInFlowThread());
     EXPECT_EQ(LayoutPoint(200, -100),
               FragmentAt(non_composited_child, 1).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(non_composited_child, 1).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(non_composited_child, 1).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(composited_child));
     EXPECT_EQ(LayoutPoint(200, 50),
               FragmentAt(composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(200, -400),
               FragmentAt(composited_child, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(),
+              FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   } else {
     // SPv1* forces single fragment for composited layers.
     EXPECT_EQ(1u, NumFragments(composited));
     EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(composited, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(composited, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(composited, 0).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(non_composited_child));
     EXPECT_EQ(LayoutPoint(100, 100),
               FragmentAt(non_composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(non_composited_child, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(non_composited_child, 0).LogicalTopInFlowThread());
     EXPECT_EQ(1u, NumFragments(composited_child));
     EXPECT_EQ(LayoutPoint(100, 250),
               FragmentAt(composited_child, 0).PaintOffset());
     EXPECT_EQ(LayoutPoint(100, -200),
               FragmentAt(composited_child, 0).PaginationOffset());
+    EXPECT_EQ(LayoutUnit(200),
+              FragmentAt(composited_child, 0).LogicalTopInFlowThread());
   }
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedY) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='paged' style='overflow: -webkit-paged-y; column-gap: 0;
+        width: 100px; height: 100px'>
+      <div id='content' style='height: 250px'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(3u, NumFragments(content));
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(100), FragmentAt(content, 1).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 2).LogicalTopInFlowThread());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedYWithGap) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='paged' style='overflow: -webkit-paged-y; column-gap: 10px;
+        width: 100px; height: 100px'>
+      <div id='content' style='height: 250px'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(3u, NumFragments(content));
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(0, 10), FragmentAt(content, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 10), FragmentAt(content, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(100), FragmentAt(content, 1).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(content, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 20), FragmentAt(content, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 2).LogicalTopInFlowThread());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedX) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='paged' style='overflow: -webkit-paged-x; column-gap: 0;
+        width: 100px; height: 100px'>
+      <div id='content' style='height: 250px'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(3u, NumFragments(content));
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(100, -100), FragmentAt(content, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, -100), FragmentAt(content, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(100), FragmentAt(content, 1).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(200, -200), FragmentAt(content, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(200, -200), FragmentAt(content, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 2).LogicalTopInFlowThread());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FragmentsInPagedYVerticalRL) {
+  // TODO(crbug.com/796768): Currently this test crashes for SPv2 when mapping
+  // layer clip rects from one fragment to another. May need to adjust fragment
+  // clip hierarchy to fix the crash.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <div id='paged' style='overflow: -webkit-paged-y; column-gap: 0;
+        width: 100px; height: 100px; writing-mode: vertical-rl'>
+      <div id='content' style='width: 250px'></div>
+    </div>
+  )HTML");
+
+  LayoutObject* content = GetLayoutObjectByElementId("content");
+  EXPECT_EQ(3u, NumFragments(content));
+  EXPECT_EQ(LayoutPoint(-150, 0), FragmentAt(content, 0).PaintOffset());
+  EXPECT_EQ(LayoutPoint(), FragmentAt(content, 0).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), FragmentAt(content, 0).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(-50, 100), FragmentAt(content, 1).PaintOffset());
+  EXPECT_EQ(LayoutPoint(100, 100), FragmentAt(content, 1).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(100), FragmentAt(content, 1).LogicalTopInFlowThread());
+  EXPECT_EQ(LayoutPoint(50, 200), FragmentAt(content, 2).PaintOffset());
+  EXPECT_EQ(LayoutPoint(200, 200), FragmentAt(content, 2).PaginationOffset());
+  EXPECT_EQ(LayoutUnit(200), FragmentAt(content, 2).LogicalTopInFlowThread());
 }
 
 // Ensures no crash with multi-column containing relative-position inline with
@@ -3766,7 +3904,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedMulticolFrameUnderMulticol) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
-       FragmentedBecomesUnfragmentedClearPaginationOffset) {
+       BecomingUnfragmentedClearsPaginationOffsetAndLogicalTopInFlowThread) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #target {
@@ -3783,11 +3921,13 @@ TEST_P(PaintPropertyTreeBuilderTest,
   LayoutObject* target = GetLayoutObjectByElementId("target");
   EXPECT_EQ(LayoutPoint(LayoutUnit(392.5f), LayoutUnit(-20)),
             target->FirstFragment().PaginationOffset());
+  EXPECT_EQ(LayoutUnit(20), target->FirstFragment().LogicalTopInFlowThread());
   Element* target_element = GetDocument().getElementById("target");
 
   target_element->setAttribute(HTMLNames::styleAttr, "position: absolute");
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(LayoutPoint(0, 0), target->FirstFragment().PaginationOffset());
+  EXPECT_EQ(LayoutUnit(), target->FirstFragment().LogicalTopInFlowThread());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Reflection) {

@@ -67,14 +67,16 @@ void FragmentainerIterator::Advance() {
 }
 
 LayoutSize FragmentainerIterator::PaginationOffset() const {
-  DCHECK(!AtEnd());
-  const MultiColumnFragmentainerGroup& group = CurrentGroup();
-  LayoutUnit fragmentainer_logical_top_in_flow_thread =
-      group.LogicalTopInFlowThread() +
-      current_fragmentainer_index_ * group.ColumnLogicalHeight();
-  return group.FlowThreadTranslationAtOffset(
-      fragmentainer_logical_top_in_flow_thread,
+  return CurrentGroup().FlowThreadTranslationAtOffset(
+      FragmentainerLogicalTopInFlowThread(),
       LayoutBox::kAssociateWithLatterPage, CoordinateSpaceConversion::kVisual);
+}
+
+LayoutUnit FragmentainerIterator::FragmentainerLogicalTopInFlowThread() const {
+  DCHECK(!AtEnd());
+  const auto& group = CurrentGroup();
+  return group.LogicalTopInFlowThread() +
+         current_fragmentainer_index_ * group.ColumnLogicalHeight();
 }
 
 LayoutRect FragmentainerIterator::ClipRectInFlowThread(
