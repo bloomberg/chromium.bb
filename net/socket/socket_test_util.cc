@@ -1214,18 +1214,14 @@ int MockSSLClientSocket::Write(
 }
 
 int MockSSLClientSocket::Connect(const CompletionCallback& callback) {
-  int rv = transport_->socket()->Connect(
-      base::Bind(&ConnectCallback, base::Unretained(this), callback));
-  if (rv == OK) {
-    if (data_->connect.result == OK)
-      connected_ = true;
-    if (data_->connect.mode == ASYNC) {
-      RunCallbackAsync(callback, data_->connect.result);
-      return ERR_IO_PENDING;
-    }
-    return data_->connect.result;
+  DCHECK(transport_->socket()->IsConnected());
+  if (data_->connect.result == OK)
+    connected_ = true;
+  if (data_->connect.mode == ASYNC) {
+    RunCallbackAsync(callback, data_->connect.result);
+    return ERR_IO_PENDING;
   }
-  return rv;
+  return data_->connect.result;
 }
 
 void MockSSLClientSocket::Disconnect() {

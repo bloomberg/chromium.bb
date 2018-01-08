@@ -13411,7 +13411,6 @@ TEST_F(HttpNetworkTransactionTest, ProxyTunnelGetHangup) {
   };
 
   MockRead data_reads1[] = {
-    MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
     MockRead("HTTP/1.1 200 Connection Established\r\n\r\n"),
     MockRead(ASYNC, 0, 0),  // EOF
   };
