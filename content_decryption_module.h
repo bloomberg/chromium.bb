@@ -1532,15 +1532,17 @@ class CDM_CLASS_API Host_10 {
   // CDM can call this method multiple times to operate on different files.
   virtual FileIO* CreateFileIO(FileIOClient* client) = 0;
 
-  // Gets a CdmProxy that proxies part of CDM functionalities to a different
-  // entity, e.g. hardware CDM modules. The |client| must be valid until
-  // Destroy() is called. Returns nullptr if a CdmProxy object cannot be
-  // obtained. When not needed any more, the caller should only call
+  // Creates a CdmProxy that proxies part of CDM functionalities to a different
+  // entity, e.g. hardware CDM modules. When not needed, the caller must call
   // CdmProxy::Destroy() to destroy the CdmProxy in the same context as it was
-  // created. There should be at most one CdmProxy per CDM instance at any time.
-  // Null will be returned if GetCdmProxy() is called when there is already a
-  // CdmProxy outstanding.
-  virtual CdmProxy* GetCdmProxy(CdmProxyClient* client) = 0;
+  // created. The |client| must remain valid until Destroy() is called.
+  // A CDM instance can have at most one CdmProxy throughout its lifetime, which
+  // should only be created and initialized during CDM instance initialization
+  // time, i.e. before OnInitialized() is called, to ensure proper connection of
+  // the CdmProxy and the media player (e.g. hardware decoder).
+  // Returns null if CdmProxy is not supported, or if CreateCdmProxy() is called
+  // more than once, or called after the CDM instance has been initialized.
+  virtual CdmProxy* CreateCdmProxy(CdmProxyClient* client) = 0;
 
   // Requests a specific version of the storage ID. A storage ID is a stable,
   // device specific ID used by the CDM to securely store persistent data. The
