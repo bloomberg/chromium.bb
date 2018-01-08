@@ -94,6 +94,8 @@ public class UrlBar extends AutocompleteEditText {
     private final KeyboardHideHelper mKeyboardHideHelper;
 
     private boolean mFocused;
+    private boolean mSuppressingTouchMoveEventsForThisTouch;
+    private MotionEvent mSuppressedTouchDownEvent;
     private boolean mAllowFocus = true;
 
     private boolean mPendingScrollTLD;
@@ -385,14 +387,39 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        // This method contains special logic to enable long presses to be handled correctly.
+
+        // One piece of the logic is to suppress all ACTION_DOWN events received while the UrlBar is
+        // not focused, and only pass them to super.onTouchEvent() if it turns out we're about to
+        // perform a long press. Long pressing will not behave properly without sending this event,
+        // but if we always send it immediately, it will cause the keyboard to show immediately,
+        // whereas we want to wait to show it until after the URL focus animation finishes, to avoid
+        // performance issues on slow devices.
+
+        // The other piece of the logic is to suppress ACTION_MOVE events received after an
+        // ACTION_DOWN received while the UrlBar is not focused. This is because the UrlBar moves to
+        // the side as it's focusing, and a finger held still on the screen would therefore be
+        // interpreted as a drag selection.
+
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             getLocationInWindow(mCachedLocation);
             mDownEventViewTop = mCachedLocation[1];
+            mSuppressingTouchMoveEventsForThisTouch = !mFocused;
         }
 
         if (!mFocused) {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                mSuppressedTouchDownEvent = MotionEvent.obtain(event);
+            }
             mGestureDetector.onTouchEvent(event);
             return true;
+        }
+
+        if (event.getActionMasked() == MotionEvent.ACTION_UP
+                || event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
+            // Minor optimization to avoid unnecessarily holding onto a MotionEvent after the touch
+            // finishes.
+            mSuppressedTouchDownEvent = null;
         }
 
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
@@ -400,6 +427,11 @@ public class UrlBar extends AutocompleteEditText {
             // Make sure to hide the current ContentView ActionBar.
             ContentViewCore viewCore = currentTab.getContentViewCore();
             if (viewCore != null) viewCore.destroySelectActionMode();
+        }
+
+        if (mSuppressingTouchMoveEventsForThisTouch
+                && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            return true;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -418,12 +450,18 @@ public class UrlBar extends AutocompleteEditText {
 
     @Override
     public boolean performLongClick(float x, float y) {
-        return shouldPerformLongClick() ? super.performLongClick(x, y) : true;
+        if (!shouldPerformLongClick()) return false;
+
+        releaseSuppressedTouchDownEvent();
+        return super.performLongClick(x, y);
     }
 
     @Override
     public boolean performLongClick() {
-        return shouldPerformLongClick() ? super.performLongClick() : true;
+        if (!shouldPerformLongClick()) return false;
+
+        releaseSuppressedTouchDownEvent();
+        return super.performLongClick();
     }
 
     /**
@@ -434,6 +472,13 @@ public class UrlBar extends AutocompleteEditText {
 
         // If the view moved between the last down event, block the long-press.
         return mDownEventViewTop == mCachedLocation[1];
+    }
+
+    private void releaseSuppressedTouchDownEvent() {
+        if (mSuppressedTouchDownEvent != null) {
+            super.onTouchEvent(mSuppressedTouchDownEvent);
+            mSuppressedTouchDownEvent = null;
+        }
     }
 
     @Override
