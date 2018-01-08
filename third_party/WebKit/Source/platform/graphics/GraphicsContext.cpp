@@ -1442,7 +1442,7 @@ PaintFlags GraphicsContext::ApplyHighContrastFilter(
   PaintFlags output;
   if (input)
     output = *input;
-  if (output.getSkShader()) {
+  if (output.HasShader()) {
     output.setColorFilter(high_contrast_filter_);
   } else {
     output.setColor(high_contrast_filter_->filterColor(output.getColor()));
