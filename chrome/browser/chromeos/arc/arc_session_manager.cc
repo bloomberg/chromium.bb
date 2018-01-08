@@ -77,6 +77,16 @@ void MaybeUpdateOptInCancelUMA(const ArcSupportHost* support_host) {
   UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
 }
 
+chromeos::SessionManagerClient* GetSessionManagerClient() {
+  // If the DBusThreadManager or the SessionManagerClient aren't available,
+  // there isn't much we can do. This should only happen when running tests.
+  if (!chromeos::DBusThreadManager::IsInitialized() ||
+      !chromeos::DBusThreadManager::Get() ||
+      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
+    return nullptr;
+  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+}
+
 }  // namespace
 
 // This class is used to track statuses on OptIn flow. It is created in case ARC
@@ -144,10 +154,17 @@ ArcSessionManager::ArcSessionManager(
   DCHECK(!g_arc_session_manager);
   g_arc_session_manager = this;
   arc_session_runner_->AddObserver(this);
+  chromeos::SessionManagerClient* client = GetSessionManagerClient();
+  if (client)
+    client->AddObserver(this);
 }
 
 ArcSessionManager::~ArcSessionManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  chromeos::SessionManagerClient* client = GetSessionManagerClient();
+  if (client)
+    client->RemoveObserver(this);
 
   Shutdown();
   arc_session_runner_->RemoveObserver(this);
@@ -1030,6 +1047,10 @@ void ArcSessionManager::SetArcSessionRunnerForTesting(
   arc_session_runner_->AddObserver(this);
 }
 
+ArcSessionRunner* ArcSessionManager::GetArcSessionRunnerForTesting() {
+  return arc_session_runner_.get();
+}
+
 void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
     const base::Closure& callback) {
   DCHECK(!callback.is_null());
@@ -1043,6 +1064,16 @@ void ArcSessionManager::ShowArcSupportHostError(
     support_host_->ShowError(error, should_show_send_feedback);
   for (auto& observer : observer_list_)
     observer.OnArcErrorShowRequested(error);
+}
+
+void ArcSessionManager::EmitLoginPromptVisibleCalled() {
+  // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
+  // instance may depend on such as cras, EmitLoginPromptVisibleCalled() is the
+  // safe place to start a mini instance.
+  if (!IsArcAvailable())
+    return;
+
+  arc_session_runner_->RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
 std::ostream& operator<<(std::ostream& os,

@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/task_runner.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_util.h"
 
 namespace arc {
@@ -17,16 +16,6 @@ namespace {
 
 constexpr base::TimeDelta kDefaultRestartDelay =
     base::TimeDelta::FromSeconds(5);
-
-chromeos::SessionManagerClient* GetSessionManagerClient() {
-  // If the DBusThreadManager or the SessionManagerClient aren't available,
-  // there isn't much we can do. This should only happen when running tests.
-  if (!chromeos::DBusThreadManager::IsInitialized() ||
-      !chromeos::DBusThreadManager::Get() ||
-      !chromeos::DBusThreadManager::Get()->GetSessionManagerClient())
-    return nullptr;
-  return chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-}
 
 void RecordInstanceCrashUma(ArcContainerLifetimeEvent sample) {
   UMA_HISTOGRAM_ENUMERATION("Arc.ContainerLifetimeEvent", sample,
@@ -147,18 +136,12 @@ ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
       restart_after_crash_count_(0),
       factory_(factory),
       weak_ptr_factory_(this) {
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->AddObserver(this);
 }
 
 ArcSessionRunner::~ArcSessionRunner() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (arc_session_)
     arc_session_->RemoveObserver(this);
-  chromeos::SessionManagerClient* client = GetSessionManagerClient();
-  if (client)
-    client->RemoveObserver(this);
 }
 
 void ArcSessionRunner::AddObserver(Observer* observer) {
@@ -326,15 +309,6 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
     for (auto& observer : observer_list_)
       observer.OnSessionStopped(stop_reason, restarting);
   }
-}
-
-void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
-  // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
-  // instance may depend on such as cras, EmitLoginPromptVisibleCalled() is the
-  // safe place to start a mini instance.
-  DCHECK(!arc_session_);
-  if (IsArcAvailable())
-    RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
 }  // namespace arc

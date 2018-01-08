@@ -145,7 +145,80 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
   DISALLOW_COPY_AND_ASSIGN(FakeLoginDisplayHost);
 };
 
-}  // namespace
+class ArcSessionManagerInLoginScreenTest : public testing::Test {
+ public:
+  ArcSessionManagerInLoginScreenTest()
+      : user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()) {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::make_unique<chromeos::FakeSessionManagerClient>());
+
+    chromeos::DBusThreadManager::Initialize();
+
+    ArcSessionManager::DisableUIForTesting();
+    SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
+
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    arc_session_manager_ =
+        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
+  }
+
+  ~ArcSessionManagerInLoginScreenTest() override {
+    arc_session_manager_->Shutdown();
+    arc_session_manager_.reset();
+    arc_service_manager_.reset();
+    chromeos::DBusThreadManager::Shutdown();
+  }
+
+ protected:
+  ArcSessionManager* arc_session_manager() {
+    return arc_session_manager_.get();
+  }
+
+  FakeArcSession* arc_session() {
+    return static_cast<FakeArcSession*>(
+        arc_session_manager_->GetArcSessionRunnerForTesting()
+            ->GetArcSessionForTesting());
+  }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<ArcServiceManager> arc_service_manager_;
+  std::unique_ptr<ArcSessionManager> arc_session_manager_;
+  user_manager::ScopedUserManager user_manager_enabler_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerInLoginScreenTest);
+};
+
+// We expect mini instance starts to run if EmitLoginPromptVisible signal is
+// emitted.
+TEST_F(ArcSessionManagerInLoginScreenTest, EmitLoginPromptVisible) {
+  EXPECT_FALSE(arc_session());
+
+  SetArcAvailableCommandLineForTesting(base::CommandLine::ForCurrentProcess());
+
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->EmitLoginPromptVisible();
+  ASSERT_TRUE(arc_session());
+  EXPECT_FALSE(arc_session()->is_running());
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
+}
+
+// We expect mini instance does not start on EmitLoginPromptVisible when ARC
+// is not available.
+TEST_F(ArcSessionManagerInLoginScreenTest, EmitLoginPromptVisible_NoOp) {
+  EXPECT_FALSE(arc_session());
+
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->EmitLoginPromptVisible();
+  EXPECT_FALSE(arc_session());
+  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
+            arc_session_manager()->state());
+}
 
 class ArcSessionManagerTestBase : public testing::Test {
  public:
@@ -167,8 +240,9 @@ class ArcSessionManagerTestBase : public testing::Test {
     SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
 
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
-    arc_session_manager_ = std::make_unique<ArcSessionManager>(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+    arc_session_manager_ =
+        std::make_unique<ArcSessionManager>(std::make_unique<ArcSessionRunner>(
+            base::BindRepeating(FakeArcSession::Create)));
 
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
@@ -1015,5 +1089,7 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
     EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
   }
 }
+
+}  // namespace
 
 }  // namespace arc
