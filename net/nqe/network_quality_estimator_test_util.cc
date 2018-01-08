@@ -66,11 +66,11 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
           std::move(external_estimate_provider),
           std::make_unique<NetworkQualityEstimatorParams>(variation_params),
           net_log->bound().net_log()),
+      net_log_(std::move(net_log)),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
       embedded_test_server_(base::FilePath(kTestFilePath)),
-      suppress_notifications_for_testing_(suppress_notifications_for_testing),
-      net_log_(std::move(net_log)) {
+      suppress_notifications_for_testing_(suppress_notifications_for_testing) {
   SetUseLocalHostRequestsForTesting(allow_local_host_requests_for_tests);
   SetUseSmallResponsesForTesting(allow_smaller_responses_for_tests);
 
@@ -89,11 +89,11 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     : NetworkQualityEstimator(std::unique_ptr<ExternalEstimateProvider>(),
                               std::move(params),
                               net_log->bound().net_log()),
+      net_log_(std::move(net_log)),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
       embedded_test_server_(base::FilePath(kTestFilePath)),
-      suppress_notifications_for_testing_(false),
-      net_log_(std::move(net_log)) {
+      suppress_notifications_for_testing_(false) {
   // Set up the embedded test server.
   EXPECT_TRUE(embedded_test_server_.Start());
 }

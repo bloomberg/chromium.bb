@@ -250,6 +250,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // id (instead of invoking platform APIs).
   nqe::internal::NetworkID GetCurrentNetworkID() const override;
 
+  // Net log provided to network quality estimator.
+  std::unique_ptr<net::BoundTestNetLog> net_log_;
+
   // If set, GetEffectiveConnectionType() and GetRecentEffectiveConnectionType()
   // would return the set values, respectively.
   base::Optional<EffectiveConnectionType> effective_connection_type_;
@@ -293,9 +296,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   const bool suppress_notifications_for_testing_;
 
   base::Optional<size_t> transport_rtt_observation_count_last_ect_computation_;
-
-  // Net log provided to network quality estimator.
-  std::unique_ptr<net::BoundTestNetLog> net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
 };

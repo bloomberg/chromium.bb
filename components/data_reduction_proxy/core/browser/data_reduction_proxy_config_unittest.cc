@@ -457,13 +457,10 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     TestDataReductionProxyConfig config(task_runner(), nullptr, configurator(),
                                         event_creator());
 
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter_ =
-        new net::TestURLRequestContextGetter(task_runner());
-
     NetworkPropertiesManager network_properties_manager(
         test_context_->pref_service(), test_context_->task_runner());
-    config.InitializeOnIOThread(request_context_getter_.get(),
-                                request_context_getter_.get(),
+    config.InitializeOnIOThread(test_context_->request_context_getter(),
+                                test_context_->request_context_getter(),
                                 &network_properties_manager);
     RunUntilIdle();
 
