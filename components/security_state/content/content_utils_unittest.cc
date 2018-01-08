@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/atomic_sequence_num.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -14,7 +15,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/security_style_explanation.h"
 #include "content/public/browser/security_style_explanations.h"
+#include "crypto/rsa_private_key.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
@@ -617,6 +620,62 @@ TEST(SecurityStateContentUtilsTest, SafeBrowsingExplanation) {
   content::SecurityStyleExplanations explanations;
   GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(1u, explanations.insecure_explanations.size());
+}
+
+// NSS requires that serial numbers be unique even for the same issuer;
+// as all fake certificates will contain the same issuer name, it's
+// necessary to ensure the serial number is unique, as otherwise
+// NSS will fail to parse.
+base::AtomicSequenceNumber g_serial_number;
+
+scoped_refptr<net::X509Certificate> CreateFakeCert(
+    base::TimeDelta time_until_expiration) {
+  std::unique_ptr<crypto::RSAPrivateKey> unused_key;
+  std::string cert_der;
+  if (!net::x509_util::CreateKeyAndSelfSignedCert(
+          "CN=Error", static_cast<uint32_t>(g_serial_number.GetNext()),
+          base::Time::Now() - base::TimeDelta::FromMinutes(30),
+          base::Time::Now() + time_until_expiration, &unused_key, &cert_der)) {
+    return nullptr;
+  }
+  return net::X509Certificate::CreateFromBytes(cert_der.data(),
+                                               cert_der.size());
+}
+
+// Tests that an info explanation is provided only if the certificate is
+// expiring soon.
+TEST(SecurityStateContentUtilsTest, ExpiringCertificateWarning) {
+  security_state::SecurityInfo security_info;
+  security_info.cert_status = 0;
+  security_info.scheme_is_cryptographic = true;
+  security_info.content_with_cert_errors_status =
+      security_state::CONTENT_STATUS_NONE;
+
+  // Check that an info explanation is provided if the certificate is expiring
+  // in less than 48 hours.
+  content::SecurityStyleExplanations explanations;
+  security_info.certificate = scoped_refptr<net::X509Certificate>(
+      CreateFakeCert(base::TimeDelta::FromHours(30)));
+  ASSERT_TRUE(security_info.certificate);
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(1u, explanations.info_explanations.size());
+
+  // Check that no explanation is set if the certificate is expiring in more
+  // than 48 hours.
+  explanations.info_explanations.clear();
+  security_info.certificate = scoped_refptr<net::X509Certificate>(
+      CreateFakeCert(base::TimeDelta::FromHours(72)));
+  ASSERT_TRUE(security_info.certificate);
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(0u, explanations.info_explanations.size());
+
+  // Check that no explanation is set if the certificate has already expired.
+  explanations.info_explanations.clear();
+  security_info.certificate = scoped_refptr<net::X509Certificate>(
+      CreateFakeCert(base::TimeDelta::FromHours(-10)));
+  ASSERT_TRUE(security_info.certificate);
+  GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(0u, explanations.info_explanations.size());
 }
 
 // Tests that an explanation using the shorter constructor sets the correct

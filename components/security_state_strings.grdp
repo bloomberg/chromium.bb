@@ -57,6 +57,13 @@
     The connection to this site is using a valid, trusted server certificate issued by <ph name="ISSUER">$1<ex>Let's Encrypt Authority X3</ex></ph>.
   </message>
 
+  <message name="IDS_CERTIFICATE_EXPIRING_SOON" desc="Summary phrase for a site with a certificate that is expiring soon." translateable="false">
+    Certificate expires soon
+  </message>
+  <message name="IDS_CERTIFICATE_EXPIRING_SOON_DESCRIPTION" desc="Description for a site with a certificate that is expiring soon." translateable="false">
+    The certificate for this site expires in less than 48 hours and needs to be renewed.
+  </message>
+
   <message name="IDS_SSL_CONNECTION_TITLE" desc="Title for the SSL connection explanation." translateable="false">
     Connection
   </message>
