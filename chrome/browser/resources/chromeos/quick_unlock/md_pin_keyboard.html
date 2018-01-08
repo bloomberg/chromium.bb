@@ -113,7 +113,7 @@
         top: 0;
       }
 
-      .digit-button.backspace-button:not([has-content]) {
+      .digit-button.backspace-button[disabled] {
         opacity: 0.34;
       }
 
@@ -261,7 +261,7 @@
           </paper-button>
           <div class="backspace-button-container">
             <paper-icon-button class="digit-button backspace-button"
-                has-content$="[[hasInput_(value)]]"
+                disabled$="[[!hasInput_(value)]]"
                 icon="pin-keyboard:backspace"
                 on-pointerdown="onBackspacePointerDown_"
                 on-pointerout="clearAndReset_"
