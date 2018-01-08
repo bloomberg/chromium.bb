@@ -44,6 +44,8 @@ gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
 }
 }  // namespace
 
+const ui::KeyboardCode kSpeakSelectionKey = ui::VKEY_S;
+
 SelectToSpeakEventRewriter::SelectToSpeakEventRewriter(
     aura::Window* root_window)
     : root_window_(root_window) {
@@ -78,16 +80,42 @@ bool SelectToSpeakEventRewriter::OnKeyEvent(const ui::KeyEvent* event) {
     if (event->type() == ui::ET_KEY_PRESSED && state_ == INACTIVE) {
       state_ = SEARCH_DOWN;
     } else if (event->type() == ui::ET_KEY_RELEASED) {
-      if (state_ == CAPTURING) {
+      if (state_ == CAPTURING_MOUSE) {
         cancel_event = true;
         state_ = WAIT_FOR_MOUSE_RELEASE;
       } else if (state_ == MOUSE_RELEASED) {
+        cancel_event = true;
+        state_ = INACTIVE;
+      } else if (state_ == CAPTURING_SPEAK_SELECTION_KEY) {
+        cancel_event = true;
+        state_ = WAIT_FOR_SPEAK_SELECTION_KEY_RELEASE;
+      } else if (state_ == SPEAK_SELECTION_KEY_RELEASED) {
         cancel_event = true;
         state_ = INACTIVE;
       } else if (state_ == SEARCH_DOWN) {
         // They just tapped the search key without clicking the mouse.
         // Don't cancel this event -- the search key may still be used
         // by another part of Chrome, and we didn't use it here.
+        state_ = INACTIVE;
+      }
+    }
+  } else if (key_code == kSpeakSelectionKey) {
+    if (event->type() == ui::ET_KEY_PRESSED &&
+        (state_ == SEARCH_DOWN || state_ == SPEAK_SELECTION_KEY_RELEASED)) {
+      // They pressed the S key while search was down.
+      // It's possible to press the selection key multiple times to read
+      // the same region over and over, so state S_RELEASED can become state
+      // CAPTURING_SPEAK_SELECTION_KEY if the search key is not lifted.
+      cancel_event = true;
+      state_ = CAPTURING_SPEAK_SELECTION_KEY;
+    } else if (event->type() == ui::ET_KEY_RELEASED) {
+      if (state_ == CAPTURING_SPEAK_SELECTION_KEY) {
+        // They released the speak selection key while it was being captured.
+        cancel_event = true;
+        state_ = SPEAK_SELECTION_KEY_RELEASED;
+      } else if (state_ == WAIT_FOR_SPEAK_SELECTION_KEY_RELEASE) {
+        // They have already released the search key
+        cancel_event = true;
         state_ = INACTIVE;
       }
     }
@@ -111,7 +139,7 @@ bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
 
   if ((state_ == SEARCH_DOWN || state_ == MOUSE_RELEASED) &&
       event->type() == ui::ET_MOUSE_PRESSED) {
-    state_ = CAPTURING;
+    state_ = CAPTURING_MOUSE;
   }
 
   if (state_ == WAIT_FOR_MOUSE_RELEASE &&
@@ -120,7 +148,7 @@ bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
     return false;
   }
 
-  if (state_ != CAPTURING)
+  if (state_ != CAPTURING_MOUSE)
     return false;
 
   if (event->type() == ui::ET_MOUSE_RELEASED)
@@ -129,7 +157,7 @@ bool SelectToSpeakEventRewriter::OnMouseEvent(const ui::MouseEvent* event) {
   ui::MouseEvent mutable_event(*event);
   ConvertMouseEventToDIPs(&mutable_event);
 
-  // If we're in the capturing state, forward the mouse event to
+  // If we're in the capturing mouse state, forward the mouse event to
   // select-to-speak.
   if (event_delegate_for_testing_) {
     event_delegate_for_testing_->OnForwardEventToSelectToSpeakExtension(

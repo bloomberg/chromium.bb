@@ -238,3 +238,67 @@ TEST_F('SelectToSpeakUnitTest', 'findAllMatching', function() {
   assertEquals(1, result.length);
   assertEquals(container2, result[0]);
 });
+
+TEST_F('SelectToSpeakUnitTest', 'getDeepEquivalentForSelectionNoChildren',
+    function() {
+  let node = {name: 'Hello, world', children: []};
+  let result = getDeepEquivalentForSelection(node, 0);
+  assertEquals(node, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(node, 6);
+  assertEquals(node, result.node);
+  assertEquals(6, result.offset);
+});
+
+TEST_F('SelectToSpeakUnitTest', 'getDeepEquivalentForSelectionSimpleChildren',
+    function() {
+  let child1 = {name: 'Hello,', children: []};
+  let child2 = {name: ' world', children: []};
+  let root = {name: 'Hello, world', children: [child1, child2]};
+  let result = getDeepEquivalentForSelection(root, 0);
+  assertEquals(child1, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 5);
+  assertEquals(child1, result.node);
+  assertEquals(5, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 6);
+  assertEquals(child2, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 9);
+  assertEquals(child2, result.node);
+  assertEquals(3, result.offset);
+});
+
+TEST_F('SelectToSpeakUnitTest', 'getDeepEquivalentForSelectionComplexChildren',
+    function() {
+  let child1 = {name: 'Hello', children: []};
+  let child2 = {name: undefined, children: []};  // Empty name
+  let child3 = {name: ',', children: []};
+  let child4 = {name: 'Hello,', children: [child1, child2, child3]};
+
+  let child5 = {name: ' ', children: []};
+  let child6 = {name: 'world', children: []};
+  let child7 = {name: ' world', children: [child5, child6]};
+
+  let root = {name: 'Hello, world', children: [child4, child7]};
+
+  let result = getDeepEquivalentForSelection(root, 0);
+  assertEquals(child1, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 5);
+  assertEquals(child3, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 6);
+  assertEquals(child5, result.node);
+  assertEquals(0, result.offset);
+
+  result = getDeepEquivalentForSelection(root, 9);
+  assertEquals(child6, result.node);
+  assertEquals(2, result.offset);
+});
