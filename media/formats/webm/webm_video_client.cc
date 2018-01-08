@@ -78,7 +78,7 @@ bool WebMVideoClient::InitializeConfig(
   }
 
   VideoPixelFormat format =
-      (alpha_mode_ == 1) ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_YV12;
+      (alpha_mode_ == 1) ? PIXEL_FORMAT_I420A : PIXEL_FORMAT_I420;
 
   if (pixel_width_ <= 0 || pixel_height_ <= 0)
     return false;

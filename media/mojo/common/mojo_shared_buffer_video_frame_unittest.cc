@@ -75,7 +75,7 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameAndPassSharedMemory) {
   // Some random values to use. Since we actually don't use the data inside the
   // frame, random values are fine (as long as the offsets are within the
   // memory size allocated).
-  const VideoPixelFormat format = PIXEL_FORMAT_YV12;
+  const VideoPixelFormat format = PIXEL_FORMAT_I420;
   const size_t y_offset = kWidth * 2;
   const size_t u_offset = kWidth * 3;
   const size_t v_offset = kWidth * 5;
@@ -138,7 +138,7 @@ TEST(MojoSharedBufferVideoFrameTest, CreateFrameOddWidth) {
 }
 
 TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
-  const VideoPixelFormat format = PIXEL_FORMAT_YV12;
+  const VideoPixelFormat format = PIXEL_FORMAT_I420;
   const int kWidth = 32;
   const int kHeight = 18;
   const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1338);

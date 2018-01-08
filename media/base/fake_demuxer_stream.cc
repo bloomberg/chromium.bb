@@ -156,7 +156,7 @@ void FakeDemuxerStream::SeekToEndOfStream() {
 void FakeDemuxerStream::UpdateVideoDecoderConfig() {
   const gfx::Rect kVisibleRect(kStartWidth, kStartHeight);
   video_decoder_config_.Initialize(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_YV12,
+      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_I420,
       COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, next_coded_size_, kVisibleRect,
       next_coded_size_, EmptyExtraData(),
       is_encrypted_ ? AesCtrEncryptionScheme() : Unencrypted());

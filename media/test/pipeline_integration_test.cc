@@ -2581,7 +2581,7 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-bt709.webm"));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
-  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12);
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_I420);
   EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_, COLOR_SPACE_HD_REC709);
 }
 

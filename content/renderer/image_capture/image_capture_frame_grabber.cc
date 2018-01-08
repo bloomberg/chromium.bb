@@ -56,8 +56,7 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     SkImageDeliverCB callback,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks /* current_time */) {
-  DCHECK(frame->format() == media::PIXEL_FORMAT_YV12 ||
-         frame->format() == media::PIXEL_FORMAT_I420 ||
+  DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
          frame->format() == media::PIXEL_FORMAT_I420A);
 
   if (first_frame_received_)

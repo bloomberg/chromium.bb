@@ -78,7 +78,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
 
     // Prepare a simulated VideoFrame to feed into the VideoEncoder.
     const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
-        PIXEL_FORMAT_YV12, next_frame_size_, gfx::Rect(next_frame_size_),
+        PIXEL_FORMAT_I420, next_frame_size_, gfx::Rect(next_frame_size_),
         next_frame_size_, next_frame_timestamp_);
     const base::TimeTicks reference_time =
         base::TimeTicks::UnixEpoch() + next_frame_timestamp_;

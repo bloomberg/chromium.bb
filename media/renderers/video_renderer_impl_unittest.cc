@@ -199,7 +199,7 @@ class VideoRendererImplTest : public testing::Test {
       if (base::StringToInt(token, &timestamp_in_ms)) {
         gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
         scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
-            PIXEL_FORMAT_YV12, natural_size, gfx::Rect(natural_size),
+            PIXEL_FORMAT_I420, natural_size, gfx::Rect(natural_size),
             natural_size, base::TimeDelta::FromMilliseconds(timestamp_in_ms));
         QueueFrame(DecodeStatus::OK, frame);
         continue;
@@ -1344,19 +1344,19 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
   gfx::Size larger_size(16, 16);
 
   QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, initial_size,
+             VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
                                      base::TimeDelta::FromMilliseconds(0)));
   QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, larger_size,
+             VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
                                      base::TimeDelta::FromMilliseconds(10)));
   QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, larger_size,
+             VideoFrame::CreateFrame(PIXEL_FORMAT_I420, larger_size,
                                      gfx::Rect(larger_size), larger_size,
                                      base::TimeDelta::FromMilliseconds(20)));
   QueueFrame(DecodeStatus::OK,
-             VideoFrame::CreateFrame(PIXEL_FORMAT_YV12, initial_size,
+             VideoFrame::CreateFrame(PIXEL_FORMAT_I420, initial_size,
                                      gfx::Rect(initial_size), initial_size,
                                      base::TimeDelta::FromMilliseconds(30)));
 
@@ -1406,7 +1406,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
   Initialize();
 
   gfx::Size frame_size(8, 8);
-  VideoPixelFormat opaque_format = PIXEL_FORMAT_YV12;
+  VideoPixelFormat opaque_format = PIXEL_FORMAT_I420;
   VideoPixelFormat non_opaque_format = PIXEL_FORMAT_I420A;
 
   QueueFrame(DecodeStatus::OK,

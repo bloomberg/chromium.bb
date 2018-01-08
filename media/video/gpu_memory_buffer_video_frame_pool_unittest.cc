@@ -106,7 +106,7 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
 
     scoped_refptr<VideoFrame> video_frame =
         media::VideoFrame::WrapExternalYuvData(
-            media::PIXEL_FORMAT_YV12,  // format
+            media::PIXEL_FORMAT_I420,  // format
             size,                      // coded_size
             gfx::Rect(size),           // visible_rect
             size,                      // natural_size

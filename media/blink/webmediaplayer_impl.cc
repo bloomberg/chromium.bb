@@ -2539,7 +2539,7 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t video_memory_usage =
       stats.video_memory_usage +
       (pipeline_metadata_.has_video && !stats.video_memory_usage
-           ? VideoFrame::AllocationSize(PIXEL_FORMAT_YV12,
+           ? VideoFrame::AllocationSize(PIXEL_FORMAT_I420,
                                         pipeline_metadata_.natural_size)
            : 0);
 

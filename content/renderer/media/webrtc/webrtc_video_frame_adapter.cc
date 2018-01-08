@@ -72,7 +72,6 @@ void IsValidFrame(const scoped_refptr<media::VideoFrame>& frame) {
       frame->format(), frame->storage_type(), frame->coded_size(),
       frame->visible_rect(), frame->natural_size()));
   DCHECK(media::PIXEL_FORMAT_I420 == frame->format() ||
-         media::PIXEL_FORMAT_YV12 == frame->format() ||
          media::PIXEL_FORMAT_I420A == frame->format());
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kYPlane)));
   CHECK(reinterpret_cast<void*>(frame->data(media::VideoFrame::kUPlane)));

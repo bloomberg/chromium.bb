@@ -41,7 +41,7 @@ TEST(VideoLayerImplTest, Occlusion) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(10, 10), gfx::Rect(10, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(10, 10), gfx::Rect(10, 10),
       gfx::Size(10, 10), base::TimeDelta());
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
@@ -120,7 +120,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   EXPECT_FALSE(draw_properties.occlusion_in_content_space.IsOccluded(visible));
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(10, 10), gfx::Rect(10, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(10, 10), gfx::Rect(10, 10),
       gfx::Size(10, 10), base::TimeDelta());
   provider.set_frame(video_frame);
   active_tree->set_needs_update_draw_properties();
@@ -155,7 +155,7 @@ TEST(VideoLayerImplTest, Rotated0) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(20, 10), gfx::Rect(20, 10),
       gfx::Size(20, 10), base::TimeDelta());
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
@@ -191,7 +191,7 @@ TEST(VideoLayerImplTest, Rotated90) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(20, 10), gfx::Rect(20, 10),
       gfx::Size(20, 10), base::TimeDelta());
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
@@ -227,7 +227,7 @@ TEST(VideoLayerImplTest, Rotated180) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(20, 10), gfx::Rect(20, 10),
       gfx::Size(20, 10), base::TimeDelta());
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
@@ -263,7 +263,7 @@ TEST(VideoLayerImplTest, Rotated270) {
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(20, 10), gfx::Rect(20, 10),
       gfx::Size(20, 10), base::TimeDelta());
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
@@ -303,7 +303,7 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   mailbox_holder.mailbox.name[0] = 1;
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_YV12, gfx::Size(20, 10), gfx::Rect(20, 10),
+      media::PIXEL_FORMAT_I420, gfx::Size(20, 10), gfx::Rect(20, 10),
       gfx::Size(20, 10), base::TimeDelta());
 
   FakeVideoFrameProvider provider;

@@ -73,7 +73,7 @@ class CursorRendererAuraTest : public AuraTestBase {
     if (!dummy_frame_) {
       constexpr gfx::Size dummy_frame_size = gfx::Size(320, 200);
       dummy_frame_ = media::VideoFrame::CreateZeroInitializedFrame(
-          media::PIXEL_FORMAT_YV12, dummy_frame_size,
+          media::PIXEL_FORMAT_I420, dummy_frame_size,
           gfx::Rect(dummy_frame_size), dummy_frame_size, base::TimeDelta());
     }
     return RenderCursorOnVideoFrame(dummy_frame_.get(), nullptr);
@@ -226,7 +226,7 @@ TEST_F(CursorRendererAuraTest, CursorRenderedOnFrame) {
 
   gfx::Size size(800, 600);
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::CreateZeroInitializedFrame(media::PIXEL_FORMAT_YV12,
+      media::VideoFrame::CreateZeroInitializedFrame(media::PIXEL_FORMAT_I420,
                                                     size, gfx::Rect(size), size,
                                                     base::TimeDelta());
 

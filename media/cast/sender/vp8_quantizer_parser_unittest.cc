@@ -46,7 +46,7 @@ class Vp8QuantizerParserTest : public ::testing::Test {
   void EncodeOneFrame(SenderEncodedFrame* encoded_frame) {
     const gfx::Size frame_size = gfx::Size(kWidth, kHeight);
     const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
-        PIXEL_FORMAT_YV12, frame_size, gfx::Rect(frame_size), frame_size,
+        PIXEL_FORMAT_I420, frame_size, gfx::Rect(frame_size), frame_size,
         next_frame_timestamp_);
     const base::TimeTicks reference_time =
         base::TimeTicks::UnixEpoch() + next_frame_timestamp_;

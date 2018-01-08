@@ -59,7 +59,7 @@ class RenderWidgetHostViewFrameSubscriber {
   // space conversion to fit into the output frame.
   //
   // Destination format is determined by |storage|, currently only
-  // media::PIXEL_FORMAT_YV12 is supported. Platform layer will perform color
+  // media::PIXEL_FORMAT_I420 is supported. Platform layer will perform color
   // space conversion if needed.
   //
   // When the frame is available |callback| will be called. It is up to the

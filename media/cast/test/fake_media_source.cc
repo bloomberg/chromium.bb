@@ -191,7 +191,7 @@ void FakeMediaSource::SetSourceFile(const base::FilePath& video_file,
     } else if (av_codec->type == AVMEDIA_TYPE_VIDEO) {
       VideoPixelFormat format =
           AVPixelFormatToVideoPixelFormat(av_codec_context->pix_fmt);
-      if (format != PIXEL_FORMAT_YV12) {
+      if (format != PIXEL_FORMAT_I420) {
         LOG(ERROR) << "Cannot handle non YV12 video format: " << format;
         continue;
       }
@@ -551,7 +551,7 @@ bool FakeMediaSource::OnNewVideoFrame(AVFrame* frame) {
   AVFrame* shallow_copy = av_frame_clone(frame);
   scoped_refptr<media::VideoFrame> video_frame =
       VideoFrame::WrapExternalYuvData(
-          media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
+          media::PIXEL_FORMAT_I420, size, gfx::Rect(size), size,
           shallow_copy->linesize[0], shallow_copy->linesize[1],
           shallow_copy->linesize[2], shallow_copy->data[0],
           shallow_copy->data[1], shallow_copy->data[2], timestamp);

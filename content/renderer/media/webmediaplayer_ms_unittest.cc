@@ -291,7 +291,7 @@ void MockMediaStreamVideoRenderer::QueueFrames(
       }
 
       auto frame = media::VideoFrame::CreateZeroInitializedFrame(
-          opaque_frame ? media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_I420A,
+          opaque_frame ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
           frame_size, gfx::Rect(frame_size), frame_size,
           base::TimeDelta::FromMilliseconds(token));
 

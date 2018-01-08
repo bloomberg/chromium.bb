@@ -221,7 +221,7 @@ class FakeFrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
     if (!should_capture_)
       return false;
     last_present_time_ = present_time;
-    *storage = media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_YV12, size_,
+    *storage = media::VideoFrame::CreateFrame(media::PIXEL_FORMAT_I420, size_,
                                               gfx::Rect(size_), size_,
                                               base::TimeDelta());
     *callback = base::Bind(&FakeFrameSubscriber::CallbackMethod, callback_);

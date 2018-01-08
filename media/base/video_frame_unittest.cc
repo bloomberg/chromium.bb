@@ -208,7 +208,7 @@ TEST(VideoFrame, CreateBlackFrame) {
       frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 
   // Test |frame| properties.
-  EXPECT_EQ(PIXEL_FORMAT_YV12, frame->format());
+  EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
   EXPECT_EQ(kWidth, frame->coded_size().width());
   EXPECT_EQ(kHeight, frame->coded_size().height());
 
