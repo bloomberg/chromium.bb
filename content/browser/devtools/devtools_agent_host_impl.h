@@ -102,30 +102,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
   static int s_last_session_id_;
 };
 
-class DevToolsMessageChunkProcessor {
- public:
-  using SendMessageIPCCallback = base::Callback<void(int, const std::string&)>;
-  using SendMessageCallback = base::Callback<void(const std::string&)>;
-  DevToolsMessageChunkProcessor(const SendMessageIPCCallback& ipc_callback,
-                                const SendMessageCallback& callback);
-  ~DevToolsMessageChunkProcessor();
-
-  const std::string& state_cookie() const { return state_cookie_; }
-  void set_state_cookie(const std::string& cookie) { state_cookie_ = cookie; }
-  int last_call_id() const { return last_call_id_; }
-  bool ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);
-  bool ProcessChunkedMessageFromAgent(mojom::DevToolsMessageChunkPtr chunk);
-  void Reset();
-
- private:
-  SendMessageIPCCallback ipc_callback_;
-  SendMessageCallback callback_;
-  std::string message_buffer_;
-  uint32_t message_buffer_size_;
-  std::string state_cookie_;
-  int last_call_id_;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_AGENT_HOST_IMPL_H_

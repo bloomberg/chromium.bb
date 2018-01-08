@@ -38,10 +38,6 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
       process_(nullptr),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
-      chunk_processor_(base::Bind(&DevToolsSession::SendMessageFromProcessorIPC,
-                                  base::Unretained(this)),
-                       base::Bind(&DevToolsSession::SendMessageFromProcessor,
-                                  base::Unretained(this))),
       weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
@@ -87,26 +83,9 @@ void DevToolsSession::ReattachToAgent(
   binding_.Bind(mojo::MakeRequest(&host_ptr_info));
   agent->AttachDevToolsSession(
       std::move(host_ptr_info), mojo::MakeRequest(&session_ptr_),
-      mojo::MakeRequest(&io_session_ptr_), state_cookie());
+      mojo::MakeRequest(&io_session_ptr_), state_cookie_);
   session_ptr_.set_connection_error_handler(base::BindOnce(
       &DevToolsSession::MojoConnectionDestroyed, base::Unretained(this)));
-}
-
-void DevToolsSession::SendMessageFromProcessorIPC(int session_id,
-                                                  const std::string& message) {
-  if (session_id != session_id_)
-    return;
-  int id = chunk_processor_.last_call_id();
-  waiting_for_response_messages_.erase(id);
-  client_->DispatchProtocolMessage(agent_host_, message);
-  // |this| may be deleted at this point.
-}
-
-void DevToolsSession::SendMessageFromProcessor(const std::string& message) {
-  int id = chunk_processor_.last_call_id();
-  waiting_for_response_messages_.erase(id);
-  client_->DispatchProtocolMessage(agent_host_, message);
-  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::SendResponse(
@@ -166,8 +145,39 @@ void DevToolsSession::InspectElement(const gfx::Point& point) {
     session_ptr_->InspectElement(point);
 }
 
-bool DevToolsSession::ReceiveMessageChunk(const DevToolsMessageChunk& chunk) {
-  return chunk_processor_.ProcessChunkedMessageFromAgent(chunk);
+void DevToolsSession::ReceiveMessageChunk(const DevToolsMessageChunk& chunk) {
+  if (chunk.session_id != session_id_)
+    return;
+
+  if (chunk.is_first) {
+    if (response_message_buffer_size_ != 0)
+      return;
+    if (chunk.is_last) {
+      response_message_buffer_size_ = chunk.data.size();
+    } else {
+      response_message_buffer_size_ = chunk.message_size;
+      response_message_buffer_.reserve(chunk.message_size);
+    }
+  }
+
+  if (response_message_buffer_.size() + chunk.data.size() >
+      response_message_buffer_size_)
+    return;
+  response_message_buffer_.append(chunk.data);
+
+  if (!chunk.is_last)
+    return;
+  if (response_message_buffer_.size() != response_message_buffer_size_)
+    return;
+
+  if (!chunk.post_state.empty())
+    state_cookie_ = chunk.post_state;
+  waiting_for_response_messages_.erase(chunk.call_id);
+  response_message_buffer_size_ = 0;
+  std::string message;
+  message.swap(response_message_buffer_);
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
 }
 
 void DevToolsSession::sendProtocolResponse(
@@ -186,9 +196,44 @@ void DevToolsSession::flushProtocolNotifications() {
 
 void DevToolsSession::DispatchProtocolMessage(
     mojom::DevToolsMessageChunkPtr chunk) {
-  if (chunk_processor_.ProcessChunkedMessageFromAgent(std::move(chunk)))
-    return;
+  if (chunk->is_first) {
+    if (response_message_buffer_size_ != 0) {
+      ReceivedBadMessage();
+      return;
+    }
+    if (chunk->is_last) {
+      response_message_buffer_size_ = chunk->data.size();
+    } else {
+      response_message_buffer_size_ = chunk->message_size;
+      response_message_buffer_.reserve(chunk->message_size);
+    }
+  }
 
+  if (response_message_buffer_.size() + chunk->data.size() >
+      response_message_buffer_size_) {
+    ReceivedBadMessage();
+    return;
+  }
+  response_message_buffer_.append(std::move(chunk->data));
+
+  if (!chunk->is_last)
+    return;
+  if (response_message_buffer_.size() != response_message_buffer_size_) {
+    ReceivedBadMessage();
+    return;
+  }
+
+  if (!chunk->post_state.empty())
+    state_cookie_ = std::move(chunk->post_state);
+  waiting_for_response_messages_.erase(chunk->call_id);
+  response_message_buffer_size_ = 0;
+  std::string message;
+  message.swap(response_message_buffer_);
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
+}
+
+void DevToolsSession::ReceivedBadMessage() {
   MojoConnectionDestroyed();
   if (process_) {
     bad_message::ReceivedBadMessage(
