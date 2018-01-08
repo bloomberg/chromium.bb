@@ -353,6 +353,7 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
   // will call the function with the right arguments.
   struct sigaction cur_handler;
   if (sigaction(sig, NULL, &cur_handler) == 0 &&
+      cur_handler.sa_sigaction == SignalHandler &&
       (cur_handler.sa_flags & SA_SIGINFO) == 0) {
     // Reset signal handler with the right flags.
     sigemptyset(&cur_handler.sa_mask);
