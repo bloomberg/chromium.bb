@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/FlexShrink.h"
 
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 
 namespace blink {
@@ -15,6 +16,16 @@ const CSSValue* FlexShrink::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeNumber(range, kValueRangeNonNegative);
+}
+
+const CSSValue* FlexShrink::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return CSSPrimitiveValue::Create(style.FlexShrink(),
+                                   CSSPrimitiveValue::UnitType::kNumber);
 }
 
 }  // namespace CSSLonghand

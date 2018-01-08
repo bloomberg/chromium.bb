@@ -1942,15 +1942,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.BoxDecorationBreak() == EBoxDecorationBreak::kSlice)
         return CSSIdentifierValue::Create(CSSValueSlice);
       return CSSIdentifierValue::Create(CSSValueClone);
-    case CSSPropertyWebkitBoxFlex:
-      return CSSPrimitiveValue::Create(style.BoxFlex(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyWebkitBoxFlexGroup:
-      return CSSPrimitiveValue::Create(style.BoxFlexGroup(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyWebkitBoxOrdinalGroup:
-      return CSSPrimitiveValue::Create(style.BoxOrdinalGroup(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyBoxShadow:
       return ValueForShadowList(style.BoxShadow(), style, true);
     case CSSPropertyColumnCount:
@@ -1972,11 +1963,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       if (style.HasAutoColumnWidth())
         return CSSIdentifierValue::Create(CSSValueAuto);
       return ZoomAdjustedPixelValue(style.ColumnWidth(), style);
-    case CSSPropertyTabSize:
-      return CSSPrimitiveValue::Create(
-          style.GetTabSize().GetPixelSize(1.0),
-          style.GetTabSize().IsSpaces() ? CSSPrimitiveValue::UnitType::kNumber
-                                        : CSSPrimitiveValue::UnitType::kPixels);
     case CSSPropertyTextSizeAdjust:
       if (style.GetTextSizeAdjust().IsAuto())
         return CSSIdentifierValue::Create(CSSValueAuto);
@@ -2038,18 +2024,9 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValuesForShorthandProperty(flexFlowShorthand(), style,
                                         layout_object, styled_node,
                                         allow_visited_style);
-    case CSSPropertyFlexGrow:
-      return CSSPrimitiveValue::Create(style.FlexGrow(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyFlexShrink:
-      return CSSPrimitiveValue::Create(style.FlexShrink(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyJustifyContent:
       return ValueForContentPositionAndDistributionWithOverflowAlignment(
           style.JustifyContent());
-    case CSSPropertyOrder:
-      return CSSPrimitiveValue::Create(style.Order(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFloat:
       if (style.Display() != EDisplay::kNone && style.HasOutOfFlowPosition())
         return CSSIdentifierValue::Create(CSSValueNone);
@@ -2326,12 +2303,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
           ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
               style.ObjectPosition().Y(), style),
           CSSValuePair::kKeepIdenticalValues);
-    case CSSPropertyOpacity:
-      return CSSPrimitiveValue::Create(style.Opacity(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyOrphans:
-      return CSSPrimitiveValue::Create(style.Orphans(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyOutlineStyle:
       if (style.OutlineStyleIsAuto())
         return CSSIdentifierValue::Create(CSSValueAuto);
@@ -2510,9 +2481,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       }
       NOTREACHED();
       return nullptr;
-    case CSSPropertyWidows:
-      return CSSPrimitiveValue::Create(style.Widows(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyWidth:
       if (WidthOrHeightShouldReturnUsedValue(layout_object))
         return ZoomAdjustedPixelValue(SizingBox(*layout_object).Width(), style);
@@ -2535,9 +2503,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         return CSSIdentifierValue::Create(CSSValueAuto);
       return CSSPrimitiveValue::Create(style.ZIndex(),
                                        CSSPrimitiveValue::UnitType::kInteger);
-    case CSSPropertyZoom:
-      return CSSPrimitiveValue::Create(style.Zoom(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyBoxSizing:
       if (style.BoxSizing() == EBoxSizing::kContentBox)
         return CSSIdentifierValue::Create(CSSValueContentBox);
@@ -2809,9 +2774,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(CSSValueNone);
     case CSSPropertyShapeMargin:
       return CSSValue::Create(style.ShapeMargin(), style.EffectiveZoom());
-    case CSSPropertyShapeImageThreshold:
-      return CSSPrimitiveValue::Create(style.ShapeImageThreshold(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyShapeOutside:
       return ValueForShape(style, style.ShapeOutside());
     case CSSPropertyFilter:
@@ -2932,21 +2894,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return list;
     }
     // SVG properties.
-    case CSSPropertyFloodOpacity:
-      return CSSPrimitiveValue::Create(svg_style.FloodOpacity(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyStopOpacity:
-      return CSSPrimitiveValue::Create(svg_style.StopOpacity(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyFillOpacity:
-      return CSSPrimitiveValue::Create(svg_style.FillOpacity(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyStrokeMiterlimit:
-      return CSSPrimitiveValue::Create(svg_style.StrokeMiterLimit(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
-    case CSSPropertyStrokeOpacity:
-      return CSSPrimitiveValue::Create(svg_style.StrokeOpacity(),
-                                       CSSPrimitiveValue::UnitType::kNumber);
     case CSSPropertyFill:
       return AdjustSVGPaintForCurrentColor(
           svg_style.FillPaintType(), svg_style.FillPaintUri(),
