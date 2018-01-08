@@ -87,13 +87,6 @@ class CORE_EXPORT NGLineBreaker {
     }
   };
 
-  const String& Text() const { return break_iterator_.GetString(); }
-  NGInlineItemResult* AddItem(const NGInlineItem&,
-                              unsigned end_offset,
-                              NGInlineItemResults*);
-  NGInlineItemResult* AddItem(const NGInlineItem&, NGInlineItemResults*);
-  void ComputeCanBreakAfter(NGInlineItemResult*) const;
-
   void BreakLine(NGLineInfo*);
 
   void PrepareNextLine(const NGLayoutOpportunity&, NGLineInfo*);
@@ -102,48 +95,50 @@ class CORE_EXPORT NGLineBreaker {
   void ComputeLineLocation(NGLineInfo*) const;
 
   enum class LineBreakState {
-    // The line breaking is complete.
-    kDone,
-
-    // Should complete the line at the earliest possible point.
-    // Trailing spaces, <br>, or close tags should be included to the line even
-    // when it is overflowing.
-    kTrailing,
-
-    // The initial state. Looking for items to break the line.
-    kContinue,
+    // The current position is not breakable.
+    kNotBreakable,
+    // The current position is breakable.
+    kIsBreakable,
+    // Break by including trailing items (CloseTag).
+    kBreakAfterTrailings,
+    // Break immediately.
+    kForcedBreak
   };
 
-  LineBreakState HandleText(const NGInlineItem&, LineBreakState, NGLineInfo*);
+  LineBreakState HandleText(NGLineInfo*,
+                            const NGInlineItem&,
+                            NGInlineItemResult*);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
                  LayoutUnit available_width,
                  NGLineInfo*);
-  LineBreakState HandleTrailingSpaces(const NGInlineItem&, NGLineInfo*);
-  void AppendHyphen(const ComputedStyle&, NGLineInfo*);
+  static void AppendHyphen(const ComputedStyle&, NGLineInfo*);
 
-  LineBreakState HandleControlItem(const NGInlineItem&,
-                                   LineBreakState,
-                                   NGLineInfo*);
-  LineBreakState HandleBidiControlItem(const NGInlineItem&,
-                                       LineBreakState,
-                                       NGLineInfo*);
-  void HandleAtomicInline(const NGInlineItem&, NGLineInfo*);
-  void HandleFloat(const NGInlineItem&, NGInlineItemResult*);
+  LineBreakState HandleControlItem(const NGInlineItem&, NGInlineItemResult*);
+  LineBreakState HandleAtomicInline(const NGInlineItem&,
+                                    NGInlineItemResult*,
+                                    const NGLineInfo&);
+  LineBreakState HandleFloat(const NGInlineItem&, NGInlineItemResult*);
 
   void HandleOpenTag(const NGInlineItem&, NGInlineItemResult*);
-  void HandleCloseTag(const NGInlineItem&, NGInlineItemResults*);
+  LineBreakState HandleCloseTag(const NGInlineItem&, NGInlineItemResults*);
 
-  LineBreakState HandleOverflow(NGLineInfo*);
-  LineBreakState HandleOverflow(NGLineInfo*, LayoutUnit available_width);
+  void HandleOverflow(NGLineInfo*);
+  void HandleOverflow(NGLineInfo*,
+                      LayoutUnit available_width,
+                      bool force_break_anywhere);
   void Rewind(NGLineInfo*, unsigned new_end);
 
   void TruncateOverflowingText(NGLineInfo*);
 
   void SetCurrentStyle(const ComputedStyle&);
+  bool IsFirstBreakOpportunity(unsigned, const NGLineInfo&) const;
+  static LineBreakState ToLineBreakState(const NGInlineItemResult&);
+  LineBreakState ComputeIsBreakableAfter(NGInlineItemResult*) const;
 
   void MoveToNextOf(const NGInlineItem&);
   void MoveToNextOf(const NGInlineItemResult&);
+  void SkipCollapsibleWhitespaces();
 
   bool IsFirstFormattedLine() const;
   void ComputeBaseDirection();
@@ -179,11 +174,7 @@ class CORE_EXPORT NGLineBreaker {
   bool auto_wrap_ = false;
 
   // True when current box has 'word-break/word-wrap: break-word'.
-  bool break_anywhere_if_overflow_ = false;
-
-  // Force LineBreakType::kBreakCharacter by ignoring the current style.
-  // Set to find grapheme cluster boundaries for 'break-word' after overflow.
-  bool override_break_anywhere_ = false;
+  bool break_if_overflow_ = false;
 
   // True when breaking at soft hyphens (U+00AD) is allowed.
   bool enable_soft_hyphen_ = true;

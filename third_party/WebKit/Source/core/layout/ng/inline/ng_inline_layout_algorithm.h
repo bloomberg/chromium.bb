@@ -74,7 +74,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                        NGInlineItemResult*,
                        const NGLineInfo&);
 
-  LayoutUnit OffsetForTextAlign(const NGLineInfo&, ETextAlign) const;
+  void ApplyTextAlign(const NGLineInfo&,
+                      ETextAlign,
+                      LayoutUnit* line_left,
+                      LayoutUnit inline_size);
   bool ApplyJustify(NGLineInfo*);
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
