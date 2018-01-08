@@ -50,7 +50,8 @@ public final class AwCookieManager {
      * Synchronous version of setCookie.
      */
     public void setCookie(String url, String value) {
-        nativeSetCookieSync(url, value);
+        UrlValue pair = fixupUrlValue(url, value);
+        nativeSetCookieSync(pair.mUrl, pair.mValue);
     }
 
     /**
@@ -77,7 +78,8 @@ public final class AwCookieManager {
      */
     public void setCookie(final String url, final String value, final Callback<Boolean> callback) {
         try {
-            nativeSetCookie(url, value, CookieCallback.convert(callback));
+            UrlValue pair = fixupUrlValue(url, value);
+            nativeSetCookie(pair.mUrl, pair.mValue, CookieCallback.convert(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "SetCookie must be called on a thread with a running Looper.");
@@ -198,6 +200,43 @@ public final class AwCookieManager {
         public void onReceiveValue(final T t) {
             mHandler.post(() -> mCallback.onResult(t));
         }
+    }
+
+    /**
+     * A tuple to hold a URL and Value when setting a cookie.
+     */
+    private static class UrlValue {
+        public String mUrl;
+        public String mValue;
+
+        public UrlValue(String url, String value) {
+            mUrl = url;
+            mValue = value;
+        }
+    }
+
+    private static String appendDomain(String value, String domain) {
+        // Prefer the explicit Domain attribute, if available. We allow any case for "Domain".
+        if (value.matches("^.*(?i);[\\t ]*Domain[\\t ]*=.*$")) {
+            return value;
+        } else if (value.matches("^.*;\\s*$")) {
+            return value + " Domain=" + domain;
+        }
+        return value + "; Domain=" + domain;
+    }
+
+    private static UrlValue fixupUrlValue(String url, String value) {
+        final String leadingHttpTripleSlashDot = "http:///.";
+
+        // The app passed a domain instead of a real URL (and the glue layer "fixed" it into this
+        // form). For backwards compatibility, we fix this into a well-formed URL and add a Domain
+        // attribute to the cookie value.
+        if (url.startsWith(leadingHttpTripleSlashDot)) {
+            String domain = url.substring(leadingHttpTripleSlashDot.length() - 1);
+            url = "http://" + url.substring(leadingHttpTripleSlashDot.length());
+            value = appendDomain(value, domain);
+        }
+        return new UrlValue(url, value);
     }
 
     private native void nativeSetShouldAcceptCookies(boolean accept);
