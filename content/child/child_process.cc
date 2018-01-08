@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -35,8 +34,6 @@ ChildProcess::ChildProcess(
       io_thread_("Chrome_ChildIOThread") {
   DCHECK(!g_lazy_tls.Pointer()->Get());
   g_lazy_tls.Pointer()->Set(this);
-
-  base::StatisticsRecorder::Initialize();
 
   // Initialize TaskScheduler if not already done. A TaskScheduler may already
   // exist when ChildProcess is instantiated in the browser process or in a

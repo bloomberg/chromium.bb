@@ -18,7 +18,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
@@ -172,8 +171,6 @@ class NetErrorHelperCoreTest : public testing::Test,
     // No test finishes while an error page is being fetched.
     EXPECT_FALSE(is_url_being_fetched());
   }
-
-  void SetUp() override { base::StatisticsRecorder::Initialize(); }
 
   void SetUpCore(bool auto_reload_enabled,
                  bool auto_reload_visible_only,

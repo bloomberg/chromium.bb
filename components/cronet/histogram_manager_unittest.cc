@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cronet {
@@ -18,7 +17,6 @@ using metrics::ChromeUserMetricsExtension;
 using metrics::HistogramEventProto;
 
 TEST(HistogramManager, HistogramBucketFields) {
-  base::StatisticsRecorder::Initialize();
   // Capture histograms at the start of the test to avoid later GetDeltas()
   // calls picking them up.
   std::vector<uint8_t> data_init;

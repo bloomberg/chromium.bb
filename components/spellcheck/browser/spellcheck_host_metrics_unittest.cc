@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
@@ -20,10 +19,6 @@
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
   SpellcheckHostMetricsTest() {
-  }
-
-  static void SetUpTestCase() {
-    base::StatisticsRecorder::Initialize();
   }
 
   void SetUp() override { metrics_.reset(new SpellCheckHostMetrics); }
@@ -62,10 +57,6 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
 
 TEST_F(SpellcheckHostMetricsTest, MAYBE_CustomWordStats) {
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
-
-  // Determine if test failures are due the statistics recorder not being
-  // available or because the histogram just isn't there: crbug.com/230534.
-  EXPECT_TRUE(base::StatisticsRecorder::IsActive());
 
   base::HistogramTester histogram_tester;
 

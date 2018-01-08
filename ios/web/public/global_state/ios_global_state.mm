@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/task_scheduler/initialization_util.h"
 #include "net/base/network_change_notifier.h"
 
@@ -54,8 +53,6 @@ void Create(const CreateParams& create_params) {
     base::TaskScheduler::Create("");
 
     base::CommandLine::Init(create_params.argc, create_params.argv);
-
-    base::StatisticsRecorder::Initialize();
   });
 }
 

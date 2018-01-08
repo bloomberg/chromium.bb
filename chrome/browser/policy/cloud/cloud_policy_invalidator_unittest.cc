@@ -884,7 +884,6 @@ CloudPolicyInvalidatorUserTypedTest::~CloudPolicyInvalidatorUserTypedTest() {
 }
 
 void CloudPolicyInvalidatorUserTypedTest::SetUp() {
-  base::StatisticsRecorder::Initialize();
   refresh_samples_ = GetHistogramSamples(
       GetPolicyType() == em::DeviceRegisterRequest::DEVICE ?
           kMetricDevicePolicyRefresh : kMetricUserPolicyRefresh);

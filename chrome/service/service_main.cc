@@ -5,7 +5,6 @@
 #include "base/base_switches.h"
 #include "base/debug/debugger.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_process.h"
@@ -27,8 +26,6 @@ int CloudPrintServiceProcessMain(
 
   VLOG(1) << "Service process launched: "
           << parameters.command_line.GetCommandLineString();
-
-  base::StatisticsRecorder::Initialize();
 
   // If there is already a service process running, quit now.
   std::unique_ptr<ServiceProcessState> state(new ServiceProcessState);

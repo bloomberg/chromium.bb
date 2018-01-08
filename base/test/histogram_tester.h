@@ -29,8 +29,7 @@ class HistogramTester {
  public:
   using CountsMap = std::map<std::string, HistogramBase::Count>;
 
-  // The constructor will call StatisticsRecorder::Initialize() for you. Also,
-  // this takes a snapshot of all current histograms counts.
+  // Takes a snapshot of all current histograms counts.
   HistogramTester();
   ~HistogramTester();
 

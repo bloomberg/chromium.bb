@@ -67,8 +67,6 @@ class SpellcheckCustomDictionaryTest : public testing::Test {
     // Use SetTestingFactoryAndUse to force creation and initialization.
     SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         &profile_, &BuildSpellcheckService);
-
-    StatisticsRecorder::Initialize();
   }
 
   // A wrapper around SpellcheckCustomDictionary::LoadDictionaryFile private
@@ -1142,10 +1140,6 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
 TEST_F(SpellcheckCustomDictionaryTest, MAYBE_RecordSizeStatsCorrectly) {
   // Record a baseline.
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
-
-  // Determine if test failures are due the statistics recorder not being
-  // available or because the histogram just isn't there: crbug.com/230534.
-  EXPECT_TRUE(StatisticsRecorder::IsActive());
 
   HistogramBase* histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");

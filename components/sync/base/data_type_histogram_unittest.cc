@@ -4,16 +4,12 @@
 
 #include "components/sync/base/data_type_histogram.h"
 
-#include "base/metrics/statistics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 namespace {
 
-class DataTypeHistogramTest : public testing::Test {
- public:
-  void SetUp() override { base::StatisticsRecorder::Initialize(); }
-};
+class DataTypeHistogramTest : public testing::Test {};
 
 // Create a histogram of type LOCAL_HISTOGRAM_COUNTS for each model type.
 // Nothing should break.

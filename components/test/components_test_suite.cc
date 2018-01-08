@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
@@ -47,11 +46,6 @@ class ComponentsTestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
 
     mojo::edk::Init();
-
-    // Initialize the histograms subsystem, so that any histograms hit in tests
-    // are correctly registered with the statistics recorder and can be queried
-    // by tests.
-    base::StatisticsRecorder::Initialize();
 
 #if !defined(OS_IOS)
     gl::GLSurfaceTestSupport::InitializeOneOff();

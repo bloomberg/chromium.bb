@@ -21,7 +21,6 @@ namespace mod_pagespeed {
 
 // Ensure that we count PageSpeed headers correctly.
 TEST(ModPagespeedMetricsTest, CountPageSpeedHeadersTest) {
-  base::StatisticsRecorder::Initialize();
   GURL url("http://google.com");
   std::string temp("HTTP/1.1 200 OK\n\n");
   std::replace(temp.begin(), temp.end(), '\n', '\0');
