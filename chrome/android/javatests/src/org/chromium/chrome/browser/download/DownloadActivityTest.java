@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.download.ui.SpaceDisplay;
 import org.chromium.chrome.browser.download.ui.StubbedProvider;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.widget.ListMenuButton.Item;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -126,6 +128,7 @@ public class DownloadActivityTest {
 
         startDownloadActivity();
         mUi = mActivityTestRule.getActivity().getDownloadManagerUiForTests();
+        mStubbedProvider.setUIDelegate(mUi);
         mAdapter = mUi.getDownloadHistoryAdapterForTests();
         mAdapter.registerAdapterDataObserver(mAdapterObserver);
 
@@ -271,6 +274,40 @@ public class DownloadActivityTest {
     @Test
     @MediumTest
     @RetryOnFailure
+    public void testDeleteFileFromMenu() throws Exception {
+        SnackbarManager.setDurationForTesting(1);
+
+        // This first check is a Criteria because initialization of the Adapter is asynchronous.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
+            }
+        });
+
+        Assert.assertEquals(12, mAdapter.getItemCount());
+        // checkForExternallyRemovedFiles() should have been called once already in onResume().
+        Assert.assertEquals(
+                1, mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
+        Assert.assertEquals(
+                0, mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());
+        Assert.assertEquals(
+                0, mStubbedProvider.getOfflineContentProvider().deleteItemCallback.getCallCount());
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
+
+        // Simulate a delete context menu action on the item.
+        simulateContextMenu(2, R.string.delete);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+        Assert.assertEquals(
+                1, mStubbedProvider.getDownloadDelegate().checkExternalCallback.getCallCount());
+        Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        Assert.assertEquals(11, mAdapter.getItemCount());
+        Assert.assertEquals("5.00 GB downloaded", mSpaceUsedDisplay.getText());
+    }
+
+    @Test
+    @MediumTest
+    @RetryOnFailure
     public void testUndoDelete() throws Exception {
         // Adapter positions:
         // 0 = space display
@@ -318,6 +355,71 @@ public class DownloadActivityTest {
         // one duplicate item, and one date bucket should be removed.
         Assert.assertEquals(11, mAdapter.getItemCount());
         Assert.assertEquals("1.00 GB downloaded", mSpaceUsedDisplay.getText());
+
+        // Click "Undo" on the snackbar.
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
+        final View rootView = mUi.getView().getRootView();
+        Assert.assertNotNull(rootView.findViewById(R.id.snackbar));
+        ThreadUtils.runOnUiThread(
+                (Runnable) () -> rootView.findViewById(R.id.snackbar_button).callOnClick());
+
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+
+        // Assert that items are restored.
+        Assert.assertEquals(
+                0, mStubbedProvider.getDownloadDelegate().removeDownloadCallback.getCallCount());
+        Assert.assertEquals(
+                0, mStubbedProvider.getOfflineContentProvider().deleteItemCallback.getCallCount());
+        Assert.assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
+        Assert.assertEquals(15, mAdapter.getItemCount());
+        Assert.assertEquals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
+    }
+
+    @Test
+    @MediumTest
+    @RetryOnFailure
+    public void testUndoDeleteFromMenu() throws Exception {
+        // Adapter positions:
+        // 0 = space display
+        // 1 = date
+        // 2 = download item #7
+        // 3 = download item #8
+        // 4 = date
+        // 5 = download item #6
+        // 6 = offline page #3
+
+        SnackbarManager.setDurationForTesting(5000);
+
+        // Add duplicate items.
+        int callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
+        final DownloadItem item7 = StubbedProvider.createDownloadItem(7, "20161021 07:28");
+        final DownloadItem item8 = StubbedProvider.createDownloadItem(8, "20161021 17:28");
+        ThreadUtils.runOnUiThread(() -> {
+            mAdapter.onDownloadItemCreated(item7);
+            mAdapter.onDownloadItemCreated(item8);
+        });
+
+        // The criteria is needed because an AsyncTask is fired to update the space display, which
+        // can result in either 1 or 2 updates.
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return TextUtils.equals("6.50 GB downloaded", mSpaceUsedDisplay.getText());
+            }
+        });
+
+        Assert.assertEquals(15, mAdapter.getItemCount());
+        callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
+
+        // Simulate a delete context menu action on the item.
+        simulateContextMenu(2, R.string.delete);
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
+
+        // Assert that items are temporarily removed from the adapter. The two selected items,
+        // one duplicate item, and one date bucket should be removed.
+        Assert.assertEquals(12, mAdapter.getItemCount());
+        Assert.assertEquals("6.00 GB downloaded", mSpaceUsedDisplay.getText());
 
         // Click "Undo" on the snackbar.
         callCount = mAdapterObserver.onSpaceDisplayUpdatedCallback.getCallCount();
@@ -600,12 +702,29 @@ public class DownloadActivityTest {
 
     private void toggleItemSelection(int position) throws Exception {
         int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
-        ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(position);
-        Assert.assertTrue(mostRecentHolder instanceof DownloadHistoryItemViewHolder);
-        final DownloadItemView itemView =
-                ((DownloadHistoryItemViewHolder) mostRecentHolder).getItemView();
-
+        final DownloadItemView itemView = getView(position);
         ThreadUtils.runOnUiThread((Runnable) () -> itemView.performLongClick());
         mAdapterObserver.onSelectionCallback.waitForCallback(callCount, 1);
+    }
+
+    private void simulateContextMenu(int position, @StringRes int text) throws Exception {
+        final DownloadItemView view = getView(position);
+        ThreadUtils.runOnUiThread((Runnable) () -> {
+            Item[] items = view.getItems();
+            for (Item item : items) {
+                if (item.getTextId() == text) {
+                    view.onItemSelected(item);
+                    return;
+                }
+            }
+            throw new IllegalStateException("Context menu option not found " + text);
+        });
+    }
+
+    private DownloadItemView getView(int position) throws Exception {
+        int callCount = mAdapterObserver.onSelectionCallback.getCallCount();
+        ViewHolder mostRecentHolder = mRecyclerView.findViewHolderForAdapterPosition(position);
+        Assert.assertTrue(mostRecentHolder instanceof DownloadHistoryItemViewHolder);
+        return ((DownloadHistoryItemViewHolder) mostRecentHolder).getItemView();
     }
 }
