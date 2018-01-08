@@ -594,25 +594,6 @@ const char kDataSaverPromptsShown[] =
 // A string pref that contains version where "What's new" promo was shown.
 const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 
-// Power state of the current displays from the last run.
-const char kDisplayPowerState[] = "settings.display.power_state";
-// A dictionary pref that stores per display preferences.
-const char kDisplayProperties[] = "settings.display.properties";
-// A dictionary pref that stores the touch associations for the device.
-const char kDisplayTouchAssociations[] = "settings.display.touch_associations";
-// A list pref that stores the mirror info for each external display.
-const char kExternalDisplayMirrorInfo[] =
-    "settings.display.external_display_mirror_info";
-
-// A dictionary pref that specifies per-display layout/offset information.
-// Its key is the ID of the display and its value is a dictionary for the
-// layout/offset information.
-const char kSecondaryDisplays[] = "settings.display.secondary_displays";
-
-// A dictionary pref that specifies the state of the rotation lock, and the
-// display orientation, for the internal display.
-const char kDisplayRotationLock[] = "settings.display.rotation_lock";
-
 // A string pref that contains either a Chrome app ID (see
 // extensions::ExtensionId) or an Android package name (using Java package
 // naming conventions) of the preferred note-taking app. An empty value

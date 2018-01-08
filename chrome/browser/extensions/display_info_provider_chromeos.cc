@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_prefs.h"
 #include "ash/display/overscan_calibrator.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
@@ -15,7 +16,6 @@
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "extensions/common/api/system_display.h"
@@ -416,7 +416,7 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
              ->resolution_notification_controller()
              ->PrepareNotificationAndSetDisplayMode(
                  id, current_mode, new_mode, base::BindRepeating([]() {
-                   chromeos::DisplayPrefs::Get()->StoreDisplayPrefs();
+                   ash::Shell::Get()->display_prefs()->StoreDisplayPrefs();
                  }))) {
       *error = "Unable to set the display mode.";
       return false;

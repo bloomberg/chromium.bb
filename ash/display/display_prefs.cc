@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/display_prefs.h"
+#include "ash/display/display_prefs.h"
 
 #include <stddef.h>
 
+#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -14,11 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/user_manager/user_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -30,7 +32,9 @@
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
-namespace chromeos {
+using chromeos::DisplayPowerState;
+
+namespace ash {
 
 namespace {
 
@@ -162,11 +166,14 @@ display::DisplayManager* GetDisplayManager() {
 // Returns true id the current user can write display preferences to
 // Local State.
 bool UserCanSaveDisplayPreference() {
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  return user_manager->IsUserLoggedIn() &&
-         (user_manager->IsLoggedInAsUserWithGaiaAccount() ||
-          user_manager->IsLoggedInAsSupervisedUser() ||
-          user_manager->IsLoggedInAsKioskApp());
+  SessionController* controller = ash::Shell::Get()->session_controller();
+  auto user_type = controller->GetUserType();
+  if (!user_type)
+    return false;
+  return *user_type == user_manager::USER_TYPE_REGULAR ||
+         *user_type == user_manager::USER_TYPE_CHILD ||
+         *user_type == user_manager::USER_TYPE_SUPERVISED ||
+         *user_type == user_manager::USER_TYPE_KIOSK_APP;
 }
 
 void LoadDisplayLayouts(PrefService* local_state) {
@@ -573,8 +580,6 @@ void StoreExternalDisplayMirrorInfo(PrefService* local_state) {
     pref_data->GetList().emplace_back(base::Value(base::Int64ToString(id)));
 }
 
-DisplayPrefs* g_display_prefs = nullptr;
-
 }  // namespace
 
 // static
@@ -590,20 +595,35 @@ void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
 }
 
-// static
-DisplayPrefs* DisplayPrefs::Get() {
-  CHECK(g_display_prefs);
-  return g_display_prefs;
+DisplayPrefs::DisplayPrefs() {
+  ash::Shell::Get()->AddShellObserver(this);
 }
 
-DisplayPrefs::DisplayPrefs(PrefService* local_state)
-    : local_state_(local_state) {
-  g_display_prefs = this;
+DisplayPrefs::~DisplayPrefs() {
+  ash::Shell::Get()->RemoveShellObserver(this);
 }
 
-DisplayPrefs::~DisplayPrefs() = default;
+void DisplayPrefs::OnLocalStatePrefServiceInitialized(
+    PrefService* pref_service) {
+  if (local_state_)
+    return;
+
+  bool first_run_after_boot = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+  LoadDisplayPreferences(first_run_after_boot, pref_service);
+
+  if (store_requested_) {
+    StoreDisplayPrefs();
+    store_requested_ = false;
+  }
+}
 
 void DisplayPrefs::StoreDisplayPrefs() {
+  if (!local_state_) {
+    store_requested_ = true;
+    return;
+  }
+
   // Stores the power state regardless of the login status, because the power
   // state respects to the current status (close/open) of the lid which can be
   // changed in any situation. See http://crbug.com/285360
@@ -622,15 +642,17 @@ void DisplayPrefs::StoreDisplayPrefs() {
   StoreExternalDisplayMirrorInfo(local_state_);
 }
 
-void DisplayPrefs::LoadDisplayPreferences(bool first_run_after_boot) {
-  LoadDisplayLayouts(local_state_);
-  LoadDisplayProperties(local_state_);
-  LoadExternalDisplayMirrorInfo(local_state_);
-  LoadDisplayRotationState(local_state_);
-  LoadDisplayTouchAssociations(local_state_);
+void DisplayPrefs::LoadDisplayPreferences(bool first_run_after_boot,
+                                          PrefService* local_state) {
+  local_state_ = local_state;
+  LoadDisplayLayouts(local_state);
+  LoadDisplayProperties(local_state);
+  LoadExternalDisplayMirrorInfo(local_state);
+  LoadDisplayRotationState(local_state);
+  LoadDisplayTouchAssociations(local_state);
   if (!first_run_after_boot) {
     // Restore DisplayPowerState:
-    std::string value = local_state_->GetString(prefs::kDisplayPowerState);
+    std::string value = local_state->GetString(prefs::kDisplayPowerState);
     chromeos::DisplayPowerState power_state;
     if (GetDisplayPowerStateFromString(value, &power_state)) {
       ash::Shell::Get()->display_configurator()->SetInitialDisplayPower(
@@ -677,4 +699,4 @@ bool DisplayPrefs::ParseTouchCalibrationStringForTest(
   return ParseTouchCalibrationStringValue(str, point_pair_quad);
 }
 
-}  // namespace chromeos
+}  // namespace ash

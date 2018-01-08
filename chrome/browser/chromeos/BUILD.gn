@@ -510,8 +510,6 @@ source_set("chromeos") {
     "dbus/screen_lock_service_provider.h",
     "display/display_configuration_observer.cc",
     "display/display_configuration_observer.h",
-    "display/display_prefs.cc",
-    "display/display_prefs.h",
     "display/output_protection_controller_ash.cc",
     "display/output_protection_controller_ash.h",
     "display/output_protection_controller_mus.cc",

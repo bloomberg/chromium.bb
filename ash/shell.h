@@ -94,6 +94,7 @@ class CastConfigController;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
+class DisplayPrefs;
 class DisplayShutdownObserver;
 class DragDropController;
 class EventClientImpl;
@@ -330,6 +331,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::CursorManager* cursor_manager() { return cursor_manager_.get(); }
 
   display::DisplayManager* display_manager() { return display_manager_.get(); }
+  DisplayPrefs* display_prefs() { return display_prefs_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
@@ -725,6 +727,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<::wm::AcceleratorFilter> accelerator_filter_;
 
   std::unique_ptr<display::DisplayManager> display_manager_;
+  std::unique_ptr<DisplayPrefs> display_prefs_;
   std::unique_ptr<DisplayConfigurationController>
       display_configuration_controller_;
 
