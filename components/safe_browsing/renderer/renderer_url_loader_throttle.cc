@@ -57,7 +57,8 @@ void RendererURLLoaderThrottle::WillStartRequest(
   headers.CopyFrom(request->headers);
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id_, mojo::MakeRequest(&url_checker_), request->url,
-      request->method, headers, request->load_flags, request->resource_type,
+      request->method, headers, request->load_flags,
+      static_cast<content::ResourceType>(request->resource_type),
       request->has_user_gesture,
       base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));

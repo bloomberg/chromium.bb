@@ -67,14 +67,15 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
-  DCHECK(
-      ServiceWorkerUtils::IsMainResourceType(resource_request.resource_type));
+  DCHECK(ServiceWorkerUtils::IsMainResourceType(
+      static_cast<ResourceType>(resource_request.resource_type)));
   DCHECK_EQ(network::mojom::FetchRequestMode::kNavigate,
             resource_request_.fetch_request_mode);
   DCHECK_EQ(network::mojom::FetchCredentialsMode::kInclude,
             resource_request_.fetch_credentials_mode);
-  DCHECK_EQ(FetchRedirectMode::MANUAL_MODE,
-            resource_request_.fetch_redirect_mode);
+  DCHECK_EQ(
+      FetchRedirectMode::MANUAL_MODE,
+      static_cast<FetchRedirectMode>(resource_request_.fetch_redirect_mode));
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
 }

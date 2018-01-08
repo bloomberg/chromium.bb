@@ -463,7 +463,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     FetchCallback fetch_callback)
     : request_(std::move(request)),
       version_(std::move(version)),
-      resource_type_(request_->resource_type),
+      resource_type_(static_cast<ResourceType>(request_->resource_type)),
       net_log_(net_log),
       prepare_callback_(std::move(prepare_callback)),
       fetch_callback_(std::move(fetch_callback)),
@@ -730,7 +730,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   // for the service worker navigation preload request.
   request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
   request.priority = original_request->priority();
-  request.service_worker_mode = ServiceWorkerMode::NONE;
+  request.service_worker_mode = static_cast<int>(ServiceWorkerMode::NONE);
   request.do_not_prompt_for_login = true;
   request.render_frame_id = original_info->GetRenderFrameID();
   request.is_main_frame = original_info->IsMainFrame();
@@ -794,7 +794,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreloadWithURLLoader(
   // Set to SUB_RESOURCE because we shouldn't trigger NavigationResourceThrottle
   // for the service worker navigation preload request.
   resource_request.resource_type = RESOURCE_TYPE_SUB_RESOURCE;
-  resource_request.service_worker_mode = ServiceWorkerMode::NONE;
+  resource_request.service_worker_mode =
+      static_cast<int>(ServiceWorkerMode::NONE);
   resource_request.do_not_prompt_for_login = true;
   DCHECK(net::HttpUtil::IsValidHeaderValue(
       version_->navigation_preload_state().header));

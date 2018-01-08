@@ -76,7 +76,8 @@ class SubresourceLoader : public mojom::URLLoader,
       return;
     }
     handler_ = host_->CreateRequestHandler(
-        AppCacheURLLoaderRequest::Create(request_), request_.resource_type,
+        AppCacheURLLoaderRequest::Create(request_),
+        static_cast<ResourceType>(request_.resource_type),
         request_.should_reset_appcache);
     if (!handler_) {
       CreateAndStartNetworkLoader();

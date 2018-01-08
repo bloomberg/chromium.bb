@@ -84,7 +84,7 @@ void WebstoreInstallHelper::Start(
     icon_fetcher_.reset(new BitmapFetcher(icon_url_, this, traffic_annotation));
     icon_fetcher_->Init(
         std::string(),
-        blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+        net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
         net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
     icon_fetcher_->Start(loader_factory);
   }

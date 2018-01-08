@@ -285,7 +285,8 @@ class Helper : public EmbeddedWorkerTestHelper {
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback) override {
     // Basic checks on DispatchFetchEvent parameters.
-    EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(request.resource_type));
+    EXPECT_TRUE(ServiceWorkerUtils::IsMainResourceType(
+        static_cast<ResourceType>(request.resource_type)));
 
     request_body_ = request.request_body;
 
@@ -575,7 +576,8 @@ class ServiceWorkerURLLoaderJobTest
     request->fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
     request->fetch_credentials_mode =
         network::mojom::FetchCredentialsMode::kInclude;
-    request->fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
+    request->fetch_redirect_mode =
+        static_cast<int>(FetchRedirectMode::MANUAL_MODE);
     return request;
   }
 
@@ -904,7 +906,8 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
   request.fetch_request_mode = network::mojom::FetchRequestMode::kNavigate;
   request.fetch_credentials_mode =
       network::mojom::FetchCredentialsMode::kInclude;
-  request.fetch_redirect_mode = FetchRedirectMode::MANUAL_MODE;
+  request.fetch_redirect_mode =
+      static_cast<int>(FetchRedirectMode::MANUAL_MODE);
 
   StartLoaderCallback callback;
   auto job = std::make_unique<ServiceWorkerURLLoaderJob>(

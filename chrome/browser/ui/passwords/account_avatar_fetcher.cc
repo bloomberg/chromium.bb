@@ -54,7 +54,7 @@ AccountAvatarFetcher::~AccountAvatarFetcher() = default;
 
 void AccountAvatarFetcher::Start(
     content::mojom::URLLoaderFactory* loader_factory) {
-  fetcher_.Init(std::string(), blink::kWebReferrerPolicyAlways,
+  fetcher_.Init(std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
                 net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
                     net::LOAD_DO_NOT_SEND_AUTH_DATA |
                     net::LOAD_MAYBE_USER_GESTURE);

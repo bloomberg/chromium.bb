@@ -14,6 +14,7 @@
 #include "content/public/common/resource_response.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_util.h"
+#include "ui/base/page_transition_types.h"
 
 namespace content {
 namespace {
@@ -44,9 +45,10 @@ std::unique_ptr<ServiceWorkerFetchRequest>
 ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   auto new_request = std::make_unique<ServiceWorkerFetchRequest>();
   new_request->mode = request.fetch_request_mode;
-  new_request->is_main_resource_load =
-      ServiceWorkerUtils::IsMainResourceType(request.resource_type);
-  new_request->request_context_type = request.fetch_request_context_type;
+  new_request->is_main_resource_load = ServiceWorkerUtils::IsMainResourceType(
+      static_cast<ResourceType>(request.resource_type));
+  new_request->request_context_type =
+      static_cast<RequestContextType>(request.fetch_request_context_type);
   new_request->frame_type = request.fetch_frame_type;
   new_request->url = request.url;
   new_request->method = request.method;
@@ -58,10 +60,12 @@ ServiceWorkerLoaderHelpers::CreateFetchRequest(const ResourceRequest& request) {
   new_request->credentials_mode = request.fetch_credentials_mode;
   new_request->cache_mode =
       ServiceWorkerFetchRequest::GetCacheModeFromLoadFlags(request.load_flags);
-  new_request->redirect_mode = request.fetch_redirect_mode;
+  new_request->redirect_mode =
+      static_cast<FetchRedirectMode>(request.fetch_redirect_mode);
   new_request->keepalive = request.keepalive;
   new_request->is_reload = ui::PageTransitionCoreTypeIs(
-      request.transition_type, ui::PAGE_TRANSITION_RELOAD);
+      static_cast<ui::PageTransition>(request.transition_type),
+      ui::PAGE_TRANSITION_RELOAD);
   new_request->referrer = Referrer(
       GURL(request.referrer), Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
                                   request.referrer_policy));

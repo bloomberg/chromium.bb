@@ -37,7 +37,7 @@ ServiceWorkerScriptURLLoader::ServiceWorkerScriptURLLoader(
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : request_url_(resource_request.url),
-      resource_type_(resource_request.resource_type),
+      resource_type_(static_cast<ResourceType>(resource_request.resource_type)),
       version_(version),
       network_client_binding_(this),
       network_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),

@@ -831,7 +831,8 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
   DCHECK(request_data.transferred_request_child_id != -1 ||
          request_data.transferred_request_request_id != -1);
 
-  if (!IsResourceTypeFrame(request_data.resource_type)) {
+  if (!IsResourceTypeFrame(
+          static_cast<ResourceType>(request_data.resource_type))) {
     // Transfers apply only to navigational requests - the renderer seems to
     // have sent bogus IPC data.
     bad_message::ReceivedBadMessage(
@@ -897,7 +898,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // PlzNavigate: reject invalid renderer main resource request.
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(request_data.resource_type);
+      IsResourceTypeFrame(
+          static_cast<ResourceType>(request_data.resource_type));
   if (is_navigation_stream_request &&
       !request_data.resource_body_stream_url.SchemeIs(url::kBlobScheme)) {
     // The resource_type of navigation preload requests must be SUB_RESOURCE.
@@ -935,8 +937,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
 
   ResourceContext* resource_context = nullptr;
   net::URLRequestContext* request_context = nullptr;
-  requester_info->GetContexts(request_data.resource_type, &resource_context,
-                              &request_context);
+  requester_info->GetContexts(
+      static_cast<ResourceType>(request_data.resource_type), &resource_context,
+      &request_context);
 
   // Parse the headers before calling ShouldServiceRequest, so that they are
   // available to be validated.
@@ -1043,18 +1046,20 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   int load_flags = BuildLoadFlagsForRequest(request_data);
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(request_data.resource_type);
+      IsResourceTypeFrame(
+          static_cast<ResourceType>(request_data.resource_type));
 
   ResourceContext* resource_context = nullptr;
   net::URLRequestContext* request_context = nullptr;
-  requester_info->GetContexts(request_data.resource_type, &resource_context,
-                              &request_context);
+  requester_info->GetContexts(
+      static_cast<ResourceType>(request_data.resource_type), &resource_context,
+      &request_context);
 
   // Allow the observer to block/handle the request.
-  if (delegate_ && !delegate_->ShouldBeginRequest(request_data.method,
-                                                  request_data.url,
-                                                  request_data.resource_type,
-                                                  resource_context)) {
+  if (delegate_ && !delegate_->ShouldBeginRequest(
+                       request_data.method, request_data.url,
+                       static_cast<ResourceType>(request_data.resource_type),
+                       resource_context)) {
     AbortRequestBeforeItStarts(requester_info->filter(), request_id,
                                std::move(url_loader_client));
     return;
@@ -1089,7 +1094,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     // Browser-initiated navigations don't have an initiator document, the
     // others have one.
     DCHECK(request_data.request_initiator.has_value() ||
-           IsResourceTypeFrame(request_data.resource_type));
+           IsResourceTypeFrame(
+               static_cast<ResourceType>(request_data.resource_type)));
     new_request->set_initiator(request_data.request_initiator);
 
     if (request_data.originated_from_service_worker) {
@@ -1129,7 +1135,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     }
 
     allow_download = request_data.allow_download &&
-                     IsResourceTypeFrame(request_data.resource_type);
+                     IsResourceTypeFrame(
+                         static_cast<ResourceType>(request_data.resource_type));
     do_not_prompt_for_login = request_data.do_not_prompt_for_login;
 
     // Raw headers are sensitive, as they include Cookie/Set-Cookie, so only
@@ -1206,8 +1213,10 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       requester_info, route_id,
       -1,  // frame_tree_node_id
       request_data.plugin_child_id, request_id, request_data.render_frame_id,
-      request_data.is_main_frame, request_data.resource_type,
-      request_data.transition_type, request_data.should_replace_current_entry,
+      request_data.is_main_frame,
+      static_cast<ResourceType>(request_data.resource_type),
+      static_cast<ui::PageTransition>(request_data.transition_type),
+      request_data.should_replace_current_entry,
       false,  // is download
       false,  // is stream
       allow_download, request_data.has_user_gesture,
@@ -1240,27 +1249,32 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     // the initial request.
     handler = CreateBaseResourceHandler(
         new_request.get(), std::move(mojo_request),
-        std::move(url_loader_client), request_data.resource_type);
+        std::move(url_loader_client),
+        static_cast<ResourceType>(request_data.resource_type));
   } else {
     // Initialize the service worker handler for the request. We don't use
     // ServiceWorker for synchronous loads to avoid renderer deadlocks.
     const ServiceWorkerMode service_worker_mode =
-        is_sync_load ? ServiceWorkerMode::NONE
-                     : request_data.service_worker_mode;
+        is_sync_load
+            ? ServiceWorkerMode::NONE
+            : static_cast<ServiceWorkerMode>(request_data.service_worker_mode);
     ServiceWorkerRequestHandler::InitializeHandler(
         new_request.get(), requester_info->service_worker_context(),
         blob_context, child_id, request_data.service_worker_provider_id,
         service_worker_mode != ServiceWorkerMode::ALL,
         request_data.fetch_request_mode, request_data.fetch_credentials_mode,
-        request_data.fetch_redirect_mode, request_data.fetch_integrity,
-        request_data.keepalive, request_data.resource_type,
-        request_data.fetch_request_context_type, request_data.fetch_frame_type,
-        request_data.request_body);
+        static_cast<FetchRedirectMode>(request_data.fetch_redirect_mode),
+        request_data.fetch_integrity, request_data.keepalive,
+        static_cast<ResourceType>(request_data.resource_type),
+        static_cast<RequestContextType>(
+            request_data.fetch_request_context_type),
+        request_data.fetch_frame_type, request_data.request_body);
 
     // Have the appcache associate its extra info with the request.
     AppCacheInterceptor::SetExtraRequestInfo(
         new_request.get(), requester_info->appcache_service(), child_id,
-        request_data.appcache_host_id, request_data.resource_type,
+        request_data.appcache_host_id,
+        static_cast<ResourceType>(request_data.resource_type),
         request_data.should_reset_appcache);
     handler = CreateResourceHandler(requester_info.get(), new_request.get(),
                                     request_data, route_id, child_id,
@@ -1284,9 +1298,9 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
   DCHECK(requester_info->IsRenderer() || requester_info->IsNavigationPreload());
   // Construct the IPC resource handler.
   std::unique_ptr<ResourceHandler> handler;
-  handler = CreateBaseResourceHandler(request, std::move(mojo_request),
-                                      std::move(url_loader_client),
-                                      request_data.resource_type);
+  handler = CreateBaseResourceHandler(
+      request, std::move(mojo_request), std::move(url_loader_client),
+      static_cast<ResourceType>(request_data.resource_type));
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
   if (request_data.download_to_file) {
@@ -1308,11 +1322,12 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
     handler = std::move(detachable_handler);
   }
 
-  return AddStandardHandlers(request, request_data.resource_type,
-                             resource_context, request_data.fetch_request_mode,
-                             request_data.fetch_request_context_type,
-                             requester_info->appcache_service(), child_id,
-                             route_id, std::move(handler), nullptr, nullptr);
+  return AddStandardHandlers(
+      request, static_cast<ResourceType>(request_data.resource_type),
+      resource_context, request_data.fetch_request_mode,
+      static_cast<RequestContextType>(request_data.fetch_request_context_type),
+      requester_info->appcache_service(), child_id, route_id,
+      std::move(handler), nullptr, nullptr);
 }
 
 std::unique_ptr<ResourceHandler>
@@ -2454,7 +2469,8 @@ bool ResourceDispatcherHostImpl::ShouldServiceRequest(
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool is_navigation_stream_request =
       IsBrowserSideNavigationEnabled() &&
-      IsResourceTypeFrame(request_data.resource_type);
+      IsResourceTypeFrame(
+          static_cast<ResourceType>(request_data.resource_type));
   // Check if the renderer is permitted to request the requested URL.
   // PlzNavigate: no need to check the URL here. The browser already picked the
   // right renderer to send the request to. The original URL isn't used, as the

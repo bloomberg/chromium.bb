@@ -201,7 +201,7 @@ URLLoader::URLLoader(NetworkContext* context,
                      uint32_t process_id)
     : context_(context),
       options_(options),
-      resource_type_(request.resource_type),
+      resource_type_(static_cast<ResourceType>(request.resource_type)),
       is_load_timing_enabled_(request.enable_load_timing),
       process_id_(process_id),
       render_frame_id_(request.render_frame_id),
@@ -252,7 +252,7 @@ URLLoader::URLLoader(NetworkContext* context,
 
   // TODO(qinmin): network service shouldn't know about resource type, need
   // to introduce another field to set this.
-  if (request.resource_type == RESOURCE_TYPE_MAIN_FRAME) {
+  if (resource_type_ == RESOURCE_TYPE_MAIN_FRAME) {
     url_request_->set_first_party_url_policy(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
@@ -266,7 +266,7 @@ URLLoader::URLLoader(NetworkContext* context,
         base::Bind(&URLLoader::SetRawResponseHeaders, base::Unretained(this)));
   }
 
-  AttachAcceptHeader(request.resource_type, url_request_.get());
+  AttachAcceptHeader(resource_type_, url_request_.get());
 
   url_request_->Start();
 }

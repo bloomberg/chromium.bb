@@ -632,11 +632,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->is_external_request = request.IsExternalRequest();
   resource_request->cors_preflight_policy = request.GetCORSPreflightPolicy();
   resource_request->service_worker_mode =
-      GetServiceWorkerModeForWebURLRequest(request);
+      static_cast<int>(GetServiceWorkerModeForWebURLRequest(request));
   resource_request->fetch_request_mode = request.GetFetchRequestMode();
   resource_request->fetch_credentials_mode = request.GetFetchCredentialsMode();
   resource_request->fetch_redirect_mode =
-      GetFetchRedirectModeForWebURLRequest(request);
+      static_cast<int>(GetFetchRedirectModeForWebURLRequest(request));
   resource_request->fetch_integrity =
       GetFetchIntegrityForWebURLRequest(request);
   resource_request->fetch_request_context_type =
@@ -658,7 +658,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   }
   resource_request->report_raw_headers = request.ReportRawHeaders();
   resource_request->previews_state =
-      static_cast<PreviewsState>(request.GetPreviewsState());
+      static_cast<int>(request.GetPreviewsState());
 
   // PlzNavigate: The network request has already been made by the browser.
   // The renderer should request a stream which contains the body of the

@@ -68,7 +68,7 @@ void ProfileAvatarDownloader::Start() {
   if (loader_factory) {
     fetcher_->Init(
         std::string(),
-        blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+        net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
         net::LOAD_NORMAL);
     fetcher_->Start(loader_factory);
   }

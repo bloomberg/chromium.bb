@@ -5,6 +5,7 @@
 #include "content/renderer/loader/cors_url_loader.h"
 
 #include "content/public/common/origin_util.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "third_party/WebKit/public/platform/WebCORS.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderMap.h"

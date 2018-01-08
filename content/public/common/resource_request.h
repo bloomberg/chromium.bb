@@ -11,20 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/child_process_host.h"
-#include "content/public/common/previews_state.h"
-#include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_request_body.h"
-#include "content/public/common/resource_type.h"
-#include "content/public/common/service_worker_modes.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/interfaces/cors.mojom.h"
 #include "services/network/public/interfaces/fetch_api.mojom.h"
 #include "services/network/public/interfaces/request_context_frame_type.mojom.h"
-#include "third_party/WebKit/common/page/page_visibility_state.mojom.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -72,13 +65,17 @@ struct CONTENT_EXPORT ResourceRequest {
   // If this request originated from a pepper plugin running in a child
   // process, this identifies which process it came from. Otherwise, it
   // is zero.
-  int plugin_child_id = ChildProcessHost::kInvalidUniqueID;
+  // -1 to match ChildProcessHost::kInvalidUniqueID
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int plugin_child_id = -1;
 
   // What this resource load is for (main frame, sub-frame, sub-resource,
   // object).
-  // TODO(qinmin): this is used for legacy code path. With network service, it
-  // shouldn't know about resource type.
-  ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
+  // Note: this is an enum of type content::ResourceType.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int resource_type = 0;
 
   // The priority of this request determined by Blink.
   net::RequestPriority priority = net::IDLE;
@@ -103,9 +100,11 @@ struct CONTENT_EXPORT ResourceRequest {
   network::mojom::CORSPreflightPolicy cors_preflight_policy =
       network::mojom::CORSPreflightPolicy::kConsiderPreflight;
 
-  // Indicates which frame (or worker context) the request is being loaded into,
-  // or kInvalidServiceWorkerProviderId.
-  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
+  // Indicates which frame (or worker context) the request is being loaded into.
+  // -1 corresponds to kInvalidServiceWorkerProviderId.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int service_worker_provider_id = -1;
 
   // True if the request originated from a Service Worker, e.g. due to a
   // fetch() in the Service Worker script.
@@ -113,7 +112,10 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // The service worker mode that indicates which service workers should get
   // events for this request.
-  ServiceWorkerMode service_worker_mode = ServiceWorkerMode::ALL;
+  // Note: this is an enum of type content::ServiceWorkerMode.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int service_worker_mode = 0;
 
   // The request mode passed to the ServiceWorker.
   network::mojom::FetchRequestMode fetch_request_mode =
@@ -124,14 +126,20 @@ struct CONTENT_EXPORT ResourceRequest {
       network::mojom::FetchCredentialsMode::kOmit;
 
   // The redirect mode used in Fetch API.
-  FetchRedirectMode fetch_redirect_mode = FetchRedirectMode::FOLLOW_MODE;
+  // Note: this is an enum of type content::FetchRedirectMode.
+  // TODO(jam): emove this if network service shouldn't know about this, or
+  // redefine it in /services/network if it is needed to implement CORS in
+  // network service.
+  int fetch_redirect_mode = 0;
 
   // The integrity used in Fetch API.
   std::string fetch_integrity;
 
   // The request context passed to the ServiceWorker.
-  RequestContextType fetch_request_context_type =
-      REQUEST_CONTEXT_TYPE_UNSPECIFIED;
+  // Note: this is an enum of type content::RequestContextType.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int fetch_request_context_type = 0;
 
   // The frame type passed to the ServiceWorker.
   network::mojom::RequestContextFrameType fetch_frame_type =
@@ -169,7 +177,10 @@ struct CONTENT_EXPORT ResourceRequest {
   // True if |frame_id| is the main frame of a RenderView.
   bool is_main_frame = false;
 
-  ui::PageTransition transition_type = ui::PAGE_TRANSITION_LINK;
+  // Note: this is an enum of type ui::PageTransition.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int transition_type = 0;
 
   // For navigations, whether this navigation should replace the current session
   // history entry on commit.
@@ -190,7 +201,10 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // Whether or not to request a Preview version of the resource or let the
   // browser decide.
-  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
+  // Note: this is an enum of type PreviewsState.
+  // TODO(jam): remove this from the struct since network service shouldn't know
+  // about this.
+  int previews_state = 0;
 
   // PlzNavigate: the stream url associated with a navigation. Used to get
   // access to the body of the response that has already been fetched by the

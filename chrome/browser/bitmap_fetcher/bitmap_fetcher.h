@@ -15,6 +15,7 @@
 #include "content/public/common/simple_url_loader.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -37,7 +38,7 @@ class BitmapFetcher : public ImageDecoder::ImageRequest {
   // |net::LOAD_NORMAL| is appropriate.  Init may be called more than once in
   // some cases.  If so, subsequent starts will be ignored.
   void Init(const std::string& referrer,
-            blink::WebReferrerPolicy referrer_policy,
+            net::URLRequest::ReferrerPolicy referrer_policy,
             int load_flags);
 
   // Start fetching the URL with the fetcher. The delegate is notified
