@@ -121,6 +121,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'SetScaling', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetScaling);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetOther', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetOther);
+});
+
 PrintPreviewRestoreStateTest = class extends NewPrintPreviewTest {
   /** @override */
   get browsePreload() {

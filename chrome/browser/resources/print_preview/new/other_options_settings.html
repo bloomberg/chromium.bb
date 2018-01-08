@@ -1,50 +1,53 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="checkbox_radio_css.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="settings_behavior.html">
 <link rel="import" href="settings_section.html">
 
 <dom-module id="print-preview-other-options-settings">
   <template>
-    <style include="print-preview-shared checkbox-radio">
+    <style include="print-preview-shared checkbox-radio cr-hidden-style">
+      label {
+        display: block;
+      }
     </style>
     <print-preview-settings-section class="multirow-controls">
       <span slot="title" id="options-label">$i18n{optionsLabel}</span>
       <div slot="controls" class="checkbox">
-        <div id="header-footer-container"
+        <label aria-live="polite"
             hidden$="[[!settings.headerFooter.available]]">
-          <label aria-live="polite">
-            <input type="checkbox">
-            <span>$i18n{optionHeaderFooter}</span>
-          </label>
-        </div>
-        <div id="duplex-container" hidden$="[[!settings.duplex.available]]">
-          <label aria-live="polite">
-            <input type="checkbox" checked="{{duplexValue_::change}}">
-            <span>$i18n{optionTwoSided}</span>
-          </label>
-        </div>
-        <div id="css-background-container"
+          <input type="checkbox" id="header-footer"
+              on-change="onHeaderFooterChange_"
+              checked$="[[settings.headerFooter.value]]">
+          <span>$i18n{optionHeaderFooter}</span>
+        </label>
+        <label aria-live="polite" hidden$="[[!settings.duplex.available]]">
+          <input type="checkbox" id="duplex" on-change="onDuplexChange_"
+              checked$="[[settings.duplex.value]]">
+          <span>$i18n{optionTwoSided}</span>
+        </label>
+        <label aria-live="polite"
             hidden$="[[!settings.cssBackground.available]]">
-          <label aria-live="polite">
-            <input type="checkbox">
-            <span>$i18n{optionBackgroundColorsAndImages}</span>
-          </label>
-        </div>
-        <div id="rasterize-container"
-            hidden$="[[!settings.rasterize.available]]">
-          <label aria-live="polite">
-            <input type="checkbox">
-            <span>$i18n{optionRasterize}</span>
-          </label>
-        </div>
-        <div id="selection-only-container"
+          <input type="checkbox" id="css-background"
+              on-change="onCssBackgroundChange_"
+              checked$="[[settings.cssBackground.value]]">
+          <span>$i18n{optionBackgroundColorsAndImages}</span>
+        </label>
+        <label aria-live="polite" hidden$="[[!settings.rasterize.available]]">
+          <input type="checkbox" id="rasterize"
+              on-change="onRasterizeChange_"
+              checked$="[[settings.rasterize.value]]">
+          <span>$i18n{optionRasterize}</span>
+        </label>
+        <label aria-live="polite"
             hidden$="[[!settings.selectionOnly.available]]">
-          <label aria-live="polite">
-            <input type="checkbox">
-            <span>$i18n{optionSelectionOnly}</span>
-          </label>
-        </div>
+          <input type="checkbox" id="selection-only"
+              on-change="onSelectionOnlyChange_"
+              checked$="[[settings.selectionOnly.value]]">
+          <span>$i18n{optionSelectionOnly}</span>
+        </label>
       </div>
     </print-preview-settings-section>
   </template>
