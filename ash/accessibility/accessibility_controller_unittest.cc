@@ -42,12 +42,33 @@ using AccessibilityControllerTest = AshTestBase;
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityAutoclickEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
+}
+
+TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->IsAutoclickEnabled());
+
+  TestAccessibilityObserver observer;
+  Shell::Get()->system_tray_notifier()->AddAccessibilityObserver(&observer);
+  EXPECT_EQ(0, observer.changed_);
+
+  controller->SetAutoclickEnabled(true);
+  EXPECT_TRUE(controller->IsAutoclickEnabled());
+  EXPECT_EQ(1, observer.changed_);
+
+  controller->SetAutoclickEnabled(false);
+  EXPECT_FALSE(controller->IsAutoclickEnabled());
+  EXPECT_EQ(2, observer.changed_);
+
+  Shell::Get()->system_tray_notifier()->RemoveAccessibilityObserver(&observer);
 }
 
 TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {

@@ -71,7 +71,7 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_SCREEN_MAGNIFIER;
   if (controller->IsLargeCursorEnabled())
     state |= A11Y_LARGE_CURSOR;
-  if (delegate->IsAutoclickEnabled())
+  if (controller->IsAutoclickEnabled())
     state |= A11Y_AUTOCLICK;
   if (delegate->IsVirtualKeyboardEnabled())
     state |= A11Y_VIRTUAL_KEYBOARD;
@@ -165,7 +165,7 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
   TrayPopupUtils::UpdateCheckMarkVisibility(screen_magnifier_view_,
                                             screen_magnifier_enabled_);
 
-  autoclick_enabled_ = delegate->IsAutoclickEnabled();
+  autoclick_enabled_ = controller->IsAutoclickEnabled();
   TrayPopupUtils::UpdateCheckMarkVisibility(autoclick_view_,
                                             autoclick_enabled_);
 
@@ -232,7 +232,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
           IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SCREEN_MAGNIFIER),
       screen_magnifier_enabled_);
 
-  autoclick_enabled_ = delegate->IsAutoclickEnabled();
+  autoclick_enabled_ = controller->IsAutoclickEnabled();
   autoclick_view_ = AddScrollListCheckableItem(
       kSystemMenuAccessibilityAutoClickIcon,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
@@ -322,10 +322,10 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                      : UserMetricsAction("StatusArea_LargeCursorDisabled"));
     controller->SetLargeCursorEnabled(new_state);
   } else if (autoclick_view_ && view == autoclick_view_) {
-    RecordAction(delegate->IsAutoclickEnabled()
-                     ? UserMetricsAction("StatusArea_AutoClickDisabled")
-                     : UserMetricsAction("StatusArea_AutoClickEnabled"));
-    delegate->SetAutoclickEnabled(!delegate->IsAutoclickEnabled());
+    bool new_state = !controller->IsAutoclickEnabled();
+    RecordAction(new_state ? UserMetricsAction("StatusArea_AutoClickEnabled")
+                           : UserMetricsAction("StatusArea_AutoClickDisabled"));
+    controller->SetAutoclickEnabled(new_state);
   } else if (virtual_keyboard_view_ && view == virtual_keyboard_view_) {
     RecordAction(delegate->IsVirtualKeyboardEnabled()
                      ? UserMetricsAction("StatusArea_VirtualKeyboardDisabled")
