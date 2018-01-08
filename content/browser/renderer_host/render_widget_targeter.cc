@@ -125,13 +125,10 @@ void RenderWidgetTargeter::QueryClient(
   if (mouse_event.GetType() == blink::WebInputEvent::kUndefined)
     return;
   request_in_flight_ = true;
-  float scale_factor = root_view->current_device_scale_factor();
   auto* target_client =
       target->GetRenderWidgetHostImpl()->input_target_client();
   target_client->FrameSinkIdAt(
-      gfx::ScaleToCeiledPoint(
-          gfx::ToCeiledPoint(mouse_event.PositionInWidget()), scale_factor,
-          scale_factor),
+      gfx::ToCeiledPoint(mouse_event.PositionInWidget()),
       base::BindOnce(&RenderWidgetTargeter::FoundFrameSinkId,
                      weak_ptr_factory_.GetWeakPtr(), root_view->GetWeakPtr(),
                      target->GetWeakPtr(),
@@ -169,7 +166,15 @@ void RenderWidgetTargeter::FoundFrameSinkId(
   if (view == target.get()) {
     FoundTarget(root_view.get(), view, event, latency, target_location);
   } else {
-    QueryClient(root_view.get(), view, event, latency, target_location);
+    base::Optional<gfx::PointF> location = target_location;
+    if (target_location) {
+      gfx::PointF updated_location = *target_location;
+      if (target->TransformPointToCoordSpaceForView(updated_location, view,
+                                                    &updated_location)) {
+        location.emplace(updated_location);
+      }
+    }
+    QueryClient(root_view.get(), view, event, latency, location);
   }
 }
 
