@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search/tokenized_string.h"
-#include "ash/app_list/model/search/tokenized_string_match.h"
+#include "ash/public/cpp/app_list/tokenized_string.h"
+#include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/string_util.h"

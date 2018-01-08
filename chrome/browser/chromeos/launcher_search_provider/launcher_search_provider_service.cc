@@ -8,8 +8,8 @@
 
 #include <utility>
 
-#include "ash/app_list/model/search/tokenized_string.h"
-#include "ash/app_list/model/search/tokenized_string_match.h"
+#include "ash/public/cpp/app_list/tokenized_string.h"
+#include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/launcher_search_provider/launcher_search_provider_service_factory.h"

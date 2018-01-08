@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
-#define ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#define ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_CHAR_ITERATOR_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
 
-#include "ash/app_list/model/app_list_model_export.h"
-#include "ash/app_list/model/search/tokenized_string.h"
+#include "ash/public/cpp/app_list/tokenized_string.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 
 namespace base {
@@ -23,7 +23,7 @@ class UTF16CharIterator;
 namespace app_list {
 
 // An UTF16 char iterator for a TokenizedString.
-class APP_LIST_MODEL_EXPORT TokenizedStringCharIterator {
+class ASH_PUBLIC_EXPORT TokenizedStringCharIterator {
  public:
   struct State {
     State();
@@ -78,4 +78,4 @@ class APP_LIST_MODEL_EXPORT TokenizedStringCharIterator {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_CHAR_ITERATOR_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_CHAR_ITERATOR_H_

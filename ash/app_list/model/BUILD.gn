@@ -44,20 +44,13 @@ component("search_model") {
     "search/search_result.cc",
     "search/search_result.h",
     "search/search_result_observer.h",
-    "search/term_break_iterator.cc",
-    "search/term_break_iterator.h",
-    "search/tokenized_string.cc",
-    "search/tokenized_string.h",
-    "search/tokenized_string_char_iterator.cc",
-    "search/tokenized_string_char_iterator.h",
-    "search/tokenized_string_match.cc",
-    "search/tokenized_string_match.h",
   ]
 
   defines = [ "APP_LIST_MODEL_IMPLEMENTATION" ]
 
   deps = [
     ":speech_ui_model",
+    "//ash/public/cpp:cpp",
     "//base:i18n",
     "//ui/base",
     "//ui/gfx",

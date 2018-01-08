@@ -140,6 +140,7 @@ component("app_list") {
     "//ash/app_list/model:app_list_model",
     "//ash/app_list/model:search_model",
     "//ash/app_list/model:speech_ui_model",
+    "//ash/public/cpp:cpp",
   ]
 }
 
