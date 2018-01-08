@@ -12,15 +12,12 @@
 #ifndef AV1_COMMON_IDCT_H_
 #define AV1_COMMON_IDCT_H_
 
-#include <assert.h>
-
 #include "./aom_config.h"
 #include "av1/common/blockd.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"
 #include "aom_dsp/inv_txfm.h"
 #include "aom_dsp/txfm_common.h"
-#include "aom_ports/mem.h"
 
 #ifdef __cplusplus
 extern "C" {
