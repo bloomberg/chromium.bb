@@ -117,6 +117,7 @@ void ElementShadow::Attach(const Node::AttachContext& context) {
 
 void ElementShadow::Detach(const Node::AttachContext& context) {
   Node::AttachContext children_context(context);
+  children_context.clear_invalidation = true;
 
   for (ShadowRoot* root = &YoungestShadowRoot(); root;
        root = root->OlderShadowRoot())
