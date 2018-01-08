@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_stop_reason.h"
@@ -42,8 +41,7 @@ enum class ArcContainerLifetimeEvent {
 
 // Accept requests to start/stop ARC instance. Also supports automatic
 // restarting on unexpected ARC instance crash.
-class ArcSessionRunner : public ArcSession::Observer,
-                         public chromeos::SessionManagerClient::Observer {
+class ArcSessionRunner : public ArcSession::Observer {
  public:
   // Observer to notify events across multiple ARC session runs.
   class Observer {
@@ -105,9 +103,6 @@ class ArcSessionRunner : public ArcSession::Observer,
 
   // ArcSession::Observer:
   void OnSessionStopped(ArcStopReason reason, bool was_running) override;
-
-  // chromeos::SessionManagerClient::Observer:
-  void EmitLoginPromptVisibleCalled() override;
 
   THREAD_CHECKER(thread_checker_);
 

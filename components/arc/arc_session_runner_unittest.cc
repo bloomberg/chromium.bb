@@ -259,8 +259,8 @@ TEST_F(ArcSessionRunnerTest, Crash_MiniInstance) {
   EXPECT_FALSE(stopped_called());
 }
 
-// Tests that RequestStart() works even after EmitLoginPromptVisibleCalled()
-// is called.
+// Tests that RequestStart(FULL_INSTANCE) works after calling
+// RequestStart(MINI_INSTANCE).
 TEST_F(ArcSessionRunnerTest, Upgrade) {
   EXPECT_FALSE(arc_session());
 
@@ -271,31 +271,6 @@ TEST_F(ArcSessionRunnerTest, Upgrade) {
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
-}
-
-// We expect mini instance starts to run if EmitLoginPromptVisible signal is
-// emitted.
-TEST_F(ArcSessionRunnerTest, EmitLoginPromptVisible) {
-  EXPECT_FALSE(arc_session());
-
-  SetArcAvailableCommandLineForTesting(base::CommandLine::ForCurrentProcess());
-
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->EmitLoginPromptVisible();
-  ASSERT_TRUE(arc_session());
-  EXPECT_FALSE(arc_session()->is_running());
-}
-
-// We expect mini instance does not start on EmitLoginPromptVisible when ARC
-// is not available.
-TEST_F(ArcSessionRunnerTest, EmitLoginPromptVisible_NoOp) {
-  EXPECT_FALSE(arc_session());
-
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->EmitLoginPromptVisible();
-  EXPECT_FALSE(arc_session());
 }
 
 // If the instance is stopped, it should be re-started.
