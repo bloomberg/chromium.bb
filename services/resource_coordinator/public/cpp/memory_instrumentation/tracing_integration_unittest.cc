@@ -119,6 +119,10 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
                                MemoryDumpLevelOfDetail level_of_detail,
                                const RequestGlobalMemoryDumpCallback&) override;
 
+  void RequestGlobalMemoryDumpForPid(
+      base::ProcessId pid,
+      const RequestGlobalMemoryDumpForPidCallback&) override {}
+
   void RequestGlobalMemoryDumpAndAppendToTrace(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,

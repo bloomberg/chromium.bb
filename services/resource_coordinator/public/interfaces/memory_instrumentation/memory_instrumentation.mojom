@@ -232,6 +232,11 @@ interface Coordinator {
   RequestGlobalMemoryDump(DumpType dump_type, LevelOfDetail level_of_detail) =>
       (bool success, GlobalMemoryDump? global_memory_dump);
 
+  // Sends a dump request to the client process given by the specified pid and
+  // returns a summarized dump back or null if there was a failure.
+  RequestGlobalMemoryDumpForPid(mojo.common.mojom.ProcessId pid) =>
+      (bool success, GlobalMemoryDump? global_memory_dump);
+
   // Broadcasts a dump request to all registered client processes and injects the
   // dump in the trace buffer (if tracing is enabled).
   RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,
