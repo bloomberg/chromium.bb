@@ -1813,13 +1813,6 @@ extern const char kUiSlowAnimationsDescription[];
 
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(TOOLKIT_VIEWS)
-
-extern const char kExperimentalTabControllerName[];
-extern const char kExperimentalTabControllerDescription[];
-
-#endif  // defined(TOOLKIT_VIEWS)
-
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 
 extern const char kAutofillCreditCardUploadName[];
