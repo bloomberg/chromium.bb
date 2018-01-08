@@ -76,7 +76,7 @@ class ASH_EXPORT ResolutionNotificationController
  private:
   friend class ResolutionNotificationControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ResolutionNotificationControllerTest, Timeout);
-  FRIEND_TEST_ALL_PREFIXES(chromeos::DisplayPrefsTest, PreventStore);
+  FRIEND_TEST_ALL_PREFIXES(DisplayPrefsTest, PreventStore);
 
   // A struct to bundle the data for a single resolution change.
   struct ResolutionChangeInfo;

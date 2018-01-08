@@ -67,6 +67,23 @@ const char kAccessibilitySwitchAccessEnabled[] = "settings.a11y.switch_access";
 // regardless of the state of a11y features.
 const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
+// Power state of the current displays from the last run.
+const char kDisplayPowerState[] = "settings.display.power_state";
+// A dictionary pref that stores per display preferences.
+const char kDisplayProperties[] = "settings.display.properties";
+// A dictionary pref that specifies the state of the rotation lock, and the
+// display orientation, for the internal display.
+const char kDisplayRotationLock[] = "settings.display.rotation_lock";
+// A dictionary pref that stores the touch associations for the device.
+const char kDisplayTouchAssociations[] = "settings.display.touch_associations";
+// A list pref that stores the mirror info for each external display.
+const char kExternalDisplayMirrorInfo[] =
+    "settings.display.external_display_mirror_info";
+// A dictionary pref that specifies per-display layout/offset information.
+// Its key is the ID of the display and its value is a dictionary for the
+// layout/offset information.
+const char kSecondaryDisplays[] = "settings.display.secondary_displays";
+
 // A boolean pref which stores whether a stylus has been seen before.
 const char kHasSeenStylus[] = "ash.has_seen_stylus";
 // A boolean pref which stores whether a the palette warm welcome bubble
