@@ -328,3 +328,76 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusKeyIgnoresClicks) {
   ASSERT_TRUE(event_capturer_.last_key_event());
   EXPECT_FALSE(event_capturer_.last_key_event()->handled());
 }
+
+TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIsCaptured) {
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+
+  // Press and release S, key presses should be captured.
+  event_capturer_.Reset();
+  generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  generator_->ReleaseKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  // Press and release again while still holding down search.
+  // The events should continue to be captured.
+  generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  generator_->ReleaseKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  // S alone is not captured
+  generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(event_capturer_.last_key_event());
+  ASSERT_FALSE(event_capturer_.last_key_event()->handled());
+}
+
+TEST_F(SelectToSpeakEventRewriterTest, SearchPlusSIgnoresMouse) {
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+
+  // Press S
+  event_capturer_.Reset();
+  generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  // Mouse events are passed through like normal.
+  generator_->PressLeftButton();
+  EXPECT_TRUE(event_capturer_.last_mouse_event());
+  event_capturer_.Reset();
+  generator_->ReleaseLeftButton();
+  EXPECT_TRUE(event_capturer_.last_mouse_event());
+
+  generator_->ReleaseKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+}
+
+TEST_F(SelectToSpeakEventRewriterTest, SearchPlusMouseIgnoresS) {
+  generator_->PressKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+
+  // Press the mouse
+  event_capturer_.Reset();
+  generator_->PressLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+
+  // S key events are passed through like normal.
+  generator_->PressKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(event_capturer_.last_key_event());
+  event_capturer_.Reset();
+  generator_->ReleaseKey(ui::VKEY_S, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(event_capturer_.last_key_event());
+
+  generator_->ReleaseLeftButton();
+  EXPECT_FALSE(event_capturer_.last_mouse_event());
+
+  event_capturer_.Reset();
+  generator_->ReleaseKey(ui::VKEY_LWIN, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(event_capturer_.last_key_event());
+}
