@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -50,6 +51,8 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/printing/external_printers.h"
+#include "chrome/browser/chromeos/printing/external_printers_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -64,6 +67,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -179,6 +183,10 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
+ExternalPrinters* GetExternalPrinters(const AccountId& account_id) {
+  return ExternalPrintersFactory::Get()->GetForAccountId(account_id);
+}
+
 }  // namespace
 
 // static
@@ -275,6 +283,11 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
           cros_settings_, device_local_account_policy_service,
           policy::key::kWallpaperImage, this);
   wallpaper_policy_observer_->Init();
+  printers_policy_observer_ =
+      std::make_unique<policy::CloudExternalDataPolicyObserver>(
+          cros_settings_, device_local_account_policy_service,
+          policy::key::kNativePrintersBulkConfiguration, this);
+  printers_policy_observer_->Init();
 
   // Record the stored session length for enrolled device.
   if (IsEnterpriseManaged())
@@ -321,6 +334,9 @@ void ChromeUserManagerImpl::Shutdown() {
   multi_profile_user_controller_.reset();
   avatar_policy_observer_.reset();
   wallpaper_policy_observer_.reset();
+  // Remove the observer before shutting down the printer policy objects.
+  printers_policy_observer_.reset();
+  ExternalPrintersFactory::Get()->Shutdown();
   registrar_.RemoveAll();
 }
 
@@ -488,6 +504,7 @@ void ChromeUserManagerImpl::SaveUserDisplayName(
 void ChromeUserManagerImpl::StopPolicyObserverForTesting() {
   avatar_policy_observer_.reset();
   wallpaper_policy_observer_.reset();
+  printers_policy_observer_.reset();
 }
 
 void ChromeUserManagerImpl::Observe(
@@ -567,6 +584,8 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
   else if (policy == policy::key::kWallpaperImage)
     WallpaperManager::Get()->OnPolicySet(policy, account_id);
+  else if (policy == policy::key::kNativePrintersBulkConfiguration)
+    GetExternalPrinters(account_id)->ClearData();
   else
     NOTREACHED();
 }
@@ -579,6 +598,8 @@ void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
   else if (policy == policy::key::kWallpaperImage)
     WallpaperManager::Get()->OnPolicyCleared(policy, account_id);
+  else if (policy == policy::key::kNativePrintersBulkConfiguration)
+    GetExternalPrinters(account_id)->ClearData();
   else
     NOTREACHED();
 }
@@ -595,6 +616,8 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
   else if (policy == policy::key::kWallpaperImage)
     WallpaperManager::Get()->OnPolicyFetched(policy, account_id,
                                              std::move(data));
+  else if (policy == policy::key::kNativePrintersBulkConfiguration)
+    GetExternalPrinters(account_id)->SetData(std::move(data));
   else
     NOTREACHED();
 }
@@ -1006,6 +1029,7 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeData(
 
   WallpaperControllerClient::Get()->RemoveUserWallpaper(account_id);
   GetUserImageManager(account_id)->DeleteUserImage();
+  ExternalPrintersFactory::Get()->RemoveForUserId(account_id);
 
   supervised_user_manager_->RemoveNonCryptohomeData(account_id.GetUserEmail());
 
