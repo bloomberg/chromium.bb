@@ -35,6 +35,8 @@ enum class GamepadHapticsResult {
 
 class GamepadHapticActuator {
  public:
+  static constexpr double kMaxEffectDurationMillis = 5000.0;
+
   GamepadHapticActuator() : not_null(false) {}
 
   bool not_null;

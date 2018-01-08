@@ -25,6 +25,8 @@ component("gamepad") {
     "gamepad_data_fetcher.h",
     "gamepad_data_fetcher_manager.cc",
     "gamepad_data_fetcher_manager.h",
+    "gamepad_device_linux.cc",
+    "gamepad_device_linux.h",
     "gamepad_export.h",
     "gamepad_haptics_manager.cc",
     "gamepad_haptics_manager.h",
@@ -82,7 +84,10 @@ component("gamepad") {
     if (use_udev) {
       deps += [ "//device/udev_linux" ]
     } else {
-      sources -= [ "gamepad_platform_data_fetcher_linux.cc" ]
+      sources -= [
+        "gamepad_device_linux.cc",
+        "gamepad_platform_data_fetcher_linux.cc",
+      ]
     }
   }
 
