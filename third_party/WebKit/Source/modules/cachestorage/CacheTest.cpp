@@ -28,7 +28,7 @@
 #include "core/fetch/Response.h"
 #include "core/fetch/ResponseInit.h"
 #include "core/frame/Frame.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
@@ -239,9 +239,9 @@ class NotImplementedErrorCache : public ErrorWebCacheForTests {
       : ErrorWebCacheForTests(CacheStorageError::kErrorNotImplemented) {}
 };
 
-class CacheStorageTest : public ::testing::Test {
+class CacheStorageTest : public PageTestBase {
  public:
-  CacheStorageTest() : page_(DummyPageHolder::Create(IntSize(1, 1))) {}
+  void SetUp() override { PageTestBase::SetUp(IntSize(1, 1)); }
 
   Cache* CreateCache(ScopedFetcherForTests* fetcher,
                      WebServiceWorkerCache* web_cache) {
@@ -249,7 +249,7 @@ class CacheStorageTest : public ::testing::Test {
   }
 
   ScriptState* GetScriptState() {
-    return ToScriptStateForMainWorld(page_->GetDocument().GetFrame());
+    return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }
   ExecutionContext* GetExecutionContext() {
     return ExecutionContext::From(GetScriptState());
@@ -338,9 +338,6 @@ class CacheStorageTest : public ::testing::Test {
 
     ScriptValue* value_;
   };
-
-  // Lifetime is that of the text fixture.
-  std::unique_ptr<DummyPageHolder> page_;
 };
 
 RequestInfo StringToRequestInfo(const String& value) {

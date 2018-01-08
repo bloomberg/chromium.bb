@@ -18,7 +18,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/page/FocusController.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "platform/bindings/ScriptState.h"
@@ -145,41 +145,38 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
   }
 };
 
-class ServiceWorkerContainerTest : public ::testing::Test {
+class ServiceWorkerContainerTest : public PageTestBase {
  protected:
-  ServiceWorkerContainerTest() : page_(DummyPageHolder::Create()) {}
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
   ~ServiceWorkerContainerTest() override {
-    page_.reset();
     V8GCController::CollectAllGarbageForTesting(GetIsolate());
   }
 
-  ExecutionContext* GetExecutionContext() { return &(page_->GetDocument()); }
+  ExecutionContext* GetExecutionContext() { return &GetDocument(); }
   NavigatorServiceWorker* GetNavigatorServiceWorker() {
-    return NavigatorServiceWorker::From(page_->GetDocument());
+    return NavigatorServiceWorker::From(GetDocument());
   }
   v8::Isolate* GetIsolate() { return v8::Isolate::GetCurrent(); }
   ScriptState* GetScriptState() {
-    return ToScriptStateForMainWorld(page_->GetDocument().GetFrame());
+    return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }
 
   void Provide(std::unique_ptr<WebServiceWorkerProvider> provider) {
     Supplement<Document>::ProvideTo(
-        page_->GetDocument(), ServiceWorkerContainerClient::SupplementName(),
-        new ServiceWorkerContainerClient(page_->GetDocument(),
-                                         std::move(provider)));
+        GetDocument(), ServiceWorkerContainerClient::SupplementName(),
+        new ServiceWorkerContainerClient(GetDocument(), std::move(provider)));
   }
 
   void SetPageURL(const String& url) {
     // For URL completion.
-    page_->GetDocument().SetURL(KURL(NullURL(), url));
+    GetDocument().SetURL(KURL(NullURL(), url));
 
     // The basis for security checks.
-    page_->GetDocument().SetSecurityOrigin(
-        SecurityOrigin::CreateFromString(url));
+    GetDocument().SetSecurityOrigin(SecurityOrigin::CreateFromString(url));
 
     if (url.StartsWith("https://") || url.StartsWith("http://localhost/")) {
-      page_->GetDocument().SetSecureContextStateForTesting(
+      GetDocument().SetSecureContextStateForTesting(
           SecureContextState::kSecure);
     }
   }
@@ -212,9 +209,6 @@ class ServiceWorkerContainerTest : public ::testing::Test {
         container->getRegistration(GetScriptState(), document_url);
     ExpectRejected(GetScriptState(), promise, value_test);
   }
-
- private:
-  std::unique_ptr<DummyPageHolder> page_;
 };
 
 TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected) {

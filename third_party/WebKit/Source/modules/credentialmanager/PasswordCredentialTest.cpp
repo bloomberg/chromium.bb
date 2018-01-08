@@ -12,20 +12,15 @@
 #include "core/html/forms/FormController.h"
 #include "core/html/forms/FormData.h"
 #include "core/html/forms/HTMLFormElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class PasswordCredentialTest : public ::testing::Test {
+class PasswordCredentialTest : public PageTestBase {
  protected:
-  void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create();
-    document_ = &dummy_page_holder_->GetDocument();
-  }
-
-  Document& GetDocument() const { return *document_; }
+  void SetUp() override { PageTestBase::SetUp(IntSize()); }
 
   HTMLFormElement* PopulateForm(const char* enctype, const char* html) {
     StringBuilder b;
@@ -34,17 +29,11 @@ class PasswordCredentialTest : public ::testing::Test {
     b.Append("'>");
     b.Append(html);
     b.Append("</form></body></html>");
-    GetDocument().documentElement()->SetInnerHTMLFromString(b.ToString());
-    GetDocument().View()->UpdateAllLifecyclePhases();
-    HTMLFormElement* form =
-        ToHTMLFormElement(GetDocument().getElementById("theForm"));
+    SetHtmlInnerHTML(b.ToString().Utf8().data());
+    HTMLFormElement* form = ToHTMLFormElement(GetElementById("theForm"));
     EXPECT_NE(nullptr, form);
     return form;
   }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
-  Persistent<Document> document_;
 };
 
 TEST_F(PasswordCredentialTest, CreateFromMultipartForm) {
