@@ -125,7 +125,7 @@
   },
   {
     "prefix": "android",
-    "base": "fast/rootscroller",
+    "base": "rootscroller",
     "args": ["--enable-features=OverlayScrollbar", "--enable-threaded-compositing",
              "--enable-fixed-position-compositing", "--enable-prefer-compositing-to-lcd-text",
              "--enable-composited-scrolling-for-frames", "--enable-gesture-tap-highlight", "--enable-pinch",
@@ -188,7 +188,7 @@
   },
   {
     "prefix": "rootlayerscrolls",
-    "base": "fast/rootscroller",
+    "base": "rootscroller",
     "args": ["--root-layer-scrolls"]
   },
   {
