@@ -18,7 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.media.MediaCodecUtil.BitrateAdjustmentTypes;
 import org.chromium.media.MediaCodecUtil.MimeTypes;
 
 import java.nio.ByteBuffer;
@@ -49,10 +48,6 @@ class MediaCodecBridge {
     private static final String KEY_CROP_BOTTOM = "crop-bottom";
     private static final String KEY_CROP_TOP = "crop-top";
 
-    // TODO(sanfin): Factor this and other bitrate adjustment logic to a delegate class.
-    static final int BITRATE_ADJUSTMENT_FPS = 30;
-    static final int MAXIMUM_INITIAL_FPS = 30;
-
     protected MediaCodec mMediaCodec;
 
     private ByteBuffer[] mInputBuffers;
@@ -60,7 +55,7 @@ class MediaCodecBridge {
 
     private boolean mFlushed;
     private long mLastPresentationTimeUs;
-    private BitrateAdjustmentTypes mBitrateAdjustmentType = BitrateAdjustmentTypes.NO_ADJUSTMENT;
+    private BitrateAdjuster mBitrateAdjuster;
 
     @MainDex
     private static class DequeueInputResult {
@@ -180,12 +175,12 @@ class MediaCodecBridge {
         }
     }
 
-    MediaCodecBridge(MediaCodec mediaCodec, BitrateAdjustmentTypes bitrateAdjustmentType) {
+    MediaCodecBridge(MediaCodec mediaCodec, BitrateAdjuster bitrateAdjuster) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
-        mBitrateAdjustmentType = bitrateAdjustmentType;
+        mBitrateAdjuster = bitrateAdjuster;
     }
 
     @CalledByNative
@@ -337,12 +332,7 @@ class MediaCodecBridge {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @CalledByNative
     private void setVideoBitrate(int bps, int frameRate) {
-        int targetBps = bps;
-        if (mBitrateAdjustmentType == BitrateAdjustmentTypes.FRAMERATE_ADJUSTMENT
-                && frameRate > 0) {
-            targetBps = BITRATE_ADJUSTMENT_FPS * bps / frameRate;
-        }
-
+        int targetBps = mBitrateAdjuster.getTargetBitrate(bps, frameRate);
         Bundle b = new Bundle();
         b.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, targetBps);
         try {
