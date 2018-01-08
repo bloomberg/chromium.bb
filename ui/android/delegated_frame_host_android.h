@@ -14,7 +14,6 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/android/ui_android_export.h"
-#include "ui/compositor/compositor_lock.h"
 
 namespace cc {
 class SurfaceLayer;
@@ -34,8 +33,7 @@ class WindowAndroidCompositor;
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient,
-      public viz::HostFrameSinkClient,
-      public ui::CompositorLockClient {
+      public viz::HostFrameSinkClient {
  public:
   class Client {
    public:
@@ -104,9 +102,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
 
-  // ui::CompositorLockClient implementation.
-  void CompositorLockTimedOut() override;
-
   void CreateNewCompositorFrameSinkSupport();
 
   const viz::FrameSinkId frame_sink_id_;
@@ -125,11 +120,6 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   bool has_transparent_background_ = false;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;
-
-  // A lock that is held from the point at which we attach to the compositor to
-  // the point at which we submit our first frame to the compositor. This
-  // ensures that the compositor doesn't swap without a frame available.
-  std::unique_ptr<ui::CompositorLock> compositor_attach_until_frame_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatedFrameHostAndroid);
 };
