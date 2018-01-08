@@ -34,7 +34,7 @@ class Repositioner : public UiElement {
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;
-  void UpdateTransform();
+  void UpdateTransform(const gfx::Transform& head_pose);
   bool OnBeginFrame(const base::TimeTicks& time,
                     const gfx::Transform& head_pose) override;
   void DumpGeometry(std::ostringstream* os) const override;
