@@ -241,9 +241,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_DASH_CULL_PATH
 #endif
 
-#ifndef SK_SUPPORT_LEGACY_CONTAINED_IN_CLIP
-#define SK_SUPPORT_LEGACY_CONTAINED_IN_CLIP
-#endif
 
 #ifndef SK_SUPPORT_LEGACY_2PT_CONICAL
 #define SK_SUPPORT_LEGACY_2PT_CONICAL
