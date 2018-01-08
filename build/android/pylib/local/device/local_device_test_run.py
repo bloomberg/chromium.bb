@@ -12,6 +12,7 @@ import threading
 from devil import base_error
 from devil.android import crash_handler
 from devil.android import device_errors
+from devil.android.sdk import version_codes
 from devil.android.tools import device_recovery
 from devil.utils import signal_handler
 from pylib import valgrind_tools
@@ -117,11 +118,19 @@ class LocalDeviceTestRun(test_run.TestRun):
         results = []
         while tries < self._env.max_tries and tests:
           logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
-          if (tries > 0 and tries + 1 == self._env.max_tries and
-              self._env.recover_devices):
-            logging.info(
-                'Attempting to recover devices prior to last test attempt.')
-            self._env.parallel_devices.pMap(device_recovery.RecoverDevice, None)
+          if tries > 0 and self._env.recover_devices:
+            if any(d.build_version_sdk == version_codes.LOLLIPOP_MR1
+                   for d in self._env.devices):
+              logging.info(
+                  'Attempting to recover devices due to known issue on L MR1. '
+                  'See crbug.com/787056 for details.')
+              self._env.parallel_devices.pMap(
+                  device_recovery.RecoverDevice, None)
+            elif tries + 1 == self._env.max_tries:
+              logging.info(
+                  'Attempting to recover devices prior to last test attempt.')
+              self._env.parallel_devices.pMap(
+                  device_recovery.RecoverDevice, None)
           logging.info('Will run %d tests on %d devices: %s',
                        len(tests), len(self._env.devices),
                        ', '.join(str(d) for d in self._env.devices))
