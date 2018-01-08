@@ -295,7 +295,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
         MainThreadTaskQueue::QueueType::kFrameLoading_kControl);
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timer_task_runner_ = scheduler_->TimerTaskQueue();
-    v8_task_runner_ = scheduler_->kV8TaskQueue();
+    v8_task_runner_ = scheduler_->V8TaskQueue();
     fake_queue_ = scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
   }
@@ -3778,7 +3778,7 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
   EXPECT_EQ(scheduler_->VirtualTimeControlTaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
-  EXPECT_EQ(scheduler_->kV8TaskQueue()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->V8TaskQueue()->GetTimeDomain(),
             scheduler_->GetVirtualTimeDomain());
 
   // The main control task queue remains in the real time domain.
@@ -3856,7 +3856,7 @@ TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
             scheduler_->real_time_domain());
   EXPECT_EQ(scheduler_->ControlTaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
-  EXPECT_EQ(scheduler_->kV8TaskQueue()->GetTimeDomain(),
+  EXPECT_EQ(scheduler_->V8TaskQueue()->GetTimeDomain(),
             scheduler_->real_time_domain());
   EXPECT_FALSE(scheduler_->VirtualTimeControlTaskQueue());
 }

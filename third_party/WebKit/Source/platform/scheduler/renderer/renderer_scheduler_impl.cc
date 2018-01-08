@@ -549,7 +549,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::TimerTaskQueue() {
   return default_timer_task_queue_;
 }
 
-scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::kV8TaskQueue() {
+scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::V8TaskQueue() {
   helper_.CheckOnValidThread();
   return v8_task_queue_;
 }

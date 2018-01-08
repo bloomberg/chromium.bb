@@ -185,7 +185,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
   scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
   scoped_refptr<MainThreadTaskQueue> TimerTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> kV8TaskQueue();
+  scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
 
   // Returns a new task queue created with given params.
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
