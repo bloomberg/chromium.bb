@@ -1273,6 +1273,10 @@ class CONTENT_EXPORT RenderFrameImpl
   bool UpdateNavigationHistory(const blink::WebHistoryItem& item,
                                blink::WebHistoryCommitType commit_type);
 
+  // Notify render_view_ observers that a commit happened.
+  void NotifyObserversOfNavigationCommit(bool is_new_navigation,
+                                         bool is_same_document);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
   // FrameDetached() is called until destruction (which is asynchronous in the
