@@ -185,6 +185,23 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
+  static uint32_t GetURLLoaderOptions(bool is_main_frame) {
+    uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse;
+    if (is_main_frame)
+      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+
+    if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+      options |= mojom::kURLLoadOptionSniffMimeType;
+    } else {
+      // TODO(arthursonzogni): This is a temporary option. Remove this as soon
+      // as the InterceptingResourceHandler is removed.
+      // See https://crbug.com/791049.
+      options |= mojom::kURLLoadOptionPauseOnResponseStarted;
+    }
+
+    return options;
+  }
+
   void CreateNonNetworkServiceURLLoader(
       net::URLRequestContextGetter* url_request_context_getter,
       storage::FileSystemContext* upload_file_system_context,
@@ -204,7 +221,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           upload_file_system_context, *request_info,
           std::move(navigation_ui_data), nullptr, std::move(url_loader_client),
           std::move(url_loader), service_worker_navigation_handle_core,
-          appcache_handle_core);
+          appcache_handle_core,
+          GetURLLoaderOptions(request_info->is_main_frame));
     }
 
     // TODO(arthursonzogni): Detect when the ResourceDispatcherHost didn't
@@ -414,10 +432,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       default_loader_used_ = true;
     }
     url_chain_.push_back(resource_request_->url);
-    uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
-                       mojom::kURLLoadOptionSniffMimeType;
-    if (resource_request_->resource_type == RESOURCE_TYPE_MAIN_FRAME)
-      options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+    uint32_t options = GetURLLoaderOptions(resource_request_->resource_type ==
+                                           RESOURCE_TYPE_MAIN_FRAME);
     url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory,
         GetContentClient()->browser()->CreateURLLoaderThrottles(

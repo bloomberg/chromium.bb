@@ -1322,10 +1322,9 @@ ResourceDispatcherHostImpl::CreateBaseResourceHandler(
     mojom::URLLoaderClientPtr url_loader_client,
     ResourceType resource_type) {
   std::unique_ptr<ResourceHandler> handler;
-  handler.reset(
-      new MojoAsyncResourceHandler(request, this, std::move(mojo_request),
-                                   std::move(url_loader_client), resource_type,
-                                   false));  // defer_on_response_started.
+  handler.reset(new MojoAsyncResourceHandler(
+      request, this, std::move(mojo_request), std::move(url_loader_client),
+      resource_type, mojom::kURLLoadOptionNone));
   return handler;
 }
 
@@ -1807,7 +1806,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     mojom::URLLoaderClientPtr url_loader_client,
     mojom::URLLoaderRequest url_loader_request,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core,
-    AppCacheNavigationHandleCore* appcache_handle_core) {
+    AppCacheNavigationHandleCore* appcache_handle_core,
+    uint32_t url_loader_options) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
@@ -1980,8 +1980,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   if (IsNavigationMojoResponseEnabled()) {
     handler = std::make_unique<MojoAsyncResourceHandler>(
         new_request.get(), this, std::move(url_loader_request),
-        std::move(url_loader_client), resource_type,
-        true);  // defer_on_response_started.
+        std::move(url_loader_client), resource_type, url_loader_options);
   } else {
     StreamContext* stream_context =
         GetStreamContextForResourceContext(resource_context);
