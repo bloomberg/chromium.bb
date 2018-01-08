@@ -11,7 +11,6 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
-#include "chrome/common/prerender_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
@@ -27,6 +26,9 @@ using content::ResourceType;
 namespace prerender {
 
 namespace {
+static const char kFollowOnlyWhenPrerenderShown[] =
+    "follow-only-when-prerender-shown";
+
 PrerenderContents* g_prerender_contents_for_testing;
 
 // Returns true if the response has a "no-store" cache control header.
@@ -200,7 +202,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
 
     // Abort any prerenders that spawn requests that use unsupported HTTP
     // methods or schemes.
-    if (!IsValidHttpMethod(prerender_contents->prerender_mode(), method)) {
+    if (!prerender_contents->IsValidHttpMethod(method)) {
       // If this is a full prerender, cancel the prerender in response to
       // invalid requests.  For prefetches, cancel invalid requests but keep the
       // prefetch going, unless it's the main frame that's invalid.
@@ -209,7 +211,7 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
         prerender_contents->Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
       }
       cancel = true;
-    } else if (!DoesSubresourceURLHaveValidScheme(url) &&
+    } else if (!PrerenderManager::DoesSubresourceURLHaveValidScheme(url) &&
                resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
       // Destroying the prerender for unsupported scheme only for non-main
       // resource to allow chrome://crash to actually crash in the
@@ -258,12 +260,12 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
   PrerenderContents* prerender_contents =
       PrerenderContentsFromGetter(web_contents_getter);
   if (prerender_contents) {
-    RecordPrefetchResponseReceived(
-        PrerenderHistograms::GetHistogramPrefix(prerender_contents->origin()),
+    prerender_contents->prerender_manager()->RecordPrefetchResponseReceived(
+        prerender_contents->origin(),
         content::IsResourceTypeFrame(resource_type), true /* is_redirect */,
         is_no_store);
     // Abort any prerenders with requests which redirect to invalid schemes.
-    if (!DoesURLHaveValidScheme(new_url)) {
+    if (!PrerenderManager::DoesURLHaveValidScheme(new_url)) {
       prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
       ReportUnsupportedPrerenderScheme(new_url);
       cancel = true;
@@ -305,12 +307,11 @@ void PrerenderResourceThrottle::WillProcessResponseOnUI(
   if (prerender_throttle_info->mode() != PREFETCH_ONLY)
     return;
 
-  auto histogram_prefix = PrerenderHistograms::GetHistogramPrefix(
-      prerender_throttle_info->origin());
-  RecordPrefetchResponseReceived(histogram_prefix, is_main_resource,
-                                 false /* is_redirect */, is_no_store);
-  RecordPrefetchRedirectCount(histogram_prefix, is_main_resource,
-                              redirect_count);
+  prerender_throttle_info->manager()->RecordPrefetchResponseReceived(
+      prerender_throttle_info->origin(), is_main_resource,
+      false /* is_redirect */, is_no_store);
+  prerender_throttle_info->manager()->RecordPrefetchRedirectCount(
+      prerender_throttle_info->origin(), is_main_resource, redirect_count);
 }
 
 // static

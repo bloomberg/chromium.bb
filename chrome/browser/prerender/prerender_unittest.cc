@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_types.h"
-#include "chrome/common/prerender_util.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -1785,19 +1784,25 @@ TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
 }
 
 TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "GET"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "HEAD"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "OPTIONS"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "POST"));
-  EXPECT_TRUE(IsValidHttpMethod(FULL_PRERENDER, "TRACE"));
-  EXPECT_FALSE(IsValidHttpMethod(FULL_PRERENDER, "WHATEVER"));
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          GURL("my://dummy.url"), FINAL_STATUS_MANAGER_SHUTDOWN);
 
-  EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "GET"));
-  EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "HEAD"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "OPTIONS"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "POST"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "TRACE"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "WHATEVER"));
+  prerender_contents->SetPrerenderMode(FULL_PRERENDER);
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("GET"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("HEAD"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("OPTIONS"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("POST"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("TRACE"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("WHATEVER"));
+
+  prerender_contents->SetPrerenderMode(PREFETCH_ONLY);
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("GET"));
+  EXPECT_TRUE(prerender_contents->IsValidHttpMethod("HEAD"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("OPTIONS"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("POST"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("TRACE"));
+  EXPECT_FALSE(prerender_contents->IsValidHttpMethod("WHATEVER"));
 }
 
 TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {

@@ -124,7 +124,6 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/profiling/constants.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
@@ -791,16 +790,6 @@ GetSystemRequestContextOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return scoped_refptr<net::URLRequestContextGetter>(
       g_browser_process->system_request_context());
-}
-
-chrome::mojom::PrerenderCanceler* GetPrerenderCanceller(
-    const base::Callback<content::WebContents*()>& wc_getter) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return nullptr;
-
-  return prerender::PrerenderContents::FromWebContents(web_contents);
 }
 
 }  // namespace
@@ -3710,17 +3699,6 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
           GetSafeBrowsingUrlCheckerDelegate(), wc_getter);
   if (safe_browsing_throttle)
     result.push_back(std::move(safe_browsing_throttle));
-
-  ChromeNavigationUIData* chrome_navigation_ui_data =
-      static_cast<ChromeNavigationUIData*>(navigation_ui_data);
-  if (chrome_navigation_ui_data &&
-      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
-    result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
-        chrome_navigation_ui_data->prerender_mode(),
-        chrome_navigation_ui_data->prerender_histogram_prefix(),
-        base::BindOnce(GetPrerenderCanceller, wc_getter),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-  }
 
   return result;
 }

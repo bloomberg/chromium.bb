@@ -179,8 +179,7 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromeRenderFrameObserver::OnSetIsPrerendering(
-    prerender::PrerenderMode mode,
-    const std::string& histogram_prefix) {
+    prerender::PrerenderMode mode) {
   if (mode != prerender::NO_PRERENDER) {
     // If the PrerenderHelper for this frame already exists, don't create it. It
     // can already be created for subframes during handling of
@@ -191,7 +190,7 @@ void ChromeRenderFrameObserver::OnSetIsPrerendering(
 
     // The PrerenderHelper will destroy itself either after recording histograms
     // or on destruction of the RenderView.
-    new prerender::PrerenderHelper(render_frame(), mode, histogram_prefix);
+    new prerender::PrerenderHelper(render_frame(), mode);
   }
 }
 

@@ -477,6 +477,21 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   PostCleanupTask();
 }
 
+void PrerenderManager::RecordPrefetchResponseReceived(Origin origin,
+                                                      bool is_main_resource,
+                                                      bool is_redirect,
+                                                      bool is_no_store) {
+  histograms_->RecordPrefetchResponseReceived(origin, is_main_resource,
+                                              is_redirect, is_no_store);
+}
+
+void PrerenderManager::RecordPrefetchRedirectCount(Origin origin,
+                                                   bool is_main_resource,
+                                                   int redirect_count) {
+  histograms_->RecordPrefetchRedirectCount(origin, is_main_resource,
+                                           redirect_count);
+}
+
 void PrerenderManager::RecordNoStateFirstContentfulPaint(const GURL& url,
                                                          bool is_no_store,
                                                          bool was_hidden,
@@ -679,6 +694,18 @@ bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
   }
 
   return false;
+}
+
+// static
+bool PrerenderManager::DoesURLHaveValidScheme(const GURL& url) {
+  return (url.SchemeIsHTTPOrHTTPS() ||
+          url.SchemeIs(extensions::kExtensionScheme) ||
+          url.SchemeIs("data"));
+}
+
+// static
+bool PrerenderManager::DoesSubresourceURLHaveValidScheme(const GURL& url) {
+  return DoesURLHaveValidScheme(url) || url == url::kAboutBlankURL;
 }
 
 std::unique_ptr<base::DictionaryValue> PrerenderManager::CopyAsValue() const {
