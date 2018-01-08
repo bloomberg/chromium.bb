@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
 #include "chromeos/components/tether/host_scan_scheduler_impl.h"
 #include "chromeos/components/tether/host_scanner.h"
+#include "chromeos/components/tether/hotspot_usage_duration_tracker.h"
 #include "chromeos/components/tether/keep_alive_scheduler.h"
 #include "chromeos/components/tether/master_host_scan_cache.h"
 #include "chromeos/components/tether/network_connection_handler_tether_delegate.h"
@@ -129,6 +130,9 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           master_host_scan_cache_.get(),
           device_id_tether_network_guid_map_.get())),
       clock_(std::make_unique<base::DefaultClock>()),
+      hotspot_usage_duration_tracker_(
+          std::make_unique<HotspotUsageDurationTracker>(active_host_.get(),
+                                                        clock_.get())),
       host_scanner_(std::make_unique<HostScanner>(
           network_state_handler_,
           asychronous_container->tether_host_fetcher(),

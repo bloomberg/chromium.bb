@@ -18,6 +18,18 @@ namespace chromeos {
 
 namespace tether {
 
+// static
+std::string ActiveHost::StatusToString(const ActiveHostStatus& status) {
+  switch (status) {
+    case ActiveHostStatus::DISCONNECTED:
+      return "DISCONNECTED";
+    case ActiveHostStatus::CONNECTING:
+      return "CONNECTING";
+    case ActiveHostStatus::CONNECTED:
+      return "CONNECTED";
+  }
+}
+
 bool operator==(const ActiveHost::ActiveHostChangeInfo& first,
                 const ActiveHost::ActiveHostChangeInfo& second) {
   bool new_devices_equal;

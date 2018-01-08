@@ -32,6 +32,7 @@ class GmsCoreNotificationsStateTrackerImpl;
 class HostScanner;
 class HostScanScheduler;
 class HostScanDevicePrioritizerImpl;
+class HotspotUsageDurationTracker;
 class KeepAliveScheduler;
 class HostConnectionMetricsLogger;
 class MasterHostScanCache;
@@ -114,6 +115,7 @@ class SynchronousShutdownObjectContainerImpl
   std::unique_ptr<NotificationRemover> notification_remover_;
   std::unique_ptr<KeepAliveScheduler> keep_alive_scheduler_;
   std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<HotspotUsageDurationTracker> hotspot_usage_duration_tracker_;
   std::unique_ptr<HostScanner> host_scanner_;
   std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
   std::unique_ptr<HostConnectionMetricsLogger> host_connection_metrics_logger_;

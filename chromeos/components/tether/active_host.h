@@ -36,6 +36,7 @@ class ActiveHost {
     CONNECTING = 1,
     CONNECTED = 2
   };
+  static std::string StatusToString(const ActiveHostStatus& status);
 
   struct ActiveHostChangeInfo {
     ActiveHostChangeInfo();
