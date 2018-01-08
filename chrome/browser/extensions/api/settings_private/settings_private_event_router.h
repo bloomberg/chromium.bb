@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -30,12 +31,17 @@ namespace extensions {
 // This is an event router that will observe listeners to pref changes on the
 // appropriate pref service(s) and notify listeners on the JavaScript
 // settingsPrivate API.
-class SettingsPrivateEventRouter : public KeyedService,
-                                   public EventRouter::Observer {
+class SettingsPrivateEventRouter
+    : public KeyedService,
+      public EventRouter::Observer,
+      public settings_private::GeneratedPref::Observer {
  public:
   static SettingsPrivateEventRouter* Create(
       content::BrowserContext* browser_context);
   ~SettingsPrivateEventRouter() override;
+
+  // settings_private::GeneratedPref::Observer implementation.
+  void OnGeneratedPrefChanged(const std::string& pref_name) override;
 
  protected:
   explicit SettingsPrivateEventRouter(content::BrowserContext* context);
