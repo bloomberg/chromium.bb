@@ -36,20 +36,11 @@ gfx::Rect AppListFolderItem::GetTargetIconRectInFolderForItem(
                                                         folder_icon_bounds);
 }
 
-void AppListFolderItem::Activate(int event_flags) {
-  // Folder handling is implemented by the View, so do nothing.
-}
-
 // static
 const char AppListFolderItem::kItemType[] = "FolderItem";
 
 const char* AppListFolderItem::GetItemType() const {
   return AppListFolderItem::kItemType;
-}
-
-ui::MenuModel* AppListFolderItem::GetContextMenuModel() {
-  // TODO(stevenjb/jennyz): Implement.
-  return NULL;
 }
 
 AppListItem* AppListFolderItem::FindChildItem(const std::string& id) {

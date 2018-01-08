@@ -357,6 +357,14 @@ void AppListViewDelegate::GetWallpaperProminentColors(
   *colors = wallpaper_prominent_colors_;
 }
 
+void AppListViewDelegate::ActivateItem(const std::string& id, int event_flags) {
+  model_updater_->ActivateChromeItem(id, event_flags);
+}
+
+ui::MenuModel* AppListViewDelegate::GetContextMenuModel(const std::string& id) {
+  return model_updater_->GetContextMenuModel(id);
+}
+
 void AppListViewDelegate::AddObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.AddObserver(observer);

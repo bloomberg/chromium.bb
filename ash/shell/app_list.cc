@@ -129,8 +129,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
     }
   }
 
-  // AppListItem
-  void Activate(int event_flags) override { ActivateItem(type_, event_flags); }
+  void Activate(int event_flags) { ActivateItem(type_, event_flags); }
 
  private:
   Type type_;
@@ -291,6 +290,18 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void GetWallpaperProminentColors(std::vector<SkColor>* colors) override {
     NOTIMPLEMENTED();
+  }
+
+  void ActivateItem(const std::string& id, int event_flags) override {
+    WindowTypeShelfItem* item =
+        static_cast<WindowTypeShelfItem*>(model_->FindItem(id));
+    if (!item)
+      return;
+    item->Activate(event_flags);
+  }
+
+  ui::MenuModel* GetContextMenuModel(const std::string& id) override {
+    return nullptr;
   }
 
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override {

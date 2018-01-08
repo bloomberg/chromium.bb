@@ -9,7 +9,7 @@ namespace app_list {
 class SearchModel;
 }
 
-class AppListModelUpdater;
+class ChromeAppListModelUpdater;
 class AppListService;
 class AppListServiceImpl;
 class Profile;
@@ -18,7 +18,7 @@ namespace test {
 
 // Gets the model updater keyed to the profile currently associated with
 // |service|.
-AppListModelUpdater* GetModelUpdater(AppListService* service);
+ChromeAppListModelUpdater* GetModelUpdater(AppListService* service);
 
 // TODO(hejq): Merge it into model updater.
 // Gets the search model keyed to the profile currently associated with

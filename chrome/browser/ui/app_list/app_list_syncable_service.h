@@ -24,7 +24,6 @@
 #include "components/sync/model/syncable_service.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 
-class AppListModelUpdater;
 class ArcAppModelBuilder;
 class ChromeAppListModelUpdater;
 class ChromeAppListItem;
@@ -121,7 +120,7 @@ class AppListSyncableService : public syncer::SyncableService,
                       const syncer::StringOrdinal& item_pin_ordinal);
 
   // Gets the app list model updater.
-  AppListModelUpdater* GetModelUpdater();
+  ChromeAppListModelUpdater* GetModelUpdater();
 
   // Gets the app list model.
   // Note: This will be removed. Use |GetModelUpdater| instead.

@@ -80,5 +80,24 @@ void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
   search_model_->SetSearchEngineIsGoogle(is_google);
 }
 
+void AppListTestViewDelegate::ActivateItem(const std::string& id,
+                                           int event_flags) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  if (!item)
+    return;
+  DCHECK(!item->is_folder());
+  static_cast<AppListTestModel::AppListTestItem*>(item)->Activate(event_flags);
+}
+
+ui::MenuModel* AppListTestViewDelegate::GetContextMenuModel(
+    const std::string& id) {
+  app_list::AppListItem* item = model_->FindItem(id);
+  // TODO(stevenjb/jennyz): Implement this for folder items
+  if (!item || item->is_folder())
+    return nullptr;
+  return static_cast<AppListTestModel::AppListTestItem*>(item)
+      ->GetContextMenuModel();
+}
+
 }  // namespace test
 }  // namespace app_list
