@@ -753,6 +753,143 @@ static void update_inter_mode_stats(FRAME_COUNTS *counts, PREDICTION_MODE mode,
   }
 }
 
+static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
+                            const MODE_INFO *mi, const MODE_INFO *above_mi,
+                            const MODE_INFO *left_mi, const int intraonly,
+                            const int mi_row, const int mi_col,
+                            uint8_t allow_update_cdf) {
+  FRAME_CONTEXT *fc = xd->tile_ctx;
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const PREDICTION_MODE y_mode = mbmi->mode;
+  const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
+  (void)counts;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+
+  // Update intra tx size cdf
+  if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
+      allow_update_cdf) {
+    const TX_SIZE tx_size = mbmi->tx_size;
+    const int tx_size_ctx = get_tx_size_context(xd);
+    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
+    const int depth = tx_size_to_depth(tx_size, bsize, 0);
+    const int max_depths = bsize_to_max_depth(bsize, 0);
+    update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
+               max_depths + 1);
+  }
+
+  if (intraonly) {
+#if CONFIG_ENTROPY_STATS
+    const PREDICTION_MODE above = av1_above_block_mode(above_mi);
+    const PREDICTION_MODE left = av1_left_block_mode(left_mi);
+#if CONFIG_KF_CTX
+    int above_ctx = intra_mode_context[above];
+    int left_ctx = intra_mode_context[left];
+    ++counts->kf_y_mode[above_ctx][left_ctx][y_mode];
+#else
+    ++counts->kf_y_mode[above][left][y_mode];
+#endif
+#endif  // CONFIG_ENTROPY_STATS
+    if (allow_update_cdf)
+      update_cdf(get_y_mode_cdf(fc, above_mi, left_mi), y_mode, INTRA_MODES);
+  } else {
+#if CONFIG_ENTROPY_STATS
+    ++counts->y_mode[size_group_lookup[bsize]][y_mode];
+#endif  // CONFIG_ENTROPY_STATS
+    if (allow_update_cdf)
+      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
+  }
+
+#if CONFIG_FILTER_INTRA
+  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
+      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
+    const int use_filter_intra_mode =
+        mbmi->filter_intra_mode_info.use_filter_intra;
+#if CONFIG_ENTROPY_STATS
+    ++counts->filter_intra_tx[mbmi->tx_size][use_filter_intra_mode];
+    if (use_filter_intra_mode) {
+      ++counts
+            ->filter_intra_mode[mbmi->filter_intra_mode_info.filter_intra_mode];
+    }
+#endif  // CONFIG_ENTROPY_STATS
+    if (allow_update_cdf) {
+      if (use_filter_intra_mode)
+        update_cdf(fc->filter_intra_mode_cdf,
+                   mbmi->filter_intra_mode_info.filter_intra_mode,
+                   FILTER_INTRA_MODES);
+      update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,
+                 2);
+    }
+  }
+#endif  // CONFIG_FILTER_INTRA
+#if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+  if (av1_is_directional_mode(mbmi->mode, bsize) &&
+      av1_use_angle_delta(bsize)) {
+#if CONFIG_ENTROPY_STATS
+    ++counts->angle_delta[mbmi->mode - V_PRED]
+                         [mbmi->angle_delta[0] + MAX_ANGLE_DELTA];
+#endif
+    if (allow_update_cdf)
+      update_cdf(fc->angle_delta_cdf[mbmi->mode - V_PRED],
+                 mbmi->angle_delta[0] + MAX_ANGLE_DELTA,
+                 2 * MAX_ANGLE_DELTA + 1);
+  }
+#endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+
+  if (!is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
+                           xd->plane[1].subsampling_y))
+    return;
+#if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
+      av1_use_angle_delta(bsize)) {
+#if CONFIG_ENTROPY_STATS
+    ++counts->angle_delta[mbmi->uv_mode - V_PRED]
+                         [mbmi->angle_delta[1] + MAX_ANGLE_DELTA];
+#endif
+    if (allow_update_cdf)
+      update_cdf(fc->angle_delta_cdf[mbmi->uv_mode - V_PRED],
+                 mbmi->angle_delta[1] + MAX_ANGLE_DELTA,
+                 2 * MAX_ANGLE_DELTA + 1);
+  }
+#endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
+#if CONFIG_ENTROPY_STATS
+  ++counts->uv_mode[y_mode][uv_mode];
+#endif  // CONFIG_ENTROPY_STATS
+  if (allow_update_cdf)
+    update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
+}
+
+// TODO(anybody) We can add stats accumulation here to train entropy models for
+// palette modes
+static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
+  FRAME_CONTEXT *fc = xd->tile_ctx;
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
+
+  if (mbmi->mode == DC_PRED) {
+    const int n = pmi->palette_size[0];
+    int palette_y_mode_ctx = 0;
+    if (above_mi) {
+      palette_y_mode_ctx +=
+          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+    if (left_mi) {
+      palette_y_mode_ctx +=
+          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+    update_cdf(fc->palette_y_mode_cdf[bsize_ctx][palette_y_mode_ctx], n > 0, 2);
+  }
+
+  if (mbmi->uv_mode == UV_DC_PRED) {
+    const int n = pmi->palette_size[1];
+    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+    update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
+  }
+}
+
 static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
                          ThreadData *td, int mi_row, int mi_col) {
   MACROBLOCK *x = &td->mb;
@@ -843,6 +980,15 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     }
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
+  }
+
+  if (!is_inter_block(mbmi)) {
+    sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
+                    frame_is_intra_only(cm), mi_row, mi_col,
+                    tile_data->allow_update_cdf);
+    if (av1_allow_palette(cm->allow_screen_content_tools, bsize) &&
+        tile_data->allow_update_cdf)
+      update_palette_cdf(xd, mi);
   }
 
   if (!frame_is_intra_only(cm)) {
@@ -4070,143 +4216,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
   }
 }
 
-static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
-                            const MODE_INFO *mi, const MODE_INFO *above_mi,
-                            const MODE_INFO *left_mi, const int intraonly,
-                            const int mi_row, const int mi_col,
-                            uint8_t allow_update_cdf) {
-  FRAME_CONTEXT *fc = xd->tile_ctx;
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  const PREDICTION_MODE y_mode = mbmi->mode;
-  const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-  (void)counts;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-
-  // Update intra tx size cdf
-  if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id] &&
-      allow_update_cdf) {
-    const TX_SIZE tx_size = mbmi->tx_size;
-    const int tx_size_ctx = get_tx_size_context(xd);
-    const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
-    const int depth = tx_size_to_depth(tx_size, bsize, 0);
-    const int max_depths = bsize_to_max_depth(bsize, 0);
-    update_cdf(fc->tx_size_cdf[tx_size_cat][tx_size_ctx], depth,
-               max_depths + 1);
-  }
-
-  if (intraonly) {
-#if CONFIG_ENTROPY_STATS
-    const PREDICTION_MODE above = av1_above_block_mode(above_mi);
-    const PREDICTION_MODE left = av1_left_block_mode(left_mi);
-#if CONFIG_KF_CTX
-    int above_ctx = intra_mode_context[above];
-    int left_ctx = intra_mode_context[left];
-    ++counts->kf_y_mode[above_ctx][left_ctx][y_mode];
-#else
-    ++counts->kf_y_mode[above][left][y_mode];
-#endif
-#endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf)
-      update_cdf(get_y_mode_cdf(fc, above_mi, left_mi), y_mode, INTRA_MODES);
-  } else {
-#if CONFIG_ENTROPY_STATS
-    ++counts->y_mode[size_group_lookup[bsize]][y_mode];
-#endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf)
-      update_cdf(fc->y_mode_cdf[size_group_lookup[bsize]], y_mode, INTRA_MODES);
-  }
-
-#if CONFIG_FILTER_INTRA
-  if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
-      av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    const int use_filter_intra_mode =
-        mbmi->filter_intra_mode_info.use_filter_intra;
-#if CONFIG_ENTROPY_STATS
-    ++counts->filter_intra_tx[mbmi->tx_size][use_filter_intra_mode];
-    if (use_filter_intra_mode) {
-      ++counts
-            ->filter_intra_mode[mbmi->filter_intra_mode_info.filter_intra_mode];
-    }
-#endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf) {
-      if (use_filter_intra_mode)
-        update_cdf(fc->filter_intra_mode_cdf,
-                   mbmi->filter_intra_mode_info.filter_intra_mode,
-                   FILTER_INTRA_MODES);
-      update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,
-                 2);
-    }
-  }
-#endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
-  if (av1_is_directional_mode(mbmi->mode, bsize) &&
-      av1_use_angle_delta(bsize)) {
-#if CONFIG_ENTROPY_STATS
-    ++counts->angle_delta[mbmi->mode - V_PRED]
-                         [mbmi->angle_delta[0] + MAX_ANGLE_DELTA];
-#endif
-    if (allow_update_cdf)
-      update_cdf(fc->angle_delta_cdf[mbmi->mode - V_PRED],
-                 mbmi->angle_delta[0] + MAX_ANGLE_DELTA,
-                 2 * MAX_ANGLE_DELTA + 1);
-  }
-#endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
-
-  if (!is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                           xd->plane[1].subsampling_y))
-    return;
-#if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
-  if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize) &&
-      av1_use_angle_delta(bsize)) {
-#if CONFIG_ENTROPY_STATS
-    ++counts->angle_delta[mbmi->uv_mode - V_PRED]
-                         [mbmi->angle_delta[1] + MAX_ANGLE_DELTA];
-#endif
-    if (allow_update_cdf)
-      update_cdf(fc->angle_delta_cdf[mbmi->uv_mode - V_PRED],
-                 mbmi->angle_delta[1] + MAX_ANGLE_DELTA,
-                 2 * MAX_ANGLE_DELTA + 1);
-  }
-#endif  // CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD
-#if CONFIG_ENTROPY_STATS
-  ++counts->uv_mode[y_mode][uv_mode];
-#endif  // CONFIG_ENTROPY_STATS
-  if (allow_update_cdf)
-    update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
-}
-
-// TODO(anybody) We can add stats accumulation here to train entropy models for
-// palette modes
-static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
-  FRAME_CONTEXT *fc = xd->tile_ctx;
-  const MB_MODE_INFO *const mbmi = &mi->mbmi;
-  const MODE_INFO *const above_mi = xd->above_mi;
-  const MODE_INFO *const left_mi = xd->left_mi;
-  const BLOCK_SIZE bsize = mbmi->sb_type;
-  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  const int bsize_ctx = av1_get_palette_bsize_ctx(bsize);
-
-  if (mbmi->mode == DC_PRED) {
-    const int n = pmi->palette_size[0];
-    int palette_y_mode_ctx = 0;
-    if (above_mi) {
-      palette_y_mode_ctx +=
-          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
-    if (left_mi) {
-      palette_y_mode_ctx +=
-          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
-    }
-    update_cdf(fc->palette_y_mode_cdf[bsize_ctx][palette_y_mode_ctx], n > 0, 2);
-  }
-
-  if (mbmi->uv_mode == UV_DC_PRED) {
-    const int n = pmi->palette_size[1];
-    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-    update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
-  }
-}
-
 static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts, TX_SIZE tx_size, int depth,
                               int blk_row, int blk_col,
@@ -4450,15 +4459,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #if CONFIG_CFL
     xd->cfl.store_y = 0;
 #endif  // CONFIG_CFL
-    if (!dry_run) {
-      sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
-                      frame_is_intra_only(cm), mi_row, mi_col,
-                      tile_data->allow_update_cdf);
-      if (av1_allow_palette(cm->allow_screen_content_tools, bsize) &&
-          tile_data->allow_update_cdf)
-        update_palette_cdf(xd, mi);
-    }
-
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {
       for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
