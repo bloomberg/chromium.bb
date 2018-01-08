@@ -21,7 +21,7 @@ Tests DOMSnapshot.getSnapshot method.
           "useCapture": false,
           "passive": false,
           "once": false,
-          "scriptId": "19",
+          "scriptId": "<string>",
           "lineNumber": 42,
           "columnNumber": 46
         }
@@ -212,7 +212,7 @@ Tests DOMSnapshot.getSnapshot method.
           "useCapture": false,
           "passive": false,
           "once": false,
-          "scriptId": "19",
+          "scriptId": "<string>",
           "lineNumber": 39,
           "columnNumber": 59
         }
@@ -313,7 +313,7 @@ Tests DOMSnapshot.getSnapshot method.
           "useCapture": false,
           "passive": false,
           "once": false,
-          "scriptId": "19",
+          "scriptId": "<string>",
           "lineNumber": 40,
           "columnNumber": 59
         }
@@ -371,7 +371,7 @@ Tests DOMSnapshot.getSnapshot method.
           "useCapture": false,
           "passive": false,
           "once": false,
-          "scriptId": "19",
+          "scriptId": "<string>",
           "lineNumber": 41,
           "columnNumber": 59
         }
