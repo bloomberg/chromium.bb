@@ -18,7 +18,6 @@
 #include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragmentation_utils.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
@@ -632,8 +631,9 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   //
   // This re-layout *must* produce a fragment and opportunity which fits within
   // the exclusion space.
-  if (opportunity.offset.block_offset != child_bfc_offset_estimate ||
-      (is_fixed_inline_size && fragment_block_size > opportunity.BlockSize())) {
+  if (opportunity.rect.start_offset.block_offset != child_bfc_offset_estimate ||
+      (is_fixed_inline_size &&
+       fragment_block_size > opportunity.rect.BlockSize())) {
     NGMarginStrut non_adjoining_margin_strut(
         previous_inflow_position->margin_strut);
     child_bfc_offset_estimate = child_data.bfc_offset_estimate.block_offset +
@@ -659,12 +659,12 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   // Auto-margins are applied within the layout opportunity which fits.
   NGBoxStrut auto_margins;
-  ApplyAutoMargins(child_style, Style(), opportunity.InlineSize(),
+  ApplyAutoMargins(child_style, Style(), opportunity.rect.InlineSize(),
                    fragment.InlineSize(), &auto_margins);
 
-  NGBfcOffset child_bfc_offset(
-      opportunity.offset.line_offset + auto_margins.LineLeft(direction),
-      opportunity.offset.block_offset);
+  NGBfcOffset child_bfc_offset(opportunity.rect.start_offset.line_offset +
+                                   auto_margins.LineLeft(direction),
+                               opportunity.rect.start_offset.block_offset);
 
   NGLogicalOffset logical_offset = LogicalFromBfcOffsets(
       fragment, child_bfc_offset, ContainerBfcOffset(),
@@ -771,8 +771,8 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // TODO(ikilpatrick): Investigate tables 'auto' size as this is subtly
     // different to normal 'auto' sizing behaviour.
     opportunity = tmp_exclusion_space.FindLayoutOpportunity(
-        origin_offset, child_available_size, NGLogicalSize());
-    fixed_inline_size = ConstrainByMinMax(opportunity->InlineSize(),
+        origin_offset, child_available_size.inline_size, NGLogicalSize());
+    fixed_inline_size = ConstrainByMinMax(opportunity->rect.InlineSize(),
                                           min_inline_size, max_inline_size);
   }
 
@@ -791,7 +791,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     // TODO(ikilpatrick): child_available_size is probably wrong as the area we
     // need to search shrinks by the origin_offset and LineRight margin.
     opportunity = tmp_exclusion_space.FindLayoutOpportunity(
-        origin_offset, child_available_size,
+        origin_offset, child_available_size.inline_size,
         NGLogicalSize{fragment.InlineSize(), fragment.BlockSize()});
   }
 

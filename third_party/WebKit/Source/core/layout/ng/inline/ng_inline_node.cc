@@ -684,6 +684,8 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   scoped_refptr<NGInlineBreakToken> break_token;
   NGLineInfo line_info;
   NGExclusionSpace empty_exclusion_space;
+  NGLayoutOpportunity opportunity(NGBfcRect(
+      NGBfcOffset(), NGBfcOffset(available_inline_size, LayoutUnit::Max())));
   LayoutUnit result;
   while (!break_token || !break_token->IsFinished()) {
     unpositioned_floats.clear();
@@ -691,11 +693,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
     NGLineBreaker line_breaker(node, mode, *space, &positioned_floats,
                                &unpositioned_floats, &empty_exclusion_space, 0u,
                                break_token.get());
-    if (!line_breaker.NextLine(
-            NGLayoutOpportunity(
-                NGBfcOffset(),
-                NGLogicalSize({available_inline_size, NGSizeIndefinite})),
-            &line_info))
+    if (!line_breaker.NextLine(opportunity, &line_info))
       break;
 
     break_token = line_breaker.CreateBreakToken(nullptr);

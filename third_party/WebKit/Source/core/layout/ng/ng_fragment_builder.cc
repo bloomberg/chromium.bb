@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 
 #include "core/layout/LayoutObject.h"
+#include "core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
@@ -12,7 +13,6 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_fragmentation_utils.h"
 #include "core/layout/ng/ng_layout_result.h"

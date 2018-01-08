@@ -47,25 +47,28 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
   // TODO(ikilpatrick): Don't include the block-start margin of a float which
   // has fragmented.
   return exclusion_space.FindLayoutOpportunity(
-      adjusted_origin_point, unpositioned_float.available_size, float_size);
+      adjusted_origin_point, unpositioned_float.available_size.inline_size,
+      float_size);
 }
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-NGExclusion CreateExclusion(const NGFragment& fragment,
-                            const NGBfcOffset& float_margin_bfc_offset,
-                            const NGBoxStrut& margins,
-                            NGExclusion::Type exclusion_type) {
-  NGExclusion exclusion;
-  exclusion.type = exclusion_type;
-  NGBfcRect& rect = exclusion.rect;
-  rect.offset = float_margin_bfc_offset;
-
+scoped_refptr<NGExclusion> CreateExclusion(
+    const NGFragment& fragment,
+    const NGBfcOffset& float_margin_bfc_offset,
+    const NGBoxStrut& margins,
+    EFloat type) {
   // TODO(ikilpatrick): Don't include the block-start margin of a float which
   // has fragmented.
-  rect.size.inline_size = fragment.InlineSize() + margins.InlineSum();
-  rect.size.block_size = fragment.BlockSize() + margins.BlockSum();
-  return exclusion;
+  NGBfcOffset start_offset = float_margin_bfc_offset;
+
+  NGBfcOffset end_offset(
+      /* line_offset */ start_offset.line_offset +
+          (fragment.InlineSize() + margins.InlineSum()).ClampNegativeToZero(),
+      /* block_offset */ start_offset.block_offset +
+          (fragment.BlockSize() + margins.BlockSum()).ClampNegativeToZero());
+
+  return NGExclusion::Create(NGBfcRect(start_offset, end_offset), type);
 }
 
 // TODO(ikilpatrick): origin_block_offset looks wrong for fragmentation here.
@@ -209,32 +212,32 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
                             *layout_result->PhysicalFragment());
 
   // TODO(glebl): This should check for infinite opportunity instead.
-  if (opportunity.IsEmpty()) {
+  // TODO(ikilpatrick): Remove.
+  if (opportunity.rect.IsEmpty()) {
     // Because of the implementation specific of the layout opportunity iterator
     // an empty opportunity can mean 2 things:
     // - search for layout opportunities is exhausted.
     // - opportunity has an infinite size. That's because CS is infinite.
-    opportunity = NGLayoutOpportunity(
-        NGBfcOffset(),
-        NGLogicalSize(float_fragment.InlineSize(), float_fragment.BlockSize()));
+    opportunity = NGLayoutOpportunity(NGBfcRect(
+        /* start_offset */ NGBfcOffset(), /* end_offset */ NGBfcOffset(
+            float_fragment.InlineSize(), float_fragment.BlockSize())));
   }
 
   LayoutUnit float_margin_box_inline_size =
       float_fragment.InlineSize() + unpositioned_float->margins.InlineSum();
 
   // Calculate the float's margin box BFC offset.
-  NGBfcOffset float_margin_bfc_offset = opportunity.offset;
+  NGBfcOffset float_margin_bfc_offset = opportunity.rect.start_offset;
   if (unpositioned_float->IsRight()) {
     float_margin_bfc_offset.line_offset +=
-        (opportunity.size.inline_size - float_margin_box_inline_size);
+        (opportunity.rect.InlineSize() - float_margin_box_inline_size);
   }
 
   // Add the float as an exclusion.
-  const NGExclusion exclusion = CreateExclusion(
+  scoped_refptr<NGExclusion> exclusion = CreateExclusion(
       float_fragment, float_margin_bfc_offset, unpositioned_float->margins,
-      unpositioned_float->IsRight() ? NGExclusion::Type::kFloatRight
-                                    : NGExclusion::Type::kFloatLeft);
-  exclusion_space->Add(exclusion);
+      unpositioned_float->IsRight() ? EFloat::kRight : EFloat::kLeft);
+  exclusion_space->Add(std::move(exclusion));
 
   // Adjust the float's bfc_offset to its border-box (instead of margin-box).
   NGBfcOffset float_bfc_offset(

@@ -6,9 +6,9 @@
 #define NGLineBreaker_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/exclusions/ng_layout_opportunity.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/text/TextBreakIterator.h"
