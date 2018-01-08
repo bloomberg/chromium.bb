@@ -387,6 +387,8 @@ class MockProviderVisitor
     provider_.reset(new extensions::ExternalProviderImpl(
         this, new extensions::ExternalTestingLoader(json_data, fake_base_path_),
         profile_.get(), crx_location, download_location, Extension::NO_FLAGS));
+    if (crx_location == Manifest::EXTERNAL_REGISTRY)
+      provider_->set_allow_updates(true);
 
     // We also parse the file into a dictionary to compare what we get back
     // from the provider.
