@@ -1378,9 +1378,9 @@ static CSSValue* ValueForAnimationIterationCount(double iteration_count) {
 }
 
 static CSSValue* ValueForAnimationPlayState(EAnimPlayState play_state) {
-  if (play_state == kAnimPlayStatePlaying)
+  if (play_state == EAnimPlayState::kPlaying)
     return CSSIdentifierValue::Create(CSSValueRunning);
-  DCHECK_EQ(play_state, kAnimPlayStatePaused);
+  DCHECK_EQ(play_state, EAnimPlayState::kPaused);
   return CSSIdentifierValue::Create(CSSValuePaused);
 }
 
