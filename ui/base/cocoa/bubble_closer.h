@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "ui/base/cocoa/weak_ptr_nsobject.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -30,6 +31,7 @@ class UI_BASE_EXPORT BubbleCloser {
 
   id event_tap_;  // Weak. Owned by AppKit.
   base::RepeatingClosure on_click_outside_;
+  WeakPtrNSObjectFactory<BubbleCloser> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleCloser);
 };

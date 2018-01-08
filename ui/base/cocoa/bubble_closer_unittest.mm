@@ -50,8 +50,12 @@ class BubbleCloserTest : public CocoaTest {
     [NSApp sendEvent:event];
   }
 
+  void ResetCloser() { bubble_closer_ = nullptr; }
+
  protected:
   int click_outside_count() const { return click_outside_count_; }
+  NSWindow* bubble_window() { return bubble_window_; }
+  bool IsCloserReset() const { return !bubble_closer_; }
 
  private:
   base::scoped_nsobject<NSWindow> bubble_window_;
@@ -60,6 +64,18 @@ class BubbleCloserTest : public CocoaTest {
 
   DISALLOW_COPY_AND_ASSIGN(BubbleCloserTest);
 };
+
+// Test for lifetime issues around NSEvent monitors.
+TEST_F(BubbleCloserTest, SecondBubbleCloser) {
+  auto resetter = [](BubbleCloserTest* me) { me->ResetCloser(); };
+  auto deleter = std::make_unique<BubbleCloser>(
+      bubble_window(), base::BindRepeating(resetter, this));
+  SendClick(LEFT, OUTSIDE);
+
+  // The order is non-deterministic, so click_outside_count() may not change.
+  // But either way, the closer should have been reset.
+  EXPECT_TRUE(IsCloserReset());
+}
 
 // Test that clicking outside the window fires the callback and clicking inside
 // does not.
