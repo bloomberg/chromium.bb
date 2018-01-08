@@ -317,13 +317,9 @@ NSEvent* MockScrollWheelEventWithPhase(SEL mockPhaseSelector, int32_t delta) {
   return event;
 }
 
-NSEvent* MockScrollWheelEventWithoutPhase(int32_t delta) {
-  return MockScrollWheelEventWithPhase(@selector(phaseNone), delta);
-}
-
 NSEvent* MockScrollWheelEventWithMomentumPhase(SEL mockPhaseSelector,
                                                int32_t delta) {
-  // Create a dummy event with phaseNone. This is for resetting the phase info
+  // Create a fake event with phaseNone. This is for resetting the phase info
   // of CGEventRef.
   MockScrollWheelEventWithPhase(@selector(phaseNone), 0);
   CGEventRef cg_event = CGEventCreateScrollWheelEvent(
@@ -338,20 +334,30 @@ NSEvent* MockScrollWheelEventWithMomentumPhase(SEL mockPhaseSelector,
   return event;
 }
 
+NSEvent* MockScrollWheelEventWithoutPhase(int32_t delta) {
+  return MockScrollWheelEventWithMomentumPhase(@selector(phaseNone), delta);
+}
+
+enum WheelScrollingMode {
+  kWheelScrollingModeNone,
+  kWheelScrollLatching,
+  kAsyncWheelEvents,
+};
+
 }  // namespace
 
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
-  RenderWidgetHostViewMacTest(bool scroll_latching = false)
-      : rwhv_mac_(nullptr), scroll_latching_(scroll_latching) {
+  RenderWidgetHostViewMacTest(
+      WheelScrollingMode wheel_scrolling_mode = kWheelScrollingModeNone)
+      : rwhv_mac_(nullptr),
+        wheel_scrolling_mode_(wheel_scrolling_mode),
+        scroll_latching_(wheel_scrolling_mode_ != kWheelScrollingModeNone) {
     std::unique_ptr<base::SimpleTestTickClock> mock_clock(
         new base::SimpleTestTickClock());
     mock_clock->Advance(base::TimeDelta::FromMilliseconds(100));
     ui::SetEventTickClockForTesting(std::move(mock_clock));
-    if (scroll_latching)
-      EnableWheelScrollLatching();
-    else
-      DisableWheelScrollLatching();
+    SetFeatureList();
 
     mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     vsync_feature_list_.InitAndEnableFeature(
@@ -403,18 +409,28 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     return base::UTF16ToUTF8(rwhv_mac_->GetTextSelection()->selected_text());
   }
 
-  void EnableWheelScrollLatching() {
-    feature_list_.InitFromCommandLine(
-        features::kTouchpadAndWheelScrollLatching.name, "");
-  }
-
-  void DisableWheelScrollLatching() {
-    feature_list_.InitFromCommandLine(
-        "", features::kTouchpadAndWheelScrollLatching.name);
+  void SetFeatureList() {
+    if (wheel_scrolling_mode_ == kAsyncWheelEvents) {
+      feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents},
+                                     {});
+    } else if (wheel_scrolling_mode_ == kWheelScrollLatching) {
+      feature_list_.InitWithFeatures(
+          {features::kTouchpadAndWheelScrollLatching},
+          {features::kAsyncWheelEvents});
+    } else if (wheel_scrolling_mode_ == kWheelScrollingModeNone) {
+      feature_list_.InitWithFeatures({},
+                                     {features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
+    }
   }
 
   void IgnoreEmptyUnhandledWheelEventWithWheelGestures();
   void ScrollWheelEndEventDelivery();
+  void TimerBasedPhaseInfo();
+  void WheelWithPhaseEndedIsNotForwardedImmediately();
+  void WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer();
+  void WheelWithPhaseBeganDispatchesThePendingWheelEnd();
 
   MockRenderWidgetHostDelegate delegate_;
 
@@ -425,6 +441,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   RenderWidgetHostViewMac* rwhv_mac_ = nullptr;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
 
+  WheelScrollingMode wheel_scrolling_mode_;
   bool scroll_latching_;
 
  private:
@@ -1246,10 +1263,21 @@ class RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest
     : public RenderWidgetHostViewMacTest {
  public:
   RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest()
-      : RenderWidgetHostViewMacTest(true) {}
+      : RenderWidgetHostViewMacTest(kWheelScrollLatching) {}
+};
+
+class RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest
+    : public RenderWidgetHostViewMacTest {
+ public:
+  RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest()
+      : RenderWidgetHostViewMacTest(kAsyncWheelEvents) {}
 };
 
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
+  IgnoreEmptyUnhandledWheelEventWithWheelGestures();
+}
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
        IgnoreEmptyUnhandledWheelEventWithWheelGestures) {
   IgnoreEmptyUnhandledWheelEventWithWheelGestures();
 }
@@ -1258,12 +1286,19 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
        ScrollWheelEndEventDelivery) {
   ScrollWheelEndEventDelivery();
 }
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
+       ScrollWheelEndEventDelivery) {
+  ScrollWheelEndEventDelivery();
+}
 
 // Scrolling with a mouse wheel device on Mac won't give phase information.
 // MouseWheelPhaseHandler adds timer based phase information to wheel events
 // generated from this type of devices.
-TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
-       TimerBasedPhaseInfo) {
+void RenderWidgetHostViewMacTest::TimerBasedPhaseInfo() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!scroll_latching_)
+    return;
+
   rwhv_mac_->set_mouse_wheel_wheel_phase_handler_timeout(
       base::TimeDelta::FromMilliseconds(100));
 
@@ -1299,12 +1334,24 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
                   events[1]->ToEvent()->Event()->web_event.get())
                   ->data.scroll_end.synthetic);
 }
+TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       TimerBasedPhaseInfo) {
+  TimerBasedPhaseInfo();
+}
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
+       TimerBasedPhaseInfo) {
+  TimerBasedPhaseInfo();
+}
 
 // When wheel scroll latching is enabled, wheel end events are not sent
 // immediately, instead we start a timer to see if momentum phase of the scroll
 // starts or not.
-TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
-       WheelWithPhaseEndedIsNotForwardedImmediately) {
+void RenderWidgetHostViewMacTest::
+    WheelWithPhaseEndedIsNotForwardedImmediately() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!scroll_latching_)
+    return;
+
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -1358,9 +1405,21 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
       kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan);
   run_loop.Run();
 }
-
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
-       WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer) {
+       WheelWithPhaseEndedIsNotForwardedImmediately) {
+  WheelWithPhaseEndedIsNotForwardedImmediately();
+}
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
+       WheelWithPhaseEndedIsNotForwardedImmediately) {
+  WheelWithPhaseEndedIsNotForwardedImmediately();
+}
+
+void RenderWidgetHostViewMacTest::
+    WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!scroll_latching_)
+    return;
+
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -1410,14 +1469,29 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   [view->cocoa_view() scrollWheel:wheelEvent3];
   base::RunLoop().RunUntilIdle();
   events = host->GetAndResetDispatchedMessages();
-  ASSERT_EQ("MouseWheel", GetMessageNames(events));
+  if (wheel_scrolling_mode_ == kAsyncWheelEvents)
+    ASSERT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
+  else
+    ASSERT_EQ("MouseWheel", GetMessageNames(events));
   DCHECK(!view->HasPendingWheelEndEventForTesting());
 
   host->ShutdownAndDestroyWidget(true);
 }
-
 TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
-       WheelWithPhaseBeganDispatchesThePendingWheelEnd) {
+       WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer) {
+  WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer();
+}
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
+       WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer) {
+  WheelWithMomentumPhaseBeganStopsTheWheelEndDispatchTimer();
+}
+
+void RenderWidgetHostViewMacTest::
+    WheelWithPhaseBeganDispatchesThePendingWheelEnd() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!scroll_latching_)
+    return;
+
   // Initialize the view associated with a MockRenderWidgetHostImpl, rather than
   // the MockRenderProcessHost that is set up by the test harness which mocks
   // out |OnMessageReceived()|.
@@ -1472,6 +1546,14 @@ TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
   DCHECK(!view->HasPendingWheelEndEventForTesting());
 
   host->ShutdownAndDestroyWidget(true);
+}
+TEST_F(RenderWidgetHostViewMacWithWheelScrollLatchingEnabledTest,
+       WheelWithPhaseBeganDispatchesThePendingWheelEnd) {
+  WheelWithPhaseBeganDispatchesThePendingWheelEnd();
+}
+TEST_F(RenderWidgetHostViewMacWithAsyncWheelEventsEnabledTest,
+       WheelWithPhaseBeganDispatchesThePendingWheelEnd) {
+  WheelWithPhaseBeganDispatchesThePendingWheelEnd();
 }
 
 class RenderWidgetHostViewMacPinchTest : public RenderWidgetHostViewMacTest {

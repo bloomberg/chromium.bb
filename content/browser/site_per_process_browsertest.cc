@@ -6688,7 +6688,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   // Send a mouse wheel event to the main frame. If wheel scroll latching is
   // enabled it will be still routed to child till the end of current scrolling
   // sequence.
-  SendMouseWheel(gfx::Point(10, 10));
+  SendMouseWheel(pos);
   if (child_rwhv->wheel_scroll_latching_enabled())
     EXPECT_EQ(child_rwhv, router->wheel_target_.target);
   else
@@ -7061,6 +7061,20 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
     RenderWidgetHostViewBase* expected_target) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
+  if (root_view_aura->wheel_scroll_latching_enabled()) {
+    // Touchpad Fling must be sent inside a gesture scroll seqeunce.
+    blink::WebGestureEvent gesture_event(
+        blink::WebGestureEvent::kGestureScrollBegin,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
+    gesture_event.x = gesture_point.x();
+    gesture_event.y = gesture_point.y();
+    gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
+    gesture_event.data.scroll_begin.delta_y_hint = 1.0f;
+    expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+  }
+
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gesture_point,
                               ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
   root_view_aura->OnScrollEvent(&fling_start);
@@ -7070,6 +7084,17 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
                                ui::EventTimeForNow(), 0, 1, 0, 1, 0, 1);
   root_view_aura->OnScrollEvent(&fling_cancel);
   EXPECT_EQ(expected_target, router_touchpad_gesture_target);
+
+  if (root_view_aura->wheel_scroll_latching_enabled()) {
+    blink::WebGestureEvent gesture_event(
+        blink::WebGestureEvent::kGestureScrollEnd,
+        blink::WebInputEvent::kNoModifiers,
+        blink::WebInputEvent::kTimeStampForTesting);
+    gesture_event.source_device = blink::kWebGestureDeviceTouchpad;
+    gesture_event.x = gesture_point.x();
+    gesture_event.y = gesture_point.y();
+    expected_target->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
+  }
 }
 #endif
 

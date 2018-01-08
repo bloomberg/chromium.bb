@@ -65,20 +65,26 @@ const char kWheelEventLatchingDataURL[] =
     " document.scrollingElement.addEventListener('wheel',"
     "   function(e) { documentWheelEventCounter++; });"
     "</script>";
+
+enum WheelScrollingMode {
+  kWheelScrollingModeNone,
+  kWheelScrollLatching,
+  kAsyncWheelEvents,
+};
 }  // namespace
 
 namespace content {
 class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
  public:
-  WheelScrollLatchingBrowserTest(bool wheel_scroll_latching_enabled = true)
-      : wheel_scroll_latching_enabled_(wheel_scroll_latching_enabled) {
+  WheelScrollLatchingBrowserTest(
+      WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
+      : wheel_scrolling_mode_(wheel_scrolling_mode),
+        wheel_scroll_latching_enabled_(wheel_scrolling_mode_ !=
+                                       kWheelScrollingModeNone) {
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
 
-    if (wheel_scroll_latching_enabled_)
-      EnableWheelScrollLatching();
-    else
-      DisableWheelScrollLatching();
+    SetFeatureList();
   }
   ~WheelScrollLatchingBrowserTest() override {}
 
@@ -127,75 +133,108 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
         shell(), "domAutomationController.send(" + script + ")", &value));
     return value;
   }
-  void EnableWheelScrollLatching() {
-    feature_list_.InitFromCommandLine(
-        features::kTouchpadAndWheelScrollLatching.name, "");
+  void SetFeatureList() {
+    if (wheel_scrolling_mode_ == kAsyncWheelEvents) {
+      feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents},
+                                     {});
+    } else if (wheel_scrolling_mode_ == kWheelScrollLatching) {
+      feature_list_.InitWithFeatures(
+          {features::kTouchpadAndWheelScrollLatching},
+          {features::kAsyncWheelEvents});
+    } else if (wheel_scrolling_mode_ == kWheelScrollingModeNone) {
+      feature_list_.InitWithFeatures({},
+                                     {features::kTouchpadAndWheelScrollLatching,
+                                      features::kAsyncWheelEvents});
+    }
   }
-  void DisableWheelScrollLatching() {
-    feature_list_.InitFromCommandLine(
-        "", features::kTouchpadAndWheelScrollLatching.name);
+
+  void WheelEventTargetTest();
+  void WheelEventRetargetWhenTargetRemovedTest();
+  void WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  WheelScrollingMode wheel_scrolling_mode_;
+  bool wheel_scroll_latching_enabled_;
+};
+
+class WheelScrollLatchingDisabledBrowserTest
+    : public WheelScrollLatchingBrowserTest {
+ public:
+  WheelScrollLatchingDisabledBrowserTest()
+      : WheelScrollLatchingBrowserTest(kWheelScrollingModeNone) {}
+  ~WheelScrollLatchingDisabledBrowserTest() override {}
+};
+
+class AsyncWheelEventsBrowserTest : public WheelScrollLatchingBrowserTest {
+ public:
+  AsyncWheelEventsBrowserTest()
+      : WheelScrollLatchingBrowserTest(kAsyncWheelEvents) {}
+  ~AsyncWheelEventsBrowserTest() override {}
+};
+
+void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
+  LoadURL();
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
+
+  MainThreadFrameObserver frame_observer(
+      shell()->web_contents()->GetRenderViewHost()->GetWidget());
+
+  auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+
+  float scrollable_div_top =
+      ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");
+  float x = (ExecuteScriptAndExtractInt(
+                 "scrollableDiv.getBoundingClientRect().left") +
+             ExecuteScriptAndExtractInt(
+                 "scrollableDiv.getBoundingClientRect().right")) /
+            2;
+  float y = 0.5 * scrollable_div_top;
+  float delta_x = 0;
+  float delta_y = -0.6 * scrollable_div_top;
+  blink::WebMouseWheelEvent wheel_event =
+      SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, delta_x, delta_y, 0,
+                                                true);
+
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
+                                    ui::LatencyInfo());
+
+  // Runs until we get the InputMsgAck callback.
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+            input_msg_watcher->WaitForAck());
+
+  while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
+         -delta_y) {
+    frame_observer.Wait();
   }
 
-  void WheelEventTargetTest() {
-    LoadURL();
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
-    EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
+  EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
+  EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
-    MainThreadFrameObserver frame_observer(
-        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
+                                    ui::LatencyInfo());
 
-    auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
-        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
-
-    float scrollable_div_top =
-        ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");
-    float x = (ExecuteScriptAndExtractInt(
-                   "scrollableDiv.getBoundingClientRect().left") +
-               ExecuteScriptAndExtractInt(
-                   "scrollableDiv.getBoundingClientRect().right")) /
-              2;
-    float y = 0.5 * scrollable_div_top;
-    float delta_x = 0;
-    float delta_y = -0.6 * scrollable_div_top;
-    blink::WebMouseWheelEvent wheel_event =
-        SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, delta_x, delta_y,
-                                                  0, true);
-
-    wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-    GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
-                                      ui::LatencyInfo());
-
+  if (wheel_scrolling_mode_ != kAsyncWheelEvents) {
     // Runs until we get the InputMsgAck callback.
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
               input_msg_watcher->WaitForAck());
+  }
 
+  if (wheel_scroll_latching_enabled_) {
     while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
-           -delta_y) {
+           -2 * delta_y) {
       frame_observer.Wait();
     }
 
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
-    EXPECT_EQ(1, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
+    EXPECT_EQ(2, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
-
-    wheel_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
-    GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
-                                      ui::LatencyInfo());
-
-    // Runs until we get the InputMsgAck callback.
-    EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
-              input_msg_watcher->WaitForAck());
-
-    if (wheel_scroll_latching_enabled_) {
-      while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
-             -2 * delta_y) {
-        frame_observer.Wait();
-      }
-
-      EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"));
-      EXPECT_EQ(2, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
-      EXPECT_EQ(0,
-                ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
     } else {  // !wheel_scroll_latching_enabled_
       while (ExecuteScriptAndExtractInt("scrollableDiv.scrollTop") < -delta_y)
         frame_observer.Wait();
@@ -205,20 +244,6 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
                 ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
     }
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  bool wheel_scroll_latching_enabled_;
-};
-
-class WheelScrollLatchingDisabledBrowserTest
-    : public WheelScrollLatchingBrowserTest {
- public:
-  WheelScrollLatchingDisabledBrowserTest()
-      : WheelScrollLatchingBrowserTest(false) {}
-  ~WheelScrollLatchingDisabledBrowserTest() override {}
-};
-
 // Start scrolling by mouse wheel on the document: the wheel event will be sent
 // to the document's scrolling element, the scrollable div will be under the
 // cursor after applying the scrolling. Continue scrolling by mouse wheel, since
@@ -226,6 +251,9 @@ class WheelScrollLatchingDisabledBrowserTest
 // document's scrolling element and the document's scrolling element will
 // continue scrolling.
 IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest, WheelEventTarget) {
+  WheelEventTargetTest();
+}
+IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest, WheelEventTarget) {
   WheelEventTargetTest();
 }
 
@@ -242,8 +270,11 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingDisabledBrowserTest,
 
 // Tests that wheel events are retargeted if their target gets deleted in the
 // middle of scrolling.
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       WheelEventRetargetWhenTargetRemoved) {
+void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!wheel_scroll_latching_enabled_)
+    return;
+
   LoadURL();
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
@@ -294,6 +325,14 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
+                       WheelEventRetargetWhenTargetRemoved) {
+  WheelEventRetargetWhenTargetRemovedTest();
+}
+IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
+                       WheelEventRetargetWhenTargetRemoved) {
+  WheelEventRetargetWhenTargetRemovedTest();
+}
 
 // crbug.com/777258 Flaky on Android.
 #if defined(OS_ANDROID)
@@ -303,8 +342,12 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 #define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
   WheelScrollingRelatchWhenLatchedScrollerRemoved
 #endif
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+void WheelScrollLatchingBrowserTest::
+    WheelScrollingRelatchWhenLatchedScrollerRemovedTest() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (!wheel_scroll_latching_enabled_)
+    return;
+
   LoadURL();
   EXPECT_EQ(ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop"),
             0);
@@ -365,6 +408,14 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
          20) {
     GiveItSomeTime();
   }
+}
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
+                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+  WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
+}
+IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
+                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+  WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
 }
 
 }  // namespace content
