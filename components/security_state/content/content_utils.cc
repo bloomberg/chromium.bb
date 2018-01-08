@@ -185,6 +185,18 @@ void ExplainCertificateSecurity(
             l10n_util::GetStringUTF8(
                 IDS_PRIVATE_KEY_PINNING_BYPASSED_DESCRIPTION)));
   }
+
+  if (security_info.certificate &&
+      !security_info.certificate->valid_expiry().is_null() &&
+      (security_info.certificate->valid_expiry() - base::Time::Now())
+              .InHours() < 48 &&
+      (security_info.certificate->valid_expiry() > base::Time::Now())) {
+    security_style_explanations->info_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_CERTIFICATE_EXPIRING_SOON),
+            l10n_util::GetStringUTF8(
+                IDS_CERTIFICATE_EXPIRING_SOON_DESCRIPTION)));
+  }
 }
 
 void ExplainConnectionSecurity(
