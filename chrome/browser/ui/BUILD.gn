@@ -3536,6 +3536,8 @@ split_static_library("ui") {
       "extensions/hosted_app_menu_model.h",
       "extensions/icon_with_badge_image_source.cc",
       "extensions/icon_with_badge_image_source.h",
+      "extensions/installation_error_infobar_delegate.cc",
+      "extensions/installation_error_infobar_delegate.h",
       "extensions/settings_api_bubble_helpers.cc",
       "extensions/settings_api_bubble_helpers.h",
       "webui/extensions/extension_basic_info.cc",
