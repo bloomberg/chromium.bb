@@ -62,6 +62,10 @@ class SVGFETurbulenceElement final
 
   virtual void Trace(blink::Visitor*);
 
+  // Turbulence takes no inputs and doesn't taint origin, so we can always
+  // return false.
+  bool TaintsOrigin(bool inputs_taint_origin) const override { return false; }
+
  private:
   explicit SVGFETurbulenceElement(Document&);
 
