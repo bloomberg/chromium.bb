@@ -58,8 +58,11 @@ void MediaControlsRotateToFullscreenDelegate::Attach() {
 
   // TODO(795286): device orientation now requires a v8::Context in the stack so
   // we are creating one so the event pump starts running.
-  ScriptState::Scope scope(
-      ToScriptStateForMainWorld(video_element_->GetDocument().GetFrame()));
+  LocalFrame* frame = video_element_->GetDocument().GetFrame();
+  if (!frame)
+    return;
+
+  ScriptState::Scope scope(ToScriptStateForMainWorld(frame));
   dom_window->addEventListener(EventTypeNames::deviceorientation, this, false);
 }
 
