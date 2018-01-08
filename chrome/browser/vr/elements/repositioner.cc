@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/repositioner.h"
 
+#include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -25,7 +26,7 @@ gfx::Transform Repositioner::GetTargetLocalTransform() const {
   return transform_;
 }
 
-void Repositioner::UpdateTransform() {
+void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
   DCHECK(kOrigin.SquaredDistanceTo(laser_origin_) <
          content_depth_ * content_depth_);
 
@@ -44,7 +45,9 @@ void Repositioner::UpdateTransform() {
   gfx::Vector3dF new_reticle_vector = laser_origin_vector;
   new_reticle_vector.Add(new_ray);
 
-  if (new_reticle_vector.x() == 0.f && new_reticle_vector.z() == 0.f)
+  gfx::Vector3dF head_up_vector = vr::GetUpVector(head_pose);
+  if (gfx::AngleBetweenVectorsInDegrees(head_up_vector, new_reticle_vector) ==
+      0.f)
     return;
 
   transform_.MakeIdentity();
@@ -54,9 +57,8 @@ void Repositioner::UpdateTransform() {
 
   gfx::Vector3dF new_right_vector = {1, 0, 0};
   transform_.TransformVector(&new_right_vector);
-  // Right vector should be othogonal to world space x-z plane.
   gfx::Vector3dF expected_right_vector =
-      gfx::CrossProduct(new_reticle_vector, {0, 1, 0});
+      gfx::CrossProduct(new_reticle_vector, head_up_vector);
 
   gfx::Quaternion rotate_to_expected_right(new_right_vector,
                                            expected_right_vector);
@@ -66,7 +68,7 @@ void Repositioner::UpdateTransform() {
 bool Repositioner::OnBeginFrame(const base::TimeTicks& time,
                                 const gfx::Transform& head_pose) {
   if (enabled_) {
-    UpdateTransform();
+    UpdateTransform(head_pose);
     return true;
   }
   return false;
