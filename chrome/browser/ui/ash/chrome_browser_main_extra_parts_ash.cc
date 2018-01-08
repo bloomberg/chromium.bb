@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h"
+#include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 
 #include "ash/public/cpp/mus_property_mirror_ash.h"
 #include "ash/public/cpp/window_pin_type.h"
@@ -24,9 +24,9 @@
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
+#include "chrome/browser/ui/ash/tab_scrubber.h"
 #include "chrome/browser/ui/ash/volume_controller.h"
 #include "chrome/browser/ui/ash/vpn_list_forwarder.h"
-#include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"

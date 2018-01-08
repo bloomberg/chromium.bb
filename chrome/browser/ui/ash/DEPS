@@ -7,10 +7,8 @@ include_rules = [
   # those are owned by the ash process under mash. See //ash/README.md.
   "-ash/wm/window_util.h",
 
-  # TODO(ananta): Remove this when we move files which display UI in
-  # chrome/browser/ui/ash to chrome/browser/ui/views/ash
-  # crbug.com/728877
-  "+chrome/browser/ui/views/harmony/chrome_layout_provider.h",
+  # ash depends on views, so code in ui/ash is allowed to depend on ui/views.
+  "+chrome/browser/ui/views",
 
   "+components/arc",
   "+components/drive",

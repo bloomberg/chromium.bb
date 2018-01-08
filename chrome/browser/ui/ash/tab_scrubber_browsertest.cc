@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/tab_scrubber.h"
+#include "chrome/browser/ui/ash/tab_scrubber.h"
 
 #include <memory>
 
@@ -80,9 +80,7 @@ class ImmersiveRevealEndedWaiter : public ImmersiveModeController::Observer {
 class TabScrubberTest : public InProcessBrowserTest,
                         public TabStripModelObserver {
  public:
-  TabScrubberTest()
-      : target_index_(-1) {
-  }
+  TabScrubberTest() : target_index_(-1) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(chromeos::switches::kNaturalScrollDefault);
@@ -115,8 +113,8 @@ class TabScrubberTest : public InProcessBrowserTest,
   float GetStartX(Browser* browser,
                   int index,
                   TabScrubber::Direction direction) {
-    return static_cast<float>(TabScrubber::GetStartPoint(
-        GetTabStrip(browser), index, direction).x());
+    return static_cast<float>(
+        TabScrubber::GetStartPoint(GetTabStrip(browser), index, direction).x());
   }
 
   float GetTabCenter(Browser* browser, int index) {
@@ -151,13 +149,13 @@ class TabScrubberTest : public InProcessBrowserTest,
     aura::Window* root = window->GetRootWindow();
     ui::test::EventGenerator event_generator(root, window);
     int active_index = browser->tab_strip_model()->active_index();
-    TabScrubber::Direction direction = index < active_index ?
-        TabScrubber::LEFT : TabScrubber::RIGHT;
+    TabScrubber::Direction direction =
+        index < active_index ? TabScrubber::LEFT : TabScrubber::RIGHT;
 
     direction = InvertDirectionIfNeeded(direction);
 
     float offset = GetTabCenter(browser, index) -
-        GetStartX(browser, active_index, direction);
+                   GetStartX(browser, active_index, direction);
     ui::ScrollEvent scroll_event(ui::ET_SCROLL, gfx::Point(0, 0),
                                  ui::EventTimeForNow(), 0, offset, 0, offset, 0,
                                  3);
@@ -207,10 +205,8 @@ class TabScrubberTest : public InProcessBrowserTest,
         last += increment;
       }
     }
-    event_generator.ScrollSequence(gfx::Point(0, 0),
-                                   base::TimeDelta::FromMilliseconds(100),
-                                   offsets,
-                                   3);
+    event_generator.ScrollSequence(
+        gfx::Point(0, 0), base::TimeDelta::FromMilliseconds(100), offsets, 3);
     RunUntilTabActive(browser, index);
   }
 
