@@ -78,6 +78,8 @@ class CC_EXPORT Proxy {
   virtual bool MainFrameWillHappenForTesting() = 0;
 
   virtual void SetURLForUkm(const GURL& url) = 0;
+
+  virtual void ClearHistoryOnNavigation() = 0;
 };
 
 }  // namespace cc

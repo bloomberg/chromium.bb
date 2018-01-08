@@ -754,4 +754,10 @@ void ProxyImpl::SetURLForUkm(const GURL& url) {
   host_impl_->ukm_manager()->SetSourceURL(url);
 }
 
+void ProxyImpl::ClearHistoryOnNavigation() {
+  DCHECK(IsImplThread());
+  DCHECK(IsMainThreadBlocked());
+  scheduler_->ClearHistoryOnNavigation();
+}
+
 }  // namespace cc

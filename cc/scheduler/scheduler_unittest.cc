@@ -1611,6 +1611,40 @@ TEST_F(SchedulerTest, MainFrameNotSkippedAfterCanDrawChanges) {
   EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
 }
 
+TEST_F(SchedulerTest, MainFrameNotSkippedWhenNoTimingHistory) {
+  SetUpScheduler(EXTERNAL_BFS);
+
+  // Use fast estimates so we think we can recover latency if needed.
+  fake_compositor_timing_history_->SetAllEstimatesTo(kFastDuration);
+
+  // Impl thread hits deadline before BeginMainFrame commits.
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("AddObserver(this)", "WillBeginImplFrame",
+                 "ScheduledActionSendBeginMainFrame");
+  EXPECT_FALSE(scheduler_->MainThreadMissedLastDeadline());
+  task_runner().RunTasksWhile(client_->InsideBeginImplFrame(true));
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
+  scheduler_->NotifyBeginMainFrameStarted(now_src()->NowTicks());
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
+
+  // Commit after the deadline.
+  client_->Reset();
+  scheduler_->NotifyReadyToCommit();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTIONS("ScheduledActionCommit", "ScheduledActionActivateSyncTree");
+  EXPECT_TRUE(scheduler_->MainThreadMissedLastDeadline());
+
+  // Clear the timing history. Make sure we don't skip the main frame until we
+  // have history from at least one frame.
+  client_->Reset();
+  scheduler_->SetNeedsBeginMainFrame();
+  scheduler_->ClearHistoryOnNavigation();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
+}
+
 void SchedulerTest::ImplFrameSkippedAfterLateAck(
     bool receive_ack_before_deadline) {
   // To get into a high latency state, this test disables automatic swap acks.

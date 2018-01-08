@@ -628,6 +628,12 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
 }
 
+void SingleThreadProxy::ClearHistoryOnNavigation() {
+  DCHECK(task_runner_provider_->IsImplThread());
+  if (scheduler_on_impl_thread_)
+    scheduler_on_impl_thread_->ClearHistoryOnNavigation();
+}
+
 void SingleThreadProxy::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DebugScopedSetImplThread impl(task_runner_provider_);
 #if DCHECK_IS_ON()
