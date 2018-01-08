@@ -100,6 +100,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
 
   // If the object is fragmented, it will have a fragment clip.
   Optional<LayoutRect> fragment_clip;
+  LayoutUnit logical_top_in_flow_thread;
 };
 
 struct PaintPropertyTreeBuilderContext {

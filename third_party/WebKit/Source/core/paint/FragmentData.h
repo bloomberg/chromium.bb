@@ -82,6 +82,14 @@ class CORE_EXPORT FragmentData {
       EnsureRareData().partial_invalidation_rect = r;
   }
 
+  LayoutUnit LogicalTopInFlowThread() const {
+    return rare_data_ ? rare_data_->logical_top_in_flow_thread : LayoutUnit();
+  }
+  void SetLogicalTopInFlowThread(LayoutUnit top) {
+    if (rare_data_ || top)
+      EnsureRareData().logical_top_in_flow_thread = top;
+  }
+
   // The pagination offset is the additional factor to add in to map
   // from flow thread coordinates relative to the enclosing pagination
   // layer, to visual coordiantes relative to that pagination layer.
@@ -185,6 +193,7 @@ class CORE_EXPORT FragmentData {
 
     // Fragment specific data.
     LayoutPoint pagination_offset;
+    LayoutUnit logical_top_in_flow_thread;
     std::unique_ptr<ObjectPaintProperties> paint_properties;
     std::unique_ptr<PropertyTreeState> local_border_box_properties;
   };

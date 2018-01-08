@@ -61,12 +61,13 @@ struct CORE_EXPORT PaintInfo {
             GlobalPaintFlags global_paint_flags,
             PaintLayerFlags paint_flags,
             const LayoutBoxModelObject* paint_container = nullptr,
-            const LayoutPoint& pagination_offset = LayoutPoint())
+            LayoutUnit fragment_logical_top_in_flow_thread = LayoutUnit())
       : context(context),
         phase(phase),
         cull_rect_(cull_rect),
         paint_container_(paint_container),
-        pagination_offset_(pagination_offset),
+        fragment_logical_top_in_flow_thread_(
+            fragment_logical_top_in_flow_thread),
         paint_flags_(paint_flags),
         global_paint_flags_(global_paint_flags) {}
 
@@ -76,7 +77,8 @@ struct CORE_EXPORT PaintInfo {
         phase(copy_other_fields_from.phase),
         cull_rect_(copy_other_fields_from.cull_rect_),
         paint_container_(copy_other_fields_from.paint_container_),
-        pagination_offset_(copy_other_fields_from.pagination_offset_),
+        fragment_logical_top_in_flow_thread_(
+            copy_other_fields_from.fragment_logical_top_in_flow_thread_),
         paint_flags_(copy_other_fields_from.paint_flags_),
         global_paint_flags_(copy_other_fields_from.global_paint_flags_) {}
 
@@ -137,8 +139,8 @@ struct CORE_EXPORT PaintInfo {
   const FragmentData* FragmentToPaint(const LayoutObject& object) const {
     for (const auto* fragment = &object.FirstFragment(); fragment;
          fragment = fragment->NextFragment()) {
-      // TODO(chrishtr): This technique is fragile and need improvement.
-      if (fragment->PaginationOffset() == pagination_offset_)
+      if (fragment->LogicalTopInFlowThread() ==
+          fragment_logical_top_in_flow_thread_)
         return fragment;
     }
     // No fragment of the current painting object matches the layer fragment,
@@ -157,9 +159,9 @@ struct CORE_EXPORT PaintInfo {
   // The box model object that originates the current painting.
   const LayoutBoxModelObject* paint_container_;
 
-  // The pagination offset of the current fragment of the self-painting
-  // PaintLayer which initiated the current painting.
-  LayoutPoint pagination_offset_;
+  // The logical top of the current fragment of the self-painting PaintLayer
+  // which initiated the current painting, in the containing flow thread.
+  LayoutUnit fragment_logical_top_in_flow_thread_;
 
   const PaintLayerFlags paint_flags_;
   const GlobalPaintFlags global_paint_flags_;

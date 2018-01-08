@@ -1595,16 +1595,19 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 
 }  // namespace
 
-// Match |fragment_clip| against an intersecting one from the parent contexts,
-// if any, to allow for correct transform and effect parenting of fragments.
-PaintPropertyTreeBuilderFragmentContext ContextForFragment(
+// Find from parent contexts with matching |logical_top_in_flow_thread|, if any,
+// to allow for correct transform and effect parenting of fragments.
+static PaintPropertyTreeBuilderFragmentContext ContextForFragment(
     const LayoutRect& fragment_clip,
+    LayoutUnit logical_top_in_flow_thread,
     const Vector<PaintPropertyTreeBuilderFragmentContext, 1>&
         parent_fragments) {
-  // Find a fragment whose clip intersects this one, if any.
+  if (parent_fragments.IsEmpty())
+    return PaintPropertyTreeBuilderFragmentContext();
+
   for (auto& fragment_context : parent_fragments) {
-    if (!fragment_context.fragment_clip ||
-        fragment_clip.Intersects(*fragment_context.fragment_clip)) {
+    if (fragment_context.logical_top_in_flow_thread ==
+        logical_top_in_flow_thread) {
       PaintPropertyTreeBuilderFragmentContext context(fragment_context);
       context.fragment_clip = fragment_clip;
       return context;
@@ -1612,13 +1615,9 @@ PaintPropertyTreeBuilderFragmentContext ContextForFragment(
   }
 
   // Otherwise return a new fragment parented at the first parent fragment.
-  if (parent_fragments.IsEmpty()) {
-    PaintPropertyTreeBuilderFragmentContext context;
-    context.fragment_clip = LayoutRect();
-    return context;
-  }
   PaintPropertyTreeBuilderFragmentContext context(parent_fragments[0]);
   context.fragment_clip = fragment_clip;
+  context.logical_top_in_flow_thread = logical_top_in_flow_thread;
   return context;
 }
 
@@ -1632,6 +1631,7 @@ void ObjectPaintPropertyTreeBuilder::InitFragmentPaintProperties(
     fragment.ClearPaintProperties();
   }
   fragment.SetPaginationOffset(LayoutPoint());
+  fragment.SetLogicalTopInFlowThread(LayoutUnit());
 }
 
 void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
@@ -1645,6 +1645,7 @@ void ObjectPaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   } else {
     context_.fragments.resize(1);
     context_.fragments[0].fragment_clip.reset();
+    context_.fragments[0].logical_top_in_flow_thread = LayoutUnit();
   }
 }
 
@@ -1680,13 +1681,15 @@ void ObjectPaintPropertyTreeBuilder::UpdateCompositedLayerPaginationOffset() {
     if (!iterator.AtEnd()) {
       first_fragment.SetPaginationOffset(
           ToLayoutPoint(iterator.PaginationOffset()));
+      first_fragment.SetLogicalTopInFlowThread(
+          iterator.FragmentainerLogicalTopInFlowThread());
     }
   } else if (parent_composited_layer) {
     // All objects under the composited layer use the same pagination offset.
-    first_fragment.SetPaginationOffset(
-        parent_composited_layer->GetLayoutObject()
-            .FirstFragment()
-            .PaginationOffset());
+    const auto& fragment =
+        parent_composited_layer->GetLayoutObject().FirstFragment();
+    first_fragment.SetPaginationOffset(fragment.PaginationOffset());
+    first_fragment.SetLogicalTopInFlowThread(fragment.LogicalTopInFlowThread());
   }
 }
 
@@ -1737,11 +1740,15 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
       InitFragmentPaintProperties(*current_fragment_data,
                                   needs_paint_properties);
 
+      auto pagination_offset = ToLayoutPoint(iterator.PaginationOffset());
+      auto logical_top_in_flow_thread =
+          iterator.FragmentainerLogicalTopInFlowThread();
+
       // 1. Compute clip in flow thread space of the containing flow thread.
       LayoutRect fragment_clip(iterator.ClipRectInFlowThread());
       // 2. Convert #1 to visual coordinates in the space of the flow thread.
-      fragment_clip.Move(iterator.PaginationOffset());
-      // 3. Adust #2 to visual coordinates in the containing "paint offset"
+      fragment_clip.MoveBy(pagination_offset);
+      // 3. Adjust #2 to visual coordinates in the containing "paint offset"
       // space.
       {
         DCHECK(context_.fragments[0].current.paint_offset_root);
@@ -1759,13 +1766,15 @@ void ObjectPaintPropertyTreeBuilder::UpdateFragments() {
         fragment_clip.MoveBy(pagination_visual_offset);
       }
       // 4. Match to parent fragments from the same containing flow thread.
-      new_fragment_contexts.push_back(
-          ContextForFragment(fragment_clip, context_.fragments));
-      // 5. Save off PaginationOffset (which allows us to adjust
-      // logical paint offsets into the space of the current fragment later.
+      new_fragment_contexts.push_back(ContextForFragment(
+          fragment_clip, logical_top_in_flow_thread, context_.fragments));
 
-      current_fragment_data->SetPaginationOffset(
-          ToLayoutPoint(iterator.PaginationOffset()));
+      // 5. Save PaginationOffset (which allows us to adjust logical paint
+      // offsets into the space of the current fragment later) and
+      // LogicalTopInFlowThread.
+      current_fragment_data->SetPaginationOffset(pagination_offset);
+      current_fragment_data->SetLogicalTopInFlowThread(
+          logical_top_in_flow_thread);
     }
     if (current_fragment_data) {
       current_fragment_data->ClearNextFragment();
