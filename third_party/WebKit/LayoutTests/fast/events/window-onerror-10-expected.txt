@@ -27,7 +27,7 @@ window.onerror: "Uncaught Error: exception in setTimeout" at onerror-test.js (Li
 Stack Trace:
 Error: exception in setTimeout
     at throwException onerror-test.js:6:11
-    at window-onerror-10.html:11:155
+    at eval window-onerror-10.html:11:155
 
 PASS successfullyParsed is true
 
