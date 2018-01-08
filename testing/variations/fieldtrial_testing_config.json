@@ -3675,11 +3675,12 @@
             ],
             "experiments": [
                 {
-                    "name": "Enforcement20170329",
+                    "name": "Enforcement20180102",
                     "params": {
-                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/2017/03/translate_ranker_model_20170329.pb.bin"
+                        "translate-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/translate/translate_ranker_autoblacklist_20180102.model"
                     },
                     "enable_features": [
+                        "TranslateRankerAutoBlacklistOverride",
                         "TranslateRankerEnforcement",
                         "TranslateRankerQuery"
                     ]
