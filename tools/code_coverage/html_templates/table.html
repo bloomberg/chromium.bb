@@ -9,16 +9,26 @@
   <tr class='light-row'>
     <td>
       {% if entry['is_dir'] == True %}
-        <pre><a href='{{ entry.href }}'>{{ entry.name }}/</a></pre>
+        <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}/</a></pre>
       {% else %}
-        <pre><a href='{{ entry.href }}'>{{ entry.name }}</a></pre>
+        <pre><a href='{{ entry["href"] }}'>{{ entry["name"] }}</a></pre>
       {% endif %}
     </td>
-    {% for feature in ('lines', 'functions', 'regions') %}
+    {% for feature in ("lines", "functions", "regions") %}
     <td class='column-entry-{{ entry[feature]["color_class"] }}'>
       <pre> {{ entry[feature]["percentage"] }}% ({{ entry[feature]["covered"] }}/{{ entry[feature]["total"] }})</pre>
     </td>
     {% endfor %}
   </tr>
   {% endfor %}
+  <tr class='light-row'>
+    <td>
+      <pre><b>TOTALS</b></pre>
+    </td>
+    {% for feature in ("lines", "functions", "regions") %}
+    <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
+      <pre><b> {{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</b></pre>
+    </td>
+    {% endfor %}
+  </tr>
 </table>
