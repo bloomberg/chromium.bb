@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
 #include "ui/gfx/geometry/rect_conversions.h"

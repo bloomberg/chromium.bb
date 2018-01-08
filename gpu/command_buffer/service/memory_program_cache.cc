@@ -206,7 +206,7 @@ void RetrieveShaderInterfaceBlockInfo(const ShaderInterfaceBlockProto& proto,
   (*map)[proto.mapped_name()] = interface_block;
 }
 
-void RunShaderCallback(GLES2DecoderClient* client,
+void RunShaderCallback(DecoderClient* client,
                        GpuProgramProto* proto,
                        std::string sha_string) {
   std::string shader;
@@ -311,7 +311,7 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     const LocationMap* bind_attrib_location_map,
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
-    GLES2DecoderClient* client) {
+    DecoderClient* client) {
   if (!ProgramBinaryExtensionsAvailable()) {
     // Early exit if this context can't support program binaries
     return PROGRAM_LOAD_FAILURE;
@@ -398,7 +398,7 @@ void MemoryProgramCache::SaveLinkedProgram(
     const LocationMap* bind_attrib_location_map,
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
-    GLES2DecoderClient* client) {
+    DecoderClient* client) {
   if (!ProgramBinaryExtensionsAvailable()) {
     // Early exit if this context can't support program binaries
     return;

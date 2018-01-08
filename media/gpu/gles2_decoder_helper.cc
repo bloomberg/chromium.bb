@@ -9,7 +9,7 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
@@ -18,7 +18,7 @@ namespace media {
 
 class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
  public:
-  explicit GLES2DecoderHelperImpl(gpu::gles2::GLES2Decoder* decoder)
+  explicit GLES2DecoderHelperImpl(gpu::DecoderContext* decoder)
       : decoder_(decoder) {}
 
   bool MakeContextCurrent() override {
@@ -107,7 +107,7 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
   }
 
  private:
-  gpu::gles2::GLES2Decoder* decoder_;
+  gpu::DecoderContext* decoder_;
   THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderHelperImpl);
@@ -115,7 +115,7 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
 
 // static
 std::unique_ptr<GLES2DecoderHelper> GLES2DecoderHelper::Create(
-    gpu::gles2::GLES2Decoder* decoder) {
+    gpu::DecoderContext* decoder) {
   if (!decoder)
     return nullptr;
   return base::MakeUnique<GLES2DecoderHelperImpl>(decoder);

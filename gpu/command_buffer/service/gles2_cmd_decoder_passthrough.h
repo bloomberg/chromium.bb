@@ -109,7 +109,7 @@ class ScopedTexture2DBindingReset {
 
 class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
-  GLES2DecoderPassthroughImpl(GLES2DecoderClient* client,
+  GLES2DecoderPassthroughImpl(DecoderClient* client,
                               CommandBufferServiceBase* command_buffer_service,
                               Outputter* outputter,
                               ContextGroup* group);
@@ -126,7 +126,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
                        int num_entries,
                        int* entries_processed);
 
-  base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
+  base::WeakPtr<DecoderContext> AsWeakPtr() override;
 
   gpu::ContextResult Initialize(
       const scoped_refptr<gl::GLSurface>& surface,
@@ -391,7 +391,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   void ExitCommandProcessingEarly() { commands_to_process_ = 0; }
 
-  GLES2DecoderClient* client_;
+  DecoderClient* client_;
 
   int commands_to_process_;
 

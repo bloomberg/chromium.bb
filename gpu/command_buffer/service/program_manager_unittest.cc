@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/common_decoder.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
@@ -55,8 +56,7 @@ uint32_t ComputeOffset(const void* start, const void* position) {
 
 }  // namespace anonymous
 
-class ProgramManagerTestBase : public GpuServiceTest,
-                               public GLES2DecoderClient {
+class ProgramManagerTestBase : public GpuServiceTest, public DecoderClient {
  protected:
   virtual void SetupProgramManager() {
     manager_.reset(new ProgramManager(

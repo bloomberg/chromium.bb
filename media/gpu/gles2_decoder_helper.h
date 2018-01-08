@@ -15,21 +15,21 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace gpu {
+class DecoderContext;
 struct Mailbox;
 namespace gles2 {
-class GLES2Decoder;
 class TextureRef;
 }  // namespace gles2
 }  // namespace gpu
 
 namespace media {
 
-// Utility methods to simplify working with a gpu::gles2::GLES2Decoder from
+// Utility methods to simplify working with a gpu::DecoderContext from
 // inside VDAs.
 class MEDIA_GPU_EXPORT GLES2DecoderHelper {
  public:
   static std::unique_ptr<GLES2DecoderHelper> Create(
-      gpu::gles2::GLES2Decoder* decoder);
+      gpu::DecoderContext* decoder);
 
   virtual ~GLES2DecoderHelper() {}
 

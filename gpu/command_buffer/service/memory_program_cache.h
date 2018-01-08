@@ -15,7 +15,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/program_cache.h"
 
 namespace gpu {
@@ -40,7 +40,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) override;
+      DecoderClient* client) override;
   void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,
@@ -48,7 +48,7 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) override;
+      DecoderClient* client) override;
 
   void LoadProgram(const std::string& key, const std::string& program) override;
 

@@ -129,7 +129,7 @@ class MockProgramCache : public ProgramCache {
                    const LocationMap* bind_attrib_location_map,
                    const std::vector<std::string>& transform_feedback_varyings,
                    GLenum transform_feedback_buffer_mode,
-                   GLES2DecoderClient* client));
+                   DecoderClient* client));
 
   MOCK_METHOD7(SaveLinkedProgram,
                void(GLuint program,
@@ -138,7 +138,7 @@ class MockProgramCache : public ProgramCache {
                     const LocationMap* bind_attrib_location_map,
                     const std::vector<std::string>& transform_feedback_varyings,
                     GLenum transform_feedback_buffer_mode,
-                    GLES2DecoderClient* client));
+                    DecoderClient* client));
   MOCK_METHOD2(LoadProgram, void(const std::string&, const std::string&));
   MOCK_METHOD1(Trim, size_t(size_t));
 

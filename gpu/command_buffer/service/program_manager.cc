@@ -25,8 +25,8 @@
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/progress_reporter.h"
@@ -1306,7 +1306,7 @@ void Program::ExecuteProgramOutputBindCalls() {
 
 bool Program::Link(ShaderManager* manager,
                    Program::VaryingsPackingOption varyings_packing_option,
-                   GLES2DecoderClient* client) {
+                   DecoderClient* client) {
   ClearLinkStatus();
 
   if (!AttachedShadersExist()) {

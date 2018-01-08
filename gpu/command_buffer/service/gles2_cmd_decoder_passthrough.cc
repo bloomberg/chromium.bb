@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
@@ -419,7 +420,7 @@ void GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Destroy(
 }
 
 GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
-    GLES2DecoderClient* client,
+    DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
     ContextGroup* group)
@@ -558,7 +559,7 @@ GLES2Decoder::Error GLES2DecoderPassthroughImpl::DoCommandsImpl(
   return result;
 }
 
-base::WeakPtr<GLES2Decoder> GLES2DecoderPassthroughImpl::AsWeakPtr() {
+base::WeakPtr<DecoderContext> GLES2DecoderPassthroughImpl::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -1076,8 +1077,8 @@ bool GLES2DecoderPassthroughImpl::MakeCurrent() {
 #if defined(USE_EGL)
   // Establish the program binary caching callback.
   if (group_->has_program_cache()) {
-    auto program_callback = base::BindRepeating(
-        &GLES2DecoderClient::CacheShader, base::Unretained(client_));
+    auto program_callback = base::BindRepeating(&DecoderClient::CacheShader,
+                                                base::Unretained(client_));
     angle::SetCacheProgramCallback(program_callback);
   }
 #endif  // defined(USE_EGL)

@@ -166,7 +166,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, context_group_->transfer_buffer_manager());
-  decoder_.reset(gles2::GLES2Decoder::Create(
+  std::unique_ptr<gles2::GLES2Decoder> decoder(gles2::GLES2Decoder::Create(
       this, command_buffer_.get(), manager->outputter(), context_group_.get()));
 
   sync_point_client_state_ =
@@ -284,7 +284,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
            gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
            gl::GetGLImplementation() == gl::kGLImplementationStubGL);
     context = base::MakeRefCounted<GLContextVirtual>(
-        share_group_.get(), context.get(), decoder_->AsWeakPtr());
+        share_group_.get(), context.get(), decoder->AsWeakPtr());
     if (!context->Initialize(surface_.get(),
                              GenerateGLContextAttribs(init_params.attribs,
                                                       context_group_.get()))) {
@@ -320,7 +320,7 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   }
 
   if (!context->GetGLStateRestorer()) {
-    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder_->AsWeakPtr()));
+    context->SetGLStateRestorer(new GLStateRestorerImpl(decoder->AsWeakPtr()));
   }
 
   if (!context_group_->has_program_cache() &&
@@ -329,17 +329,18 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  auto result = decoder_->Initialize(surface_, context, offscreen,
-                                     gpu::gles2::DisallowedFeatures(),
-                                     init_params.attribs);
+  auto result = decoder->Initialize(surface_, context, offscreen,
+                                    gpu::gles2::DisallowedFeatures(),
+                                    init_params.attribs);
   if (result != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     return result;
   }
 
   if (manager->gpu_preferences().enable_gpu_service_logging) {
-    decoder_->set_log_commands(true);
+    decoder->set_log_commands(true);
   }
+  set_decoder_context(std::move(decoder));
 
   const size_t kSharedStateSize = sizeof(CommandBufferSharedState);
   if (!shared_state_shm->Map(kSharedStateSize)) {

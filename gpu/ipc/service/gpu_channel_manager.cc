@@ -254,11 +254,11 @@ void GpuChannelManager::DoWakeUpGpu() {
     const GpuChannel* channel = kv.second.get();
     stub = channel->GetOneStub();
     if (stub) {
-      DCHECK(stub->decoder());
+      DCHECK(stub->decoder_context());
       break;
     }
   }
-  if (!stub || !stub->decoder()->MakeCurrent())
+  if (!stub || !stub->decoder_context()->MakeCurrent())
     return;
   glFinish();
   DidAccessGpu();

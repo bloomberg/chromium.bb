@@ -9,7 +9,7 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -23,7 +23,7 @@ struct SyncToken;
 
 class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
                                        public CommandBufferServiceClient,
-                                       public gles2::GLES2DecoderClient {
+                                       public DecoderClient {
  public:
   using MakeCurrentCallback = base::Callback<bool()>;
 
@@ -52,7 +52,7 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 
-  // GLES2DecoderClient implementation
+  // DecoderClient implementation
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;

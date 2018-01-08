@@ -6,7 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_PASSTHROUGH_PROGRAM_CACHE_H_
 
 #include "base/macros.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/program_cache.h"
 
 namespace gpu {
@@ -28,7 +28,7 @@ class GPU_EXPORT PassthroughProgramCache : public ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) override;
+      DecoderClient* client) override;
   void SaveLinkedProgram(
       GLuint program,
       const Shader* shader_a,
@@ -36,7 +36,7 @@ class GPU_EXPORT PassthroughProgramCache : public ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) override;
+      DecoderClient* client) override;
 
   void LoadProgram(const std::string& key, const std::string& program) override;
 

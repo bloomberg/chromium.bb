@@ -75,7 +75,7 @@ ProgramCache::ProgramLoadResult PassthroughProgramCache::LoadLinkedProgram(
     const LocationMap* bind_attrib_location_map,
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
-    GLES2DecoderClient* client) {
+    DecoderClient* client) {
   NOTREACHED();
   return PROGRAM_LOAD_FAILURE;
 }
@@ -87,7 +87,7 @@ void PassthroughProgramCache::SaveLinkedProgram(
     const LocationMap* bind_attrib_location_map,
     const std::vector<std::string>& transform_feedback_varyings,
     GLenum transform_feedback_buffer_mode,
-    GLES2DecoderClient* client) {
+    DecoderClient* client) {
   NOTREACHED();
 }
 
