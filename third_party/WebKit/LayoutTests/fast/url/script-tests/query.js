@@ -12,9 +12,9 @@ cases = [
   ["\\x02hello\x7f bye", "%02hello%7F%20bye"],
   ["%40%41123", "%40%41123"],
   // Chinese input/output
-  ["q=\u4F60\u597D", "q=&%2320320;&%2322909;"],
+  ["q=\u4F60\u597D", "q=%26%2320320%3B%26%2322909%3B"],
   // Invalid UTF-8/16 input should be replaced with invalid characters.
-  ["q=\\ud800\\ud800", "q=&%2355296;&%2355296;"],
+  ["q=\\ud800\\ud800", "q=%26%2355296%3B%26%2355296%3B"],
   // Don't allow < or > because sometimes they are used for XSS if the
   // URL is echoed in content. Firefox does this, IE doesn't.
   ["q=<asdf>", "q=%3Casdf%3E"],

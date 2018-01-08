@@ -46,7 +46,7 @@ enum UnencodableHandling {
 
   // Encodes the character as en entity as above, but escaped
   // non-alphanumeric characters. This is used in URLs.
-  // For example, U+6DE would be "&%231758;".
+  // For example, U+6DE would be "%26%231758%3B".
   kURLEncodedEntitiesForUnencodables,
 
   // Encodes the character as a CSS entity.  For example U+06DE
