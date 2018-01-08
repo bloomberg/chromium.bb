@@ -968,11 +968,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Now navigate to a login form that has similar HTML markup.
   NavigateToFile("/password/password_form.html");
 
+  // The form should be filled with the previously submitted username.
+  CheckElementValue("username_field", "my_username");
+
   // Simulate a user click to force an autofill of the form's DOM value, not
   // just the suggested value.
   content::SimulateMouseClick(WebContents(), 0,
                               blink::WebMouseEvent::Button::kLeft);
-  WaitForElementValue("username_field", "my_username");
   WaitForElementValue("password_field", "password");
 
   // Submit the form and verify that there is no infobar (as the password
@@ -1151,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       UsernameAndPasswordValueAccessible) {
+                       PasswordValueAccessible) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -1184,16 +1186,18 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/form_and_link.html");
   reload_observer.Wait();
 
-  // Now check that the username and the password are not accessible yet.
-  CheckElementValue("username_field", "");
+  // Wait until the username is filled, to make sure autofill kicked in.
+  WaitForElementValue("username_field", "admin");
+  // Now check that the password is not accessible yet.
   CheckElementValue("password_field", "");
   // Let the user interact with the page.
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
-  // Wait until that interaction causes the username and the password value to
-  // be revealed.
-  WaitForElementValue("username_field", "admin");
+  // Wait until that interaction causes the password value to be revealed.
   WaitForElementValue("password_field", "12345");
+  // And check that after the side-effects of the interaction took place, the
+  // username value stays the same.
+  CheckElementValue("username_field", "admin");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
@@ -2295,8 +2299,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   NavigateToFile("/password/password_form_in_same_origin_iframe.html");
   reload_observer.Wait();
 
-  // Verify password and username are not accessible yet.
-  CheckElementValue("iframe", "username_field", "");
+  // Verify username is autofilled
+  CheckElementValue("iframe", "username_field", "temp");
+
+  // Verify password is not autofilled
   CheckElementValue("iframe", "password_field", "");
 
   // Simulate the user interaction in the iframe which should trigger autofill.
@@ -2320,9 +2326,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(x, y));
-  // Verify username and password have been autofilled
-  WaitForElementValue("iframe", "username_field", "temp");
+  // Verify password has been autofilled
   WaitForElementValue("iframe", "password_field", "pa55w0rd");
+
+  // Verify username has been autofilled
+  CheckElementValue("iframe", "username_field", "temp");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoFormElementTest) {
@@ -2957,12 +2965,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // password is autofilled.
   NavigateToFile("/password/password_form.html");
 
+  CheckElementValue("hidden_password_form_username", "myusername");
+
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling the password.
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  WaitForElementValue("hidden_password_form_username", "myusername");
   WaitForElementValue("hidden_password_form_password", "mypassword");
 }
 
@@ -2985,12 +2994,13 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // whether username and password is autofilled.
   NavigateToFile("/password/password_form.html");
 
+  CheckElementValue("form_with_hidden_password_username", "myusername");
+
   // Let the user interact with the page, so that DOM gets modification events,
   // needed for autofilling the password.
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  WaitForElementValue("form_with_hidden_password_username", "myusername");
   WaitForElementValue("form_with_hidden_password_password", "mypassword");
 }
 
