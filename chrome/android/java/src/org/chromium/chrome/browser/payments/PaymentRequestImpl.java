@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddressRequestDelegate;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.page_info.CertificateChainHelper;
@@ -91,7 +92,7 @@ public class PaymentRequestImpl
                    PaymentInstrument.AbortCallback, PaymentInstrument.InstrumentDetailsCallback,
                    PaymentAppFactory.PaymentAppCreatedCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
-                   NormalizedAddressRequestDelegate {
+                   NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer {
     /**
      * A test-only observer for the PaymentRequest service implementation.
      */
@@ -1475,8 +1476,64 @@ public class PaymentRequestImpl
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
                 context, AutofillAndPaymentsPreferences.class.getName());
         context.startActivity(intent);
-        mJourneyLogger.setAborted(AbortReason.ABORTED_BY_USER);
-        disconnectFromClientWithDebugMessage("Card and address settings clicked");
+    }
+
+    @Override
+    public void onAddressUpdated(AutofillAddress address) {
+        if (mClient == null) return;
+
+        address.setShippingAddressLabelWithCountry();
+        mCardEditor.updateBillingAddressIfComplete(address);
+
+        if (mShippingAddressesSection != null) {
+            mShippingAddressesSection.addAndSelectOrUpdateItem(address);
+            mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, mShippingAddressesSection);
+        }
+
+        if (mContactSection != null) {
+            mContactSection.addOrUpdateWithAutofillAddress(address);
+            mUI.updateSection(PaymentRequestUI.TYPE_CONTACT_DETAILS, mContactSection);
+        }
+    }
+
+    @Override
+    public void onAddressDeleted(String guid) {
+        if (mClient == null) return;
+
+        // TODO: Delete the address from mShippingAddressesSection and mContactSection. Note that we
+        // only displayed SUGGESTIONS_LIMIT addresses, so we may want to add back previously
+        // ignored addresses.
+    }
+
+    @Override
+    public void onCreditCardUpdated(CreditCard card) {
+        if (mClient == null) return;
+        if (!mMerchantSupportsAutofillPaymentInstruments || mPaymentMethodsSection == null) return;
+
+        PaymentInstrument updatedAutofillPaymentInstruments = null;
+        for (PaymentApp app : mApps) {
+            if (app instanceof AutofillPaymentApp) {
+                updatedAutofillPaymentInstruments =
+                        ((AutofillPaymentApp) app).getInstrumentForCard(card);
+            }
+        }
+        if (updatedAutofillPaymentInstruments == null) return;
+
+        mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillPaymentInstruments);
+
+        updateInstrumentModifiedTotals();
+        mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
+    }
+
+    @Override
+    public void onCreditCardDeleted(String guid) {
+        if (mClient == null) return;
+        if (!mMerchantSupportsAutofillPaymentInstruments || mPaymentMethodsSection == null) return;
+
+        mPaymentMethodsSection.removeAndUnselectItem(guid);
+
+        updateInstrumentModifiedTotals();
+        mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);
     }
 
     /**
@@ -1672,6 +1729,8 @@ public class PaymentRequestImpl
         // UI has requested the full list of payment instruments. Provide it now.
         if (mPaymentInformationCallback != null) providePaymentInformation();
 
+        SettingsAutofillAndPaymentsObserver.getInstance().registerObserver(this);
+
         triggerPaymentAppUiSkipIfApplicable();
     }
 
@@ -1857,6 +1916,8 @@ public class PaymentRequestImpl
             mObservedTabModel.removeObserver(mTabModelObserver);
             mObservedTabModel = null;
         }
+
+        SettingsAutofillAndPaymentsObserver.getInstance().unregisterObserver(this);
 
         // Destroy native objects.
         for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
