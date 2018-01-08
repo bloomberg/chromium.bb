@@ -34,17 +34,28 @@ gfx::Point EventMonitor::GetLastMouseLocation() {
 }
 
 EventMonitorMac::EventMonitorMac(ui::EventHandler* event_handler,
-                                 gfx::NativeWindow target_window) {
+                                 gfx::NativeWindow target_window)
+    : factory_(this) {
   DCHECK(event_handler);
+
+  // Capture a WeakPtr via NSObject. This allows the block to detect another
+  // event monitor for the same event deleting |this|.
+  WeakPtrNSObject* handle = factory_.handle();
+
+  auto block = ^NSEvent*(NSEvent* event) {
+    if (!ui::WeakPtrNSObjectFactory<EventMonitorMac>::Get(handle))
+      return event;
+
+    if (!target_window || [event window] == target_window) {
+      std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
+      if (ui_event)
+        event_handler->OnEvent(ui_event.get());
+    }
+    return event;
+  };
+
   monitor_ = [NSEvent addLocalMonitorForEventsMatchingMask:NSAnyEventMask
-      handler:^NSEvent*(NSEvent* event) {
-          if (!target_window || [event window] == target_window) {
-            std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
-            if (ui_event)
-              event_handler->OnEvent(ui_event.get());
-          }
-          return event;
-      }];
+                                                   handler:block];
 }
 
 EventMonitorMac::~EventMonitorMac() {
