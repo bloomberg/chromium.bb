@@ -1405,13 +1405,6 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     return fragment.BlockSize() > space_left ? SoftBreak : NoBreak;
   }
 
-  // If the block offset is past the fragmentainer boundary (or exactly at the
-  // boundary), no part of the fragment is going to fit in the current
-  // fragmentainer. Fragments may be pushed past the fragmentainer boundary by
-  // margins.
-  if (space_left <= LayoutUnit())
-    return SoftBreak;
-
   EBreakBetween break_before = JoinFragmentainerBreakValues(
       child.Style().BreakBefore(), layout_result.InitialBreakBefore());
   EBreakBetween break_between =
@@ -1422,6 +1415,13 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     if (has_processed_first_child_)
       return ForcedBreak;
   }
+
+  // If the block offset is past the fragmentainer boundary (or exactly at the
+  // boundary), no part of the fragment is going to fit in the current
+  // fragmentainer. Fragments may be pushed past the fragmentainer boundary by
+  // margins.
+  if (space_left <= LayoutUnit())
+    return SoftBreak;
 
   const auto* token = physical_fragment.BreakToken();
   if (!token || token->IsFinished())
