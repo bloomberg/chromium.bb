@@ -883,6 +883,17 @@ SelectToSpeak.prototype = {
   },
 
   /**
+   * Converts the speech pitch into an enum based on
+   * tools/metrics/histograms/enums.xml.
+   * These values are persisted to logs. Entries should not be
+   * renumbered and numeric values should never be reused.
+   * @return {number} the current speech pitch as an int for metrics.
+   */
+  speechPitchToSparceHistogramInt_: function() {
+    return this.speechPitch_ * 100;
+  },
+
+  /**
    * Records an event that Select-to-Speak has begun speaking.
    */
   recordStartEvent_: function() {
@@ -891,6 +902,9 @@ SelectToSpeak.prototype = {
     chrome.metricsPrivate.recordSparseValue(
         'Accessibility.CrosSelectToSpeak.SpeechRate',
         this.speechRateToSparceHistogramInt_());
+    chrome.metricsPrivate.recordSparseValue(
+        'Accessibility.CrosSelectToSpeak.SpeechPitch',
+        this.speechPitchToSparceHistogramInt_());
     chrome.metricsPrivate.recordBoolean(
         'Accessibility.CrosSelectToSpeak.WordHighlighting',
         this.wordHighlight_);
