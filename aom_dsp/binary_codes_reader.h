@@ -46,6 +46,11 @@ int16_t aom_read_signed_primitive_refsubexpfin_(aom_reader *r, uint16_t n,
 
 int16_t aom_rb_read_signed_primitive_refsubexpfin(
     struct aom_read_bit_buffer *rb, uint16_t n, uint16_t k, int16_t ref);
+
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+uint32_t aom_rb_read_uvlc(struct aom_read_bit_buffer *rb);
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -242,6 +242,13 @@ typedef struct AV1Common {
   int render_height;
   int last_width;
   int last_height;
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+  int timing_info_present;
+  uint32_t num_units_in_tick;
+  uint32_t time_scale;
+  int equal_picture_interval;
+  uint32_t num_ticks_per_picture;
+#endif
 
   // TODO(jkoleszar): this implies chroma ss right now, but could vary per
   // plane. Revisit as part of the future change to YV12_BUFFER_CONFIG to

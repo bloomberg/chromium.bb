@@ -2269,6 +2269,25 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 #endif  // CONFIG_EXT_QM
 }
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+void av1_read_timing_info_header(AV1_COMMON *cm,
+                                 struct aom_read_bit_buffer *rb) {
+  cm->timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
+
+  if (cm->timing_info_present) {
+    cm->num_units_in_tick =
+        aom_rb_read_unsigned_literal(rb, 32);  // Number of units in tick
+    cm->time_scale = aom_rb_read_unsigned_literal(rb, 32);  // Time scale
+    cm->equal_picture_interval =
+        aom_rb_read_bit(rb);  // Equal picture interval bit
+    if (cm->equal_picture_interval) {
+      cm->num_ticks_per_picture =
+          aom_rb_read_uvlc(rb) + 1;  // ticks per picture
+    }
+  }
+}
+#endif
+
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void read_sequence_header(SequenceHeader *seq_params,
                           struct aom_read_bit_buffer *rb) {
@@ -2668,6 +2687,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->current_video_frame = 0;
 #if !CONFIG_OBU
     av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+    av1_read_time_info_header(cm, rb);
+#endif
 #endif
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
@@ -2735,6 +2757,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->intra_only) {
 #if !CONFIG_OBU
       av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+      av1_read_timing_info_header(cm, rb);
+#endif
 #endif
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);

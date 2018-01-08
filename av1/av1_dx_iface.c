@@ -167,6 +167,26 @@ static aom_bit_depth_t parse_bitdepth(BITSTREAM_PROFILE profile,
   return bit_depth;
 }
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+static void parse_timing_info_header(struct aom_read_bit_buffer *rb) {
+  int timing_info_present;
+  int equal_picture_interval;
+  uint32_t num_ticks_per_picture;
+
+  timing_info_present = aom_rb_read_bit(rb);  // timing info present flag
+
+  if (timing_info_present) {
+    rb->bit_offset += 32;  // Number of units in tick
+    rb->bit_offset += 32;  // Time scale
+
+    equal_picture_interval = aom_rb_read_bit(rb);  // Equal picture interval bit
+    if (equal_picture_interval) {
+      num_ticks_per_picture = aom_rb_read_uvlc(rb) - 1;  // ticks per picture
+    }
+  }
+}
+#endif  // CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+
 static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
                                               struct aom_read_bit_buffer *rb) {
 #if CONFIG_CICP
@@ -259,6 +279,9 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
 #if CONFIG_EXT_QM
   rb->bit_offset += 1;  // separate_uv_delta_q
 #endif                  // CONFIG_EXT_QM
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+  parse_timing_info_header(rb);
+#endif
   return 1;
 }
 #endif

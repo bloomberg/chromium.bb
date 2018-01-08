@@ -294,6 +294,14 @@ typedef struct AV1EncoderConfig {
   int color_range;
   int render_width;
   int render_height;
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+  aom_timing_info_t timing_info;
+  int timing_info_present;
+  uint32_t num_units_in_tick;
+  uint32_t time_scale;
+  int equal_picture_interval;
+  uint32_t num_ticks_per_picture;
+#endif
 
 #if CONFIG_EXT_PARTITION
   aom_superblock_size_t superblock_size;

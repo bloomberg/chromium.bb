@@ -48,6 +48,14 @@ void aom_wb_write_literal(struct aom_write_bit_buffer *wb, int data, int bits) {
   for (bit = bits - 1; bit >= 0; bit--) aom_wb_write_bit(wb, (data >> bit) & 1);
 }
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+void aom_wb_write_unsigned_literal(struct aom_write_bit_buffer *wb,
+                                   uint32_t data, int bits) {
+  int bit;
+  for (bit = bits - 1; bit >= 0; bit--) aom_wb_write_bit(wb, (data >> bit) & 1);
+}
+#endif
+
 void aom_wb_overwrite_literal(struct aom_write_bit_buffer *wb, int data,
                               int bits) {
   int bit;

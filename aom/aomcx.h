@@ -683,6 +683,12 @@ enum aome_enc_control_id {
    * 0 : off, 1 : MAX_EXTREME_MV, 2 : MIN_EXTREME_MV
    */
   AV1E_ENABLE_MOTION_VECTOR_UNIT_TEST,
+
+  /*!\brief Codec control function to signal picture timing info in the
+   * bitstream. \note Valid ranges: 0..1, default is "UNKNOWN". 0 = UNKNOWN, 1 =
+   * EQUAL
+   */
+  AV1E_SET_TIMING_INFO,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -752,6 +758,9 @@ typedef enum {
   AOM_CONTENT_SCREEN,
   AOM_CONTENT_INVALID
 } aom_tune_content;
+
+/*!brief AV1 encoder timing info signaling */
+typedef enum { AOM_TIMING_UNSPECIFIED, AOM_TIMING_EQUAL } aom_timing_info_t;
 
 /*!\brief Model tuning parameters
  *
@@ -856,6 +865,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
 #define AOM_CTRL_AV1E_SET_NUM_TG
 AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 #define AOM_CTRL_AV1E_SET_MTU
+
+AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO, aom_timing_info_t)
+#define AOM_CTRL_AV1E_SET_TIMING_INFO
 
 AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TEMPMV, unsigned int)
 #define AOM_CTRL_AV1E_SET_DISABLE_TEMPMV

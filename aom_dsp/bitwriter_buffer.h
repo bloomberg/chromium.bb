@@ -31,6 +31,11 @@ void aom_wb_overwrite_bit(struct aom_write_bit_buffer *wb, int bit);
 
 void aom_wb_write_literal(struct aom_write_bit_buffer *wb, int data, int bits);
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+void aom_wb_write_unsigned_literal(struct aom_write_bit_buffer *wb,
+                                   uint32_t data, int bits);
+#endif
+
 void aom_wb_overwrite_literal(struct aom_write_bit_buffer *wb, int data,
                               int bits);
 

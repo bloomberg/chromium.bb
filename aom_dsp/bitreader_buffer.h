@@ -37,6 +37,10 @@ int aom_rb_read_bit(struct aom_read_bit_buffer *rb);
 
 int aom_rb_read_literal(struct aom_read_bit_buffer *rb, int bits);
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+uint32_t aom_rb_read_unsigned_literal(struct aom_read_bit_buffer *rb, int bits);
+#endif
+
 int aom_rb_read_inv_signed_literal(struct aom_read_bit_buffer *rb, int bits);
 
 #ifdef __cplusplus

@@ -50,6 +50,11 @@ void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,
 void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            struct aom_read_bit_buffer *rb,
                                            int allow_lowbitdepth);
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+void av1_read_timing_info_header(AV1_COMMON *cm,
+                                 struct aom_read_bit_buffer *rb);
+#endif
+
 struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end);

@@ -467,6 +467,16 @@ static const arg_def_t mtu_size =
     ARG_DEF(NULL, "mtu-size", 1,
             "MTU size for a tile group, default is 0 (no MTU targeting), "
             "overrides maximum number of tile groups");
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+static const struct arg_enum_list timing_info_enum[] = {
+  { "unspecified", AOM_TIMING_UNSPECIFIED },
+  { "constant", AOM_TIMING_EQUAL },
+  { NULL, 0 }
+};
+static const arg_def_t timing_info =
+    ARG_DEF_ENUM(NULL, "timing-info", 1,
+                 "Signal timing info in the bitstream:", timing_info_enum);
+#endif
 #if CONFIG_TEMPMV_SIGNALING
 static const arg_def_t disable_tempmv = ARG_DEF(
     NULL, "disable-tempmv", 1, "Disable temporal mv prediction (default is 0)");
@@ -696,6 +706,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #endif  // CONFIG_EXT_PARTITION
                                        &num_tg,
                                        &mtu_size,
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+                                       &timing_info,
+#endif
 #if CONFIG_TEMPMV_SIGNALING
                                        &disable_tempmv,
 #endif
@@ -764,6 +777,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #endif  // CONFIG_EXT_PARTITION
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+                                        AV1E_SET_TIMING_INFO,
+#endif
 #if CONFIG_TEMPMV_SIGNALING
                                         AV1E_SET_DISABLE_TEMPMV,
 #endif
@@ -2125,9 +2141,19 @@ int main(int argc, const char **argv_) {
     }
 #endif
 
-    /* Use the frame rate from the file only if none was specified
-     * on the command-line.
-     */
+/* Use the frame rate from the file only if none was specified
+ * on the command-line.
+ */
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+    if (!global.have_framerate) {
+      global.framerate.num = input.framerate.numerator;
+      global.framerate.den = input.framerate.denominator;
+    }
+    FOREACH_STREAM(stream, streams) {
+      stream->config.cfg.g_timebase.den = global.framerate.num;
+      stream->config.cfg.g_timebase.num = global.framerate.den;
+    }
+#else
     if (!global.have_framerate) {
       global.framerate.num = input.framerate.numerator;
       global.framerate.den = input.framerate.denominator;
@@ -2136,7 +2162,7 @@ int main(int argc, const char **argv_) {
         stream->config.cfg.g_timebase.num = global.framerate.den;
       }
     }
-
+#endif
     /* Show configuration */
     if (global.verbose && pass == 0) {
       FOREACH_STREAM(stream, streams) {

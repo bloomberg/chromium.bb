@@ -3289,6 +3289,25 @@ static void write_bitdepth_colorspace_sampling(
 #endif
 }
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+static void write_timing_info_header(AV1_COMMON *const cm,
+                                     struct aom_write_bit_buffer *wb) {
+  aom_wb_write_bit(wb, cm->timing_info_present);  // timing info present flag
+
+  if (cm->timing_info_present) {
+    aom_wb_write_unsigned_literal(wb, cm->num_units_in_tick,
+                                  32);  // Number of units in tick
+    aom_wb_write_unsigned_literal(wb, cm->time_scale, 32);  // Time scale
+    aom_wb_write_bit(wb,
+                     cm->equal_picture_interval);  // Equal picture interval bit
+    if (cm->equal_picture_interval) {
+      aom_wb_write_uvlc(wb,
+                        cm->num_ticks_per_picture - 1);  // ticks per picture
+    }
+  }
+}
+#endif  // CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -3547,6 +3566,10 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
   if (cm->frame_type == KEY_FRAME) {
     write_bitdepth_colorspace_sampling(cm, wb);
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+    // timing_info
+    write_timing_info_header(cm, wb);
+#endif
 #if CONFIG_FRAME_SIZE
     write_frame_size(cm, frame_size_override_flag, wb);
 #else
@@ -3587,6 +3610,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
     if (cm->intra_only) {
       write_bitdepth_colorspace_sampling(cm, wb);
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+      write_timing_info_header(cm, wb);
+#endif
 
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
 #if CONFIG_FRAME_SIZE
@@ -4351,6 +4377,11 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
 
   // color_config
   write_bitdepth_colorspace_sampling(cm, &wb);
+
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+  // timing_info
+  write_timing_info_header(cm, &wb);
+#endif
 
   size = aom_wb_bytes_written(&wb);
   return size;

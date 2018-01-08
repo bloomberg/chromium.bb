@@ -35,6 +35,16 @@ int aom_rb_read_literal(struct aom_read_bit_buffer *rb, int bits) {
   return value;
 }
 
+#if CONFIG_TIMING_INFO_IN_SEQ_HEADERS
+uint32_t aom_rb_read_unsigned_literal(struct aom_read_bit_buffer *rb,
+                                      int bits) {
+  uint32_t value = 0;
+  int bit;
+  for (bit = bits - 1; bit >= 0; bit--) value |= aom_rb_read_bit(rb) << bit;
+  return value;
+}
+#endif
+
 int aom_rb_read_inv_signed_literal(struct aom_read_bit_buffer *rb, int bits) {
   const int nbits = sizeof(unsigned) * 8 - bits - 1;
   const unsigned value = (unsigned)aom_rb_read_literal(rb, bits + 1) << nbits;
