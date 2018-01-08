@@ -75,7 +75,7 @@ SQLTransaction::SQLTransaction(Database* db,
   probe::AsyncTaskScheduled(db->GetExecutionContext(), "SQLTransaction", this);
 }
 
-SQLTransaction::~SQLTransaction() {}
+SQLTransaction::~SQLTransaction() = default;
 
 void SQLTransaction::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_);

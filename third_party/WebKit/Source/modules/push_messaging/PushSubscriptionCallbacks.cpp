@@ -25,7 +25,7 @@ PushSubscriptionCallbacks::PushSubscriptionCallbacks(
   DCHECK(service_worker_registration_);
 }
 
-PushSubscriptionCallbacks::~PushSubscriptionCallbacks() {}
+PushSubscriptionCallbacks::~PushSubscriptionCallbacks() = default;
 
 void PushSubscriptionCallbacks::OnSuccess(
     std::unique_ptr<WebPushSubscription> web_push_subscription) {

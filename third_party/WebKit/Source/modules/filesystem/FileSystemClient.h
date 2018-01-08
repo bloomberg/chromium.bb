@@ -50,8 +50,8 @@ class FileSystemClient {
   WTF_MAKE_NONCOPYABLE(FileSystemClient);
 
  public:
-  FileSystemClient() {}
-  virtual ~FileSystemClient() {}
+  FileSystemClient() = default;
+  virtual ~FileSystemClient() = default;
 
   virtual bool RequestFileSystemAccessSync(ExecutionContext*) = 0;
   virtual void RequestFileSystemAccessAsync(

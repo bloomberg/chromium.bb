@@ -32,7 +32,7 @@ namespace blink {
 AXMockObject::AXMockObject(AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache) {}
 
-AXMockObject::~AXMockObject() {}
+AXMockObject::~AXMockObject() = default;
 
 bool AXMockObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {

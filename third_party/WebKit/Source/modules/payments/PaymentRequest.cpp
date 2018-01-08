@@ -796,7 +796,7 @@ PaymentRequest* PaymentRequest::Create(
                             exception_state);
 }
 
-PaymentRequest::~PaymentRequest() {}
+PaymentRequest::~PaymentRequest() = default;
 
 ScriptPromise PaymentRequest::show(ScriptState* script_state) {
   if (!payment_provider_.is_bound() || show_resolver_) {

@@ -58,7 +58,7 @@ class TestAnimationWorkletProxyClient
   USING_GARBAGE_COLLECTED_MIXIN(TestAnimationWorkletProxyClient);
 
  public:
-  TestAnimationWorkletProxyClient() {}
+  TestAnimationWorkletProxyClient() = default;
   void SetGlobalScope(WorkletGlobalScope*) override {}
   void Dispose() override {}
 };

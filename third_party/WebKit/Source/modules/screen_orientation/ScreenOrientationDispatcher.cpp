@@ -17,7 +17,7 @@ ScreenOrientationDispatcher& ScreenOrientationDispatcher::Instance() {
   return screen_orientation_dispatcher;
 }
 
-ScreenOrientationDispatcher::ScreenOrientationDispatcher() {}
+ScreenOrientationDispatcher::ScreenOrientationDispatcher() = default;
 
 ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
   DCHECK(!listener_);

@@ -75,7 +75,7 @@ class DocumentWebSocketChannel::BlobLoader final
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle>, DocumentWebSocketChannel*);
-  ~BlobLoader() override {}
+  ~BlobLoader() override = default;
 
   void Cancel();
 

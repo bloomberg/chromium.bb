@@ -109,7 +109,7 @@ void FileWriterSync::PrepareForWrite() {
   complete_ = false;
 }
 
-FileWriterSync::~FileWriterSync() {}
+FileWriterSync::~FileWriterSync() = default;
 
 void FileWriterSync::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);

@@ -37,7 +37,7 @@ AXARIAGridRow::AXARIAGridRow(LayoutObject* layout_object,
                              AXObjectCacheImpl& ax_object_cache)
     : AXTableRow(layout_object, ax_object_cache) {}
 
-AXARIAGridRow::~AXARIAGridRow() {}
+AXARIAGridRow::~AXARIAGridRow() = default;
 
 AXARIAGridRow* AXARIAGridRow::Create(LayoutObject* layout_object,
                                      AXObjectCacheImpl& ax_object_cache) {

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-HTMLIFrameElementPayments::HTMLIFrameElementPayments() {}
+HTMLIFrameElementPayments::HTMLIFrameElementPayments() = default;
 
 // static
 const char* HTMLIFrameElementPayments::SupplementName() {

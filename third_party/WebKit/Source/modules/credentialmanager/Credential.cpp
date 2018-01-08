@@ -9,7 +9,7 @@
 
 namespace blink {
 
-Credential::~Credential() {}
+Credential::~Credential() = default;
 
 Credential::Credential(const String& id, const String& type)
     : id_(id), type_(type) {

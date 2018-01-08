@@ -18,7 +18,7 @@ DOMFloat32Array* MojoArrayToFloat32Array(
 
 }  // namespace
 
-VRPose::VRPose() {}
+VRPose::VRPose() = default;
 
 void VRPose::SetPose(const device::mojom::blink::VRPosePtr& state) {
   if (state.is_null())

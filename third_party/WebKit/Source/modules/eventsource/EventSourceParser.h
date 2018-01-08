@@ -20,7 +20,7 @@ class MODULES_EXPORT EventSourceParser final
  public:
   class MODULES_EXPORT Client : public GarbageCollectedMixin {
    public:
-    virtual ~Client() {}
+    virtual ~Client() = default;
     virtual void OnMessageEvent(const AtomicString& type,
                                 const String& data,
                                 const AtomicString& last_event_id) = 0;

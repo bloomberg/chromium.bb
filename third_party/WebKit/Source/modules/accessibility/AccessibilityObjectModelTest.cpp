@@ -244,7 +244,7 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
 
 class SparseAttributeAdapter : public AXSparseAttributeClient {
  public:
-  SparseAttributeAdapter() {}
+  SparseAttributeAdapter() = default;
 
   std::map<AXBoolAttribute, bool> bool_attributes;
   std::map<AXStringAttribute, String> string_attributes;

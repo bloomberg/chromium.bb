@@ -20,7 +20,7 @@ class MODULES_EXPORT PaymentUpdater : public GarbageCollectedMixin {
   virtual void OnUpdatePaymentDetailsFailure(const String& error) = 0;
 
  protected:
-  virtual ~PaymentUpdater() {}
+  virtual ~PaymentUpdater() = default;
 };
 
 }  // namespace blink

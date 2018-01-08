@@ -39,7 +39,7 @@ namespace blink {
 NavigatorVibration::NavigatorVibration(Navigator& navigator)
     : ContextLifecycleObserver(navigator.GetFrame()->GetDocument()) {}
 
-NavigatorVibration::~NavigatorVibration() {}
+NavigatorVibration::~NavigatorVibration() = default;
 
 // static
 NavigatorVibration& NavigatorVibration::From(Navigator& navigator) {

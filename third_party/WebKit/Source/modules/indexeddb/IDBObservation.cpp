@@ -17,7 +17,7 @@
 
 namespace blink {
 
-IDBObservation::~IDBObservation() {}
+IDBObservation::~IDBObservation() = default;
 
 ScriptValue IDBObservation::key(ScriptState* script_state) {
   if (!key_range_)

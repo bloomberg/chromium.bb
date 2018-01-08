@@ -52,7 +52,7 @@ class Crypto final : public ScriptWrappable {
   void Trace(blink::Visitor*);
 
  private:
-  Crypto() {}
+  Crypto() = default;
 
   Member<SubtleCrypto> subtle_crypto_;
 };

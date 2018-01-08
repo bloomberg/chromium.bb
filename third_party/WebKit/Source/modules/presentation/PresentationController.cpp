@@ -27,8 +27,7 @@ PresentationController::PresentationController(LocalFrame& frame,
       client_(client),
       controller_binding_(this) {}
 
-PresentationController::~PresentationController() {
-}
+PresentationController::~PresentationController() = default;
 
 // static
 PresentationController* PresentationController::Create(

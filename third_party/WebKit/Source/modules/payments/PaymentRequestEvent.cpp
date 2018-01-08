@@ -34,7 +34,7 @@ PaymentRequestEvent* PaymentRequestEvent::Create(
                                  wait_until_observer);
 }
 
-PaymentRequestEvent::~PaymentRequestEvent() {}
+PaymentRequestEvent::~PaymentRequestEvent() = default;
 
 const AtomicString& PaymentRequestEvent::InterfaceName() const {
   return EventNames::PaymentRequestEvent;

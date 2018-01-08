@@ -53,7 +53,7 @@ DeviceOrientationDispatcher& DeviceOrientationDispatcher::Instance(
 DeviceOrientationDispatcher::DeviceOrientationDispatcher(bool absolute)
     : absolute_(absolute) {}
 
-DeviceOrientationDispatcher::~DeviceOrientationDispatcher() {}
+DeviceOrientationDispatcher::~DeviceOrientationDispatcher() = default;
 
 void DeviceOrientationDispatcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(last_device_orientation_data_);

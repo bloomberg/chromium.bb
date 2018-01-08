@@ -17,7 +17,7 @@ class MODULES_EXPORT EffectProxy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  EffectProxy() {}
+  EffectProxy() = default;
 
   void setLocalTime(double time) {
     local_time_ = WTF::TimeDelta::FromMillisecondsD(time);

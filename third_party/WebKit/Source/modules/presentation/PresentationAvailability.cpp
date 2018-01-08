@@ -43,7 +43,7 @@ PresentationAvailability::PresentationAvailability(
   DCHECK(execution_context->IsDocument());
 }
 
-PresentationAvailability::~PresentationAvailability() {}
+PresentationAvailability::~PresentationAvailability() = default;
 
 const AtomicString& PresentationAvailability::InterfaceName() const {
   return EventTargetNames::PresentationAvailability;

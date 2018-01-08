@@ -27,7 +27,7 @@ class XRFrameProviderRequestCallback
  public:
   explicit XRFrameProviderRequestCallback(XRFrameProvider* frame_provider)
       : frame_provider_(frame_provider) {}
-  ~XRFrameProviderRequestCallback() override {}
+  ~XRFrameProviderRequestCallback() override = default;
   void Invoke(double high_res_time_ms) override {
     // TODO(bajones): Eventually exclusive vsyncs won't be handled here.
     if (frame_provider_->exclusive_session()) {

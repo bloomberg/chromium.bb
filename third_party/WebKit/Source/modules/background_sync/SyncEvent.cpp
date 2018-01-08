@@ -20,7 +20,7 @@ SyncEvent::SyncEvent(const AtomicString& type, const SyncEventInit& init)
   last_chance_ = init.lastChance();
 }
 
-SyncEvent::~SyncEvent() {}
+SyncEvent::~SyncEvent() = default;
 
 const AtomicString& SyncEvent::InterfaceName() const {
   return EventNames::SyncEvent;

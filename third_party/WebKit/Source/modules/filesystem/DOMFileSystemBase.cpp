@@ -69,7 +69,7 @@ DOMFileSystemBase::DOMFileSystemBase(ExecutionContext* context,
       filesystem_root_url_(root_url),
       clonable_(false) {}
 
-DOMFileSystemBase::~DOMFileSystemBase() {}
+DOMFileSystemBase::~DOMFileSystemBase() = default;
 
 void DOMFileSystemBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);

@@ -154,7 +154,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
   handle_->Registration()->SetProxy(this);
 }
 
-ServiceWorkerRegistration::~ServiceWorkerRegistration() {}
+ServiceWorkerRegistration::~ServiceWorkerRegistration() = default;
 
 void ServiceWorkerRegistration::Dispose() {
   // Promptly clears a raw reference from content/ to an on-heap object

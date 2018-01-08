@@ -39,7 +39,7 @@ class SQLError;
 class SQLStatementErrorCallback
     : public GarbageCollectedFinalized<SQLStatementErrorCallback> {
  public:
-  virtual ~SQLStatementErrorCallback() {}
+  virtual ~SQLStatementErrorCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual bool handleEvent(SQLTransaction*, SQLError*) = 0;
 };

@@ -33,7 +33,7 @@ class DetailsTestCase {
         expect_exception_(expect_exception),
         expected_exception_code_(expected_exception_code) {}
 
-  ~DetailsTestCase() {}
+  ~DetailsTestCase() = default;
 
   PaymentDetailsInit BuildDetails() const {
     return BuildPaymentDetailsInitForTest(detail_, data_, mod_type_,

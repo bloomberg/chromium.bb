@@ -199,7 +199,7 @@ void WebGLTextureAttachment::Unattach(gpu::gles2::GLES2Interface* gl,
 
 }  // anonymous namespace
 
-WebGLFramebuffer::WebGLAttachment::WebGLAttachment() {}
+WebGLFramebuffer::WebGLAttachment::WebGLAttachment() = default;
 
 WebGLFramebuffer* WebGLFramebuffer::Create(WebGLRenderingContextBase* ctx) {
   return new WebGLFramebuffer(ctx, false);

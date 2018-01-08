@@ -35,7 +35,7 @@
 
 namespace blink {
 
-WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto() {}
+WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto() = default;
 
 const char* WorkerGlobalScopeCrypto::SupplementName() {
   return "WorkerGlobalScopeCrypto";

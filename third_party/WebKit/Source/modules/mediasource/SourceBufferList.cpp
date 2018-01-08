@@ -40,7 +40,7 @@ SourceBufferList::SourceBufferList(ExecutionContext* context,
                                    MediaElementEventQueue* async_event_queue)
     : ContextClient(context), async_event_queue_(async_event_queue) {}
 
-SourceBufferList::~SourceBufferList() {}
+SourceBufferList::~SourceBufferList() = default;
 
 void SourceBufferList::Add(SourceBuffer* buffer) {
   list_.push_back(buffer);

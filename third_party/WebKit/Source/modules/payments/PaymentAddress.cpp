@@ -31,7 +31,7 @@ PaymentAddress::PaymentAddress(
   }
 }
 
-PaymentAddress::~PaymentAddress() {}
+PaymentAddress::~PaymentAddress() = default;
 
 ScriptValue PaymentAddress::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);

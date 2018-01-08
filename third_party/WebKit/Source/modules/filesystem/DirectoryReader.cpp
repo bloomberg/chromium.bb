@@ -86,7 +86,7 @@ DirectoryReader::DirectoryReader(DOMFileSystemBase* file_system,
                                  const String& full_path)
     : DirectoryReaderBase(file_system, full_path), is_reading_(false) {}
 
-DirectoryReader::~DirectoryReader() {}
+DirectoryReader::~DirectoryReader() = default;
 
 void DirectoryReader::readEntries(V8EntriesCallback* entries_callback,
                                   V8ErrorCallback* error_callback) {

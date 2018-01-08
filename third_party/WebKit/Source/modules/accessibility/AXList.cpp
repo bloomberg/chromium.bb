@@ -39,7 +39,7 @@ using namespace HTMLNames;
 AXList::AXList(LayoutObject* layout_object, AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
-AXList::~AXList() {}
+AXList::~AXList() = default;
 
 AXList* AXList::Create(LayoutObject* layout_object,
                        AXObjectCacheImpl& ax_object_cache) {

@@ -48,7 +48,7 @@ MediaStreamEvent::MediaStreamEvent(const AtomicString& type,
     stream_ = initializer.stream();
 }
 
-MediaStreamEvent::~MediaStreamEvent() {}
+MediaStreamEvent::~MediaStreamEvent() = default;
 
 MediaStream* MediaStreamEvent::stream() const {
   return stream_.Get();

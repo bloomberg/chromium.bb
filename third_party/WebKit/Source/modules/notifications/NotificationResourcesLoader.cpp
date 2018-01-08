@@ -22,7 +22,7 @@ NotificationResourcesLoader::NotificationResourcesLoader(
   DCHECK(completion_callback_);
 }
 
-NotificationResourcesLoader::~NotificationResourcesLoader() {}
+NotificationResourcesLoader::~NotificationResourcesLoader() = default;
 
 void NotificationResourcesLoader::Start(
     ExecutionContext* execution_context,

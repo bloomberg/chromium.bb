@@ -43,7 +43,7 @@ AXListBox::AXListBox(LayoutObject* layout_object,
   ActiveIndexChanged();
 }
 
-AXListBox::~AXListBox() {}
+AXListBox::~AXListBox() = default;
 
 AXListBox* AXListBox::Create(LayoutObject* layout_object,
                              AXObjectCacheImpl& ax_object_cache) {

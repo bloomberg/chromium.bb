@@ -50,7 +50,7 @@ class MIDIInput final : public MIDIPort {
                            const String& name,
                            const String& version,
                            midi::mojom::PortState);
-  ~MIDIInput() override {}
+  ~MIDIInput() override = default;
 
   EventListener* onmidimessage();
   void setOnmidimessage(EventListener*);

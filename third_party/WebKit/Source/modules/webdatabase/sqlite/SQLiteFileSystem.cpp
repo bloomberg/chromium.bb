@@ -39,7 +39,7 @@
 // platform-specific files SQLiteFileSystemChromium{Win|Posix}.cpp
 namespace blink {
 
-SQLiteFileSystem::SQLiteFileSystem() {}
+SQLiteFileSystem::SQLiteFileSystem() = default;
 
 int SQLiteFileSystem::OpenDatabase(const String& filename, sqlite3** database) {
   return sqlite3_open_v2(filename.Utf8().data(), database,

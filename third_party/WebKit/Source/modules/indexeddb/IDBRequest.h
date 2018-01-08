@@ -95,7 +95,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
     // This is used for internal requests that should not show up in an
     // application's trace. Examples of internal requests are the requests
     // issued by DevTools, and the requests used to populate indexes.
-    explicit AsyncTraceState() {}
+    explicit AsyncTraceState() = default;
 
     // Creates an instance that produces begin/end events with the given name.
     //

@@ -21,7 +21,7 @@ static const char kGamma[] = "gamma";
 static const char kOverrideEnabled[] = "overrideEnabled";
 }
 
-DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() {}
+DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent() = default;
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(
     InspectedFrames* inspected_frames)

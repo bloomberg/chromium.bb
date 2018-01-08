@@ -43,7 +43,7 @@ class GlobalIndexedDBImpl final
   }
 
  private:
-  GlobalIndexedDBImpl() {}
+  GlobalIndexedDBImpl() = default;
 
   static const char* GetName() { return "IndexedDB"; }
 

@@ -89,7 +89,7 @@ VibrationController::VibrationController(LocalFrame& frame)
       mojo::MakeRequest(&vibration_manager_));
 }
 
-VibrationController::~VibrationController() {}
+VibrationController::~VibrationController() = default;
 
 bool VibrationController::Vibrate(const VibrationPattern& pattern) {
   // Cancel clears the stored pattern and cancels any ongoing vibration.

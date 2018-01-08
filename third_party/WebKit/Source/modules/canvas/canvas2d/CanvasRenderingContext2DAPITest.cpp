@@ -40,7 +40,7 @@ class CanvasRenderingContext2DAPITest : public PageTestBase {
   Persistent<HTMLCanvasElement> canvas_element_;
 };
 
-CanvasRenderingContext2DAPITest::CanvasRenderingContext2DAPITest() {}
+CanvasRenderingContext2DAPITest::CanvasRenderingContext2DAPITest() = default;
 
 CanvasRenderingContext2D* CanvasRenderingContext2DAPITest::Context2d() const {
   // If the following check fails, perhaps you forgot to call createContext

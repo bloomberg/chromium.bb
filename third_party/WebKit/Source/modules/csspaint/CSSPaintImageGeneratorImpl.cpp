@@ -42,7 +42,7 @@ CSSPaintImageGeneratorImpl::CSSPaintImageGeneratorImpl(
     const String& name)
     : observer_(observer), paint_worklet_(paint_worklet), name_(name) {}
 
-CSSPaintImageGeneratorImpl::~CSSPaintImageGeneratorImpl() {}
+CSSPaintImageGeneratorImpl::~CSSPaintImageGeneratorImpl() = default;
 
 void CSSPaintImageGeneratorImpl::NotifyGeneratorReady() {
   DCHECK(observer_);

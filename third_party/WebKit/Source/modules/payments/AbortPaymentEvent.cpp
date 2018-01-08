@@ -31,7 +31,7 @@ AbortPaymentEvent* AbortPaymentEvent::Create(
                                wait_until_observer);
 }
 
-AbortPaymentEvent::~AbortPaymentEvent() {}
+AbortPaymentEvent::~AbortPaymentEvent() = default;
 
 const AtomicString& AbortPaymentEvent::InterfaceName() const {
   return EventNames::AbortPaymentEvent;

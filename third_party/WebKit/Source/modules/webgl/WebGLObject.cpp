@@ -35,7 +35,7 @@ WebGLObject::WebGLObject(WebGLRenderingContextBase* context)
       deleted_(false),
       destruction_in_progress_(false) {}
 
-WebGLObject::~WebGLObject() {}
+WebGLObject::~WebGLObject() = default;
 
 uint32_t WebGLObject::CachedNumberOfContextLosses() const {
   return cached_number_of_context_losses_;

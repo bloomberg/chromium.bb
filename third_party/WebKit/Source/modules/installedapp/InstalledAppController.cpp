@@ -38,7 +38,7 @@ class InstalledAppController::GetRelatedAppsCallbacks
   std::unique_ptr<AppInstalledCallbacks> callbacks_;
 };
 
-InstalledAppController::~InstalledAppController() {}
+InstalledAppController::~InstalledAppController() = default;
 
 void InstalledAppController::GetInstalledRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks) {

@@ -20,7 +20,7 @@ class MODULES_EXPORT PaymentCompleter : public GarbageCollectedMixin {
   virtual ScriptPromise Complete(ScriptState*, PaymentComplete result) = 0;
 
  protected:
-  virtual ~PaymentCompleter() {}
+  virtual ~PaymentCompleter() = default;
 };
 
 }  // namespace blink

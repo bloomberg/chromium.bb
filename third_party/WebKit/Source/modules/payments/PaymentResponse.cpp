@@ -30,7 +30,7 @@ PaymentResponse::PaymentResponse(
   DCHECK(payment_completer_);
 }
 
-PaymentResponse::~PaymentResponse() {}
+PaymentResponse::~PaymentResponse() = default;
 
 ScriptValue PaymentResponse::toJSONForBinding(ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);

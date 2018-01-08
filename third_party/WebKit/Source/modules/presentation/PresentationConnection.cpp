@@ -129,7 +129,7 @@ class PresentationConnection::BlobLoader final
     loader_->Start(presentation_connection_->GetExecutionContext(),
                    std::move(blob_data_handle));
   }
-  ~BlobLoader() override {}
+  ~BlobLoader() override = default;
 
   // FileReaderLoaderClient functions.
   void DidStartLoading() override {}

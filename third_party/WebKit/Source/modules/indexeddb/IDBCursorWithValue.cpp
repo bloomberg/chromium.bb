@@ -49,6 +49,6 @@ IDBCursorWithValue::IDBCursorWithValue(std::unique_ptr<WebIDBCursor> backend,
                                        IDBTransaction* transaction)
     : IDBCursor(std::move(backend), direction, request, source, transaction) {}
 
-IDBCursorWithValue::~IDBCursorWithValue() {}
+IDBCursorWithValue::~IDBCursorWithValue() = default;
 
 }  // namespace blink

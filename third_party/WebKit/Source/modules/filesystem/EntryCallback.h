@@ -39,7 +39,7 @@ class Entry;
 
 class EntryCallback : public GarbageCollectedFinalized<EntryCallback> {
  public:
-  virtual ~EntryCallback() {}
+  virtual ~EntryCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(Entry*) = 0;
 };

@@ -64,7 +64,7 @@ CSSPaintDefinition::CSSPaintDefinition(
   input_argument_types_ = input_argument_types;
 }
 
-CSSPaintDefinition::~CSSPaintDefinition() {}
+CSSPaintDefinition::~CSSPaintDefinition() = default;
 
 scoped_refptr<Image> CSSPaintDefinition::Paint(
     const ImageResourceObserver& client,

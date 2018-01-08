@@ -25,7 +25,7 @@ AudioWorkletProcessorDefinition::AudioWorkletProcessorDefinition(
       constructor_(isolate, this, constructor),
       process_(isolate, this, process) {}
 
-AudioWorkletProcessorDefinition::~AudioWorkletProcessorDefinition() {}
+AudioWorkletProcessorDefinition::~AudioWorkletProcessorDefinition() = default;
 
 v8::Local<v8::Object> AudioWorkletProcessorDefinition::ConstructorLocal(
     v8::Isolate* isolate) {

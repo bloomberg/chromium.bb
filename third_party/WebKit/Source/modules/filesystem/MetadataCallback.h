@@ -39,7 +39,7 @@ class Metadata;
 
 class MetadataCallback : public GarbageCollectedFinalized<MetadataCallback> {
  public:
-  virtual ~MetadataCallback() {}
+  virtual ~MetadataCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(Metadata*) = 0;
 };

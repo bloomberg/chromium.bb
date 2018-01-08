@@ -42,9 +42,9 @@ DeviceMotionDispatcher& DeviceMotionDispatcher::Instance() {
   return device_motion_dispatcher;
 }
 
-DeviceMotionDispatcher::DeviceMotionDispatcher() {}
+DeviceMotionDispatcher::DeviceMotionDispatcher() = default;
 
-DeviceMotionDispatcher::~DeviceMotionDispatcher() {}
+DeviceMotionDispatcher::~DeviceMotionDispatcher() = default;
 
 void DeviceMotionDispatcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(last_device_motion_data_);

@@ -23,7 +23,7 @@ namespace blink {
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-NavigatorBeacon::~NavigatorBeacon() {}
+NavigatorBeacon::~NavigatorBeacon() = default;
 
 void NavigatorBeacon::Trace(blink::Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);

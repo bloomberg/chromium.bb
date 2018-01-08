@@ -33,7 +33,7 @@ SensorProxy::SensorProxy(SensorType sensor_type,
           this,
           &SensorProxy::OnPollingTimer) {}
 
-SensorProxy::~SensorProxy() {}
+SensorProxy::~SensorProxy() = default;
 
 void SensorProxy::Dispose() {
   client_binding_.Close();

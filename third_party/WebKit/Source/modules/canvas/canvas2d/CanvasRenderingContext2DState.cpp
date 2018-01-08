@@ -116,7 +116,7 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
     font_.GetFontSelector()->RegisterForInvalidationCallbacks(this);
 }
 
-CanvasRenderingContext2DState::~CanvasRenderingContext2DState() {}
+CanvasRenderingContext2DState::~CanvasRenderingContext2DState() = default;
 
 void CanvasRenderingContext2DState::FontsNeedUpdate(
     FontSelector* font_selector) {

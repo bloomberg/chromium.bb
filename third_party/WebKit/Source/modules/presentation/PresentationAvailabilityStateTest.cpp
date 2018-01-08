@@ -26,7 +26,7 @@ class MockPresentationAvailabilityObserver
  public:
   explicit MockPresentationAvailabilityObserver(const Vector<KURL>& urls)
       : urls_(urls) {}
-  ~MockPresentationAvailabilityObserver() override {}
+  ~MockPresentationAvailabilityObserver() override = default;
 
   MOCK_METHOD1(AvailabilityChanged, void(ScreenAvailability availability));
   const Vector<KURL>& Urls() const override { return urls_; }
@@ -58,7 +58,7 @@ class PresentationAvailabilityStateTest : public ::testing::Test {
         mock_presentation_service_(),
         state_(&mock_presentation_service_) {}
 
-  ~PresentationAvailabilityStateTest() override {}
+  ~PresentationAvailabilityStateTest() override = default;
 
   void ChangeURLState(const KURL& url, ScreenAvailability state) {
     if (state != ScreenAvailability::UNKNOWN)

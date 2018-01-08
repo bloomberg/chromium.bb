@@ -34,7 +34,7 @@ namespace blink {
 
 class AnimationWorkletGlobalScopeTest : public PageTestBase {
  public:
-  AnimationWorkletGlobalScopeTest() {}
+  AnimationWorkletGlobalScopeTest() = default;
 
   void SetUp() override {
     AnimationWorkletThread::CreateSharedBackingThreadForTest();

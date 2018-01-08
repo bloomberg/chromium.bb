@@ -20,7 +20,7 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
     return new HitRegion(path, options);
   }
 
-  virtual ~HitRegion() {}
+  virtual ~HitRegion() = default;
 
   void RemovePixels(const Path&);
 
@@ -64,7 +64,7 @@ class HitRegionManager final : public GarbageCollected<HitRegionManager> {
   void Trace(blink::Visitor*);
 
  private:
-  HitRegionManager() {}
+  HitRegionManager() = default;
 
   typedef HeapListHashSet<Member<HitRegion>> HitRegionList;
   typedef HitRegionList::const_reverse_iterator HitRegionIterator;

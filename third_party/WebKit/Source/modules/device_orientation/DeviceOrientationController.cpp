@@ -21,7 +21,7 @@ DeviceOrientationController::DeviceOrientationController(Document& document)
     : DeviceSingleWindowEventController(document),
       Supplement<Document>(document) {}
 
-DeviceOrientationController::~DeviceOrientationController() {}
+DeviceOrientationController::~DeviceOrientationController() = default;
 
 void DeviceOrientationController::DidUpdateData() {
   if (override_orientation_data_)

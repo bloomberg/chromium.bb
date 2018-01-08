@@ -61,7 +61,7 @@ class MIDIPort : public EventTargetWithInlineData,
 
   enum TypeCode { kTypeInput, kTypeOutput };
 
-  ~MIDIPort() override {}
+  ~MIDIPort() override = default;
 
   String connection() const;
   String id() const { return id_; }

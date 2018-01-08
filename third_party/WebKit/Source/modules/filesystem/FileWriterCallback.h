@@ -40,7 +40,7 @@ class FileWriter;
 class FileWriterCallback
     : public GarbageCollectedFinalized<FileWriterCallback> {
  public:
-  virtual ~FileWriterCallback() {}
+  virtual ~FileWriterCallback() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(FileWriter*) = 0;
 };

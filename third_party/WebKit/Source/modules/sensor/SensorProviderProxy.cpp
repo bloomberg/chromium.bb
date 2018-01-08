@@ -43,7 +43,7 @@ SensorProviderProxy* SensorProviderProxy::From(LocalFrame* frame) {
   return provider_proxy;
 }
 
-SensorProviderProxy::~SensorProviderProxy() {}
+SensorProviderProxy::~SensorProviderProxy() = default;
 
 void SensorProviderProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(sensor_proxies_);

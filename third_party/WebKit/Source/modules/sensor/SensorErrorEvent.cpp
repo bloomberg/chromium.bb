@@ -9,7 +9,7 @@
 
 namespace blink {
 
-SensorErrorEvent::~SensorErrorEvent() {}
+SensorErrorEvent::~SensorErrorEvent() = default;
 
 SensorErrorEvent::SensorErrorEvent(const AtomicString& event_type,
                                    DOMException* error)

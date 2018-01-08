@@ -50,7 +50,7 @@ TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
   DCHECK_EQ(name, "UTF-8");
 }
 
-TextEncoder::~TextEncoder() {}
+TextEncoder::~TextEncoder() = default;
 
 String TextEncoder::encoding() const {
   String name = String(encoding_.GetName()).DeprecatedLower();

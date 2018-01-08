@@ -65,9 +65,9 @@ void RequestStorageQuotaCallback(V8StorageQuotaCallback* success_callback,
 
 }  // namespace
 
-StorageQuotaClient::StorageQuotaClient() {}
+StorageQuotaClient::StorageQuotaClient() = default;
 
-StorageQuotaClient::~StorageQuotaClient() {}
+StorageQuotaClient::~StorageQuotaClient() = default;
 
 void StorageQuotaClient::RequestQuota(ScriptState* script_state,
                                       mojom::StorageType storage_type,

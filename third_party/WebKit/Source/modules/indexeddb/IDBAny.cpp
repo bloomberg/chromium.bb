@@ -47,7 +47,7 @@ IDBAny::IDBAny(Type type) : type_(type) {
   DCHECK(type == kUndefinedType || type == kNullType);
 }
 
-IDBAny::~IDBAny() {}
+IDBAny::~IDBAny() = default;
 
 void IDBAny::ContextWillBeDestroyed() {
   if (idb_cursor_)

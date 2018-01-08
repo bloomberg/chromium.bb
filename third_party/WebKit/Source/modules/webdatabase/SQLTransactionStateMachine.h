@@ -34,7 +34,7 @@ namespace blink {
 template <typename T>
 class SQLTransactionStateMachine {
  public:
-  virtual ~SQLTransactionStateMachine() {}
+  virtual ~SQLTransactionStateMachine() = default;
 
  protected:
   SQLTransactionStateMachine();

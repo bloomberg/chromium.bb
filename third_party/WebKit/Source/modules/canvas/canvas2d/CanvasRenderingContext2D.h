@@ -74,8 +74,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
     WTF_MAKE_NONCOPYABLE(Factory);
 
    public:
-    Factory() {}
-    ~Factory() override {}
+    Factory() = default;
+    ~Factory() override = default;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost* host,
