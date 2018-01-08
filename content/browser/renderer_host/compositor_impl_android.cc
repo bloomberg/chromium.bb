@@ -484,7 +484,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false),
-      lock_manager_(base::ThreadTaskRunnerHandle::Get(), this),
       weak_factory_(this) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
 #if DCHECK_IS_ON()
@@ -647,6 +646,10 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);
+}
+
+void CompositorImpl::SetDeferCommits(bool defer_commits) {
+  host_->SetDeferCommits(defer_commits);
 }
 
 void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
@@ -956,17 +959,6 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
 
 bool CompositorImpl::HavePendingReadbacks() {
   return !readback_layer_tree_->children().empty();
-}
-
-std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
-    ui::CompositorLockClient* client,
-    base::TimeDelta timeout) {
-  return lock_manager_.GetCompositorLock(client, timeout);
-}
-
-void CompositorImpl::OnCompositorLockStateChanged(bool locked) {
-  if (host_)
-    host_->SetDeferCommits(locked);
 }
 
 }  // namespace content

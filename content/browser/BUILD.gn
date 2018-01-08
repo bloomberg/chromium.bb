@@ -2116,7 +2116,6 @@ jumbo_source_set("browser") {
       "//media/capture/content/android",
       "//media/capture/video/android",
       "//ui/android",
-      "//ui/compositor",
     ]
     defines += [
       "APPCACHE_USE_SIMPLE_CACHE",
