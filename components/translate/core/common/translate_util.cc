@@ -73,7 +73,6 @@ const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
     {"zh-TW", "zh-HK"},
     {"zh-TW", "zh-MO"},
     {"zh-CN", "zh-SG"},
-    {"zh-CN", "zh"},
 };
 
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
@@ -86,24 +85,25 @@ void ToTranslateLanguageSynonym(std::string* language) {
     }
   }
 
+  std::string main_part, tail_part;
+  SplitIntoMainAndTail(*language, &main_part, &tail_part);
+  if (main_part.empty())
+    return;
+
+  // Chinese is a special case: we do not return the main_part only.
+  // There is not a single base language, but two: traditional and simplified.
+  // The kLanguageCodeChineseCompatiblePairs list contains the relation between
+  // various Chinese locales. We need to return the code from that mapping
+  // instead of the main_part.
+  // Note that "zh" does not have any mapping and as such we leave it as is. See
+  // https://crbug/798512 for more info.
   for (size_t i = 0; i < arraysize(kLanguageCodeChineseCompatiblePairs); ++i) {
     if (*language == kLanguageCodeChineseCompatiblePairs[i].chrome_language) {
       *language = kLanguageCodeChineseCompatiblePairs[i].translate_language;
       return;
     }
   }
-
-  std::string main_part, tail_part;
-  SplitIntoMainAndTail(*language, &main_part, &tail_part);
-  if (main_part.empty())
-    return;
-
-  // Chinese is a special case.
-  // There is not a single base language, but two: traditional and simplified.
-  // The kLanguageCodeChineseCompatiblePairs list contains the relation between
-  // various Chinese locales.
   if (main_part == "zh") {
-    *language = main_part + tail_part;
     return;
   }
 

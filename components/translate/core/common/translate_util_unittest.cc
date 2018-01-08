@@ -31,7 +31,7 @@ TEST_F(TranslateUtilTest, ToTranslateLanguageSynonym) {
   EXPECT_EQ("zh-CN", language);
   language = std::string("zh");
   translate::ToTranslateLanguageSynonym(&language);
-  EXPECT_EQ("zh-CN", language);
+  EXPECT_EQ("zh", language);
 
   // A sub code is not preserved (except for Chinese).
   language = std::string("he-IL");
