@@ -108,6 +108,10 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   bool IsLineBreak() const;
 
+  // Returns true if the text is generated (from, e.g., list marker,
+  // pseudo-element, ...) instead of from a DOM text node.
+  bool IsAnonymousText() const;
+
  private:
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.

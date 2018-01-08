@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 
+#include "core/dom/Node.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/style/ComputedStyle.h"
@@ -73,6 +75,16 @@ bool NGPhysicalTextFragment::IsLineBreak() const {
   // TODO(xiaochengh): Introduce and set a text fragment type flag in fragment
   // builder, instead of check text content string.
   return Text() == "\n";
+}
+
+bool NGPhysicalTextFragment::IsAnonymousText() const {
+  // TODO(xiaochengh): Introduce and set a flag for anonymous text.
+  const LayoutObject* layout_object = GetLayoutObject();
+  if (layout_object && layout_object->IsText() &&
+      ToLayoutText(layout_object)->IsTextFragment())
+    return !ToLayoutTextFragment(layout_object)->AssociatedTextNode();
+  const Node* node = GetNode();
+  return !node || node->IsPseudoElement();
 }
 
 }  // namespace blink
