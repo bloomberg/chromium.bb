@@ -249,6 +249,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // PlzNavigate: Begins a request for NavigationURLLoader. |loader| is the
   // loader to attach to the leaf resource handler.
+  // After calling this function, |global_request_id| will contains the
+  // request's global id.
   void BeginNavigationRequest(
       ResourceContext* resource_context,
       net::URLRequestContext* request_context,
@@ -260,7 +262,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       mojom::URLLoaderRequest url_loader_request,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
-      uint32_t url_loader_options);
+      uint32_t url_loader_options,
+      GlobalRequestID* global_request_id);
 
   int num_in_flight_requests_for_testing() const {
     return num_in_flight_requests_;
