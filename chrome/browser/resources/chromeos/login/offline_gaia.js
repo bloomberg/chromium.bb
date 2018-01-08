@@ -81,7 +81,7 @@ Polymer((function() {
     },
 
     onForgotPasswordCloseTap_: function() {
-      this.$$('#.forgotPasswordDlg').close();
+      this.$$('#forgotPasswordDlg').close();
     },
 
     onDialogOverlayClosed_: function() {
