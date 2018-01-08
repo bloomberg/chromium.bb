@@ -487,7 +487,8 @@ void RecordMainStartupMetrics(base::TimeTicks exe_entry_point_ticks) {
 // from the Java side until it has initialized the JNI. See
 // ChromeMainDelegateAndroid.
 #if !defined(OS_ANDROID)
-  startup_metric_utils::RecordMainEntryPointTime(base::Time::Now());
+  startup_metric_utils::RecordMainEntryPointTime(base::Time::Now(),
+                                                 base::TimeTicks::Now());
 #endif
 }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)

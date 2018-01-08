@@ -137,7 +137,12 @@ public class UmaUtils {
         return sApplicationStartWallClockMs;
     }
 
-    public static long getForegroundStartTime() {
+    @CalledByNative
+    public static long getMainEntryPointTicks() {
+        return sApplicationStartTimeMs;
+    }
+
+    public static long getForegroundStartTicks() {
         assert sForegroundStartTimeMs != 0;
         return sForegroundStartTimeMs;
     }
