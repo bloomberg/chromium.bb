@@ -548,14 +548,19 @@ public class AccountSigninView extends FrameLayout {
         // as this is needed for the previous account check.
         final long seedingStartTime = SystemClock.elapsedRealtime();
         if (AccountTrackerService.get().checkAndSeedSystemAccounts()) {
-            showConfirmSigninPagePreviousAccountCheck(seedingStartTime);
+            recordAccountTrackerServiceSeedingTime(seedingStartTime);
+            showConfirmSigninPagePreviousAccountCheck();
         } else {
             AccountTrackerService.get().addSystemAccountsSeededListener(
                     new OnSystemAccountsSeededListener() {
                         @Override
                         public void onSystemAccountsSeedingComplete() {
                             AccountTrackerService.get().removeSystemAccountsSeededListener(this);
-                            showConfirmSigninPagePreviousAccountCheck(seedingStartTime);
+                            recordAccountTrackerServiceSeedingTime(seedingStartTime);
+                            // Don't show dialogs and confirmation page if activity was destroyed.
+                            if (ViewCompat.isAttachedToWindow(AccountSigninView.this)) {
+                                showConfirmSigninPagePreviousAccountCheck();
+                            }
                         }
 
                         @Override
@@ -564,9 +569,7 @@ public class AccountSigninView extends FrameLayout {
         }
     }
 
-    private void showConfirmSigninPagePreviousAccountCheck(long seedingStartTime) {
-        RecordHistogram.recordTimesHistogram("Signin.AndroidAccountSigninViewSeedingTime",
-                SystemClock.elapsedRealtime() - seedingStartTime, TimeUnit.MILLISECONDS);
+    private void showConfirmSigninPagePreviousAccountCheck() {
         mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(getContext(),
                 mDelegate.getFragmentManager(), ImportSyncType.PREVIOUS_DATA_FOUND,
                 PrefServiceBridge.getInstance().getSyncLastAccountName(), mSelectedAccountName,
@@ -585,6 +588,11 @@ public class AccountSigninView extends FrameLayout {
                         onSigninConfirmationCancel();
                     }
                 });
+    }
+
+    private static void recordAccountTrackerServiceSeedingTime(long seedingStartTime) {
+        RecordHistogram.recordTimesHistogram("Signin.AndroidAccountSigninViewSeedingTime",
+                SystemClock.elapsedRealtime() - seedingStartTime, TimeUnit.MILLISECONDS);
     }
 
     private void setUpCancelButton() {
