@@ -9,7 +9,6 @@ import android.util.SparseArray;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.media.MediaCodecUtil.BitrateAdjustmentTypes;
 
 import java.nio.ByteBuffer;
 
@@ -29,9 +28,8 @@ class MediaCodecEncoder extends MediaCodecBridge {
     // SPS and PPS NALs (Config frame).
     private ByteBuffer mConfigData = null;
 
-    protected MediaCodecEncoder(
-            MediaCodec mediaCodec, BitrateAdjustmentTypes bitrateAdjustmentType) {
-        super(mediaCodec, bitrateAdjustmentType);
+    protected MediaCodecEncoder(MediaCodec mediaCodec, BitrateAdjuster bitrateAdjuster) {
+        super(mediaCodec, bitrateAdjuster);
     }
 
     @Override
