@@ -35,8 +35,8 @@ class SettingsPrivateDelegate : public KeyedService {
   ~SettingsPrivateDelegate() override;
 
   // Sets the pref with the given name and value in the proper PrefService.
-  virtual PrefsUtil::SetPrefResult SetPref(
-      const std::string& name, const base::Value* value);
+  virtual settings_private::SetPrefResult SetPref(const std::string& name,
+                                                  const base::Value* value);
 
   // Gets the value of the pref with the given |name|.
   virtual std::unique_ptr<base::Value> GetPref(const std::string& name);
@@ -48,7 +48,7 @@ class SettingsPrivateDelegate : public KeyedService {
   virtual std::unique_ptr<base::Value> GetDefaultZoom();
 
   // Sets the pref.
-  virtual PrefsUtil::SetPrefResult SetDefaultZoom(double zoom);
+  virtual settings_private::SetPrefResult SetDefaultZoom(double zoom);
 
  protected:
   Profile* profile_;  // weak; not owned by us
