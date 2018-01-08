@@ -442,14 +442,16 @@ public class WebappNavigationTest {
                         "https://somewebapp.com" /* referrer */, true /* isPost */,
                         true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
                         false /* isRedirect */, false /* isExternalProtocol */,
-                        true /* isMainFrame */, true /* hasUserGestureCarryover */),
+                        true /* isMainFrame */, null /* suggestedFilename */,
+                        true /* hasUserGestureCarryover */),
                 info, WebappScopePolicy.STRICT));
         Assert.assertTrue(WebappInterceptNavigationDelegate.shouldOpenInCustomTab(
                 NavigationParams.create("https://otherdomain.com",
                         "https://somewebapp.com" /* referrer */, false /* isPost */,
                         true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
                         false /* isRedirect */, false /* isExternalProtocol */,
-                        true /* isMainFrame */, true /* hasUserGestureCarryover */),
+                        true /* isMainFrame */, null /* suggestedFilename */,
+                        true /* hasUserGestureCarryover */),
                 info, WebappScopePolicy.STRICT));
     }
 

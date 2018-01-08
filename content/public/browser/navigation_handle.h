@@ -250,6 +250,10 @@ class CONTENT_EXPORT NavigationHandle {
   // navigation when processing final (post redirect) HTTP response headers.
   virtual bool IsDownload() = 0;
 
+  // If this navigation was triggered by an anchor with a download attribute,
+  // this returns the (possibly empty) value of that attribute.
+  virtual const base::Optional<std::string>& GetSuggestedFilename() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.

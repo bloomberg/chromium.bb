@@ -128,7 +128,8 @@ public class WebappInterceptNavigationDelegate extends InterceptNavigationDelega
     static boolean shouldOpenInCustomTab(
             NavigationParams navigationParams, WebappInfo info, WebappScopePolicy scopePolicy) {
         return UrlUtilities.isValidForIntentFallbackNavigation(navigationParams.url)
-                && !navigationParams.isPost && !scopePolicy.isUrlInScope(info, navigationParams.url)
+                && !navigationParams.isPost && navigationParams.suggestedFilename == null
+                && !scopePolicy.isUrlInScope(info, navigationParams.url)
                 && scopePolicy.openOffScopeNavsInCct();
     }
 }

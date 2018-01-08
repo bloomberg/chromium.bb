@@ -52,7 +52,7 @@ DataUrlNavigationThrottle::WillProcessResponse() {
 
   // We treat <a download href="data:.."> as a navigation, but it will always
   // result in a download, not a top-level navigation, so not blocking it here.
-  if (handle->suggested_filename().has_value())
+  if (handle->GetSuggestedFilename().has_value())
     return PROCEED;
 
   RenderFrameHost* top_frame =

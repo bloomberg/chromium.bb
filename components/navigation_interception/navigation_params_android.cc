@@ -25,11 +25,17 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
   ScopedJavaLocalRef<jstring> jstring_referrer =
       ConvertUTF8ToJavaString(env, params.referrer().url.spec());
 
+  ScopedJavaLocalRef<jstring> jstring_suggested_filename = nullptr;
+  if (params.suggested_filename().has_value()) {
+    jstring_suggested_filename =
+        ConvertUTF8ToJavaString(env, params.suggested_filename().value());
+  }
+
   return Java_NavigationParams_create(
       env, jstring_url, jstring_referrer, params.is_post(),
       params.has_user_gesture(), params.transition_type(), params.is_redirect(),
       params.is_external_protocol(), params.is_main_frame(),
-      has_user_gesture_carryover);
+      jstring_suggested_filename, has_user_gesture_carryover);
 }
 
 }  // namespace navigation_interception

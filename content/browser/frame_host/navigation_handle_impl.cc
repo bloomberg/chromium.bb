@@ -529,6 +529,11 @@ bool NavigationHandleImpl::IsDownload() {
   return is_download_;
 }
 
+const base::Optional<std::string>&
+NavigationHandleImpl::GetSuggestedFilename() {
+  return suggested_filename_;
+}
+
 void NavigationHandleImpl::InitServiceWorkerHandle(
     ServiceWorkerContextWrapper* service_worker_context) {
   service_worker_handle_.reset(
