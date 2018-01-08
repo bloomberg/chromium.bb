@@ -3208,23 +3208,6 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests",
-          "--no-xvfb"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "os": "Ubuntu"
-            }
-          ]
-        },
-        "test": "gl_unittests",
-        "use_xvfb": false
-      },
-      {
-        "args": [
           "--use-gpu-in-tests"
         ],
         "swarming": {
