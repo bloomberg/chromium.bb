@@ -46,13 +46,13 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   void Shutdown() override;
 
   bool HasImage() const override { return true; }
-  scoped_refptr<Image> GetImage(const IntSize&) const override;
+  scoped_refptr<Image> GetImage(const LayoutSize&) const override;
   bool ErrorOccurred() const override { return style_image_->ErrorOccurred(); }
 
   bool ImageHasRelativeSize() const override {
     return style_image_->ImageHasRelativeSize();
   }
-  LayoutSize ImageSize(float multiplier) const override;
+  FloatSize ImageSize(float multiplier) const override;
   WrappedImagePtr ImagePtr() const override { return style_image_->Data(); }
 
   void Trace(blink::Visitor*) override;

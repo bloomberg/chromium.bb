@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  *
  */
-#ifndef IntSizeHash_h
-#define IntSizeHash_h
+#ifndef LayoutSizeHash_h
+#define LayoutSizeHash_h
 
-#include "platform/geometry/IntSize.h"
+#include "platform/geometry/LayoutSize.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
@@ -28,14 +28,14 @@
 namespace WTF {
 
 template <>
-struct DefaultHash<blink::IntSize> {
+struct DefaultHash<blink::LayoutSize> {
   STATIC_ONLY(DefaultHash);
   struct Hash {
     STATIC_ONLY(Hash);
-    static unsigned GetHash(const blink::IntSize& key) {
-      return HashInts(key.Width(), key.Height());
+    static unsigned GetHash(const blink::LayoutSize& key) {
+      return HashInts(key.Width().RawValue(), key.Height().RawValue());
     }
-    static bool Equal(const blink::IntSize& a, const blink::IntSize& b) {
+    static bool Equal(const blink::LayoutSize& a, const blink::LayoutSize& b) {
       return a == b;
     }
     static const bool safe_to_compare_to_empty_or_deleted = true;
@@ -43,13 +43,13 @@ struct DefaultHash<blink::IntSize> {
 };
 
 template <>
-struct HashTraits<blink::IntSize> : GenericHashTraits<blink::IntSize> {
+struct HashTraits<blink::LayoutSize> : GenericHashTraits<blink::LayoutSize> {
   STATIC_ONLY(HashTraits);
   static const bool kEmptyValueIsZero = true;
-  static void ConstructDeletedValue(blink::IntSize& slot, bool) {
-    new (NotNull, &slot) blink::IntSize(-1, -1);
+  static void ConstructDeletedValue(blink::LayoutSize& slot, bool) {
+    slot = blink::LayoutSize(-1, -1);
   }
-  static bool IsDeletedValue(const blink::IntSize& value) {
+  static bool IsDeletedValue(const blink::LayoutSize& value) {
     return value.Width() == -1 && value.Height() == -1;
   }
 };

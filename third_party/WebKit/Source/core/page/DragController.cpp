@@ -1050,7 +1050,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
   if (image->IsSVGImage()) {
     KURL url = element->GetDocument().CompleteURL(element->ImageSourceURL());
     svg_image = SVGImageForContainer::Create(
-        ToSVGImage(image), image_element_size_in_pixels, 1, url);
+        ToSVGImage(image), LayoutSize(image_element_size_in_pixels), 1, url);
     image = svg_image.get();
   }
 

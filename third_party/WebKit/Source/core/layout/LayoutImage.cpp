@@ -137,7 +137,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
   LayoutSize new_intrinsic_size =
-      image_resource_->ImageSize(Style()->EffectiveZoom());
+      RoundedLayoutSize(image_resource_->ImageSize(Style()->EffectiveZoom()));
   UpdateIntrinsicSizeIfNeeded(new_intrinsic_size);
 
   // In the case of generated image content using :before/:after/content, we

@@ -30,19 +30,20 @@ class StyleInvalidImage final : public StyleImage {
   CSSValue* ComputedCSSValue() const override { return CssValue(); }
   bool CanRender() const override { return false; }
 
-  LayoutSize ImageSize(const Document&,
-                       float /*multiplier*/,
-                       const LayoutSize& /*defaultObjectSize*/) const override {
-    return LayoutSize();
+  FloatSize ImageSize(const Document&,
+                      float /*multiplier*/,
+                      const LayoutSize& /*defaultObjectSize*/) const override {
+    return FloatSize();
   }
   bool ImageHasRelativeSize() const override { return false; }
   bool UsesImageContainerSize() const override { return false; }
   void AddClient(ImageResourceObserver*) override {}
   void RemoveClient(ImageResourceObserver*) override {}
-  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
-                                const Document&,
-                                const ComputedStyle&,
-                                const IntSize& container_size) const override {
+  scoped_refptr<Image> GetImage(
+      const ImageResourceObserver&,
+      const Document&,
+      const ComputedStyle&,
+      const LayoutSize& container_size) const override {
     return nullptr;
   }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override {

@@ -69,8 +69,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
 
   LayoutRect box(box_origin, layout_list_marker_.Size());
 
-  IntRect marker = layout_list_marker_.GetRelativeMarkerRect();
-  marker.MoveBy(RoundedIntPoint(box_origin));
+  LayoutRect marker = layout_list_marker_.GetRelativeMarkerRect();
+  marker.MoveBy(box_origin);
 
   GraphicsContext& context = local_paint_info.context;
 
@@ -82,7 +82,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
             ->GetImage(layout_list_marker_, layout_list_marker_.GetDocument(),
                        layout_list_marker_.StyleRef(), marker.Size())
             .get(),
-        Image::kSyncDecode, marker);
+        Image::kSyncDecode, FloatRect(marker));
     if (layout_list_marker_.GetSelectionState() != SelectionState::kNone) {
       LayoutRect sel_rect = layout_list_marker_.LocalSelectionRect();
       sel_rect.MoveBy(box_origin);
@@ -113,7 +113,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   const EListStyleType list_style =
       layout_list_marker_.Style()->ListStyleType();
   if (style_category == LayoutListMarker::ListStyleCategory::kSymbol) {
-    PaintSymbol(context, color, marker, list_style);
+    PaintSymbol(context, color, PixelSnappedIntRect(marker), list_style);
     return;
   }
 
@@ -126,7 +126,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
 
   GraphicsContextStateSaver state_saver(context, false);
   if (!layout_list_marker_.Style()->IsHorizontalWritingMode()) {
-    marker.MoveBy(RoundedIntPoint(-box_origin));
+    marker.MoveBy(-box_origin);
     marker = marker.TransposedRect();
     marker.MoveBy(
         IntPoint(RoundToInt(box.X()),
@@ -138,12 +138,13 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   }
 
   TextRunPaintInfo text_run_paint_info(text_run);
-  text_run_paint_info.bounds = marker;
+  text_run_paint_info.bounds = EnclosingIntRect(marker);
   const SimpleFontData* font_data =
       layout_list_marker_.Style()->GetFont().PrimaryFont();
-  IntPoint text_origin = IntPoint(
-      marker.X(),
-      marker.Y() + (font_data ? font_data->GetFontMetrics().Ascent() : 0));
+  IntPoint text_origin =
+      IntPoint(marker.X().Round(),
+               marker.Y().Round() +
+                   (font_data ? font_data->GetFontMetrics().Ascent() : 0));
 
   // Text is not arbitrary. We can judge whether it's RTL from the first
   // character, and we only need to handle the direction RightToLeft for now.
@@ -167,7 +168,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
       ConstructTextRun(font, suffix_str, 2, layout_list_marker_.StyleRef(),
                        layout_list_marker_.Style()->Direction());
   TextRunPaintInfo suffix_run_info(suffix_run);
-  suffix_run_info.bounds = marker;
+  suffix_run_info.bounds = EnclosingIntRect(marker);
 
   if (layout_list_marker_.Style()->IsLeftToRightDirection()) {
     context.DrawText(font, text_run_paint_info, text_origin);

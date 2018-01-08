@@ -47,18 +47,19 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   CSSValue* CssValue() const override;
   CSSValue* ComputedCSSValue() const override;
 
-  LayoutSize ImageSize(const Document&,
-                       float multiplier,
-                       const LayoutSize& default_object_size) const override;
+  FloatSize ImageSize(const Document&,
+                      float multiplier,
+                      const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override { return !fixed_size_; }
   bool UsesImageContainerSize() const override { return !fixed_size_; }
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
-  // The |container_size| is the container size with subpixel snapping
-  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
-                                const Document&,
-                                const ComputedStyle&,
-                                const IntSize& container_size) const override;
+  // The |container_size| is the container size
+  scoped_refptr<Image> GetImage(
+      const ImageResourceObserver&,
+      const Document&,
+      const ComputedStyle&,
+      const LayoutSize& container_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
   virtual void Trace(blink::Visitor*);

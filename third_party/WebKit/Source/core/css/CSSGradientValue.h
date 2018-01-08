@@ -96,7 +96,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
                                 const ComputedStyle&,
-                                const IntSize&);
+                                const LayoutSize&);
 
   void AddStop(const CSSGradientColorStop& stop) {
     stops_.push_back(stop);
@@ -110,7 +110,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   CSSGradientType GradientType() const { return gradient_type_; }
 
   bool IsFixedSize() const { return false; }
-  IntSize FixedSize(const Document&) const { return IntSize(); }
+  FloatSize FixedSize(const Document&) const { return FloatSize(); }
 
   bool IsPending() const { return false; }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
@@ -170,7 +170,7 @@ class CSSLinearGradientValue final : public CSSGradientValue {
 
   // Create the gradient for a given size.
   scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                         const IntSize&,
+                                         const LayoutSize&,
                                          const LayoutObject&);
 
   bool Equals(const CSSLinearGradientValue&) const;
@@ -243,7 +243,7 @@ class CSSRadialGradientValue final : public CSSGradientValue {
 
   // Create the gradient for a given size.
   scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                         const IntSize&,
+                                         const LayoutSize&,
                                          const LayoutObject&);
 
   bool Equals(const CSSRadialGradientValue&) const;
@@ -309,7 +309,7 @@ class CSSConicGradientValue final : public CSSGradientValue {
 
   // Create the gradient for a given size.
   scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                         const IntSize&,
+                                         const LayoutSize&,
                                          const LayoutObject&);
 
   bool Equals(const CSSConicGradientValue&) const;

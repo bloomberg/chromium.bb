@@ -75,8 +75,9 @@ LayoutSize LayoutListMarker::ImageBulletSize() const {
   // marker box.
   LayoutUnit bullet_width =
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
-  return image_->ImageSize(GetDocument(), Style()->EffectiveZoom(),
-                           LayoutSize(bullet_width, bullet_width));
+  return RoundedLayoutSize(
+      image_->ImageSize(GetDocument(), Style()->EffectiveZoom(),
+                        LayoutSize(bullet_width, bullet_width)));
 }
 
 void LayoutListMarker::StyleWillChange(StyleDifference diff,
@@ -474,13 +475,11 @@ bool LayoutListMarker::IsInside() const {
          Style()->ListStylePosition() == EListStylePosition::kInside;
 }
 
-IntRect LayoutListMarker::GetRelativeMarkerRect() const {
-  if (IsImage()) {
-    IntSize image_size = FlooredIntSize(ImageBulletSize());
-    return IntRect(0, 0, image_size.Width(), image_size.Height());
-  }
+LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
+  if (IsImage())
+    return LayoutRect(LayoutPoint(), ImageBulletSize());
 
-  IntRect relative_rect;
+  LayoutRect relative_rect;
   const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
   DCHECK(font_data);
   if (!font_data)
@@ -488,26 +487,27 @@ IntRect LayoutListMarker::GetRelativeMarkerRect() const {
 
   switch (GetListStyleCategory()) {
     case ListStyleCategory::kNone:
-      return IntRect();
+      return LayoutRect();
     case ListStyleCategory::kSymbol: {
       // TODO(wkorman): Review and clean up/document the calculations below.
       // http://crbug.com/543193
       const FontMetrics& font_metrics = font_data->GetFontMetrics();
       int ascent = font_metrics.Ascent();
       int bullet_width = (ascent * 2 / 3 + 1) / 2;
-      relative_rect = IntRect(1, 3 * (ascent - ascent * 2 / 3) / 2,
-                              bullet_width, bullet_width);
+      relative_rect = LayoutRect(1, 3 * (ascent - ascent * 2 / 3) / 2,
+                                 bullet_width, bullet_width);
     } break;
     case ListStyleCategory::kLanguage:
-      relative_rect = IntRect(0, 0, GetWidthOfTextWithSuffix().ToInt(),
-                              font_data->GetFontMetrics().Height());
+      relative_rect =
+          LayoutRect(LayoutUnit(), LayoutUnit(), GetWidthOfTextWithSuffix(),
+                     LayoutUnit(font_data->GetFontMetrics().Height()));
       break;
   }
 
   if (!Style()->IsHorizontalWritingMode()) {
     relative_rect = relative_rect.TransposedRect();
-    relative_rect.SetX(
-        (Size().Width() - relative_rect.X() - relative_rect.Width()).ToInt());
+    relative_rect.SetX(Size().Width() - relative_rect.X() -
+                       relative_rect.Width());
   }
 
   return relative_rect;

@@ -34,8 +34,8 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(
     scoped_refptr<Image> from_image,
     scoped_refptr<Image> to_image,
     float percentage,
-    IntSize crossfade_size,
-    const IntSize& size)
+    FloatSize crossfade_size,
+    const FloatSize& size)
     : GeneratedImage(size),
       from_image_(std::move(from_image)),
       to_image_(std::move(to_image)),
@@ -48,7 +48,7 @@ void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
                                             ImageDecodingMode decode_mode) {
   FloatRect from_image_rect(FloatPoint(), FloatSize(from_image_->Size()));
   FloatRect to_image_rect(FloatPoint(), FloatSize(to_image_->Size()));
-  FloatRect dest_rect((FloatPoint()), FloatSize(crossfade_size_));
+  FloatRect dest_rect((FloatPoint()), crossfade_size_);
 
   // TODO(junov): The various effects encoded into paint should probably be
   // applied here instead of inside the layer.  This probably faulty behavior
@@ -108,7 +108,7 @@ void CrossfadeGeneratedImage::DrawTile(GraphicsContext& context,
   PaintFlags flags = context.FillFlags();
   flags.setBlendMode(SkBlendMode::kSrcOver);
   flags.setAntiAlias(context.ShouldAntialias());
-  FloatRect dest_rect((FloatPoint()), FloatSize(crossfade_size_));
+  FloatRect dest_rect((FloatPoint()), crossfade_size_);
   flags.setFilterQuality(
       context.ComputeFilterQuality(this, dest_rect, src_rect));
   DrawCrossfade(context.Canvas(), flags, kClampImageToSourceRect, kSyncDecode);

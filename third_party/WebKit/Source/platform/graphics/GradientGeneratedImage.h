@@ -32,13 +32,11 @@
 
 namespace blink {
 
-class IntSize;
-
 class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
  public:
   static scoped_refptr<GradientGeneratedImage> Create(
       scoped_refptr<Gradient> generator,
-      const IntSize& size) {
+      const FloatSize& size) {
     return base::AdoptRef(
         new GradientGeneratedImage(std::move(generator), size));
   }
@@ -57,7 +55,8 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
             ImageDecodingMode) override;
   void DrawTile(GraphicsContext&, const FloatRect&) override;
 
-  GradientGeneratedImage(scoped_refptr<Gradient> generator, const IntSize& size)
+  GradientGeneratedImage(scoped_refptr<Gradient> generator,
+                         const FloatSize& size)
       : GeneratedImage(size), gradient_(std::move(generator)) {}
 
   scoped_refptr<Gradient> gradient_;

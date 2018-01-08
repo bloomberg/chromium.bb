@@ -60,7 +60,7 @@ class SVGImageForContainer final : public Image {
  public:
   static scoped_refptr<SVGImageForContainer> Create(
       SVGImage* image,
-      const IntSize& container_size,
+      const LayoutSize& container_size,
       float zoom,
       const KURL& url) {
     FloatSize container_size_without_zoom(container_size);
