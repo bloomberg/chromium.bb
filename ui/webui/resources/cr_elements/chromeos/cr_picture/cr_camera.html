@@ -45,6 +45,10 @@
         width: var(--cr-camera-hidden-frame-size);
       }
 
+      :host-context([dir=rtl]) #userImageStreamCrop::after {
+        float: left;
+      }
+
       #userImageStreamCrop.preview::after {
         height: var(--cr-camera-preview-frame-size);
         transition-timing-function: ease-out;
