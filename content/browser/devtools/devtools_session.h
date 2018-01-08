@@ -44,7 +44,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   };
   using MessageByCallId = std::map<int, Message>;
   MessageByCallId& waiting_messages() { return waiting_for_response_messages_; }
-  const std::string& state_cookie() { return chunk_processor_.state_cookie(); }
+  const std::string& state_cookie() { return state_cookie_; }
 
   protocol::Response::Status Dispatch(
       const std::string& message,
@@ -54,7 +54,7 @@ class DevToolsSession : public protocol::FrontendChannel,
                                       const std::string& method,
                                       const std::string& message);
   void InspectElement(const gfx::Point& point);
-  bool ReceiveMessageChunk(const DevToolsMessageChunk& chunk);
+  void ReceiveMessageChunk(const DevToolsMessageChunk& chunk);
 
   template <typename Handler>
   static std::vector<Handler*> HandlersForAgentHost(
@@ -72,10 +72,9 @@ class DevToolsSession : public protocol::FrontendChannel,
   }
 
  private:
-  void SendMessageFromProcessorIPC(int session_id, const std::string& message);
-  void SendMessageFromProcessor(const std::string& message);
   void SendResponse(std::unique_ptr<base::DictionaryValue> response);
   void MojoConnectionDestroyed();
+  void ReceivedBadMessage();
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(
@@ -99,10 +98,13 @@ class DevToolsSession : public protocol::FrontendChannel,
   RenderProcessHost* process_;
   RenderFrameHostImpl* host_;
   std::unique_ptr<protocol::UberDispatcher> dispatcher_;
-  // Chunk processor's state cookie always corresponds to a state before
-  // any of the waiting for response messages have been handled.
-  DevToolsMessageChunkProcessor chunk_processor_;
   MessageByCallId waiting_for_response_messages_;
+
+  // |state_cookie_| always corresponds to a state before
+  // any of the waiting for response messages have been handled.
+  std::string state_cookie_;
+  std::string response_message_buffer_;
+  uint32_t response_message_buffer_size_ = 0;
 
   base::WeakPtrFactory<DevToolsSession> weak_factory_;
 };
