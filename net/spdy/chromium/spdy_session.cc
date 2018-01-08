@@ -1367,10 +1367,12 @@ bool SpdySession::CloseOneIdleConnection() {
   return false;
 }
 
-bool SpdySession::ValidatePushedStream(const SpdySessionKey& key) const {
+bool SpdySession::ValidatePushedStream(const GURL& url,
+                                       const SpdySessionKey& key) const {
   return key.proxy_server() == spdy_session_key_.proxy_server() &&
          key.privacy_mode() == spdy_session_key_.privacy_mode() &&
-         VerifyDomainAuthentication(key.host_port_pair().host());
+         (!url.SchemeIsCryptographic() ||
+          VerifyDomainAuthentication(key.host_port_pair().host()));
 }
 
 void SpdySession::OnPushedStreamClaimed(const GURL& url,

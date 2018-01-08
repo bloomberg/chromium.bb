@@ -33,8 +33,7 @@ const SpdyStreamId kNoPushedStreamFound = 0;
 // Each SpdySessionPool owns one instance of this class.
 // SpdySession uses this class to register, unregister and query pushed streams.
 // HttpStreamFactoryImpl::Job uses this class to find a SpdySession with a
-// pushed stream matching the request, if such exists, which is only allowed for
-// requests with a cryptographic scheme.
+// pushed stream matching the request, if such exists.
 class NET_EXPORT Http2PushPromiseIndex {
  public:
   // Interface for validating pushed streams, signaling when a pushed stream is
@@ -44,8 +43,10 @@ class NET_EXPORT Http2PushPromiseIndex {
     Delegate() {}
     virtual ~Delegate() {}
 
-    // Return true if the pushed stream can be used for a request with |key|.
-    virtual bool ValidatePushedStream(const SpdySessionKey& key) const = 0;
+    // Return true if a pushed stream with |url| can be used for a request with
+    // |key|.
+    virtual bool ValidatePushedStream(const GURL& url,
+                                      const SpdySessionKey& key) const = 0;
 
     // Called when a pushed stream is claimed.  Guaranateed to be called
     // synchronously after ValidatePushedStream() is called and returns true.

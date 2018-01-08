@@ -31,7 +31,8 @@ class TestDelegate : public Http2PushPromiseIndex::Delegate {
   TestDelegate(const SpdySessionKey& key) : key_(key) {}
   ~TestDelegate() override {}
 
-  bool ValidatePushedStream(const SpdySessionKey& key) const override {
+  bool ValidatePushedStream(const GURL& url,
+                            const SpdySessionKey& key) const override {
     return key == key_;
   }
 
@@ -50,7 +51,8 @@ class MockDelegate : public Http2PushPromiseIndex::Delegate {
   MockDelegate() = default;
   ~MockDelegate() override {}
 
-  MOCK_CONST_METHOD1(ValidatePushedStream, bool(const SpdySessionKey& key));
+  MOCK_CONST_METHOD2(ValidatePushedStream,
+                     bool(const GURL& url, const SpdySessionKey& key));
   MOCK_METHOD2(OnPushedStreamClaimed,
                void(const GURL& url, SpdyStreamId stream_id));
 
@@ -379,7 +381,8 @@ TEST_F(Http2PushPromiseIndexTest, MultipleMatchingStreams) {
 // the appropriate arguments.
 TEST_F(Http2PushPromiseIndexTest, MatchCallsOnPushedStreamClaimed) {
   MockDelegate delegate;
-  EXPECT_CALL(delegate, ValidatePushedStream(key1_)).WillOnce(Return(true));
+  EXPECT_CALL(delegate, ValidatePushedStream(url1_, key1_))
+      .WillOnce(Return(true));
   EXPECT_CALL(delegate, OnPushedStreamClaimed(url1_, 2)).Times(1);
 
   EXPECT_TRUE(index_.RegisterUnclaimedPushedStream(url1_, 2, &delegate));
@@ -398,7 +401,8 @@ TEST_F(Http2PushPromiseIndexTest, MatchCallsOnPushedStreamClaimed) {
 // called.
 TEST_F(Http2PushPromiseIndexTest, MismatchDoesNotCallOnPushedStreamClaimed) {
   MockDelegate delegate;
-  EXPECT_CALL(delegate, ValidatePushedStream(key1_)).WillOnce(Return(false));
+  EXPECT_CALL(delegate, ValidatePushedStream(url1_, key1_))
+      .WillOnce(Return(false));
   EXPECT_CALL(delegate, OnPushedStreamClaimed(_, _)).Times(0);
 
   EXPECT_TRUE(index_.RegisterUnclaimedPushedStream(url1_, 2, &delegate));
