@@ -283,11 +283,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                                  ProvisionallySaveRestriction restriction);
 
   // This function attempts to fill |username_element| and |password_element|
-  // with values from |fill_data|. The |password_element| will only have the
-  // suggestedValue set, and will be registered for copying that to the real
-  // value through |registration_callback|. If a match is found, return true and
-  // |field_value_and_properties_map| will be modified with the autofilled
-  // credentials and |FieldPropertiesFlags::AUTOFILLED| flag.
+  // with values from |fill_data|. The |username_element| and |password_element|
+  // will only have the suggestedValue set, and will be registered for copying
+  // that to the real value through |registration_callback|. If a match is
+  // found, return true and |field_value_and_properties_map| will be modified
+  // with the autofilled credentials and |FieldPropertiesFlags::AUTOFILLED|
+  // flag.
   bool FillUserNameAndPassword(
       blink::WebInputElement* username_element,
       blink::WebInputElement* password_element,

@@ -1004,9 +1004,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, CredentialsAutofilled) {
 
   // Reload the page and make sure it's autofilled.
   NavigateToFile("/password/password_form.html");
-  WaitForElementValue("username_field", "user");
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
+  WaitForElementValue("username_field", "user");
   WaitForElementValue("password_field", "12345");
 }
 
