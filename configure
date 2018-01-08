@@ -310,7 +310,6 @@ EXPERIMENT_LIST="
     mfmv
     frame_marker
     jnt_comp
-    frame_refs
     frame_sign_bias
     ext_skip
     obu
@@ -539,7 +538,6 @@ post_process_cmdline() {
     enabled intra_edge && enable_feature ext_intra
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker
-    enabled frame_refs && enable_feature frame_marker
     enabled frame_sign_bias && enable_feature frame_marker
     enabled ext_skip && enable_feature frame_marker
     enabled loopfilter_level && enable_feature parallel_deblocking
