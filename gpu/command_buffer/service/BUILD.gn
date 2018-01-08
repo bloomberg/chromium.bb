@@ -114,6 +114,8 @@ target(link_target_type, "gles2_sources") {
     "context_state.h",
     "context_state_autogen.h",
     "context_state_impl_autogen.h",
+    "decoder_client.h",
+    "decoder_context.h",
     "error_state.cc",
     "error_state.h",
     "feature_info.cc",

@@ -40,7 +40,7 @@ static gl::GLContext* GetGLContext(
     return nullptr;
   }
 
-  return stub->decoder()->GetGLContext();
+  return stub->decoder_context()->GetGLContext();
 }
 
 static bool MakeDecoderContextCurrent(
@@ -50,7 +50,7 @@ static bool MakeDecoderContextCurrent(
     return false;
   }
 
-  if (!stub->decoder()->MakeCurrent()) {
+  if (!stub->decoder_context()->MakeCurrent()) {
     DLOG(ERROR) << "Failed to MakeCurrent()";
     return false;
   }
@@ -68,7 +68,7 @@ static bool BindImage(const base::WeakPtr<gpu::CommandBufferStub>& stub,
     return false;
   }
 
-  gpu::gles2::GLES2Decoder* command_decoder = stub->decoder();
+  gpu::DecoderContext* command_decoder = stub->decoder_context();
   command_decoder->BindImage(client_texture_id, texture_target, image.get(),
                              can_bind_to_sampler);
   return true;
@@ -77,7 +77,7 @@ static bool BindImage(const base::WeakPtr<gpu::CommandBufferStub>& stub,
 static gpu::gles2::ContextGroup* GetContextGroup(
     const base::WeakPtr<gpu::CommandBufferStub>& stub) {
   if (!stub) {
-    DLOG(ERROR) << "Stub is gone; no GLES2Decoder.";
+    DLOG(ERROR) << "Stub is gone; no DecoderContext.";
     return nullptr;
   }
 
@@ -399,9 +399,9 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     return;
   }
 
-  gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
+  gpu::DecoderContext* decoder_context = stub_->decoder_context();
   gpu::gles2::TextureManager* texture_manager =
-      command_decoder->GetContextGroup()->texture_manager();
+      stub_->context_group()->texture_manager();
 
   std::vector<PictureBuffer> buffers;
   std::vector<std::vector<scoped_refptr<gpu::gles2::TextureRef>>> textures;
@@ -423,7 +423,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
     }
     for (size_t j = 0; j < textures_per_buffer_; j++) {
       gpu::TextureBase* texture_base =
-          command_decoder->GetTextureBase(buffer_texture_ids[j]);
+          decoder_context->GetTextureBase(buffer_texture_ids[j]);
       if (!texture_base) {
         DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];
         NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
@@ -533,7 +533,7 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(const Picture& picture) {
   for (auto texture_ref : it->second) {
     GLenum target = texture_ref->texture()->target();
     gpu::gles2::TextureManager* texture_manager =
-        stub_->decoder()->GetContextGroup()->texture_manager();
+        stub_->context_group()->texture_manager();
     texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
   }
   uncleared_textures_.erase(it);

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -21,7 +21,6 @@
 namespace gpu {
 
 using gles2::ContextGroup;
-using gles2::GLES2Decoder;
 using gles2::TextureManager;
 using gles2::TextureRef;
 
@@ -29,9 +28,8 @@ using gles2::TextureRef;
 bool StreamTexture::Create(CommandBufferStub* owner_stub,
                            uint32_t client_texture_id,
                            int stream_id) {
-  GLES2Decoder* decoder = owner_stub->decoder();
   TextureManager* texture_manager =
-      decoder->GetContextGroup()->texture_manager();
+      owner_stub->context_group()->texture_manager();
   TextureRef* texture = texture_manager->GetTexture(client_texture_id);
 
   if (texture && (!texture->texture()->target() ||
@@ -104,10 +102,11 @@ void StreamTexture::OnWillDestroyStub() {
 std::unique_ptr<ui::ScopedMakeCurrent> StreamTexture::MakeStubCurrent() {
   std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
   bool needs_make_current =
-      !owner_stub_->decoder()->GetGLContext()->IsCurrent(NULL);
+      !owner_stub_->decoder_context()->GetGLContext()->IsCurrent(NULL);
   if (needs_make_current) {
     scoped_make_current.reset(new ui::ScopedMakeCurrent(
-        owner_stub_->decoder()->GetGLContext(), owner_stub_->surface()));
+        owner_stub_->decoder_context()->GetGLContext(),
+        owner_stub_->surface()));
   }
   return scoped_make_current;
 }
@@ -130,7 +129,7 @@ void StreamTexture::UpdateTexImage() {
     // far as the current context is concerned, but if we temporarily change
     // it, we have to keep the state intact in *that* context also.
     const gles2::ContextState* state =
-        owner_stub_->decoder()->GetContextState();
+        owner_stub_->decoder_context()->GetContextState();
     const gles2::TextureUnit& active_unit =
         state->texture_units[state->active_texture_unit];
     glBindTexture(GL_TEXTURE_EXTERNAL_OES,
@@ -161,7 +160,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
   UpdateTexImage();
 
   TextureManager* texture_manager =
-      owner_stub_->decoder()->GetContextGroup()->texture_manager();
+      owner_stub_->context_group()->texture_manager();
   gles2::Texture* texture =
       texture_manager->GetTextureForServiceId(texture_id_);
   if (texture) {

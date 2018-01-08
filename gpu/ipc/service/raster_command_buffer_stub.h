@@ -18,6 +18,7 @@ class GPU_IPC_SERVICE_EXPORT RasterCommandBufferStub
                           SequenceId sequence_id,
                           int32_t stream_id,
                           int32_t route_id);
+  ~RasterCommandBufferStub() override;
 
   // This must leave the GL context associated with the newly-created
   // CommandBufferStub current, so the GpuChannel can initialize

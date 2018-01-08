@@ -59,7 +59,7 @@ class GPU_EXPORT ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) = 0;
+      DecoderClient* client) = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
   // call LinkedProgramCacheSuccess.
@@ -70,7 +70,7 @@ class GPU_EXPORT ProgramCache {
       const LocationMap* bind_attrib_location_map,
       const std::vector<std::string>& transform_feedback_varyings,
       GLenum transform_feedback_buffer_mode,
-      GLES2DecoderClient* client) = 0;
+      DecoderClient* client) = 0;
 
   virtual void LoadProgram(const std::string& key,
                            const std::string& program) = 0;

@@ -542,7 +542,7 @@ void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
 const CommandBufferStub* GpuChannel::GetOneStub() const {
   for (const auto& kv : stubs_) {
     const CommandBufferStub* stub = kv.second.get();
-    if (stub->decoder() && !stub->decoder()->WasContextLost())
+    if (stub->decoder_context() && !stub->decoder_context()->WasContextLost())
       return stub;
   }
   return nullptr;
@@ -595,7 +595,7 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  if (share_group && !share_group->decoder()) {
+  if (share_group && !share_group->decoder_context()) {
     // This should catch test errors where we did not Initialize the
     // share_group's CommandBuffer.
     LOG(ERROR) << "ContextResult::kFatalFailure: "
@@ -603,7 +603,7 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  if (share_group && share_group->decoder()->WasContextLost()) {
+  if (share_group && share_group->decoder_context()->WasContextLost()) {
     // The caller should retry to get a context.
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "shared context was already lost";
@@ -647,7 +647,7 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   *result = ContextResult::kSuccess;
-  *capabilities = stub->decoder()->GetCapabilities();
+  *capabilities = stub->decoder_context()->GetCapabilities();
   stubs_[route_id] = std::move(stub);
 }
 

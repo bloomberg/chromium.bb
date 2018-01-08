@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
@@ -266,7 +267,7 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // messages directed at the command buffer. This ensures that the message
   // handler can assume that the context is current (not necessary for
   // RetireSyncPoint or WaitSyncPoint).
-  if (decoder_.get() &&
+  if (decoder_context_.get() &&
       message.type() != GpuCommandBufferMsg_SetGetBuffer::ID &&
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
@@ -315,8 +316,8 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 
   // Ensure that any delayed work that was created will be handled.
   if (have_context) {
-    if (decoder_)
-      decoder_->ProcessPendingQueries(false);
+    if (decoder_context_)
+      decoder_context_->ProcessPendingQueries(false);
     ScheduleDelayedWork(
         base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
   }
@@ -354,10 +355,10 @@ void CommandBufferStub::PerformWork() {
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
-  if (decoder_.get() && !MakeCurrent())
+  if (decoder_context_.get() && !MakeCurrent())
     return;
 
-  if (decoder_) {
+  if (decoder_context_) {
     uint32_t current_unprocessed_num =
         channel()->sync_point_manager()->GetUnprocessedOrderNum();
     // We're idle when no messages were processed or scheduled.
@@ -375,11 +376,11 @@ void CommandBufferStub::PerformWork() {
 
     if (is_idle) {
       last_idle_time_ = base::TimeTicks::Now();
-      decoder_->PerformIdleWork();
+      decoder_context_->PerformIdleWork();
     }
 
-    decoder_->ProcessPendingQueries(false);
-    decoder_->PerformPollingWork();
+    decoder_context_->ProcessPendingQueries(false);
+    decoder_context_->PerformPollingWork();
   }
 
   ScheduleDelayedWork(
@@ -396,9 +397,10 @@ bool CommandBufferStub::HasUnprocessedCommands() {
 }
 
 void CommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
-  bool has_more_work = decoder_.get() && (decoder_->HasPendingQueries() ||
-                                          decoder_->HasMoreIdleWork() ||
-                                          decoder_->HasPollingWork());
+  bool has_more_work =
+      decoder_context_.get() && (decoder_context_->HasPendingQueries() ||
+                                 decoder_context_->HasMoreIdleWork() ||
+                                 decoder_context_->HasPollingWork());
   if (!has_more_work) {
     last_idle_time_ = base::TimeTicks();
     return;
@@ -425,7 +427,7 @@ void CommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
   // for more work at the rate idle work is performed. This also ensures
   // that idle work is done as efficiently as possible without any
   // unnecessary delays.
-  if (command_buffer_->scheduled() && decoder_->HasMoreIdleWork()) {
+  if (command_buffer_->scheduled() && decoder_context_->HasMoreIdleWork()) {
     delay = base::TimeDelta();
   }
 
@@ -435,7 +437,7 @@ void CommandBufferStub::ScheduleDelayedWork(base::TimeDelta delay) {
 }
 
 bool CommandBufferStub::MakeCurrent() {
-  if (decoder_->MakeCurrent())
+  if (decoder_context_->MakeCurrent())
     return true;
   DLOG(ERROR) << "Context lost because MakeCurrent failed.";
   command_buffer_->SetParseError(error::kLostContext);
@@ -476,10 +478,11 @@ void CommandBufferStub::Destroy() {
   }
 
   bool have_context = false;
-  if (decoder_ && decoder_->GetGLContext()) {
+  if (decoder_context_ && decoder_context_->GetGLContext()) {
     // Try to make the context current regardless of whether it was lost, so we
     // don't leak resources.
-    have_context = decoder_->GetGLContext()->MakeCurrent(surface_.get());
+    have_context =
+        decoder_context_->GetGLContext()->MakeCurrent(surface_.get());
   }
   for (auto& observer : destruction_observers_)
     observer.OnWillDestroyStub();
@@ -491,9 +494,9 @@ void CommandBufferStub::Destroy() {
   // calls.
   surface_ = nullptr;
 
-  if (decoder_) {
-    decoder_->Destroy(have_context);
-    decoder_.reset();
+  if (decoder_context_) {
+    decoder_context_->Destroy(have_context);
+    decoder_context_.reset();
   }
 
   command_buffer_.reset();
@@ -517,17 +520,17 @@ void CommandBufferStub::OnSetGetBuffer(int32_t shm_id) {
 
 void CommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
   TRACE_EVENT0("gpu", "CommandBufferStub::OnTakeFrontBuffer");
-  if (!decoder_) {
+  if (!decoder_context_) {
     LOG(ERROR) << "Can't take front buffer before initialization.";
     return;
   }
 
-  decoder_->TakeFrontBuffer(mailbox);
+  decoder_context_->TakeFrontBuffer(mailbox);
 }
 
 void CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
                                             bool is_lost) {
-  decoder_->ReturnFrontBuffer(mailbox, is_lost);
+  decoder_context_->ReturnFrontBuffer(mailbox, is_lost);
 }
 
 CommandBufferServiceClient::CommandBatchProcessedResult
@@ -643,7 +646,7 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset,
   last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
-  command_buffer_->Flush(put_offset, decoder_.get());
+  command_buffer_->Flush(put_offset, decoder_context_.get());
   CommandBuffer::State post_state = command_buffer_->GetState();
 
   if (pre_state.get_offset != post_state.get_offset)
@@ -703,8 +706,8 @@ void CommandBufferStub::OnSignalAck(uint32_t id) {
 }
 
 void CommandBufferStub::OnSignalQuery(uint32_t query_id, uint32_t id) {
-  if (decoder_) {
-    gles2::QueryManager* query_manager = decoder_->GetQueryManager();
+  if (decoder_context_) {
+    gles2::QueryManager* query_manager = decoder_context_->GetQueryManager();
     if (query_manager) {
       gles2::QueryManager::Query* query = query_manager->GetQuery(query_id);
       if (query) {
@@ -727,8 +730,8 @@ void CommandBufferStub::OnCreateGpuFenceFromHandle(
     return;
   }
 
-  if (decoder_->GetGpuFenceManager()->CreateGpuFenceFromHandle(gpu_fence_id,
-                                                               handle))
+  if (decoder_context_->GetGpuFenceManager()->CreateGpuFenceFromHandle(
+          gpu_fence_id, handle))
     return;
 
   // The insertion failed. This shouldn't happen, force context loss to avoid
@@ -744,7 +747,7 @@ void CommandBufferStub::OnGetGpuFenceHandle(uint32_t gpu_fence_id) {
     return;
   }
 
-  auto* manager = decoder_->GetGpuFenceManager();
+  auto* manager = decoder_context_->GetGpuFenceManager();
   gfx::GpuFenceHandle handle;
   if (manager->IsValidGpuFence(gpu_fence_id)) {
     std::unique_ptr<gfx::GpuFence> gpu_fence =
@@ -774,7 +777,7 @@ void CommandBufferStub::OnFenceSyncRelease(uint64_t release) {
 
 void CommandBufferStub::OnDescheduleUntilFinished() {
   DCHECK(command_buffer_->scheduled());
-  DCHECK(decoder_->HasPollingWork());
+  DCHECK(decoder_context_->HasPollingWork());
 
   command_buffer_->SetScheduled(false);
   channel_->OnCommandBufferDescheduled(this);
@@ -840,7 +843,7 @@ void CommandBufferStub::OnCreateImage(
   }
 
   if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
-          format, decoder_->GetCapabilities())) {
+          format, decoder_context_->GetCapabilities())) {
     LOG(ERROR) << "Format is not supported.";
     return;
   }
@@ -922,7 +925,8 @@ bool CommandBufferStub::CheckContextLost() {
 
   if (was_lost) {
     bool was_lost_by_robustness =
-        decoder_ && decoder_->WasContextLostByRobustnessExtension();
+        decoder_context_ &&
+        decoder_context_->WasContextLostByRobustnessExtension();
 
     // Work around issues with recovery by allowing a new GPU process to launch.
     if ((was_lost_by_robustness ||
@@ -949,8 +953,8 @@ void CommandBufferStub::MarkContextLost() {
     return;
 
   command_buffer_->SetContextLostReason(error::kUnknown);
-  if (decoder_)
-    decoder_->MarkContextLost(error::kUnknown);
+  if (decoder_context_)
+    decoder_context_->MarkContextLost(error::kUnknown);
   command_buffer_->SetParseError(error::kLostContext);
 }
 

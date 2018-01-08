@@ -23,12 +23,12 @@
 
 namespace gpu {
 
+class DecoderClient;
 struct GpuPreferences;
 
 namespace gles2 {
 
 class FeatureInfo;
-class GLES2DecoderClient;
 class ProgramCache;
 class ProgramManager;
 class ProgressReporter;
@@ -327,7 +327,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // Performs glLinkProgram and related activities.
   bool Link(ShaderManager* manager,
             VaryingsPackingOption varyings_packing_option,
-            GLES2DecoderClient* client);
+            DecoderClient* client);
 
   // Performs glValidateProgram and related activities.
   void Validate();

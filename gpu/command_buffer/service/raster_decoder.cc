@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_ids.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_context.h"
@@ -49,11 +50,12 @@ RasterDecoder::CommandInfo RasterDecoder::command_info[] = {
 #undef GLES2_CMD_OP
 };
 
-RasterDecoder::RasterDecoder(GLES2DecoderClient* client,
+RasterDecoder::RasterDecoder(DecoderClient* client,
                              CommandBufferServiceBase* command_buffer_service,
                              Outputter* outputter,
                              ContextGroup* group)
-    : GLES2Decoder(command_buffer_service, outputter),
+    : CommonDecoder(command_buffer_service),
+      initialized_(false),
       commands_to_process_(0),
       current_decoder_error_(error::kNoError),
       client_(client),
@@ -62,11 +64,13 @@ RasterDecoder::RasterDecoder(GLES2DecoderClient* client,
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(), this, &logger_),
+      debug_(false),
+      log_commands_(false),
       weak_ptr_factory_(this) {}
 
 RasterDecoder::~RasterDecoder() {}
 
-base::WeakPtr<GLES2Decoder> RasterDecoder::AsWeakPtr() {
+base::WeakPtr<DecoderContext> RasterDecoder::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -82,7 +86,7 @@ gpu::ContextResult RasterDecoder::Initialize(
 
   state_.set_api(gl::g_current_gl_context);
 
-  set_initialized();
+  initialized_ = true;
 
   // TODO(backer): Remove temporary hack once we use a separate set of
   // commands. Thread safe because Initialize is always called from CrGpuMain
@@ -106,8 +110,9 @@ gpu::ContextResult RasterDecoder::Initialize(
     return gpu::ContextResult::kFatalFailure;
   }
 
-  if (group_->gpu_preferences().enable_gpu_debugging)
-    set_debug(true);
+  // FIXME(backer):
+  // if (group_->gpu_preferences().enable_gpu_debugging)
+  //   set_debug(true);
 
   if (group_->gpu_preferences().enable_gpu_command_logging)
     set_log_commands(true);
@@ -128,24 +133,22 @@ gpu::ContextResult RasterDecoder::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
-void RasterDecoder::Destroy(bool have_context) {}
+bool RasterDecoder::initialized() const {
+  return initialized_;
+}
 
-void RasterDecoder::SetSurface(const scoped_refptr<gl::GLSurface>& surface) {
+const gles2::ContextState* RasterDecoder::GetContextState() {
   NOTIMPLEMENTED();
+  return nullptr;
 }
-void RasterDecoder::ReleaseSurface() {
-  NOTIMPLEMENTED();
-}
+
+void RasterDecoder::Destroy(bool have_context) {}
 
 void RasterDecoder::TakeFrontBuffer(const Mailbox& mailbox) {
   NOTIMPLEMENTED();
 }
 void RasterDecoder::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
   NOTIMPLEMENTED();
-}
-bool RasterDecoder::ResizeOffscreenFramebuffer(const gfx::Size& size) {
-  NOTIMPLEMENTED();
-  return true;
 }
 
 // Make this decoder's GL context current.
@@ -168,23 +171,8 @@ bool RasterDecoder::MakeCurrent() {
   return true;
 }
 
-GLES2Util* RasterDecoder::GetGLES2Util() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 gl::GLContext* RasterDecoder::GetGLContext() {
   return context_.get();
-}
-
-ContextGroup* RasterDecoder::GetContextGroup() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-const FeatureInfo* RasterDecoder::GetFeatureInfo() const {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 Capabilities RasterDecoder::GetCapabilities() {
@@ -229,10 +217,6 @@ void RasterDecoder::RestoreRenderbufferBindings() {
   NOTIMPLEMENTED();
 }
 
-void RasterDecoder::RestoreGlobalState() const {
-  NOTIMPLEMENTED();
-}
-
 void RasterDecoder::RestoreProgramBindings() const {
   NOTIMPLEMENTED();
 }
@@ -253,67 +237,12 @@ void RasterDecoder::RestoreAllExternalTextureBindingsIfNeeded() {
   NOTIMPLEMENTED();
 }
 
-void RasterDecoder::RestoreDeviceWindowRectangles() const {
-  NOTIMPLEMENTED();
-}
-
-void RasterDecoder::ClearAllAttributes() const {
-  NOTIMPLEMENTED();
-}
-
-void RasterDecoder::RestoreAllAttributes() const {
-  NOTIMPLEMENTED();
-}
-
-void RasterDecoder::SetIgnoreCachedStateForTest(bool ignore) {
-  NOTIMPLEMENTED();
-}
-
-void RasterDecoder::SetForceShaderNameHashingForTest(bool force) {
-  NOTIMPLEMENTED();
-}
-
-uint32_t RasterDecoder::GetAndClearBackbufferClearBitsForTest() {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-size_t RasterDecoder::GetSavedBackTextureCountForTest() {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
-size_t RasterDecoder::GetCreatedBackTextureCountForTest() {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 QueryManager* RasterDecoder::GetQueryManager() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
 GpuFenceManager* RasterDecoder::GetGpuFenceManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-FramebufferManager* RasterDecoder::GetFramebufferManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-TransformFeedbackManager* RasterDecoder::GetTransformFeedbackManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-VertexArrayManager* RasterDecoder::GetVertexArrayManager() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-ImageManager* RasterDecoder::GetImageManagerForTest() {
   NOTIMPLEMENTED();
   return nullptr;
 }
@@ -345,63 +274,9 @@ void RasterDecoder::PerformPollingWork() {
   NOTIMPLEMENTED();
 }
 
-bool RasterDecoder::GetServiceTextureId(uint32_t client_texture_id,
-                                        uint32_t* service_texture_id) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 TextureBase* RasterDecoder::GetTextureBase(uint32_t client_id) {
   NOTIMPLEMENTED();
   return nullptr;
-}
-
-bool RasterDecoder::ClearLevel(Texture* texture,
-                               unsigned target,
-                               int level,
-                               unsigned format,
-                               unsigned type,
-                               int xoffset,
-                               int yoffset,
-                               int width,
-                               int height) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RasterDecoder::ClearCompressedTextureLevel(Texture* texture,
-                                                unsigned target,
-                                                int level,
-                                                unsigned format,
-                                                int width,
-                                                int height) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RasterDecoder::IsCompressedTextureFormat(unsigned format) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool RasterDecoder::ClearLevel3D(Texture* texture,
-                                 unsigned target,
-                                 int level,
-                                 unsigned format,
-                                 unsigned type,
-                                 int width,
-                                 int height,
-                                 int depth) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-ErrorState* RasterDecoder::GetErrorState() {
-  return state_.GetErrorState();
-}
-
-void RasterDecoder::WaitForReadPixels(base::Closure callback) {
-  NOTIMPLEMENTED();
 }
 
 bool RasterDecoder::WasContextLost() const {
@@ -422,12 +297,9 @@ bool RasterDecoder::CheckResetStatus() {
   return false;
 }
 
-Logger* RasterDecoder::GetLogger() {
-  return &logger_;
-}
-
 void RasterDecoder::BeginDecoding() {
-  NOTIMPLEMENTED();
+  // TODO(backer): Add support the tracing commands.
+  gpu_debug_commands_ = log_commands() || debug();
 }
 
 void RasterDecoder::EndDecoding() {
@@ -441,10 +313,11 @@ const char* RasterDecoder::GetCommandName(unsigned int command_id) const {
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
 }
 
-error::Error RasterDecoder::DoCommands(unsigned int num_commands,
-                                       const volatile void* buffer,
-                                       int num_entries,
-                                       int* entries_processed) {
+template <bool DebugImpl>
+error::Error RasterDecoder::DoCommandsImpl(unsigned int num_commands,
+                                           const volatile void* buffer,
+                                           int num_entries,
+                                           int* entries_processed) {
   DCHECK(entries_processed);
   commands_to_process_ = num_commands;
   error::Error result = error::kNoError;
@@ -468,6 +341,11 @@ error::Error RasterDecoder::DoCommands(unsigned int num_commands,
       break;
     }
 
+    if (DebugImpl && log_commands()) {
+      LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]"
+                 << "cmd: " << GetCommandName(command);
+    }
+
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstGLES2Command;
     if (command_index < arraysize(command_info)) {
@@ -483,6 +361,15 @@ error::Error RasterDecoder::DoCommands(unsigned int num_commands,
                      << command_index << ") is NOTIMPLEMENTED";
         } else {
           result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
+          if (DebugImpl && debug() && !WasContextLost()) {
+            GLenum error;
+            while ((error = api()->glGetErrorFn()) != GL_NO_ERROR) {
+              LOG(ERROR) << "[" << logger_.GetLogPrefix() << "] "
+                         << "GL ERROR: " << GLES2Util::GetStringEnum(error)
+                         << " : " << GetCommandName(command);
+              LOCAL_SET_GL_ERROR(error, "DoCommand", "GL error from driver");
+            }
+          }
         }
       } else {
         result = error::kInvalidArguments;
@@ -513,15 +400,21 @@ error::Error RasterDecoder::DoCommands(unsigned int num_commands,
   return result;
 }
 
-const ContextState* RasterDecoder::GetContextState() {
-  NOTIMPLEMENTED();
-  return nullptr;
+error::Error RasterDecoder::DoCommands(unsigned int num_commands,
+                                       const volatile void* buffer,
+                                       int num_entries,
+                                       int* entries_processed) {
+  if (gpu_debug_commands_) {
+    return DoCommandsImpl<true>(num_commands, buffer, num_entries,
+                                entries_processed);
+  } else {
+    return DoCommandsImpl<false>(num_commands, buffer, num_entries,
+                                 entries_processed);
+  }
 }
 
-scoped_refptr<ShaderTranslatorInterface> RasterDecoder::GetTranslator(
-    unsigned int type) {
-  NOTIMPLEMENTED();
-  return nullptr;
+base::StringPiece RasterDecoder::GetLogPrefix() {
+  return logger_.GetLogPrefix();
 }
 
 void RasterDecoder::BindImage(uint32_t client_texture_id,
@@ -529,6 +422,14 @@ void RasterDecoder::BindImage(uint32_t client_texture_id,
                               gl::GLImage* image,
                               bool can_bind_to_sampler) {
   NOTIMPLEMENTED();
+}
+
+gles2::ContextGroup* RasterDecoder::GetContextGroup() {
+  return group_.get();
+}
+
+gles2::ErrorState* RasterDecoder::GetErrorState() {
+  return state_.GetErrorState();
 }
 
 void RasterDecoder::OnContextLostError() {

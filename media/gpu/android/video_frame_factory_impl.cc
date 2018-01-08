@@ -29,7 +29,7 @@ namespace media {
 namespace {
 
 bool MakeContextCurrent(gpu::CommandBufferStub* stub) {
-  return stub && stub->decoder()->MakeCurrent();
+  return stub && stub->decoder_context()->MakeCurrent();
 }
 
 }  // namespace
@@ -133,7 +133,7 @@ scoped_refptr<SurfaceTextureGLOwner> GpuVideoFrameFactory::Initialize(
   if (!MakeContextCurrent(stub_))
     return nullptr;
   stub_->AddDestructionObserver(this);
-  decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder());
+  decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
   return SurfaceTextureGLOwnerImpl::Create();
 }
 
@@ -188,7 +188,7 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
   if (!MakeContextCurrent(stub_))
     return;
 
-  gpu::gles2::ContextGroup* group = stub_->decoder()->GetContextGroup();
+  gpu::gles2::ContextGroup* group = stub_->decoder_context()->GetContextGroup();
   if (!group)
     return;
   gpu::gles2::TextureManager* texture_manager = group->texture_manager();

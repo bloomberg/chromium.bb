@@ -67,8 +67,7 @@ class ProgramBinaryEmulator {
   const char* binary_;
 };
 
-class MemoryProgramCacheTest : public GpuServiceTest,
-                               public GLES2DecoderClient {
+class MemoryProgramCacheTest : public GpuServiceTest, public DecoderClient {
  public:
   static const size_t kCacheSizeBytes = 1024;
   static const bool kDisableGpuDiskCache = false;

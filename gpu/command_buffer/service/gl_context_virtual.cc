@@ -5,8 +5,8 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 
 #include "base/callback.h"
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_state_restorer_impl.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
@@ -16,7 +16,7 @@ namespace gpu {
 
 GLContextVirtual::GLContextVirtual(gl::GLShareGroup* share_group,
                                    gl::GLContext* shared_context,
-                                   base::WeakPtr<gles2::GLES2Decoder> decoder)
+                                   base::WeakPtr<DecoderContext> decoder)
     : GLContext(share_group),
       shared_context_(shared_context),
       decoder_(decoder) {}

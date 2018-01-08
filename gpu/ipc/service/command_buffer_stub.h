@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
@@ -42,6 +42,7 @@ struct GPUCreateCommandBufferConfig;
 struct GpuCommandBufferMsg_CreateImage_Params;
 
 namespace gpu {
+class DecoderContext;
 struct Mailbox;
 struct SyncToken;
 struct WaitForCommandState;
@@ -52,7 +53,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
     : public IPC::Listener,
       public IPC::Sender,
       public CommandBufferServiceClient,
-      public gles2::GLES2DecoderClient,
+      public DecoderClient,
       public base::SupportsWeakPtr<CommandBufferStub> {
  public:
   class DestructionObserver {
@@ -91,7 +92,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 
-  // GLES2DecoderClient implementation:
+  // DecoderClient implementation:
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
@@ -107,7 +108,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // Whether there are commands in the buffer that haven't been processed.
   bool HasUnprocessedCommands();
 
-  gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
+  DecoderContext* decoder_context() const { return decoder_context_.get(); }
   GpuChannel* channel() const { return channel_; }
 
   // Unique command buffer ID for this command buffer stub.
@@ -137,6 +138,12 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   gles2::MemoryTracker* CreateMemoryTracker(
       const GPUCreateCommandBufferConfig init_params) const;
 
+  // Must be called during Initialize(). Takes ownership to co-ordinate
+  // teardown in Destroy().
+  void set_decoder_context(std::unique_ptr<DecoderContext> decoder_context) {
+    decoder_context_ = std::move(decoder_context);
+  }
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the CommandBufferStubs that they own when
   // they are destroyed. So a raw pointer is safe.
@@ -153,7 +160,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   bool use_virtualized_gl_context_;
 
   std::unique_ptr<CommandBufferService> command_buffer_;
-  std::unique_ptr<gles2::GLES2Decoder> decoder_;
 
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
@@ -229,6 +235,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // Set driver bug workarounds and disabled GL extensions to the context.
   static void SetContextGpuFeatureInfo(gl::GLContext* context,
                                        const GpuFeatureInfo& gpu_feature_info);
+
+  std::unique_ptr<DecoderContext> decoder_context_;
 
   uint32_t last_flush_id_;
 

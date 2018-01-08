@@ -28,7 +28,7 @@
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
@@ -86,7 +86,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     : public CommandBuffer,
       public GpuControl,
       public CommandBufferServiceClient,
-      public gles2::GLES2DecoderClient,
+      public DecoderClient,
       public ImageTransportSurfaceDelegate {
  public:
   class Service;
@@ -153,7 +153,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
 
-  // GLES2DecoderClient implementation:
+  // DecoderClient implementation:
   void OnConsoleMessage(int32_t id, const std::string& message) override;
   void CacheShader(const std::string& key, const std::string& shader) override;
   void OnFenceSyncRelease(uint64_t release) override;
