@@ -5382,10 +5382,12 @@ void WebGLRenderingContextBase::TexImageBitmapByGPU(
     GLint xoffset,
     GLint yoffset,
     const IntRect& source_sub_rect) {
+  // We hard-code premultiply_alpha and flip_y values because these values
+  // should have been already manipulated during construction of ImageBitmap.
   bitmap->BitmapImage()->CopyToTexture(
       GetDrawingBuffer()->ContextProvider()->ContextGL(), target,
-      target_texture, true /* unpack_premultiply_alpha */, unpack_flip_y_,
-      IntPoint(xoffset, yoffset), source_sub_rect);
+      target_texture, true /* unpack_premultiply_alpha */,
+      false /* unpack_flip_y_ */, IntPoint(xoffset, yoffset), source_sub_rect);
 }
 
 void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
