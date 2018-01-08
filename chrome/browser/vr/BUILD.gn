@@ -245,6 +245,7 @@ test("vr_common_unittests") {
     "animation_player_unittest.cc",
     "databinding/binding_unittest.cc",
     "databinding/vector_binding_unittest.cc",
+    "elements/button_unittest.cc",
     "elements/disc_button_unittest.cc",
     "elements/exit_prompt_unittest.cc",
     "elements/linear_layout_unittest.cc",

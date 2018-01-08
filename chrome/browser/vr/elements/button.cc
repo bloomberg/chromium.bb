@@ -97,6 +97,10 @@ void Button::HandleButtonUp() {
 
 void Button::OnStateUpdated() {
   pressed_ = hovered_ ? down_ : false;
+  background_->SetColor(colors_.GetBackgroundColor(hovered_, pressed_));
+
+  if (hover_offset_ == 0.0f)
+    return;
 
   if (hovered()) {
     background_->SetTranslate(0.0, 0.0, hover_offset_);
@@ -106,7 +110,6 @@ void Button::OnStateUpdated() {
     background_->SetTranslate(0.0, 0.0, 0.0);
     hit_plane_->SetScale(1.0f, 1.0f, 1.0f);
   }
-  background_->SetColor(colors_.GetBackgroundColor(hovered_, pressed_));
 }
 
 void Button::OnSetDrawPhase() {
