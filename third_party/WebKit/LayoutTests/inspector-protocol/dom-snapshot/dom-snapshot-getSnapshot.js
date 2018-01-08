@@ -10,7 +10,7 @@
   `);
 
   function stabilize(key, value) {
-    var unstableKeys = ['documentURL', 'baseURL', 'frameId', 'backendNodeId'];
+    var unstableKeys = ['documentURL', 'baseURL', 'frameId', 'backendNodeId', 'scriptId'];
     if (unstableKeys.indexOf(key) !== -1)
       return '<' + typeof(value) + '>';
     if (typeof value === 'string' && value.indexOf('/dom-snapshot/') !== -1)
