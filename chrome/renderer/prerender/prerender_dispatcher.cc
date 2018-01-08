@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/renderer/prerender/prerender_extra_data.h"
@@ -24,7 +25,8 @@ namespace prerender {
 using blink::WebPrerender;
 using blink::WebPrerenderingSupport;
 
-PrerenderDispatcher::PrerenderDispatcher() {
+PrerenderDispatcher::PrerenderDispatcher()
+    : process_start_time_(base::TimeTicks::Now()) {
   WebPrerenderingSupport::Initialize(this);
 }
 
@@ -34,6 +36,19 @@ PrerenderDispatcher::~PrerenderDispatcher() {
 
 bool PrerenderDispatcher::IsPrerenderURL(const GURL& url) const {
   return running_prerender_urls_.count(url) >= 1;
+}
+
+void PrerenderDispatcher::IncrementPrefetchCount() {
+  prefetch_count_++;
+}
+
+void PrerenderDispatcher::DecrementPrefetchCount() {
+  if (!--prefetch_count_ && prefetch_finished_) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Prerender.NoStatePrefetchRendererLifetimeExtension",
+        base::TimeTicks::Now() - prefetch_parsed_time_);
+    content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
+  }
 }
 
 void PrerenderDispatcher::OnPrerenderStart(int prerender_id) {
@@ -175,7 +190,15 @@ void PrerenderDispatcher::Abandon(const WebPrerender& prerender) {
 }
 
 void PrerenderDispatcher::PrefetchFinished() {
-  content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
+  prefetch_parsed_time_ = base::TimeTicks::Now();
+  if (prefetch_count_) {
+    prefetch_finished_ = true;
+  } else {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Prerender.NoStatePrefetchRendererParseTime",
+        prefetch_parsed_time_ - process_start_time_);
+    content::RenderThread::Get()->Send(new PrerenderHostMsg_PrefetchFinished());
+  }
 }
 
 }  // namespace prerender

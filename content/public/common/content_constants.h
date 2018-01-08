@@ -61,6 +61,9 @@ extern const int kStatsMaxCounters;
 // a browser-supplied sequence number.
 CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
 
+// How long to keep a detachable resource load alive before aborting it.
+CONTENT_EXPORT extern const int kDefaultDetachableCancelDelayMs;
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_
