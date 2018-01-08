@@ -38,26 +38,6 @@
 
 namespace chrome {
 
-namespace {
-
-void ShowBadFlagsInfoBar(content::WebContents* web_contents,
-                         int message_id,
-                         const char* flag) {
-  std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(flag);
-  if (!switch_value.empty())
-    switch_value = "=" + switch_value;
-  SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents),
-      infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, nullptr,
-      l10n_util::GetStringFUTF16(
-          message_id,
-          base::UTF8ToUTF16(std::string("--") + flag + switch_value)),
-      false);
-}
-
-}  // namespace
-
 void ShowBadFlagsPrompt(Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -148,6 +128,22 @@ void ShowBadFlagsPrompt(Browser* browser) {
       return;
     }
   }
+}
+
+void ShowBadFlagsInfoBar(content::WebContents* web_contents,
+                         int message_id,
+                         const char* flag) {
+  std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(flag);
+  if (!switch_value.empty())
+    switch_value = "=" + switch_value;
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents),
+      infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, nullptr,
+      l10n_util::GetStringFUTF16(
+          message_id,
+          base::UTF8ToUTF16(std::string("--") + flag + switch_value)),
+      false);
 }
 
 void MaybeShowInvalidUserDataDirWarningDialog() {
