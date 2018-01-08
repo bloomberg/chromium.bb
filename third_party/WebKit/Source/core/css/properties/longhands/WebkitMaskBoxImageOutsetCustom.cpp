@@ -5,6 +5,8 @@
 #include "core/css/properties/longhands/WebkitMaskBoxImageOutset.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -14,6 +16,16 @@ const CSSValue* WebkitMaskBoxImageOutset::ParseSingleValue(
     const CSSParserContext&,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ConsumeBorderImageOutset(range);
+}
+
+const CSSValue* WebkitMaskBoxImageOutset::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForNinePieceImageQuad(
+      style.MaskBoxImage().Outset(), style);
 }
 
 }  // namespace CSSLonghand

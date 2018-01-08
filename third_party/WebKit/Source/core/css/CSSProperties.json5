@@ -718,17 +718,17 @@
     },
     {
       name: "background-attachment",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-blend-mode",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-clip",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
@@ -753,18 +753,18 @@
     },
     {
       name: "background-origin",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "background-position-x",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "background-position-y",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
@@ -861,24 +861,24 @@
     },
     {
       name: "border-image-outset",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-repeat",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-slice",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "border-image-source",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Image"],
@@ -886,7 +886,7 @@
     },
     {
       name: "border-image-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
@@ -1720,7 +1720,7 @@
     },
     {
       name: "marker-end",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       name_for_methods: "MarkerEndResource",
@@ -1728,7 +1728,7 @@
     },
     {
       name: "marker-mid",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       name_for_methods: "MarkerMidResource",
@@ -1736,7 +1736,7 @@
     },
     {
       name: "marker-start",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
       name_for_methods: "MarkerStartResource",
@@ -1744,14 +1744,14 @@
     },
     {
       name: "mask",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       svg: true,
       name_for_methods: "MaskerResource",
       converter: "ConvertFragmentIdentifier",
     },
     {
       name: "mask-source-type",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSMaskSourceType",
       custom_apply_functions_all: true,
     },
@@ -2878,7 +2878,7 @@
     },
     {
       name: "-webkit-border-image",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_value: true,
     },
     {
@@ -2971,7 +2971,7 @@
     },
     {
       name: "-webkit-box-reflect",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       field_group: "*",
       field_template: "pointer",
       include_paths: ["core/style/StyleReflection.h"],
@@ -3141,41 +3141,41 @@
     },
     {
       name: "-webkit-mask-box-image-outset",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-source",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_value: true,
     },
     {
       name: "-webkit-mask-box-image-width",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-clip",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-composite",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
@@ -3186,18 +3186,18 @@
     },
     {
       name: "-webkit-mask-origin",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-x",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-y",
-      property_methods: ["ParseSingleValue"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
     },
@@ -3846,7 +3846,7 @@
         "border-image-source", "border-image-slice", "border-image-width",
         "border-image-outset", "border-image-repeat"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "border-left",
@@ -4192,7 +4192,7 @@
         "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset",
         "-webkit-mask-box-image-repeat"
       ],
-      property_methods: ["ParseShorthand"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "-webkit-mask-position",

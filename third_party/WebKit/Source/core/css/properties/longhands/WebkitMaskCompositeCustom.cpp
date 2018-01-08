@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/WebkitMaskComposite.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,6 +16,19 @@ const CSSValue* WebkitMaskComposite::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSParsingUtils::ConsumeBackgroundComposite, range);
+}
+
+const CSSValue* WebkitMaskComposite::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  const FillLayer* curr_layer = &style.MaskLayers();
+  for (; curr_layer; curr_layer = curr_layer->Next())
+    list->Append(*CSSIdentifierValue::Create(curr_layer->Composite()));
+  return list;
 }
 
 }  // namespace CSSLonghand

@@ -5,6 +5,7 @@
 #include "core/css/properties/longhands/MaskSourceType.h"
 
 #include "core/css/properties/CSSParsingUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -15,6 +16,30 @@ const CSSValue* MaskSourceType::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSParsingUtils::ConsumeMaskSourceType, range);
+}
+
+static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
+  switch (type) {
+    case EMaskSourceType::kAlpha:
+      return CSSIdentifierValue::Create(CSSValueAlpha);
+    case EMaskSourceType::kLuminance:
+      return CSSIdentifierValue::Create(CSSValueLuminance);
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+const CSSValue* MaskSourceType::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
+       curr_layer = curr_layer->Next())
+    list->Append(*ValueForFillSourceType(curr_layer->MaskSourceType()));
+  return list;
 }
 
 }  // namespace CSSLonghand
