@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_TERM_BREAK_ITERATOR_H_
-#define ASH_APP_LIST_MODEL_SEARCH_TERM_BREAK_ITERATOR_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_
+#define ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_
 
 #include <stddef.h>
 
 #include <memory>
 
-#include "ash/app_list/model/app_list_model_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
@@ -27,7 +27,7 @@ namespace app_list {
 //  e.g.
 //   CamelCase -> Camel, Case
 //   Python2.7 -> Python, 2.7
-class APP_LIST_MODEL_EXPORT TermBreakIterator {
+class ASH_PUBLIC_EXPORT TermBreakIterator {
  public:
   // Note that |word| must out live this iterator.
   explicit TermBreakIterator(const base::string16& word);
@@ -70,4 +70,4 @@ class APP_LIST_MODEL_EXPORT TermBreakIterator {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_TERM_BREAK_ITERATOR_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_TERM_BREAK_ITERATOR_H_

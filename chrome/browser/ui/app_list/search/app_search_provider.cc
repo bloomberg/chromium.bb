@@ -13,8 +13,8 @@
 #include <unordered_set>
 #include <utility>
 
-#include "ash/app_list/model/search/tokenized_string.h"
-#include "ash/app_list/model/search/tokenized_string_match.h"
+#include "ash/public/cpp/app_list/tokenized_string.h"
+#include "ash/public/cpp/app_list/tokenized_string_match.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/model/search/tokenized_string.h"
+#include "ash/public/cpp/app_list/tokenized_string.h"
 
 #include <stddef.h>
 
-#include "ash/app_list/model/search/term_break_iterator.h"
+#include "ash/public/cpp/app_list/term_break_iterator.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"

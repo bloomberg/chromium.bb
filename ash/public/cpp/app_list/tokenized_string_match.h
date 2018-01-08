@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_MATCH_H_
-#define ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_MATCH_H_
+#ifndef ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_
+#define ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_
 
 #include <vector>
 
-#include "ash/app_list/model/app_list_model_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/range/range.h"
@@ -22,7 +22,7 @@ class TokenizedString;
 // of text. A relevance of zero means the two are completely different to each
 // other. The higher the relevance score, the better the two strings are
 // matched. Matched portions of text are stored as index ranges.
-class APP_LIST_MODEL_EXPORT TokenizedStringMatch {
+class ASH_PUBLIC_EXPORT TokenizedStringMatch {
  public:
   typedef std::vector<gfx::Range> Hits;
 
@@ -51,4 +51,4 @@ class APP_LIST_MODEL_EXPORT TokenizedStringMatch {
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_MODEL_SEARCH_TOKENIZED_STRING_MATCH_H_
+#endif  // ASH_PUBLIC_CPP_APP_LIST_TOKENIZED_STRING_MATCH_H_

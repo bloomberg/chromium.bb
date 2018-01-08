@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/model/search/tokenized_string_char_iterator.h"
+#include "ash/public/cpp/app_list/tokenized_string_char_iterator.h"
 
 #include <string>
 #include <vector>
