@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "components/cronet/android/cronet_jni_registration.h"
 #include "components/cronet/version.h"
@@ -46,9 +45,6 @@ net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
 bool NativeInit() {
   if (!base::android::OnJNIOnLoadInit())
     return false;
-  // Initializes the statistics recorder system. This needs to be done before
-  // emitting histograms to prevent memory leaks (crbug.com/707836).
-  base::StatisticsRecorder::Initialize();
   if (!base::TaskScheduler::GetInstance())
     base::TaskScheduler::CreateAndStartWithDefaultParams("Cronet");
 

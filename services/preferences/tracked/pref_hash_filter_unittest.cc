@@ -549,7 +549,6 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
         reset_recorded_(false) {}
 
   void SetUp() override {
-    base::StatisticsRecorder::Initialize();
     Reset();
   }
 

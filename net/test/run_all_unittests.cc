@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
+
 #include "base/build_time.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -50,9 +51,6 @@ bool VerifyBuildIsTimely() {
 }  // namespace
 
 int main(int argc, char** argv) {
-  // Record histograms, so we can get histograms data in tests.
-  base::StatisticsRecorder::Initialize();
-
   if (!VerifyBuildIsTimely())
     return 1;
 

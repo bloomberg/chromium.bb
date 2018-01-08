@@ -140,7 +140,6 @@ void PreregisterHistogram(const char* name,
                           int32_t flags) {
   base::StringPiece name_piece(name);
 
-  DCHECK(base::StatisticsRecorder::IsActive());
   DCHECK(base::Histogram::InspectConstructionArguments(
       name_piece, &minimum, &maximum, &bucket_count));
   DCHECK(!base::StatisticsRecorder::FindHistogram(name_piece))
@@ -167,7 +166,6 @@ void PreregisterHistogram(const char* name,
 } // namespace
 
 void PreregisterAllGroupedHistograms() {
-  base::StatisticsRecorder::Initialize();
   for (size_t i = 0; i < arraysize(kHistogramsToGroup); ++i) {
     PreregisterHistogram(
         kHistogramsToGroup[i].name,

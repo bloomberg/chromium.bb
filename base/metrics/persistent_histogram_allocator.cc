@@ -1090,9 +1090,6 @@ GlobalHistogramAllocator::GlobalHistogramAllocator(
     std::unique_ptr<PersistentMemoryAllocator> memory)
     : PersistentHistogramAllocator(std::move(memory)),
       import_iterator_(this) {
-  // Make sure the StatisticsRecorder is initialized to prevent duplicate
-  // histograms from being created. It's safe to call this multiple times.
-  StatisticsRecorder::Initialize();
 }
 
 void GlobalHistogramAllocator::ImportHistogramsToStatisticsRecorder() {

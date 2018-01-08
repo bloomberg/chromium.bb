@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -273,9 +272,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   }
 
   base::PlatformThread::SetName("CrGpuMain");
-
-  // Initializes StatisticsRecorder which tracks UMA histograms.
-  base::StatisticsRecorder::Initialize();
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Set thread priority before sandbox initialization.

@@ -26,7 +26,6 @@ public class RecordHistogramTest {
     @Before
     public void setUp() throws Exception {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
-        RecordHistogram.initialize();
     }
 
     /**

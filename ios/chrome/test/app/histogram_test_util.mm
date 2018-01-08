@@ -34,8 +34,6 @@ base::HistogramBase* FindHistogram(const std::string& name,
 namespace chrome_test_util {
 
 HistogramTester::HistogramTester() {
-  base::StatisticsRecorder::Initialize();  // Safe to call multiple times.
-
   // Record any histogram data that exists when the object is created so it can
   // be subtracted later.
   base::StatisticsRecorder::Histograms histograms;

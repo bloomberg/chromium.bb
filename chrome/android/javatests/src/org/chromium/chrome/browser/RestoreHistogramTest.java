@@ -17,7 +17,6 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -59,7 +58,6 @@ public class RestoreHistogramTest {
     @SmallTest
     public void testHistogramWriter() throws ProcessInitException {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
-        RecordHistogram.initialize();
         MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
                 ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
         MetricsUtils.HistogramDelta restoreCompletedDelta =
@@ -101,7 +99,6 @@ public class RestoreHistogramTest {
     @SmallTest
     public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
-        RecordHistogram.initialize();
         MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
                 ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
 

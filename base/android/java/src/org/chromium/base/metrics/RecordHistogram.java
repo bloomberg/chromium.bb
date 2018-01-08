@@ -292,14 +292,6 @@ public class RecordHistogram {
         return nativeGetHistogramTotalCountForTesting(name);
     }
 
-    /**
-     * Initializes the metrics system.
-     */
-    public static void initialize() {
-        if (sDisabledBy != null) return;
-        nativeInitialize();
-    }
-
     private static native long nativeRecordCustomTimesHistogramMilliseconds(
             String name, long key, int duration, int min, int max, int numBuckets);
 
@@ -314,5 +306,4 @@ public class RecordHistogram {
 
     private static native int nativeGetHistogramValueCountForTesting(String name, int sample);
     private static native int nativeGetHistogramTotalCountForTesting(String name);
-    private static native void nativeInitialize();
 }

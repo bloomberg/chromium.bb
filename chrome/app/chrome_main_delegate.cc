@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
@@ -638,10 +637,6 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   if ((base::SysInfo::IsRunningOnChromeOS() &&
        command_line.HasSwitch(chromeos::switches::kLoginUser)) ||
       command_line.HasSwitch(switches::kDiagnosticsRecovery)) {
-    // The statistics subsystem needs get initialized soon enough for the
-    // statistics to be collected.  It's safe to call this more than once.
-    base::StatisticsRecorder::Initialize();
-
     base::CommandLine interim_command_line(command_line.GetProgram());
     const char* const kSwitchNames[] = {switches::kUserDataDir, };
     interim_command_line.CopySwitchesFrom(

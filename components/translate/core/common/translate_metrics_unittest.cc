@@ -30,8 +30,6 @@ const int kFalse = 0;
 class MetricsRecorder {
  public:
   explicit MetricsRecorder(const char* key) : key_(key) {
-    StatisticsRecorder::Initialize();
-
     HistogramBase* histogram = StatisticsRecorder::FindHistogram(key_);
     if (histogram)
       base_samples_ = histogram->SnapshotSamples();

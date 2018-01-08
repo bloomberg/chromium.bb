@@ -68,13 +68,6 @@ class BASE_EXPORT StatisticsRecorder {
   // Precondition: The recorder being deleted is the current global recorder.
   ~StatisticsRecorder();
 
-  // DEPRECATED.
-  //
-  // StatisticsRecorder is always active and ready. There is no need to
-  // explicitly initialize it.
-  static void Initialize() {}
-  static bool IsActive() { return true; }
-
   // Registers a provider of histograms that can be called to merge those into
   // the global recorder. Calls to ImportProvidedHistograms() will fetch from
   // registered providers.

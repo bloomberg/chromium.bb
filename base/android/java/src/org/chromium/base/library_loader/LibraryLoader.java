@@ -318,9 +318,6 @@ public class LibraryLoader {
                         Log.w(TAG, "Forking a process to prefetch the native library failed.");
                     }
                 }
-                // As this runs in a background thread, it can be called before histograms are
-                // initialized. In this instance, histograms are dropped.
-                RecordHistogram.initialize();
                 if (prefetch) {
                     RecordHistogram.recordBooleanHistogram("LibraryLoader.PrefetchStatus", success);
                 }

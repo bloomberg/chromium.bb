@@ -8,11 +8,11 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
@@ -79,8 +79,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 
       if (parameters.command_line.HasSwitch(switches::kBrowserStartupDialog))
         WaitForDebugger("Browser");
-
-      base::StatisticsRecorder::Initialize();
 
       notification_service_.reset(new NotificationServiceImpl);
 

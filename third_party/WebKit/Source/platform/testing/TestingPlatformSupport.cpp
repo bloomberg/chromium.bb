@@ -33,7 +33,6 @@
 #include <memory>
 #include "base/command_line.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/test_discardable_memory_allocator.h"
@@ -228,7 +227,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
       WTF::WrapUnique(new base::TestDiscardableMemoryAllocator);
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_memory_allocator_.get());
-  base::StatisticsRecorder::Initialize();
 
   dummy_platform_ = WTF::WrapUnique(new DummyPlatform);
   Platform::SetCurrentPlatformForTesting(dummy_platform_.get());

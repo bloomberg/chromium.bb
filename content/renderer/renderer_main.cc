@@ -12,7 +12,6 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -167,9 +166,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::PlatformThread::SetName("CrRendererMain");
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
-
-  // Initialize histogram statistics gathering system.
-  base::StatisticsRecorder::Initialize();
 
 #if defined(OS_ANDROID)
   // If we have any pending LibraryLoader histograms, record them.

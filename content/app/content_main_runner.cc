@@ -29,7 +29,6 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
@@ -639,8 +638,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     if (!base::i18n::InitializeICU())
       return TerminateForFatalInitializationError();
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-
-    base::StatisticsRecorder::Initialize();
 
     InitializeV8IfNeeded(command_line, process_type);
 

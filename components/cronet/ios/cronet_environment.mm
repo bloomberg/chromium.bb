@@ -17,7 +17,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -437,7 +436,6 @@ std::string CronetEnvironment::user_agent() {
 }
 
 std::vector<uint8_t> CronetEnvironment::GetHistogramDeltas() {
-  DCHECK(base::StatisticsRecorder::IsActive());
   std::vector<uint8_t> data;
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return std::vector<uint8_t>();

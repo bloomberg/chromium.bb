@@ -47,10 +47,6 @@ TEST(ExceptionProcessorTest, ExceptionBinning) {
 }
 
 TEST(ExceptionProcessorTest, RecordException) {
-  // Start up a histogram recorder.
-  // TODO(rtenneti): Leaks StatisticsRecorder and will update suppressions.
-  base::StatisticsRecorder::Initialize();
-
   StatisticsRecorder::Histograms histograms;
   StatisticsRecorder::GetSnapshot("OSX.NSException", &histograms);
   EXPECT_EQ(0U, histograms.size());

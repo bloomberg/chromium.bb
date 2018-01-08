@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -31,8 +30,6 @@ class SignalSenderVerificationTest : public testing::Test {
   }
 
   void SetUp() override {
-    base::StatisticsRecorder::Initialize();
-
     // Make the main thread not to allow IO.
     base::ThreadRestrictions::SetIOAllowed(false);
 

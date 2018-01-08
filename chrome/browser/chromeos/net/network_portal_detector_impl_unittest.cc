@@ -89,7 +89,6 @@ class NetworkPortalDetectorImplTest
         base::WrapUnique(user_manager));
 
     DBusThreadManager::Initialize();
-    base::StatisticsRecorder::Initialize();
     SetupNetworkHandler();
 
     ASSERT_TRUE(test_profile_manager_.SetUp());
