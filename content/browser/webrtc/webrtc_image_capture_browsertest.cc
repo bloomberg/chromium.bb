@@ -32,6 +32,16 @@ namespace content {
 #define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
 #define MAYBE_GetTrackSettings DISABLED_GetTrackSettings
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
+#elif defined(OS_ANDROID)
+// TODO(chfremer): Re-enable test on Android as soon as the cause for
+// https://crbug.com/793859 is understood and fixed.
+#define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
+#define MAYBE_GetPhotoSettings GetPhotoSettings
+#define MAYBE_TakePhoto TakePhoto
+#define MAYBE_GrabFrame GrabFrame
+#define MAYBE_GetTrackCapabilities GetTrackCapabilities
+#define MAYBE_GetTrackSettings GetTrackSettings
+#define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
 #define MAYBE_GetPhotoSettings GetPhotoSettings
