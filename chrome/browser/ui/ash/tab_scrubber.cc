@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/ash/tab_scrubber.h"
+#include "chrome/browser/ui/ash/tab_scrubber.h"
 
 #include <stdint.h>
 
@@ -53,9 +53,8 @@ gfx::Point TabScrubber::GetStartPoint(TabStripImpl* tab_strip,
   // non-RTL layouts (in non-RTL layouts GetMirroredBounds() is the same as
   // bounds()).
   gfx::Rect tab_bounds = tab_strip->tab_at(index)->GetMirroredBounds();
-  float x = direction == LEFT ?
-      tab_bounds.x() + initial_tab_offset :
-          tab_bounds.right() - initial_tab_offset;
+  float x = direction == LEFT ? tab_bounds.x() + initial_tab_offset
+                              : tab_bounds.right() - initial_tab_offset;
   return gfx::Point(x, tab_bounds.CenterPoint().y());
 }
 
@@ -79,10 +78,8 @@ TabScrubber::TabScrubber()
   // gestures on browser windows is not sufficient, as this feature works when
   // the cursor is over the shelf, desktop, etc.
   ash::Shell::Get()->AddPreTargetHandler(this);
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
+                 content::NotificationService::AllSources());
 }
 
 TabScrubber::~TabScrubber() {
@@ -105,14 +102,13 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   Browser* browser = GetActiveBrowser();
   if (!browser || (scrubbing_ && browser_ && browser != browser_) ||
       (highlighted_tab_ != -1 &&
-          highlighted_tab_ >= browser->tab_strip_model()->count())) {
+       highlighted_tab_ >= browser->tab_strip_model()->count())) {
     FinishScrub(false);
     return;
   }
 
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(
-          browser->window()->GetNativeWindow());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+      browser->window()->GetNativeWindow());
   TabStripImpl* tab_strip = browser_view->tabstrip()->AsTabStripImpl();
   if (!tab_strip) {
     DLOG(WARNING) << "TabScrubber disabled for experimental tab strip.";
@@ -203,7 +199,7 @@ void TabScrubber::TabStripMovedTab(TabStrip* tab_strip,
 
   if (from_index == highlighted_tab_)
     highlighted_tab_ = to_index;
-  else if (from_index < highlighted_tab_&& highlighted_tab_<= to_index)
+  else if (from_index < highlighted_tab_ && highlighted_tab_ <= to_index)
     --highlighted_tab_;
   else if (from_index > highlighted_tab_ && highlighted_tab_ >= to_index)
     ++highlighted_tab_;
@@ -267,9 +263,8 @@ void TabScrubber::FinishScrub(bool activate) {
   activate_timer_.Stop();
 
   if (browser_ && browser_->window()) {
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForNativeWindow(
-            browser_->window()->GetNativeWindow());
+    BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
+        browser_->window()->GetNativeWindow());
     TabStripImpl* tab_strip = browser_view->tabstrip()->AsTabStripImpl();
     if (tab_strip) {
       if (activate && highlighted_tab_ != -1) {

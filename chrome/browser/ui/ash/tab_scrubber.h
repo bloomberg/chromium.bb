@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
-#define CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
+#ifndef CHROME_BROWSER_UI_ASH_TAB_SCRUBBER_H_
+#define CHROME_BROWSER_UI_ASH_TAB_SCRUBBER_H_
 
 #include <memory>
 
@@ -28,7 +28,7 @@ class TabScrubber : public ui::EventHandler,
                     public content::NotificationObserver,
                     public TabStripObserver {
  public:
-  enum Direction {LEFT, RIGHT};
+  enum Direction { LEFT, RIGHT };
 
   // Returns a the single instance of a TabScrubber.
   static TabScrubber* GetInstance();
@@ -113,4 +113,4 @@ class TabScrubber : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(TabScrubber);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_ASH_TAB_SCRUBBER_H_
+#endif  // CHROME_BROWSER_UI_ASH_TAB_SCRUBBER_H_
