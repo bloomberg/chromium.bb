@@ -23,6 +23,10 @@ source_set("u2f") {
     "public_key.h",
     "register_response_data.cc",
     "register_response_data.h",
+    "response_data.cc",
+    "response_data.h",
+    "sign_response_data.cc",
+    "sign_response_data.h",
     "u2f_apdu_command.cc",
     "u2f_apdu_command.h",
     "u2f_apdu_response.cc",
@@ -138,6 +142,19 @@ fuzzer_test("u2f_ble_frames_fuzzer") {
     "//net",
   ]
   libfuzzer_options = [ "max_len=65535" ]
+}
+
+fuzzer_test("sign_response_data_fuzzer") {
+  sources = [
+    "sign_response_data_fuzzer.cc",
+  ]
+  deps = [
+    ":u2f",
+    "//base",
+    "//net",
+  ]
+  seed_corpus = "response_data_fuzzer_corpus/"
+  libfuzzer_options = [ "max_len=65537" ]
 }
 
 is_linux_without_udev = is_linux && !use_udev

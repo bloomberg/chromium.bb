@@ -4,16 +4,17 @@
 
 #include "device/u2f/u2f_sign.h"
 
-#include <list>
 #include <tuple>
 #include <utility>
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/test_io_thread.h"
+#include "device/u2f/authenticator_data.h"
 #include "device/u2f/mock_u2f_device.h"
 #include "device/u2f/mock_u2f_discovery.h"
+#include "device/u2f/sign_response_data.h"
 #include "device/u2f/u2f_response_test_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -21,8 +22,74 @@ using ::testing::_;
 namespace device {
 
 namespace {
+
 constexpr char kTestRelyingPartyId[] = "google.com";
+
+// Signature counter returned within the authenticator data.
+constexpr uint8_t kTestSignatureCounter[] = {0x00, 0x00, 0x00, 0x25};
+
+// Test data specific to GetAssertion/Sign.
+constexpr uint8_t kTestU2fSignResponse[] = {
+    0x01, 0x00, 0x00, 0x00, 0x25, 0x30, 0x45, 0x02, 0x21, 0x00, 0xCA,
+    0xA5, 0x3E, 0x91, 0x0D, 0xB7, 0x5E, 0xDE, 0xAF, 0x72, 0xCF, 0x9F,
+    0x6F, 0x54, 0xE5, 0x20, 0x5B, 0xBB, 0xB9, 0x2F, 0x0B, 0x9F, 0x7D,
+    0xC6, 0xF8, 0xD4, 0x7B, 0x19, 0x70, 0xED, 0xFE, 0xBC, 0x02, 0x20,
+    0x06, 0x32, 0x83, 0x65, 0x26, 0x4E, 0xBE, 0xFE, 0x35, 0x3C, 0x95,
+    0x91, 0xDF, 0xCE, 0x7D, 0x73, 0x15, 0x98, 0x64, 0xDF, 0xEA, 0xB7,
+    0x87, 0xF1, 0x5D, 0xF8, 0xA5, 0x97, 0xD0, 0x85, 0x0C, 0xA2};
+
+constexpr uint8_t kTestAssertionSignature[] = {
+    0x30, 0x45, 0x02, 0x21, 0x00, 0xCA, 0xA5, 0x3E, 0x91, 0x0D, 0xB7, 0x5E,
+    0xDE, 0xAF, 0x72, 0xCF, 0x9F, 0x6F, 0x54, 0xE5, 0x20, 0x5B, 0xBB, 0xB9,
+    0x2F, 0x0B, 0x9F, 0x7D, 0xC6, 0xF8, 0xD4, 0x7B, 0x19, 0x70, 0xED, 0xFE,
+    0xBC, 0x02, 0x20, 0x06, 0x32, 0x83, 0x65, 0x26, 0x4E, 0xBE, 0xFE, 0x35,
+    0x3C, 0x95, 0x91, 0xDF, 0xCE, 0x7D, 0x73, 0x15, 0x98, 0x64, 0xDF, 0xEA,
+    0xB7, 0x87, 0xF1, 0x5D, 0xF8, 0xA5, 0x97, 0xD0, 0x85, 0x0C, 0xA2};
+
+// The authenticator data for sign responses.
+constexpr uint8_t kTestSignAuthenticatorData[] = {
+    // clang-format off
+    // sha256 hash of kTestRelyingPartyId
+    0xD4, 0xC9, 0xD9, 0x02, 0x73, 0x26, 0x27, 0x1A, 0x89, 0xCE, 0x51,
+    0xFC, 0xAF, 0x32, 0x8E, 0xD6, 0x73, 0xF1, 0x7B, 0xE3, 0x34, 0x69,
+    0xFF, 0x97, 0x9E, 0x8A, 0xB8, 0xDD, 0x50, 0x1E, 0x66, 0x4F,
+    0x01,  // flags (TUP bit set)
+    0x00, 0x00, 0x00, 0x25  // counter
+    // clang-format on
+};
+
+std::vector<uint8_t> GetTestCredentialRawIdBytes() {
+  return std::vector<uint8_t>(std::begin(test_data::kTestCredentialRawIdBytes),
+                              std::end(test_data::kTestCredentialRawIdBytes));
 }
+
+std::vector<uint8_t> GetTestSignResponse() {
+  return std::vector<uint8_t>(std::begin(kTestU2fSignResponse),
+                              std::end(kTestU2fSignResponse));
+}
+
+std::vector<uint8_t> GetTestAuthenticatorData() {
+  return std::vector<uint8_t>(std::begin(kTestSignAuthenticatorData),
+                              std::end(kTestSignAuthenticatorData));
+}
+
+std::vector<uint8_t> GetTestAssertionSignature() {
+  return std::vector<uint8_t>(std::begin(kTestAssertionSignature),
+                              std::end(kTestAssertionSignature));
+}
+
+std::vector<uint8_t> GetTestSignatureCounter() {
+  return std::vector<uint8_t>(std::begin(kTestSignatureCounter),
+                              std::end(kTestSignatureCounter));
+}
+
+// Get a subset of the response for testing error handling.
+std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
+  return std::vector<uint8_t>(kTestU2fSignResponse,
+                              kTestU2fSignResponse + length);
+}
+
+}  // namespace
 
 class U2fSignTest : public testing::Test {
  public:
@@ -275,4 +342,57 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
   EXPECT_TRUE(std::get<2>(response).empty());
 }
 
+TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
+  constexpr uint8_t flags =
+      static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
+
+  EXPECT_EQ(GetTestAuthenticatorData(),
+            AuthenticatorData(kTestRelyingPartyId, flags,
+                              GetTestSignatureCounter(), base::nullopt)
+                .SerializeToByteArray());
+}
+
+TEST_F(U2fSignTest, TestSignResponseData) {
+  base::Optional<SignResponseData> response =
+      SignResponseData::CreateFromU2fSignResponse(
+          kTestRelyingPartyId, GetTestSignResponse(),
+          GetTestCredentialRawIdBytes());
+  ASSERT_TRUE(response.has_value());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
+  EXPECT_EQ(GetTestAuthenticatorData(), response->GetAuthenticatorDataBytes());
+  EXPECT_EQ(GetTestAssertionSignature(), response->signature());
+}
+
+TEST_F(U2fSignTest, TestNullKeyHandle) {
+  base::Optional<SignResponseData> response =
+      SignResponseData::CreateFromU2fSignResponse(
+          kTestRelyingPartyId, GetTestSignResponse(), std::vector<uint8_t>());
+  EXPECT_EQ(base::nullopt, response);
+}
+
+TEST_F(U2fSignTest, TestNullResponse) {
+  base::Optional<SignResponseData> response =
+      SignResponseData::CreateFromU2fSignResponse(
+          kTestRelyingPartyId, std::vector<uint8_t>(),
+          GetTestCredentialRawIdBytes());
+  EXPECT_EQ(base::nullopt, response);
+}
+
+TEST_F(U2fSignTest, TestCorruptedCounter) {
+  // A sign response of less than 5 bytes.
+  base::Optional<SignResponseData> response =
+      SignResponseData::CreateFromU2fSignResponse(
+          kTestRelyingPartyId, GetTestCorruptedSignResponse(3),
+          GetTestCredentialRawIdBytes());
+  EXPECT_EQ(base::nullopt, response);
+}
+
+TEST_F(U2fSignTest, TestCorruptedSignature) {
+  // A sign response no more than 5 bytes.
+  base::Optional<SignResponseData> response =
+      SignResponseData::CreateFromU2fSignResponse(
+          kTestRelyingPartyId, GetTestCorruptedSignResponse(5),
+          GetTestCredentialRawIdBytes());
+  EXPECT_EQ(base::nullopt, response);
+}
 }  // namespace device

@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/base64url.h"
+#include "base/optional.h"
 #include "device/u2f/attestation_object.h"
 #include "device/u2f/attested_credential_data.h"
 #include "device/u2f/authenticator_data.h"
@@ -19,7 +19,7 @@ namespace device {
 // static
 RegisterResponseData RegisterResponseData::CreateFromU2fRegisterResponse(
     std::string relying_party_id,
-    std::vector<uint8_t> u2f_data) {
+    const std::vector<uint8_t>& u2f_data) {
   std::unique_ptr<ECPublicKey> public_key =
       ECPublicKey::ExtractFromU2fRegistrationResponse(u2f_parsing_utils::kEs256,
                                                       u2f_data);
@@ -42,12 +42,12 @@ RegisterResponseData RegisterResponseData::CreateFromU2fRegisterResponse(
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
 
-  auto authenticator_data = AuthenticatorData::Create(
-      std::move(relying_party_id), flags, std::move(counter),
-      std::move(attested_credential_data));
+  AuthenticatorData authenticator_data(std::move(relying_party_id), flags,
+                                       std::move(counter),
+                                       std::move(attested_credential_data));
 
   // Construct the attestation statement.
-  std::unique_ptr<FidoAttestationStatement> fido_attestation_statement =
+  auto fido_attestation_statement =
       FidoAttestationStatement::CreateFromU2fRegisterResponse(u2f_data);
 
   // Construct the attestation object.
@@ -63,7 +63,7 @@ RegisterResponseData::RegisterResponseData() = default;
 RegisterResponseData::RegisterResponseData(
     std::vector<uint8_t> credential_id,
     std::unique_ptr<AttestationObject> object)
-    : raw_id_(std::move(credential_id)),
+    : ResponseData(std::move(credential_id)),
       attestation_object_(std::move(object)) {}
 
 RegisterResponseData::RegisterResponseData(RegisterResponseData&& other) =
@@ -77,15 +77,6 @@ RegisterResponseData::~RegisterResponseData() = default;
 std::vector<uint8_t> RegisterResponseData::GetCBOREncodedAttestationObject()
     const {
   return attestation_object_->SerializeToCBOREncodedBytes();
-}
-
-std::string RegisterResponseData::GetId() const {
-  std::string id;
-  base::Base64UrlEncode(
-      base::StringPiece(reinterpret_cast<const char*>(raw_id_.data()),
-                        raw_id_.size()),
-      base::Base64UrlEncodePolicy::OMIT_PADDING, &id);
-  return id;
 }
 
 }  // namespace device
