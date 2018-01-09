@@ -30,7 +30,7 @@ WorkerShadowPage::WorkerShadowPage(Client* client)
   // not create graphics layers.
   web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
 
-  main_frame_->SetDevToolsAgentClient(client_);
+  main_frame_->DevToolsAgentImpl()->SetClient(client_);
 }
 
 WorkerShadowPage::~WorkerShadowPage() {

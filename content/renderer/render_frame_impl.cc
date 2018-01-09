@@ -94,7 +94,6 @@
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
-#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
@@ -1286,7 +1285,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
       web_user_media_client_(nullptr),
-      devtools_agent_(nullptr),
       presentation_dispatcher_(nullptr),
       push_messaging_client_(nullptr),
       screen_orientation_dispatcher_(nullptr),
@@ -1428,12 +1426,6 @@ void RenderFrameImpl::Initialize() {
       std::make_unique<SharedWorkerRepository>(GetInterfaceProvider());
   GetWebFrame()->SetSharedWorkerRepositoryClient(
       shared_worker_repository_.get());
-
-  if (IsLocalRoot()) {
-    // DevToolsAgent is a RenderFrameObserver, and will destruct itself
-    // when |this| is deleted.
-    devtools_agent_ = new DevToolsAgent(this);
-  }
 
   RegisterMojoInterfaces();
 
@@ -6949,11 +6941,6 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
 void RenderFrameImpl::RegisterMojoInterfaces() {
   GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
-
-  if (devtools_agent_) {
-    GetAssociatedInterfaceRegistry()->AddInterface(
-        base::Bind(&DevToolsAgent::BindRequest, devtools_agent_->GetWeakPtr()));
-  }
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindMediaEngagement, weak_factory_.GetWeakPtr()));

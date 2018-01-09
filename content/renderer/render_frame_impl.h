@@ -144,7 +144,6 @@ class AssociatedInterfaceProviderImpl;
 class BlinkInterfaceRegistryImpl;
 class ChildURLLoaderFactoryGetter;
 class CompositorDependencies;
-class DevToolsAgent;
 class DocumentState;
 class ExternalPopupMenu;
 class HistoryEntry;
@@ -295,8 +294,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
-
-  DevToolsAgent* devtools_agent() { return devtools_agent_; }
 
   // This method must be called after the frame has been added to the frame
   // tree. It creates all objects that depend on the frame being at its proper
@@ -1431,10 +1428,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // The media permission dispatcher attached to this frame.
   std::unique_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
-
-  // The devtools agent for this frame; only created for main frame and
-  // local roots.
-  DevToolsAgent* devtools_agent_;
 
   // The presentation dispatcher implementation attached to this frame, lazily
   // initialized.

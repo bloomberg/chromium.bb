@@ -5,7 +5,6 @@
 #include "content/renderer/service_worker/embedded_worker_devtools_agent.h"
 
 #include "content/common/devtools_messages.h"
-#include "content/renderer/devtools/devtools_agent.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"

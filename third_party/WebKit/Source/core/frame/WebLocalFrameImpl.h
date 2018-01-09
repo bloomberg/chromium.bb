@@ -244,8 +244,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                                       blink::InterfaceRegistry*) override;
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
-  void SetDevToolsAgentClient(WebDevToolsAgentClient*) override;
-  WebDevToolsAgent* DevToolsAgent() override;
   WebLocalFrameImpl* LocalRoot() override;
   WebFrame* FindFrameByName(const WebString& name) override;
   void SendPings(const WebURL& destination_url) override;

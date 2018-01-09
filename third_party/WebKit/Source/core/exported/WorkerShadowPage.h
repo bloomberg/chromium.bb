@@ -5,8 +5,8 @@
 #ifndef WorkerShadowPage_h
 #define WorkerShadowPage_h
 
+#include "core/exported/WebDevToolsAgentImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
-#include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebDocumentLoader.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebView.h"
@@ -33,7 +33,7 @@ class WebSettings;
 // TODO(kinuko): Make this go away (https://crbug.com/538751).
 class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
  public:
-  class CORE_EXPORT Client : public WebDevToolsAgentClient {
+  class CORE_EXPORT Client : public WebDevToolsAgentImpl::Client {
    public:
     virtual ~Client() {}
 
@@ -74,7 +74,9 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   WebDocumentLoader* DocumentLoader() {
     return main_frame_->GetDocumentLoader();
   }
-  WebDevToolsAgent* DevToolsAgent() { return main_frame_->DevToolsAgent(); }
+  WebDevToolsAgentImpl* DevToolsAgent() {
+    return main_frame_->DevToolsAgentImpl();
+  }
 
   bool WasInitialized() const;
 

@@ -39,7 +39,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
-#include "public/web/WebDevToolsAgentClient.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom-shared.h"
 #include "v8/include/v8.h"
 
