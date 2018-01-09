@@ -116,15 +116,29 @@ static void AppendItem(Vector<NGInlineItem>* items,
   items->push_back(NGInlineItem(type, start, end, style, layout_object));
 }
 
+static inline bool ShouldIgnore(UChar c) {
+  // Ignore carriage return and form feed.
+  // https://drafts.csswg.org/css-text-3/#white-space-processing
+  // https://github.com/w3c/csswg-drafts/issues/855
+  //
+  // Unicode Default_Ignorable is not included because we need some of them
+  // in the line breaker (e.g., SOFT HYPHEN.) HarfBuzz ignores them while
+  // shaping.
+  return c == kCarriageReturnCharacter || c == kFormFeedCharacter;
+}
+
 static inline bool IsCollapsibleSpace(UChar c) {
-  return c == kSpaceCharacter || c == kTabulationCharacter ||
-         c == kNewlineCharacter;
+  return c == kSpaceCharacter || c == kNewlineCharacter ||
+         c == kTabulationCharacter || c == kCarriageReturnCharacter;
 }
 
 // Characters needing a separate control item than other text items.
 // It makes the line breaker easier to handle.
 static inline bool IsControlItemCharacter(UChar c) {
-  return c == kTabulationCharacter || c == kNewlineCharacter;
+  return c == kNewlineCharacter || c == kTabulationCharacter ||
+         // Include ignorable character here to avoids shaping/rendering
+         // these glyphs, and to help the line breaker to ignore them.
+         ShouldIgnore(c);
 }
 
 template <typename OffsetMappingBuilder>

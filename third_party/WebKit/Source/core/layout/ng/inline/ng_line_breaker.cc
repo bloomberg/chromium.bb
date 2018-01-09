@@ -504,6 +504,12 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
       item_result->can_break_after = true;
       break;
     }
+    case kCarriageReturnCharacter:
+    case kFormFeedCharacter:
+      // Ignore carriage return and form feed.
+      // https://drafts.csswg.org/css-text-3/#white-space-processing
+      // https://github.com/w3c/csswg-drafts/issues/855
+      break;
     default:
       NOTREACHED();
       break;
