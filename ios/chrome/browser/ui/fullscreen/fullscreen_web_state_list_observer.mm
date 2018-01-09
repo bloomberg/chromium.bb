@@ -59,6 +59,6 @@ void FullscreenWebStateListObserver::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    bool user_action) {
+    int reason) {
   web_state_observer_.SetWebState(new_web_state);
 }

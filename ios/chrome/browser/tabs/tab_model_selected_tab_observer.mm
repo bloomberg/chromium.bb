@@ -31,7 +31,7 @@
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                 userAction:(BOOL)userAction {
+                     reason:(int)reason {
   if (oldWebState) {
     // Save state, such as scroll position, ... of the old selected Tab.
     Tab* oldTab = LegacyTabHelper::GetTabForWebState(oldWebState);

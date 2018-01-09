@@ -127,7 +127,7 @@
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
-                 userAction:(BOOL)userAction {
+                     reason:(int)reason {
   DCHECK_EQ(self.webStateList, webStateList);
   self.webState = newWebState;
 }

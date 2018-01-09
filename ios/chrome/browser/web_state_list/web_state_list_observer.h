@@ -16,6 +16,19 @@ class WebState;
 // Interface for listening to events occurring to WebStateLists.
 class WebStateListObserver {
  public:
+  // Constants used when notifying about changes to active WebState.
+  enum ChangeReason {
+    // Used to indicate that none of the reasons below are responsible for
+    // the active WebState change.
+    CHANGE_REASON_NONE = 0,
+
+    // Used to indicate the active WebState changed because it was replaced.
+    CHANGE_REASON_REPLACED = 1 << 0,
+
+    // Used to indicate the active WebState changed due to a user action.
+    CHANGE_REASON_USER_ACTION = 1 << 1,
+  };
+
   WebStateListObserver();
   virtual ~WebStateListObserver();
 
@@ -63,13 +76,14 @@ class WebStateListObserver {
 
   // Invoked after |new_web_state| was activated at the specified index. Both
   // WebState are either valid or null (if there was no selection or there is
-  // no selection). If the change is due to an user action, |user_action| will
-  // be true.
+  // no selection). If |reason| has CHANGE_REASON_USER_ACTION set then the
+  // change is due to an user action. If |reason| has CHANGE_REASON_REPLACED
+  // set then the change is caused because the WebState was replaced.
   virtual void WebStateActivatedAt(WebStateList* web_state_list,
                                    web::WebState* old_web_state,
                                    web::WebState* new_web_state,
                                    int active_index,
-                                   bool user_action);
+                                   int reason);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebStateListObserver);
