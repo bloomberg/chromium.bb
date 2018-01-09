@@ -52,6 +52,23 @@ class MockDownloadTaskObserver : public DownloadTaskObserver {
   MOCK_METHOD1(OnDownloadUpdated, void(DownloadTask* task));
 };
 
+// Allows waiting for DownloadTaskObserver::OnDownloadUpdated callback.
+class OnDownloadUpdatedWaiter : public DownloadTaskObserver {
+ public:
+  bool Wait() {
+    return WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+      base::RunLoop().RunUntilIdle();
+      return download_updated_;
+    });
+  }
+
+ private:
+  void OnDownloadUpdated(DownloadTask* task) override {
+    download_updated_ = true;
+  }
+  bool download_updated_ = false;
+};
+
 // Mocks DownloadTaskImpl::Delegate's OnTaskUpdated and OnTaskDestroyed methods
 // and stubs DownloadTaskImpl::Delegate::CreateSession with session mock.
 class FakeDownloadTaskImplDelegate : public DownloadTaskImpl::Delegate {
@@ -102,7 +119,9 @@ class DownloadTaskImplTest : public PlatformTest {
             /*total_bytes=*/-1,
             kMimeType,
             task_delegate_.configuration().identifier,
-            &task_delegate_)) {
+            &task_delegate_)),
+        session_delegate_callbacks_queue_(
+            dispatch_queue_create(nullptr, DISPATCH_QUEUE_SERIAL)) {
     browser_state_.SetOffTheRecord(true);
     web_state_.SetBrowserState(&browser_state_);
     task_->AddObserver(&task_observer_);
@@ -164,21 +183,34 @@ class DownloadTaskImplTest : public PlatformTest {
   // C-string that represents the downloaded data.
   void SimulateDataDownload(CRWFakeNSURLSessionTask* session_task,
                             const char data_str[]) {
+    OnDownloadUpdatedWaiter callback_waiter;
+    task_->AddObserver(&callback_waiter);
     session_task.countOfBytesReceived += strlen(data_str);
     NSData* data = [NSData dataWithBytes:data_str length:strlen(data_str)];
-    [session_delegate() URLSession:session()
-                          dataTask:session_task
-                    didReceiveData:data];
+    dispatch_async(session_delegate_callbacks_queue_, ^{
+      [session_delegate() URLSession:session()
+                            dataTask:session_task
+                      didReceiveData:data];
+    });
+    EXPECT_TRUE(callback_waiter.Wait());
+    task_->RemoveObserver(&callback_waiter);
   }
 
   // Sets NSURLSessionTask.state to NSURLSessionTaskStateCompleted and calls
   // URLSession:dataTask:didCompleteWithError: callback.
   void SimulateDownloadCompletion(CRWFakeNSURLSessionTask* session_task,
                                   NSError* error = nil) {
+    OnDownloadUpdatedWaiter callback_waiter;
+    task_->AddObserver(&callback_waiter);
+
     session_task.state = NSURLSessionTaskStateCompleted;
-    [session_delegate() URLSession:session()
-                              task:session_task
-              didCompleteWithError:error];
+    dispatch_async(session_delegate_callbacks_queue_, ^{
+      [session_delegate() URLSession:session()
+                                task:session_task
+                didCompleteWithError:error];
+    });
+    EXPECT_TRUE(callback_waiter.Wait());
+    task_->RemoveObserver(&callback_waiter);
   }
 
   web::TestWebThreadBundle thread_bundle_;
@@ -187,6 +219,8 @@ class DownloadTaskImplTest : public PlatformTest {
   testing::StrictMock<FakeDownloadTaskImplDelegate> task_delegate_;
   std::unique_ptr<DownloadTaskImpl> task_;
   MockDownloadTaskObserver task_observer_;
+  // NSURLSessionDataDelegate callbacks are called on background serial queue.
+  dispatch_queue_t session_delegate_callbacks_queue_ = 0;
 };
 
 // Tests DownloadTaskImpl default state after construction.
