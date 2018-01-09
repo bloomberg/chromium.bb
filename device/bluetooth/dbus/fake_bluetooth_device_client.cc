@@ -1565,6 +1565,7 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
 
 void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
     const dbus::ObjectPath& object_path,
+    const std::vector<std::string>& service_uuids,
     const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
     const std::unordered_map<uint16_t, std::vector<uint8_t>>&
         manufacturer_data) {
@@ -1575,6 +1576,7 @@ void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
   }
   Properties* properties = iter->second.get();
   DCHECK(properties);
+  properties->uuids.set_valid(true);
   properties->service_data.set_valid(true);
   properties->manufacturer_data.set_valid(true);
 
@@ -1582,6 +1584,12 @@ void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
   // caching behavior, merge the new data here with the existing data.
   // TODO(crbug.com/707039): once the BlueZ caching behavior is changed, this
   // needs to be updated as well.
+
+  std::vector<std::string> merged_uuids = service_uuids;
+  merged_uuids.insert(merged_uuids.begin(), properties->uuids.value().begin(),
+                      properties->uuids.value().end());
+  properties->uuids.ReplaceValue(merged_uuids);
+
   std::unordered_map<std::string, std::vector<uint8_t>> merged_service_data =
       service_data;
   merged_service_data.insert(properties->service_data.value().begin(),

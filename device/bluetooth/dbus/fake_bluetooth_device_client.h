@@ -177,11 +177,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // |object_path| to |rssi|, if the fake device exists.
   void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
 
-  // Updates the service and manufacturer data property of fake device with
-  // object path |object_path| to merge |service_data| into the existing data,
-  // if the fake device exists.
+  // Updates service UUIDs, service data, and manufacturer data of the fake
+  // device with the given |object_path|. The |service_uuids| values are
+  // appended, while |service_data| and |manufacturer_data| are merged into the
+  // existing property values. Has no effect if the fake device does not exist.
   void UpdateServiceAndManufacturerData(
       const dbus::ObjectPath& object_path,
+      const std::vector<std::string>& service_uuids,
       const std::unordered_map<std::string, std::vector<uint8_t>>& service_data,
       const std::unordered_map<uint16_t, std::vector<uint8_t>>&
           manufacturer_data);
