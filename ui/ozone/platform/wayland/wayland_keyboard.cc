@@ -41,7 +41,7 @@ WaylandKeyboard::WaylandKeyboard(wl_keyboard* keyboard,
 #if BUILDFLAG(USE_XKBCOMMON)
   auto* engine = static_cast<WaylandXkbKeyboardLayoutEngine*>(
       KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
-  engine->set_event_modifiers(&event_modifiers_);
+  engine->SetEventModifiers(&event_modifiers_);
 #endif
 
   wl_keyboard_add_listener(obj_.get(), &listener, this);
