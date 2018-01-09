@@ -20,7 +20,9 @@
 
 // https://drafts.csswg.org/cssom/#the-stylesheet-interface
 
-interface StyleSheet {
+[
+    Exposed=Window
+] interface StyleSheet {
     readonly attribute DOMString type;
     readonly attribute DOMString? href;
     // TODO(foolip): ownerNode should be (Element or ProcessingInstruction).

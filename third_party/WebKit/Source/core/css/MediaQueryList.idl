@@ -20,7 +20,8 @@
 // https://drafts.csswg.org/cssom-view/#the-mediaquerylist-interface
 
 [
-    ActiveScriptWrappable
+    ActiveScriptWrappable,
+    Exposed=Window
 ] interface MediaQueryList : EventTarget {
     readonly attribute DOMString media;
     readonly attribute boolean matches;
