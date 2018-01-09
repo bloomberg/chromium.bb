@@ -188,18 +188,6 @@ struct ServiceWorkerClientQueryOptions {
   bool include_uncontrolled;
 };
 
-struct ExtendableMessageEventSource {
-  ExtendableMessageEventSource();
-  explicit ExtendableMessageEventSource(
-      const blink::mojom::ServiceWorkerClientInfo& client_info);
-  explicit ExtendableMessageEventSource(
-      const blink::mojom::ServiceWorkerObjectInfo& service_worker_info);
-
-  // Exactly one of these infos should be valid.
-  blink::mojom::ServiceWorkerClientInfo client_info;
-  blink::mojom::ServiceWorkerObjectInfo service_worker_info;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_

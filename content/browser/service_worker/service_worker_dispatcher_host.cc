@@ -23,7 +23,6 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
-#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
@@ -51,6 +50,33 @@ namespace {
 const uint32_t kServiceWorkerFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
 };
+
+void SetMessageEventSource(
+    mojom::ExtendableMessageEventPtr* event,
+    const blink::mojom::ServiceWorkerClientInfo& source_info) {
+  (*event)->source_info_for_client = blink::mojom::ServiceWorkerClientInfo::New(
+      source_info.url, source_info.client_uuid, source_info.client_type,
+      source_info.page_visibility_state, source_info.is_focused,
+      source_info.frame_type, source_info.last_focus_time,
+      source_info.creation_time);
+
+  // Hide the client url if the client has a unique origin.
+  if ((*event)->source_origin.unique())
+    (*event)->source_info_for_client->url = GURL();
+}
+
+void SetMessageEventSource(
+    mojom::ExtendableMessageEventPtr* event,
+    const blink::mojom::ServiceWorkerObjectInfo& source_info) {
+  (*event)->source_info_for_service_worker =
+      blink::mojom::ServiceWorkerObjectInfo::New(
+          source_info.handle_id, source_info.version_id, source_info.state,
+          source_info.url);
+
+  // Hide the client url if the client has a unique origin.
+  if ((*event)->source_origin.unique())
+    (*event)->source_info_for_service_worker->url = GURL();
+}
 
 }  // namespace
 
@@ -352,24 +378,25 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
 
   worker->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::MESSAGE,
-      base::BindOnce(&ServiceWorkerDispatcherHost::
-                         DispatchExtendableMessageEventAfterStartWorker,
-                     this, worker, message, source_origin, sent_message_ports,
-                     ExtendableMessageEventSource(source_info), timeout,
-                     callback),
+      base::BindOnce(
+          &ServiceWorkerDispatcherHost::
+              DispatchExtendableMessageEventAfterStartWorker<SourceInfo>,
+          this, worker, message, source_origin, sent_message_ports, source_info,
+          timeout, callback),
       base::BindOnce(
           &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent<
               SourceInfo>,
           this, sent_message_ports, source_info, callback));
 }
 
+template <typename SourceInfo>
 void ServiceWorkerDispatcherHost::
     DispatchExtendableMessageEventAfterStartWorker(
         scoped_refptr<ServiceWorkerVersion> worker,
         const base::string16& message,
         const url::Origin& source_origin,
         const std::vector<MessagePortChannel>& sent_message_ports,
-        const ExtendableMessageEventSource& source,
+        const SourceInfo& source_info,
         const base::Optional<base::TimeDelta>& timeout,
         const StatusCallback& callback) {
   int request_id;
@@ -386,15 +413,7 @@ void ServiceWorkerDispatcherHost::
   event->message = message;
   event->source_origin = source_origin;
   event->message_ports = MessagePortChannel::ReleaseHandles(sent_message_ports);
-  event->source = source;
-
-  // Hide the client url if the client has a unique origin.
-  if (source_origin.unique()) {
-    if (IsValidSourceInfo(event->source.client_info))
-      event->source.client_info.url = GURL();
-    else
-      event->source.service_worker_info.url = GURL();
-  }
+  SetMessageEventSource(&event, source_info);
 
   worker->event_dispatcher()->DispatchExtendableMessageEvent(
       std::move(event), worker->CreateSimpleEventCallback(request_id));

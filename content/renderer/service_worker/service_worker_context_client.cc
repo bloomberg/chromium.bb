@@ -170,6 +170,9 @@ WebURLRequest::RequestContext GetBlinkRequestContext(
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
 }
 
+// TODO(falken): Once all related IPCs got mojofied, remove this function and
+// use the ToWebServiceWorkerClientInfo(ServiceWorkerClientInfoPtr) function
+// instead.
 blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
     const blink::mojom::ServiceWorkerClientInfo& client_info) {
   DCHECK(!client_info.client_uuid.empty());
@@ -182,6 +185,22 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
   web_client_info.url = client_info.url;
   web_client_info.frame_type = client_info.frame_type;
   web_client_info.client_type = client_info.client_type;
+
+  return web_client_info;
+}
+
+blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
+    blink::mojom::ServiceWorkerClientInfoPtr client_info) {
+  DCHECK(!client_info->client_uuid.empty());
+
+  blink::WebServiceWorkerClientInfo web_client_info;
+
+  web_client_info.uuid = blink::WebString::FromASCII(client_info->client_uuid);
+  web_client_info.page_visibility_state = client_info->page_visibility_state;
+  web_client_info.is_focused = client_info->is_focused;
+  web_client_info.url = client_info->url;
+  web_client_info.frame_type = client_info->frame_type;
+  web_client_info.client_type = client_info->client_type;
 
   return web_client_info;
 }
@@ -1476,9 +1495,9 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       CreateAbortCallback(&context_->message_event_callbacks));
   context_->message_event_callbacks.emplace(request_id, std::move(callback));
 
-  if (!event->source.client_info.client_uuid.empty()) {
+  if (event->source_info_for_client) {
     blink::WebServiceWorkerClientInfo web_client =
-        ToWebServiceWorkerClientInfo(event->source.client_info);
+        ToWebServiceWorkerClientInfo(std::move(event->source_info_for_client));
     proxy_->DispatchExtendableMessageEvent(
         request_id, blink::WebString::FromUTF16(event->message),
         event->source_origin,
@@ -1487,13 +1506,13 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
     return;
   }
 
-  DCHECK(event->source.service_worker_info.handle_id !=
+  DCHECK(event->source_info_for_service_worker->handle_id !=
              blink::mojom::kInvalidServiceWorkerHandleId &&
-         event->source.service_worker_info.version_id !=
+         event->source_info_for_service_worker->version_id !=
              blink::mojom::kInvalidServiceWorkerVersionId);
   std::unique_ptr<ServiceWorkerHandleReference> handle =
       ServiceWorkerHandleReference::Adopt(
-          event->source.service_worker_info.Clone(), sender_);
+          std::move(event->source_info_for_service_worker), sender_);
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
           sender_.get(), main_thread_task_runner_.get());
