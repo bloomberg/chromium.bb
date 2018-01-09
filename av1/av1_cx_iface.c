@@ -1331,6 +1331,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           return AOM_CODEC_ERROR;
         }
       }
+      cpi->seq_params_locked = 1;
       if (frame_size) {
         if (ctx->pending_cx_data == 0) ctx->pending_cx_data = cx_data;
 
