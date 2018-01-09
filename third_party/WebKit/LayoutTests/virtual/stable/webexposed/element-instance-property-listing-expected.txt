@@ -259,6 +259,7 @@ html element a
     property protocol
     property referrerPolicy
     property rel
+    property relList
     property rev
     property search
     property shape

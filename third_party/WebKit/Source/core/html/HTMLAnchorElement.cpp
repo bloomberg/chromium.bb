@@ -52,7 +52,8 @@ HTMLAnchorElement::HTMLAnchorElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       link_relations_(0),
       was_focused_by_mouse_(false),
-      cached_visited_link_hash_(0) {}
+      cached_visited_link_hash_(0),
+      rel_list_(RelList::Create(this)) {}
 
 HTMLAnchorElement* HTMLAnchorElement::Create(Document& document) {
   return new HTMLAnchorElement(aTag, document);
@@ -220,6 +221,7 @@ void HTMLAnchorElement::ParseAttribute(
     // Do nothing.
   } else if (params.name == relAttr) {
     SetRel(params.new_value);
+    rel_list_->DidUpdateAttributeValue(params.old_value, params.new_value);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -436,6 +438,17 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
       HTMLElement::InsertedInto(insertion_point);
   LogAddElementIfIsolatedWorldAndInDocument("a", hrefAttr);
   return request;
+}
+
+void HTMLAnchorElement::Trace(blink::Visitor* visitor) {
+  visitor->Trace(rel_list_);
+  HTMLElement::Trace(visitor);
+}
+
+void HTMLAnchorElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
+  visitor->TraceWrappers(rel_list_);
+  HTMLElement::TraceWrappers(visitor);
 }
 
 }  // namespace blink
