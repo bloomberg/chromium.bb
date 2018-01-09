@@ -1506,11 +1506,10 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
       MV_REF *mv_ref = &mv_ref_base[blk_row * mvs_cols + blk_col];
       MV fwd_mv = mv_ref->mv[dir & 0x01].as_mv;
 
-      const int ref_frame_offset = ref_offset[mv_ref->ref_frame[dir & 0x01]];
-
       if (mv_ref->ref_frame[dir & 0x01] > INTRA_FRAME) {
         int_mv this_mv;
         int mi_r, mi_c;
+        const int ref_frame_offset = ref_offset[mv_ref->ref_frame[dir & 0x01]];
 
         get_mv_projection(&this_mv.as_mv, fwd_mv, ref_to_cur, ref_frame_offset);
         int pos_valid = get_block_position(cm, &mi_r, &mi_c, blk_row, blk_col,
