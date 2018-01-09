@@ -3,6 +3,7 @@
 // Map of id => function that releases a lock.
 
 const held = new Map();
+let next_lock_id = 1;
 
 self.addEventListener('message', e => {
   function respond(data) {
@@ -17,13 +18,14 @@ self.addEventListener('message', e => {
         ifAvailable: e.data.ifAvailable || false
       }, lock => {
         if (lock === null) {
-          respond({ack: 'request', id: e.data.lock_id, failed: true});
+          respond({ack: 'request', failed: true});
           return;
         }
+        let lock_id = next_lock_id++;
         let release;
         const promise = new Promise(r => { release = r; });
-        held.set(e.data.lock_id, release);
-        respond({ack: 'request', id: e.data.lock_id});
+        held.set(lock_id, release);
+        respond({ack: 'request', lock_id: lock_id});
         return promise;
       });
     break;
@@ -31,7 +33,7 @@ self.addEventListener('message', e => {
   case 'release':
     held.get(e.data.lock_id)();
     held.delete(e.data.lock_id);
-    respond({ack: 'release', id: e.data.lock_id});
+    respond({ack: 'release', lock_id: e.data.lock_id});
     break;
   }
 });

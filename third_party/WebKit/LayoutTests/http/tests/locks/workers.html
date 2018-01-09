@@ -4,29 +4,9 @@
 <link rel=help href="https://github.com/inexorabletash/web-locks">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
+<script src="resources/helpers.js"></script>
 <script>
 'use strict';
-
-let next_request_id = 0;
-function postAndWait(worker, data) {
-  return new Promise(resolve => {
-    worker.postMessage(Object.assign(data, {rqid: next_request_id++}));
-    const listener = event => {
-      if (event.data.rqid !== data.rqid)
-        return;
-      worker.removeEventListener('message', listener);
-      resolve(event.data);
-    };
-    worker.addEventListener('message', listener);
-  });
-}
-
-async function postAndConfirm(worker, data) {
-  const response = await postAndWait(worker, data);
-  assert_equals(response.ack, data.op);
-  assert_equals(response.id, data.lock_id);
-  return response;
-}
 
 promise_test(async t => {
   const worker = new Worker('resources/worker.js');
@@ -34,11 +14,11 @@ promise_test(async t => {
 
   const res = 'shared resource 1';
 
-  await postAndConfirm(
-    worker, {op: 'request', lock_id: 1, name: res, mode: 'shared'})
+  const lock_id = (await postToWorkerAndWait(
+    worker, {op: 'request', name: res, mode: 'shared'})).lock_id;
 
   await navigator.locks.acquire(res, {mode: 'shared'}, async lock => {
-    await postAndConfirm(worker, {op: 'release', lock_id: 1});
+    await postToWorkerAndWait(worker, {op: 'release', lock_id});
   });
 
 }, 'Window and Worker - shared mode');
@@ -50,7 +30,8 @@ promise_test(async t => {
   const res = 'exclusive resource 1';
 
   // worker acquires the lock.
-  await postAndConfirm(worker, {op: 'request', lock_id: 1, name: res})
+  const lock_id = (await postToWorkerAndWait(
+    worker, {op: 'request', name: res})).lock_id;
 
   // This request should be blocked.
   let lock_granted = false;
@@ -65,7 +46,7 @@ promise_test(async t => {
   assert_false(lock_granted);
 
   // Ask the worker to release it.
-  await postAndConfirm(worker, {op: 'release', lock_id: 1});
+  await postToWorkerAndWait(worker, {op: 'release', lock_id});
 
   // Now we've got it.
   const lock2 = await blocked;
@@ -81,23 +62,23 @@ promise_test(async t => {
   const res = 'exclusive resource 2';
 
   // worker1 acquires the lock.
-  await postAndConfirm(
-    worker1, {op: 'request', lock_id: 1, name: res})
+  const lock_id = (await postToWorkerAndWait(
+    worker1, {op: 'request', name: res})).lock_id;
 
   // This request should be blocked.
   let lock_granted = false;
-  const blocked = postAndConfirm(
-    worker2, {op: 'request', lock_id: 1, name: res});
+  const blocked = postToWorkerAndWait(
+    worker2, {op: 'request', name: res});
   blocked.then(f => { lock_granted = true; });
 
   // Verify worker2 can't get it.
-  assert_true((await postAndConfirm(worker2, {
-    op: 'request', name: res, lock_id: 2, ifAvailable: true
+  assert_true((await postToWorkerAndWait(worker2, {
+    op: 'request', name: res, ifAvailable: true
   })).failed, 'Lock request should have failed');
   assert_false(lock_granted);
 
   // Ask worker1 to release it.
-  await postAndConfirm(worker1, {op: 'release', lock_id: 1});
+  await postToWorkerAndWait(worker1, {op: 'release', lock_id});
 
   // Now worker2 can get it.
   const lock = await blocked;
@@ -111,8 +92,7 @@ promise_test(async t => {
   const res = 'exclusive resource 3';
 
   // Worker acquires the lock.
-  await postAndConfirm(
-    worker, {op: 'request', lock_id: 1, name: res})
+  await postToWorkerAndWait(worker, {op: 'request', name: res});
 
   // This request should be blocked.
   let lock_granted = false;
