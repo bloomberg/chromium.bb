@@ -154,7 +154,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
   void PretendAutoSigningIn();
   void PretendManagingPasswords();
 
-  void DestroyModel();
+  void DestroyModelAndVerifyControllerExpectations();
   void DestroyModelExpectReason(
       password_manager::metrics_util::UIDismissalReason dismissal_reason);
 
@@ -220,7 +220,8 @@ void ManagePasswordsBubbleModelTest::PretendManagingPasswords() {
                  ManagePasswordsBubbleModel::USER_ACTION);
 }
 
-void ManagePasswordsBubbleModelTest::DestroyModel() {
+void ManagePasswordsBubbleModelTest::
+    DestroyModelAndVerifyControllerExpectations() {
   EXPECT_CALL(*controller(), OnBubbleHidden());
   model_.reset();
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -229,7 +230,7 @@ void ManagePasswordsBubbleModelTest::DestroyModel() {
 void ManagePasswordsBubbleModelTest::DestroyModelExpectReason(
     password_manager::metrics_util::UIDismissalReason dismissal_reason) {
   base::HistogramTester histogram_tester;
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(kUIDismissalReasonMetric,
                                       dismissal_reason, 1);
 }
@@ -330,7 +331,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   autofill::PasswordForm form;
   EXPECT_CALL(*controller(), UpdatePassword(form));
   model()->OnUpdateClicked(form);
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
@@ -347,7 +348,7 @@ TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
               SavePassword(kExpectedUsername, kExpectedPassword));
   EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
   model()->OnSaveClicked();
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, OnBrandLinkClicked) {
@@ -368,7 +369,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
   model()->OnSaveClicked();
 
   EXPECT_FALSE(model()->ReplaceToShowPromotionIfNeeded());
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectTotalCount(kSignInPromoDismissalReasonMetric, 0);
   histogram_tester.ExpectTotalCount(kSignInPromoCountTilSignInMetric, 0);
   histogram_tester.ExpectTotalCount(kSignInPromoCountTilNoThanksMetric, 0);
@@ -386,7 +387,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
   EXPECT_CALL(*controller(), NavigateToChromeSignIn());
   model()->OnSignInToChromeClicked();
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
@@ -410,7 +411,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
 
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
   model()->OnSkipSignInClicked();
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
@@ -433,7 +434,7 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
   model()->OnSaveClicked();
 
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
-  DestroyModel();
+  DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
@@ -588,7 +589,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
           } else {
             NOTREACHED();
           }
-          DestroyModel();
+          DestroyModelAndVerifyControllerExpectations();
         }
 
         ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
@@ -626,7 +627,7 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
   }
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, EyeIcon) {
+TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_ReauthForPasswordsRevealing) {
   for (bool is_manual_fallback_for_saving : {false, true}) {
     for (bool form_has_autofilled_value : {false, true}) {
       for (ManagePasswordsBubbleModel::DisplayReason display_reason :
@@ -655,23 +656,60 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon) {
         if (display_reason == ManagePasswordsBubbleModel::AUTOMATIC)
           EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_));
 
+        EXPECT_CALL(*controller(), ArePasswordsRevealedWhenBubbleIsOpened())
+            .WillOnce(Return(false));
         EXPECT_CALL(*controller(), BubbleIsManualFallbackForSaving())
             .WillOnce(Return(is_manual_fallback_for_saving));
+
         SetUpWithState(password_manager::ui::PENDING_PASSWORD_STATE,
                        display_reason);
-        EXPECT_EQ(
+        bool reauth_expected =
             is_manual_fallback_for_saving
                 ? form_has_autofilled_value
-                : display_reason == ManagePasswordsBubbleModel::USER_ACTION,
-            model()->hide_eye_icon());
+                : display_reason == ManagePasswordsBubbleModel::USER_ACTION;
+        EXPECT_EQ(reauth_expected,
+                  model()->password_revealing_requires_reauth());
 
-        DestroyModel();
+        if (reauth_expected) {
+          EXPECT_CALL(*controller(), AuthenticateUser())
+              .WillOnce(Return(false));
+          EXPECT_FALSE(model()->RevealPasswords());
+          ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
+
+          EXPECT_CALL(*controller(), AuthenticateUser()).WillOnce(Return(true));
+          EXPECT_TRUE(model()->RevealPasswords());
+        } else {
+          EXPECT_TRUE(model()->RevealPasswords());
+        }
+
+        DestroyModelAndVerifyControllerExpectations();
         // Flush async calls on password store.
         base::RunLoop().RunUntilIdle();
-        testing::Mock::VerifyAndClearExpectations(GetStore());
+        ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(GetStore()));
       }
     }
   }
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_BubbleReopenedAfterAuth) {
+  // Checks re-authentication is not needed if the bubble is opened right after
+  // successful authentication.
+  autofill::PasswordForm form = GetPendingPassword();
+  form.form_has_autofilled_value = true;
+  EXPECT_CALL(*controller(), GetPendingPassword()).WillOnce(ReturnRef(form));
+  password_manager::InteractionsStats stats = GetTestStats();
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(&stats));
+
+  // After successful authentication this value is set to true.
+  EXPECT_CALL(*controller(), ArePasswordsRevealedWhenBubbleIsOpened())
+      .WillOnce(Return(true));
+
+  SetUpWithState(password_manager::ui::PENDING_PASSWORD_STATE,
+                 ManagePasswordsBubbleModel::USER_ACTION);
+
+  EXPECT_FALSE(model()->password_revealing_requires_reauth());
+  EXPECT_TRUE(model()->RevealPasswords());
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, DisableEditing) {

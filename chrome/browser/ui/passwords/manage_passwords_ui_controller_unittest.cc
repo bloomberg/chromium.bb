@@ -95,6 +95,9 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   ~TestManagePasswordsUIController() override;
 
   bool opened_bubble() const { return opened_bubble_; }
+  bool are_passwords_revealed_in_opened_bubble() const {
+    return are_passwords_revealed_in_opened_bubble_;
+  }
 
   MOCK_METHOD1(CreateAccountChooser,
                AccountChooserPrompt*(PasswordDialogController*));
@@ -110,8 +113,10 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   void UpdatePasswordInternal(
       const autofill::PasswordForm& password_form) override {}
   void NeverSavePasswordInternal() override;
+  bool ShowAuthenticationDialog() override { return true; }
 
   bool opened_bubble_;
+  bool are_passwords_revealed_in_opened_bubble_;
 };
 
 TestManagePasswordsUIController::TestManagePasswordsUIController(
@@ -133,8 +138,11 @@ void TestManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   OnUpdateBubbleAndIconVisibility();
   TestManagePasswordsIconView view;
   UpdateIconAndBubbleState(&view);
-  if (opened_bubble_)
+  if (opened_bubble_) {
+    are_passwords_revealed_in_opened_bubble_ =
+        ArePasswordsRevealedWhenBubbleIsOpened();
     OnBubbleShown();
+  }
 }
 
 void TestManagePasswordsUIController::NeverSavePasswordInternal() {
@@ -1236,4 +1244,36 @@ TEST_F(ManagePasswordsUIControllerTest, AutofillDuringSignInPromo) {
   // Once the bubble is closed the controller is reacting again.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnBubbleHidden();
+}
+
+TEST_F(ManagePasswordsUIControllerTest, AuthenticateUserToRevealPasswords) {
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE,
+            controller()->GetState());
+  EXPECT_TRUE(controller()->opened_bubble());
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
+
+  // Simulate that re-auth is need to reveal passwords in the bubble.
+  bool success = controller()->AuthenticateUser();
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  EXPECT_FALSE(success);
+  // Let the task posted in AuthenticateUser re-open the bubble.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE(controller()->opened_bubble());
+  EXPECT_TRUE(controller()->are_passwords_revealed_in_opened_bubble());
+  // Since the bubble is opened, this property is already cleared.
+  EXPECT_FALSE(controller()->ArePasswordsRevealedWhenBubbleIsOpened());
+
+  // Close the bubble.
+  controller()->OnBubbleHidden();
+#else
+  EXPECT_TRUE(success);
+#endif
 }
