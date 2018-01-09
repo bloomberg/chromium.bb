@@ -175,7 +175,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       new LargeObjectArena(thread_state_, BlinkGC::kLargeObjectArenaIndex);
 
   likely_to_be_promptly_freed_ =
-      WrapArrayUnique(new int[kLikelyToBePromptlyFreedArraySize]);
+      std::make_unique<int[]>(kLikelyToBePromptlyFreedArraySize);
   ClearArenaAges();
 }
 

@@ -2302,9 +2302,9 @@ class FormatConverter {
         success_(false) {
     const unsigned kMaxNumberOfComponents = 4;
     const unsigned kMaxBytesPerComponent = 4;
-    unpacked_intermediate_src_data_ = WrapArrayUnique(
-        new uint8_t[src_sub_rectangle_.Width() * kMaxNumberOfComponents *
-                    kMaxBytesPerComponent]);
+    unpacked_intermediate_src_data_ = std::make_unique<uint8_t[]>(
+        src_sub_rectangle_.Width() * kMaxNumberOfComponents *
+        kMaxBytesPerComponent);
     DCHECK(unpacked_intermediate_src_data_.get());
   }
 

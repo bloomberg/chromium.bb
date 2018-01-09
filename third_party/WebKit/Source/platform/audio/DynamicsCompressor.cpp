@@ -186,8 +186,8 @@ void DynamicsCompressor::Reset() {
 }
 
 void DynamicsCompressor::SetNumberOfChannels(unsigned number_of_channels) {
-  source_channels_ = WrapArrayUnique(new const float*[number_of_channels]);
-  destination_channels_ = WrapArrayUnique(new float*[number_of_channels]);
+  source_channels_ = std::make_unique<const float* []>(number_of_channels);
+  destination_channels_ = std::make_unique<float* []>(number_of_channels);
 
   compressor_.SetNumberOfChannels(number_of_channels);
   number_of_channels_ = number_of_channels;

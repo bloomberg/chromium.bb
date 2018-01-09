@@ -424,8 +424,8 @@ void AudioBufferSourceHandler::SetBuffer(AudioBuffer* buffer,
 
     Output(0).SetNumberOfChannels(number_of_channels);
 
-    source_channels_ = WrapArrayUnique(new const float*[number_of_channels]);
-    destination_channels_ = WrapArrayUnique(new float*[number_of_channels]);
+    source_channels_ = std::make_unique<const float* []>(number_of_channels);
+    destination_channels_ = std::make_unique<float* []>(number_of_channels);
 
     for (unsigned i = 0; i < number_of_channels; ++i)
       source_channels_[i] = buffer->getChannelData(i).View()->Data();
