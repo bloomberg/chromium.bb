@@ -9,49 +9,17 @@
 <script>
 'use strict';
 
-function iframe(url) {
-  return new Promise(resolve => {
-    const element = document.createElement('iframe');
-    element.addEventListener(
-      'load', () => { resolve(element); }, { once: true });
-    element.src = url;
-    document.documentElement.appendChild(element);
-  });
-}
-
-let next_request_id = 0;
-function postAndWait(frame, data) {
-  const iframe_window = frame.contentWindow;
-  iframe_window.postMessage(Object.assign(data, {rqid: next_request_id++}), '*');
-  return new Promise(resolve => {
-    const listener = event => {
-      if (event.source !== iframe_window || event.data.rqid !== data.rqid)
-        return;
-      self.removeEventListener('message', listener);
-      resolve(event.data);
-    };
-    self.addEventListener('message', listener);
-  });
-}
-
-async function postAndConfirm(frame, data) {
-  const response = await postAndWait(frame, data);
-  assert_equals(response.ack, data.op);
-  assert_equals(response.id, data.lock_id);
-  return response;
-}
-
 promise_test(async t => {
   const res = uniqueName(t);
 
   const frame = await iframe('resources/iframe.html');
   t.add_cleanup(() => { frame.remove(); });
 
-  await postAndConfirm(
-    frame, {op: 'request', lock_id: 1, name: res, mode: 'shared'});
+  const lock_id = (await postToFrameAndWait(
+    frame, {op: 'request', name: res, mode: 'shared'})).lock_id;
 
   await navigator.locks.acquire(res, {mode: 'shared'}, async lock => {
-    await postAndConfirm(frame, {op: 'release', lock_id: 1});
+    await postToFrameAndWait(frame, {op: 'release', lock_id});
   });
 
 }, 'Window and Frame - shared mode');
@@ -63,8 +31,8 @@ promise_test(async t => {
   t.add_cleanup(() => { frame.remove(); });
 
   // frame acquires the lock.
-  await postAndConfirm(
-    frame, {op: 'request', lock_id: 1, name: res});
+  const lock_id = (await postToFrameAndWait(
+    frame, {op: 'request', name: res})).lock_id;
 
   // This request should be blocked.
   let lock_granted = false;
@@ -78,7 +46,7 @@ promise_test(async t => {
   assert_false(lock_granted);
 
   // Ask the frame to release it.
-  await postAndConfirm(frame, {op: 'release', lock_id: 1});
+  await postToFrameAndWait(frame, {op: 'release', lock_id});
 
   await blocked;
   // Now we've got it.
@@ -92,23 +60,23 @@ promise_test(async t => {
   const frame2 = await iframe('resources/iframe.html');
 
   // frame1 acquires the lock.
-  await postAndConfirm(
-    frame1, {op: 'request', lock_id: 1, name: res});
+  const lock_id = (await postToFrameAndWait(
+    frame1, {op: 'request', name: res})).lock_id;
 
   // frame2's request should be blocked.
   let lock_granted = false;
-  const blocked = postAndConfirm(
-    frame2, {op: 'request', lock_id: 1, name: res});
+  const blocked = postToFrameAndWait(
+    frame2, {op: 'request', name: res});
   blocked.then(f => { lock_granted = true; });
 
   // Verify that frame2 can't get it.
-  assert_true((await postAndConfirm(frame2, {
-    op: 'request', name: res, lock_id: 2, ifAvailable: true
+  assert_true((await postToFrameAndWait(frame2, {
+    op: 'request', name: res, ifAvailable: true
   })).failed, 'Lock request should have failed');
   assert_false(lock_granted);
 
   // Ask frame1 to release it.
-  await postAndConfirm(frame1, {op: 'release', lock_id: 1});
+  await postToFrameAndWait(frame1, {op: 'release', lock_id});
 
   await blocked;
   // Now frame2 can get it.
@@ -123,8 +91,7 @@ promise_test(async t => {
   const frame = await iframe('resources/iframe.html');
 
   // Frame acquires the lock.
-  await postAndConfirm(
-    frame, {op: 'request', lock_id: 1, name: res});
+  await postToFrameAndWait(frame, {op: 'request', name: res});
 
   // This request should be blocked.
   let lock_granted = false;
@@ -152,8 +119,7 @@ promise_test(async t => {
   const frame = await iframe('resources/iframe.html');
 
   // Frame acquires the lock.
-  await postAndConfirm(
-    frame, {op: 'request', lock_id: 1, name: res});
+  await postToFrameAndWait(frame, {op: 'request', name: res});
 
   // This request should be blocked.
   let lock_granted = false;
@@ -193,23 +159,21 @@ promise_test(async t => {
   t.add_cleanup(() => { frame3.remove(); });
 
   // frame1 requests and holds res - should be granted immediately.
-  await postAndConfirm(
-    frame1, {op: 'request', lock_id: 1, name: res});
+  const lock_id = (await postToFrameAndWait(
+    frame1, {op: 'request', name: res})).lock_id;
 
   // frame2 requests res - should be blocked.
   // (don't attach listeners as they will keep the frame alive)
-  frame2.contentWindow.postMessage(
-    {op: 'request', lock_id: 1, name: res}, '*');
+  frame2.contentWindow.postMessage({op: 'request', name: res}, '*');
 
   // frame3 requests res - should be blocked.
   let lock_granted = false;
-  const blocked = postAndConfirm(
-    frame3, {op: 'request', lock_id: 1, name: res});
+  const blocked = postToFrameAndWait(frame3, {op: 'request', name: res});
   blocked.then(f => { lock_granted = true; });
 
   // Verify that frame3 can't get it.
-  assert_true((await postAndConfirm(frame3, {
-    op: 'request', name: res, lock_id: 2, ifAvailable: true
+  assert_true((await postToFrameAndWait(frame3, {
+    op: 'request', name: res, ifAvailable: true
   })).failed, 'Lock request should have failed');
   assert_false(lock_granted);
 
@@ -217,7 +181,7 @@ promise_test(async t => {
   frame2.src = 'about:blank';
 
   // frame1 releases lock
-  await postAndConfirm(frame1, {op: 'release', lock_id: 1});
+  await postToFrameAndWait(frame1, {op: 'release', lock_id});
 
   // frame3's request should be granted.
   await blocked;
@@ -242,23 +206,21 @@ promise_test(async t => {
   t.add_cleanup(() => { frame3.remove(); });
 
   // frame1 requests and holds res - should be granted immediately.
-  await postAndConfirm(
-    frame1, {op: 'request', lock_id: 1, name: res});
+  const lock_id = (await postToFrameAndWait(
+    frame1, {op: 'request', name: res})).lock_id;
 
   // frame2 requests res - should be blocked.
   // (don't attach listeners as they will keep the frame alive)
-  frame2.contentWindow.postMessage(
-    {op: 'request', lock_id: 1, name: res}, '*');
+  frame2.contentWindow.postMessage({op: 'request', name: res}, '*');
 
   // frame3 requests res - should be blocked.
   let lock_granted = false;
-  const blocked = postAndConfirm(
-    frame3, {op: 'request', lock_id: 1, name: res});
+  const blocked = postToFrameAndWait(frame3, {op: 'request', name: res});
   blocked.then(f => { lock_granted = true; });
 
   // So frame3 can't get it
-  assert_true((await postAndConfirm(frame3, {
-    op: 'request', name: res, lock_id: 2, ifAvailable: true
+  assert_true((await postToFrameAndWait(frame3, {
+    op: 'request', name: res, ifAvailable: true
   })).failed, 'Lock request should have failed');
   assert_false(lock_granted);
 
@@ -266,7 +228,7 @@ promise_test(async t => {
   frame2.remove();
 
   // frame1 releases lock
-  await postAndConfirm(frame1, {op: 'release', lock_id: 1});
+  await postToFrameAndWait(frame1, {op: 'release', lock_id});
 
   // frame3's request should be granted.
   await blocked;
