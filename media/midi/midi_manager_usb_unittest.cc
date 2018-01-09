@@ -227,7 +227,7 @@ class MidiManagerUsbTest : public ::testing::Test {
     service_ = std::make_unique<MidiService>(std::move(factory));
   }
   ~MidiManagerUsbTest() override {
-    manager()->Shutdown();
+    service_->Shutdown();
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
 
@@ -240,10 +240,10 @@ class MidiManagerUsbTest : public ::testing::Test {
  protected:
   void Initialize() {
     client_.reset(new FakeMidiManagerClient(&logger_));
-    manager()->StartSession(client_.get());
+    service_->StartSession(client_.get());
   }
 
-  void Finalize() { manager()->EndSession(client_.get()); }
+  void Finalize() { service_->EndSession(client_.get()); }
 
   bool IsInitializationCallbackInvoked() {
     return client_->complete_start_session_;
