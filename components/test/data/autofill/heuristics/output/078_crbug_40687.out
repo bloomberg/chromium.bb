@@ -9,7 +9,7 @@ ADDRESS_HOME_COUNTRY | user[billing][country] | Billing Country | US | user[bill
 PHONE_HOME_WHOLE_NUMBER | user[phone_first] | Phone Number |  | user[billing][firstname]_1-default
 EMAIL_ADDRESS | user[email] | Email Address |  | user[billing][firstname]_1-default
 EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address |  | user[billing][firstname]_1-default
-CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number |  | user[billing][firstname]_1-cc
-CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month |  | user[billing][firstname]_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year |  | user[billing][firstname]_1-cc
-CREDIT_CARD_VERIFICATION_CODE | payment[sigpanel] | CVV2/Panel Code |  | user[billing][firstname]_1-cc
+CREDIT_CARD_NUMBER | payment[cc_number] | Credit Card Number |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | payment[cc_expmo] | Expiration Month |  | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | payment[cc_expyr] | Expiration Year |  | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | payment[sigpanel] | CVV2/Panel Code |  | credit-card-cc

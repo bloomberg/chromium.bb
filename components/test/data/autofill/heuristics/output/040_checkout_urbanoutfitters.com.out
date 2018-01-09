@@ -25,11 +25,11 @@ PHONE_HOME_WHOLE_NUMBER | billingPhone | Phone | Phone | billingFirstName_1-defa
 PHONE_HOME_WHOLE_NUMBER | altBillingPhone | Alternate Phone (optional) | Alternate Phone (optional) | billingFirstName_1-default
 UNKNOWN_TYPE | defaultBilling | Make this my default billing address | true | billingFirstName_1-default
 UNKNOWN_TYPE | savedCreditCard |  |  | billingFirstName_1-default
-CREDIT_CARD_TYPE | payment_cardtype |  |  | billingFirstName_1-cc
-CREDIT_CARD_NUMBER | payment_acctnum | Card Number (no spaces or dashes) | Card Number (no spaces or dashes) | billingFirstName_1-cc
-CREDIT_CARD_EXP_MONTH | expmonth |  |  | billingFirstName_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | expyear |  |  | billingFirstName_1-cc
-CREDIT_CARD_VERIFICATION_CODE | payment_cidnew | CID / Security Code | CID / Security Code | billingFirstName_1-cc
+CREDIT_CARD_TYPE | payment_cardtype |  |  | credit-card-cc
+CREDIT_CARD_NUMBER | payment_acctnum | Card Number (no spaces or dashes) | Card Number (no spaces or dashes) | credit-card-cc
+CREDIT_CARD_EXP_MONTH | expmonth |  |  | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expyear |  |  | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | payment_cidnew | CID / Security Code | CID / Security Code | credit-card-cc
 UNKNOWN_TYPE | makeDefaultCreditCard | Make this my default credit card | true | billingFirstName_1-default
 UNKNOWN_TYPE | giftMessageField |  |  | giftMessageField_1-default
 UNKNOWN_TYPE | giftCardNumberFromBalance | Gift Card Number | Gift Card Number | giftCardNumberFromBalance_1-default

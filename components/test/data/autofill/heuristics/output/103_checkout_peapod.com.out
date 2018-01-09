@@ -10,9 +10,9 @@ ADDRESS_HOME_ZIP | billZip | Zip Code: | 01001 | _1-default
 PHONE_HOME_CITY_CODE | HomeArea | Contact Phone: | 310 | _1-default
 PHONE_HOME_NUMBER | HomePrefix | Contact Phone: | 555 | _1-default
 PHONE_HOME_NUMBER | HomeSuffix | Contact Phone: | 1212 | _1-default
-CREDIT_CARD_TYPE | /peapod/handler/iditarod/CheckoutRegistrationHandler.creditCardType | Card Type: |  | _1-cc
-CREDIT_CARD_NUMBER | cardNum |  |  | _1-cc
-CREDIT_CARD_VERIFICATION_CODE | cid |  |  | _1-cc
-CREDIT_CARD_EXP_MONTH | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationMonth | Expiration Date: | 0 | _1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationYear | / | 0 | _1-cc
-CREDIT_CARD_NAME_FULL | cardName | Shorty Nge | Shorty Nge | _1-cc
+CREDIT_CARD_TYPE | /peapod/handler/iditarod/CheckoutRegistrationHandler.creditCardType | Card Type: |  | credit-card-cc
+CREDIT_CARD_NUMBER | cardNum |  |  | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | cid |  |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationMonth | Expiration Date: | 0 | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | /peapod/handler/iditarod/CheckoutRegistrationHandler.expirationYear | / | 0 | credit-card-cc
+CREDIT_CARD_NAME_FULL | cardName | Shorty Nge | Shorty Nge | credit-card-cc

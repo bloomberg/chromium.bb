@@ -2,11 +2,11 @@ UNKNOWN_TYPE | unbxd_q | enter keyword or item number... | enter keyword or item
 UNKNOWN_TYPE | CouponCode | Enter Your Gift Card or Coupon Number: |  | unbxd_q_1-default
 UNKNOWN_TYPE | CouponPin | Enter Your Gift Card Pin Number: |  | unbxd_q_1-default
 UNKNOWN_TYPE | paymentMethod | Credit Card | CreditCard | paymentMethod_1-default
-CREDIT_CARD_NUMBER | CreditCardNumber | Credit Card Number: |  | paymentMethod_1-cc
-CREDIT_CARD_NAME_FULL | CreditCardHolderName | Name on Card: |  | paymentMethod_1-cc
-CREDIT_CARD_EXP_MONTH | CreditCardMonth | Month: | 01 | paymentMethod_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardYear | Year: | 2017 | paymentMethod_1-cc
-CREDIT_CARD_VERIFICATION_CODE | CreditCardSecurityValue | Card Security Value: |  | paymentMethod_1-cc
+CREDIT_CARD_NUMBER | CreditCardNumber | Credit Card Number: |  | credit-card-cc
+CREDIT_CARD_NAME_FULL | CreditCardHolderName | Name on Card: |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | CreditCardMonth | Month: | 01 | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardYear | Year: | 2017 | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | CreditCardSecurityValue | Card Security Value: |  | credit-card-cc
 UNKNOWN_TYPE | paymentMethod | PayPal | PayPal | paymentMethod_1-default
 UNKNOWN_TYPE | paymentMethod | Check or Money Order | CheckOrMoneyOrder | paymentMethod_1-default
 UNKNOWN_TYPE | UseShippingAddressAsBillingAddress | My billing address is the same as my shipping address | true | paymentMethod_1-default

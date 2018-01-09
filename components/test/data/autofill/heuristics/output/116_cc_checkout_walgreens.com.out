@@ -2,10 +2,10 @@ UNKNOWN_TYPE | paymentMethodType | CC | CC | paymentMethodType_1-default
 UNKNOWN_TYPE | 007 | VisaCheckout | VisaCheckout | paymentMethodType_1-default
 UNKNOWN_TYPE | paymentMethodType | Paypal | Paypal | paymentMethodType_1-default
 UNKNOWN_TYPE | paymentMethodType | BML | BML | paymentMethodType_1-default
-CREDIT_CARD_TYPE | addtype |  |  | paymentMethodType_1-cc
-CREDIT_CARD_NUMBER | addcardnumber |  |  | paymentMethodType_1-cc
-CREDIT_CARD_EXP_MONTH | addmonth |  |  | paymentMethodType_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | addyear |  |  | paymentMethodType_1-cc
+CREDIT_CARD_TYPE | addtype |  |  | credit-card-cc
+CREDIT_CARD_NUMBER | addcardnumber |  |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | addmonth |  |  | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | addyear |  |  | credit-card-cc
 UNKNOWN_TYPE | preferred | Same as shipping address | on | paymentMethodType_1-default
 NAME_FIRST | addfirstName |  |  | paymentMethodType_1-default
 NAME_LAST | addlastName |  |  | paymentMethodType_1-default

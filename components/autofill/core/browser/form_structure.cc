@@ -1332,6 +1332,12 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
 
     for (const auto& field : fields_) {
       const ServerFieldType current_type = field->Type().GetStorableType();
+      // All credit card fields belong to the same section that's different
+      // from address sections.
+      if (AutofillType(current_type).group() == CREDIT_CARD) {
+        field->set_section("credit-card");
+        continue;
+      }
 
       bool already_saw_current_type = seen_types.count(current_type) > 0;
 

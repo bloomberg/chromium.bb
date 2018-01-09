@@ -31,11 +31,11 @@ ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: |  | f1_1-default
 ADDRESS_HOME_CITY | Tribute_NotifyCity | City / St. / Zip: |  | f1_1-default
 ADDRESS_HOME_STATE | Tribute_NotifyState | City / St. / Zip: |  | f1_1-default
 ADDRESS_HOME_ZIP | Tribute_NotifyZip | City / St. / Zip: |  | f1_1-default
-CREDIT_CARD_TYPE | cctype | Credit Card Type * | Visa | f1_1-cc
-CREDIT_CARD_NUMBER | ccard | Credit Card Number * |  | f1_1-cc
-CREDIT_CARD_VERIFICATION_CODE | csc | CSC Number * What Is This? |  | f1_1-cc
-CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1 | f1_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11 | f1_1-cc
+CREDIT_CARD_TYPE | cctype | Credit Card Type * | Visa | credit-card-cc
+CREDIT_CARD_NUMBER | ccard | Credit Card Number * |  | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | csc | CSC Number * What Is This? |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1 | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11 | credit-card-cc
 UNKNOWN_TYPE | SameAddress | Same As Contact Address | checkbox | f1_1-default
 ADDRESS_HOME_LINE1 | CC_Addr | Address 1 * |  | CC_Addr_1-default
 ADDRESS_HOME_LINE2 | CC_Addr2 | Address 2 |  | CC_Addr_1-default

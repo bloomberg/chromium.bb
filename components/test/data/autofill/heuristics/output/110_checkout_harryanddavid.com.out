@@ -37,6 +37,6 @@ UNKNOWN_TYPE | GiftCardPin | PIN* |  | _1-default
 UNKNOWN_TYPE | paymentType | What is PayPal? | on | _1-default
 UNKNOWN_TYPE | paymentType | Card Number Expiration Date | on | _1-default
 UNKNOWN_TYPE |  | Card Number | Χ  | _1-default
-CREDIT_CARD_NUMBER | clearTextAccount | Card Number |  | _1-cc
-CREDIT_CARD_EXP_MONTH | expire_month | Expiration Date | 01 | _1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | expire_year | Expiration Date | 2014 | _1-cc
+CREDIT_CARD_NUMBER | clearTextAccount | Card Number |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | expire_month | Expiration Date | 01 | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | expire_year | Expiration Date | 2014 | credit-card-cc
