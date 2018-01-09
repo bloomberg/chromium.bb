@@ -343,6 +343,10 @@ void RenderViewTest::TearDown() {
   // (http://crbug.com/21508).
   base::RunLoop().RunUntilIdle();
 
+#if defined(OS_WIN)
+  ClearDWriteFontProxySenderForTesting();
+#endif
+
 #if defined(OS_MACOSX)
   autorelease_pool_.reset();
 #endif

@@ -17,15 +17,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "content/common/dwrite_font_proxy.mojom.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
-#include "ipc/ipc_platform_file.h"
 
-struct DWriteFontStyle;
-struct MapCharactersResult;
-
-namespace base {
-class SequencedTaskRunner;
+namespace service_manager {
+struct BindSourceInfo;
 }
 
 namespace content {
@@ -33,34 +30,31 @@ namespace content {
 // Implements a message filter that handles the dwrite font proxy messages.
 // If DWrite is enabled, calls into the system font collection to obtain
 // results. Otherwise, acts as if the system collection contains no fonts.
-class CONTENT_EXPORT DWriteFontProxyMessageFilter
-    : public BrowserMessageFilter {
+class CONTENT_EXPORT DWriteFontProxyImpl : public mojom::DWriteFontProxy {
  public:
-  DWriteFontProxyMessageFilter();
+  DWriteFontProxyImpl();
+  ~DWriteFontProxyImpl() override;
 
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override;
-  base::TaskRunner* OverrideTaskRunnerForMessage(const IPC::Message&) override;
+  static void Create(mojom::DWriteFontProxyRequest request,
+                     const service_manager::BindSourceInfo& source_info);
 
   void SetWindowsFontsPathForTesting(base::string16 path);
 
  protected:
-  ~DWriteFontProxyMessageFilter() override;
-
-  void OnFindFamily(const base::string16& family_name, UINT32* family_index);
-  void OnGetFamilyCount(UINT32* count);
-  void OnGetFamilyNames(
-      UINT32 family_index,
-      std::vector<std::pair<base::string16, base::string16>>* family_names);
-  void OnGetFontFiles(UINT32 family_index,
-                      std::vector<base::string16>* file_paths,
-                      std::vector<IPC::PlatformFileForTransit>* file_handles);
-  void OnMapCharacters(const base::string16& text,
-                       const DWriteFontStyle& font_style,
-                       const base::string16& locale_name,
-                       uint32_t reading_direction,
-                       const base::string16& base_family_name,
-                       MapCharactersResult* result);
+  // mojom::DWriteFontProxy:
+  void FindFamily(const base::string16& family_name,
+                  FindFamilyCallback callback) override;
+  void GetFamilyCount(GetFamilyCountCallback callback) override;
+  void GetFamilyNames(uint32_t family_index,
+                      GetFamilyNamesCallback callback) override;
+  void GetFontFiles(uint32_t family_index,
+                    GetFontFilesCallback callback) override;
+  void MapCharacters(const base::string16& text,
+                     mojom::DWriteFontStylePtr font_style,
+                     const base::string16& locale_name,
+                     uint32_t reading_direction,
+                     const base::string16& base_family_name,
+                     MapCharactersCallback callback) override;
 
   void InitializeDirectWrite();
 
@@ -84,12 +78,11 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
   Microsoft::WRL::ComPtr<IDWriteFontFallback> font_fallback_;
   base::string16 windows_fonts_path_;
   CustomFontFileLoadingMode custom_font_file_loading_mode_;
-  scoped_refptr<base::SequencedTaskRunner> dwrite_io_task_runner_;
 
   // Temp code to help track down crbug.com/561873
   std::vector<uint32_t> last_resort_fonts_;
 
-  DISALLOW_COPY_AND_ASSIGN(DWriteFontProxyMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(DWriteFontProxyImpl);
 };
 
 }  // namespace content

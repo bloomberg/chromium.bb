@@ -206,9 +206,10 @@ class SyncChannel::ReceivedSyncMsgQueue :
         }
         for (; it != message_queue_.end(); it++) {
           int message_group = it->context->restrict_dispatch_group();
-          if (!dispatching_context ||
-              message_group == kRestrictDispatchGroup_None ||
-              message_group == dispatching_context->restrict_dispatch_group()) {
+          if (message_group == kRestrictDispatchGroup_None ||
+              (dispatching_context &&
+               message_group ==
+                   dispatching_context->restrict_dispatch_group())) {
             message = it->message;
             context = it->context;
             it = message_queue_.erase(it);

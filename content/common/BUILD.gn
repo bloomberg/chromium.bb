@@ -118,7 +118,6 @@ source_set("common") {
     "drag_event_source_info.h",
     "drag_messages.h",
     "drag_traits.h",
-    "dwrite_font_proxy_messages.h",
     "edit_command.h",
     "fileapi/file_system_messages.h",
     "fileapi/webblob_messages.h",
@@ -578,7 +577,10 @@ mojom("mojo_bindings") {
   ]
 
   if (is_win) {
-    sources += [ "font_cache_win.mojom" ]
+    sources += [
+      "dwrite_font_proxy.mojom",
+      "font_cache_win.mojom",
+    ]
   }
 
   import_dirs = [ "//mojo/services" ]
