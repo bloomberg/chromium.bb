@@ -13014,11 +13014,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, HitTestNestedFrames) {
           quit_closure.Run();
         }));
     content::RunThisRunLoop(&run_loop);
-    // |point_in_child| should hit test to |child_node|.
-    ASSERT_EQ(viz::FrameSinkId(
-                  rwhv_child->GetRenderWidgetHost()->GetProcess()->GetID(),
-                  child_node->current_frame_host()->GetRoutingID()),
-              received_frame_sink_id);
+    // |point_in_child| should hit test to the view for |child_node|.
+    ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
   }
 
   {
@@ -13035,9 +13032,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, HitTestNestedFrames) {
           quit_closure.Run();
         }));
     content::RunThisRunLoop(&run_loop);
-    // |point_in_nested_child| should hit test to |rwhv_grandchild|. We have
-    // to check against the nested child's RenderFrameProxyHost for the parent
-    // frame's SiteInstance.
+    // |point_in_nested_child| should hit test to |rwhv_grandchild|.
     ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
   }
 }
