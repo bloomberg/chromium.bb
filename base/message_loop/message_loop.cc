@@ -258,9 +258,17 @@ void MessageLoop::RemoveTaskObserver(TaskObserver* task_observer) {
 }
 
 bool MessageLoop::IsIdleForTesting() {
-  // We only check the incoming queue, since we don't want to lock the work
-  // queue.
-  return incoming_task_queue_->IsIdleForTesting();
+  // Have unprocessed tasks? (this reloads the work queue if necessary)
+  if (incoming_task_queue_->triage_tasks().HasTasks())
+    return false;
+
+  // Have unprocessed deferred tasks which can be processed at this run-level?
+  if (incoming_task_queue_->deferred_tasks().HasTasks() &&
+      !RunLoop::IsNestedOnCurrentThread()) {
+    return false;
+  }
+
+  return true;
 }
 
 //------------------------------------------------------------------------------
