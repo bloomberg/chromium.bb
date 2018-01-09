@@ -2566,6 +2566,11 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
 // If the view size is larger than the compositor frame then extra layers
 // should be created to fill the gap.
 TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
+  // TODO(fsamuel): Delete this test once surface synchronization is on for
+  // all platforms.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Size large_size(100, 100);
   gfx::Size small_size(40, 45);
   gfx::Size medium_size(40, 95);
@@ -2753,6 +2758,11 @@ TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
 
 // Skipped frames should not drop their damage.
 TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
+  // TODO(fsamuel): Delete this test once surface synchronization is on for
+  // all platforms.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   viz::LocalSurfaceId local_surface_id =
@@ -2867,6 +2877,11 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
 
 // If resize races with a renderer frame, we should lock for the right size.
 TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
+  // TODO(fsamuel): Delete this test once surface synchronization is on for
+  // all platforms.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
   viz::LocalSurfaceId local_surface_id =
@@ -2942,6 +2957,11 @@ TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
 // no reason to lock the compositor as there can't be guttering around a
 // renderer frame that doesn't exist.
 TEST_F(RenderWidgetHostViewAuraTest, MissingFramesDontLock) {
+  // TODO(fsamuel): Delete this test once surface synchronization is on for
+  // all platforms.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size = view_rect.size();
 
@@ -3296,6 +3316,11 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
+  // TODO(fsamuel): Delete this test once surface synchronization is on for
+  // all platforms.
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
