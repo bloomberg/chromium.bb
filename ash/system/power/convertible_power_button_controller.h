@@ -37,17 +37,6 @@ class ASH_EXPORT ConvertiblePowerButtonController
   // Public for tests.
   static constexpr float kGravity = 9.80665f;
 
-  // Amount of time since last screen state change that power button event needs
-  // to be ignored.
-  static constexpr base::TimeDelta kScreenStateChangeDelay =
-      base::TimeDelta::FromMilliseconds(500);
-
-  // Ignore button-up events occurring within this many milliseconds of the
-  // previous button-up event. This prevents us from falling behind if the power
-  // button is pressed repeatedly.
-  static constexpr base::TimeDelta kIgnoreRepeatedButtonUpDelay =
-      base::TimeDelta::FromMilliseconds(500);
-
   ConvertiblePowerButtonController(
       PowerButtonDisplayController* display_controller,
       base::TickClock* tick_clock);
@@ -75,10 +64,6 @@ class ASH_EXPORT ConvertiblePowerButtonController
 
   // Called by |shutdown_timer_| to start the pre-shutdown animation.
   void OnShutdownTimeout();
-
-  // Locks the screen if the "require password to wake from sleep" pref is set
-  // and locking is possible.
-  void LockScreenIfRequired();
 
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;

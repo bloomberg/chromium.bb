@@ -590,6 +590,8 @@ component("ash") {
     "system/power/power_button_display_controller.h",
     "system/power/power_button_screenshot_controller.cc",
     "system/power/power_button_screenshot_controller.h",
+    "system/power/power_button_util.cc",
+    "system/power/power_button_util.h",
     "system/power/power_event_observer.cc",
     "system/power/power_event_observer.h",
     "system/power/power_status.cc",
