@@ -1098,16 +1098,14 @@
     'views_mus_interactive_ui_tests': {},
   },
 
-  'mus_chromium_gtests': {
-    'ash_unittests-mus': {
-      'test': 'ash_unittests',
-      'override_isolate_target': 'ash_unittests',
+  'linux_chromeos_rel_mus_specific_gtests': {
+    'mus_ash_unittests': {
       'args': [
         '--mus',
       ],
+      'test': 'ash_unittests',
     },
     'mus_browser_tests': {
-      'test': 'browser_tests',
       'args': [
         '--mus',
         '--ozone-platform=headless',
@@ -1117,45 +1115,13 @@
         'hard_timeout': 1500,
         'shards': 5,
       },
+      'test': 'browser_tests',
     },
     'mus_content_unittests': {
+      'args': [
+        '--mus',
+      ],
       'test': 'content_unittests',
-      'args': [
-        '--mus',
-      ],
-    },
-    'content_browsertests --mus': {
-      'test': 'content_browsertests',
-      'override_isolate_target': 'content_browsertests',
-      'args': [
-        '--mus',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mus.content_browsertests.filter',
-      ],
-      'swarming': {
-        'shards': 2,
-      },
-    },
-  },
-
-  # TODO(kbr): unify these with the tests on chromium.chromiumos and
-  # specify any differences in command line arguments as exceptions.
-  'mus_chromium_chromiumos_gtests': {
-    'ash_unittests-mus': {
-      'args': [
-        '--mus',
-      ],
-      'test': 'ash_unittests',
-    },
-    'mus_browser_tests': {
-      'args': [
-        '--mus',
-        '--override-use-software-gl-for-tests',
-      ],
-      'swarming': {
-        'hard_timeout': 1500,
-        'shards': 5,
-      },
-      'test': 'browser_tests',
     },
     'mus_content_browsertests': {
       'args': [
@@ -1987,9 +1953,9 @@
   'linux_chromeos_rel_gtests': [
     # This is:
     #   linux_chromeos_dbg_gtests
+    #   + linux_chromeos_rel_mus_specific_gtests
     #   + linux_chromeos_rel_specific_gtests
     #   + mash_chromium_gtests
-    #   + mus_chromium_gtests
     'aura_gtests',
     'aura_non_clang_gtests',
     'chromium_gtests',
@@ -1999,10 +1965,10 @@
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
+    'linux_chromeos_rel_mus_specific_gtests',
     'linux_chromeos_rel_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'mash_chromium_gtests',
-    'mus_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_chromium_gtests',
     'non_android_and_clang_linux_mac_win_chromium_gtests',
@@ -2089,10 +2055,10 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
+    'linux_chromeos_rel_mus_specific_gtests',
     'linux_chromeos_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'mash_chromium_gtests',
-    'mus_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_chromium_gtests',
     'non_android_and_clang_linux_mac_win_chromium_gtests',
@@ -2285,9 +2251,9 @@
 
   'mojo_chromiumos_fyi_gtests': [
     'aura_non_clang_gtests',
+    'linux_chromeos_rel_mus_specific_gtests',
     'mash_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
-    'mus_chromium_chromiumos_gtests',
     'viz_fyi_gtests',
   ],
 
