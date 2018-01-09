@@ -10,6 +10,9 @@
       <includes>
         <if expr="background_image_available">
         <include name="IDR_VR_BACKGROUND_IMAGE" file="../../resources/vr/assets/background.png" type="BINDATA" />
+        <include name="IDR_VR_NORMAL_GRADIENT_IMAGE" file="../../resources/vr/assets/normal_gradient.png" type="BINDATA" />
+        <include name="IDR_VR_INCOGNITO_GRADIENT_IMAGE" file="../../resources/vr/assets/incognito_gradient.png" type="BINDATA" />
+        <include name="IDR_VR_FULLSCREEN_GRADIENT_IMAGE" file="../../resources/vr/assets/fullscreen_gradient.png" type="BINDATA" />
          </if>
       </includes>
   </release>
