@@ -3340,7 +3340,8 @@ TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
 
   scoped_refptr<FakeRasterSource> pending_raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_bounds);
-  SetupPendingTree(pending_raster_source);
+  SetupPendingTree(std::move(pending_raster_source), gfx::Size(), Region(),
+                   Layer::LayerMaskType::MULTI_TEXTURE_MASK);
   host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
   ActivateTree();
 

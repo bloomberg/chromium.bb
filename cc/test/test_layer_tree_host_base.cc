@@ -96,7 +96,8 @@ void TestLayerTreeHostBase::SetupPendingTree(
 void TestLayerTreeHostBase::SetupPendingTree(
     scoped_refptr<RasterSource> raster_source,
     const gfx::Size& tile_size,
-    const Region& invalidation) {
+    const Region& invalidation,
+    Layer::LayerMaskType mask_type) {
   host_impl()->CreatePendingTree();
   host_impl()->pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
                                                            100000.f);
@@ -111,7 +112,20 @@ void TestLayerTreeHostBase::SetupPendingTree(
   if (!pending_root) {
     std::unique_ptr<LayerImpl> new_pending_root =
         LayerImpl::Create(pending_tree, root_id_);
-    pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
+    switch (mask_type) {
+      case Layer::LayerMaskType::NOT_MASK:
+        pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
+        break;
+      case Layer::LayerMaskType::SINGLE_TEXTURE_MASK:
+        pending_layer =
+            FakePictureLayerImpl::CreateSingleTextureMask(pending_tree, id_);
+        break;
+      case Layer::LayerMaskType::MULTI_TEXTURE_MASK:
+        pending_layer = FakePictureLayerImpl::CreateMask(pending_tree, id_);
+        break;
+      default:
+        NOTREACHED();
+    }
     if (!tile_size.IsEmpty())
       pending_layer->set_fixed_tile_size(tile_size);
     pending_layer->SetDrawsContent(true);

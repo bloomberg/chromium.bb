@@ -212,11 +212,18 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (raster_source_->IsSolidColor()) {
-    float max_contents_scale = CanHaveTilings()
-                                   ? ideal_contents_scale_
-                                   : std::min(kMaxIdealContentsScale,
-                                              std::max(GetIdealContentsScale(),
-                                                       MinimumContentsScale()));
+    // TODO(sunxd): Solid color non-mask layers are forced to have contents
+    // scale = 1. This is a workaround to temperarily fix
+    // https://crbug.com/796558.
+    // We need to investigate into the ca layers logic and remove this
+    // workaround after fixing the bug.
+    float max_contents_scale =
+        !(mask_type_ == Layer::LayerMaskType::MULTI_TEXTURE_MASK)
+            ? 1
+            : CanHaveTilings() ? ideal_contents_scale_
+                               : std::min(kMaxIdealContentsScale,
+                                          std::max(GetIdealContentsScale(),
+                                                   MinimumContentsScale()));
 
     // The downstream CA layers use shared_quad_state to generate resources of
     // the right size even if it is a solid color picture layer.
