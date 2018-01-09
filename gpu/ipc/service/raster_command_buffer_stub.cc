@@ -281,4 +281,13 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 #endif  // defined(OS_FUCHSIA)
 }
 
+// RasterInterface clients should not manipulate the front buffer.
+void RasterCommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
+  NOTREACHED();
+}
+void RasterCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
+                                                  bool is_lost) {
+  NOTREACHED();
+}
+
 }  // namespace gpu

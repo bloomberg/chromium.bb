@@ -181,8 +181,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id);
-  void OnTakeFrontBuffer(const Mailbox& mailbox);
-  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost);
+  virtual void OnTakeFrontBuffer(const Mailbox& mailbox) = 0;
+  virtual void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) = 0;
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,

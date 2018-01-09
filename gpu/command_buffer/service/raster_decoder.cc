@@ -144,13 +144,6 @@ const gles2::ContextState* RasterDecoder::GetContextState() {
 
 void RasterDecoder::Destroy(bool have_context) {}
 
-void RasterDecoder::TakeFrontBuffer(const Mailbox& mailbox) {
-  NOTIMPLEMENTED();
-}
-void RasterDecoder::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
-  NOTIMPLEMENTED();
-}
-
 // Make this decoder's GL context current.
 bool RasterDecoder::MakeCurrent() {
   DCHECK(surface_);

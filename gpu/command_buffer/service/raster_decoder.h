@@ -62,8 +62,6 @@ class GPU_EXPORT RasterDecoder : public DecoderContext,
   bool initialized() const override;
   const gles2::ContextState* GetContextState() override;
   void Destroy(bool have_context) override;
-  void TakeFrontBuffer(const Mailbox& mailbox) override;
-  void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
   bool MakeCurrent() override;
   gl::GLContext* GetGLContext() override;
   Capabilities GetCapabilities() override;

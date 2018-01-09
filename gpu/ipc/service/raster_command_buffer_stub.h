@@ -28,6 +28,10 @@ class GPU_IPC_SERVICE_EXPORT RasterCommandBufferStub
       const GPUCreateCommandBufferConfig& init_params,
       std::unique_ptr<base::SharedMemory> shared_state_shm) override;
 
+ private:
+  void OnTakeFrontBuffer(const Mailbox& mailbox) override;
+  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
+
   DISALLOW_COPY_AND_ASSIGN(RasterCommandBufferStub);
 };
 
