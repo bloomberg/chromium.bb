@@ -543,7 +543,7 @@ deps = {
   },
 
   'src/third_party/openh264/src':
-    Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'a180c9d4d6f1a4830ca9eed9d159d54996bd63cb',
+    Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '5a5c4f14f471b9f434a55c39e942153453f25661',
 
   'src/third_party/openmax_dl':
     Var('webrtc_git') + '/deps/third_party/openmax.git' + '@' +  Var('openmax_dl_revision'),
