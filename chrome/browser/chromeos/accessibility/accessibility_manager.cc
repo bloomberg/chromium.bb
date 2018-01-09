@@ -15,13 +15,12 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/autoclick/mus/public/interfaces/autoclick.mojom.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/interfaces/constants.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/system/power/backlights_forced_off_setter.h"
-#include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -331,6 +330,11 @@ AccessibilityManager::AccessibilityManager()
       extension_misc::kSwitchAccessExtensionId,
       resources_path.Append(extension_misc::kSwitchAccessExtensionPath),
       base::Closure()));
+
+  // Connect to ash's AccessibilityController interface.
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &accessibility_controller_);
 }
 
 AccessibilityManager::~AccessibilityManager() {
@@ -778,17 +782,7 @@ void AccessibilityManager::OnMonoAudioChanged() {
 }
 
 void AccessibilityManager::SetDarkenScreen(bool darken) {
-  // TODO(mash): Support forcing backlights off from within Chrome:
-  // https://crbug.com/793112
-  if (GetAshConfig() == ash::Config::MASH)
-    return;
-
-  if (darken && !scoped_backlights_forced_off_) {
-    scoped_backlights_forced_off_ =
-        ash::Shell::Get()->backlights_forced_off_setter()->ForceBacklightsOff();
-  } else if (!darken && scoped_backlights_forced_off_) {
-    scoped_backlights_forced_off_.reset();
-  }
+  accessibility_controller_->SetDarkenScreen(darken);
 }
 
 void AccessibilityManager::SetCaretHighlightEnabled(bool enabled) {
@@ -1472,7 +1466,7 @@ void AccessibilityManager::PostUnloadChromeVox() {
   }
 
   // In case the user darkened the screen, undarken it now.
-  scoped_backlights_forced_off_.reset();
+  SetDarkenScreen(false);
 
   keyboard_state_setter_.reset();
 }

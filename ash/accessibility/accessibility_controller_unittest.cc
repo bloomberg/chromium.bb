@@ -7,11 +7,14 @@
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
 
 namespace ash {
@@ -37,7 +40,28 @@ class TestAccessibilityObserver : public AccessibilityObserver {
   DISALLOW_COPY_AND_ASSIGN(TestAccessibilityObserver);
 };
 
-using AccessibilityControllerTest = AshTestBase;
+class AccessibilityControllerTest : public AshTestBase {
+ public:
+  AccessibilityControllerTest() = default;
+  ~AccessibilityControllerTest() override = default;
+
+  void SetUp() override {
+    auto power_manager_client =
+        std::make_unique<chromeos::FakePowerManagerClient>();
+    power_manager_client_ = power_manager_client.get();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        std::move(power_manager_client));
+
+    AshTestBase::SetUp();
+  }
+
+ protected:
+  // Owned by chromeos::DBusThreadManager.
+  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerTest);
+};
 
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
@@ -162,6 +186,18 @@ TEST_F(AccessibilityControllerTest, GetShutdownSoundDuration) {
   controller->FlushMojoForTest();
   EXPECT_EQ(TestAccessibilityControllerClient::kShutdownSoundDuration,
             sound_duration);
+}
+
+TEST_F(AccessibilityControllerTest, SetDarkenScreen) {
+  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetDarkenScreen(true);
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+
+  controller->SetDarkenScreen(false);
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
 using AccessibilityControllerSigninTest = NoSessionAshTestBase;

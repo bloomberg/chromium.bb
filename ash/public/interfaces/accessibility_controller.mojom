@@ -42,6 +42,10 @@ enum AccessibilityAlert {
 interface AccessibilityController {
   // Sets the client interface.
   SetClient(AccessibilityControllerClient client);
+
+  // Starts or stops darkening the screen (e.g. to allow chrome a11y extensions
+  // to darken the screen).
+  SetDarkenScreen(bool darken);
 };
 
 // Interface for ash to request accessibility service from its client (e.g.
