@@ -8522,6 +8522,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   RD_STATS best_rdcost = *rd_cost;
   int best_skip = x->skip;
 
+  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8] = { 0 };
   for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
        dir < IBC_MOTION_DIRECTIONS; ++dir) {
     const MvLimits tmp_mv_limits = x->mv_limits;
@@ -8615,6 +8616,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       memset(x->blk_skip[0], rd_stats.skip,
              sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
     }
+
     super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
     av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
 #if CONFIG_RD_DEBUG
@@ -8634,25 +8636,33 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       best_mbmi = *mbmi;
       best_skip = x->skip;
       best_rdcost = rdc_noskip;
+      memcpy(best_blk_skip, x->blk_skip[0],
+             sizeof(x->blk_skip[0][0]) * xd->n8_h * xd->n8_w * 4);
     }
 
-    x->skip = 1;
-    mbmi->skip = 1;
-    RD_STATS rdc_skip;
-    av1_init_rd_stats(&rdc_skip);
-    rdc_skip.rate = rate_mode + rate_mv + x->skip_cost[skip_ctx][1];
-    rdc_skip.dist = rd_stats.sse;
-    rdc_skip.rdcost = RDCOST(x->rdmult, rdc_skip.rate, rdc_skip.dist);
-    if (rdc_skip.rdcost < best_rd) {
-      best_rd = rdc_skip.rdcost;
-      best_mbmi = *mbmi;
-      best_skip = x->skip;
-      best_rdcost = rdc_skip;
+    if (!xd->lossless[mbmi->segment_id]) {
+      x->skip = 1;
+      mbmi->skip = 1;
+      RD_STATS rdc_skip;
+      av1_init_rd_stats(&rdc_skip);
+      rdc_skip.rate = rate_mode + rate_mv + x->skip_cost[skip_ctx][1];
+      rdc_skip.dist = rd_stats.sse;
+      rdc_skip.rdcost = RDCOST(x->rdmult, rdc_skip.rate, rdc_skip.dist);
+      if (rdc_skip.rdcost < best_rd) {
+        best_rd = rdc_skip.rdcost;
+        best_mbmi = *mbmi;
+        best_skip = x->skip;
+        best_rdcost = rdc_skip;
+        memcpy(best_blk_skip, x->blk_skip[0],
+               sizeof(x->blk_skip[0][0]) * xd->n8_h * xd->n8_w * 4);
+      }
     }
   }
   *mbmi = best_mbmi;
   *rd_cost = best_rdcost;
   x->skip = best_skip;
+  memcpy(x->blk_skip[0], best_blk_skip,
+         sizeof(x->blk_skip[0][0]) * xd->n8_h * xd->n8_w * 4);
   return best_rd;
 }
 #endif  // CONFIG_INTRABC
@@ -8724,6 +8734,8 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
     best_rd = rd_cost->rdcost;
   if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
     ctx->skip = x->skip;  // FIXME where is the proper place to set this?!
+    memcpy(ctx->blk_skip[0], x->blk_skip[0],
+           sizeof(x->blk_skip[0][0]) * ctx->num_4x4_blk);
     assert(rd_cost->rate != INT_MAX);
   }
 #endif
