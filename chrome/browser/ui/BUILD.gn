@@ -141,8 +141,6 @@ split_static_library("ui") {
     "page_info/page_info_ui.h",
     "passwords/account_avatar_fetcher.cc",
     "passwords/account_avatar_fetcher.h",
-    "passwords/destination_file_system.cc",
-    "passwords/destination_file_system.h",
     "passwords/manage_passwords_state.cc",
     "passwords/manage_passwords_state.h",
     "passwords/manage_passwords_view_utils.cc",

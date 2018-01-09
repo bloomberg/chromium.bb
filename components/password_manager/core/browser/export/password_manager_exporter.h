@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -20,7 +21,6 @@ struct PasswordForm;
 namespace password_manager {
 
 class CredentialProviderInterface;
-class Destination;
 
 // Controls the exporting of passwords. PasswordManagerExporter will perform
 // the export asynchrnously as soon as all the required info is available
@@ -38,10 +38,16 @@ class PasswordManagerExporter {
 
   // Set the destination, where the passwords will be written when they are
   // ready.
-  virtual void SetDestination(std::unique_ptr<Destination> destination);
+  virtual void SetDestination(const base::FilePath& destination);
 
   // Best-effort canceling of any on-going task related to exporting.
   virtual void Cancel();
+
+  // Replace the function which writes to the filesystem with a custom action.
+  // The return value is -1 on error, otherwise the number of bytes written.
+  void SetWriteForTesting(int (*write_function)(const base::FilePath& filename,
+                                                const char* data,
+                                                int size));
 
  private:
   // Returns true if all the necessary data is available.
@@ -53,7 +59,7 @@ class PasswordManagerExporter {
   void Export();
 
   // Callback after the passwords have been serialised.
-  void OnPasswordsSerialised(std::unique_ptr<Destination> destination,
+  void OnPasswordsSerialised(base::FilePath destination,
                              const std::string& serialised);
 
   // The source of the password list which will be exported.
@@ -65,7 +71,13 @@ class PasswordManagerExporter {
 
   // The destination which was provided and where the password list will be
   // sent. It will be cleared once exporting is complete.
-  std::unique_ptr<Destination> destination_;
+  base::FilePath destination_;
+
+  // The function which does the actual writing. It should point to
+  // base::WriteFile, unless it's changed for testing purposes.
+  int (*write_function_)(const base::FilePath& filename,
+                         const char* data,
+                         int size);
 
   // |task_runner_| is used for time-consuming tasks during exporting. The tasks
   // will dereference a WeakPtr to |*this|, which means they all need to run on
