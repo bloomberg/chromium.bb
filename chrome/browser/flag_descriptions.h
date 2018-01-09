@@ -1096,11 +1096,17 @@ extern const char kContentSuggestionsCategoryRankerDescription[];
 extern const char kContentSuggestionsDebugLogName[];
 extern const char kContentSuggestionsDebugLogDescription[];
 
+extern const char kContextualSearchMlTapSuppressionName[];
+extern const char kContextualSearchMlTapSuppressionDescription[];
+
 extern const char kContextualSearchName[];
 extern const char kContextualSearchDescription[];
 
-extern const char kContextualSearchMlTapSuppressionName[];
-extern const char kContextualSearchMlTapSuppressionDescription[];
+extern const char kContextualSearchRankerQueryName[];
+extern const char kContextualSearchRankerQueryDescription[];
+
+extern const char kContextualSearchSecondTapName[];
+extern const char kContextualSearchSecondTapDescription[];
 
 extern const char kDontPrefetchLibrariesName[];
 extern const char kDontPrefetchLibrariesDescription[];

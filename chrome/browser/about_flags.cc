@@ -37,6 +37,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
+#include "components/assist_ranker/predictor_config_definitions.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -1318,6 +1319,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchMlTapSuppressionDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextualSearchMlTapSuppression)},
+    {"contextual-search-ranker-query",
+     flag_descriptions::kContextualSearchRankerQueryName,
+     flag_descriptions::kContextualSearchRankerQueryDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(assist_ranker::kContextualSearchRankerQuery)},
+    {"contextual-search-second-tap",
+     flag_descriptions::kContextualSearchSecondTapName,
+     flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
 #endif  // OS_ANDROID
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
