@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5263 tests; 5144 PASS, 119 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5263 tests; 5146 PASS, 117 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -995,7 +995,7 @@ PASS HTMLAnchorElement interface: attribute target
 PASS HTMLAnchorElement interface: attribute download
 PASS HTMLAnchorElement interface: attribute ping
 PASS HTMLAnchorElement interface: attribute rel
-FAIL HTMLAnchorElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
+PASS HTMLAnchorElement interface: attribute relList
 PASS HTMLAnchorElement interface: attribute hreflang
 PASS HTMLAnchorElement interface: attribute type
 PASS HTMLAnchorElement interface: attribute text
@@ -1023,7 +1023,7 @@ PASS HTMLAnchorElement interface: document.createElement("a") must inherit prope
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "download" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "ping" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "rel" with the proper type
-FAIL HTMLAnchorElement interface: document.createElement("a") must inherit property "relList" with the proper type assert_inherits: property "relList" not found in prototype chain
+PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "relList" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "hreflang" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "type" with the proper type
 PASS HTMLAnchorElement interface: document.createElement("a") must inherit property "text" with the proper type

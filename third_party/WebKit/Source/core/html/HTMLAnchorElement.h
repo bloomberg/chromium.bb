@@ -27,6 +27,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/RelList.h"
 #include "core/html_names.h"
 #include "core/url/DOMURLUtils.h"
 #include "platform/LinkHash.h"
@@ -82,11 +83,17 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   bool HasRel(uint32_t relation) const;
   void SetRel(const AtomicString&);
+  DOMTokenList& relList() const {
+    return static_cast<DOMTokenList&>(*rel_list_);
+  }
 
   LinkHash VisitedLinkHash() const;
   void InvalidateCachedVisitedLinkHash() { cached_visited_link_hash_ = 0; }
 
   void SendPings(const KURL& destination_url) const;
+
+  virtual void Trace(blink::Visitor*);
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   HTMLAnchorElement(const QualifiedName&, Document&);
@@ -123,6 +130,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   unsigned link_relations_ : 31;
   unsigned was_focused_by_mouse_ : 1;
   mutable LinkHash cached_visited_link_hash_;
+  TraceWrapperMember<RelList> rel_list_;
 };
 
 inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {

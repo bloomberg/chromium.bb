@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 175 tests; 173 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 175 tests; 174 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS a.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList.
 PASS area.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList.
 PASS link.classList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList.
@@ -70,7 +70,7 @@ PASS iframe.htmlFor in null namespace should be undefined.
 PASS output.htmlFor in null namespace should be undefined.
 PASS td.htmlFor in null namespace should be undefined.
 PASS th.htmlFor in null namespace should be undefined.
-FAIL a.relList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList. assert_equals: expected "[object DOMTokenList]" but got "[object Undefined]"
+PASS a.relList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList.
 FAIL area.relList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList. assert_equals: expected "[object DOMTokenList]" but got "[object Undefined]"
 PASS link.relList in http://www.w3.org/1999/xhtml namespace should be DOMTokenList.
 PASS iframe.relList in http://www.w3.org/1999/xhtml namespace should be undefined.
