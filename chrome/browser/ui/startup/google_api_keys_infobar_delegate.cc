@@ -8,16 +8,12 @@
 #include "chrome/grit/chromium_strings.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "ui/base/l10n/l10n_util.h"
 
 
 // static
 void GoogleApiKeysInfoBarDelegate::Create(InfoBarService* infobar_service) {
-  if (google_apis::HasKeysConfigured())
-    return;
-
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
       std::unique_ptr<ConfirmInfoBarDelegate>(
           new GoogleApiKeysInfoBarDelegate())));

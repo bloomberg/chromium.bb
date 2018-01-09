@@ -67,6 +67,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "google_apis/google_api_keys.h"
 #include "rlz/features/features.h"
 #include "ui/base/ui_features.h"
 
@@ -796,7 +797,8 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     chrome::ShowBadFlagsPrompt(browser);
     InfoBarService* infobar_service = InfoBarService::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents());
-    GoogleApiKeysInfoBarDelegate::Create(infobar_service);
+    if (!google_apis::HasKeysConfigured())
+      GoogleApiKeysInfoBarDelegate::Create(infobar_service);
     if (ObsoleteSystem::IsObsoleteNowOrSoon()) {
       PrefService* local_state = g_browser_process->local_state();
       if (!local_state ||
