@@ -472,7 +472,12 @@ public class DOMUtils {
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
                 + getMaybeTopControlsHeight(viewCore);
-        return new int[] { clickX, clickY };
+
+        // This scale will almost always be 1. See the comments on
+        // DisplayAndroid#getAndroidUIScaling().
+        float scale = viewCore.getWindowAndroid().getDisplay().getAndroidUIScaling();
+
+        return new int[] {(int) (clickX * scale), (int) (clickY * scale)};
     }
 
     private static int getMaybeTopControlsHeight(ContentViewCore viewCore) {
