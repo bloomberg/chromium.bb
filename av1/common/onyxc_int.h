@@ -122,6 +122,7 @@ typedef enum {
 
 typedef struct {
   int_mv mfmv[INTER_REFS_PER_FRAME][MFMV_STACK_SIZE];
+  int mem_size;
 } TPL_MV_REF;
 #endif
 
@@ -667,8 +668,10 @@ static INLINE int frame_can_use_prev_frame_mvs(const AV1_COMMON *cm) {
 #endif
 
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
-  if (buf->mvs == NULL || buf->mi_rows < cm->mi_rows ||
-      buf->mi_cols < cm->mi_cols) {
+  const int buf_rows = buf->mi_rows;
+  const int buf_cols = buf->mi_cols;
+
+  if (buf->mvs == NULL || buf_rows < cm->mi_rows || buf_cols < cm->mi_cols) {
     aom_free(buf->mvs);
     buf->mi_rows = cm->mi_rows;
     buf->mi_cols = cm->mi_cols;
@@ -691,13 +694,16 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
   }
 
 #if CONFIG_MFMV
-  if (cm->tpl_mvs == NULL || buf->mi_rows < cm->mi_rows ||
-      buf->mi_cols < cm->mi_cols) {
+  const int mem_size =
+      ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
+  int realloc = cm->tpl_mvs == NULL;
+  if (cm->tpl_mvs) realloc |= cm->tpl_mvs->mem_size < mem_size;
+
+  if (realloc) {
     aom_free(cm->tpl_mvs);
-    CHECK_MEM_ERROR(cm, cm->tpl_mvs, (TPL_MV_REF *)aom_calloc(
-                                         ((cm->mi_rows + MAX_MIB_SIZE) >> 1) *
-                                             (cm->mi_stride >> 1),
-                                         sizeof(*cm->tpl_mvs)));
+    CHECK_MEM_ERROR(cm, cm->tpl_mvs,
+                    (TPL_MV_REF *)aom_calloc(mem_size, sizeof(*cm->tpl_mvs)));
+    cm->tpl_mvs->mem_size = mem_size;
   }
 #endif
 }
