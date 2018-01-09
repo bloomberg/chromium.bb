@@ -70,6 +70,9 @@ class LevelDBMojoProxy;
 namespace media {
 class BlockingUrlProtocol;
 }
+namespace midi {
+class TaskService;  // https://crbug.com/796830
+}
 namespace mojo {
 class SyncCallRestrictions;
 namespace edk {
@@ -264,6 +267,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
+  friend class midi::TaskService;  // https://crbug.com/796830
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
   friend class rlz_lib::FinancialPing;
   friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
