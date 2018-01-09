@@ -53,6 +53,16 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * Called when focus is returned from ash::SystemTray.
+   */
+  Oobe.focusReturned = function() {
+    if (Oobe.getInstance().currentScreen &&
+        Oobe.getInstance().currentScreen.onFocusReturned) {
+      Oobe.getInstance().currentScreen.onFocusReturned();
+    }
+  };
+
+  /**
    * Handle accelerators. These are passed from native code instead of a JS
    * event handler in order to make sure that embedded iframes cannot swallow
    * them.

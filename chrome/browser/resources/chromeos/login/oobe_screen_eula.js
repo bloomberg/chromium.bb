@@ -347,5 +347,16 @@ login.createScreen('EulaScreen', 'eula', function() {
           loadBundledEula);
       pendingLoad.start();
     },
+
+    /**
+     * Called when focus is returned.
+     */
+    onFocusReturned: function() {
+      if ($('oobe-eula') && !$('oobe-eula').hidden) {
+        $('oobe-eula').focus();
+      } else if ($('oobe-eula-md') && !$('oobe-eula-md').hidden) {
+        $('oobe-eula-md').focus();
+      }
+    },
   };
 });
