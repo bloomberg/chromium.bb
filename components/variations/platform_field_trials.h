@@ -13,8 +13,8 @@ namespace variations {
 // WebView make use through their corresponding subclasses.
 class PlatformFieldTrials {
  public:
-  PlatformFieldTrials(){};
-  virtual ~PlatformFieldTrials(){};
+  PlatformFieldTrials() = default;
+  virtual ~PlatformFieldTrials() = default;
 
   // Set up field trials for a specific platform.
   virtual void SetupFieldTrials() = 0;
