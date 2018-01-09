@@ -11,6 +11,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_display_controller.h"
+#include "ash/system/power/power_button_util.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
@@ -38,18 +39,7 @@ constexpr base::TimeDelta kShutdownWhenScreenOnTimeout =
 constexpr base::TimeDelta kShutdownWhenScreenOffTimeout =
     base::TimeDelta::FromMilliseconds(2000);
 
-// Amount of time since last SuspendDone() that power button event needs to be
-// ignored.
-constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
-    base::TimeDelta::FromSeconds(2);
-
 }  // namespace
-
-constexpr base::TimeDelta
-    ConvertiblePowerButtonController::kScreenStateChangeDelay;
-
-constexpr base::TimeDelta
-    ConvertiblePowerButtonController::kIgnoreRepeatedButtonUpDelay;
 
 ConvertiblePowerButtonController::ConvertiblePowerButtonController(
     PowerButtonDisplayController* display_controller,
@@ -80,7 +70,8 @@ void ConvertiblePowerButtonController::OnPowerButtonEvent(
     // backlight has been turned back on before seeing the power button events
     // that woke the system. Avoid forcing off display just after resuming to
     // ensure that we don't turn the display off in response to the events.
-    if (timestamp - last_resume_time_ <= kIgnorePowerButtonAfterResumeDelay)
+    if (timestamp - last_resume_time_ <=
+        power_button_util::kIgnorePowerButtonAfterResumeDelay)
       force_off_on_button_up_ = false;
 
     // The actual display may remain off for a short period after powerd asks
@@ -88,7 +79,7 @@ void ConvertiblePowerButtonController::OnPowerButtonEvent(
     // this time, they probably intend to turn the display on. Avoid forcing off
     // in this case.
     if (timestamp - display_controller_->screen_state_last_changed() <=
-        kScreenStateChangeDelay) {
+        power_button_util::kScreenStateChangeDelay) {
       force_off_on_button_up_ = false;
     }
 
@@ -105,7 +96,8 @@ void ConvertiblePowerButtonController::OnPowerButtonEvent(
       lock_state_controller_->CancelShutdownAnimation();
 
     // Ignore the event if it comes too soon after the last one.
-    if (timestamp - previous_up_time <= kIgnoreRepeatedButtonUpDelay) {
+    if (timestamp - previous_up_time <=
+        power_button_util::kIgnoreRepeatedButtonUpDelay) {
       shutdown_timer_.Stop();
       return;
     }
@@ -114,7 +106,8 @@ void ConvertiblePowerButtonController::OnPowerButtonEvent(
       shutdown_timer_.Stop();
       if (!screen_off_when_power_button_down_ && force_off_on_button_up_) {
         display_controller_->SetBacklightsForcedOff(true);
-        LockScreenIfRequired();
+        power_button_util::LockScreenIfRequired(
+            Shell::Get()->session_controller(), lock_state_controller_);
       }
     }
   }
@@ -154,16 +147,6 @@ void ConvertiblePowerButtonController::StartShutdownTimer() {
 
 void ConvertiblePowerButtonController::OnShutdownTimeout() {
   lock_state_controller_->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
-}
-
-void ConvertiblePowerButtonController::LockScreenIfRequired() {
-  SessionController* session_controller = Shell::Get()->session_controller();
-  if (session_controller->ShouldLockScreenAutomatically() &&
-      session_controller->CanLockScreen() &&
-      !session_controller->IsUserSessionBlocked() &&
-      !lock_state_controller_->LockRequested()) {
-    lock_state_controller_->LockWithoutAnimation();
-  }
 }
 
 }  // namespace ash
