@@ -2312,13 +2312,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         }
 
         @Override
-        public boolean awakenScrollBars() {
-            mWebViewPrivate.awakenScrollBars(0);
-            // TODO: modify the WebView.PrivateAccess to provide a return value.
-            return true;
-        }
-
-        @Override
         public boolean super_awakenScrollBars(int arg0, boolean arg1) {
             return false;
         }
