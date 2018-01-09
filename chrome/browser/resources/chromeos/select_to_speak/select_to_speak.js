@@ -100,8 +100,8 @@ function getNodeState(node) {
     return NodeState.NODE_STATE_INVISIBLE;
   }
   // Walk up the tree to make sure the window it is in is not invisible.
-  var parent = getNearestContainingWindow(node);
-  if (parent != null && parent.state[chrome.automation.StateType.INVISIBLE]) {
+  var window = getNearestContainingWindow(node);
+  if (window != null && window.state[chrome.automation.StateType.INVISIBLE]) {
     return NodeState.NODE_STATE_INVISIBLE;
   }
   // TODO: Also need a check for whether the window is minimized,
@@ -1093,11 +1093,22 @@ SelectToSpeak.prototype = {
     if (this.currentNode_ == null) {
       return;
     }
-    var parent = getNearestContainingWindow(evt.target);
-    var currentParent = getNearestContainingWindow(this.currentNode_.node);
-    var inForeground =
-        currentParent != null && parent != null && currentParent == parent;
-    this.updateFromNodeState_(this.currentNode_.node, inForeground);
+    chrome.automation.getFocus(function(focusedNode) {
+      var window = getNearestContainingWindow(evt.target);
+      var currentWindow = getNearestContainingWindow(this.currentNode_.node);
+      var inForeground =
+          currentWindow != null && window != null && currentWindow == window;
+      if (!inForeground && focusedNode && currentWindow) {
+        // See if the focused node window matches the currentWindow.
+        // This may happen in some cases, for example, ARC++, when the window
+        // which received the hit test request is not part of the tree that
+        // contains the actual content. In such cases, use focus to get the
+        // appropriate root.
+        var focusedWindow = getNearestContainingWindow(focusedNode.root);
+        inForeground = focusedWindow != null && currentWindow == focusedWindow;
+      }
+      this.updateFromNodeState_(this.currentNode_.node, inForeground);
+    }.bind(this));
   },
 
   /**
