@@ -1755,6 +1755,9 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
     frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
   }
 
+  if (frame_->IsLocalRoot())
+    dev_tools_agent_ = WebDevToolsAgentImpl::Create(this);
+
   if (!owner) {
     // This trace event is needed to detect the main frame of the
     // renderer in telemetry metrics. See crbug.com/692112#c11.
@@ -1972,16 +1975,6 @@ void WebLocalFrameImpl::SetAutofillClient(WebAutofillClient* autofill_client) {
 
 WebAutofillClient* WebLocalFrameImpl::AutofillClient() {
   return autofill_client_;
-}
-
-void WebLocalFrameImpl::SetDevToolsAgentClient(
-    WebDevToolsAgentClient* dev_tools_client) {
-  DCHECK(dev_tools_client);
-  dev_tools_agent_ = WebDevToolsAgentImpl::Create(this, dev_tools_client);
-}
-
-WebDevToolsAgent* WebLocalFrameImpl::DevToolsAgent() {
-  return dev_tools_agent_.Get();
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::LocalRoot() {

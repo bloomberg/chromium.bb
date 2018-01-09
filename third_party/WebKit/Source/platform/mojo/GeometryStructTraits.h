@@ -7,11 +7,19 @@
 
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<gfx::mojom::PointDataView, ::blink::WebPoint> {
+  static int x(const ::blink::WebPoint& point) { return point.x; }
+  static int y(const ::blink::WebPoint& point) { return point.y; }
+  static bool Read(gfx::mojom::PointDataView, ::blink::WebPoint* out);
+};
 
 template <>
 struct StructTraits<gfx::mojom::PointFDataView, ::blink::WebFloatPoint> {

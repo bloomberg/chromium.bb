@@ -68,7 +68,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebSettings.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
@@ -144,8 +143,8 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
 
 void WebSharedWorkerImpl::SendProtocolMessage(int session_id,
                                               int call_id,
-                                              const WebString& message,
-                                              const WebString& state) {
+                                              const String& message,
+                                              const String& state) {
   DCHECK(IsMainThread());
   client_->SendDevToolsMessage(session_id, call_id, message, state);
 }
@@ -359,21 +358,21 @@ void WebSharedWorkerImpl::PauseWorkerContextOnStart() {
 }
 
 void WebSharedWorkerImpl::AttachDevTools(int session_id) {
-  WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
+  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
     devtools_agent->Attach(session_id);
 }
 
 void WebSharedWorkerImpl::ReattachDevTools(int session_id,
                                            const WebString& saved_state) {
-  WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
+  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
     devtools_agent->Reattach(session_id, saved_state);
   ResumeStartup();
 }
 
 void WebSharedWorkerImpl::DetachDevTools(int session_id) {
-  WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
+  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent)
     devtools_agent->Detach(session_id);
 }
@@ -384,7 +383,7 @@ void WebSharedWorkerImpl::DispatchDevToolsMessage(int session_id,
                                                   const WebString& message) {
   if (asked_to_terminate_)
     return;
-  WebDevToolsAgent* devtools_agent = shadow_page_->DevToolsAgent();
+  WebDevToolsAgentImpl* devtools_agent = shadow_page_->DevToolsAgent();
   if (devtools_agent) {
     devtools_agent->DispatchOnInspectorBackend(session_id, call_id, method,
                                                message);

@@ -34,8 +34,6 @@ class WebAutofillClient;
 class WebContentSettingsClient;
 class WebData;
 class WebDocumentLoader;
-class WebDevToolsAgent;
-class WebDevToolsAgentClient;
 class WebDocument;
 class WebDoubleSize;
 class WebDOMEvent;
@@ -133,8 +131,6 @@ class WebLocalFrame : public WebFrame {
 
   virtual void SetAutofillClient(WebAutofillClient*) = 0;
   virtual WebAutofillClient* AutofillClient() = 0;
-  virtual void SetDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
-  virtual WebDevToolsAgent* DevToolsAgent() = 0;
   virtual void SetSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) = 0;
 

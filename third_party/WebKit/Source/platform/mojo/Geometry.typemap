@@ -6,6 +6,7 @@ mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 public_headers = [
   "//third_party/WebKit/public/platform/WebFloatRect.h",
   "//third_party/WebKit/public/platform/WebFloatPoint.h",
+  "//third_party/WebKit/public/platform/WebPoint.h",
   "//third_party/WebKit/public/platform/WebRect.h",
   "//third_party/WebKit/public/platform/WebSize.h",
 ]
@@ -23,6 +24,7 @@ deps = [
 # TODO(zqzhang): ideally, gfx.mojom.Size should be mapped into ::blink::IntSize.
 # However that introduces an link issue on Windows. See https://crbug.com/653323
 type_mappings = [
+  "gfx.mojom.Point=::blink::WebPoint",
   "gfx.mojom.PointF=::blink::WebFloatPoint",
   "gfx.mojom.RectF=::blink::WebFloatRect",
   "gfx.mojom.Rect=::blink::WebRect",

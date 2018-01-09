@@ -13,8 +13,8 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
-#include "content/common/devtools.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 
 namespace content {
 
@@ -22,7 +22,7 @@ class DevToolsAgentHostClient;
 class RenderFrameHostImpl;
 
 class DevToolsSession : public protocol::FrontendChannel,
-                        public mojom::DevToolsSessionHost {
+                        public blink::mojom::DevToolsSessionHost {
  public:
   DevToolsSession(DevToolsAgentHostImpl* agent_host,
                   DevToolsAgentHostClient* client,
@@ -35,8 +35,8 @@ class DevToolsSession : public protocol::FrontendChannel,
   void SetRenderer(RenderProcessHost* process_host,
                    RenderFrameHostImpl* frame_host);
   void SetFallThroughForNotFound(bool value);
-  void AttachToAgent(const mojom::DevToolsAgentAssociatedPtr& agent);
-  void ReattachToAgent(const mojom::DevToolsAgentAssociatedPtr& agent);
+  void AttachToAgent(const blink::mojom::DevToolsAgentAssociatedPtr& agent);
+  void ReattachToAgent(const blink::mojom::DevToolsAgentAssociatedPtr& agent);
 
   struct Message {
     std::string method;
@@ -84,12 +84,13 @@ class DevToolsSession : public protocol::FrontendChannel,
       std::unique_ptr<protocol::Serializable> message) override;
   void flushProtocolNotifications() override;
 
-  // mojom::DevToolsSessionHost implementation.
-  void DispatchProtocolMessage(mojom::DevToolsMessageChunkPtr chunk) override;
+  // blink::mojom::DevToolsSessionHost implementation.
+  void DispatchProtocolMessage(
+      blink::mojom::DevToolsMessageChunkPtr chunk) override;
 
-  mojo::AssociatedBinding<mojom::DevToolsSessionHost> binding_;
-  mojom::DevToolsSessionAssociatedPtr session_ptr_;
-  mojom::DevToolsSessionPtr io_session_ptr_;
+  mojo::AssociatedBinding<blink::mojom::DevToolsSessionHost> binding_;
+  blink::mojom::DevToolsSessionAssociatedPtr session_ptr_;
+  blink::mojom::DevToolsSessionPtr io_session_ptr_;
   DevToolsAgentHostImpl* agent_host_;
   DevToolsAgentHostClient* client_;
   int session_id_;
