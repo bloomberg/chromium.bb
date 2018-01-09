@@ -83,7 +83,8 @@ const CGFloat kSpacing = 16;
     ];
     ApplyVisualConstraintsWithOptions(constraints, viewsDictionary,
                                       LayoutOptionForRTLSupport(), self);
-    UILayoutGuide* safeAreaLayoutGuide = SafeAreaLayoutGuideForView(self);
+    id<LayoutGuideProvider> safeAreaLayoutGuide =
+        SafeAreaLayoutGuideForView(self);
     [NSLayoutConstraint activateConstraints:@[
       [title.leadingAnchor
           constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor

@@ -7,7 +7,29 @@
 
 #import <UIKit/UIKit.h>
 
-// UI util for adding constraints.
+// Defines a protocol for common -...Anchor methods of UIView and UILayoutGuide.
+@protocol LayoutGuideProvider<NSObject>
+@property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* leadingAnchor;
+@property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* trailingAnchor;
+@property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* leftAnchor;
+@property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* rightAnchor;
+@property(nonatomic, readonly, strong) NSLayoutYAxisAnchor* topAnchor;
+@property(nonatomic, readonly, strong) NSLayoutYAxisAnchor* bottomAnchor;
+@property(nonatomic, readonly, strong) NSLayoutDimension* widthAnchor;
+@property(nonatomic, readonly, strong) NSLayoutDimension* heightAnchor;
+@property(nonatomic, readonly, strong) NSLayoutXAxisAnchor* centerXAnchor;
+@property(nonatomic, readonly, strong) NSLayoutYAxisAnchor* centerYAnchor;
+@end
+
+// UIView already supports the methods in LayoutGuideProvider.
+@interface UIView (LayoutGuideProvider)<LayoutGuideProvider>
+@end
+
+// UILayoutGuide already supports the methods in LayoutGuideProvider.
+@interface UILayoutGuide (LayoutGuideProvider)<LayoutGuideProvider>
+@end
+
+#pragma mark - Visual constraints.
 
 // General note on the following constraint utility functions:
 // Directly adding constraints to views has been deprecated in favor of just
@@ -73,13 +95,18 @@ NSArray* VisualConstraintsWithMetricsAndOptions(
     NSDictionary* metrics,
     NSLayoutFormatOptions options);
 
+#pragma mark - Constraints between two views.
+// Most methods in this group can take a layout guide or a view.
+
 // Adds a constraint that |view1| and |view2| are center-aligned horizontally
 // and vertically.
-void AddSameCenterConstraints(UIView* view1, UIView* view2);
+void AddSameCenterConstraints(id<LayoutGuideProvider> view1,
+                              id<LayoutGuideProvider> view2);
 
 // Adds a constraint that |view1| and |view2| are center-aligned horizontally.
 // |view1| and |view2| must be in the same view hierarchy.
-void AddSameCenterXConstraint(UIView* view1, UIView* view2);
+void AddSameCenterXConstraint(id<LayoutGuideProvider> view1,
+                              id<LayoutGuideProvider> view2);
 // Deprecated version:
 void AddSameCenterXConstraint(UIView* unused_parentView,
                               UIView* subview1,
@@ -87,7 +114,8 @@ void AddSameCenterXConstraint(UIView* unused_parentView,
 
 // Adds a constraint that |view1| and |view2| are center-aligned vertically.
 // |view1| and |view2| must be in the same view hierarchy.
-void AddSameCenterYConstraint(UIView* view1, UIView* view2);
+void AddSameCenterYConstraint(id<LayoutGuideProvider> view1,
+                              id<LayoutGuideProvider> view2);
 // Deprecated version:
 void AddSameCenterYConstraint(UIView* unused_parentView,
                               UIView* subview1,
@@ -95,16 +123,16 @@ void AddSameCenterYConstraint(UIView* unused_parentView,
 
 // Adds constraints to make two views' size and center equal by pinning leading,
 // trailing, top and bottom anchors.
-void AddSameConstraints(UIView* view1, UIView* view2);
-
-// Adds constraints such as the |layoutGuide| matches the |view|.
-void AddSameConstraints(UIView* view, UILayoutGuide* layoutGuide);
+void AddSameConstraints(id<LayoutGuideProvider> view1,
+                        id<LayoutGuideProvider> view2);
 
 // Adds constraints to make |innerView| leading, trailing, top and bottom
 // anchors equals to |outerView| safe area (or view bounds) anchors.
-void PinToSafeArea(UIView* innerView, UIView* outerView);
+void PinToSafeArea(id<LayoutGuideProvider> innerView, UIView* outerView);
+
+#pragma mark - Safe Area.
 
 // Returns a safeAreaLayoutGuide for a given view.
-UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view);
+id<LayoutGuideProvider> SafeAreaLayoutGuideForView(UIView* view);
 
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_CONSTRAINTS_UI_UTIL_H_
