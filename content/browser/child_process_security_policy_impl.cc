@@ -91,13 +91,6 @@ bool IsMalformedBlobUrl(const GURL& url) {
                        base::CompareCase::INSENSITIVE_ASCII))
     return false;
 
-  // blob:blobinternal:// is used by blink for stream URLs. This doesn't survive
-  // url::Origin canonicalization -- blobinternal is a fake scheme -- but allow
-  // it anyway. TODO(nick): Added speculatively, might be unnecessary.
-  if (base::StartsWith(url.GetContent(), "blobinternal://",
-                       base::CompareCase::INSENSITIVE_ASCII))
-    return false;
-
   // This is a malformed blob URL.
   return true;
 }

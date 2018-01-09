@@ -25,14 +25,7 @@ BlobReader::BlobReader(content::BrowserContext* browser_context,
                        BlobReadCallback callback)
     : callback_(callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GURL blob_url;
-  if (base::StartsWith(blob_uuid, "blob:blobinternal",
-                       base::CompareCase::SENSITIVE)) {
-    // TODO(michaeln): remove support for deprecated blob urls
-    blob_url = GURL(blob_uuid);
-  } else {
-    blob_url = GURL(std::string("blob:uuid/") + blob_uuid);
-  }
+  GURL blob_url = GURL(std::string("blob:uuid/") + blob_uuid);
   DCHECK(blob_url.is_valid());
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

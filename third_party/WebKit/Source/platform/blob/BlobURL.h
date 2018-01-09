@@ -54,8 +54,6 @@ class PLATFORM_EXPORT BlobURL {
   static KURL CreatePublicURL(const SecurityOrigin*);
   static String GetOrigin(const KURL&);
 
-  static KURL CreateInternalStreamURL();
-
  private:
   static KURL CreateBlobURL(const String& origin_string);
   static const char kBlobProtocol[];

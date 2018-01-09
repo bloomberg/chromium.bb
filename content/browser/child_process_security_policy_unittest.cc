@@ -230,8 +230,6 @@ TEST_F(ChildProcessSecurityPolicyTest, BlobSchemeTest) {
   EXPECT_TRUE(
       p->CanRequestURL(kRendererID, GURL("blob:NulL/some-guid#fragment")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("blob:NulL/some-guid?query")));
-  EXPECT_TRUE(
-      p->CanRequestURL(kRendererID, GURL("blob:blobinternal://some-guid")));
   EXPECT_FALSE(p->CanRequestURL(
       kRendererID, GURL("blob:http://username@localhost/some-guid")));
   EXPECT_FALSE(p->CanRequestURL(
@@ -249,7 +247,6 @@ TEST_F(ChildProcessSecurityPolicyTest, BlobSchemeTest) {
   EXPECT_TRUE(p->CanRedirectToURL(GURL("blob:NulL/some-guid")));
   EXPECT_TRUE(p->CanRedirectToURL(GURL("blob:NulL/some-guid#fragment")));
   EXPECT_TRUE(p->CanRedirectToURL(GURL("blob:NulL/some-guid?query")));
-  EXPECT_TRUE(p->CanRedirectToURL(GURL("blob:blobinternal://some-guid")));
   EXPECT_TRUE(
       p->CanRedirectToURL(GURL("blob:http://username@localhost/some-guid")));
   EXPECT_TRUE(p->CanRedirectToURL(
@@ -269,8 +266,6 @@ TEST_F(ChildProcessSecurityPolicyTest, BlobSchemeTest) {
   EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("blob:NulL/some-guid")));
   EXPECT_TRUE(
       p->CanCommitURL(kRendererID, GURL("blob:NulL/some-guid#fragment")));
-  EXPECT_TRUE(
-      p->CanCommitURL(kRendererID, GURL("blob:blobinternal://some-guid")));
   EXPECT_FALSE(p->CanCommitURL(
       kRendererID, GURL("blob:http://username@localhost/some-guid")));
   EXPECT_FALSE(p->CanCommitURL(
