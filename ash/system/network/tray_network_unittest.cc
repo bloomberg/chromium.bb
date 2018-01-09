@@ -50,7 +50,6 @@ class TrayNetworkTest : public AshTestBase {
     }
     AshTestBase::TearDown();
     chromeos::NetworkHandler::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
  private:
