@@ -7,6 +7,8 @@ source_set("fakes") {
   testonly = true
 
   sources = [
+    "fake_download_manager_tab_helper_delegate.h",
+    "fake_download_manager_tab_helper_delegate.mm",
     "fake_pass_kit_tab_helper_delegate.h",
     "fake_pass_kit_tab_helper_delegate.mm",
   ]
@@ -14,6 +16,7 @@ source_set("fakes") {
   deps = [
     "//ios/chrome/browser/download",
     "//ios/web/public",
+    "//ios/web/public/download",
   ]
 
   libs = [ "Foundation.framework" ]
