@@ -18,11 +18,11 @@ constexpr uint32_t kDefaultNumberOfFramesToDeadline = 4;
 const char kDeadlineToSynchronizeSurfaces[] =
     "deadline-to-synchronize-surfaces";
 
-// Enable surface lifetime management using surface references. This disables
-// adding surface sequences and enables adding temporary references. This flag
+// Disable surface lifetime management using surface references. This enables
+// adding surface sequences and disables adding temporary references. This flag
 // is only checked on Android, other platforms always have surface references
 // enabled.
-const char kEnableSurfaceReferences[] = "enable-surface-references";
+const char kDisableSurfaceReferences[] = "disable-surface-references";
 
 // Enables multi-client Surface synchronization. In practice, this indicates
 // that LayerTreeHost expects to be given a valid viz::LocalSurfaceId provided
