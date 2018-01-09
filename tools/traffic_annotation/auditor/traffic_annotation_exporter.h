@@ -10,51 +10,15 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/stl_util.h"
 #include "tools/traffic_annotation/auditor/instance.h"
 
 class TrafficAnnotationExporter {
  public:
-  TrafficAnnotationExporter(const base::FilePath& source_path);
-  ~TrafficAnnotationExporter();
-  TrafficAnnotationExporter(const TrafficAnnotationExporter&) = delete;
-  TrafficAnnotationExporter(TrafficAnnotationExporter&&) = delete;
-
-  // Loads annotations from annotations.xml file into |annotation_items_|.
-  bool LoadAnnotationsXML();
-
-  // Updates |annotation_items_| with current set of extracted annotations and
-  // reserved ids. Sets the |modified_| flag if any item is updated.
-  bool UpdateAnnotations(const std::vector<AnnotationInstance>& annotations,
-                         const std::map<int, std::string>& reserved_ids);
-
-  // Saves |annotation_items_| into annotations.xml.
-  bool SaveAnnotationsXML();
-
-  // Returns the required updates for annotations.xml.
-  std::string GetRequiredUpdates();
-
-  std::string GetXMLDifferencesForTesting(const std::string& old_xml,
-                                          const std::string& new_xml) {
-    return GetXMLDifferences(old_xml, new_xml);
-  }
-
-  // Produces the list of deprecated hash codes. Returns false if
-  // annotations.xml is not and cannot be loaded.
-  bool GetDeprecatedHashCodes(std::set<int>* hash_codes);
-
-  bool modified() { return modified_; }
-
-  // Runs tests on content of |annotation_items_|.
-  bool CheckAnnotationItems();
-
-  // Returns the number of items in annotations.xml for testing.
-  unsigned GetXMLItemsCountForTesting();
-
- private:
-  struct AnnotationItem {
-    AnnotationItem();
-    AnnotationItem(const AnnotationItem& other);
-    ~AnnotationItem();
+  struct ArchivedAnnotation {
+    ArchivedAnnotation();
+    ArchivedAnnotation(const ArchivedAnnotation& other);
+    ~ArchivedAnnotation();
 
     AnnotationInstance::Type type;
 
@@ -70,16 +34,64 @@ class TrafficAnnotationExporter {
     std::string file_path;
   };
 
+  TrafficAnnotationExporter(const base::FilePath& source_path);
+  ~TrafficAnnotationExporter();
+  TrafficAnnotationExporter(const TrafficAnnotationExporter&) = delete;
+  TrafficAnnotationExporter(TrafficAnnotationExporter&&) = delete;
+
+  // Loads annotations from annotations.xml file into |archive_|.
+  bool LoadAnnotationsXML();
+
+  // Updates |archive_| with current set of extracted annotations and
+  // reserved ids. Sets the |modified_| flag if any item is updated.
+  bool UpdateAnnotations(const std::vector<AnnotationInstance>& annotations,
+                         const std::map<int, std::string>& reserved_ids);
+
+  // Saves |archive_| into annotations.xml.
+  bool SaveAnnotationsXML() const;
+
+  // Returns the required updates for annotations.xml.
+  std::string GetRequiredUpdates();
+
+  // Produces the list of deprecated hash codes. Returns false if
+  // annotations.xml is not loaded and cannot be loaded.
+  bool GetDeprecatedHashCodes(std::set<int>* hash_codes);
+
+  bool modified() const { return modified_; }
+
+  // Runs tests on content of |archive_|.
+  bool CheckArchivedAnnotations();
+
+  const std::map<std::string, ArchivedAnnotation>& GetArchivedAnnotations()
+      const {
+    return archive_;
+  }
+
+  // Checks if the current platform is in the os list of archived annotation.
+  bool MatchesCurrentPlatform(const ArchivedAnnotation& annotation) const {
+    return base::ContainsValue(annotation.os_list, current_platform_);
+  }
+
+  // Returns the number of items in annotations.xml for testing.
+  unsigned GetXMLItemsCountForTesting();
+
+  std::string GetXMLDifferencesForTesting(const std::string& old_xml,
+                                          const std::string& new_xml) {
+    return GetXMLDifferences(old_xml, new_xml);
+  }
+
+ private:
   // Generates a text serialized XML for current report items.
-  std::string GenerateSerializedXML();
+  std::string GenerateSerializedXML() const;
 
   // Returns the required updates to convert one serialized XML to another.
   std::string GetXMLDifferences(const std::string& old_xml,
                                 const std::string& new_xml);
 
   std::vector<std::string> all_supported_platforms_;
-  std::map<std::string, AnnotationItem> annotation_items_;
+  std::map<std::string, ArchivedAnnotation> archive_;
   const base::FilePath source_path_;
+  std::string current_platform_;
   bool modified_;
 };
 

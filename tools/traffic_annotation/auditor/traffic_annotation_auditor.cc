@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_id_checker.h"
 
@@ -78,6 +77,23 @@ const base::FilePath kRunToolScript =
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("run_tool.py"));
 
+// Checks if the list of |path_filters| include the given |file_path|, or there
+// are path filters which are a folder (don't have a '.' in their name), and
+// match the file name.
+// TODO(https://crbug.com/690323): Update to a more general policy.
+bool PathFiltersMatch(const std::vector<std::string>& path_filters,
+                      const std::string file_path) {
+  if (base::ContainsValue(path_filters, file_path))
+    return true;
+  for (const std::string& path_filter : path_filters) {
+    if (path_filter.find(".") == std::string::npos &&
+        file_path.substr(0, path_filter.length()) == path_filter) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace
 
 TrafficAnnotationAuditor::TrafficAnnotationAuditor(
@@ -87,6 +103,7 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
     : source_path_(source_path),
       build_path_(build_path),
       clang_tool_path_(clang_tool_path),
+      exporter_(source_path),
       safe_list_loaded_(false) {
   DCHECK(!source_path.empty());
   DCHECK(!build_path.empty());
@@ -110,10 +127,20 @@ base::FilePath TrafficAnnotationAuditor::GetClangLibraryPath() {
 
 bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
-    bool filter_files,
+    bool filter_files_based_on_heuristics,
     bool use_compile_commands) {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
+
+  // Get list of files/folders to process.
+  std::vector<std::string> file_paths;
+  if (!GenerateFilesListForClangTool(path_filters,
+                                     filter_files_based_on_heuristics,
+                                     use_compile_commands, &file_paths)) {
+    return false;
+  }
+  if (file_paths.empty())
+    return true;
 
   // Create a file to pass options to the clang tool running script.
   base::FilePath options_filepath;
@@ -141,55 +168,9 @@ bool TrafficAnnotationAuditor::RunClangTool(
   if (use_compile_commands)
     fprintf(options_file, "--all ");
 
-  // If |use_compile_commands| is requested or |filter_files| is false, we pass
-  // all given file paths to the running script and the files in the safe list
-  // will be later removed from the results.
-  if (!filter_files || use_compile_commands) {
-    for (const std::string& file_path : path_filters)
-      fprintf(options_file, "%s ", file_path.c_str());
-  } else {
-    TrafficAnnotationFileFilter filter;
-    std::vector<std::string> file_paths;
+  for (const std::string& file_path : file_paths)
+    fprintf(options_file, "%s ", file_path.c_str());
 
-    if (path_filters.size()) {
-      for (const auto& path_filter : path_filters) {
-// If path filter is a directory, search and add its contents.
-// Otherwise add it if it is a relevant file which is not safe listed.
-#if defined(OS_WIN)
-        base::FilePath current_path = base::FilePath(
-            base::FilePath::StringPieceType((base::UTF8ToWide(path_filter))));
-#else
-        base::FilePath current_path = base::FilePath(path_filter);
-#endif
-        if (base::DirectoryExists(current_path)) {
-          filter.GetRelevantFiles(source_path_,
-                                  safe_list_[static_cast<int>(
-                                      AuditorException::ExceptionType::ALL)],
-                                  path_filter, &file_paths);
-        } else {
-          if (!TrafficAnnotationAuditor::IsSafeListed(
-                  path_filter, AuditorException::ExceptionType::ALL) &&
-              filter.IsFileRelevant(path_filter)) {
-            file_paths.push_back(path_filter);
-          }
-        }
-      }
-    } else {
-      filter.GetRelevantFiles(
-          source_path_,
-          safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
-          "", &file_paths);
-    }
-
-    if (!file_paths.size()) {
-      base::CloseFile(options_file);
-      base::DeleteFile(options_filepath, false);
-      LOG(ERROR) << "No file is specified for annotation tests.";
-      return false;
-    }
-    for (const auto& file_path : file_paths)
-      fprintf(options_file, "%s ", file_path.c_str());
-  }
   base::CloseFile(options_file);
 
   base::CommandLine cmdline(
@@ -241,6 +222,77 @@ bool TrafficAnnotationAuditor::RunClangTool(
   base::DeleteFile(options_filepath, false);
 
   return result;
+}
+
+bool TrafficAnnotationAuditor::GenerateFilesListForClangTool(
+    const std::vector<std::string>& path_filters,
+    bool filter_files_based_on_heuristics,
+    bool use_compile_commands,
+    std::vector<std::string>* file_paths) {
+  // If |use_compile_commands| is requested or
+  // |filter_files_based_on_heuristics| is false, we pass all given file paths
+  // to the running script and the files in the safe list will be later removed
+  // from the results.
+  if (!filter_files_based_on_heuristics || use_compile_commands) {
+    *file_paths = path_filters;
+    return true;
+  }
+
+  TrafficAnnotationFileFilter filter;
+
+  // If no path filter is provided, get all relevant files, except the safe
+  // listed ones.
+  if (path_filters.empty()) {
+    filter.GetRelevantFiles(
+        source_path_,
+        safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)], "",
+        file_paths);
+    return true;
+  }
+
+  base::FilePath original_path;
+  base::GetCurrentDirectory(&original_path);
+  base::SetCurrentDirectory(source_path_);
+
+  bool possibly_deleted_files = false;
+  for (const auto& path_filter : path_filters) {
+#if defined(OS_WIN)
+    base::FilePath path = base::FilePath(
+        base::FilePath::StringPieceType((base::UTF8ToWide(path_filter))));
+#else
+    base::FilePath path = base::FilePath(path_filter);
+#endif
+
+    // If path filter is a directory, add its relevent, not safe-listed
+    // contents.
+    if (base::DirectoryExists(path)) {
+      filter.GetRelevantFiles(
+          source_path_,
+          safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
+          path_filter, file_paths);
+    } else {
+      // Add the file if it exists and is a relevant file which is not
+      // safe-listed.
+      if (base::PathExists(path)) {
+        if (!TrafficAnnotationAuditor::IsSafeListed(
+                path_filter, AuditorException::ExceptionType::ALL) &&
+            filter.IsFileRelevant(path_filter)) {
+          file_paths->push_back(path_filter);
+        }
+      } else {
+        possibly_deleted_files = true;
+      }
+    }
+  }
+
+  base::SetCurrentDirectory(original_path);
+
+  if (file_paths->empty() && !possibly_deleted_files) {
+    LOG(ERROR) << "No file is specified for annotation tests.";
+    return false;
+  }
+
+  return true;
 }
 
 bool TrafficAnnotationAuditor::IsSafeListed(
@@ -492,6 +544,9 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
   for (AnnotationInstance& instance : extracted_annotations_) {
     switch (instance.type) {
       case AnnotationInstance::Type::ANNOTATION_COMPLETE: {
+        // Instances loaded from archive are already checked before archiving.
+        if (instance.is_loaded_from_archive)
+          continue;
         AuditorResult result = instance.IsComplete();
         if (result.IsOK())
           result = instance.IsConsistent();
@@ -516,6 +571,12 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
         found_a_pair = true;
         used_completing_annotations.insert(completing);
 
+        // Instances loaded from archive are already checked before archiving.
+        if (partial->is_loaded_from_archive &&
+            completing->is_loaded_from_archive) {
+          break;
+        }
+
         AnnotationInstance completed;
         AuditorResult result =
             partial->CreateCompleteAnnotation(*completing, &completed);
@@ -539,17 +600,17 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
     }
 
     if (!found_a_pair) {
-      errors_.push_back(AuditorResult(
-          AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION, std::string(),
-          partial->proto.source().file(), partial->proto.source().line()));
+      errors_.push_back(
+          AuditorResult(AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION,
+                        partial->proto.unique_id()));
     }
   }
 
   for (AnnotationInstance* instance : completing_annotations) {
     if (!base::ContainsKey(used_completing_annotations, instance)) {
-      errors_.push_back(AuditorResult(
-          AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION, std::string(),
-          instance->proto.source().file(), instance->proto.source().line()));
+      errors_.push_back(
+          AuditorResult(AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION,
+                        instance->proto.unique_id()));
     }
   }
 
@@ -559,13 +620,33 @@ void TrafficAnnotationAuditor::CheckAnnotationsContents() {
                                   new_annotations.end());
 }
 
-bool TrafficAnnotationAuditor::RunAllChecks() {
+void TrafficAnnotationAuditor::AddMissingAnnotations(
+    const std::vector<std::string>& path_filters) {
+  for (const auto& item : exporter_.GetArchivedAnnotations()) {
+    if (item.second.deprecation_date.empty() &&
+        exporter_.MatchesCurrentPlatform(item.second) &&
+        !item.second.file_path.empty() &&
+        !PathFiltersMatch(path_filters, item.second.file_path)) {
+      extracted_annotations_.push_back(AnnotationInstance::LoadFromArchive(
+          item.second.type, item.first, item.second.unique_id_hash_code,
+          item.second.second_id_hash_code, item.second.content_hash_code,
+          item.second.semantics_fields, item.second.policy_fields));
+    }
+  }
+}
+
+bool TrafficAnnotationAuditor::RunAllChecks(
+    const std::vector<std::string>& path_filters,
+    bool report_xml_updates) {
   std::set<int> deprecated_ids;
 
-  if (!TrafficAnnotationExporter(source_path_)
-           .GetDeprecatedHashCodes(&deprecated_ids)) {
+  if (!exporter_.GetDeprecatedHashCodes(&deprecated_ids)) {
     return false;
   }
+
+  if (path_filters.size())
+    AddMissingAnnotations(path_filters);
+
   TrafficAnnotationIDChecker id_checker(GetReservedIDsSet(), deprecated_ids);
   id_checker.Load(extracted_annotations_);
   id_checker.CheckIDs(&errors_);
@@ -577,6 +658,19 @@ bool TrafficAnnotationAuditor::RunAllChecks() {
     CheckAnnotationsContents();
 
   CheckAllRequiredFunctionsAreAnnotated();
+
+  if (errors_.empty()) {
+    if (!exporter_.UpdateAnnotations(extracted_annotations_,
+                                     GetReservedIDsMap())) {
+      return false;
+    }
+  }
+
+  if (report_xml_updates && exporter_.modified()) {
+    errors_.push_back(
+        AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
+                      exporter_.GetRequiredUpdates()));
+  }
 
   return true;
 }

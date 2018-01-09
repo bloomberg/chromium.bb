@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "tools/traffic_annotation/auditor/auditor_result.h"
 #include "tools/traffic_annotation/auditor/instance.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
 #include "tools/traffic_annotation/traffic_annotation.pb.h"
 
 // Holds an item of safe list rules for auditor.
@@ -50,13 +51,13 @@ class TrafficAnnotationAuditor {
   ~TrafficAnnotationAuditor();
 
   // Runs traffic_annotation_extractor clang tool and puts its output in
-  // |clang_tool_raw_output_|. If |filter_files| flag is set, the list of files
-  // will be received from repository and heuristically filtered to only
-  // process the relevant files. If |use_compile_commands| flag is set, the
-  // list of files is extracted from compile_commands.json instead of git and
-  // will not be filtered.
+  // |clang_tool_raw_output_|. If |filter_files_based_on_heuristics| flag is
+  // set, the list of files will be received from repository and heuristically
+  // filtered to only process the relevant files. If |use_compile_commands| flag
+  // is set, the list of files is extracted from compile_commands.json instead
+  // of git and will not be filtered.
   bool RunClangTool(const std::vector<std::string>& path_filters,
-                    bool filter_files,
+                    bool filter_files_based_on_heuristics,
                     bool use_compile_commands);
 
   // Parses the output of clang tool (|clang_tool_raw_output_|) and populates
@@ -88,8 +89,12 @@ class TrafficAnnotationAuditor {
   // Checks if a call instance can stay not annotated.
   bool CheckIfCallCanBeUnannotated(const CallInstance& call);
 
-  // Performs all checks on extracted annotations and calls.
-  bool RunAllChecks();
+  // Performs all checks on extracted annotations and calls. The input path
+  // filters are passed so that the data for files that were not tested would be
+  // read from annotations.xml. If |report_xml_updates| is set and
+  // annotations.xml requires updates, the updates are added to |errors_|.
+  bool RunAllChecks(const std::vector<std::string>& path_filters,
+                    bool report_xml_updates);
 
   // Returns a mapping of reserved unique ids' hash codes to the unique ids'
   // texts. This list includes all unique ids that are defined in
@@ -126,7 +131,9 @@ class TrafficAnnotationAuditor {
     return extracted_calls_;
   }
 
-  std::vector<AuditorResult> errors() { return errors_; }
+  const std::vector<AuditorResult>& errors() const { return errors_; }
+
+  const TrafficAnnotationExporter& exporter() const { return exporter_; }
 
   void ClearErrorsForTesting() { errors_.clear(); }
 
@@ -146,6 +153,8 @@ class TrafficAnnotationAuditor {
   const base::FilePath build_path_;
   const base::FilePath clang_tool_path_;
 
+  TrafficAnnotationExporter exporter_;
+
   std::string clang_tool_raw_output_;
   std::vector<AnnotationInstance> extracted_annotations_;
   std::vector<CallInstance> extracted_calls_;
@@ -156,6 +165,22 @@ class TrafficAnnotationAuditor {
       safe_list_[static_cast<int>(
                      AuditorException::ExceptionType::EXCEPTION_TYPE_LAST) +
                  1];
+
+  // Adds all archived annotations (from annotations.xml) that match the
+  // following features, to |extracted_annotations_|:
+  //  1- Not deprecated.
+  //  2- OS list includes current platform.
+  //  2- Has a path (is not a reserved word).
+  //  3- Path matches an item in |path_filters|.
+  void AddMissingAnnotations(const std::vector<std::string>& path_filters);
+
+  // Generates files list to Run clang tool on. Please refer to RunClangTool
+  // function's comment.
+  bool GenerateFilesListForClangTool(
+      const std::vector<std::string>& path_filters,
+      bool filter_files_based_on_heuristics,
+      bool use_compile_commands,
+      std::vector<std::string>* file_paths);
 
   base::FilePath gn_file_for_test_;
   std::map<std::string, bool> checked_dependencies_;
