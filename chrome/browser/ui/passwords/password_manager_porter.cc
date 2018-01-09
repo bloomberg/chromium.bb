@@ -15,7 +15,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/passwords/destination_file_system.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/export/password_manager_exporter.h"
@@ -200,9 +199,7 @@ void PasswordManagerPorter::ImportPasswordsFromPath(
 }
 
 void PasswordManagerPorter::ExportPasswordsToPath(const base::FilePath& path) {
-  std::unique_ptr<DestinationFileSystem> destination(
-      new DestinationFileSystem(path));
-  exporter_->SetDestination(std::move(destination));
+  exporter_->SetDestination(path);
 
   // TODO(crbug.com/785237) Do this independently from setting the destination.
   exporter_->PreparePasswordsForExport();
