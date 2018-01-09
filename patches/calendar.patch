@@ -1,40 +1,37 @@
 diff --git a/source/i18n/calendar.cpp b/source/i18n/calendar.cpp
-index 12966a73..3a9b790f 100644
+index 12966a73..b2089017 100644
 --- a/source/i18n/calendar.cpp
 +++ b/source/i18n/calendar.cpp
-@@ -706,7 +706,9 @@ fTime(0),
- fLenient(TRUE),
- fZone(NULL),
+@@ -708,6 +708,8 @@ fZone(NULL),
  fRepeatedWallTime(UCAL_WALLTIME_LAST),
--fSkippedWallTime(UCAL_WALLTIME_LAST)
-+fSkippedWallTime(UCAL_WALLTIME_LAST),
-+validLocale(""),
-+actualLocale("")
+ fSkippedWallTime(UCAL_WALLTIME_LAST)
  {
++    validLocale[0] = 0;
++    actualLocale[0] = 0;
      clear();
      if (U_FAILURE(success)) {
-@@ -732,7 +734,9 @@ fTime(0),
+         return;
+@@ -734,6 +736,8 @@ fZone(NULL),
+ fRepeatedWallTime(UCAL_WALLTIME_LAST),
+ fSkippedWallTime(UCAL_WALLTIME_LAST)
+ {
++    validLocale[0] = 0;
++    actualLocale[0] = 0;
+     if (U_FAILURE(success)) {
+         return;
+     }
+@@ -764,8 +768,10 @@ fTime(0),
  fLenient(TRUE),
  fZone(NULL),
  fRepeatedWallTime(UCAL_WALLTIME_LAST),
 -fSkippedWallTime(UCAL_WALLTIME_LAST)
 +fSkippedWallTime(UCAL_WALLTIME_LAST),
-+validLocale(""),
-+actualLocale("")
  {
++    validLocale[0] = 0;
++    actualLocale[0] = 0;
      if (U_FAILURE(success)) {
          return;
-@@ -764,7 +768,9 @@ fTime(0),
- fLenient(TRUE),
- fZone(NULL),
- fRepeatedWallTime(UCAL_WALLTIME_LAST),
--fSkippedWallTime(UCAL_WALLTIME_LAST)
-+fSkippedWallTime(UCAL_WALLTIME_LAST),
-+validLocale(""),
-+actualLocale("")
- {
-     if (U_FAILURE(success)) {
-         return;
+     }
 @@ -822,8 +828,10 @@ Calendar::operator=(const Calendar &right)
          fWeekendCease            = right.fWeekendCease;
          fWeekendCeaseMillis      = right.fWeekendCeaseMillis;

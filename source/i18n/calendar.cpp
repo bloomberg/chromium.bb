@@ -706,10 +706,10 @@ fTime(0),
 fLenient(TRUE),
 fZone(NULL),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST),
-validLocale(""),
-actualLocale("")
+fSkippedWallTime(UCAL_WALLTIME_LAST)
 {
+    validLocale[0] = 0;
+    actualLocale[0] = 0;
     clear();
     if (U_FAILURE(success)) {
         return;
@@ -734,10 +734,10 @@ fTime(0),
 fLenient(TRUE),
 fZone(NULL),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST),
-validLocale(""),
-actualLocale("")
+fSkippedWallTime(UCAL_WALLTIME_LAST)
 {
+    validLocale[0] = 0;
+    actualLocale[0] = 0;
     if (U_FAILURE(success)) {
         return;
     }
@@ -769,9 +769,9 @@ fLenient(TRUE),
 fZone(NULL),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
 fSkippedWallTime(UCAL_WALLTIME_LAST),
-validLocale(""),
-actualLocale("")
 {
+    validLocale[0] = 0;
+    actualLocale[0] = 0;
     if (U_FAILURE(success)) {
         return;
     }
