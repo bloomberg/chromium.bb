@@ -88,6 +88,11 @@ public class FramebustBlockInfoBar extends InfoBar {
         super.onLinkClicked();
     }
 
+    @VisibleForTesting
+    public String getBlockedUrl() {
+        return mBlockedUrl;
+    }
+
     private String getString(@StringRes int stringResId) {
         return getContext().getString(stringResId);
     }

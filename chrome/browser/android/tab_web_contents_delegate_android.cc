@@ -100,6 +100,14 @@ infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
   return nullptr;
 }
 
+void ShowFramebustBlockInfobarInternal(content::WebContents* web_contents,
+                                       const GURL& url) {
+  FramebustBlockInfoBar::Show(
+      web_contents,
+      base::MakeUnique<FramebustBlockMessageDelegate>(
+          web_contents, url, FramebustBlockMessageDelegate::OutcomeCallback()));
+}
+
 }  // anonymous namespace
 
 namespace android {
@@ -435,10 +443,7 @@ void TabWebContentsDelegateAndroid::OnAudioStateChanged(
 void TabWebContentsDelegateAndroid::OnDidBlockFramebust(
     content::WebContents* web_contents,
     const GURL& url) {
-  FramebustBlockInfoBar::Show(
-      web_contents,
-      base::MakeUnique<FramebustBlockMessageDelegate>(
-          web_contents, url, FramebustBlockMessageDelegate::OutcomeCallback()));
+  ShowFramebustBlockInfobarInternal(web_contents, url);
 }
 
 }  // namespace android
@@ -526,4 +531,15 @@ void JNI_TabWebContentsDelegateAndroid_NotifyStopped(
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
   indicator->NotifyStopped(web_contents);
+}
+
+void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& java_web_contents,
+    const JavaParamRef<jstring>& java_url) {
+  GURL url(base::android::ConvertJavaStringToUTF16(env, java_url));
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  ShowFramebustBlockInfobarInternal(web_contents, url);
 }
