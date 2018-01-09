@@ -30,7 +30,7 @@ const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",
 // TouchpadAndWheelScrollLatching and enabling it when latching is disabled
 // won't have any impacts.
 const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Block subresource requests whose URLs contain embedded credentials (e.g.
 // `https://user:pass@example.com/resource`).
@@ -357,7 +357,7 @@ const base::Feature kTopDocumentIsolation{"top-document-isolation",
 
 // Enables touchpad and wheel scroll latching.
 const base::Feature kTouchpadAndWheelScrollLatching{
-    "TouchpadAndWheelScrollLatching", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TouchpadAndWheelScrollLatching", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // An experiment to turn off compositing for 2D transform & opacity animations.
 const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
