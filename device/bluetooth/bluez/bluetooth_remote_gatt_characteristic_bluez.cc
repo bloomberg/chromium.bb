@@ -6,10 +6,12 @@
 
 #include <iterator>
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -68,12 +70,6 @@ BluetoothRemoteGattCharacteristicBlueZ::
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattDescriptorClient()
       ->RemoveObserver(this);
-
-  // Clean up all the descriptors. There isn't much point in notifying service
-  // observers for each descriptor that gets removed, so just delete them.
-  for (DescriptorMap::iterator iter = descriptors_.begin();
-       iter != descriptors_.end(); ++iter)
-    delete iter->second;
 }
 
 device::BluetoothUUID BluetoothRemoteGattCharacteristicBlueZ::GetUUID() const {
@@ -162,20 +158,16 @@ bool BluetoothRemoteGattCharacteristicBlueZ::IsNotifying() const {
 std::vector<device::BluetoothRemoteGattDescriptor*>
 BluetoothRemoteGattCharacteristicBlueZ::GetDescriptors() const {
   std::vector<device::BluetoothRemoteGattDescriptor*> descriptors;
-  for (DescriptorMap::const_iterator iter = descriptors_.begin();
-       iter != descriptors_.end(); ++iter)
-    descriptors.push_back(iter->second);
+  for (const auto& descriptor : descriptors_)
+    descriptors.push_back(descriptor.second.get());
   return descriptors;
 }
 
 device::BluetoothRemoteGattDescriptor*
 BluetoothRemoteGattCharacteristicBlueZ::GetDescriptor(
     const std::string& identifier) const {
-  DescriptorMap::const_iterator iter =
-      descriptors_.find(dbus::ObjectPath(identifier));
-  if (iter == descriptors_.end())
-    return nullptr;
-  return iter->second;
+  auto iter = descriptors_.find(dbus::ObjectPath(identifier));
+  return iter != descriptors_.end() ? iter->second.get() : nullptr;
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
@@ -264,9 +256,10 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
   VLOG(1) << "Adding new remote GATT descriptor for GATT characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
+  // NOTE: Can't use std::make_unique due to private constructor.
   BluetoothRemoteGattDescriptorBlueZ* descriptor =
       new BluetoothRemoteGattDescriptorBlueZ(this, object_path);
-  descriptors_[object_path] = descriptor;
+  descriptors_.emplace(object_path, base::WrapUnique(descriptor));
   DCHECK(descriptor->GetIdentifier() == object_path.value());
   DCHECK(descriptor->GetUUID().IsValid());
   DCHECK(service_);
@@ -286,15 +279,14 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorRemoved(
   VLOG(1) << "Removing remote GATT descriptor from characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattDescriptorBlueZ* descriptor = iter->second;
+  auto descriptor = std::move(iter->second);
   DCHECK(descriptor->object_path() == object_path);
   descriptors_.erase(iter);
 
   DCHECK(service_);
   static_cast<BluetoothRemoteGattServiceBlueZ*>(service_)
-      ->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
-
-  delete descriptor;
+      ->NotifyDescriptorAddedOrRemoved(this, descriptor.get(),
+                                       false /* added */);
 }
 
 void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorPropertyChanged(
@@ -318,7 +310,7 @@ void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorPropertyChanged(
 
   DCHECK(service_);
   static_cast<BluetoothRemoteGattServiceBlueZ*>(service_)
-      ->NotifyDescriptorValueChanged(this, iter->second,
+      ->NotifyDescriptorValueChanged(this, iter->second.get(),
                                      properties->value.value());
 }
 
