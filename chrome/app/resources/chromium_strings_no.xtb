@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1298199220304005244">Få hjelp med å bruke Chromium OS</translation>
 <translation id="1396446129537741364">Chromium prøver å vise passord.</translation>
-<translation id="1403254041219632970">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
-<translation id="1440917365206527807">Chromium hindret dette nettstedet i å viderekoble deg til</translation>
 <translation id="1444754455097148408">Åpen kildekode-lisenser for Chromium</translation>
 <translation id="1502360822835740515">Gjør Chromium til standard nettleser</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
-<translation id="1559451348202814456">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1585657529869845941">Klikk på <ph name="BEGIN_BOLD" />Bytt likevel<ph name="END_BOLD" /> (hvis knappen vises)</translation>
 <translation id="1653828314016431939">OK – start på nytt nå</translation>
 <translation id="1668054258064581266">Når du har fjernet kontoen din fra Chromium, kan det hende at du må laste inn de åpne fanene på nytt før endringene trer i kraft.</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">Chromium OS må startes på nytt for at oppdateringen skal tas i bruk.</translation>
 <translation id="2647554856022461007">Chromium kan bruke nettjenester for å forbedre brukeropplevelsen din på nettet. Du kan slå av disse tjenestene. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Det oppsto en systemfeil under installering. Last ned Chromium på nytt.</translation>
-<translation id="2685838254101182273">Chromium oppdateres ikke lenger og har mistet støtten for denne versjonen av operativsystemet ditt.</translation>
 <translation id="2705403826523567092">Logg på for å gi surfeopplevelsen et personlig preg, synkronisert mellom alle enheter</translation>
 <translation id="2711502716910134313">Chromium-fane</translation>
 <translation id="2718390899429598676">Chromium krypterer dataene dine for å øke sikkerheten.</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">Logg deg av og så på igjen for at denne endringen skal tre i kraft.</translation>
 <translation id="4469812139324097969">Chromium er utdatert fordi den ikke har vært startet på nytt på en stund. En oppdatering er tilgjengelig og tas i bruk når du starter Chromium på nytt.</translation>
 <translation id="4488554488975128561">Du kan bidra til å gjøre Chromium tryggere og enklere å bruke ved å sende Google noe systeminformasjon og sideinnhold automatisk. Dette hjelper oss med å oppdage farlige apper og nettsteder.</translation>
-<translation id="4549794359424059447">Fremtidige versjoner av Chromium kommer ikke lenger til å støtte Windows XP eller Windows Vista.</translation>
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS" />. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="459535195905078186">Chromium-apper</translation>
 <translation id="4611246891205775468">Chromium trenger tilgang til mikrofonen din for dette nettstedet.</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
-<translation id="5524843473235508879">Viderekobling blokkert.</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>
 <translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette språket</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">Autentiseringssertifikatet mislyktes. Logg på Chromium på nytt, eller kontakt administratoren din for å få mer informasjon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Nå er oppdateringen snart ferdig! Start enheten på nytt for å fullføre oppdateringen.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chromium.</translation>
-<translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="5987687638152509985">Oppdater Chromium for å starte synkroniseringen</translation>
 <translation id="6055895534982063517">En nyere versjon av Chromium er tilgjengelig, og den er raskere enn noen gang.</translation>
 <translation id="6063093106622310249">&amp;Åpne i Chromium</translation>
@@ -173,12 +166,10 @@
 Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chromium.</translation>
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium er allerede installert for alle brukerne på datamaskinen din.</translation>
-<translation id="6777817260680419853">Viderekobling er blokkert</translation>
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium har blitt oppdatert, men du har ikke brukt den på minst 30 dager.</translation>
 <translation id="6944967875980567883">Moduler lastet inn i Chromium</translation>
-<translation id="694592694773692225">Viderekobling er blokkert på denne siden.</translation>
 <translation id="6964305034639999644">Åpne linken i et inko&amp;gnitovindu i Chromium</translation>
 <translation id="6970811910055250180">Oppdaterer enheten ...</translation>
 <translation id="705851970750939768">Oppdater Chromium</translation>

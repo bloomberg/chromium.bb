@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ಫೈಲ್ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s </translation>
 <translation id="8725488761726303204">+ <ph name="NUMBER" /> ಇನ್ನಷ್ಟು</translation>
+<translation id="8730621377337864115">ಮುಗಿದಿದೆ</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ಗಂ}one{#ಗಂ}other{#ಗಂ}}</translation>
 <translation id="8806053966018712535">ಫೋಲ್ಡರ್ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ಚಿತ್ರವನ್ನು ಟಿಪ್ಪಣಿ ಮಾಡಿ</translation>

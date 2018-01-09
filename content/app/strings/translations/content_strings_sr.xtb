@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">мрежа стабла</translation>
 <translation id="1822429046913737220">пре подне/по подне</translation>
 <translation id="1832974991323546415">пуштајте на удаљеном уређају</translation>
-<translation id="1854180393107901205">Заустави пребацивање</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Вредност мора да буде <ph name="MAXIMUM_DATE_OR_TIME" /> или старија.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Друго...</translation>
 <translation id="9138385573473225930">обавештење</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, од <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Слика у слици</translation>
 <translation id="947831847158436616">ћелија</translation>
 <translation id="966787709310836684">мени</translation>
 </translationbundle>

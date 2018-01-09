@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">کارت‌های اعتباری و نقدی قابل‌قبول</translation>
 <translation id="1519264250979466059">تاریخ ساخت</translation>
 <translation id="1527263332363067270">درانتظار برقراری اتصال…‏</translation>
-<translation id="1532118530259321453">این صفحه می‌گوید</translation>
 <translation id="153384715582417236">درحال‌حاضر مورد دیگری وجود ندارد</translation>
 <translation id="154408704832528245">انتخاب نشانی ارسال</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">دسترسی داده محلی</translation>
 <translation id="1594030484168838125">انتخاب</translation>
 <translation id="1620510694547887537">دوربین</translation>
+<translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="1629803312968146339">‏می‌خواهید Chrome این کارت را ذخیره کند؟</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="2270484714375784793">شماره تلفن</translation>
 <translation id="2292556288342944218">دسترسی شما به اینترنت مسدود است</translation>
-<translation id="2298151730144880294">صفحه جاسازی‌شده‌ای در این صفحه می‌گوید</translation>
 <translation id="230155334948463882">کارت جدید؟</translation>
 <translation id="2316887270356262533">کمتر از ۱ مگابایت از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2851634818064021665">برای بازدید کردن از این سایت، مجوز لازم دارید</translation>
 <translation id="2856444702002559011">شاید مهاجم‌ها در تلاش باشند اطلاعات شما (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) را از <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سرقت کنند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">تازه‌سازی نشود</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2916038427272391327">برنامه‌های دیگر را ببندید</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">هیچ نتیجه‌ای برای جستجو یافت نشد</translation>
 <translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="3320021301628644560">افزودن نشانی صورتحساب</translation>
-<translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
 <translation id="3338095232262050444">ایمن</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
 <translation id="3345135638360864351">درخواست شما برای دسترسی به این سایت به <ph name="NAME" /> ارسال نشد. لطفاً دوباره امتحان کنید.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">مدیرتان می‌تواند این سایت را برای شما بگشاید</translation>
 <translation id="3566021033012934673">اتصال شما خصوصی نیست</translation>
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
 <translation id="358285529439630156">کارت‌های اعتباری و پیش‌پرداخت پذیرفته می‌شوند.</translation>
 <translation id="3582930987043644930">افزودن نام</translation>
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناس به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
 <translation id="4923459931733593730">پرداخت</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> می‌گوید</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4958444002117714549">بزرگ کردن فهرست</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">به زبان <ph name="ORIGINAL_LANGUAGE" /> نیست؟ گزارش این خطا</translation>
 <translation id="5190835502935405962">نوار نشانک‌ها</translation>
 <translation id="5199729219167945352">آزمایشات</translation>
-<translation id="5201306358585911203">صفحه جاسازی‌شده‌ای در این صفحه می‌گوید</translation>
 <translation id="5205222826937269299">نام ضروری است</translation>
 <translation id="5222812217790122047">رایانامه ضروری است</translation>
 <translation id="522700295135997067">ممکن است این سایت اخیراً گذرواژه‌تان را سرقت کرده باشد</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">اتصال</translation>
 <translation id="5308689395849655368">گزارش خرابی غیر فعال است.</translation>
 <translation id="5317780077021120954">ذخیره</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> از <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">انتخاب اطلاعات تماس</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5332219387342487447">روش ارسال کالا</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">مدیرتان هنوز این سایت را تأیید نکرده است</translation>
 <translation id="6569060085658103619">درحال مشاهده یک صفحه افزونه هستید</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
-<translation id="662080504995468778">ماندن</translation>
 <translation id="6624427990725312378">اطلاعات تماس</translation>
 <translation id="6626291197371920147">افزودن شماره کارت معتبر</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">این مجوز هیچ مکانیزمی را برای بررسی اینکه آیا باطل شده یا نه مشخص نمی‌کند.</translation>
 <translation id="8620436878122366504">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
 <translation id="8625384913736129811">ذخیره کردن این کارت در این دستگاه</translation>
+<translation id="8639963783467694461">تنظیمات تکمیل خودکار</translation>
 <translation id="8647750283161643317">بازنشانی همه به موارد پیش‌فرض</translation>
 <translation id="8660471606262461360">‏از Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، پاسخ، <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="8952525071319348207">‏برای به‌روزرسانی جزئیات کارتتان، تاریخ انقضا و CVC کارت <ph name="CREDIT_CARD" /> را وارد کنید. بعد از تأیید، جزئیات کارت از حساب «پرداخت‌های Google» با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
-<translation id="8958260976055043711">این صفحه می‌گوید</translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>
 <translation id="8978053250194585037">‏Google Safe Browsing اخیراً در <ph name="SITE" />، <ph name="BEGIN_LINK" />فیشینگ شناسایی کرده است<ph name="END_LINK" />. سایت‌های فیشینگ وانمود می‌کنند وب‌سایت‌های دیگری هستند تا شما را فریب دهند.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;واگرد</translation>
 <translation id="917450738466192189">گواهی سرور نامعتبر است.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> از یک پروتکل پشتیبانی‌نشده استفاده می‌کند.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> می‌گوید</translation>
 <translation id="9205078245616868884">داده‌های شما با عبارت عبور همگام‌سازی رمزگذاری می‌شود. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
-<translation id="9209577707918422353">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
 <translation id="9215416866750762878">‏برنامه‌ای مانع از اتصال ایمن Chrome به این سایت می‌شود</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="933612690413056017">اتصال اینترنت قطع است</translation>

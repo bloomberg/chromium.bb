@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Приемани кредитни и дебитни карти</translation>
 <translation id="1519264250979466059">Дата на версията</translation>
 <translation id="1527263332363067270">Изчаква се връзка…</translation>
-<translation id="1532118530259321453">Тази страница изпраща съобщение</translation>
 <translation id="153384715582417236">Това е всичко засега</translation>
 <translation id="154408704832528245">Избиране на адрес за бърза доставка</translation>
 <translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Достъп до локални данни</translation>
 <translation id="1594030484168838125">Избор</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1623104350909869708">Да не се създават допълнителни диалогови прозорци от тази страница</translation>
 <translation id="1629803312968146339">Искате ли Chrome да запази тази карта?</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
 <translation id="1640180200866533862">Правила за потребителите</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2270484714375784793">Телефонен номер</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
-<translation id="2298151730144880294">Страница, вградена в тази страница, изпраща съобщение</translation>
 <translation id="230155334948463882">Нова карта?</translation>
 <translation id="2316887270356262533">Ще освободите по-малко от 1 МБ. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="2317259163369394535">Изискват се потребителско име и парола за <ph name="DOMAIN" />.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Изчистване на формуляра</translation>
 <translation id="2851634818064021665">Необходимо ви е разрешение, за да посетите този сайт</translation>
 <translation id="2856444702002559011">Възможно е извършители на атака да опитват да откраднат информацията ви от <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например пароли, съобщения или номера на кредитни карти). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Без презареждане</translation>
 <translation id="2909946352844186028">Установена бе промяна в мрежата.</translation>
 <translation id="2916038427272391327">Затворете другите програми.</translation>
 <translation id="2922350208395188000">Сертификатът на сървъра не може да бъде проверен.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Няма намерени резултати от търсенето</translation>
 <translation id="3305707030755673451">На <ph name="TIME" /> данните ви бяха шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="3320021301628644560">Добавяне на адреса за фактуриране</translation>
-<translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
 <translation id="3338095232262050444">Има защита</translation>
 <translation id="3340978935015468852">настройки</translation>
 <translation id="3345135638360864351">Заявката ви за достъп до този сайт не можа да се изпрати до <ph name="NAME" />. Моля, опитайте отново.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Мениджърът ви може да го отблокира за вас</translation>
 <translation id="3566021033012934673">Връзката ви не е поверителна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Вградена страница на адрес <ph name="SITE" /> изпраща съобщение</translation>
 <translation id="358285529439630156">Приемат се кредитни и предплатени карти.</translation>
 <translation id="3582930987043644930">Добавете име</translation>
 <translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Плащане</translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> изпраща съобщение</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Разгъване на списъка</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE" />? Подайте сигнал за тази грешка</translation>
 <translation id="5190835502935405962">Лента на отметките</translation>
 <translation id="5199729219167945352">Експерименти</translation>
-<translation id="5201306358585911203">Страница, вградена в тази страница, изпраща съобщение</translation>
 <translation id="5205222826937269299">Името е задължително</translation>
 <translation id="5222812217790122047">Имейл адресът е задължителен</translation>
 <translation id="522700295135997067">Възможно е този сайт току-що да е откраднал паролата ви</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Свързване</translation>
 <translation id="5308689395849655368">Изпращането на сигнали за сривове е деактивирано.</translation>
 <translation id="5317780077021120954">Запазване</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> от <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Избиране на информация за връзка</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5332219387342487447">Начин за доставка</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Мениджърът ви все още не е одобрил заявката</translation>
 <translation id="6569060085658103619">Преглеждате страница на разширение</translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
-<translation id="662080504995468778">Оставане</translation>
 <translation id="6624427990725312378">Информация за връзка</translation>
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">Сертификатът не посочва механизъм за проверка дали е бил анулиран.</translation>
 <translation id="8620436878122366504">Родителите ви все още не са одобрили заявката</translation>
 <translation id="8625384913736129811">Запазване на картата на това устройство</translation>
+<translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8647750283161643317">Възстановяване на всичко към стандартното състояние</translation>
 <translation id="8660471606262461360">От Google Payments</translation>
 <translation id="8680536109547170164">„<ph name="QUERY" />“, отговор: „<ph name="ANSWER" />“</translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Приемани кредитни и предплатени карти</translation>
 <translation id="8952525071319348207">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си. След като я потвърдите, данните за нея от профила ви в Google Payments ще бъдат споделени с този сайт.</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
-<translation id="8958260976055043711">Тази страница изпраща съобщение</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
 <translation id="8978053250194585037">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри фишинг<ph name="END_LINK" /> на <ph name="SITE" />. Сайтовете за фишинг се представят за други уебсайтове с цел да ви подведат.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="917450738466192189">Сертификатът на сървъра е невалиден.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> използва неподдържан протокол.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> изпраща съобщение</translation>
 <translation id="9205078245616868884">Данните ви са шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
-<translation id="9209577707918422353">Вградена страница на адрес <ph name="SITE" /> изпраща съобщение</translation>
 <translation id="9215416866750762878">Приложение пречи на Chrome да се свърже безопасно с този сайт</translation>
 <translation id="9219103736887031265">Изображения</translation>
 <translation id="933612690413056017">Няма връзка с интернет</translation>

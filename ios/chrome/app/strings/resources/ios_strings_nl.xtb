@@ -218,6 +218,7 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="5327248766486351172">Naam</translation>
+<translation id="533632423981297619">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken. Deel het bestand niet.</translation>
 <translation id="5388358297987318779">Afbeelding openen</translation>
 <translation id="5409365236829784218">Er zijn geen applicaties geïnstalleerd waarmee dit bestand kan worden geopend.</translation>
 <translation id="5433691172869980887">Gebruikersnaam gekopieerd</translation>
@@ -243,7 +244,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5857090052475505287">Nieuwe map</translation>
 <translation id="5857770089550859117">Wachtwoordzin vereist om de synchronisatie te starten.</translation>
 <translation id="5860033963881614850">Uit</translation>
-<translation id="5869029295770560994">OK</translation>
+<translation id="5869029295770560994">OK, begrepen</translation>
 <translation id="5871497086027727873">1 item verplaatst</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">Aan</translation>
@@ -325,7 +326,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="722055596168483966">Google-services personaliseren</translation>
 <translation id="7272437679830969316">Kan je identiteit niet verifiëren. Wachtwoord niet gekopieerd.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent gedownload</translation>
-<translation id="7346909386216857016">OK</translation>
+<translation id="7346909386216857016">OK, begrepen</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Wijzigingen in je bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden niet meer gesynchroniseerd met je Google-account. Je bestaande gegevens blijven echter opgeslagen in je Google-account.</translation>
 <translation id="744343212394640790">Niet <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7859704718976024901">Browsegeschiedenis</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Wachtwoorden exporteren...</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7961015016161918242">Nooit</translation>
 <translation id="7971521879845308059">Pop-ups blokkeren</translation>
@@ -395,7 +397,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8881801611828450202">Zoeken op <ph name="SEARCH_ENGINE" /> naar deze afbeelding</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="895541991026785598">Een probleem melden</translation>
-<translation id="8971089644512329999">OK</translation>
+<translation id="8971089644512329999">OK, begrepen</translation>
 <translation id="8981454092730389528">Google-activiteitsopties</translation>
 <translation id="8985320356172329008">Ingelogd bij Google als</translation>
 <translation id="902659348151742535">Google kan je browsegeschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren.</translation>

@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 文件 (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+ 另外 <ph name="NUMBER" /> 项</translation>
+<translation id="8730621377337864115">完成</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 小时}other{# 小时}}</translation>
 <translation id="8806053966018712535">文件夹“<ph name="FOLDER_NAME" />”</translation>
 <translation id="883911313571074303">为图片添加注释</translation>

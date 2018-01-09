@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Дебетовые и кредитные карты, которые принимаются к оплате</translation>
 <translation id="1519264250979466059">Дата сборки</translation>
 <translation id="1527263332363067270">Ожидание подключения…</translation>
-<translation id="1532118530259321453">Подтвердите действие</translation>
 <translation id="153384715582417236">Пока это всё</translation>
 <translation id="154408704832528245">Выбрать адрес доставки</translation>
 <translation id="1549470594296187301">Для использования этой функции необходимо включить JavaScript.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Доступ к данным на устройстве</translation>
 <translation id="1594030484168838125">Выбрать</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1629803312968146339">Сохранить эту карту в Chrome?</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="1640180200866533862">Пользовательские правила</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2270484714375784793">Номер телефона</translation>
 <translation id="2292556288342944218">Доступ в Интернет закрыт</translation>
-<translation id="2298151730144880294">Подтвердите действие</translation>
 <translation id="230155334948463882">Добавить карту?</translation>
 <translation id="2316887270356262533">Освободится менее 1 МБ пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="2317259163369394535">Для доступа к домену <ph name="DOMAIN" /> необходимо указать имя пользователя и пароль.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Очистить форму</translation>
 <translation id="2851634818064021665">Для доступа к этой странице требуется разрешение.</translation>
 <translation id="2856444702002559011">Злоумышленники могут пытаться похитить ваши данные с сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например, пароли, сообщения или номера банковских карт). <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Не обновлять</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2916038427272391327">Закройте другие программы.</translation>
 <translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
@@ -329,7 +327,6 @@
 <translation id="3303855915957856445">Ничего не найдено</translation>
 <translation id="3305707030755673451">Данные были зашифрованы с помощью кодовой фразы <ph name="TIME" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="3320021301628644560">Добавьте платежный адрес</translation>
-<translation id="333371639341676808">Предотвратить создание дополнительных диалоговых окон на этой странице.</translation>
 <translation id="3338095232262050444">Защищено</translation>
 <translation id="3340978935015468852">настройках</translation>
 <translation id="3345135638360864351">Не удалось отправить пользователю <ph name="NAME" /> запрос на доступ к этому сайту. Повторите попытку.</translation>
@@ -370,7 +367,6 @@
 <translation id="3556433843310711081">Для разблокировки обратитесь к администратору.</translation>
 <translation id="3566021033012934673">Подключение не защищено</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Подтвердите действие на странице <ph name="SITE" /></translation>
 <translation id="358285529439630156">Принимаются кредитные карты и карты предоплаты.</translation>
 <translation id="3582930987043644930">Добавьте имя</translation>
 <translation id="3583757800736429874">&amp;Повторить перемещение</translation>
@@ -535,7 +531,6 @@
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Платеж</translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
-<translation id="4926159001844873046">Подтвердите действие на странице <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Развернуть список</translation>
@@ -571,7 +566,6 @@
 <translation id="5179510805599951267">Это не <ph name="ORIGINAL_LANGUAGE" />? Сообщите об ошибке</translation>
 <translation id="5190835502935405962">Панель закладок</translation>
 <translation id="5199729219167945352">Экспериментальные функции</translation>
-<translation id="5201306358585911203">Подтвердите действие</translation>
 <translation id="5205222826937269299">Введите имя или название</translation>
 <translation id="5222812217790122047">Введите адрес электронной почты</translation>
 <translation id="522700295135997067">Через этот сайт могли похитить ваш пароль</translation>
@@ -594,6 +588,7 @@
 <translation id="5308380583665731573">Подключение</translation>
 <translation id="5308689395849655368">Отчеты о сбоях отключены.</translation>
 <translation id="5317780077021120954">Сохранить</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> из <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Выбрать контактные данные</translation>
 <translation id="5327248766486351172">Название</translation>
 <translation id="5332219387342487447">Способ доставки</translation>
@@ -753,7 +748,6 @@
 <translation id="6563469144985748109">Ещё не одобрено администратором</translation>
 <translation id="6569060085658103619">Вы просматриваете страницу расширения</translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
-<translation id="662080504995468778">Остаться</translation>
 <translation id="6624427990725312378">Контактная информация</translation>
 <translation id="6626291197371920147">Введите номер действующей карты</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
@@ -786,7 +780,7 @@
 <translation id="6945221475159498467">Выбрать</translation>
 <translation id="6948701128805548767">Выберите адрес, чтобы посмотреть способы и условия получения.</translation>
 <translation id="6957887021205513506">Возможно, сертификат сервера фальсифицирован.</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">ОК</translation>
 <translation id="6965978654500191972">Устройство</translation>
 <translation id="6970216967273061347">Район</translation>
 <translation id="6973656660372572881">Указаны как фиксированные прокси-серверы, так и URL PAC-скриптов.</translation>
@@ -999,6 +993,7 @@
 <translation id="859285277496340001">Этот сертификат не определяет механизм проверки отзыва.</translation>
 <translation id="8620436878122366504">Ещё не одобрено родителями</translation>
 <translation id="8625384913736129811">Сохранить карту на этом устройстве</translation>
+<translation id="8639963783467694461">Настройки автозаполнения</translation>
 <translation id="8647750283161643317">Восстановить настройки по умолчанию</translation>
 <translation id="8660471606262461360">Из Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ответ, <ph name="ANSWER" /></translation>
@@ -1032,7 +1027,6 @@
 <translation id="8938939909778640821">Кредитные карты и карты предоплаты, которые принимаются к оплате</translation>
 <translation id="8952525071319348207">Введите срок окончания действия и CVC-код карты <ph name="CREDIT_CARD" />. После этого ее реквизиты из платежного аккаунта Google будут переданы сайту.</translation>
 <translation id="8957210676456822347">Авторизация через адаптивный портал</translation>
-<translation id="8958260976055043711">Подтвердите действие</translation>
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>
 <translation id="8978053250194585037">Функция "Google Безопасный просмотр" недавно <ph name="BEGIN_LINK" />обнаружила попытку фишинга<ph name="END_LINK" /> на сайте <ph name="SITE" />. Будьте внимательны! Мошенники часто создают веб-страницы, похожие на знакомые вам сайты.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1070,10 +1064,8 @@
 <translation id="9170848237812810038">&amp;Отменить</translation>
 <translation id="917450738466192189">Сертификат сервера недействителен</translation>
 <translation id="9183425211371246419">На сайте <ph name="HOST_NAME" /> используется неподдерживаемый протокол.</translation>
-<translation id="9198587359415855350">Подтвердите действие на странице <ph name="SITE" /></translation>
 <translation id="9205078245616868884">Данные зашифрованы с помощью кодовой фразы. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="9207861905230894330">Не удалось добавить статью</translation>
-<translation id="9209577707918422353">Подтвердите действие на странице <ph name="SITE" /></translation>
 <translation id="9215416866750762878">Приложение не позволяет Chrome безопасно подключиться к этому сайту</translation>
 <translation id="9219103736887031265">Картинки</translation>
 <translation id="933612690413056017">Нет подключения к Интернету</translation>

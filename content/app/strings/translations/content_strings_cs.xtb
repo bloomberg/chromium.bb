@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">stromová mřížka</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">přehrát ve vzdáleném zařízení</translation>
-<translation id="1854180393107901205">Zastavit odesílání</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stav</translation>
 <translation id="1938124657309484470">Datum musí být <ph name="MAXIMUM_DATE_OR_TIME" /> nebo dříve.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Jiné…</translation>
 <translation id="9138385573473225930">upozornění</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, začíná <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="947831847158436616">buňka</translation>
 <translation id="966787709310836684">nabídka</translation>
 </translationbundle>

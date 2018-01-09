@@ -8,6 +8,7 @@
 <translation id="1104959162601287462">O OS-u &amp;Chrome</translation>
 <translation id="110877069173485804">Ovo je vaš Chrome</translation>
 <translation id="1142745911746664600">Nije moguće ažurirati Chrome</translation>
+<translation id="1154147086299354128">&amp;Otvori u Chromeu</translation>
 <translation id="123620459398936149">OS Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
 <translation id="127345590676626841">Chrome se ažurira automatski, pa uvijek imate najnoviju verziju. Kada se ovo preuzimanje dovrši, Chrome će se ponovo pokrenuti i moći ćete nastaviti.</translation>
 <translation id="1302523850133262269">Pričekajte da Chrome instalira najnovija ažuriranja sustava.</translation>
@@ -30,7 +31,6 @@
 <translation id="1698376642261615901">Google Chrome jest web-preglednik koji web-stranice i aplikacije pokreće brzinom svjetlosti. Brz je, stabilan i jednostavan za upotrebu. Sigurnije pregledavajte web uz zaštitu protiv zlonamjernog i špijunskog softvera koja je ugrađena u Google Chrome.</translation>
 <translation id="1718131156967340976">Odaberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
-<translation id="1759301979429102118">Pojedinosti iz vaših kontakata mogu vam pomoći brže ispuniti obrasce na Chromeu.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Pomoć za upotrebu OS-a Chrome</translation>
 <translation id="1795405610103747296">Instalirajte Chrome na telefon. Poslat ćemo vam SMS na vaš telefonski broj: <ph name="PHONE_NUMBER" /></translation>
@@ -107,8 +107,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="3898493977366060150">Pregledavanje weba uz pametne Googleove značajke</translation>
 <translation id="4028693306634653894">Otvorite Chrome brže</translation>
-<translation id="4031074602479304239">Chrome je spriječio web-lokaciju u preusmjeravanju na</translation>
-<translation id="4042449298237264661">Ovo računalo više neće primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više nisu podržani.</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
 <translation id="4053720452172726777">Prilagodite Google Chrome i upravljajte njime</translation>
 <translation id="4147555960264124640">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE" /></translation>
@@ -152,12 +150,12 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="5243785881901838525">Google Payments (kopirano na Chrome)</translation>
 <translation id="5251420635869119124">Gosti mogu upotrebljavati Chrome bez ostavljanja tragova o upotrebi.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome ponovo će se pokrenuti za 1 sekundu.}one{Google Chrome ponovo će se pokrenuti za # sekundu.}few{Google Chrome ponovo će se pokrenuti za # sekunde.}other{Google Chrome ponovo će se pokrenuti za # sekundi.}}</translation>
+<translation id="532046782124376502">Upozorenje: Google Chrome ne može spriječiti proširenja u evidentiranju vaše povijesti pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite ovu opciju.</translation>
 <translation id="5334545119300433702">Za taj se modul već zna da je u konfliktu s programom Google Chrome.</translation>
 <translation id="5386244825306882791">Upravlja i time koja se stranica prikazuje prilikom pokretanja Chromea ili pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="5430073640787465221">Datoteka vaših postavki oštećena je ili nevažeća. Google Chrome nema mogućnost oporavka vaših postavki.</translation>
 <translation id="5453904507266736060">Neka Google Chrome radi u pozadini</translation>
 <translation id="5495581687705680288">Moduli preneseni na Google Chrome</translation>
-<translation id="5524843473235508879">Preusmjeravanje je blokirano.</translation>
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju.</translation>
@@ -178,15 +176,12 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Ažuriraj OS &amp;Chrome</translation>
 <translation id="6235018212288296708">Ulazno pravilo kako bi Google Chrome dopustio mDNS promet.</translation>
-<translation id="6236285698028833233">Google Chrome prestao se ažurirati i više ne podržava ovu verziju vašeg operativnog sustava.</translation>
 <translation id="6291089322031436445">Aplikacije preglednika Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome već je instaliran za sve korisnike na računalu.</translation>
 <translation id="6338556085225130112">Ažuriranje Google Chromea</translation>
 <translation id="6368958679917195344">OS Chrome omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom otvorenog koda<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6393863479814692971">Chrome treba dopuštenje za pristup fotoaparatu i mikrofonu za ovu web-lokaciju.</translation>
-<translation id="6400076122676892962">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više neće biti podržani.</translation>
 <translation id="6410540444482791104">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski šalju neki podaci o sustavu i sadržaju stranice u svrhu otkrivanja opasnih aplikacija i web-lokacija.</translation>
-<translation id="6470176598693778404">Ovo računalo više neće primati ažuriranja za Google Chrome jer sustavi Mac OS X 10.6, 10.7 i 10.8 više nisu podržani.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{U tijeku je preuzimanje. Želite li otkazati preuzimanje i napustiti Google Chrome?}one{U tijeku je # preuzimanje. Želite li otkazati preuzimanja i napustiti Google Chrome?}few{U tijeku su # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}other{U tijeku je # preuzimanja. Želite li otkazati preuzimanja i napustiti Google Chrome?}}</translation>
 <translation id="6566149418543181476">Ažuriranje Google Chromea (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Upotrebljavate profil <ph name="PROFILE_EMAIL" /> za sinkronizaciju sadržaja u Chromeu. Da biste ažurirali svoje postavke sinkroniziranja ili upotrebljavali Chrome bez Google računa, posjetite <ph name="SETTINGS_LINK" />.</translation>
@@ -194,11 +189,9 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="6634887557811630702">Google Chrome ažuran je.</translation>
 <translation id="6676384891291319759">Pristup Internetu</translation>
 <translation id="6697947395630195233">Chrome treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom.</translation>
-<translation id="6777817260680419853">Preusmjeravanje je blokirano</translation>
 <translation id="683440813066116847">Ulazno pravilo kako bi Google Chrome Canary dopustio mDNS promet.</translation>
 <translation id="686561893457936865">Ponesite Chrome svugdje</translation>
 <translation id="6885412569789873916">Aplikacije preglednika Chrome Beta</translation>
-<translation id="694592694773692225">Preusmjeravanje je blokirano na ovoj stranici.</translation>
 <translation id="6967962315388095737">Ulazno pravilo kako bi Google Chrome Beta dopustio mDNS promet.</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> zahtijeva da pročitate i prihvatite sljedeće Uvjete pružanja usluge prije upotrebe ovog uređaja. Ti uvjeti ne predstavljaju proširenje, izmjenu ili ograničenje Uvjeta OS-a Google Chrome.</translation>
@@ -209,7 +202,6 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7164397146364144019">Možete pomoći da Chrome bude sigurniji i jednostavniji za upotrebu tako što ćete omogućiti da se Googleu automatski prijavljuju pojedinosti o mogućim sigurnosnim incidentima.</translation>
 <translation id="7185038942300673794">Proširenje "<ph name="EXTENSION_NAME" />" dodano je u Chrome.</translation>
 <translation id="7242029209006116544">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME" />. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chrome zasebno. <ph name="LEARN_MORE" /></translation>
-<translation id="729375352412857283">Ovo računalo uskoro će prestati primati ažuriranja za Google Chrome jer sustavi Windows XP i Windows Vista više neće biti podržani.</translation>
 <translation id="7330164299247909639">Certifikat za autentifikaciju nije uspio. Prijavite se ponovo u Google Chrome kao <ph name="USER_NAME" /> ili se obratite administratoru za više informacija. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="7369650938475876456">Upotrijebite snažnu zaporku koju generira Chrome</translation>

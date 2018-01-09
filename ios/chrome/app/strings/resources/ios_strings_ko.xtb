@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
+<translation id="533632423981297619">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다. 누구와도 파일을 공유하지 마세요.</translation>
 <translation id="5388358297987318779">이미지 열기</translation>
 <translation id="5409365236829784218">이 파일을 열 수 있는 애플리케이션이 설치되어 있지 않습니다.</translation>
 <translation id="5433691172869980887">사용자 이름 복사됨</translation>
@@ -350,6 +351,7 @@
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7859704718976024901">인터넷 사용 기록</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">비밀번호 내보내기...</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7961015016161918242">사용하지 않음</translation>
 <translation id="7971521879845308059">팝업 차단</translation>
@@ -395,7 +397,7 @@
 <translation id="8881801611828450202"><ph name="SEARCH_ENGINE" />에서 이 이미지 검색</translation>
 <translation id="8904976895050290827">크롬 동기화</translation>
 <translation id="895541991026785598">문제 신고</translation>
-<translation id="8971089644512329999">확인</translation>
+<translation id="8971089644512329999">동의</translation>
 <translation id="8981454092730389528">Google 활동 제어</translation>
 <translation id="8985320356172329008">다음 계정으로 Google에 로그인함:</translation>
 <translation id="902659348151742535">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용할 수 있습니다.</translation>

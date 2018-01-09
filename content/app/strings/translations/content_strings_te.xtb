@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">వృక్షాంశ గ్రిడ్</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">రిమోట్ పరికరంలో ప్లే చేస్తుంది</translation>
-<translation id="1854180393107901205">ప్రసారాన్ని ఆపివేయి</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">స్థితి</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME" /> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">ఇతర...</translation>
 <translation id="9138385573473225930">హెచ్చరిక</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> నుండి ప్రారంభమవుతుంది</translation>
+<translation id="916607977885256133">చిత్రంలో చిత్రం</translation>
 <translation id="947831847158436616">గడి</translation>
 <translation id="966787709310836684">మెను</translation>
 </translationbundle>

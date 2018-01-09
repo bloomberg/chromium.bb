@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Godkjente kreditt- og debetkort</translation>
 <translation id="1519264250979466059">Versjonsdato</translation>
 <translation id="1527263332363067270">Venter på tilkobling …</translation>
-<translation id="1532118530259321453">På denne siden står det</translation>
 <translation id="153384715582417236">Det var alt for denne gangen</translation>
 <translation id="154408704832528245">Velg leveringsadresse</translation>
 <translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1594030484168838125">Velg</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
 <translation id="1629803312968146339">Vil du at Chrome skal lagre dette kortet?</translation>
 <translation id="1639239467298939599">Laster inn</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP-feil</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
-<translation id="2298151730144880294">På en innebygd side på denne siden står det</translation>
 <translation id="230155334948463882">Nytt kort?</translation>
 <translation id="2316887270356262533">Frigjør mindre enn 1 MB. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> krever brukernavn og passord.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Slett skjemaet</translation>
 <translation id="2851634818064021665">Du trenger tillatelse for å besøke dette nettstedet</translation>
 <translation id="2856444702002559011">Det kan hende at angripere prøver å stjele informasjonen din fra <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for eksempel passord, meldinger og kredittkortinformasjon). <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Ikke last inn på nytt</translation>
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2916038427272391327">Lukk andre programmer</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Søket ga ingen treff</translation>
 <translation id="3305707030755673451">Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME" />. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="3320021301628644560">Legg til faktureringsadresse</translation>
-<translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
 <translation id="3338095232262050444">Sikker</translation>
 <translation id="3340978935015468852">innstillinger</translation>
 <translation id="3345135638360864351">Forespørselen om tilgang til dette nettstedet kunne ikke sendes til <ph name="NAME" />. Prøv igjen.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Administratoren din kan oppheve blokkeringen for deg</translation>
 <translation id="3566021033012934673">Tilkoblingen din er ikke privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">På en innebygd side på <ph name="SITE" /> står det</translation>
 <translation id="358285529439630156">Kredittkort og forhåndsbetalte kort godtas.</translation>
 <translation id="3582930987043644930">Legg til navn</translation>
 <translation id="3583757800736429874">&amp;Flytt likevel</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Må angis.</translation>
-<translation id="4926159001844873046">På <ph name="SITE" /> står det</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE" />? Rapportér denne feilen</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
-<translation id="5201306358585911203">På en innebygd side på denne siden står det</translation>
 <translation id="5205222826937269299">Navn er obligatorisk</translation>
 <translation id="5222812217790122047">E-post er obligatorisk</translation>
 <translation id="522700295135997067">Dette nettstedet stjal muligens nettopp passordet ditt</translation>
@@ -754,7 +748,6 @@
 <translation id="6563469144985748109">Administratoren din har ikke godkjent det ennå</translation>
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
-<translation id="662080504995468778">Bli her</translation>
 <translation id="6624427990725312378">Kontaktinformasjon</translation>
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
@@ -1000,6 +993,7 @@
 <translation id="859285277496340001">Sertifikatet spesifiserer ikke en mekanisme for å kontrollere hvorvidt det har blitt tilbakekalt.</translation>
 <translation id="8620436878122366504">Foreldrene dine har ikke godkjent det ennå</translation>
 <translation id="8625384913736129811">Lagre dette kortet på denne enheten</translation>
+<translation id="8639963783467694461">Innstillinger for autofyll</translation>
 <translation id="8647750283161643317">Tilbakestill alle til standard</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
@@ -1033,7 +1027,6 @@
 <translation id="8938939909778640821">Godkjente kredittkort og forhåndsbetalte kort</translation>
 <translation id="8952525071319348207">Skriv inn utløpsdatoen og CVC-koden for <ph name="CREDIT_CARD" /> for å oppdatere kortinformasjonen din. Når du bekrefter, deles kortopplysningene fra Google Payments-kontoen med dette nettstedet.</translation>
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
-<translation id="8958260976055043711">På denne siden står det</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8978053250194585037">Google Safe Browsing <ph name="BEGIN_LINK" />oppdaget nylig nettfisking<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder for nettfisking er laget for å ligne på andre nettsteder, for å prøve å lure deg.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1064,8 @@
 <translation id="9170848237812810038">&amp;Angre</translation>
 <translation id="917450738466192189">Tjenerens sertifikat er ugyldig.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> bruker en protokoll som ikke støttes.</translation>
-<translation id="9198587359415855350">På <ph name="SITE" /> står det</translation>
 <translation id="9205078245616868884">Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
-<translation id="9209577707918422353">På en innebygd side på <ph name="SITE" /> står det</translation>
 <translation id="9215416866750762878">Et program hindrer Chrome i å koble trygt til dette nettstedet.</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="933612690413056017">Du er ikke koblet til Internett</translation>

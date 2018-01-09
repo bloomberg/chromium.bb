@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Платне и кредитне картице које се прихватају</translation>
 <translation id="1519264250979466059">Датум верзије</translation>
 <translation id="1527263332363067270">Чека се веза…</translation>
-<translation id="1532118530259321453">Ова страница наводи:</translation>
 <translation id="153384715582417236">То је све за сада</translation>
 <translation id="154408704832528245">Одаберите адресу за доставу</translation>
 <translation id="1549470594296187301">JavaScript мора да буде омогућен да бисте користили ову функцију.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
 <translation id="1594030484168838125">Одабери</translation>
 <translation id="1620510694547887537">Камера</translation>
+<translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
 <translation id="1629803312968146339">Желите ли да Chrome сачува ову картицу?</translation>
 <translation id="1639239467298939599">Учитавање</translation>
 <translation id="1640180200866533862">Смернице за кориснике</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2270484714375784793">Број телефона</translation>
 <translation id="2292556288342944218">Приступ интернету је блокиран</translation>
-<translation id="2298151730144880294">Уграђена страница на овој страници наводи:</translation>
 <translation id="230155334948463882">Нова картица?</translation>
 <translation id="2316887270356262533">Ослобађа мање од 1 MB. Неки сајтови ће се можда спорије учитавати кад их следећи пут посетите.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> захтева корисничко име и лозинку.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Обриши образац</translation>
 <translation id="2851634818064021665">Треба вам дозвола да бисте посетили овај сајт</translation>
 <translation id="2856444702002559011">Нападачи можда покушавају да украду информације са <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (на пример, лозинке, поруке или кредитне картице). <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Не учитавај поново</translation>
 <translation id="2909946352844186028">Откривена је промена на мрежи.</translation>
 <translation id="2916038427272391327">Затворите друге програме</translation>
 <translation id="2922350208395188000">Није могуће проверити сертификат сервера.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Нису пронађени резултати претраге</translation>
 <translation id="3305707030755673451">Подаци су шифровани помоћу приступне фразе за синхронизацију <ph name="TIME" />. Унесите је да бисте започели синхронизацију.</translation>
 <translation id="3320021301628644560">Додајте адресу за обрачун</translation>
-<translation id="333371639341676808">Спречите ову страницу да прави додатне дијалоге.</translation>
 <translation id="3338095232262050444">Безбедан</translation>
 <translation id="3340978935015468852">подешавања</translation>
 <translation id="3345135638360864351">Слање захтева за приступ овом сајту кориснику <ph name="NAME" /> није успело. Пробајте поново.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Менаџер може да га деблокира за вас</translation>
 <translation id="3566021033012934673">Веза није приватна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Уграђена страница на <ph name="SITE" /> наводи:</translation>
 <translation id="358285529439630156">Прихватају се кредитне и припејд картице.</translation>
 <translation id="3582930987043644930">Додајте име</translation>
 <translation id="3583757800736429874">&amp;Понови премештање</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Плаћање</translation>
 <translation id="4926049483395192435">Мора да буде наведено.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> наводи:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Радње</translation>
 <translation id="4958444002117714549">Прошири листу</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Није <ph name="ORIGINAL_LANGUAGE" />? Пријавите ову грешку</translation>
 <translation id="5190835502935405962">Трака са обележивачима</translation>
 <translation id="5199729219167945352">Експерименти</translation>
-<translation id="5201306358585911203">Уграђена страница на овој веб-страници наводи:</translation>
 <translation id="5205222826937269299">Име је обавезно</translation>
 <translation id="5222812217790122047">Имејл је обавезан</translation>
 <translation id="522700295135997067">Овај сајт вам је можда управо украо лозинку</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Повезивање</translation>
 <translation id="5308689395849655368">Извештавање о отказивању је онемогућено.</translation>
 <translation id="5317780077021120954">Сачувај</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />. од <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Одаберите контакт информације</translation>
 <translation id="5327248766486351172">Назив</translation>
 <translation id="5332219387342487447">Начин испоруке</translation>
@@ -753,7 +748,6 @@
 <translation id="6563469144985748109">Менаџер га још увек није одобрио</translation>
 <translation id="6569060085658103619">Прегледате страницу додатка.</translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
-<translation id="662080504995468778">Не затварај</translation>
 <translation id="6624427990725312378">Контакт информације</translation>
 <translation id="6626291197371920147">Додајте важећи број картице</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> претрага</translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">Сертификат не наводи механизам којим се проверава да ли је опозван.</translation>
 <translation id="8620436878122366504">Родитељи га још увек нису одобрили</translation>
 <translation id="8625384913736129811">Сачувај ову картицу на овом уређају</translation>
+<translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
 <translation id="8647750283161643317">Врати све на подразумевано</translation>
 <translation id="8660471606262461360">Од Google Payments-а</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, одговор, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Прихватају се кредитне и припејд картице</translation>
 <translation id="8952525071319348207">Унесите рок трајања и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици. Када будете потврдили, подаци о картици са налога за Google плаћања ће бити послати овом сајту.</translation>
 <translation id="8957210676456822347">Овлашћење на улазном порталу</translation>
-<translation id="8958260976055043711">Ова страница наводи:</translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8978053250194585037">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило „пецање“<ph name="END_LINK" /> на <ph name="SITE" />. Сајтови са „пецањем“ се представљају као неки други веб-сајтови да би вас преварили.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="917450738466192189">Сертификат сервера је неважећи.</translation>
 <translation id="9183425211371246419">Хост <ph name="HOST_NAME" /> користи неподржани протокол.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> наводи:</translation>
 <translation id="9205078245616868884">Подаци се шифрују помоћу приступне фразе за синхронизацију. Унесите је да бисте започели синхронизацију.</translation>
 <translation id="9207861905230894330">Додавање чланка није успело.</translation>
-<translation id="9209577707918422353">Уграђена страница на <ph name="SITE" /> наводи:</translation>
 <translation id="9215416866750762878">Апликација онемогућава Chrome-у да се безбедно повеже са овим сајтом</translation>
 <translation id="9219103736887031265">Слике</translation>
 <translation id="933612690413056017">Није успостављена веза са интернетом</translation>

@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">स्वीकृत क्रेडिट और डेबिट कार्ड</translation>
 <translation id="1519264250979466059">बिल्ड दिनांक</translation>
 <translation id="1527263332363067270">कनेक्‍शन के इंतज़ार में…</translation>
-<translation id="1532118530259321453">इस पेज का कहना है कि</translation>
 <translation id="153384715582417236">अभी के लिए हो गया</translation>
 <translation id="154408704832528245">डिलीवरी पता चुनें</translation>
 <translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
 <translation id="1594030484168838125">चुनें</translation>
 <translation id="1620510694547887537">कैमरा</translation>
+<translation id="1623104350909869708">इस पेज को अतिरिक्त डॉयलॉग बनाने से रोकें</translation>
 <translation id="1629803312968146339">क्या आप चाहते हैं कि Chrome इस कार्ड को सहेजे?</translation>
 <translation id="1639239467298939599">लोड हो रहा है</translation>
 <translation id="1640180200866533862">उपयोगकर्ता नीतियां</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP गड़बड़ी</translation>
 <translation id="2270484714375784793">फ़ोन नंबर</translation>
 <translation id="2292556288342944218">आपका इंटरनेट कनेक्शन अवरुद्ध है</translation>
-<translation id="2298151730144880294">इस पेज पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="230155334948463882">नया कार्ड?</translation>
 <translation id="2316887270356262533">1 MB से भी कम जगह खाली करता है. आपकी अगली विज़िट पर कुछ साइटें और भी धीमे लोड हो सकती हैं.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> के लिए उपयोगकर्ता नाम और पासवर्ड आवश्यक है.</translation>
@@ -245,7 +244,7 @@
 <translation id="2728127805433021124">सर्वर का प्रमाणपत्र एक कमज़ोर हस्ताक्षर एल्गोरिदम का उपयोग करके हस्ताक्षरित किया गया है.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />नेटवर्क कनेक्टिविटी चलाकर देखें<ph name="END_LINK" /></translation>
 <translation id="2738330467931008676">पिकअप का पता चुनें</translation>
-<translation id="2740531572673183784">ठीक</translation>
+<translation id="2740531572673183784">ठीक है</translation>
 <translation id="2742870351467570537">चयनित आइटम निकालें</translation>
 <translation id="277133753123645258">शिपिंग का तरीका</translation>
 <translation id="277499241957683684">डिवाइस का रिकॉर्ड लापता है</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">फ़ॉर्म साफ़ करें</translation>
 <translation id="2851634818064021665">आपको इस साइट पर जाने की अनुमति लेनी होगी</translation>
 <translation id="2856444702002559011">हो सकता है कि हमलावर <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> से आपकी जानकारी (उदाहरण के लिए, पासवर्ड, संदेश या क्रेडिट कार्ड) चुराने की कोशिश कर रहे हों. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">पुन: लोड ना करें</translation>
 <translation id="2909946352844186028">नेटवर्क में बदलाव का पता चला.</translation>
 <translation id="2916038427272391327">दूसरे प्रोग्राम बंद करें</translation>
 <translation id="2922350208395188000">सर्वर प्रमाणपत्र की जाँच नहीं की जा सकती.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">कोई खोज परिणाम नहीं मिला</translation>
 <translation id="3305707030755673451">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ <ph name="TIME" /> को एन्क्रिप्ट किया गया था. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
-<translation id="333371639341676808">इस पेज को अतिरिक्त ब्लॉग बनाने से रोकें.</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
 <translation id="3340978935015468852">सेटिंग</translation>
 <translation id="3345135638360864351">इस साइट को ऐक्‍सेस करने का आपका अनुरोध <ph name="NAME" /> को नहीं भेजा जा सका. कृपया पुन: प्रयास करें.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">आपका प्रबंधक इसे आपके लिए अनवरोधित कर सकता है</translation>
 <translation id="3566021033012934673">आपका कनेक्शन निजी नहीं है</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635"><ph name="SITE" /> पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="358285529439630156">क्रेडिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
 <translation id="3582930987043644930">नाम जोड़ें</translation>
 <translation id="3583757800736429874">&amp;ले जाना फिर से करें</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">इस पेज का एक अज्ञात भाषा से <ph name="LANGUAGE_LANGUAGE" /> में अनुवाद किया गया है</translation>
 <translation id="4923459931733593730">भुगतान</translation>
 <translation id="4926049483395192435">निर्दिष्ट किया जाना चाहिए.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> का कहना है कि</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4958444002117714549">सूची विस्तृत करें</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" /> में नहीं है? इस गड़बड़ी की रिपोर्ट करें</translation>
 <translation id="5190835502935405962">बुकमार्क बार</translation>
 <translation id="5199729219167945352">प्रयोग</translation>
-<translation id="5201306358585911203">इस पेज पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="5205222826937269299">नाम आवश्यक है</translation>
 <translation id="5222812217790122047">ईमेल आवश्यक है</translation>
 <translation id="522700295135997067">शायद इस साइट ने अभी-अभी आपका पासवर्ड चुरा लिया है</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">कनेक्ट करें</translation>
 <translation id="5308689395849655368">क्रैश की रिपोर्ट करना अक्षम कर दिया गया है.</translation>
 <translation id="5317780077021120954">सहेजें</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> में से <ph name="MATCH_POSITION" /></translation>
 <translation id="5324080437450482387">संपर्क जानकारी चुनें</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5332219387342487447">शिपिंग का तरीका</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">आपके प्रबंधक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
-<translation id="662080504995468778">इसपर रहें</translation>
 <translation id="6624427990725312378">संपर्क जानकारी</translation>
 <translation id="6626291197371920147">मान्य कार्ड नंबर जोड़ें</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
@@ -787,7 +781,7 @@
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6948701128805548767">पिकअप के तरीके और ज़रूरतें देखने के लिए, कोई पता चुनें</translation>
 <translation id="6957887021205513506">सर्वर का प्रमाणपत्र फर्जी दिखाई देता है.</translation>
-<translation id="6965382102122355670">ठीक</translation>
+<translation id="6965382102122355670">ठीक है</translation>
 <translation id="6965978654500191972">डिवाइस</translation>
 <translation id="6970216967273061347">जिला</translation>
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही निर्दिष्ट हैं.</translation>
@@ -1001,6 +995,7 @@
 <translation id="859285277496340001">प्रमाणपत्र यह जाँचने के लिए कोई तंत्र निर्दिष्‍ट नहीं करता कि इसे रद्द कर दिया गया है या नहीं.</translation>
 <translation id="8620436878122366504">आपके अभिभावकों ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="8625384913736129811">यह कार्ड इस डिवाइस पर सेव करें</translation>
+<translation id="8639963783467694461">ऑटोमैटिक भरना की सेटिंग...</translation>
 <translation id="8647750283161643317">सभी को डिफ़ॉल्ट पर रीसेट करें</translation>
 <translation id="8660471606262461360">Google Payments से</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
@@ -1034,7 +1029,6 @@
 <translation id="8938939909778640821">स्वीकृत क्रेडिट और प्रीपेड कार्ड</translation>
 <translation id="8952525071319348207">अपने कार्ड के विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> के खत्म होने की तारीख और कार्ड वेरीफ़िकेशन कोड (सीवीसी) डालें. आपकी ओर से पुष्टि होने के बाद, आपके Google Payments खाते में मौजूद कार्ड के विवरण इस साइट से शेयर किए जाएंगे.</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल प्राधिकरण</translation>
-<translation id="8958260976055043711">इस पेज का कहना है कि</translation>
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा समाप्त हो चुकी है.</translation>
 <translation id="8978053250194585037">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />फ़िशिंग का पता चला है<ph name="END_LINK" />. फ़िशिंग साइटें आपको भ्रमित करने के लिए अन्य वेबसाइटें होने का दिखावा करती हैं.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1072,10 +1066,8 @@
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="917450738466192189">सर्वर का प्रमाणपत्र अमान्य है.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> एक असमर्थित प्रोटोकॉल का उपयोग करता है.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> का कहना है कि</translation>
 <translation id="9205078245616868884">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ एन्क्रिप्ट किया गया है. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="9207861905230894330">लेख जोड़ने में विफल रहा.</translation>
-<translation id="9209577707918422353"><ph name="SITE" /> पर एम्बेड किए गए पेज का कहना है कि</translation>
 <translation id="9215416866750762878">एक ऐप्‍लिकेशन Chrome को इस साइट से सुरक्षित तरीके से कनेक्‍ट होने से रोक रहा है</translation>
 <translation id="9219103736887031265">चित्र</translation>
 <translation id="933612690413056017">कोई इंटरनेट कनेक्शन नहीं है</translation>

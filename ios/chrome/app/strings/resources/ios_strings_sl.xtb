@@ -216,6 +216,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
+<translation id="533632423981297619">Gesla bodo vidna vsakomur, ki si lahko ogleda izvoženo datoteko. Datoteke ne delite z nikomer.</translation>
 <translation id="5388358297987318779">Odpri sliko</translation>
 <translation id="5409365236829784218">Nameščena ni nobena apl. za odpiranje te datoteke.</translation>
 <translation id="5433691172869980887">Uporabniško ime kopirano</translation>
@@ -348,6 +349,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7859704718976024901">Zgodovina brskanja</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Izvozi gesla ...</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7961015016161918242">Nikoli</translation>
 <translation id="7971521879845308059">Blokiraj pojavna okna</translation>
@@ -393,7 +395,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8881801611828450202">Uporabi <ph name="SEARCH_ENGINE" /> za iskanje te slike</translation>
 <translation id="8904976895050290827">Sinhronizacija za Chrome</translation>
 <translation id="895541991026785598">Prijavite težavo</translation>
-<translation id="8971089644512329999">Ok, Got it</translation>
+<translation id="8971089644512329999">V redu, razumem</translation>
 <translation id="8981454092730389528">Googlovi kontrolniki za dejavnost</translation>
 <translation id="8985320356172329008">Signed In to Google as</translation>
 <translation id="902659348151742535">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>

@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Carte di credito e di debito accettate</translation>
 <translation id="1519264250979466059">Data build</translation>
 <translation id="1527263332363067270">In attesa di connessione…</translation>
-<translation id="1532118530259321453">Questa pagina dice</translation>
 <translation id="153384715582417236">Per il momento è tutto</translation>
 <translation id="154408704832528245">Scegli l'indirizzo di consegna</translation>
 <translation id="1549470594296187301">JavaScript deve essere attivato per utilizzare questa funzione.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1594030484168838125">Scegli</translation>
 <translation id="1620510694547887537">Videocamera</translation>
+<translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
 <translation id="1629803312968146339">Vuoi che Chrome salvi questa carta?</translation>
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="2270484714375784793">Numero di telefono</translation>
 <translation id="2292556288342944218">L'accesso a Internet è bloccato</translation>
-<translation id="2298151730144880294">Una pagina incorporata in questa pagina dice</translation>
 <translation id="230155334948463882">Nuova carta?</translation>
 <translation id="2316887270356262533">Consente di liberare meno di 1 MB. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> richiede un nome utente e una password.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Cancella modulo</translation>
 <translation id="2851634818064021665">Ti occorre l'autorizzazione per poter visitare questo sito</translation>
 <translation id="2856444702002559011">Gli utenti malintenzionati potrebbero provare a carpire le tue informazioni da <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ad esempio, password, messaggi o carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Non ricaricare</translation>
 <translation id="2909946352844186028">È stato rilevato un cambio di rete.</translation>
 <translation id="2916038427272391327">Chiudi altri programmi</translation>
 <translation id="2922350208395188000">Il certificato del server non può essere verificato.</translation>
@@ -327,7 +325,6 @@
 <translation id="3303855915957856445">Nessun risultato di ricerca trovato</translation>
 <translation id="3305707030755673451">I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
-<translation id="333371639341676808">Impedisci alla pagina di creare altre finestre di dialogo.</translation>
 <translation id="3338095232262050444">Sicuro</translation>
 <translation id="3340978935015468852">impostazioni</translation>
 <translation id="3345135638360864351">Impossibile inviare a <ph name="NAME" /> la richiesta di accesso a questo sito. Riprova.</translation>
@@ -368,7 +365,6 @@
 <translation id="3556433843310711081">Il tuo gestore può sbloccarlo per te</translation>
 <translation id="3566021033012934673">La connessione non è privata</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Una pagina incorporata in <ph name="SITE" /> dice</translation>
 <translation id="358285529439630156">Le carte di credito e prepagate sono accettate.</translation>
 <translation id="3582930987043644930">Aggiungi nome</translation>
 <translation id="3583757800736429874">&amp;Ripeti spostamento</translation>
@@ -533,7 +529,6 @@
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagamento</translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> dice</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4958444002117714549">Espandi elenco</translation>
@@ -569,7 +564,6 @@
 <translation id="5179510805599951267">Non in <ph name="ORIGINAL_LANGUAGE" />? Segnala questo errore</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="5199729219167945352">Esperimenti</translation>
-<translation id="5201306358585911203">Una pagina incorporata in questa pagina dice</translation>
 <translation id="5205222826937269299">Nome obbligatorio</translation>
 <translation id="5222812217790122047">Email obbligatoria</translation>
 <translation id="522700295135997067">Questo sito potrebbe avere appena rubato la tua password</translation>
@@ -592,6 +586,7 @@
 <translation id="5308380583665731573">Connessione</translation>
 <translation id="5308689395849655368">La segnalazione degli arresti anomali è disattivata.</translation>
 <translation id="5317780077021120954">Salva</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> di <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Scegli le informazioni di contatto</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5332219387342487447">Modalità di spedizione</translation>
@@ -750,7 +745,6 @@
 <translation id="6563469144985748109">Il tuo gestore non ha ancora approvato la richiesta</translation>
 <translation id="6569060085658103619">È visualizzata la pagina di un'estensione</translation>
 <translation id="6596325263575161958">Opzioni di crittografia</translation>
-<translation id="662080504995468778">Rimani</translation>
 <translation id="6624427990725312378">Informazioni di contatto</translation>
 <translation id="6626291197371920147">Aggiungi un numero di carta valido</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
@@ -996,6 +990,7 @@
 <translation id="859285277496340001">Il certificato non specifica un meccanismo per il controllo della sua revoca.</translation>
 <translation id="8620436878122366504">I tuoi genitori non hanno ancora approvato la richiesta</translation>
 <translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
+<translation id="8639963783467694461">Impostazioni di Compilazione automatica</translation>
 <translation id="8647750283161643317">Ripristina i valori predefiniti per tutto</translation>
 <translation id="8660471606262461360">Da Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
@@ -1029,7 +1024,6 @@
 <translation id="8938939909778640821">Carte di credito e prepagate accettate</translation>
 <translation id="8952525071319348207">Inserisci la data di scadenza e il codice CVC della carta <ph name="CREDIT_CARD" /> per aggiornare i relativi dettagli. Dopo essere stati confermati, i dati della carta del tuo account Google Payments saranno condivisi con questo sito.</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
-<translation id="8958260976055043711">Questa pagina dice</translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
 <translation id="8978053250194585037">La funzione Google Navigazione sicura <ph name="BEGIN_LINK" />ha rilevato di recente attività di phishing<ph name="END_LINK" /> sul sito <ph name="SITE" />. I siti di phishing si spacciano per altri siti web per ingannarti.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1067,10 +1061,8 @@
 <translation id="9170848237812810038">&amp;Annulla</translation>
 <translation id="917450738466192189">Il certificato del server non è valido.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utilizza un protocollo non supportato.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> dice</translation>
 <translation id="9205078245616868884">I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="9207861905230894330">Impossibile aggiungere l'articolo.</translation>
-<translation id="9209577707918422353">Una pagina incorporata in <ph name="SITE" /> dice</translation>
 <translation id="9215416866750762878">Un'applicazione sta impedendo a Chrome di connettersi in sicurezza a questo sito.</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="933612690413056017">Connessione Internet assente</translation>

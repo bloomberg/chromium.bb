@@ -218,6 +218,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
+<translation id="533632423981297619">Cualquier usuario que pueda ver el archivo exportado podrá ver tus contraseñas. No compartas el archivo con nadie.</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5409365236829784218">Ninguna aplicación instalada puede abrir este archivo.</translation>
 <translation id="5433691172869980887">Se ha copiado el nombre de usuario</translation>
@@ -243,7 +244,7 @@ Handoff también debe estar habilitado en la sección General de Ajustes, y los 
 <translation id="5857090052475505287">Nueva carpeta</translation>
 <translation id="5857770089550859117">Se requiere una frase de contraseña para iniciar la sincronización.</translation>
 <translation id="5860033963881614850">No</translation>
-<translation id="5869029295770560994">¡Entendido!</translation>
+<translation id="5869029295770560994">Entendido</translation>
 <translation id="5871497086027727873">1 elemento eliminado</translation>
 <translation id="5911030830365207728">Traductor de Google</translation>
 <translation id="5916664084637901428">Activar</translation>
@@ -350,6 +351,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportar contraseñas...</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>

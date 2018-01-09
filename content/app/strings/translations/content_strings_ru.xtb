@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">сетка в виде дерева</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">воспроизвести на удаленном устройстве</translation>
-<translation id="1854180393107901205">Прекратить трансляцию</translation>
 <translation id="1921819250265091946">дд</translation>
 <translation id="1930711995431081526">статус</translation>
 <translation id="1938124657309484470">Максимальное значение должно быть <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Другое…</translation>
 <translation id="9138385573473225930">оповещение</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, начинается <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Картинка в картинке</translation>
 <translation id="947831847158436616">ячейка</translation>
 <translation id="966787709310836684">меню</translation>
 </translationbundle>

@@ -8,7 +8,7 @@
 • Compatibilidade com reprodução de áudio em computadores Windows ou Linux.</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar conexões remotas</translation>
-<translation id="1291443878853470558">Ative conexões remotas se desejar usar o Chromoting para acessar este computador.</translation>
+<translation id="1291443878853470558">Ative conexões remotas se quiser usar o Chromoting para acessar este computador.</translation>
 <translation id="1297009705180977556">Erro ao conectar-se a <ph name="HOSTNAME" /></translation>
 <translation id="1300633907480909701">Acesse com segurança seus computadores no seu dispositivo Android.
 
@@ -91,7 +91,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 • Instale o software Área de trabalho remota do Google Chrome e siga as instruções para concluir a configuração.
 • No dispositivo iOS, abra o app e toque em qualquer um dos seus computadores on-line para se conectar a ele.</translation>
 <translation id="2894654864775534701">Atualmente, este computador é compartilhado com uma conta diferente.</translation>
-<translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Deseja continuar compartilhando?</translation>
+<translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Quer continuar compartilhando?</translation>
 <translation id="2921543551052660690">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Chromium<ph name="LINK_END" /> usando essa conta e reinstale o Chromoting.</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
 <translation id="2930135165929238380">Alguns componentes obrigatórios não foram encontrados. Acesse chrome://plugins e certifique-se de que "Cliente nativo' esteja ativado.</translation>
@@ -135,7 +135,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="3933246213702324812">O Chromoting em <ph name="HOSTNAME" /> está desatualizado e precisa ser atualizado.</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3989511127559254552">Para continuar, é necessário conceder permissões de acesso estendidas ao seu computador. Você só precisará fazer isso uma vez.</translation>
-<translation id="4006787130661126000">Ative conexões remotas se desejar usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
+<translation id="4006787130661126000">Ative conexões remotas se quiser usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
 <translation id="405887016757208221">O computador remoto apresentou uma falha ao inicializar a sessão. Se o problema persistir, tente configurar o host novamente.</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
@@ -190,7 +190,7 @@ PC</translation>
 <translation id="4985296110227979402">Primeiro, é necessário configurar seu computador para acesso remoto.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
-<translation id="507204348399810022">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
+<translation id="507204348399810022">Tem certeza que quer desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>
 <translation id="518094545883702183">Essa informação é usada apenas para diagnosticar o problema que você está relatando, está disponível apenas para as pessoas que estão investigando seu relatório e só fica retida por até 30 dias.</translation>
@@ -264,7 +264,7 @@ PC</translation>
 <translation id="6948905685698011662">A Área de trabalho remota do Google Chrome agora está na Web. Confira nosso <ph name="LINK_BEGIN" />app da Web gratuito<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">As conexões com o computador remoto estão temporariamente bloqueadas porque alguém estava tentando se conectar a ele com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6985691951107243942">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
+<translation id="6985691951107243942">Tem certeza que quer desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência remota</translation>
@@ -327,7 +327,7 @@ PC</translation>
 <translation id="8548209692293300397">Você fez login anteriormente como <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN" />faça login no Google Chrome<ph name="LINK_END" /> usando essa conta e reinstale a Área de trabalho remota do Google Chrome.</translation>
 <translation id="8642984861538780905">Regular</translation>
 <translation id="8712909229180978490">Não consigo ver meus arquivos salvos on-line no Google Drive.</translation>
-<translation id="8743328882720071828">Deseja permitir que <ph name="CLIENT_USERNAME" /> veja e controle seu computador?</translation>
+<translation id="8743328882720071828">Quer permitir que <ph name="CLIENT_USERNAME" /> veja e controle seu computador?</translation>
 <translation id="8747048596626351634">Ocorreu uma falha na sessão ou não foi possível iniciá-la. Se ~/.chrome-remote-desktop-session existe no computador remoto, verifique se ele inicia um processo de execução longa em primeiro plano, como um ambiente de área de trabalho ou um gerenciador de janelas.</translation>
 <translation id="8759753423332885148">Saiba mais.</translation>
 <translation id="8791202241915690908">Fazer o download do instalador do host do Chromoting</translation>

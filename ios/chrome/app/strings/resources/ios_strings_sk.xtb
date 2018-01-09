@@ -218,6 +218,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>
+<translation id="533632423981297619">Vaše heslá sa zobrazia všetkým používateľom, ktorí vidia exportovaný súbor. Tento súbor s nikým nezdieľajte.</translation>
 <translation id="5388358297987318779">Otvoriť obrázok</translation>
 <translation id="5409365236829784218">Nie sú nainštalované žiadne aplikácie, ktoré dokážu otvoriť tento súbor.</translation>
 <translation id="5433691172869980887">Používateľské meno bolo skopírované</translation>
@@ -243,7 +244,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5857090052475505287">Nový priečinok</translation>
 <translation id="5857770089550859117">Spustenie synchronizácie vyžaduje prístupovú frázu.</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
-<translation id="5869029295770560994">OK, dobre</translation>
+<translation id="5869029295770560994">Ok, rozumiem</translation>
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
@@ -325,7 +326,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
 <translation id="7272437679830969316">Vašu totožnosť nie je možné overiť. Heslo sa neskopírovalo.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
-<translation id="7346909386216857016">Ok, dobre</translation>
+<translation id="7346909386216857016">Ok, rozumiem</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="7425346204213733349">Záložky, história, heslá a ďalšie nastavenia sa už nebudú ďalej synchronizovať do vášho účtu Google. Vaše súčasné údaje však zostanú uložené v účte Google.</translation>
 <translation id="744343212394640790">Nie som <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7859704718976024901">História prehliadania</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportovať heslá...</translation>
 <translation id="7947953824732555851">Prijať a prihl. sa</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokov. okien</translation>

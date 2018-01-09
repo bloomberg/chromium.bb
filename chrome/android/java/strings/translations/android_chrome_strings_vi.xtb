@@ -98,6 +98,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1832521218263067499">Sự cố bảo mật</translation>
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="1880072593381090678">Trang phổ biến từ Chrome</translation>
+<translation id="1891331835972267886"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
 <translation id="1897409700584096124">Trang web đang phát</translation>
 <translation id="1919345977826869612">Quảng cáo</translation>
@@ -224,6 +225,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3030708446010914655">Truy cập vào thanh địa chỉ ở đây</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
+<translation id="305593374596241526">Đã tắt vị trí; hãy bật vị trí trong mục <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="307908932405420782">Các bài viết khác sẽ sớm xuất hiện. Chúc bạn buổi sáng vui vẻ!</translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="311456632243022227">Đã mở nhiều liên kết trong Chrome</translation>
@@ -247,6 +249,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3269093882174072735">Tải hình ảnh</translation>
 <translation id="3269956123044984603">Để có các tab từ các thiết bị khác của bạn, hãy bật “Tự động đồng bộ hóa dữ liệu” trong cài đặt tài khoản Android.</translation>
 <translation id="3282568296779691940">Đăng nhập vào Chrome</translation>
+<translation id="32895400574683172">Cho phép thông báo</translation>
 <translation id="3295602654194328831">Ẩn thông tin</translation>
 <translation id="3303414029551471755">Tiếp tục tải xuống nội dung?</translation>
 <translation id="3321222012623826478">Dịch vụ này cần gửi ẩn danh địa chỉ trang web này đến máy chủ của Google để xác minh.</translation>
@@ -290,6 +293,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3661699943263275414">Các trang web của bên thứ ba có thể lưu và đọc dữ liệu cookie</translation>
 <translation id="3662546969139119822">Không có lịch sử ở đây</translation>
 <translation id="3672452749423051839">Đề xuất cho lỗi điều hướng</translation>
+<translation id="3682249951633602029">Bất cứ ai có thể xem tệp mật khẩu đã xuất đều có thể biết mật khẩu của bạn.</translation>
 <translation id="3712575778697986964">Đặt lại Trình tiết kiệm dữ liệu?</translation>
 <translation id="3714981814255182093">Mở thanh Tìm kiếm</translation>
 <translation id="3716182511346448902">Chrome đã tạm dừng trang này vì trang dùng quá nhiều bộ nhớ.</translation>
@@ -323,7 +327,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="3988466920954086464">Xem kết quả tìm kiếm tức thì trong bảng điều khiển này</translation>
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
 <translation id="4002066346123236978">Tiêu đề</translation>
-<translation id="4031074602479304239">Chrome đã chặn chuyển hướng từ trang web này đến</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
@@ -398,6 +401,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4714588616299687897">Tiết kiệm tới 60% dữ liệu</translation>
 <translation id="4719927025381752090">Đề xuất dịch</translation>
 <translation id="4720023427747327413">Mở trong <ph name="PRODUCT_NAME" /></translation>
+<translation id="4720982865791209136">Hãy giúp cải tiến Chrome. <ph name="BEGIN_LINK" />Tham gia khảo sát<ph name="END_LINK" /></translation>
 <translation id="4730876730346568982">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="ACCOUNT_EMAIL_OLD" /> sang <ph name="ACCOUNT_EMAIL_NEW" />. Dữ liệu Chrome hiện có của bạn do <ph name="MANAGED_DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn còn trong <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4738836084190194332">Đồng bộ hóa lần cuối: <ph name="WHEN" /></translation>
@@ -416,6 +420,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4874967477260347223">Giấy phép phương tiện</translation>
 <translation id="4875775213178255010">Đề xuất nội dung</translation>
 <translation id="4876188919622883022">Chế độ xem đơn giản</translation>
+<translation id="4878404682131129617">Thiết lập đường hầm qua máy chủ proxy không thành công</translation>
 <translation id="4881695831933465202">Mở</translation>
 <translation id="4885273946141277891">Số phiên bản Chrome không được hỗ trợ.</translation>
 <translation id="4910889077668685004">Ứng dụng thanh toán</translation>
@@ -457,7 +462,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5271967389191913893">Thiết bị không thể mở nội dung được tải xuống.</translation>
 <translation id="528192093759286357">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="5284584623296338184">Các thay đổi đối với dấu trang, lịch sử, mật khẩu và cài đặt khác sẽ không còn được đồng bộ hóa với Tài khoản Google của bạn. Tuy nhiên, dữ liệu hiện có của bạn sẽ vẫn được lưu trữ trong tài khoản Google của bạn.</translation>
-<translation id="5301954838959518834">OK</translation>
+<translation id="5301954838959518834">Ok</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
 <translation id="5308380583665731573">Kết nối</translation>
 <translation id="5308603654685598744">Khi tính năng này được bật, Chrome sẽ đề xuất sử dụng Google Dịch để dịch các trang viết bằng ngôn ngữ khác.</translation>
@@ -495,10 +500,12 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5537099431952529648">Bạn và bố mẹ bạn có thể quản lý Chrome Sync và cá nhân hóa trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="557283862590186398">Chrome cần có quyền truy cập micrô của bạn cho trang web này.</translation>
+<translation id="55737423895878184">Cho phép vị trí và thông báo</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5585019845078534178">Thẻ</translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
+<translation id="5620655347161642930">Xuất mật khẩu...</translation>
 <translation id="5620928963363755975">Tìm tệp và trang của bạn trong Tài nguyên đã tải xuống từ nút Tùy chọn khác</translation>
 <translation id="5626134646977739690">Tên:</translation>
 <translation id="5639724618331995626">Cho phép tất cả trang web</translation>
@@ -536,14 +543,12 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5854790677617711513">Đã tồn tại hơn 30 ngày</translation>
 <translation id="5858741533101922242">Chrome không thể bật bộ điều hợp Bluetooth</translation>
 <translation id="5860033963881614850">Tắt</translation>
-<translation id="5867841422488265304">Tìm kiếm hoặc nhập địa chỉ web</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="5878455346526065919">Chặn quảng cáo từ các trang web thường hiển thị quảng cáo xâm nhập</translation>
 <translation id="5902828464777634901">Tất cả dữ liệu cục bộ được trang web này lưu, bao gồm cookie, sẽ bị xóa.</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
-<translation id="5923939907038835197">Tìm tin tức, công thức, thời tiết...</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
 <translation id="5956665950594638604">Mở Trung tâm trợ giúp Chrome trong tab mới</translation>
@@ -564,6 +569,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6127379762771434464">Đã xóa mục</translation>
 <translation id="6138140242378429169">Đặt trang ở chế độ thân thiện với thiết bị di động</translation>
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
+<translation id="6154478581116148741">Bật khóa màn hình trong Cài đặt để xuất mật khẩu của bạn từ thiết bị này</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6177111841848151710">Bị chặn đối với công cụ tìm kiếm hiện tại</translation>
@@ -572,6 +578,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="618555311922999635">Đã mở bảng điều hướng trên toàn bộ màn hình</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="6210748933810148297">Không phải là <ph name="EMAIL" />?</translation>
+<translation id="6221633008163990886">Mở khóa để xuất mật khẩu của bạn</translation>
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
 
 Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cách hiển thị cho bạn các quảng cáo không dựa trên các trang web khác mà bạn đã truy cập. Nhiều trang web sẽ vẫn thu thập và sử dụng dữ liệu duyệt web của bạn — ví dụ: để tăng cường bảo mật, cung cấp nội dung, quảng cáo và đề xuất, đồng thời tạo số liệu thống kê báo cáo.</translation>
@@ -592,6 +599,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6404511346730675251">Chỉnh sửa dấu trang</translation>
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
 <translation id="6409731863280057959">Cửa sổ bật lên</translation>
+<translation id="6411957228448379013">Thanh địa chỉ. Vuốt lên để xem tài nguyên đã tải xuống, dấu trang và lịch sử.</translation>
 <translation id="641643625718530986">In…</translation>
 <translation id="6416782512398055893">Đã tải xuống <ph name="MBS" /> MB</translation>
 <translation id="6433501201775827830">Chọn công cụ tìm kiếm của bạn</translation>
@@ -712,6 +720,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7493994139787901920"><ph name="VERSION" /> (Đã cập nhật <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7498271377022651285">Vui lòng đợi…</translation>
 <translation id="7514365320538308">Tải xuống</translation>
+<translation id="751961395872307827">Không thể kết nối với trang web</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Không thể nhận đề xuất</translation>
 <translation id="7562080006725997899">Xóa dữ liệu duyệt web</translation>
@@ -723,7 +732,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7596558890252710462">Hệ điều hành</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
-<translation id="7607552448134703340">Nhập nội dung bạn đang tìm kiếm</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
 <translation id="7620146066550602128">Hãy thử một <ph name="BEGIN_LINK" />cách duyệt web dễ dàng hơn<ph name="END_LINK" /></translation>
@@ -834,6 +842,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Mức cường độ tín hiệu: # vạch}other{Mức cường độ tín hiệu: # vạch}}</translation>
 <translation id="869891660844655955">Ngày hết hạn</translation>
+<translation id="8712637175834984815">Bỏ qua</translation>
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8728487861892616501">Bằng việc sử dụng ứng dụng này, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome cũng như <ph name="BEGIN_LINK3" />Thông báo bảo mật cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
@@ -841,6 +850,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8748850008226585750">Nội dung bị ẩn</translation>
 <translation id="8788968922598763114">Mở lại tab đóng sau cùng</translation>
 <translation id="8812260976093120287">Trên một số trang web, bạn có thể thanh toán bằng các ứng dụng thanh toán được hỗ trợ bên trên trên thiết bị của bạn.</translation>
+<translation id="8816439037877937734"><ph name="APP_NAME" /> sẽ mở trong Chrome. Bằng việc tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome, cũng như <ph name="BEGIN_LINK3" />Thông báo bảo mật cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883635517171802338">Chặn trang web hiển thị cửa sổ bật lên (được đề xuất)</translation>
 <translation id="883806473910249246">Đã xảy ra lỗi khi tải nội dung xuống.</translation>
@@ -852,6 +862,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
+<translation id="892369953214061711">Cho phép thông báo. Đã tắt vị trí, hãy bật vị trí trong mục Cài đặt Android.</translation>
 <translation id="8936297887573571433">Nhấn để xem tài nguyên đã tải xuống, dấu trang và lịch sử</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>

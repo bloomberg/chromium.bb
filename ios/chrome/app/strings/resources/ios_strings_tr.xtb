@@ -218,6 +218,7 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
+<translation id="533632423981297619">Şifreleriniz dışa aktarılan dosyayı görebilen herkes tarafından görülebilir. Bu dosyayı kimseyle paylaşmayın.</translation>
 <translation id="5388358297987318779">Resmi Aç</translation>
 <translation id="5409365236829784218">Bu dosyayı açabilecek yüklü uygulama yok.</translation>
 <translation id="5433691172869980887">Kullanıcı adı kopyalandı</translation>
@@ -350,6 +351,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7859704718976024901">Tarama Geçmişi</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Şifreleri Dışa Aktar...</translation>
 <translation id="7947953824732555851">Kabul et ve oturum aç</translation>
 <translation id="7961015016161918242">Hiçbir Zaman</translation>
 <translation id="7971521879845308059">Pop-up'ları Engelle</translation>

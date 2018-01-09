@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">πλέγμα δέντρου</translation>
 <translation id="1822429046913737220">Π.Μ./Μ.Μ.</translation>
 <translation id="1832974991323546415">αναπαραγωγή σε απομακρυσμένη συσκευή</translation>
-<translation id="1854180393107901205">Διακοπή μετάδοσης</translation>
 <translation id="1921819250265091946">ηη</translation>
 <translation id="1930711995431081526">κατάσταση</translation>
 <translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME" /> ή προγενέστερη.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Άλλες…</translation>
 <translation id="9138385573473225930">ειδοποίηση</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, από τις <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Παράθεση εικόνων</translation>
 <translation id="947831847158436616">κελί</translation>
 <translation id="966787709310836684">μενού</translation>
 </translationbundle>

@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">ट्री ग्रीड</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">दूरस्थ डिव्हाइसवर प्ले करा</translation>
-<translation id="1854180393107901205">कास्ट करणे थांबवा</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">स्थिती</translation>
 <translation id="1938124657309484470">मूल्य <ph name="MAXIMUM_DATE_OR_TIME" /> किंवा आधीचे असणे आवश्यक आहे.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">अन्य...</translation>
 <translation id="9138385573473225930">सूचना</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> रोजी प्रारंभ होणारा, <ph name="WEEK" /></translation>
+<translation id="916607977885256133">चित्रात-चित्र</translation>
 <translation id="947831847158436616">सेल</translation>
 <translation id="966787709310836684">मेनू</translation>
 </translationbundle>

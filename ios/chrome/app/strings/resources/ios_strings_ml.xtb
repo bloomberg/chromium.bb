@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
+<translation id="533632423981297619">എക്‌സ്പോർട്ട് ചെയ്ത ഫയൽ കാണാൻ കഴിയുന്ന ഏതൊരാൾക്കും നിങ്ങളുടെ പാസ്‌വേഡ് കാണാൻ കഴിയും. ഈ ഫയൽ ആരുമായും പങ്കിടരുത്.</translation>
 <translation id="5388358297987318779">ഇമേജ് തുറക്കുക</translation>
 <translation id="5409365236829784218">ഈ ഫയലിൽ തുറക്കാൻ കഴിയുന്ന അപ്ലിക്കേഷനുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്‌തില്ല.</translation>
 <translation id="5433691172869980887">ഉപയോക്തൃനാമം പകർത്തി</translation>
@@ -325,7 +326,7 @@
 <translation id="722055596168483966">Google സേവനങ്ങൾ വ്യക്തിപരമാക്കുക</translation>
 <translation id="7272437679830969316">നിങ്ങളുടെ ഐഡന്റിറ്റി പരിശോധിക്കാനാകില്ല. പാസ്‍വേഡ് പകർത്തിയില്ല.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ശതമാനം ഡൗൺലോഡുചെയ്‌തു</translation>
-<translation id="7346909386216857016">ശരി, മനസ്സിലായി!</translation>
+<translation id="7346909386216857016">മനസ്സിലായി!</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">ബുക്ക്‌മാർക്കുകൾ, ചരിത്രം, പാസ്‌വേഡുകൾ, മറ്റ് ക്രമീകരണം എന്നിവയിലുള്ള മാറ്റങ്ങളെ ഇനി നിങ്ങളുടെ Google അക്കൗണ്ടിലേക്ക് സമന്വയിപ്പിക്കില്ല. എന്നിരുന്നാലും, നിങ്ങളുടെ നിലവിലെ വിവരം Google അക്കൗണ്ടിൽ തുടർന്നും സൂക്ഷിക്കും.</translation>
 <translation id="744343212394640790"><ph name="EMAIL" /> അല്ല</translation>
@@ -350,6 +351,7 @@
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
 <translation id="7859704718976024901">ബ്രൗസിംഗ് ചരിത്രം</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യുക...</translation>
 <translation id="7947953824732555851">അംഗീകരിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
 <translation id="7971521879845308059">പോപ്പ്-അപ്പുകൾ തടയുക</translation>

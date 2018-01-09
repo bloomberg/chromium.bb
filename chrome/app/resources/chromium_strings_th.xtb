@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">เกี่ยวกับ Chromium</translation>
 <translation id="1298199220304005244">รับความช่วยเหลือเกี่ยวกับการใช้ Chromium OS</translation>
 <translation id="1396446129537741364">Chromium กำลังพยายามแสดงรหัสผ่าน</translation>
-<translation id="1403254041219632970">Chromium เวอร์ชันต่อไปจะไม่รองรับ Mac OS X 10.6, 10.7 หรือ 10.8 อีกต่อไป</translation>
 <translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
-<translation id="1440917365206527807">Chromium หยุดไม่ให้เว็บไซต์นี้นำคุณไปที่</translation>
 <translation id="1444754455097148408">ใบอนุญาตโอเพนซอร์สของ Chromium</translation>
 <translation id="1502360822835740515">กำหนดให้ Chromium เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
-<translation id="1559451348202814456">Chromium อาจทำงานไม่ถูกต้องเพราะไม่รองรับ Mac OS X 10.6, 10.7 หรือ 10.8 อีกต่อไป</translation>
 <translation id="1585657529869845941">คลิก<ph name="BEGIN_BOLD" />สลับ<ph name="END_BOLD" /> หากเห็นปุ่มดังกล่าว</translation>
 <translation id="1653828314016431939">ตกลง - รีสตาร์ทเลย</translation>
 <translation id="1668054258064581266">เมื่อลบบัญชีของคุณออกจาก Chromium แล้ว คุณต้องโหลดแท็บที่เปิดอยู่ซ้ำเพื่อให้มีผล</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">ต้องรีสตาร์ท Chromium OS เพื่อให้ระบบนำเวอร์ชันอัปเดตไปใช้</translation>
 <translation id="2647554856022461007">Chromium อาจใช้บริการเว็บเพื่อปรับปรุงประสบการณ์การท่องเว็บของคุณ คุณสามารถเลือกปิดบริการเหล่านี้ได้ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">เกิดข้อผิดพลาดของระบบปฏิบัติในระหว่างการติดตั้ง โปรดดาวน์โหลด Chromium อีกครั้ง</translation>
-<translation id="2685838254101182273">Chromium ได้หยุดการอัปเดต และไม่สนับสนุนระบบปฏิบัติการเวอร์ชันนี้อีกต่อไป</translation>
 <translation id="2705403826523567092">ลงชื่อเข้าใช้เพื่อรับประสบการณ์การท่องเว็บที่ปรับให้เข้ากับคุณและซิงค์กันในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="2711502716910134313">แท็บ Chromium</translation>
 <translation id="2718390899429598676">เพื่อเพิ่มความปลอดภัยให้มากยิ่งขึ้น Chromium จะเข้ารหัสข้อมูลของคุณ</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4469812139324097969">Chromium ล้าสมัยเพราะไม่ได้เปิดใหม่มาระยะหนึ่งแล้ว มีเวอร์ชันอัปเดตพร้อมใช้งานและระบบจะนำเวอร์ชันอัปเดตดังกล่าวไปใช้เมื่อคุณเปิดเครื่องใหม่</translation>
 <translation id="4488554488975128561">คุณสามารถช่วยปรับปรุงให้ Chromium ปลอดภัยและใช้งานง่ายขึ้นด้วยการส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตราย</translation>
-<translation id="4549794359424059447">Chromium เวอร์ชันต่อไปจะไม่รองรับ Windows XP หรือ Windows Vista อีกต่อไป</translation>
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
 <translation id="459535195905078186">แอป Chromium</translation>
 <translation id="4611246891205775468">Chromium ต้องการสิทธิ์เข้าถึงไมโครโฟนของคุณสำหรับไซต์นี้</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium ทำการอัปเดตโดยอัตโนมัติเพื่อให้คุณมีเวอร์ชันใหม่ล่าสุดเสมอ เมื่อดาวน์โหลดเสร็จ Chromium จะรีสตาร์ท และคุณจะสามารถใช้งานได้ทันที</translation>
 <translation id="5479196819031988440">Chromium OS ไม่สามารถเปิดหน้านี้</translation>
 <translation id="549669000822060376">โปรดรอขณะที่ Chromium ติดตั้งการอัปเดตระบบล่าสุด</translation>
-<translation id="5524843473235508879">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="5634636535844844681">Chromium ต้องใช้ Windows 7 ขึ้นไป</translation>
 <translation id="5680901439334282664">ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">การรับรองการตรวจสอบสิทธิ์ล้มเหลว โปรดลงชื่อเข้าใช้ Chromium อีกครั้ง หรือสอบถามข้อมูลเพิ่มเติมจากผู้ดูแลระบบ <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว รีสตาร์ทอุปกรณ์เพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="5942520288919337908">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chromium แล้ว</translation>
-<translation id="59625444380784159">รายละเอียดจากรายชื่อติดต่อของคุณช่วยให้คุณสามารถกรอกฟอร์มได้อย่างรวดเร็วขึ้นใน Chromium</translation>
 <translation id="5987687638152509985">อัปเดต Chromium เพื่อเริ่มการซิงค์</translation>
 <translation id="6055895534982063517">มี Chromium รุ่นใหม่ให้ใช้งานแล้วและทำงานได้เร็วกว่าเดิม</translation>
 <translation id="6063093106622310249">&amp;เปิดใน Chromium</translation>
@@ -173,12 +166,10 @@
 ฟีเจอร์บางประการอาจไม่มี โปรดระบุไดเรกทอรีโปรไฟล์อื่น หรือใช้ Chromium รุ่นใหม่</translation>
 <translation id="6734080038664603509">อัปเดต &amp;Chromium</translation>
 <translation id="6734291798041940871">มีการติดตั้ง Chromium สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
-<translation id="6777817260680419853">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="6810143991807788455">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium ได้รับการอัปเดตแล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="6944967875980567883">โมดูลที่โหลดเข้าไปใน Chromium</translation>
-<translation id="694592694773692225">มีการบล็อกการเปลี่ยนเส้นทางในหน้านี้</translation>
 <translation id="6964305034639999644">เปิดลิงก์ในหน้าต่างที่ไม่ระบุตัวตนของ Chromium</translation>
 <translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
 <translation id="705851970750939768">อัปเดต Chromium</translation>

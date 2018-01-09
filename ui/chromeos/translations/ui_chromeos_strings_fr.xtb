@@ -115,6 +115,7 @@
 <translation id="4694604912444486114">Singe</translation>
 <translation id="4711094779914110278">Turc</translation>
 <translation id="4725511304875193254">Corgi</translation>
+<translation id="4737050008115666127">Piste d'atterrissage</translation>
 <translation id="4747271164117300400">Macédonien</translation>
 <translation id="4749157430980974800">Clavier géorgien</translation>
 <translation id="4755240240651974342">Clavier finnois</translation>
@@ -148,6 +149,7 @@
 <translation id="5465122519792752163">Clavier népalais (InScript)</translation>
 <translation id="5469868506864199649">Italien</translation>
 <translation id="5500122897333236901">Islandais</translation>
+<translation id="5508696409934741614">Points</translation>
 <translation id="5533555070048896610">Translittération (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Dvorak américain</translation>
 <translation id="5640179856859982418">Clavier suisse</translation>
@@ -208,6 +210,7 @@
 <translation id="7474889694310679759">Clavier anglais canadien</translation>
 <translation id="751507702149411736">Biélorusse</translation>
 <translation id="7547811415869834682">Néerlandais</translation>
+<translation id="7603724359189955920">Grilles</translation>
 <translation id="770015031906360009">Grec</translation>
 <translation id="7706319470528945664">Clavier portugais</translation>
 <translation id="7774365994322694683">Oiseau</translation>
@@ -238,6 +241,7 @@
 <translation id="8432745813735585631">Clavier Colemak américain</translation>
 <translation id="8437209419043462667">Américain</translation>
 <translation id="8467473010914675605">Mode de saisie du coréen</translation>
+<translation id="8477649328507734757">Toupie</translation>
 <translation id="8521441079177373948">Royaume-Uni</translation>
 <translation id="8551494947769799688">Letton</translation>
 <translation id="8561206103590473338">Éléphant</translation>
@@ -256,4 +260,5 @@
 <translation id="913758436357682283">Clavier birman myansan</translation>
 <translation id="9153744823707037316">Mode de saisie tableau</translation>
 <translation id="9206487995878691001">Mode de saisie cangjie</translation>
+<translation id="9219908252191632183">Paysage lunaire</translation>
 </translationbundle>

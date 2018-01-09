@@ -73,7 +73,7 @@
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2675319268637823299">વ્યવસ્થાપકે <ph name="USER_EMAIL" /> માટે બહુવિધ સાઇન ઇનને નામંજૂર કર્યું છે.
-    બધા વપરાશકર્તાઓએ ચાલુ રાખવા માટે સાઇન આઉટ કરવું જરૂરી છે.</translation>
+    ચાલુ રાખવા માટે બધા વપરાશકર્તાઓએ સાઇન આઉટ કરવું જરૂરી છે.</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> માં સત્ર સમાપ્ત થાય છે. તમને સાઇન આઉટ કરવામાં આવશે.</translation>
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -173,6 +173,7 @@
 <translation id="5430931332414098647">ઝટપટ ટિથરિંગ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">બધા ઉપલબ્ધ વપરાશકર્તાઓ પહેલેથી જ આ સત્ર પર ઉમેરવામાં આવ્યા છે.</translation>
+<translation id="5457599981699367932">અતિથિ તરીકે બ્રાઉઝ કરો</translation>
 <translation id="553675580533261935">સત્રથી બહાર નીકળી રહ્યાં છે</translation>
 <translation id="5548285847212963613">વિસ્તાર "<ph name="EXTENSION_NAME" />" આ નેટવર્ક સાથે કનેક્ટ કરવામાં મદદ કરી શકે છે.</translation>
 <translation id="5571066253365925590">Bluetooth સક્ષમ છે</translation>
@@ -183,6 +184,7 @@
 <translation id="5744083938413354016">ખેંચવાને ટૅપ કરો</translation>
 <translation id="5777841717266010279">સ્ક્રીન શેરિંગ રોકીએ?</translation>
 <translation id="57838592816432529">અવાજ બંધ કરો</translation>
+<translation id="5832805196449965646">વ્યક્તિ ઉમેરો</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5901316534475909376">Shift + Esc</translation>

@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Akzeptierte Kredit- und Debitkarten</translation>
 <translation id="1519264250979466059">Build-Datum</translation>
 <translation id="1527263332363067270">Warten auf Verbindung…</translation>
-<translation id="1532118530259321453">Auf dieser Seite wird Folgendes angezeigt</translation>
 <translation id="153384715582417236">Das ist im Moment alles</translation>
 <translation id="154408704832528245">Lieferadresse auswählen</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
 <translation id="1594030484168838125">Auswählen</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
 <translation id="1629803312968146339">Möchten Sie, dass Chrome diese Karte speichert?</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="1640180200866533862">Nutzerrichtlinien</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP-Fehler</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2292556288342944218">Ihre Internetverbindung ist gesperrt</translation>
-<translation id="2298151730144880294">Auf einer in dieser Seite eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="230155334948463882">Neue Karte?</translation>
 <translation id="2316887270356262533">Es werden weniger als 1 MB Speicherplatz freigegeben. Manche Websites werden beim nächsten Öffnen eventuell langsamer geladen.</translation>
 <translation id="2317259163369394535">Für <ph name="DOMAIN" /> sind ein Nutzername und ein Passwort erforderlich.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Formular leeren</translation>
 <translation id="2851634818064021665">Sie benötigen eine Berechtigung, um auf diese Website zuzugreifen</translation>
 <translation id="2856444702002559011">Hacker könnten versuchen, Ihre Daten von <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> zu stehlen, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Nicht neu laden</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2916038427272391327">Andere Programme schließen</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
 <translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
-<translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
 <translation id="3338095232262050444">Sicher</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
 <translation id="3345135638360864351">Ihre Zugriffsanfrage für diese Website konnte nicht an <ph name="NAME" /> gesendet werden. Bitte versuchen Sie es erneut.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Dein Administrator kann die Blockierung aufheben</translation>
 <translation id="3566021033012934673">Dies ist keine sichere Verbindung</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="358285529439630156">Kredit- und Prepaidkarten werden akzeptiert.</translation>
 <translation id="3582930987043644930">Namen hinzufügen</translation>
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
@@ -501,7 +497,7 @@
 <translation id="4690462567478992370">Ungültiges Zertifikat nicht mehr verwenden</translation>
 <translation id="4690954380545377795">Sie könnten den Zugriff auf Ihr Google-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
-<translation id="4708268264240856090">Ihre Verbindung wurde unterbrochen</translation>
+<translation id="4708268264240856090">Die Verbindung wurde unterbrochen</translation>
 <translation id="471880041731876836">Sie sind nicht berechtigt, auf diese Website zuzugreifen</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="472349245089439925">Bezahlung</translation>
@@ -535,7 +531,6 @@
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4923459931733593730">Zahlung</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
-<translation id="4926159001844873046">Auf <ph name="SITE" /> wird Folgendes angezeigt</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Aktionen</translation>
 <translation id="4958444002117714549">Liste einblenden</translation>
@@ -571,7 +566,6 @@
 <translation id="5179510805599951267">Nicht auf <ph name="ORIGINAL_LANGUAGE" />? Diesen Fehler melden</translation>
 <translation id="5190835502935405962">Lesezeichenleiste</translation>
 <translation id="5199729219167945352">Experimente</translation>
-<translation id="5201306358585911203">Auf einer in dieser Seite eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="5205222826937269299">Name erforderlich</translation>
 <translation id="5222812217790122047">E-Mail-Adresse erforderlich</translation>
 <translation id="522700295135997067">Diese Website hat möglicherweise gerade Ihr Passwort gestohlen</translation>
@@ -594,6 +588,7 @@
 <translation id="5308380583665731573">Verbinden</translation>
 <translation id="5308689395849655368">Die Absturzberichtsfunktion ist deaktiviert.</translation>
 <translation id="5317780077021120954">Speichern</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> von <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Kontaktdaten auswählen</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5332219387342487447">Versandart</translation>
@@ -753,7 +748,6 @@
 <translation id="6563469144985748109">Der Administrator hat die Berechtigung noch nicht erteilt</translation>
 <translation id="6569060085658103619">Dies ist eine Erweiterungsseite</translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
-<translation id="662080504995468778">Bleiben</translation>
 <translation id="6624427990725312378">Kontaktdaten</translation>
 <translation id="6626291197371920147">Gültige Kartennummer hinzufügen</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-Suche</translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">In dem Zertifikat ist kein Mechanismus angegeben, mit dem geprüft werden kann, ob es zurückgerufen wurde.</translation>
 <translation id="8620436878122366504">Deine Eltern haben die Berechtigung noch nicht erteilt</translation>
 <translation id="8625384913736129811">Diese Karte für dieses Gerät speichern</translation>
+<translation id="8639963783467694461">AutoFill-Einstellungen</translation>
 <translation id="8647750283161643317">Alle auf Standardeinstellung zurücksetzen</translation>
 <translation id="8660471606262461360">Aus Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, Antwort, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Akzeptierte Kredit- und Prepaidkarten</translation>
 <translation id="8952525071319348207">Geben Sie das Ablaufdatum und den CVC für <ph name="CREDIT_CARD" /> ein, um Ihre Kartendetails zu aktualisieren. Nach erfolgter Bestätigung werden die Kartendetails Ihres Google Payments-Kontos an diese Website weitergegeben.</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
-<translation id="8958260976055043711">Auf dieser Seite wird Folgendes angezeigt</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8978053250194585037">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Phishingaktivitäten<ph name="END_LINK" /> auf <ph name="SITE" /> festgestellt. Phishingwebsites geben sich als andere Websites aus, um Sie zu täuschen.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1072,10 +1066,8 @@
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="917450738466192189">Das Serverzertifikat ist ungültig.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> verwendet ein nicht unterstütztes Protokoll.</translation>
-<translation id="9198587359415855350">Auf <ph name="SITE" /> wird Folgendes angezeigt</translation>
 <translation id="9205078245616868884">Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="9207861905230894330">Der Artikel konnte nicht hinzugefügt werden.</translation>
-<translation id="9209577707918422353">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="9215416866750762878">Eine Anwendung verhindert, dass Chrome eine sichere Internetverbindung zu dieser Website herstellt</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="933612690413056017">Keine Internetverbindung</translation>

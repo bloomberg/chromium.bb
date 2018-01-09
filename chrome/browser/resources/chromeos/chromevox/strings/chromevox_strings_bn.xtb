@@ -46,7 +46,7 @@
 <translation id="135978014023467274">আপনার ChormeVox, ChromeVox 63 তে আপগ্রেড করা হয়েছে!</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
 <translation id="1377925789329510816">এটিই সর্বশেষ শিরোনাম। প্রথম শিরোনামে ফিরে যেতে অনুসন্ধান+H টিপুন, অথবা এই পৃষ্ঠার দ্বিতীয় শিরোনামে যেতে অনুসন্ধান+Shift+H টিপুন।</translation>
-<translation id="1383876407941801731">অনুসন্ধান</translation>
+<translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1385214448885562192">স্বীকার করতে এন্টার বা বাতিল করতে এসকেপ, পরবর্তীর জন্য নিচে এবং পূর্ববর্তীর জন্য উপরে টিপুন৷</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -140,14 +140,14 @@
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429">এখন <ph name="KEY" /> হল নতুন ChromeVox সংশোধক৷</translation>
 <translation id="2450814015951372393">চেকবাক্স</translation>
-<translation id="2462626033734746142">রেডিও বোতাম গোষ্ঠী</translation>
+<translation id="2462626033734746142">রেডিও বোতাম গ্রুপ</translation>
 <translation id="2471138580042810658">শিরোনাম ৬</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{তারা}one{#টি তারা}other{#টি তারা}}</translation>
 <translation id="2523609930580546572">ChromeVox টিউটোরিয়াল</translation>
 <translation id="2525706221823668172">Chromebook এর কীবোর্ড শর্টকাটগুলি</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> আবার সেট হয়েছে৷</translation>
 <translation id="2553108862507765288">ব্যাকরণগত ভুল</translation>
-<translation id="257674075312929031">গোষ্ঠী</translation>
+<translation id="257674075312929031">গ্রুপ</translation>
 <translation id="2582407057977008361">একপাশে</translation>
 <translation id="2606210917827248971">সাথে আছে {COUNT,plural, =1{#টি আইটেম}one{#টি আইটেম}other{#টি আইটেম}}</translation>
 <translation id="2614981083756825552">গাণিতিক ML লেআউট</translation>
@@ -168,7 +168,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">চেক করা</translation>
 <translation id="27527859628328957">পরবর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
-<translation id="2770781857296573485">গোষ্ঠী অন্বেষণ প্রবেশ করে</translation>
+<translation id="2770781857296573485">গ্রুপ অন্বেষণ প্রবেশ করে</translation>
 <translation id="2777845298774924149">বের করা হয়েছে</translation>
 <translation id="2781264313200109999">লিঙ্ক শুরু করুন</translation>
 <translation id="2784959586797362050">আপনি যথারীতি সার্চ+a এবং তারপর i টিপে আমাদের সরাসরি মতামত পাঠাতে পারেন। আমরা আপনার মতামত শোনার অপেক্ষায় আছি।</translation>
@@ -180,7 +180,7 @@
 <translation id="2811204574343810641">সারি</translation>
 <translation id="2816654101880605877">কোনো পরবর্তী স্লাইডার নেই৷</translation>
 <translation id="2841013758207633010">সময়</translation>
-<translation id="2843837985843789981">পূর্ববর্তী গোষ্ঠী</translation>
+<translation id="2843837985843789981">পূর্ববর্তী গ্রুপ</translation>
 <translation id="2844995807198708617">প্রসঙ্গ মেনু</translation>
 <translation id="2849332794118375855">কোনো পরবর্তী চেকবাক্স নেই৷</translation>
 <translation id="2864481629947106776">আগের লিঙ্ক</translation>
@@ -191,7 +191,7 @@
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
 <translation id="2932083475399492303">গঠনগত বা লেআউট রেখার প্রকারের মধ্যে টগল করুন</translation>
 <translation id="2944762337049891859">পৃষ্ঠা লোড হওয়ার পর সেটি স্বয়ংক্রিয়ভাবে পড়ুন</translation>
-<translation id="2964026537669811554">শিরোনাম গোষ্ঠী</translation>
+<translation id="2964026537669811554">শিরোনাম গ্রুপ</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
 <translation id="2972078295414139404">কোনো পূর্ববর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
 <translation id="2972205263822847197">টুল টিপ</translation>
@@ -748,7 +748,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="7776293189010177726">ChromeVox মেনুগুলি খুলুন</translation>
 <translation id="7805247615045262757">ডিফল্ট নেভিগেশন</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
-<translation id="7810781339813764006">পরবর্তী গোষ্ঠী</translation>
+<translation id="7810781339813764006">পরবর্তী গ্রুপ</translation>
 <translation id="7819187121850078213">উইন্ডো <ph name="TITLE" /> ট্যাব</translation>
 <translation id="7828956995407538686">অক্টোবর</translation>
 <translation id="7839679365527550018">পূর্ববর্তী শব্দ</translation>

@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">cuadrícula de árbol</translation>
 <translation id="1822429046913737220">A.M./P.M.</translation>
 <translation id="1832974991323546415">reproducir en dispositivo remoto</translation>
-<translation id="1854180393107901205">Detener el envío</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">estado</translation>
 <translation id="1938124657309484470">El valor debe ser igual o anterior a <ph name="MAXIMUM_DATE_OR_TIME" />.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Otra...</translation>
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Imagen en imagen</translation>
 <translation id="947831847158436616">celda</translation>
 <translation id="966787709310836684">menú</translation>
 </translationbundle>

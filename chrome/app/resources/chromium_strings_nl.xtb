@@ -11,13 +11,10 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1185134272377778587">Over Chromium</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
-<translation id="1403254041219632970">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1414495520565016063">Je bent ingelogd bij Chromium.</translation>
-<translation id="1440917365206527807">Chromium heeft voorkomen dat deze site je omleidde naar</translation>
 <translation id="1444754455097148408">Open-sourcelicenties van Chromium</translation>
 <translation id="1502360822835740515">Chromium instellen als je standaardbrowser</translation>
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
-<translation id="1559451348202814456">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1585657529869845941">Klik op <ph name="BEGIN_BOLD" />Toch overschakelen<ph name="END_BOLD" /> als die knop wordt weergegeven</translation>
 <translation id="1653828314016431939">OK - nu opnieuw starten</translation>
 <translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
@@ -50,7 +47,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2587578672395088481">Chromium OS moet opnieuw worden gestart om de update toe te passen.</translation>
 <translation id="2647554856022461007">Chromium kan webservices gebruiken om de browsefunctionaliteit te verbeteren. Je kunt deze services eventueel uitschakelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Er is tijdens de installatie een fout opgetreden in het besturingssysteem. Download Chromium opnieuw.</translation>
-<translation id="2685838254101182273">Chromium is gestopt met bijwerken en ondersteunt deze versie van je besturingssysteem niet langer.</translation>
 <translation id="2705403826523567092">Log in voor een gepersonaliseerde browsefunctionaliteit, gesynchroniseerd op verschillende apparaten</translation>
 <translation id="2711502716910134313">Chromium-tabblad</translation>
 <translation id="2718390899429598676">Je gegevens worden voor extra beveiliging door Chromium gecodeerd.</translation>
@@ -108,7 +104,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="4469812139324097969">Chromium is verouderd omdat het programma al een tijd niet opnieuw is gestart. Er is een update beschikbaar die wordt toegepast zodra je het programma opnieuw start.</translation>
 <translation id="4488554488975128561">Je kunt helpen Chromium veiliger en gebruiksvriendelijker te maken door automatisch bepaalde systeeminformatie en paginacontent naar Google te verzenden om te helpen bij de detectie van gevaarlijke apps en sites.</translation>
-<translation id="4549794359424059447">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Windows XP en Windows Vista.</translation>
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS" />. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="459535195905078186">Chromium-apps</translation>
 <translation id="4611246891205775468">Chromium heeft toegangsrechten voor je microfoon nodig voor deze site.</translation>
@@ -133,7 +128,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5466153949126434691">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chromium opnieuw gestart en kun je doorgaan.</translation>
 <translation id="5479196819031988440">Chromium OS kan deze pagina niet openen.</translation>
 <translation id="549669000822060376">Wacht terwijl Chromium de nieuwste systeemupdates installeert.</translation>
-<translation id="5524843473235508879">Omleiding geblokkeerd.</translation>
 <translation id="5634636535844844681">Voor Chromium is Windows 7 of hoger vereist.</translation>
 <translation id="5680901439334282664">inloggen bij Chromium</translation>
 <translation id="5698481217667032250">Chromium weergeven in deze taal</translation>
@@ -148,7 +142,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5902536751647951209">Verificatiecertificaat mislukt. Log opnieuw in bij Chromium of neem contact op met je beheerder voor meer informatie. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Updaten bijna voltooid. Start je apparaat opnieuw op om de update te voltooien.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> is toegevoegd aan Chromium.</translation>
-<translation id="59625444380784159">Gegevens van je contacten kunnen je helpen sneller formulieren in te vullen in Chromium.</translation>
 <translation id="5987687638152509985">Chromium updaten om de synchronisatie te starten</translation>
 <translation id="6055895534982063517">Er is een nieuwe versie van Chromium beschikbaar, en deze is sneller dan ooit.</translation>
 <translation id="6063093106622310249">&amp;Openen in Chromium</translation>
@@ -175,12 +168,10 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
 <translation id="6734080038664603509">&amp;Chromium updaten</translation>
 <translation id="6734291798041940871">Chromium is al geïnstalleerd voor alle gebruikers op je computer.</translation>
-<translation id="6777817260680419853">Omleiding geblokkeerd</translation>
 <translation id="6810143991807788455">Help Chromium beter te maken door de huidige instellingen te melden</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
-<translation id="694592694773692225">Omleiding geblokkeerd op deze pagina.</translation>
 <translation id="6964305034639999644">Link openen in een Chromium-inco&amp;gnitovenster</translation>
 <translation id="6970811910055250180">Je apparaat bijwerken...</translation>
 <translation id="705851970750939768">Chromium updaten</translation>

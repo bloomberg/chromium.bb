@@ -118,7 +118,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 વર્ષ બાકી}one{# વર્ષ બાકી}other{# વર્ષ બાકી}}</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
-<translation id="6965382102122355670">ઓકે</translation>
+<translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">સૌથી વધુ શક્ય</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ફાઇલ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> વધુ</translation>
+<translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ક}one{# ક}other{# ક}}</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> ફોલ્ડર</translation>
 <translation id="883911313571074303">છબીમાં ટીકા કરો</translation>

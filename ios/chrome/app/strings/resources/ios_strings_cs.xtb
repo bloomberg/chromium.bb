@@ -218,6 +218,7 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Název</translation>
+<translation id="533632423981297619">Vaše hesla uvidí každý, kdo může zobrazit exportovaný soubor. Tento soubor s nikým nesdílejte.</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
@@ -243,7 +244,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5857090052475505287">Nová složka</translation>
 <translation id="5857770089550859117">K zahájení synchronizace je potřeba heslová fráze.</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
-<translation id="5869029295770560994">OK, rozumím</translation>
+<translation id="5869029295770560994">Dobře, rozumím</translation>
 <translation id="5871497086027727873">Přesunuta 1 položka</translation>
 <translation id="5911030830365207728">Překladač Google</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
@@ -325,7 +326,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="722055596168483966">Přizpůsobení služeb Google</translation>
 <translation id="7272437679830969316">Vaši totožnost nelze ověřit. Heslo nebylo zkopírováno.</translation>
 <translation id="7336264872878993241">Staženo <ph name="PERCENT" /> %</translation>
-<translation id="7346909386216857016">OK, rozumím</translation>
+<translation id="7346909386216857016">Dobře, rozumím</translation>
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="7425346204213733349">Změny záložek, historie, hesel a dalších nastavení se již nebudou synchronizovat do vašeho účtu Google. Vaše existující data však v účtu Google uložena zůstanou.</translation>
 <translation id="744343212394640790">Nejsem <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7859704718976024901">Historie procházení</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportovat hesla...</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="7961015016161918242">Nikdy</translation>
 <translation id="7971521879845308059">Blokování oken</translation>

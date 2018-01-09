@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">drevesna mreža</translation>
 <translation id="1822429046913737220">Dopoldne/popoldne</translation>
 <translation id="1832974991323546415">predvajanje v oddaljeni napravi</translation>
-<translation id="1854180393107901205">Ustavi predvajanje</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stanje</translation>
 <translation id="1938124657309484470">Vrednost mora biti <ph name="MAXIMUM_DATE_OR_TIME" /> ali prej.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Drugo ...</translation>
 <translation id="9138385573473225930">opozorilo</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, začne se <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Slika v sliki</translation>
 <translation id="947831847158436616">celica</translation>
 <translation id="966787709310836684">meni</translation>
 </translationbundle>

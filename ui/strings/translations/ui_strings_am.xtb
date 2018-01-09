@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ፋይል(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> ኪባ/ሰ</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ተጨማሪ</translation>
+<translation id="8730621377337864115">ተከናውኗል</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ሰ}one{#ሰ}other{#ሰ}}</translation>
 <translation id="8806053966018712535">አቃፊ <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">ምስልን አብራራ</translation>

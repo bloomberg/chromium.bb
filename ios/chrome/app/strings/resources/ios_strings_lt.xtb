@@ -218,6 +218,7 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
+<translation id="533632423981297619">Slaptažodžiai bus matomi visiems, kas gali peržiūrėti eksportuotą failą. Nebendrinkite šio failo su niekuo.</translation>
 <translation id="5388358297987318779">Atidaryti vaizdą</translation>
 <translation id="5409365236829784218">Nėra įdiegtų pr., kurias naudojant galima atidaryti failą.</translation>
 <translation id="5433691172869980887">Naudotojo vardas nukopijuotas</translation>
@@ -350,6 +351,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7859704718976024901">Naršymo istorija</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Eksportuoti slaptažodžius...</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7971521879845308059">Blok. iššok. l.</translation>

@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
+<translation id="533632423981297619">エクスポートしたファイルが他のユーザーに閲覧可能な場合、パスワードが知られてしまう可能性があります。このファイルは誰とも共有しないでください。</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5409365236829784218">このファイルを開くアプリがインストールされていません。</translation>
 <translation id="5433691172869980887">ユーザー名がコピーされました</translation>
@@ -350,6 +351,7 @@
 <translation id="780301667611848630">いいえ</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">パスワードをエクスポート...</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="7961015016161918242">使用しない</translation>
 <translation id="7971521879845308059">ポップアップのブロック</translation>

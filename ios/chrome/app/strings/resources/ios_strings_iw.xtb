@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
+<translation id="533632423981297619">כל מי שיוכל לגשת אל הקובץ המיוצא יוכל לראות גם את הסיסמאות שלך. אין לשתף את הקובץ עם אף אחד.</translation>
 <translation id="5388358297987318779">פתח תמונה</translation>
 <translation id="5409365236829784218">אין יישומים מותקנים שיכולים לפתוח את הקובץ הזה.</translation>
 <translation id="5433691172869980887">שם המשתמש הועתק</translation>
@@ -243,7 +244,7 @@
 <translation id="5857090052475505287">תיקייה חדשה</translation>
 <translation id="5857770089550859117">יש להזין את ביטוי הסיסמה כדי להפעיל את הסינכרון.</translation>
 <translation id="5860033963881614850">כבוי</translation>
-<translation id="5869029295770560994">הבנתי</translation>
+<translation id="5869029295770560994">בסדר, הבנתי</translation>
 <translation id="5871497086027727873">פריט אחד הועבר</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">פועל</translation>
@@ -350,6 +351,7 @@
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">ייצוא סיסמאות...</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7971521879845308059">חסום חלונות קופצים</translation>
@@ -361,7 +363,7 @@
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8080028325999236607">סגור את כל הכרטיסיות</translation>
 <translation id="8205564605687841303">בטל</translation>
-<translation id="8225985093977202398">תמונות וקבצים בקובץ השמור</translation>
+<translation id="8225985093977202398">תמונות וקבצים במטמון</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8272426682713568063">כרטיסי אשראי</translation>
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
@@ -395,7 +397,7 @@
 <translation id="8881801611828450202">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">דווח על בעיה</translation>
-<translation id="8971089644512329999">הבנתי</translation>
+<translation id="8971089644512329999">בסדר, הבנתי</translation>
 <translation id="8981454092730389528">‏בחירת הפעילויות ב-Google</translation>
 <translation id="8985320356172329008">‏מחובר ל-Google בשם</translation>
 <translation id="902659348151742535">‏חברת Google עשויה להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים.</translation>

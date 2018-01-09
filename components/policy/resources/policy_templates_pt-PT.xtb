@@ -146,6 +146,7 @@
 
           Para obter exemplos mais detalhados, aceda a:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="1503487916067509762">Ativa o bloqueio de software de terceiros</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
@@ -287,6 +288,11 @@
 
           Se deixar esta política por definir, são utilizados os quatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquear o acesso a sites fora de pacotes de conteúdo</translation>
+<translation id="2075030897098958514">Controla se o NTLMv2 está ativado.
+
+          Todas as versões recentes dos servidores Samba e Windows são compatíveis com o NTLMv2. Só deve ser desativado para retrocompatibilidade e reduz a segurança da autenticação.
+
+          Quando esta política não está definida, atualmente, o valor predefinido é falso para retrocompatibilidade, mas será alterado para verdadeiro no futuro.</translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2077273864382355561">Atraso para desligar o ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima do Chrome permitida para o dispositivo</translation>
@@ -381,6 +387,7 @@
 <translation id="2303795211377219696">Ativar Preenchimento automático para cartões de crédito</translation>
 <translation id="2309390639296060546">Definição de geolocalização predefinida</translation>
 <translation id="2312134445771258233">Permite-lhe configurar as páginas que são carregadas no arranque. O conteúdo da lista "URLs a abrir no aranque" é ignorado, a menos que selecione "Abrir uma lista de URLs" em "Ação no arranque".</translation>
+<translation id="2327252517317514801">Definir domínios com permissão para aceder ao G Suite</translation>
 <translation id="2334591568684482454">Configura a disponibilidade e o comportamento da funcionalidade de atualização de firmware do <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       É possível especificar definições individuais nas propriedades de JSON:
@@ -768,6 +775,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
+<translation id="3732106275571017176">Esta definição permite que os utilizadores alternem entre Contas Google na área de conteúdo da respetiva janela do navegador após iniciarem sessão no dispositivo <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver definida como falsa, não é permitido iniciar sessão numa conta diferente a partir de uma área de conteúdo do navegador que não esteja em navegação anónima.
+
+      Se esta política não estiver definida ou estiver definida como verdadeira, é utilizado o comportamento predefinido: é permitido iniciar sessão numa conta diferente a partir da área de conteúdo do navegador, exceto para contas de criança, em que está bloqueado para uma área de conteúdo do navegador que não esteja em navegação anónima.
+
+      Caso o início de sessão numa conta diferente não deva ser permitido através do modo de navegação anónima, considere bloquear esse modo através da política IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
 <translation id="3737544779868348650">Nome do anfitrião da rede do dispositivo</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
@@ -786,6 +800,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se deixar estas políticas por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
+<translation id="377044054160169374">Aplicação da intervenção de experiência abusiva</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN do Kerberos</translation>
 <translation id="3780319008680229708">Se esta política estiver definida como verdadeira, o ícone da barra de ferramentas do Google Cast é sempre apresentado na barra de ferramentas ou no menu adicional e os utilizadores não podem removê-lo.
 
@@ -958,6 +973,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa de imagens através do método GET.
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="4285674129118156176">Permitir que os utilizadores não afiliados utilizem o ARC</translation>
 <translation id="4294280661005713627">Define uma versão de destino para as Atualizações automáticas.
 
       Especifica o prefixo de uma versão de destino para a qual o <ph name="PRODUCT_OS_NAME" /> deve ser atualizado. Se o dispositivo estiver a executar uma versão anterior ao prefixo especificado, é atualizado para a versão mais recente com esse prefixo. Se o dispositivo já estiver numa versão posterior, não há qualquer impacto (ou seja, não são feitas alterações para versões anteriores) e o dispositivo permanece na versão atual. Em termos de componentes, o formato do prefixo funciona conforme demonstrado no exemplo seguinte:
@@ -1039,10 +1055,19 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="4531706050939927436">As aplicações Android podem ser instaladas à força a partir da Consola do gestor do Google através do Google Play. Essas aplicações não utilizam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais do dispositivo</translation>
+<translation id="4544079461524242527">Configura as definições de gestão de extensões do produto <ph name="PRODUCT_NAME" />.
+
+          Esta política controla várias definições, incluindo definições controladas por quaisquer políticas existentes relativas a extensões. Além disso, substitui todas as políticas antigas, caso estejam ambas definidas.
+
+          Esta política mapeia um ID de extensão ou um URL de atualização para a respetiva configuração. Com um ID de extensão, a configuração é aplicada apenas à extensão especificada. É possível definir uma configuração predefinida para o ID especial <ph name="DEFAULT_SCOPE" />, que irá aplicar-se a todas as extensões que não tenham uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração é aplicada a todas as extensões com o URL de atualização exato indicado no manifesto desta extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Para obter uma descrição completa das definições possíveis e da estrutura desta política, aceda a https://www.chromium.org/administrators/policy-list-3/extension-settings-full.
+          </translation>
 <translation id="4555850956567117258">Permitir a comprovação remota para o utilizador</translation>
 <translation id="4557134566541205630">URL da página Novo separador do motor de pesquisa predefinido</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
+<translation id="4613508646038788144">Se a política estiver definida como falsa, o software de terceiros está autorizado a injetar código executável nos processos do Chrome. Se a política não estiver definida ou estiver definida como verdadeira, o software de terceiros é impedido de injetar código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar lista de permissões de instalação de extensões</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os tipos de conteúdo listados</translation>
@@ -1056,6 +1081,12 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="465099050592230505">URL da Web store da empresa (descontinuado)</translation>
 <translation id="4665897631924472251">Definições de gestão de extensões</translation>
 <translation id="4668325077104657568">Definição de imagens predefinidas</translation>
+<translation id="4671708336564240458">Permite-lhe definir se os sites com experiências abusivas devem ser impedidos de abrir novas janelas ou separadores.
+
+      Se esta política estiver definida como verdadeira, os sites com experiências abusivas são impedidos de abrir novas janelas ou separadores.
+      No entanto, este comportamento não é acionado se a política SafeBrowsingEnabled estiver definida como falsa.
+      Se esta política estiver definida como falsa, os sites com experiências abusivas estão autorizados a abrir novas janelas ou separadores.
+      Se esta política não for definida, é utilizada com o valor verdadeiro.</translation>
 <translation id="467236746355332046">Funcionalidades suportadas:</translation>
 <translation id="4674167212832291997">Personaliza a lista de padrões de URL que devem ser sempre processados pelo <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -1121,6 +1152,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios da ativação do ecrã serão cumpridos no que toca à gestão da alimentação.
 
           Se esta política estiver definida como falsa, os pedidos de bloqueio da ativação do ecrã serão ignorados.</translation>
+<translation id="487460824085252184">Migrar automaticamente sem solicitar a autorização do utilizador</translation>
 <translation id="4876805738539874299">Versão SSL máxima ativada</translation>
 <translation id="4881315447528084360">Especifica uma lista de aplicações e de extensões que são instaladas
           em segundo plano, sem a interação do utilizador, e que não podem
@@ -1224,6 +1256,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5272684451155669299">Se for verdadeira, o utilizador pode utilizar o hardware nos dispositivos Chrome para comprovar remotamente a sua identidade perante a AC de privacidade através da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> com <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Se estiver definida como falsa ou se não estiver definida, as chamadas para a API falham e resultam num código de erro.</translation>
+<translation id="5283457834853986457">Desativar o localizador de plug-ins (descontinuado)</translation>
 <translation id="5288772341821359899">Se a política for definida, o intervalo de portas UDP utilizado pelo WebRTC é restrito ao intervalo de portas especificado (endpoints incluídos).
 
       Se a política não for definida ou se for definida para a string vazia ou um intervalo de portas inválido, o WebRTC está autorizado a utilizar qualquer porta UDP local disponível.</translation>
@@ -1247,6 +1280,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Se esta política estiver definida como falsa, os utilizadores não podem transmitir conteúdo para o dispositivo. Se esta política estiver definida como verdadeira, os utilizadores podem transmitir conteúdo. Se esta política não estiver definida, os utilizadores não podem transmitir conteúdo para os dispositivos do Chrome OS inscritos, mas podem fazê-lo para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo</translation>
 <translation id="5365946944967967336">Mostrar o botão Página Inicial na barra de ferramentas</translation>
+<translation id="5366745336748853475">Permite especificar uma lista de padrões do URL que especificam sites para os quais é automaticamente selecionado um certificado de cliente no ecrã de início de sessão, no frame que aloja o fluxo SAML, se o site solicitar um certificado. Serve, por exemplo, para configurar um certificado ao nível do dispositivo que deve ser apresentado ao SAML IdP.
+
+      O valor tem de ser uma matriz de dicionários JSON em forma de string. Cada dicionário tem de ter o formato { "pattern": "$URL_PATTERN", "filter" : $FILTER }, no qual $URL_PATTERN é um padrão de definição de conteúdo. $FILTER restringe a partir de que certificados de cliente o navegador seleciona automaticamente. Independentemente do filtro, apenas são selecionados os certificados que correspondam ao pedido de certificado do servidor. Além disso, se $FILTER tiver o formato { "ISSUER": { "CN": "$ISSUER_CN" } }, apenas são selecionados os certificados de cliente emitidos por um certificado com o CommonName $ISSUER_CN. Se $FILTER for o dicionário vazio {}, a seleção de certificados de cliente não é adicionalmente restrita.
+
+      Se esta política não for definida, não é efetuada a seleção automática para nenhum site.</translation>
 <translation id="5366977351895725771">Se definido como "false", é desativada a criação de utilizadores supervisionados por parte deste utilizador. Todos os utilizadores supervisionados continuarão disponíveis.
 
           Se definido como "true" ou não configurado, é possível criar e gerir utilizadores supervisionados por parte deste utilizador.</translation>
@@ -1306,6 +1344,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se estiver especificada, irá adicionar um parâmetro de consulta denominado "restrito" ao URL utilizado para obter a semente Variações. O valor do parâmetro será o valor especificado nesta política.
 
       Se não estiver especificada, não irá modificar o URL da semente Variações.</translation>
+<translation id="5561811616825571914">Selecionar automaticamente certificados de cliente para estes sites no ecrã de início de sessão</translation>
 <translation id="556941986578702361">Controlar a ocultação automática da prateleira do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como 'AlwaysAutoHideShelf', a prateleira será sempre ocultada automaticamente.
@@ -1366,6 +1405,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se deixar esta definição por definir, é utilizado o diretório de perfil predefinido.</translation>
 <translation id="5826047473100157858">Especifica se o utilizador pode abrir páginas em modo de Navegação Anónima no <ph name="PRODUCT_NAME" />. Se selecionar "Ativada" ou deixar a política por definir, as páginas podem ser abertas no modo de Navegação Anónima. Se selecionar "Desativada", as páginas não podem ser abertas no modo de Navegação Anónima. Se selecionar "Forçada", as páginas APENAS podem ser abertas no modo de Navegação Anónima.</translation>
+<translation id="583091600226586337">
+      Se a política estiver ativada, é perguntado ao utilizador onde pretende guardar cada ficheiro antes da transferência.
+      Se a política estiver desativada, as transferências são iniciadas imediatamente e não é perguntado ao utilizador onde pretende guardar o ficheiro.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      </translation>
 <translation id="5835124959204887277">Especifica os URLs e os domínios para os quais não é apresentada um pedido quando são solicitados os certificados de comprovação das Chaves de segurança. Além disso, é enviado um sinal para a Chave de segurança a indicar que a comprovação individual pode ser utilizada. Sem isto, os utilizadores do Chrome 65 e superior recebem um pedido quando os sites solicitarem a comprovação das Chaves de segurança.
 
       Os URLs (como https://example.com/some/path) obtêm correspondência apenas como appIDs de U2F. Os domínios (como example.com) obtêm correspondência apenas como IDs de RP de webauthn. Desta forma, para abranger APIs de U2F e de webauthn de um determinado site, tanto o URL como o domínio do appID têm de constar da lista.</translation>
@@ -1424,6 +1468,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5966615072639944554">Extensões que têm permissão para utilizar a API de comprovação remota</translation>
 <translation id="5983708779415553259">Comportamento predefinido para sites que não estejam num pacote de conteúdo</translation>
 <translation id="5997543603646547632">Utilizar o relógio de 24 horas por predefinição</translation>
+<translation id="5997846976342452720">Especificar se o localizador de plug-ins deve ser desativado (descontinuado)</translation>
 <translation id="6005179188836322782">Ativa a funcionalidade de Navegação segura do <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem esta definição.
 
       Se ativar esta definição, a Navegação segura estará sempre ativa.
@@ -1658,6 +1703,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política RoamingProfileSupportEnabled.</translation>
+<translation id="6735701345096330595">Forçar a ativação de idiomas com verificação ortográfica</translation>
 <translation id="6757438632136860443">Permite-lhe definir uma lista de padrões de URL que especificam sites que estão autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida ou, caso contrário, a configuração pessoal do utilizador.</translation>
@@ -1678,6 +1724,25 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6903814433019432303">Esta política está ativa apenas no modo de retalho.
 
       Determina o conjunto de URLs a carregar quando a sessão de demonstração é iniciada. Esta política irá substituir quaisquer outros mecanismos para definir o URL inicial e, por isso, apenas pode ser aplicada a uma sessão não associada a um utilizador específico.</translation>
+<translation id="6908347296939885026">Ativa a funcionalidade de início de sessão restrito do <ph name="PRODUCT_NAME" /> no G Suite e impede os utilizadores de alterarem esta definição.
+
+      Se ativar esta definição, o utilizador só consegue aceder ao Google
+      Apps através de contas dos domínios especificados (tenha em atenção que esta definição
+      não funciona para o gmail.com/googlemail.com).
+
+      Esta definição NÃO impede o utilizador de iniciar sessão num dispositivo gerido
+      que requeira a autenticação Google. O utilizador continua a ter autorização para
+      iniciar sessão em contas de outros domínios, mas encontra um erro
+      quando tenta utilizar o G Suite com essas contas.
+
+      Se deixar esta definição vazia/não configurada, o utilizador pode
+      aceder ao G Suite com qualquer conta.
+
+      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains seja anexado
+      a todos os pedidos de HTTP e HTTPS para todos os domínios de google.com, conforme descrito em
+      https://support.google.com/a/answer/1668854.
+
+      Os utilizadores não podem alterar nem substituir esta definição.</translation>
 <translation id="6908640907898649429">Configura o fornecedor de pesquisas predefinido. Pode indicar o fornecedor de pesquisas predefinido que o utilizador vai usar ou optar por desativar a pesquisa predefinida.</translation>
 <translation id="6915442654606973733">Ativar a funcionalidade de acessibilidade de respostas faladas.
 
@@ -1795,6 +1860,9 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de fundo do dispositivo</translation>
+<translation id="7266471712301230894">Esta política foi removida a partir do <ph name="PRODUCT_NAME" /> 64.
+
+      A pesquisa e instalação automática de plug-ins em falta já não é suportada.</translation>
 <translation id="7267809745244694722">Teclas multimédia predefinidas para teclas de função</translation>
 <translation id="7271085005502526897">Importar página inicial a partir do navegador predefinido na primeira execução</translation>
 <translation id="7273823081800296768">Se esta definição estiver ativada ou não estiver configurada, os utilizadores podem optar por sincronizar clientes e anfitriões no momento da ligação, eliminando a necessidade permanente de introduzir um PIN.
@@ -1846,6 +1914,10 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se a política não for definida ou for definida como falsa, o <ph name="TLS_FALSE_START" /> fica ativado. Se for definida como verdadeira, o <ph name="TLS_FALSE_START" /> fica desativado.</translation>
 <translation id="7433714841194914373">Ativar Instantâneo</translation>
+<translation id="7443061725198440541">Se esta política não estiver definida ou estiver ativada, o utilizador tem autorização para utilizar a verificação ortográfica.
+
+      Se esta política estiver desativada, o utilizador não tem autorização para utilizar a verificação ortográfica. Quando esta política está desativada, a política SpellcheckLanguage também é ignorada.
+      </translation>
 <translation id="7443616896860707393">Mensagens de Autorização Básica de HTTP de origem cruzada</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados assinados SHA-1 emitidos por âncoras fidedignas locais são ou não autorizados</translation>
@@ -2073,6 +2145,14 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se a política ficar por definir, o <ph name="PRODUCT_OS_NAME" /> utilizará o ID da conta de email da conta local do dispositivo como o nome a apresentar no ecrã de início de sessão.
 
       Esta política é ignorada para contas de utilizador normais.</translation>
+<translation id="8259375588339409826">O Chromium e o Google Chrome suportam o mesmo conjunto de políticas. Tenha em atenção que este documento pode incluir políticas não lançadas (ou seja, a entrada "Suportado em" refere-se a uma versão do <ph name="PRODUCT_NAME" /> que ainda não foi lançada). Tais políticas estão sujeitas a alteração ou remoção sem aviso prévio e não são objeto de qualquer tipo de garantia, incluindo garantias quanto às respetivas propriedades de segurança e de privacidade.
+
+A utilização destas políticas destina-se unicamente à configuração de instâncias do <ph name="PRODUCT_NAME" /> internas à sua entidade. A utilização destas políticas fora da sua entidade (por exemplo, num programa distribuído publicamente) é considerada software malicioso e será, provavelmente, etiquetada como software malicioso pela Google e por fornecedores de antivírus.
+
+Não é necessário configurar estas definições manualmente. Existem modelos de fácil utilização para Windows, Mac e Linux que pode transferir a partir de <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+A forma recomendada para configurar a política no Windows é através do GPO, embora o aprovisionamento da política através de registo ainda seja suportado para instâncias do Windows que estejam associadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
+<translation id="8274603902181597201">Limpe o diretório principal de ecryptfs do utilizador e comece com um diretório principal de ext4 encriptado novo.</translation>
 <translation id="8279832363395120715">Remove as partes sensíveis de privacidade e de segurança de URLs https:// antes de os passar para scripts de PAC (Configuração automática do proxy) utilizados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
 
      Quando definida como Verdadeira, a funcionalidade de segurança está ativada
@@ -2173,6 +2253,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="8549772397068118889">Avisar quando estiver a visitar sites fora dos pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a Web Store da página Novo separador e do iniciador de aplicações</translation>
 <translation id="8587229956764455752">Permitir a criação de novas contas de utilizador</translation>
+<translation id="8598350264853261122">Se a política estiver definida como falsa, os utilizadores não afiliados não têm autorização para utilizar o ARC.
+
+      Se a política não estiver definida ou estiver definida como verdadeira, todos os utilizadores têm autorização para utilizar o ARC (a menos que o ARC esteja desativado de outra forma).
+
+      As alterações à política apenas são aplicadas enquanto o ARC não estiver em execução, por exemplo, durante o arranque do Chrome OS.</translation>
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Para aplicações Android, esta política afeta apenas a câmara integrada. Se esta política for definida como verdadeira, a câmara é desativada para todas as aplicações Android, sem exceções.</translation>
@@ -2232,6 +2317,20 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se deixar esta definição por definir, o utilizador pode optar por utilizar ou não esta função.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
+<translation id="8894962626537183708">
+      A política especifica uma lista de origens (URLs) que devem ser tratadas como contexto seguro. A intenção é permitir que as entidades configurem um servidor experimental para programações Web internas para que os respetivos programadores possam testar as funcionalidades que necessitam de contextos seguros sem terem de implementar o TLS no servidor experimental.
+      Definir uma lista de URLs nesta política tem o mesmo efeito que definir o sinalizador de linha de comandos "--unsafely-treat-insecure-origin-as-secure" numa lista separada por vírgulas dos mesmos URLs Se a política estiver definida, substitui o sinalizador de linha de comandos.
+      Para mais informações acerca de contextos seguros, consulte https://www.w3.org/TR/secure-contexts/.
+      </translation>
+<translation id="890403179930035128">Força a ativação de idiomas com verificação ortográfica. Os idiomas não reconhecidos dessa lista são ignorados.
+
+      Se ativar esta política, a verificação ortográfica é ativada para os idiomas especificados, além dos idiomas para os quais o utilizador tenha ativado a verificação ortográfica.
+
+      Se não definir ou se desativar esta política, não há qualquer alteração às preferências de verificação ortográfica do utilizador.
+
+      Se a política SpellcheckEnabled estiver desativada, esta política não tem qualquer efeito.
+
+      Atualmente, os idiomas suportados são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Ativar o modo de convidado</translation>
 <translation id="8908294717014659003">Permite-lhe definir se os Sites podem aceder a dispositivos de captura de multimédia. O acesso a dispositivos de captura de multimédia pode ser autorizado por predefinição ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos de captura de multimédia.
 
@@ -2303,6 +2402,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Por exemplo, para permitir todos os modos de desbloqueio rápido, utilize ["all"]. Para permitir apenas o desbloqueio por PIN, utilize ["PIN"]. Para desativar todos os modos de desbloqueio rápido, utilize [].
 
           Por predefinição, não estão disponíveis modos de desbloqueio rápido para dispositivos geridos.</translation>
+<translation id="9136399279941091445">Intervalos fora do horário quando as políticas do dispositivo especificadas são lançadas</translation>
 <translation id="9147029539363974059">Enviar registos do sistema para o servidor de gestão para permitir aos
       administradores monitorizar esses registos.
 
@@ -2311,14 +2411,10 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="9150416707757015439">Esta política está obsoleta. Em alternativa, utilize IncognitoModeAvailability. Ativa o modo de navegação anónima no <ph name="PRODUCT_NAME" />. Se esta definição estiver ativada ou não estiver configurada, os utilizadores podem abrir páginas Web no modo de navegação anónima. Se esta definição estiver desativada, os utilizadores não podem abrir páginas Web no modo de navegação anónima. Se deixar esta política por definir, a definição estará ativada e o utilizador poderá utilizar o modo de navegação anónima.</translation>
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
+<translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
 <translation id="9187743794267626640">Desativar a montagem do armazenamento externo</translation>
 <translation id="9197740283131855199">Percentagem que determina a escala do atraso do esbatimento do ecrã se o utilizador se tornar ativo depois do esbatimento</translation>
 <translation id="9200828125069750521">Parâmetros do URL de imagem que utilize POST</translation>
-<translation id="9212233969680267790">Aviso: a política da versão TLS máxima será totalmente removida do <ph name="PRODUCT_NAME" /> perto da versão 66 (por volta de fevereiro de 2018).
-
-      Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão máxima predefinida.
-
-      Caso contrário, pode ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS superiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o Chrome OS pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,
@@ -2336,4 +2432,5 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="930930237275114205">Definir diretório de dados do utilizador do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Permite o início de sessão forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
+<translation id="982497069985795632">Ativar a verificação ortográfica</translation>
 </translationbundle>

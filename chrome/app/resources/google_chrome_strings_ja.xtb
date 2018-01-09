@@ -8,6 +8,7 @@
 <translation id="1104959162601287462">Chrome OS について(&amp;C)</translation>
 <translation id="110877069173485804">自分好みに設定</translation>
 <translation id="1142745911746664600">Chrome を更新できません</translation>
+<translation id="1154147086299354128">Chrome で開く(&amp;O)</translation>
 <translation id="123620459398936149">Chrome OS はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="127345590676626841">Chrome は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chrome が再起動し、すぐにお使いいただけます。</translation>
 <translation id="1302523850133262269">Chrome は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
@@ -30,7 +31,6 @@
 <translation id="1698376642261615901">Google Chrome は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> を選択します</translation>
 <translation id="174539241580958092">ログイン時にエラーが発生したため、Google Chrome はデータを同期できませんでした。</translation>
-<translation id="1759301979429102118">連絡先から詳細を取得すると、Chrome でのフォームの記入が楽になります。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Chrome OS の使用に関するアドバイス</translation>
 <translation id="1795405610103747296">Chrome をスマートフォンにインストールしませんか。お客様の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
@@ -107,8 +107,6 @@
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="3898493977366060150">Google の最先端技術を活用したウェブ ブラウジング</translation>
 <translation id="4028693306634653894">Chrome をより迅速に起動</translation>
-<translation id="4031074602479304239">Chrome で、このサイトから以下のリダイレクト先へのアクセスが中止されました</translation>
-<translation id="4042449298237264661">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
 <translation id="4147555960264124640">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
@@ -152,12 +150,12 @@
 <translation id="5243785881901838525">Google ペイメント（Chrome にコピー）</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome は 1 秒後に再起動します。}other{Google Chrome は # 秒後に再起動します。}}</translation>
+<translation id="532046782124376502">警告: 拡張機能による閲覧履歴の記録を Google Chrome で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="5334545119300433702">このモジュールは Google Chrome と競合することがわかっています。</translation>
 <translation id="5386244825306882791">この拡張機能では、Chrome の起動時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5430073640787465221">ユーザー設定ファイルが壊れているか無効です。設定を復元できません。</translation>
 <translation id="5453904507266736060">Google Chrome のバックグラウンドでの実行を許可する</translation>
 <translation id="5495581687705680288">Google Chrome に読み込まれているモジュール</translation>
-<translation id="5524843473235508879">リダイレクトがブロックされました。</translation>
 <translation id="556024056938947818">Google Chrome はパスワードを表示しようとしています。</translation>
 <translation id="5566025111015594046">Google Chrome（mDNS インバウンド）</translation>
 <translation id="557283862590186398">このサイトを利用するには、Chrome でマイクの使用を許可する必要があります。</translation>
@@ -178,15 +176,12 @@
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Chrome OS を更新(&amp;C)</translation>
 <translation id="6235018212288296708">mDNS トラフィックを許可する Google Chrome のインバウンド ルールです。</translation>
-<translation id="6236285698028833233">Google Chrome はアップデートの提供を中止しています。お使いのバージョンのオペレーティング システムには対応していません。</translation>
 <translation id="6291089322031436445">Chrome Dev アプリ</translation>
 <translation id="6291549208091401781">Google Chrome は既にパソコンのすべてのユーザー対してインストールされています。</translation>
 <translation id="6338556085225130112">Google Chrome を更新しています</translation>
 <translation id="6368958679917195344">Chrome OS は、さらに追加の<ph name="BEGIN_LINK_CROS_OSS" />オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS" />によって実現しました。</translation>
 <translation id="6393863479814692971">このサイトを利用するには、Chrome でカメラとマイクの使用を許可する必要があります。</translation>
-<translation id="6400076122676892962">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="6410540444482791104">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
-<translation id="6470176598693778404">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}other{# 件のダウンロードが現在進行中です。ダウンロードをキャンセルし、Google Chrome を終了しますか？}}</translation>
 <translation id="6566149418543181476">Google Chrome を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="6598387184982954187">Chrome データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chrome を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
@@ -194,11 +189,9 @@
 <translation id="6634887557811630702">Google Chrome は最新版です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6697947395630195233">このサイトで現在地を共有するには、Chrome で位置情報の使用を許可する必要があります。</translation>
-<translation id="6777817260680419853">リダイレクトがブロックされました</translation>
 <translation id="683440813066116847">mDNS トラフィックを許可する Google Chrome Canary のインバウンド ルールです。</translation>
 <translation id="686561893457936865">どの端末でも同じ Chrome を使用できます</translation>
 <translation id="6885412569789873916">Chrome ベータ版アプリ</translation>
-<translation id="694592694773692225">このページでリダイレクトがブロックされました。</translation>
 <translation id="6967962315388095737">mDNS トラフィックを許可する Google Chrome ベータ版のインバウンド ルールです。</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Google Chrome OS 利用規約を拡張、変更、制限するものではありません。</translation>
@@ -209,7 +202,6 @@
 <translation id="7164397146364144019">セキュリティに関する事象についての詳細を Google に自動送信して、Chrome の安全性と利便性の向上にご協力ください。</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> が Chrome に追加されました。</translation>
 <translation id="7242029209006116544">現在、管理対象アカウントでログインしており、あなたの Google Chrome プロフィールを管理者が制御できる状態になっています。あなたの Chrome データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chrome データを別に保管することができます。<ph name="LEARN_MORE" /></translation>
-<translation id="729375352412857283">Windows XP と Windows Vista はサポートされなくなったため、このパソコンでは間もなく Google Chrome のアップデートが受信されなくなります。</translation>
 <translation id="7330164299247909639">認証証明書でエラーが発生しました。<ph name="USER_NAME" /> として Google Chrome にログインし直すか、管理者に詳細をお問い合わせください。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="7369650938475876456">Chrome で生成された安全なパスワードの使用をおすすめします</translation>

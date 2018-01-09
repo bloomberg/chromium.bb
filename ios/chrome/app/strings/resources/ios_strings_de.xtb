@@ -218,6 +218,7 @@ Ihre Daten sind mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie 
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="533632423981297619">Ihre Passwörter sind für jeden zugänglich, der die exportierte Datei sehen kann. Geben Sie diese Datei nicht an andere weiter.</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5409365236829784218">Es sind keine Apps inst., die diese Datei öffnen können.</translation>
 <translation id="5433691172869980887">Nutzername kopiert</translation>
@@ -350,6 +351,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Passwörter exportieren…</translation>
 <translation id="7947953824732555851">Akzeptieren und anmelden</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7971521879845308059">Pop-ups blockieren</translation>
@@ -373,7 +375,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8503813439785031346">Nutzername</translation>
 <translation id="850600235656508448">Im Inkognitomodus öffnen</translation>
-<translation id="8517375800490286174">Open-Source-Lizenzen</translation>
+<translation id="8517375800490286174">Open Source-Lizenzen</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" />-Tabs <ph name="FIRST_VISIBLE_TAB" /> bis <ph name="LAST_VISIBLE_TAB" /> von <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">Ablaufjahr</translation>
 <translation id="8534481786647257214">Google+ Beitrag gepostet</translation>

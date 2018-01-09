@@ -18,7 +18,7 @@
 <translation id="1290331692326790741">সিগন্যালটি ভাল নয়</translation>
 <translation id="1293264513303784526">USB-C ডিভাইস (বাঁ পোর্ট)</translation>
 <translation id="1346748346194534595">ডানে</translation>
-<translation id="1383876407941801731">অনুসন্ধান</translation>
+<translation id="1383876407941801731">সার্চ করুন</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
@@ -71,7 +71,7 @@
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
 <translation id="2597972630681408282">নাইট লাইট: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
-<translation id="2653659639078652383">জমা</translation>
+<translation id="2653659639078652383">জমা দিন</translation>
 <translation id="2675319268637823299">একজন প্রশাসক <ph name="USER_EMAIL" /> এর জন্য একাধিক সাইন-ইন বাতিল করেছেন।
     চালিয়ে যাওয়ার জন্য, সব ব্যবহারকারীকে অবশ্যই সাইন-আউট করতে হবে।</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে প্রস্থান করুন করা হবে৷</translation>
@@ -173,6 +173,7 @@
 <translation id="5430931332414098647">ঝটপট টিথারিং</translation>
 <translation id="5431825016875453137">VPN / L2TP খুলুন</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
+<translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
 <translation id="553675580533261935">সেশন থেকে প্রস্থান করছে</translation>
 <translation id="5548285847212963613">"<ph name="EXTENSION_NAME" />" এক্সটেনশানটি এই নেটওয়ার্কের সাথে সংযোগ স্থাপন করতে সাহায্য করতে পারে৷</translation>
 <translation id="5571066253365925590">ব্লুটুথ সক্ষমিত</translation>
@@ -183,6 +184,7 @@
 <translation id="5744083938413354016">ট্যাপ করে টেনে আনা</translation>
 <translation id="5777841717266010279">স্ক্রীন শেয়ার করা থামাবেন?</translation>
 <translation id="57838592816432529">নিঃশব্দ করুন</translation>
+<translation id="5832805196449965646">একজন ব্যক্তিকে যোগ করুন</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>

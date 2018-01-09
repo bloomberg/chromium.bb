@@ -14,7 +14,7 @@
 <translation id="1074497978438210769">No segur</translation>
 <translation id="1080116354587839789">Ajusta a l'amplada</translation>
 <translation id="1088860948719068836">Afegeix el titular de la targeta</translation>
-<translation id="1103523840287552314">Tradueix sempre de: <ph name="LANGUAGE" /></translation>
+<translation id="1103523840287552314">Tradueix sempre el text en <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Si s'activa aquesta casella, Chrome emmagatzema una còpia d'aquesta targeta al dispositiu per agilitzar l'emplenament de formularis.</translation>
 <translation id="1110994991967754504">Selecciona un permís per a <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Adreces d'interès recents</translation>
@@ -67,14 +67,13 @@
 <translation id="1413809658975081374">Error de privadesa</translation>
 <translation id="14171126816530869">La identitat de <ph name="ORGANIZATION" /> a <ph name="LOCALITY" /> ha estat verificada per <ph name="ISSUER" />.</translation>
 <translation id="1426410128494586442">Sí</translation>
-<translation id="1430915738399379752">Impressió</translation>
+<translation id="1430915738399379752">Imprimeix</translation>
 <translation id="1484290072879560759">Tria l'adreça d'enviament</translation>
 <translation id="1506687042165942984">Mostra una còpia desada (és a dir, no actualitzada) d'aquesta pàgina.</translation>
 <translation id="1517433312004943670">El número de telèfon és obligatori</translation>
 <translation id="1517500485252541695">Targetes de crèdit i de dèbit acceptades</translation>
 <translation id="1519264250979466059">Data de creació</translation>
 <translation id="1527263332363067270">S'està esperant que hi hagi connexió…</translation>
-<translation id="1532118530259321453">Aquesta pàgina diu</translation>
 <translation id="153384715582417236">De moment, això és tot</translation>
 <translation id="154408704832528245">Tria l'adreça d'entrega</translation>
 <translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Accés a les dades locals</translation>
 <translation id="1594030484168838125">Tria</translation>
 <translation id="1620510694547887537">Càmera</translation>
+<translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
 <translation id="1629803312968146339">Voleu que Chrome desi aquesta targeta?</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Error d'HTTP</translation>
 <translation id="2270484714375784793">Número de telèfon</translation>
 <translation id="2292556288342944218">El vostre accés a Internet està bloquejat</translation>
-<translation id="2298151730144880294">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="230155334948463882">És una targeta nova?</translation>
 <translation id="2316887270356262533">Allibera menys d'1 MB. És possible que alguns llocs web es carreguin més a poc a poc la propera vegada que els visitis.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Esborra el formulari</translation>
 <translation id="2851634818064021665">Necessites permís per visitar aquest lloc web</translation>
 <translation id="2856444702002559011">Pot ser que els atacants provin de robar la teva informació del lloc web <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (per exemple, contrasenyes, missatges o targetes de crèdit). <ph name="BEGIN_LEARN_MORE_LINK" />Més informació<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">No tornis a carregar</translation>
 <translation id="2909946352844186028">S'ha detectat un canvi a la xarxa.</translation>
 <translation id="2916038427272391327">Tanca altres programes</translation>
 <translation id="2922350208395188000">No es pot comprovar el certificat del servidor.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">No s'ha trobat cap resultat de la cerca</translation>
 <translation id="3305707030755673451">Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="3320021301628644560">Afegeix una adreça de facturació</translation>
-<translation id="333371639341676808">Evita que aquesta pàgina creï diàlegs addicionals.</translation>
 <translation id="3338095232262050444">Segur</translation>
 <translation id="3340978935015468852">configuració</translation>
 <translation id="3345135638360864351">La sol·licitud per accedir al lloc no s'ha pogut enviar a <ph name="NAME" />. Torneu-ho a provar.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">El teu gestor te'l pot desbloquejar</translation>
 <translation id="3566021033012934673">La vostra connexió no és privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Una pàgina inserida a <ph name="SITE" /> diu</translation>
 <translation id="358285529439630156">S'accepten targetes de crèdit i de prepagament.</translation>
 <translation id="3582930987043644930">Afegeix el nom</translation>
 <translation id="3583757800736429874">&amp;Refés el moviment</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Pagament</translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> diu</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Accions</translation>
 <translation id="4958444002117714549">Desplega la llista</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">No està escrita en <ph name="ORIGINAL_LANGUAGE" />? Informa d'aquest error</translation>
 <translation id="5190835502935405962">Barra d'adreces d'interès</translation>
 <translation id="5199729219167945352">Experiments</translation>
-<translation id="5201306358585911203">Una pàgina inserida en aquesta pàgina diu</translation>
 <translation id="5205222826937269299">El nom és obligatori</translation>
 <translation id="5222812217790122047">El correu electrònic és obligatori</translation>
 <translation id="522700295135997067">És possible que aquest lloc web t'acabi de robar la contrasenya</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Connecta</translation>
 <translation id="5308689395849655368">La creació d'informes de bloqueig està desactivada.</translation>
 <translation id="5317780077021120954">Desa</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> de <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Tria la informació de contacte</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5332219387342487447">Mètode d'enviament</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">El teu gestor encara no ho ha aprovat</translation>
 <translation id="6569060085658103619">Estàs consultant la pàgina d'una extensió</translation>
 <translation id="6596325263575161958">Opcions d'encriptació</translation>
-<translation id="662080504995468778">No surtis</translation>
 <translation id="6624427990725312378">Informació de contacte</translation>
 <translation id="6626291197371920147">Afegeix un número de targeta vàlid</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE" /></translation>
@@ -827,7 +821,7 @@
 <translation id="7271803869921933038">Targetes de prepagament acceptades</translation>
 <translation id="7275334191706090484">Adreces d'interès gestionades</translation>
 <translation id="7298195798382681320">Recomanada</translation>
-<translation id="7309308571273880165">S'ha capturat un informe d'error (<ph name="CRASH_TIME" />) (càrrega sol·licitada per l'usuari, encara no s'ha dut a terme)</translation>
+<translation id="7309308571273880165">S'ha capturat un informe d'error (<ph name="CRASH_TIME" />) (pujada sol·licitada per l'usuari, encara no s'ha dut a terme)</translation>
 <translation id="7334320624316649418">&amp;Refés el canvi d'ordre</translation>
 <translation id="7337706099755338005">No està disponible a la teva plataforma.</translation>
 <translation id="733923710415886693">El certificat del servidor no s'ha divulgat mitjançant la Transparència de certificats.</translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">El certificat no especifica un mecanisme per comprovar si s'ha revocat.</translation>
 <translation id="8620436878122366504">Els teus pares encara no ho han aprovat</translation>
 <translation id="8625384913736129811">Desa aquesta targeta al dispositiu</translation>
+<translation id="8639963783467694461">Configuració d'Emplenament automàtic</translation>
 <translation id="8647750283161643317">Restableix-ho tot als valors predeterminats</translation>
 <translation id="8660471606262461360">De Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Targetes de crèdit i de prepagament acceptades</translation>
 <translation id="8952525071319348207">Introdueix la data de caducitat i el CVC de la targeta <ph name="CREDIT_CARD" /> per actualitzar-ne els detalls. Un cop confirmada, els detalls de la targeta del compte de pagaments de Google es compartiran amb aquest lloc web.</translation>
 <translation id="8957210676456822347">Autorització de portals captius</translation>
-<translation id="8958260976055043711">Aquesta pàgina diu</translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>
 <translation id="8978053250194585037">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat recentment activitat de pesca<ph name="END_LINK" /> a <ph name="SITE" />. Els llocs web de pesca es fan passar per altres llocs web per enganyar-te.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="917450738466192189">El certificat del servidor no és vàlid.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> fa servir un protocol no admès.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> diu</translation>
 <translation id="9205078245616868884">Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincronització. Introduïu-la per començar la sincronització.</translation>
 <translation id="9207861905230894330">No s'ha pogut afegir l'article.</translation>
-<translation id="9209577707918422353">Una pàgina inserida a <ph name="SITE" /> diu</translation>
 <translation id="9215416866750762878">Una aplicació impedeix que Chrome es connecti de manera segura a aquest lloc web</translation>
 <translation id="9219103736887031265">Imatges</translation>
 <translation id="933612690413056017">No hi ha connexió a Internet</translation>

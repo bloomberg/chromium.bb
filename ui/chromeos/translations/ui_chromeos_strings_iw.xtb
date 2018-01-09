@@ -115,6 +115,7 @@
 <translation id="4694604912444486114">קוף</translation>
 <translation id="4711094779914110278">טורקית</translation>
 <translation id="4725511304875193254">קורגי</translation>
+<translation id="4737050008115666127">נחיתה</translation>
 <translation id="4747271164117300400">מקדונית</translation>
 <translation id="4749157430980974800">מקלדת גיאורגית</translation>
 <translation id="4755240240651974342">מקלדת פינית</translation>
@@ -148,6 +149,7 @@
 <translation id="5465122519792752163">‏מקלדת נפאלית (InScript)</translation>
 <translation id="5469868506864199649">איטלקית</translation>
 <translation id="5500122897333236901">איסלנדית</translation>
+<translation id="5508696409934741614">נקודות</translation>
 <translation id="5533555070048896610">‏תעתוק (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">‏ארה"ב - Dvorak</translation>
 <translation id="5640179856859982418">מקלדת שוויצרית</translation>
@@ -208,6 +210,7 @@
 <translation id="7474889694310679759">מקלדת אנגלית (קנדה)</translation>
 <translation id="751507702149411736">ביילורוסית</translation>
 <translation id="7547811415869834682">הולנדית</translation>
+<translation id="7603724359189955920">רשתות</translation>
 <translation id="770015031906360009">יוונית</translation>
 <translation id="7706319470528945664">מקלדת פורטוגזית</translation>
 <translation id="7774365994322694683">ציפור</translation>
@@ -238,6 +241,7 @@
 <translation id="8432745813735585631">‏מקלדת Colemak אנגלית (ארה"ב)</translation>
 <translation id="8437209419043462667">ארה"ב</translation>
 <translation id="8467473010914675605">שיטת קלט קוריאנית</translation>
+<translation id="8477649328507734757">סיבוב</translation>
 <translation id="8521441079177373948">בריטניה</translation>
 <translation id="8551494947769799688">לטבית</translation>
 <translation id="8561206103590473338">פיל</translation>
@@ -256,4 +260,5 @@
 <translation id="913758436357682283">‏מקדלת Myanmar Myansan</translation>
 <translation id="9153744823707037316">שיטת קלט של מערך</translation>
 <translation id="9206487995878691001">‏שיטת קלט Cangjie</translation>
+<translation id="9219908252191632183">נוף ירח</translation>
 </translationbundle>

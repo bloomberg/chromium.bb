@@ -5,7 +5,7 @@
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Introduce el código PIN <ph name="PINCODE" /> en el dispositivo</translation>
 <translation id="1032891413405719768">El lápiz óptico tiene poca batería</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
-<translation id="112308213915226829">Ocultar automáticamente estantería</translation>
+<translation id="112308213915226829">Ocultar estantería automáticamente</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
@@ -173,6 +173,7 @@
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Todos los usuarios disponibles ya se han añadido a esta sesión.</translation>
+<translation id="5457599981699367932">Navegar como invitado</translation>
 <translation id="553675580533261935">Saliendo de la sesión</translation>
 <translation id="5548285847212963613">La extensión "<ph name="EXTENSION_NAME" />" puede permitir conectarse a esta red.</translation>
 <translation id="5571066253365925590">Bluetooth habilitado</translation>
@@ -183,6 +184,7 @@
 <translation id="5744083938413354016">Tocar y arrastrar</translation>
 <translation id="5777841717266010279">¿Dejar de compartir la pantalla?</translation>
 <translation id="57838592816432529">Silenciar</translation>
+<translation id="5832805196449965646">Añadir perfil</translation>
 <translation id="5860033963881614850">No</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayús+Esc</translation>

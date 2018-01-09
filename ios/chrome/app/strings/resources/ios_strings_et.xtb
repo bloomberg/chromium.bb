@@ -218,6 +218,7 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="533632423981297619">Teie paroolid on nähtavad kõigile, kes eksporditud faili näevad. Ärge jagage seda faili kellegagi.</translation>
 <translation id="5388358297987318779">Ava kujutis</translation>
 <translation id="5409365236829784218">Pole installitud rakendust, mis suudaks selle faili avada.</translation>
 <translation id="5433691172869980887">Kasutajanimi on kopeeritud</translation>
@@ -243,7 +244,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="5857090052475505287">Uus kaust</translation>
 <translation id="5857770089550859117">Sünkroonimise alustamiseks on vaja parooli.</translation>
 <translation id="5860033963881614850">Väljas</translation>
-<translation id="5869029295770560994">OK, selge</translation>
+<translation id="5869029295770560994">Selge, sain aru</translation>
 <translation id="5871497086027727873">1 üksus on teisaldatud</translation>
 <translation id="5911030830365207728">Google'i tõlge</translation>
 <translation id="5916664084637901428">Sees</translation>
@@ -325,7 +326,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="722055596168483966">Google'i teenuste isikupärastamine</translation>
 <translation id="7272437679830969316">Teie isikut ei õnnestu tuvastada. Parooli ei kopeeritud.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> protsenti on alla laaditud</translation>
-<translation id="7346909386216857016">Selge, sain aru!</translation>
+<translation id="7346909386216857016">Selge, sain aru</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Järjehoidjates, ajaloos, paroolides ja muudes seadetes tehtud muudatusi ei sünkroonita enam teie Google'i kontoga. Teie olemasolevad andmed jäävad siiski teie Google'i kontole.</translation>
 <translation id="744343212394640790">Pole <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="780301667611848630">Ei, aitäh</translation>
 <translation id="7859704718976024901">Sirvimisajalugu</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Paroolide eksportimine …</translation>
 <translation id="7947953824732555851">Nõustu ja logi sisse</translation>
 <translation id="7961015016161918242">Mitte kunagi</translation>
 <translation id="7971521879845308059">Hüpikute blok.</translation>

@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">farács</translation>
 <translation id="1822429046913737220">de./du.</translation>
 <translation id="1832974991323546415">lejátszás távoli eszközön</translation>
-<translation id="1854180393107901205">Küldés leállítása</translation>
 <translation id="1921819250265091946">nn</translation>
 <translation id="1930711995431081526">állapot</translation>
 <translation id="1938124657309484470">Az érték <ph name="MAXIMUM_DATE_OR_TIME" /> vagy azt megelőző kell, hogy legyen.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Más...</translation>
 <translation id="9138385573473225930">értesítés</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />. hét (<ph name="WEEK_START_DATE" />-i dátummal kezdődik)</translation>
+<translation id="916607977885256133">Kép a képben</translation>
 <translation id="947831847158436616">cella</translation>
 <translation id="966787709310836684">menü</translation>
 </translationbundle>

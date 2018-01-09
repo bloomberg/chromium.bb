@@ -30,7 +30,7 @@
 <translation id="1389974829397082527">No hi ha cap adreça d'interès aquí</translation>
 <translation id="1400642268715879018">Quatre darreres setmanes</translation>
 <translation id="1407135791313364759">Obre-les totes</translation>
-<translation id="1430915738399379752">Impressió</translation>
+<translation id="1430915738399379752">Imprimeix</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elements</translation>
 <translation id="1491277525950327607">Fes doble toc per canviar la configuració</translation>
 <translation id="152234381334907219">Contrasenyes que no es desen mai</translation>
@@ -146,7 +146,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3603009562372709545">Copia l'URL de l'enllaç</translation>
 <translation id="3607167657931203000">Dades d'Emplenament automàtic</translation>
 <translation id="3628119975092896051">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
-<translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
+<translation id="3638472932233958418">Pujada prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3779810277399252432">No hi ha connexió a Internet.</translation>
@@ -218,6 +218,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="533632423981297619">Tothom que pugui veure el fitxer exportat podrà veure també les teves contrasenyes. No comparteixis aquest fitxer amb ningú.</translation>
 <translation id="5388358297987318779">Obre una imatge</translation>
 <translation id="5409365236829784218">Cap aplicació instal·lada no pot obrir el fitxer.</translation>
 <translation id="5433691172869980887">S'ha copiat el nom d'usuari</translation>
@@ -350,6 +351,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7859704718976024901">Historial de navegació</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exporta contrasenyes</translation>
 <translation id="7947953824732555851">Acc. i inicia sessió</translation>
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>

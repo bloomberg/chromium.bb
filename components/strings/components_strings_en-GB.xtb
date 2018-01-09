@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Accepted credit and debit cards</translation>
 <translation id="1519264250979466059">Build Date</translation>
 <translation id="1527263332363067270">Waiting for connection…</translation>
-<translation id="1532118530259321453">This page says</translation>
 <translation id="153384715582417236">That’s all for now</translation>
 <translation id="154408704832528245">Choose delivery address</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1594030484168838125">Choose</translation>
 <translation id="1620510694547887537">Camera</translation>
+<translation id="1623104350909869708">Prevent this page from creating additional dialogues</translation>
 <translation id="1629803312968146339">Do you want Chrome to save this card?</translation>
 <translation id="1639239467298939599">Loading</translation>
 <translation id="1640180200866533862">User policies</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2270484714375784793">Phone number</translation>
 <translation id="2292556288342944218">Your Internet access is blocked</translation>
-<translation id="2298151730144880294">An Embedded Page on This Page Says</translation>
 <translation id="230155334948463882">New card?</translation>
 <translation id="2316887270356262533">Frees up less than 1 MB. Some sites may load more slowly on your next visit.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requires a username and password.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Clear form</translation>
 <translation id="2851634818064021665">You need permission to visit this site</translation>
 <translation id="2856444702002559011">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Don't reload</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
 <translation id="2916038427272391327">Close other programmes</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">No search results found</translation>
 <translation id="3305707030755673451">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="3320021301628644560">Add billing address</translation>
-<translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
 <translation id="3338095232262050444">Secure</translation>
 <translation id="3340978935015468852">settings</translation>
 <translation id="3345135638360864351">Your request to access this site could not be sent to <ph name="NAME" />. Please try again.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Your manager can unblock it for you</translation>
 <translation id="3566021033012934673">Your connection is not private</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">An embedded page at <ph name="SITE" /> says</translation>
 <translation id="358285529439630156">Credit and prepaid cards are accepted.</translation>
 <translation id="3582930987043644930">Add name</translation>
 <translation id="3583757800736429874">&amp;Redo Move</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Payment</translation>
 <translation id="4926049483395192435">Must be specified.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> says</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Expand list</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Not in <ph name="ORIGINAL_LANGUAGE" />? Report this error</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
 <translation id="5199729219167945352">Experiments</translation>
-<translation id="5201306358585911203">An embedded page on this page says</translation>
 <translation id="5205222826937269299">Name required</translation>
 <translation id="5222812217790122047">Email (required)</translation>
 <translation id="522700295135997067">This site may have just stolen your password</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Connect</translation>
 <translation id="5308689395849655368">Crash reporting is disabled.</translation>
 <translation id="5317780077021120954">Save</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> of <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Choose contact info</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5332219387342487447">Delivery Method</translation>
@@ -630,7 +625,7 @@
 <translation id="5560088892362098740">Expiry Date</translation>
 <translation id="5565735124758917034">Active</translation>
 <translation id="5571083550517324815">Can’t pick up from this address. Select a different address.</translation>
-<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{One in use}other{# in use}}...</translation>
+<translation id="5571347317547569613">({NUM_COOKIES,plural, =1{One in use}other{# in use}})</translation>
 <translation id="5572851009514199876">Please start and sign in to Chrome so that Chrome can check whether you are allowed to access this site.</translation>
 <translation id="5580958916614886209">Check your expiry month and try again</translation>
 <translation id="5586446728396275693">No saved addresses</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Your manager hasn't approved it yet</translation>
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
-<translation id="662080504995468778">Stay</translation>
 <translation id="6624427990725312378">Contact Info</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8625384913736129811">Save This Card to This Device</translation>
+<translation id="8639963783467694461">Auto-fill settings</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
 <translation id="8660471606262461360">From Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, answer, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Accepted credit and prepaid cards</translation>
 <translation id="8952525071319348207">Enter the expiry date and CVC for <ph name="CREDIT_CARD" /> to update your card details. After you confirm, card details from your Google payments account will be shared with this site.</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
-<translation id="8958260976055043711">This Page Says</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8978053250194585037">Google Safe Browsing recently <ph name="BEGIN_LINK" />detected phishing<ph name="END_LINK" /> on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="917450738466192189">Server's certificate is invalid.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> uses an unsupported protocol.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> Says</translation>
 <translation id="9205078245616868884">Your data is encrypted with your sync passphrase. Enter it to start sync.</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>
-<translation id="9209577707918422353">An Embedded Page at <ph name="SITE" /> Says</translation>
 <translation id="9215416866750762878">An application is stopping Chrome from safely connecting to this site</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="933612690413056017">There is no Internet connection</translation>

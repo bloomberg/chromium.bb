@@ -10,13 +10,10 @@
 <translation id="1185134272377778587">Chromium बद्दल</translation>
 <translation id="1298199220304005244">Chromium OS वापरून मदत मिळवा</translation>
 <translation id="1396446129537741364">Chromium पासवर्ड दर्शविण्याचा प्रयत्न करत आहे.</translation>
-<translation id="1403254041219632970">Chromium च्या भविष्‍यातील आवृत्त्या यापुढे Mac OS X 10.6, 10.7 किंवा 10.8 ला समर्थन देणार नाहीत.</translation>
 <translation id="1414495520565016063">आपण Chromium मध्ये साइन इन केले आहे!</translation>
-<translation id="1440917365206527807">Chromium ने या साइटला तुम्हाला यावर नेण्यापासून थांबवले</translation>
 <translation id="1444754455097148408">Chromium खुला स्त्रोत परवाने</translation>
 <translation id="1502360822835740515">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="151962892725702025">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
-<translation id="1559451348202814456">Chromium यापुढे Mac OS X 10.6, 10.7 किंवा 10.8 वर समर्थित नसल्याने कदाचित ते योग्यरित्या कार्य करू शकत नाही.</translation>
 <translation id="1585657529869845941">ते दिसल्यास <ph name="BEGIN_BOLD" />कसेही स्विच करा<ph name="END_BOLD" /> वर क्लिक करा</translation>
 <translation id="1653828314016431939">ठीक आहे - आता पुन्हा एकदा सुरु करा</translation>
 <translation id="1668054258064581266">Chromium वरून आपले खाते काढल्यानंतर, प्रभावी होण्यासाठी आपल्याला आपले उघडे टॅब रीलोड करण्याची आवश्यकता असू शकते.</translation>
@@ -49,7 +46,6 @@
 <translation id="2587578672395088481">अपडेट लागू करण्यासाठी Chromium OS रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="2647554856022461007">Chromium आपला ब्राउझिंग अनुभव सुधारण्यासाठी वेब सेवा वापरू शकते. आपण या सेवा वैकल्पिकपणे अक्षम करू शकता. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">स्‍थापनेदरम्‍यान ऑपरेटिंग प्रणाली एरर आली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
-<translation id="2685838254101182273">Chromium ने अपडेट करणे थांबविले आहे आणि हे आपल्या ऑपरेटिंग प्रणालीच्या या आवृत्तीचे यापुढे समर्थन करत नाही.</translation>
 <translation id="2705403826523567092">सर्व डिव्हाइसवर सिंक केलेला, पर्सनलाइझ केलेला ब्राउझिंग अनुभव मिळवण्यासाठी साइन इन करा</translation>
 <translation id="2711502716910134313">Chromium टॅब</translation>
 <translation id="2718390899429598676">अतिरिक्त सुरक्षिततेसाठी, Chromium आपला डेटा कूटबद्ध करेल.</translation>
@@ -107,7 +103,6 @@
 <translation id="4458285410772214805">कृपया हा बदल प्रभावी होण्यासाठी साइन आउट करा आणि साइन इन करा.</translation>
 <translation id="4469812139324097969">Chromium कालबाह्य झाले आहे कारण हे काही क्षणात पुन्हा लाँच झाले नाही. एक अपडेट उपलब्ध आहे आणि आपण पुन्हा लाँच केल्यावर ते लगेच लागू होईल.</translation>
 <translation id="4488554488975128561">धोकादायम अ‍ॅप्स आणि साइट शोधण्यात मदत करण्यासाठी Google ला काही सिस्टम माहिती आणि पृष्ठ सामग्री स्वयंचलितपणे पाठवून आपण Chromium सुरक्षित आणि वापरण्यास सुलभ बनविण्यात मदत करू शकता.</translation>
-<translation id="4549794359424059447">Chromium च्या भविष्‍यातील आवृत्त्या यापुढे Windows XP किंवा Windows Vista ला समर्थन देणार नाहीत.</translation>
 <translation id="4567424176335768812">आपण <ph name="USER_EMAIL_ADDRESS" /> म्हणून साइन इन केले आहे. आता आपण आपल्या सर्व साइन इन केलेल्या डिव्हाइसेसवरील आपल्या बुकमार्क, इतिहास आणि अन्य सेटिंग्जवर प्रवेश करू शकता.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
 <translation id="4611246891205775468">या साइटसाठी Chromiumला तुमचा मायक्रोफोन अॅक्सेस करण्याची परवानगी आवश्यक आहे.</translation>
@@ -132,7 +127,6 @@
 <translation id="5466153949126434691">Chromium स्वयंचलितपणे अपडेट होते जेणेकरून आपल्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chromium रीस्टार्ट होईल आणि आपण आपल्या मार्गावर असाल.</translation>
 <translation id="5479196819031988440">Chromium OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="549669000822060376">कृपया Chromium नवीनतम सिस्टम अपडेट इंस्टॉल करेपर्यंत प्रतीक्षा करा.</translation>
-<translation id="5524843473235508879">रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="5634636535844844681">Chromium साठी Windows 7 किंवा नंतरची आवृत्ती आवश्यक आहे.</translation>
 <translation id="5680901439334282664">Chromium वर साइन इन करा</translation>
 <translation id="5698481217667032250">Chromium या भाषेत प्रदर्शि‍त करा</translation>
@@ -147,7 +141,6 @@
 <translation id="5902536751647951209">प्रमाणीकरण प्रमाणपत्र अयशस्वी झाले. कृपया Chromium मध्ये पुन्हा साइन इन करा किंवा आणखी माहितीसाठी तुमच्या प्रशासकाशी संपर्क साधा. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">अद्ययावत करणे जवळजवळ पूर्ण झाले! अपडेट करणे समाप्त करण्यासाठी आपले डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> Chrome मध्‍ये जोडले गेले आहे.</translation>
-<translation id="59625444380784159">आपल्या संपर्कांकडील तपशील आपल्याला Chromium मध्ये अधिक द्रुतपणे फॉर्म भरण्यास मदत करू शकतात.</translation>
 <translation id="5987687638152509985">संकालित करण्यासाठी Chromium अपडेट करा</translation>
 <translation id="6055895534982063517">Chromium ची नवीन आवृत्ती उपलब्ध आहे आणि ही नेहमीपेक्षा जलद आहे.</translation>
 <translation id="6063093106622310249">आणि Chromium मध्ये उघडा</translation>
@@ -174,12 +167,10 @@
 काही वैशिष्‍ट्ये अनुपलब्‍ध असू शकतील. कृपया एक भिन्न प्रोफाइल निर्देशिका निर्दिष्‍ट करा किंवा Chromium ची नवीन आवृत्ती वापरा.</translation>
 <translation id="6734080038664603509">&amp;Chromium अपडेट करा</translation>
 <translation id="6734291798041940871">आपल्या संगणकावर सर्व वापरकर्त्यांसाठी Chromium आधीच इंस्टॉल केले आहे.</translation>
-<translation id="6777817260680419853">रीडिरेक्‍ट ब्लॉक केले</translation>
 <translation id="6810143991807788455">वर्तमान सेटिंग्जचा अहवाल देऊन Chromium उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium अपडेट केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
 <translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
-<translation id="694592694773692225">या पेजवर रीडिरेक्‍ट ब्लॉक केले.</translation>
 <translation id="6964305034639999644">लिंक Chromium गु&amp;प्त विंडो मध्ये उघडा</translation>
 <translation id="6970811910055250180">आपले डिव्हाइस अपडेट करीत आहे...</translation>
 <translation id="705851970750939768">Chromium अपडेट करा</translation>

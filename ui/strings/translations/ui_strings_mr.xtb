@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+आणखी <ph name="NUMBER" /></translation>
+<translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ता}one{#ता}other{#ता}}</translation>
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> फोल्डर</translation>
 <translation id="883911313571074303">प्रतिमेवर भाष्य करा</translation>

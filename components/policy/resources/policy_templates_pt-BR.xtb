@@ -142,6 +142,7 @@
 
           Para ver exemplos mais detalhados, visite:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="1503487916067509762">Ativa o bloqueio de injeção de softwares de terceiros</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
@@ -180,15 +181,15 @@
 <translation id="1634989431648355062">Permitir o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
 <translation id="1655229863189977773">Define o tamanho do cache de disco em bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
-<translation id="1668836044817793277">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" />.
+<translation id="1668836044817793277">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" />.
 
-      Esta política define se o app em Kiosk aberto automaticamente com zero de atraso tem ou não permissão para controlar a versão do <ph name="PRODUCT_OS_NAME" />, declarando uma required_platform_version em seu manifesto e usando-a como o prefixo de atualização automática de versão de destino.
+      Esta política define se o aplicativo de quiosque aberto automaticamente com zero de atraso tem ou não permissão para controlar a versão do <ph name="PRODUCT_OS_NAME" />, declarando uma required_platform_version em seu manifesto e usando-a como o prefixo de atualização automática de versão de destino.
 
-      Se a política for definida como true, o valor da chave de manifesto required_platform_version do app em Kiosk aberto automaticamente com zero de atraso será usado como prefixo de atualização automática de versão de destino.
+      Se a política for definida como true, o valor da chave de manifesto required_platform_version do aplicativo de quiosque aberto automaticamente com zero de atraso será usado como prefixo de atualização automática de versão de destino.
 
       Se a política não estiver configurada ou estiver definida como false, a chave de manifesto required_platform_version será ignorada, e a atualização automática prosseguirá normalmente.
 
-      Aviso: não é recomendado que o controle da versão do <ph name="PRODUCT_OS_NAME" /> seja delegado a um app em Kiosk, pois ele pode impedir que o dispositivo receba atualizações de software e correções de segurança críticas. Delegar o controle da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os usuários em risco.</translation>
+      Aviso: não é recomendado que o controle da versão do <ph name="PRODUCT_OS_NAME" /> seja delegado a um aplicativo de quiosque, pois ele pode impedir que o dispositivo receba atualizações de software e correções de segurança críticas. Delegar o controle da versão do <ph name="PRODUCT_OS_NAME" /> pode colocar os usuários em risco.</translation>
 <translation id="1675002386741412210">Com suporte em:</translation>
 <translation id="1679420586049708690">Sessão pública para login automático</translation>
 <translation id="1689963000958717134">Permite que a configuração de rede seja aplicada a todos os usuários de dispositivos <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
@@ -283,6 +284,11 @@
 
           Se esta política não for definida, os quatro esquemas serão utilizados.</translation>
 <translation id="2067011586099792101">Bloquear acesso a sites fora de pacotes de conteúdo</translation>
+<translation id="2075030897098958514">Controla se NTLMv2 está ativada.
+
+          Todas as versões recentes dos servidores Samba e Windows são compatíveis com NTLMv2. Ela deve ser desativada apenas para compatibilidade reversa e reduz a segurança da autenticação.
+
+          O valor padrão quando esta política não está definida atualmente é falso para compatibilidade com versões anteriores, mas será alterado para verdadeiro no futuro.</translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
 <translation id="2082205219176343977">Configurar a versão mínima permitida do Chrome para o dispositivo.</translation>
@@ -370,6 +376,7 @@
 <translation id="2303795211377219696">Ativar o preenchimento automático para cartões de crédito</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2312134445771258233">Permite configurar as páginas que são carregadas na inicialização. O conteúdo da lista "URLs que devem ser abertos na inicialização" é ignorado, a menos que você selecione "Abrir uma lista de URLs" em "Ação na inicialização".</translation>
+<translation id="2327252517317514801">Definir os domínios autorizados a acessar o G Suite</translation>
 <translation id="2334591568684482454">Configura a disponibilidade e o comportamento da funcionalidade de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Configurações individuais podem ser especificadas em propriedades JSON:
@@ -481,7 +488,7 @@
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
 <translation id="2569647487017692047">Se esta política for definida como false, o <ph name="PRODUCT_OS_NAME" /> desativará o Bluetooth, e o usuário não poderá ativá-lo novamente.
 
-      Se esta política for definida como true ou for deixada sem definição, o usuário poderá ativar ou desativar o Bluetooth conforme desejar.
+      Se esta política for definida como true ou for deixada sem definição, o usuário poderá ativar ou desativar o Bluetooth conforme quiser.
 
       Se esta política for definida, o usuário não poderá alterá-la ou modificá-la.
 
@@ -651,7 +658,7 @@
       Se esta política não for definida, os usuários poderão decidir se o cliente DNS integrado será usado editando-se chrome://flags ou especificando-se a sinalização de uma linha de comando.</translation>
 <translation id="3214164532079860003">Caso ativada, esta política força a página inicial a ser importada do navegador padrão atual. Se desativada, a página inicial não é importada. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="3219421230122020860">Modo de navegação anônima disponível</translation>
-<translation id="3220624000494482595">Se o app em Kiosk for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
+<translation id="3220624000494482595">Se o aplicativo de quiosque for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Padrões de URL para permitir instalação de extensões, aplicativos e scripts do usuário a partir de</translation>
 <translation id="3240609035816615922">Política de acesso à configuração de impressoras.</translation>
 <translation id="3243309373265599239">Especifica o período de inatividade do usuário após o qual a tela é escurecida no funcionamento com alimentação CA.
@@ -753,6 +760,13 @@
       Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
+<translation id="3732106275571017176">Esta configuração permite que os usuários alternem entre Contas do Google dentro da área de conteúdo da janela do navegador deles após terem feito login no dispositivo <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for definida como falsa, o login em uma conta diferente a partir da área de conteúdo não anônima do navegador não será permitido.
+
+      Se esta política não for definida ou for definida como verdadeira, o comportamento padrão será usado: o login em uma conta diferente a partir da área de conteúdo do navegador será permitido, exceto para contas filhas, onde ele ficará bloqueado na área de conteúdo não anônima.
+
+      No caso de o login em uma conta diferente não ser permitido pelo modo sem rastros, recomendamos bloquear esse modo usando a política IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
 <translation id="3737544779868348650">Nome de host da rede do dispositivo</translation>
 <translation id="3750220015372671395">Bloquear a geração de chaves nesses sites</translation>
@@ -771,6 +785,7 @@
       Deixar estas políticas se definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3758249152301468420">Desativar Ferramentas de desenvolvedor</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
+<translation id="377044054160169374">Aplicação de intervenção de experiência abusiva</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
 <translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
 
@@ -943,6 +958,7 @@
           Esta política é opcional. Se não for definida, a solicitação de pesquisa de imagens será enviada usando o método GET.
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="4285674129118156176">Permitir que usuários sem afiliação utilizem o ARC</translation>
 <translation id="4294280661005713627">Define uma versão de destino para atualizações automáticas.
 
       Especifica o prefixo de uma versão de destino para a qual o <ph name="PRODUCT_OS_NAME" /> deve ser atualizado. Se o dispositivo estiver executando uma versão anterior ao prefixo especificado, ele será atualizado para a versão mais recente com esse mesmo prefixo. Se o dispositivo já estiver em uma versão posterior, não haverá nenhum efeito (ou seja, nenhum downgrade será realizado), e o dispositivo permanecerá na versão atual. O formato do prefixo funciona como um componente, conforme demonstrado no seguinte exemplo:
@@ -965,7 +981,7 @@
       Se a política for deixada sem definição, não haverá restrições impostas por ela no conjunto de apps que o usuário pode ativar na tela de bloqueio.</translation>
 <translation id="4309640770189628899">Se os pacotes de criptografia DHE em TLS estão ativados ou não</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
-<translation id="4322842393287974810">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="4322842393287974810">Permitir que o aplicativo de quiosque aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
 <translation id="4347908978527632940">Se essa política for definida como "true", e o usuário for um usuário supervisionado, outros apps do Android poderão consultar restrições da Web do usuário por meio de um provedor de conteúdo.
 
@@ -1010,7 +1026,7 @@
 <translation id="4508686775017063528">Se essa política for definida como verdadeira ou não for definida, o <ph name="PRODUCT_NAME" /> será ativado, e os usuários poderão iniciá-lo no menu do app, nos menus de contexto da página, nos controles de mídia em sites compatíveis com o Cast e (se mostrado) no ícone da barra de ferramentas do Google Cast.
 
           Se essa política for definida como falsa, o <ph name="PRODUCT_NAME" /> será desativado.</translation>
-<translation id="4518251772179446575">Perguntar sempre que um site desejar rastrear a localização física dos usuários</translation>
+<translation id="4518251772179446575">Perguntar sempre que um site quiser rastrear a localização física dos usuários</translation>
 <translation id="4519046672992331730">Permite sugestões de pesquisa na omnibox do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta configuração.
 
       Se você ativar esta configuração, as sugestões de pesquisa serão utilizadas.
@@ -1024,10 +1040,19 @@
 <translation id="4531706050939927436">Os apps Android podem ser instalados forçadamente a partir do Google Admin Console usando o Google Play. Eles não usam esta política.</translation>
 <translation id="4534500438517478692">Nome de restrição Android:</translation>
 <translation id="4541530620466526913">Contas locais de dispositivo</translation>
+<translation id="4544079461524242527">Configura as definições de gerenciamento de extensão para <ph name="PRODUCT_NAME" />.
+
+          Esta política controla várias configurações, inclusive aquelas controladas por qualquer política existente relacionada a extensões. Esta política substitui qualquer política anterior se ambas estiverem definidas.
+
+          Esta política mapeia um ID de extensão ou um URL de atualização para sua configuração. Com um ID de extensão, a configuração será aplicada à extensão especificada apenas. Uma configuração padrão pode ser definida para o <ph name="DEFAULT_SCOPE" /> de ID especial, o que será aplicado a todas as extensões que não têm uma configuração personalizada definida nesta política. Com um URL de atualização, a configuração será aplicada a todas as extensões com o URL de atualização exato estabelecido no manifesto dessa extensão, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Para ver uma descrição de configurações e estruturas possíveis desta política, visite https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="4555850956567117258">Ativar declaração remota para o usuário</translation>
 <translation id="4557134566541205630">URL da página "Nova guia" do provedor de pesquisa padrão</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
+<translation id="4613508646038788144">Se a política for definida como falsa, o software de terceiros terá permissão para injetar um código executável nos processos do Chrome. Se a política não for definida ou for definida como verdadeira, o software de terceiros será impedido de injetar o código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo listados</translation>
@@ -1041,6 +1066,12 @@
 <translation id="465099050592230505">URL da loja on-line da empresa (uso suspenso)</translation>
 <translation id="4665897631924472251">Configurações de gerenciamento de extensão</translation>
 <translation id="4668325077104657568">Configuração de imagens padrão</translation>
+<translation id="4671708336564240458">Permite que você determine se sites com experiência abusiva devem ser impedidos de abrir novas janelas ou guias.
+
+      Se esta política estiver definida como Verdadeiro, os sites com experiências abusivas serão impedidos de abrir novas janelas e guias.
+      Contudo, esse comportamento não será acionado se a política SafeBrowsingEnabled estiver definida como Falso.
+      Se esta política estiver definida como Falso, os sites com experiências abusivas poderão abrir novas janelas e guias.
+      Se a política não for definida, o valor Verdadeiro será usado.</translation>
 <translation id="467236746355332046">Recursos compatíveis:</translation>
 <translation id="4674167212832291997">Personaliza a lista de padrões de URL que devem ser sempre renderizados por <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -1106,6 +1137,7 @@
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
 
           Se esta política estiver definida como falsa, as solicitações de bloqueio de ativação da tela são ignoradas.</translation>
+<translation id="487460824085252184">Migrar automaticamente, sem autorização do usuário.</translation>
 <translation id="4876805738539874299">Versão máxima de SSL ativada</translation>
 <translation id="4881315447528084360">Especifica uma lista de apps e extensões que são instalados silenciosamente,
           sem interação do usuário e que não podem ser desinstalados ou 
@@ -1206,6 +1238,7 @@
 <translation id="5272684451155669299">Se esta política for definida como true, o usuário poderá usar o hardware em dispositivos Chrome para atestar remotamente sua identidade para a Privacy CA por meio da <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> usando <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Se for definida como false ou não for definida, as chamadas para a API falharão e receberão um código de erro.</translation>
+<translation id="5283457834853986457">Desativar o localizador de plug-ins (uso suspenso)</translation>
 <translation id="5288772341821359899">Se a política for configurada, o alcance da porta UDP usado por WebRTC será restrito ao intervalo de porta especificado (pontos de extremidade inclusos).
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
@@ -1229,10 +1262,16 @@
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
 <translation id="5330684698007383292">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> trabalhe com os tipos de conteúdo a seguir</translation>
 <translation id="5365946944967967336">Exibir o botão da Página inicial na barra de ferramentas</translation>
+<translation id="5366745336748853475">Permite que você defina uma lista de padrões de URL que especifique sites para os quais um certificado de cliente é selecionado automaticamente na tela de login do quadro que hospeda o fluxo SAML, se o site solicitar um certificado. Um exemplo de uso é a configuração de um certificado de dispositivos que será apresentado ao IdP SAML.
+
+      O valor deve ser uma matriz de dicionários JSON convertido em strings. Cada dicionário precisa ter a forma { "pattern": "$PADRÃO_DE_URL", "filter" : $FILTRO}, em que $PADRÃO_DE_URL é um padrão de configuração de conteúdo. $FILTRO restringe a partir de quais certificados de cliente o navegador selecionará automaticamente. Independentemente do filtro, apenas certificados que correspondam à solicitação de certificado do servidor serão selecionados. Se
+ $FILTRO tem a forma { "ISSUER": { "CN": "$CN_DO_EMISSOR" } }, apenas os certificados de cliente que são emitidos por um certificado com o nome real $CN_DO_EMISSOR são selecionados. Se $FILTRO for o dicionário em branco {}, a seleção de certificados de cliente não ficará mais restrita.
+
+      Se esta política não for definida, nenhuma seleção automática será feita para nenhum site.</translation>
 <translation id="5366977351895725771">Se definida como falsa, a criação de usuários supervisionados por este usuário será desativada. Quaisquer usuários supervisionados existentes permanecerão disponíveis.
 
           Se definida como verdadeira ou não configurada, este usuário poderá criar e gerenciar usuários supervisionados.</translation>
-<translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website desejar exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
+<translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website quiser exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> lide com os seguintes tipos de conteúdo.</translation>
 <translation id="5388730678841939057">Seleciona a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
 <translation id="5392172595902933844">As informações sobre o status do Android são enviadas de volta para o
@@ -1284,6 +1323,7 @@
       Se especificada, a política adicionará um parâmetro de consulta chamado "restrict" ao URL usado para buscar o termo-semente "Variações". O valor do parâmetro será o valor especificado nesta política.
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
+<translation id="5561811616825571914">Seleciona certificados de cliente automaticamente para esses sites na tela de login</translation>
 <translation id="556941986578702361">Controla a ocultação automática da estante do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política estiver definida como "AlwaysAutoHideShelf", a estante sempre será ocultada automaticamente.
@@ -1344,6 +1384,11 @@
 
       Se a política não for definida, será usado o diretório padrão do perfil.</translation>
 <translation id="5826047473100157858">Especifica se o usuário pode abrir páginas no modo de navegação anônima em <ph name="PRODUCT_NAME" />. Se a opção "Ativado" for selecionada ou a política for deixada sem configuração, as páginas podem ser abertas no modo de navegação anônima. Se a opção "Destivado" for selecionada, as páginas não poderão ser abertas no modo de navegação anônima. Se a opção "Forçado" for selecionada, as páginas podem ser abertas somente no modo de navegação anônima.</translation>
+<translation id="583091600226586337">
+      Se a política for ativada, o usuário poderá escolher onde salvar cada arquivo antes de fazer o download.
+      Se a política for desativada, os downloads começarão imediatamente, e o usuário não poderá escolher onde salvar o arquivo.
+      Se a política não for configurada, o usuário poderá alterar a configuração.
+      </translation>
 <translation id="5835124959204887277">Especifica os URLs e domínios para os quais nenhuma solicitação será exibida quando os certificados de declaração das chaves de segurança forem solicitados. Além disso, um sinal será enviado para a chave de segurança indicando que a declaração individual pode ser usada. Sem isso, os usuários receberão uma solicitação no Chrome 65 ou versão posterior quando os sites solicitarem a declaração das chaves de segurança.
 
       Os URLs (como https://example.com/algum/caminho) só terão correspondência como U2F appIDs. Os domínios (como example.com) só terão correspondência como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn de um determinado site, tanto o domínio quanto o URL do appID precisarão ser listados.</translation>
@@ -1402,6 +1447,7 @@
 <translation id="5966615072639944554">Extensões que podem usar a API de declaração remota</translation>
 <translation id="5983708779415553259">Comportamento padrão para sites fora de pacotes de conteúdo</translation>
 <translation id="5997543603646547632">Usar relógido de 24 horas por padrão</translation>
+<translation id="5997846976342452720">Especifica se o localizador de plug-ins deve ser desativado (uso suspenso)</translation>
 <translation id="6005179188836322782">Ativa o recurso "Navegação segura" do <ph name="PRODUCT_NAME" /> e impede os usuários de alterarem essa configuração.
 
       Se você ativar essa configuração, o "Navegação segura" estará sempre ativo.
@@ -1636,6 +1682,7 @@
       Se essa política for desativada ou não for configurada, apenas os perfis locais normais serão usados.
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
+<translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
 <translation id="6757438632136860443">Permite definir uma lista de padrões de URL que especificam sites autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, o valor padrão global será usado para todos os sites, seja a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou da configuração pessoal do usuário, caso não tenha sido definida.</translation>
@@ -1654,6 +1701,26 @@
 <translation id="6894178810167845842">URL da página "Nova guia"</translation>
 <translation id="6899705656741990703">Detectar automaticamente configurações de proxy</translation>
 <translation id="6903814433019432303">Esta política é ativa somente no modo de varejo. Determina o conjunto de URLs a serem carregados quando a sessão de demonstração for iniciada. Esta política substitui quaisquer outros mecanismos de definição do URL inicial e, portanto, somente pode ser aplicada a uma sessão não associada a determinado usuário.</translation>
+<translation id="6908347296939885026">Permite o recurso de login restrito do <ph name="PRODUCT_NAME" /> no G Suite e impede que os usuários alterem esta configuração.
+
+      Se você definir esta configuração, o usuário só poderá acessar o Google
+      Apps usando contas dos domínios especificados (isso não
+      funciona para gmail.com/googlemail.com).
+
+      Esta configuração NÃO impedirá que o usuário faça login em um dispositivo gerenciado
+      que requer autenticação com uma Conta do Google. O usuário ainda terá permissão para
+      fazer login em contas de outros domínios, mas receberá uma mensagem de erro
+      ao tentar usar o G Suite com essas contas.
+
+      Se esta configuração for deixada em branco/não configurada, o usuário poderá
+      acessar o G Suite com qualquer conta.
+
+      Esta política faz com que o cabeçalho X-GoogApps-Allowed-Domains seja anexado a
+      todas as solicitações HTTP e HTTPS para todos os domínios do google.com, conforme descrito em
+      https://support.google.com/a/answer/1668854.
+
+
+      Os usuários não poderão alterar ou modificar esta configuração.</translation>
 <translation id="6908640907898649429">Configura o provedor de pesquisa padrão. É possível especificar o provedor de pesquisa padrão que será usado ou escolhido pelo usuário para desativar a pesquisa padrão.</translation>
 <translation id="6915442654606973733">Ativar o recurso de acessibilidade do feedback falado.
 
@@ -1771,6 +1838,9 @@
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de plano de fundo do dispositivo</translation>
+<translation id="7266471712301230894">Esta política foi removida a partir da versão 64 do <ph name="PRODUCT_NAME" />.
+
+      A pesquisa e a instalação automáticas de plug-ins ausentes não são mais compatíveis.</translation>
 <translation id="7267809745244694722">Teclas de mídia padrão para teclas de função</translation>
 <translation id="7271085005502526897">Importar homepage do navegador padrão na primeira execução</translation>
 <translation id="7273823081800296768">Se esta definição estiver ativada ou não estiver configurada, os usuários podem optar por parear clientes e hosts no momento da conexão, eliminando a necessidade de inserir um PIN todas as vezes.
@@ -1822,6 +1892,10 @@
 
       Se a política não for configurada ou se for definida como "false", <ph name="TLS_FALSE_START" /> será ativada. Se for definida como "true", <ph name="TLS_FALSE_START" /> será desativada.</translation>
 <translation id="7433714841194914373">Ativar o Instant</translation>
+<translation id="7443061725198440541">Se esta política não for definida ou ativada, o usuário poderá usar a correção ortográfica.
+
+      Se esta política for desativada, o usuário não poderá usar a correção ortográfica. A política SpellcheckLanguage também será ignorada quando esta política for desativada.
+      </translation>
 <translation id="7443616896860707393">Solicitações básicas de autorização HTTPS de múltiplas origens</translation>
 <translation id="7469554574977894907">Ativar sugestões de pesquisa</translation>
 <translation id="7474249562477552702">Se os certificados SHA-1 assinados emitidos pelas âncoras de confiança locais são permitidos ou não</translation>
@@ -2049,6 +2123,14 @@
       Se a política não estiver definida, o <ph name="PRODUCT_OS_NAME" /> usará o ID da conta de e-mail da conta local de dispositivo como nome de exibição na tela de login.
 
       Esta política é ignorada para contas de usuário comuns.</translation>
+<translation id="8259375588339409826">Tanto o Chromium como o Google Chrome são compatíveis com o mesmo conjunto de políticas. É possível que este documento inclua políticas não lançadas (ou seja, a entrada "Compatível com" se refere a uma versão ainda não lançada do <ph name="PRODUCT_NAME" />), que estão sujeitas a alteração ou remoção sem aviso prévio e para as quais nenhuma garantia de qualquer tipo é fornecida, incluindo garantias com relação às propriedades de privacidade e segurança delas.
+
+Essas políticas devem ser usadas estritamente para configurar instâncias do <ph name="PRODUCT_NAME" /> internas à sua organização. O uso dessas políticas fora da sua organização (por exemplo, em um programa distribuído publicamente) é considerado malware e provavelmente será identificado como malware pelo Google e por fornecedores de programas antivírus.
+
+Não é necessário definir essas configurações manualmente. Modelos fáceis de usar para Windows, Mac e Linux estão disponíveis para download em <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+O modo recomendado para configurar políticas no Windows é por meio de GPO, embora o aprovisionamento de políticas por meio de registro ainda seja compatível com instâncias do Windows que estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
+<translation id="8274603902181597201">Faz a limpeza do diretório inicial do ecryptfs do usuário e começa com um novo diretório inicial ext4-encrypted.</translation>
 <translation id="8279832363395120715">Retira as partes de privacidade e confidenciais de URLs https:// antes de repassá-los para scripts de PAC (Config. automática de proxy) usados pelo <ph name="PRODUCT_NAME" /> durante a resolução de proxy.
 
       Quando a política é definida como True, o recurso de segurança é ativado. e os URLs https:// são
@@ -2129,6 +2211,11 @@
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
+<translation id="8598350264853261122">Se a política for definida como falsa, usuários sem afiliação não poderão usar o ARC.
+
+      Se a política não for definida ou for definida como verdadeira, todos os usuários poderão usar o ARC (a não ser que o ARC seja desativado por outros meios).
+
+      Alterações à política só serão aplicadas enquanto o ARC não estiver funcionando, ou seja, enquanto o Chrome OS estiver no processo de inicialização.</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>
 <translation id="8631434304112909927">até a versão <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Em apps Android, esta política afeta somente a câmera integrada. Quando esta política é definida como true, a câmera é desativada para todos os apps Android, sem exceções.</translation>
@@ -2188,6 +2275,20 @@
       Se esta configuração for deixada sem definição, o usuário poderá optar por utilizar esta função ou não.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
 <translation id="8882006618241293596">Bloquear o plug-in <ph name="FLASH_PLUGIN_NAME" /> nestes sites</translation>
+<translation id="8894962626537183708">
+      A política especifica a lista de origens (URLs) que devem ser tratadas como um contexto seguro. O objetivo é permitir que organizações possam configurar um servidor temporário para desenvolvimentos de Web internos para que os desenvolvedores deles possam testar recursos que exijam contextos seguros sem precisar implantar TLS no servidor temporário.
+      A definição de uma lista de URLs nesta política tem o mesmo efeito que configurar a sinalização de linha de comando "--unsafely-treat-insecure-origin-as-secure" para uma lista dos mesmos URLs separados por vírgulas. Se a política for definida, ela terá prioridade em relação à sinalização de linha de comando.
+      Para ver mais informações sobre contextos seguros, consulte https://www.w3.org/TR/secure-contexts/
+      </translation>
+<translation id="890403179930035128">Força a ativação da correção ortográfica de idiomas. Idiomas não reconhecidos nessa lista serão ignorados.
+
+      Se você ativar esta política, a correção ortográfica será ativada para os idiomas especificados, além dos idiomas para os quais o usuário ativou a correção ortográfica.
+
+      Se você não configurar esta política ou se desativá-la, não haverá alterações nas preferências de correção ortográfica do usuário.
+
+      Se a política SpellcheckEnabled for desativada, esta política não terá efeito.
+
+      Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Ativa o modo visitante</translation>
 <translation id="8908294717014659003">Permite definir se os sites podem ter acesso a dispositivos de captura de mídia. O acesso a dispositivos de captura de mídia pode ser permitido por padrão, ou uma pergunta será feita ao usuário cada vez que um site quiser ter acesso a dispositivos de captura de mídia.
 
@@ -2259,6 +2360,7 @@
           Por exemplo, para permitir todos os modos de desbloqueio rápido, use ["all"]. Para permitir apenas o desbloqueio com PIN, use ["all"]. Para desativar todos os modos de desbloqueio rápido, use [].
 
           Por padrão, nenhum modo de desbloqueio rápido é disponibilizado para dispositivos gerenciados.</translation>
+<translation id="9136399279941091445">Intervalos de horas de inatividade quando as políticas do dispositivo específicas são lançadas</translation>
 <translation id="9147029539363974059">Enviar registros de sistema para o servidor de gerenciamento, a fim de permitir
       que administradores monitorem os registros de sistema.
 
@@ -2267,14 +2369,10 @@
 <translation id="9150416707757015439">Esta política é obsoleta. Utilize IncognitoModeAvailability em seu lugar, que ativa o modo de navegação anônima em <ph name="PRODUCT_NAME" />. Caso esta configuração seja ativada ou não configurada, os usuários podem abrir páginas da Web no modo de navegação anônima. Se essa configuração for desativada, os usuários não podem abrir páginas da Web usando o modo de navegação anônima. Se esta política for deixada sem definição, esta opção será ativada e o usuário será capaz de usar o modo de navegação anônima.</translation>
 <translation id="915194831143859291">Se esta política é definida como "false" ou se não é configurada, o <ph name="PRODUCT_OS_NAME" /> permite que o usuário desligue o dispositivo.
       Se esta política é definida como "true", o <ph name="PRODUCT_OS_NAME" /> aciona uma reinicialização quando o usuário desliga o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de desligamento da interface de usuário por botões de reinicialização. Se o usuário desliga o dispositivo no botão liga/desliga, ele não é reinicializado automaticamente, mesmo que a política esteja ativa.</translation>
+<translation id="9158929520101169054">Permitir login múltiplo no navegador</translation>
 <translation id="9187743794267626640">Desativa a montagem de armazenamento externo</translation>
 <translation id="9197740283131855199">Percentual pelo qual calcular o intervalo de escurecimento da tela se o usuário ficar ativo após o escurecimento</translation>
 <translation id="9200828125069750521">Parâmetros para URL de imagens que usa POST</translation>
-<translation id="9212233969680267790">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 66 (aproximadamente em fevereiro de 2018).
-
-      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará uma versão máxima padrão.
-
-      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="9213347477683611358">Configura a imagem de plano de fundo do dispositivo que é exibida na tela de login se nenhum usuário está conectado ao dispositivo. A política é definida pela especificação do URL no qual o dispositivo Chrome OS pode fazer o download da imagem de plano de fundo e de um hash criptográfico usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 16 MB. O URL deve ser acessado sem nenhuma autenticação. A imagem de plano de fundo é transferida por download e armazenada em cash. Sempre que o URL ou o hash muda, o download é feito novamente.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,
@@ -2292,4 +2390,5 @@
 <translation id="930930237275114205">Configura o diretório de dados do usuário do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Ativa o login forçado no <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
+<translation id="982497069985795632">Ativar verificação ortográfica</translation>
 </translationbundle>

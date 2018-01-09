@@ -218,6 +218,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="533632423981297619">Your passwords will be visible to anyone who can see the exported file. Do not share this file with anyone.</translation>
 <translation id="5388358297987318779">Open Image</translation>
 <translation id="5409365236829784218">There are no applications installed that can open this file.</translation>
 <translation id="5433691172869980887">Username copied</translation>
@@ -350,6 +351,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7859704718976024901">Browsing history</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Export Passwords…</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7961015016161918242">Never</translation>
 <translation id="7971521879845308059">Block Pop-ups</translation>

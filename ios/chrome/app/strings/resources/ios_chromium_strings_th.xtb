@@ -40,7 +40,6 @@
 <translation id="7400689562045506105">ใช้ Chromium ได้ทุกที่</translation>
 <translation id="7674213385180944843">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Chromium แล้วเปิดกล้องถ่ายรูป</translation>
 <translation id="786327964234957808">คุณกำลังเปลี่ยนบัญชีในการซิงค์จาก <ph name="USER_EMAIL1" /> เป็น <ph name="USER_EMAIL2" /> ข้อมูล Chromium ที่มีอยู่ของคุณจัดการโดย <ph name="DOMAIN" /> การเปลี่ยนบัญชีจะลบข้อมูลจากอุปกรณ์นี้ แต่ข้อมูลจะยังคงอยู่ใน <ph name="USER_EMAIL1" /></translation>
-<translation id="8111736072665034317">การใช้แอปพลิเคชันนี้หมายความว่าคุณยอมรับ<ph name="BEGIN_LINK" />ข้อกำหนดในการให้บริการ<ph name="END_LINK" />ของ Chromium</translation>
 <translation id="8175055321229419309">เคล็ดลับ: <ph name="BEGIN_LINK" />ย้าย Chromium ไปไว้ที่ Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chromium โดยอิงจากตำแหน่งของคุณ</translation>
 <translation id="8353224596138547809">คุณต้องการให้ Chromium บันทึกรหัสผ่านของคุณสำหรับไซต์นี้หรือไม่</translation>

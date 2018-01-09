@@ -173,6 +173,7 @@
 <translation id="5430931332414098647">Tethering instantâneo</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Todos os usuários disponíveis já foram adicionados a esta sessão.</translation>
+<translation id="5457599981699367932">Navegar como visitante</translation>
 <translation id="553675580533261935">Saindo da sessão</translation>
 <translation id="5548285847212963613">A extensão "<ph name="EXTENSION_NAME" />" pode ajudar na conexão com esta rede.</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
@@ -183,6 +184,7 @@
 <translation id="5744083938413354016">Arrastar com toque</translation>
 <translation id="5777841717266010279">Interromper compartilhamento de tela?</translation>
 <translation id="57838592816432529">Desativar som</translation>
+<translation id="5832805196449965646">Adicionar pessoa</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -199,7 +201,7 @@
 <translation id="6018164090099858612">Saindo do modo espelhado</translation>
 <translation id="6043212731627905357">Este monitor não está funcionando bem com seu <ph name="DEVICE_TYPE" /> (o monitor não é compatível).</translation>
 <translation id="6043994281159824495">Sair agora</translation>
-<translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Deseja continuar?</translation>
+<translation id="6047696787498798094">O compartilhamento de tela será interrompido quando você alternar para outro usuário. Quer continuar?</translation>
 <translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Não foi possível verificar sua senha. Tente novamente.</translation>
 <translation id="607652042414456612">Seu computador pode ser detectado por dispositivos Bluetooth próximos e aparecerá como "<ph name="NAME" />", com o endereço <ph name="ADDRESS" /></translation>

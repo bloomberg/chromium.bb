@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">träddiagram</translation>
 <translation id="1822429046913737220">FM/EM</translation>
 <translation id="1832974991323546415">spela på en fjärrenhet</translation>
-<translation id="1854180393107901205">Sluta casta</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Värdet måste vara <ph name="MAXIMUM_DATE_OR_TIME" /> eller tidigare.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Annat ...</translation>
 <translation id="9138385573473225930">varning</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> som börjar den <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Bild-i-bild</translation>
 <translation id="947831847158436616">cell</translation>
 <translation id="966787709310836684">meny</translation>
 </translationbundle>

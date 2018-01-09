@@ -218,6 +218,7 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5327248766486351172">Navn</translation>
+<translation id="533632423981297619">Dine adgangskoder er synlige for alle, der kan se den eksporterede fil. Del ikke denne fil med nogen.</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
@@ -350,6 +351,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Eksportér adgangskoder…</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7971521879845308059">Bloker pop op-vinduer</translation>
@@ -395,7 +397,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
-<translation id="8971089644512329999">OK, det er forstået</translation>
+<translation id="8971089644512329999">OK</translation>
 <translation id="8981454092730389528">Administration af aktivitet på Google</translation>
 <translation id="8985320356172329008">Du er logget ind på Google som</translation>
 <translation id="902659348151742535">Google kan bruge din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester.</translation>
