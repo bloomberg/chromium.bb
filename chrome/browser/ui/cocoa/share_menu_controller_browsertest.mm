@@ -227,15 +227,20 @@ IN_PROC_BROWSER_TEST_F(ShareMenuControllerTest, MenuHasKeyEquivalent) {
   EXPECT_EQ([menu numberOfItems], 0);
   NSEvent* event = cocoa_test_event_utils::KeyEventWithKeyCode(
       'i', 'i', NSKeyDown, NSCommandKeyMask | NSShiftKeyMask);
+  id ignored_target;
+  SEL ignored_action;
   EXPECT_FALSE([controller_ menuHasKeyEquivalent:menu
                                         forEvent:event
-                                          target:nil
-                                          action:nil]);
+                                          target:&ignored_target
+                                          action:&ignored_action]);
   EXPECT_GT([menu numberOfItems], 0);
 
   NSMenuItem* item = [menu itemAtIndex:0];
   // |menuHasKeyEquivalent:....| shouldn't populate the menu after the first
   // time.
-  [controller_ menuHasKeyEquivalent:menu forEvent:event target:nil action:nil];
+  [controller_ menuHasKeyEquivalent:menu
+                           forEvent:event
+                             target:&ignored_target
+                             action:&ignored_action];
   EXPECT_EQ(item, [menu itemAtIndex:0]);  // Pointer equality intended.
 }
