@@ -1640,8 +1640,14 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
   }
 
   // This test checks large-but-not-quite-direct allocations.
+  // kSystemPageSize is 16384 on Loongson Platform, not 4096.
   {
-    void* ptr = generic_allocator.root()->Alloc(65536 + 1, type_name);
+#if defined(_MIPS_ARCH_LOONGSON)
+    size_t requestedSize = 262144;
+#else
+    size_t requestedSize = 65536;
+#endif
+    void* ptr = generic_allocator.root()->Alloc(requestedSize + 1, type_name);
 
     {
       MockPartitionStatsDumper dumper;
@@ -1649,14 +1655,15 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
                                           false /* detailed dump */, &dumper);
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
-      size_t slot_size = 65536 + (65536 / kGenericNumBucketsPerOrder);
+      size_t slot_size =
+          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_FALSE(stats->is_direct_map);
       EXPECT_EQ(slot_size, stats->bucket_slot_size);
-      EXPECT_EQ(65536u + 1 + kExtraAllocSize, stats->active_bytes);
+      EXPECT_EQ(requestedSize + 1 + kExtraAllocSize, stats->active_bytes);
       EXPECT_EQ(slot_size, stats->resident_bytes);
       EXPECT_EQ(0u, stats->decommittable_bytes);
       EXPECT_EQ(kSystemPageSize, stats->discardable_bytes);
@@ -1674,7 +1681,8 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
                                           false /* detailed dump */, &dumper);
       EXPECT_FALSE(dumper.IsMemoryAllocationRecorded());
 
-      size_t slot_size = 65536 + (65536 / kGenericNumBucketsPerOrder);
+      size_t slot_size =
+          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
@@ -1691,7 +1699,8 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
     }
 
     void* ptr2 =
-        generic_allocator.root()->Alloc(65536 + kSystemPageSize + 1, type_name);
+        generic_allocator.root()->Alloc(requestedSize + kSystemPageSize + 1,
+                                        type_name);
     EXPECT_EQ(ptr, ptr2);
 
     {
@@ -1700,14 +1709,15 @@ TEST_F(PartitionAllocTest, DumpMemoryStats) {
                                           false /* detailed dump */, &dumper);
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
-      size_t slot_size = 65536 + (65536 / kGenericNumBucketsPerOrder);
+      size_t slot_size =
+          requestedSize + (requestedSize / kGenericNumBucketsPerOrder);
       const PartitionBucketMemoryStats* stats =
           dumper.GetBucketStats(slot_size);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_FALSE(stats->is_direct_map);
       EXPECT_EQ(slot_size, stats->bucket_slot_size);
-      EXPECT_EQ(65536u + kSystemPageSize + 1 + kExtraAllocSize,
+      EXPECT_EQ(requestedSize + kSystemPageSize + 1 + kExtraAllocSize,
                 stats->active_bytes);
       EXPECT_EQ(slot_size, stats->resident_bytes);
       EXPECT_EQ(0u, stats->decommittable_bytes);
