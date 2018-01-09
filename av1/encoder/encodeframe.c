@@ -708,8 +708,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       const int energy =
           bsize <= BLOCK_16X16 ? x->mb_energy : av1_block_energy(cpi, x, bsize);
       mbmi->segment_id = av1_vaq_segment_id(energy);
-      // Re-initialise quantiser
-      av1_init_plane_quantizers(cpi, x, mbmi->segment_id);
     }
     x->rdmult = set_segment_rdmult(cpi, x, mbmi->segment_id);
   } else if (aq_mode == COMPLEXITY_AQ) {
