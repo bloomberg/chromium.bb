@@ -287,6 +287,11 @@
   [self.toolbarViewController deactivateFakeSafeAreaInsets];
 }
 
+- (void)navigateToMemexTabSwitcher {
+  const GURL memexURL("https://chrome-memex.appspot.com");
+  [self loadGURLFromLocationBar:memexURL transition:ui::PAGE_TRANSITION_LINK];
+}
+
 // TODO(crbug.com/786940): This protocol should move to the ViewController
 // owning the Toolbar. This can wait until the omnibox and toolbar refactoring
 // is more advanced.

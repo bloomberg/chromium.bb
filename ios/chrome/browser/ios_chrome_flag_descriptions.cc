@@ -69,6 +69,12 @@ const char kInProductHelpDemoModeDescription[] =
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
+const char kMemexTabSwitcherName[] = "Enable the Memex prototype Tab Switcher.";
+const char kMemexTabSwitcherDescription[] =
+    "When enabled, the TabSwitcher button will navigate to the chrome memex "
+    "prototype site instead of triggering the native Tab Switcher. The native "
+    "TabSwitcher is accessible by long pressing the button";
+
 const char kNewFullscreenName[] = "Enable the new FullscreenController.";
 const char kNewFullscreenDescription[] =
     "When enabled, the new implementation of FullscreenController will be used "

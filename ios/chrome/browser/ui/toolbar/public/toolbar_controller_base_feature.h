@@ -15,4 +15,8 @@ extern const base::Feature kCleanToolbar;
 // toolbar.
 extern const base::Feature kAdaptiveToolbar;
 
+// Feature to choose whether to use the memex prototype tab switcher or the
+// regular native tab switcher.
+extern const base::Feature kMemexTabSwitcher;
+
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONTROLLER_BASE_FEATURE_H_

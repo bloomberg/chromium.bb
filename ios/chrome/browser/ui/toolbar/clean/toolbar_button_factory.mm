@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 
+#include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -14,6 +15,7 @@
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -138,9 +140,17 @@ const int styleCount = 2;
       setTitleColor:[self.toolbarConfiguration buttonTitleHighlightedColor]
            forState:UIControlStateHighlighted];
   [self configureButton:tabSwitcherStripButton width:kToolbarButtonWidth];
-  [tabSwitcherStripButton addTarget:self.dispatcher
-                             action:@selector(displayTabSwitcher)
-                   forControlEvents:UIControlEventTouchUpInside];
+
+  // TODO(crbug.com/799601): Delete this once its not needed.
+  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
+    [tabSwitcherStripButton addTarget:self.dispatcher
+                               action:@selector(navigateToMemexTabSwitcher)
+                     forControlEvents:UIControlEventTouchUpInside];
+  } else {
+    [tabSwitcherStripButton addTarget:self.dispatcher
+                               action:@selector(displayTabSwitcher)
+                     forControlEvents:UIControlEventTouchUpInside];
+  }
 
   tabSwitcherStripButton.visibilityMask =
       self.visibilityConfiguration.tabGridButtonVisibility;
