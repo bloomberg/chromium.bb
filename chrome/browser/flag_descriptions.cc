@@ -2420,6 +2420,10 @@ const char kArcNativeBridgeExperimentName[] =
 const char kArcNativeBridgeExperimentDescription[] =
     "Enables experimental native bridge feature.";
 
+const char kArcUsbHostName[] = "Enable ARC USB host integration";
+const char kArcUsbHostDescription[] =
+    "Allow Android apps to use USB host feature on ChromeOS devices.";
+
 const char kArcVpnName[] = "Enable ARC VPN integration";
 const char kArcVpnDescription[] =
     "Allow Android VPN clients to tunnel Chrome traffic.";
