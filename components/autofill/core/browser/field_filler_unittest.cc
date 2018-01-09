@@ -819,6 +819,25 @@ INSTANTIATE_TEST_CASE_P(
              "string:6", "string:7", "string:8", "string:9", "string:10",
              "string:11", "string:12"},
             NotNumericMonthsContentsNoPlaceholder()},
+        // Unexpected values that can be matched with the content.
+        FillWithExpirationMonthTestCase{
+            {"object:1", "object:2", "object:3", "object:4", "object:5",
+             "object:6", "object:7", "object:8", "object:9", "object:10",
+             "object:11", "object:12"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Another example where unexpected values can be matched with the
+        // content.
+        FillWithExpirationMonthTestCase{
+            {"object:a", "object:b", "object:c", "object:d", "object:e",
+             "object:f", "object:g", "object:h", "object:i", "object:j",
+             "object:k", "object:l"},
+            NotNumericMonthsContentsNoPlaceholder()},
+        // Another example where unexpected values can be matched with the
+        // content.
+        FillWithExpirationMonthTestCase{
+            {"Farvardin", "Ordibehesht", "Khordad", "Tir", "Mordad",
+             "Shahrivar", "Mehr", "Aban", "Azar", "Dey", "Bahman", "Esfand"},
+            NotNumericMonthsContentsNoPlaceholder()},
         // Values start at 0 and the first content is a placeholder.
         FillWithExpirationMonthTestCase{
             {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
