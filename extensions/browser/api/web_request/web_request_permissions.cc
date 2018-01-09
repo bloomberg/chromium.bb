@@ -10,6 +10,7 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -94,6 +95,14 @@ bool IsSensitiveURL(const GURL& url,
                             base::StartsWith(url.path_piece(), "/webstore",
                                              base::CompareCase::SENSITIVE));
   }
+
+  if (is_request_from_browser_or_webui_renderer) {
+    sensitive_chrome_url =
+        sensitive_chrome_url ||
+        extensions::ExtensionsAPIClient::Get()->ShouldHideBrowserNetworkRequest(
+            url);
+  }
+
   return sensitive_chrome_url || extension_urls::IsWebstoreUpdateUrl(url) ||
          extension_urls::IsBlacklistUpdateUrl(url) ||
          extension_urls::IsSafeBrowsingUrl(origin, url.path_piece());
@@ -114,7 +123,14 @@ bool WebRequestPermissions::HideRequest(
 
   // Requests from the browser and webui get special protection for
   // clients*.google.com URLs.
-  bool is_request_from_browser = request.render_process_id == -1;
+  bool is_request_from_browser =
+      request.render_process_id == -1 &&
+      // Browser requests are often of the "other" resource type.
+      // Main frame requests are not unconditionally seen as a sensitive browser
+      // request, because a request can also be browser-driven if there is no
+      // process to associate the request with. E.g. navigations via the
+      // chrome.tabs.update extension API.
+      request.type != content::RESOURCE_TYPE_MAIN_FRAME;
   bool is_request_from_webui_renderer = false;
   if (!is_request_from_browser) {
     // Requests from guest processes are never hidden.

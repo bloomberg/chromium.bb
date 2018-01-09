@@ -375,6 +375,7 @@
 -DeclarativeNetRequestResourceTypeBrowserTest.Test1/1
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
 -DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
+-DevToolsFrontendInWebRequestApiTest.HiddenRequests
 -ExtensionWebRequestApiTest.DeclarativeSendMessage
 -ExtensionWebRequestApiTest.ExtensionRequests
 -ExtensionWebRequestApiTest.HostedAppRequest

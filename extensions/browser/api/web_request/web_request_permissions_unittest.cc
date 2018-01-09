@@ -4,12 +4,14 @@
 
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 
+#include "extensions/browser/api/extensions_api_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
 TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
+  ExtensionsAPIClient api_client;
   struct TestCase {
     const char* url;
     bool is_sensitive_if_request_from_common_renderer;

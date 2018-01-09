@@ -33,6 +33,7 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_guest_delegate.h"
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
+#include "chrome/browser/ui/webui/devtools_ui.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -101,6 +102,11 @@ bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
       (url.host_piece() == GaiaUrls::GetInstance()->gaia_url().host_piece()) &&
       (base::CompareCaseInsensitiveASCII(header_name,
                                          signin::kDiceResponseHeader) == 0));
+}
+
+bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
+    const GURL& url) const {
+  return DevToolsUI::IsFrontendResourceURL(url);
 }
 
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
