@@ -14,7 +14,7 @@
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -62,8 +62,8 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
     // Commit an URL to allow discarding.
     web_contents_->SetLastCommittedURL(GURL("https://www.example.com"));
 
-    tab_strip_model_ = std::make_unique<TabStripModelImpl>(
-        &tab_strip_model_delegate_, profile());
+    tab_strip_model_ =
+        std::make_unique<TabStripModel>(&tab_strip_model_delegate_, profile());
     tab_strip_model_->AppendWebContents(web_contents_.get(), false);
     web_contents_->WasHidden();
     tab_strip_model_->AppendWebContents(web_contents(), false);
