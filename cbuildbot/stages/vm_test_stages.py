@@ -438,6 +438,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
             (self._PERFORM_TIMEOUT_S - elapsed) / 60,
         )
       vms.Stop()
+      ValidateMoblabTestSuccess(results_dir)
     except:
       # Ignore errors while arhiving images, but re-raise the original error.
       try:
@@ -796,3 +797,26 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
       ],
       enter_chroot=True,
   )
+
+
+def ValidateMoblabTestSuccess(results_dir):
+  """Verifies that moblab tests ran, and succeeded.
+
+  Looks at the result logs dropped by the moblab tests and sanity checks that
+  the expected tests ran, and were successful.
+  """
+  log_path = os.path.join(results_dir, 'debug', 'test_that.INFO')
+  if not os.path.isfile(log_path):
+    raise failures_lib.TestFailure('Could not find test_that logs at %s' %
+                                   log_path)
+
+  dummy_pass_server_success_re = re.compile(
+      r'dummy_PassServer\s*\[\s*PASSED\s*]')
+  with open(log_path) as log_file:
+    for line in log_file:
+      if dummy_pass_server_success_re.search(line):
+        return
+
+  raise failures_lib.TestFailure(
+      'Moblab run_suite succeeded, but did not successfully run '
+      'dummy_PassServer')

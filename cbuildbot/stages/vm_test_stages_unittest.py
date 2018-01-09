@@ -230,6 +230,9 @@ class MoblabVMTestStageTestCase(
                      return_value=mock_moblab_vm)
     mock_run_moblab_tests = self.PatchObject(vm_test_stages, 'RunMoblabTests',
                                              autospec=True)
+    mock_validate_results = self.PatchObject(vm_test_stages,
+                                             'ValidateMoblabTestSuccess',
+                                             autospec=True)
 
     # Prepopulate results in the results directory to test result link printing.
     osutils.SafeMakedirsNonRoot(os.path.join(
@@ -262,12 +265,13 @@ class MoblabVMTestStageTestCase(
     mock_run_moblab_tests.assert_called_once_with(
         'moblab-generic-vm', mock.ANY, mock.ANY,
         self._temp_host_path('results'), mock.ANY)
+
+    self.assertEqual(mock_validate_results.call_count, 1)
     # 1 for the overall results during _Upload, 4 more for the detailed logs.
     self.assertEqual(mock_buildbot_link.call_count, 5)
 
     self.assertEqual(mock_moblab_vm.Stop.call_count, 1)
     self.assertEqual(mock_moblab_vm.Destroy.call_count, 1)
-
 
 
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
@@ -376,3 +380,52 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertNotExists(
         os.path.join(archive_dir, 'chromiumos_qemu_disk.bin.foo'))
     self.assertNotExists(os.path.join(archive_dir, 'taco_link'))
+
+  def testValidateMoblabTestSuccessNoLogsRaises(self):
+    """ValidateMoblabTestSuccess raises when logs are missing."""
+    os.makedirs(os.path.join(self.tempdir, 'debug'))
+    with self.assertRaises(failures_lib.TestFailure):
+      vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
+
+  def testValidateMoblabTestSuccessTestNotRunRaises(self):
+    """ValidateMoblabTestSuccess raises when logs indicate no test run."""
+    os.makedirs(os.path.join(self.tempdir, 'debug'))
+    osutils.WriteFile(
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
+        """
+Some random stuff.
+01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
+01/08 15:00:28.681 INFO  autoserv| [stderr]
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
+    )
+    with self.assertRaises(failures_lib.TestFailure):
+      vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
+
+  def testValidateMoblabTestSuccessTestFailedRaises(self):
+    """ValidateMoblabTestSuccess raises when logs indicate test failed."""
+    os.makedirs(os.path.join(self.tempdir, 'debug'))
+    osutils.WriteFile(
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
+        """
+Some random stuff.
+01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
+01/08 15:00:28.680 INFO  autoserv| [stderr] dummy_PassServer   [ FAILED ]
+01/08 15:00:28.681 INFO  autoserv| [stderr]
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
+    )
+    with self.assertRaises(failures_lib.TestFailure):
+      vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
+
+  def testValidateMoblabTestSuccessTestPassed(self):
+    """ValidateMoblabTestSuccess succeeds when logs indicate test passed."""
+    os.makedirs(os.path.join(self.tempdir, 'debug'))
+    osutils.WriteFile(
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
+        """
+Some random stuff.
+01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
+01/08 15:00:28.680 INFO  autoserv| [stderr] dummy_PassServer   [ PASSED ]
+01/08 15:00:28.681 INFO  autoserv| [stderr]
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
+    )
+    vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
