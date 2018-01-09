@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
@@ -59,11 +61,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/test_data_directory.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_interceptor.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
@@ -209,6 +214,46 @@ class TestURLFetcherDelegate : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherDelegate);
 };
 
+// The DevTool's remote front-end is hardcoded to a URL with a fixed port.
+// Redirect all responses to a URL with port.
+class DevToolsFrontendInterceptor : public net::URLRequestInterceptor {
+ public:
+  DevToolsFrontendInterceptor(int port, const base::FilePath& root_dir)
+      : port_(port), test_root_dir_(root_dir) {}
+
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    // The DevTools front-end has a hard-coded scheme (and implicit port 443).
+    // We simulate a response for it.
+    // net::URLRequestRedirectJob cannot be used because DevToolsUIBindings
+    // rejects URLs whose base URL is not the hard-coded URL.
+    if (request->url().EffectiveIntPort() != port_) {
+      return new net::URLRequestMockHTTPJob(
+          request, network_delegate,
+          test_root_dir_.AppendASCII(request->url().path().substr(1)));
+    }
+    return nullptr;
+  }
+
+ private:
+  int port_;
+  base::FilePath test_root_dir_;
+};
+
+void SetUpDevToolsFrontendInterceptorOnIO(int port,
+                                          const base::FilePath& root_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+      "https", kRemoteFrontendDomain,
+      std::make_unique<DevToolsFrontendInterceptor>(port, root_dir));
+}
+
+void TearDownDevToolsFrontendInterceptorOnIO() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
 }  // namespace
 
 class ExtensionWebRequestApiTest : public ExtensionApiTest {
@@ -229,6 +274,50 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
       bool wait_for_extension_loaded_in_incognito,
       const char* expected_content_regular_window,
       const char* exptected_content_incognito_window);
+};
+
+class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    int port = embedded_test_server()->port();
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SetUpDevToolsFrontendInterceptorOnIO, port,
+                       test_root_dir_),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void TearDownOnMainThread() override {
+    base::RunLoop run_loop;
+    content::BrowserThread::PostTaskAndReply(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&TearDownDevToolsFrontendInterceptorOnIO),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    ExtensionApiTest::TearDownOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+
+    test_root_dir_ = test_data_dir_.AppendASCII("webrequest");
+
+    embedded_test_server()->ServeFilesFromDirectory(test_root_dir_);
+    ASSERT_TRUE(StartEmbeddedTestServer());
+    command_line->AppendSwitchASCII(
+        switches::kCustomDevtoolsFrontend,
+        embedded_test_server()
+            ->GetURL("customfrontend.example.com", "/devtoolsfrontend/")
+            .spec());
+  }
+
+ private:
+  base::FilePath test_root_dir_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {
@@ -1204,6 +1293,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MinimumAccessInitiator) {
           initiator_listener.message());
     }
   }
+}
+
+// Ensure that devtools frontend requests are hidden from the webRequest API.
+IN_PROC_BROWSER_TEST_F(DevToolsFrontendInWebRequestApiTest, HiddenRequests) {
+  ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_devtools.html"))
+      << message_;
 }
 
 // Tests that the webRequest events aren't dispatched when the request initiator

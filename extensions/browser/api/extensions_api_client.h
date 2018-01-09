@@ -94,6 +94,10 @@ class ExtensionsAPIClient {
   virtual bool ShouldHideResponseHeader(const GURL& url,
                                         const std::string& header_name) const;
 
+  // Returns true if a request from the given URL from the browser context
+  // should be hidden from extensions.
+  virtual bool ShouldHideBrowserNetworkRequest(const GURL& url) const;
+
   // Creates the AppViewGuestDelegate.
   virtual AppViewGuestDelegate* CreateAppViewGuestDelegate() const;
 

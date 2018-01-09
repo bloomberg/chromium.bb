@@ -162,6 +162,12 @@ void ExtensionApiTest::SetUpOnMainThread() {
                           net::FilePathToFileURL(test_data_dir_).spec());
   test_config_->SetBoolean(kBrowserSideNavigationEnabled,
                            content::IsBrowserSideNavigationEnabled());
+  if (embedded_test_server()->Started()) {
+    // InitializeEmbeddedTestServer was called before |test_config_| was set.
+    // Set the missing port key.
+    test_config_->SetInteger(kEmbeddedTestServerPort,
+                             embedded_test_server()->port());
+  }
   extensions::TestGetConfigFunction::set_test_config_state(
       test_config_.get());
 }
@@ -415,8 +421,12 @@ bool ExtensionApiTest::InitializeEmbeddedTestServer() {
   // Build a dictionary of values that tests can use to build URLs that
   // access the test server and local file system.  Tests can see these values
   // using the extension API function chrome.test.getConfig().
-  test_config_->SetInteger(kEmbeddedTestServerPort,
-                           embedded_test_server()->port());
+  if (test_config_) {
+    test_config_->SetInteger(kEmbeddedTestServerPort,
+                             embedded_test_server()->port());
+  }
+  // else SetUpOnMainThread has not been called yet. Possibly because the
+  // caller needs a valid port in an overridden SetUpCommandLine method.
 
   return true;
 }

@@ -71,6 +71,8 @@ std::string GetMimeTypeForPath(const std::string& path) {
 // requests. Three types of requests could be handled based on the URL path:
 // 1. /bundled/: bundled DevTools frontend is served.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
+// 3. /custom/: custom DevTools frontend is served from the server as specified
+//    by the --custom-devtools-frontend flag.
 class DevToolsDataSource : public content::URLDataSource,
                            public net::URLFetcherDelegate {
  public:
@@ -192,6 +194,7 @@ void DevToolsDataSource::StartDataRequest(
                        base::CompareCase::INSENSITIVE_ASCII)) {
     GURL url = GURL(custom_frontend_url +
                     path.substr(custom_path_prefix.length()));
+    DCHECK(url.is_valid());
     StartCustomDataRequest(url, callback);
     return;
   }
@@ -348,6 +351,27 @@ GURL DevToolsUI::GetRemoteBaseURL() {
       kRemoteFrontendBase,
       kRemoteFrontendPath,
       content::GetWebKitRevision().c_str()));
+}
+
+// static
+bool DevToolsUI::IsFrontendResourceURL(const GURL& url) {
+  if (url.host_piece() == kRemoteFrontendDomain)
+    return true;
+
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kCustomDevtoolsFrontend)) {
+    GURL custom_frontend_url =
+        GURL(cmd_line->GetSwitchValueASCII(switches::kCustomDevtoolsFrontend));
+    if (custom_frontend_url.is_valid() &&
+        custom_frontend_url.scheme_piece() == url.scheme_piece() &&
+        custom_frontend_url.host_piece() == url.host_piece() &&
+        custom_frontend_url.EffectiveIntPort() == url.EffectiveIntPort() &&
+        base::StartsWith(url.path_piece(), custom_frontend_url.path_piece(),
+                         base::CompareCase::SENSITIVE)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 DevToolsUI::DevToolsUI(content::WebUI* web_ui)
