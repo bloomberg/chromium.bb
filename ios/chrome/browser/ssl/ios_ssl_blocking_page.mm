@@ -103,7 +103,7 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
     options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
-                                     options_mask, time_triggered,
+                                     options_mask, time_triggered, GURL(),
                                      controller_.get()));
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)

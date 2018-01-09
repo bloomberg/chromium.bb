@@ -42,6 +42,7 @@ class TestSSLBlockingPage : public SSLBlockingPage {
             request_url,
             0,
             base::Time::NowFromSystemTime(),
+            GURL(),
             nullptr /* ssl_cert_reporter */,
             true /* overridable */,
             CreateMetricsHelper(web_contents),
