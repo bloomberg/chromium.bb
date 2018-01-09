@@ -442,7 +442,6 @@ KURL HTMLVideoElement::PosterImageURL() const {
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
-    SnapshotReason,
     const FloatSize&) {
   if (!HasAvailableVideoFrame()) {
     *status = kInvalidSourceImageStatus;

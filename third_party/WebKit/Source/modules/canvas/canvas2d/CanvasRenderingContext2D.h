@@ -181,8 +181,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void DisableDeferral(DisableDeferralReason) final;
 
   void DidDraw(const SkIRect& dirty_rect) final;
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
-                                            SnapshotReason) const final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
 
   bool StateHasFilter() final;
   sk_sp<PaintFilter> StateGetFilter() final;

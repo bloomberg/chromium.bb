@@ -412,8 +412,7 @@ void HTMLCanvasElement::FinalizeFrame() {
       // Push a frame
       double start_time = WTF::CurrentTimeTicksInSeconds();
       scoped_refptr<StaticBitmapImage> image =
-          canvas2d_buffer_->NewImageSnapshot(kPreferAcceleration,
-                                             kSnapshotReasonLowLatencyFrame);
+          canvas2d_buffer_->NewImageSnapshot(kPreferAcceleration);
       FloatRect src_rect(0, 0, Size().Width(), Size().Height());
       dirty_rect_.Intersect(src_rect);
       IntRect int_dirty = EnclosingIntRect(dirty_rect_);
@@ -629,9 +628,8 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
 
   if (listener_needs_new_frame_capture) {
     SourceImageStatus status;
-    scoped_refptr<Image> source_image = GetSourceImageForCanvas(
-        &status, kPreferNoAcceleration, kSnapshotReasonCanvasListenerCapture,
-        FloatSize());
+    scoped_refptr<Image> source_image =
+        GetSourceImageForCanvas(&status, kPreferNoAcceleration, FloatSize());
     if (status != kNormalSourceImageStatus)
       return;
     sk_sp<SkImage> image =
@@ -690,7 +688,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
               : SkBlendMode::kSrc;
       FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
       scoped_refptr<StaticBitmapImage> snapshot =
-          NewImageSnapshot(kPreferAcceleration, kSnapshotReasonPaint);
+          NewImageSnapshot(kPreferAcceleration);
       if (snapshot) {
         // GraphicsContext cannot handle gpu resource serialization.
         snapshot = snapshot->MakeUnaccelerated();
@@ -742,8 +740,7 @@ const AtomicString HTMLCanvasElement::ImageSourceURL() const {
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
     SourceDrawingBuffer source_buffer,
-    AccelerationHint hint,
-    SnapshotReason reason) const {
+    AccelerationHint hint) const {
   if (size_.IsEmpty())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
@@ -751,7 +748,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
     if (context_->CreationAttributes().premultipliedAlpha()) {
       context_->PaintRenderingResultsToCanvas(source_buffer);
       if (webgl_buffer_)
-        image_bitmap = webgl_buffer_->NewImageSnapshot(hint, reason);
+        image_bitmap = webgl_buffer_->NewImageSnapshot(hint);
     } else {
       scoped_refptr<Uint8Array> data_array =
           context_->PaintRenderingResultsToDataArray(source_buffer);
@@ -769,7 +766,7 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::ToStaticBitmapImage(
   } else if (context_ || PlaceholderFrame()) {
     DCHECK(Is2d() || PlaceholderFrame());
     if (canvas2d_buffer_) {
-      image_bitmap = canvas2d_buffer_->NewImageSnapshot(hint, reason);
+      image_bitmap = canvas2d_buffer_->NewImageSnapshot(hint);
     } else if (PlaceholderFrame()) {
       DCHECK(PlaceholderFrame()->OriginClean());
       image_bitmap = PlaceholderFrame();
@@ -811,8 +808,8 @@ String HTMLCanvasElement::ToDataURLInternal(
     NOTREACHED();
   }
 
-  scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
-      source_buffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
+  scoped_refptr<StaticBitmapImage> image_bitmap =
+      ToStaticBitmapImage(source_buffer, kPreferNoAcceleration);
   if (image_bitmap) {
     std::unique_ptr<ImageDataBuffer> data_buffer =
         ImageDataBuffer::Create(image_bitmap);
@@ -873,8 +870,8 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
       mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
-  scoped_refptr<StaticBitmapImage> image_bitmap = ToStaticBitmapImage(
-      kBackBuffer, kPreferNoAcceleration, kSnapshotReasonToBlob);
+  scoped_refptr<StaticBitmapImage> image_bitmap =
+      ToStaticBitmapImage(kBackBuffer, kPreferNoAcceleration);
   if (image_bitmap) {
     async_creator = CanvasAsyncBlobCreator::Create(
         image_bitmap, encoding_mime_type, callback, start_time, &GetDocument());
@@ -1150,8 +1147,7 @@ void HTMLCanvasElement::CreateImageBufferUsingSurfaceForTesting(
 
 scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
     SourceDrawingBuffer source_buffer,
-    AccelerationHint hint,
-    SnapshotReason snapshot_reason) {
+    AccelerationHint hint) {
   if (SurfaceLayerBridge())
     return PlaceholderFrame();
 
@@ -1163,10 +1159,10 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
 
   if (context_->GetContextType() ==
       CanvasRenderingContext::kContextImageBitmap) {
-    scoped_refptr<Image> image = context_->GetImage(hint, snapshot_reason);
+    scoped_refptr<Image> image = context_->GetImage(hint);
     // TODO(fserb): return image?
     if (image)
-      return context_->GetImage(hint, snapshot_reason);
+      return context_->GetImage(hint);
     // Special case: transferFromImageBitmap is not yet called.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(width(), height());
@@ -1178,7 +1174,7 @@ scoped_refptr<Image> HTMLCanvasElement::CopiedImage(
   if (context_->Is3d())
     need_to_update |= context_->PaintRenderingResultsToCanvas(source_buffer);
   if (need_to_update && TryCreateImageBuffer()) {
-    copied_image_ = NewImageSnapshot(hint, snapshot_reason);
+    copied_image_ = NewImageSnapshot(hint);
     UpdateMemoryUsage();
   }
   return copied_image_;
@@ -1252,7 +1248,6 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
 scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
-    SnapshotReason reason,
     const FloatSize&) {
   if (!width() || !height()) {
     *status = kZeroSizeCanvasSourceImageStatus;
@@ -1278,7 +1273,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
   if (context_->GetContextType() ==
       CanvasRenderingContext::kContextImageBitmap) {
     *status = kNormalSourceImageStatus;
-    scoped_refptr<Image> result = context_->GetImage(hint, reason);
+    scoped_refptr<Image> result = context_->GetImage(hint);
     if (!result)
       result = CreateTransparentImage(Size());
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
@@ -1294,7 +1289,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     // cached copy of the backing in the canvas's ImageBuffer.
     RenderingContext()->PaintRenderingResultsToCanvas(kBackBuffer);
     if (webgl_buffer_) {
-      image = webgl_buffer_->NewImageSnapshot(hint, reason);
+      image = webgl_buffer_->NewImageSnapshot(hint);
     } else {
       image = CreateTransparentImage(Size());
     }
@@ -1305,7 +1300,7 @@ scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
         canvas2d_buffer_->IsAccelerated()) {
       DisableAcceleration();
     }
-    image = RenderingContext()->GetImage(hint, reason);
+    image = RenderingContext()->GetImage(hint);
     if (!image) {
       image = CreateTransparentImage(Size());
     }
@@ -1326,8 +1321,7 @@ bool HTMLCanvasElement::WouldTaintOrigin(const SecurityOrigin*) const {
 FloatSize HTMLCanvasElement::ElementSize(const FloatSize&) const {
   if (context_ && context_->GetContextType() ==
                       CanvasRenderingContext::kContextImageBitmap) {
-    scoped_refptr<Image> image =
-        context_->GetImage(kPreferNoAcceleration, kSnapshotReasonDrawImage);
+    scoped_refptr<Image> image = context_->GetImage(kPreferNoAcceleration);
     if (image)
       return FloatSize(image->width(), image->height());
     return FloatSize(0, 0);
@@ -1547,8 +1541,8 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
     std::unique_ptr<Canvas2DLayerBridge> new_buffer) {
   if (canvas2d_buffer_) {
-    scoped_refptr<StaticBitmapImage> image = canvas2d_buffer_->NewImageSnapshot(
-        kPreferNoAcceleration, kSnapshotReasonPaint);
+    scoped_refptr<StaticBitmapImage> image =
+        canvas2d_buffer_->NewImageSnapshot(kPreferNoAcceleration);
 
     // image can be null if alloaction failed in which case we should just
     // abort the surface switch to reatain the old surface which is still
@@ -1561,12 +1555,11 @@ void HTMLCanvasElement::ReplaceExistingCanvas2DBuffer(
 }
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::NewImageSnapshot(
-    AccelerationHint hint,
-    SnapshotReason reason) {
+    AccelerationHint hint) {
   if (canvas2d_buffer_)
-    return canvas2d_buffer_->NewImageSnapshot(hint, reason);
+    return canvas2d_buffer_->NewImageSnapshot(hint);
   if (webgl_buffer_)
-    return webgl_buffer_->NewImageSnapshot(hint, reason);
+    return webgl_buffer_->NewImageSnapshot(hint);
   return nullptr;
 }
 

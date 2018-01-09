@@ -650,8 +650,7 @@ scoped_refptr<Image> VRDisplay::GetFrameImage() {
     // We get a non-texture-backed image when running layout tests
     // on desktop builds. Add a slow fallback so that these continue
     // working.
-    image_ref = rendering_context_->GetImage(kPreferAcceleration,
-                                             kSnapshotReasonCreateImageBitmap);
+    image_ref = rendering_context_->GetImage(kPreferAcceleration);
     if (!image_ref.get() || !image_ref->IsTextureBacked()) {
       NOTREACHED()
           << "WebXR requires hardware-accelerated rendering to texture";

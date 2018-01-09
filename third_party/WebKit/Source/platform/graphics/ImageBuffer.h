@@ -68,8 +68,7 @@ class PLATFORM_EXPORT ImageBuffer {
   PaintCanvas* Canvas() const;
 
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(
-      AccelerationHint = kPreferNoAcceleration,
-      SnapshotReason = kSnapshotReasonUnknown) const;
+      AccelerationHint = kPreferNoAcceleration) const;
 
   const CanvasColorParams& ColorParams() const {
     return surface_->ColorParams();

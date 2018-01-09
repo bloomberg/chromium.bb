@@ -76,11 +76,10 @@ bool ImageBuffer::IsSurfaceValid() const {
 }
 
 scoped_refptr<StaticBitmapImage> ImageBuffer::NewImageSnapshot(
-    AccelerationHint hint,
-    SnapshotReason reason) const {
+    AccelerationHint hint) const {
   if (!IsSurfaceValid())
     return nullptr;
-  return surface_->NewImageSnapshot(hint, reason);
+  return surface_->NewImageSnapshot(hint);
 }
 
 bool ImageBuffer::WritePixels(const SkImageInfo& orig_info,

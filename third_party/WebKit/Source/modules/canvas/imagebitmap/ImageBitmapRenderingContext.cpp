@@ -59,8 +59,7 @@ void ImageBitmapRenderingContext::Stop() {
 }
 
 scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContext::GetImage(
-    AccelerationHint,
-    SnapshotReason) const {
+    AccelerationHint) const {
   return image_layer_bridge_->GetImage();
 }
 

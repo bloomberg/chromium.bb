@@ -123,8 +123,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
-  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
-                                                    SnapshotReason);
+  scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint);
   bool WasDrawnToAfterSnapshot() const {
     return snapshot_state_ == kDrawnToAfterSnapshot;
   }

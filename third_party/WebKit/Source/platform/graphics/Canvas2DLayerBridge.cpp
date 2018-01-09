@@ -732,8 +732,7 @@ void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
 }
 
 scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
-    AccelerationHint hint,
-    SnapshotReason) {
+    AccelerationHint hint) {
   if (snapshot_state_ == kInitialSnapshotState)
     snapshot_state_ = kDidAcquireSnapshot;
   if (IsHibernating())

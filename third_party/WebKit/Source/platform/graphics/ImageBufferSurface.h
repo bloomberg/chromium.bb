@@ -66,8 +66,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
 
   // May return nullptr if the surface is GPU-backed and the GPU context was
   // lost.
-  virtual scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
-                                                            SnapshotReason) = 0;
+  virtual scoped_refptr<StaticBitmapImage> NewImageSnapshot(
+      AccelerationHint) = 0;
 
   const IntSize& Size() const { return size_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }

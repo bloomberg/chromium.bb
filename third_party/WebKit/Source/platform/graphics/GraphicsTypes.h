@@ -100,28 +100,6 @@ enum AccelerationHint {
   kPreferNoAcceleration,
 };
 
-enum SnapshotReason {
-  kSnapshotReasonUnknown,
-  kSnapshotReasonGetImageData,
-  kSnapshotReasonWebGLTexImage2D,
-  kSnapshotReasonWebGLTexSubImage2D,
-  kSnapshotReasonWebGLTexImage3D,
-  kSnapshotReasonWebGLTexSubImage3D,
-  kSnapshotReasonPaint,
-  kSnapshotReasonToDataURL,
-  kSnapshotReasonToBlob,
-  kSnapshotReasonCanvasListenerCapture,
-  kSnapshotReasonDrawImage,
-  kSnapshotReasonCreatePattern,
-  kSnapshotReasonTransferToImageBitmap,
-  kSnapshotReasonUnitTests,
-  kSnapshotReasonGetCopiedImage,
-  kSnapshotReasonWebGLDrawImageIntoBuffer,
-  kSnapshotReasonCopyToClipboard,
-  kSnapshotReasonCreateImageBitmap,
-  kSnapshotReasonLowLatencyFrame,
-};
-
 // Note: enum used directly for histogram, values must not change
 enum DisableDeferralReason {
   kDisableDeferralReasonUnknown =

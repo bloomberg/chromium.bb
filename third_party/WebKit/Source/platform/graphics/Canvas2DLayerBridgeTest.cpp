@@ -160,9 +160,7 @@ class Canvas2DLayerBridgeTest : public Test {
 
     const GrGLTextureInfo* texture_info =
         skia::GrBackendObjectToGrGLTextureInfo(
-            bridge
-                ->NewImageSnapshot(kPreferAcceleration,
-                                   kSnapshotReasonUnitTests)
+            bridge->NewImageSnapshot(kPreferAcceleration)
                 ->PaintImageForCurrentFrame()
                 .GetSkImage()
                 ->getTextureHandle(true));
@@ -187,8 +185,8 @@ class Canvas2DLayerBridgeTest : public Test {
           CanvasColorParams())));
       EXPECT_TRUE(bridge->IsValid());
       EXPECT_TRUE(bridge->IsAccelerated());
-      scoped_refptr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot(
-          kPreferAcceleration, kSnapshotReasonUnitTests);
+      scoped_refptr<StaticBitmapImage> snapshot =
+          bridge->NewImageSnapshot(kPreferAcceleration);
       EXPECT_TRUE(bridge->IsAccelerated());
       EXPECT_TRUE(snapshot->IsTextureBacked());
     }
@@ -207,8 +205,8 @@ class Canvas2DLayerBridgeTest : public Test {
       // This will cause SkSurface_Gpu creation to fail without
       // Canvas2DLayerBridge otherwise detecting that anything was disabled.
       gr->abandonContext();
-      scoped_refptr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot(
-          kPreferAcceleration, kSnapshotReasonUnitTests);
+      scoped_refptr<StaticBitmapImage> snapshot =
+          bridge->NewImageSnapshot(kPreferAcceleration);
       EXPECT_FALSE(bridge->IsAccelerated());
       EXPECT_FALSE(snapshot->IsTextureBacked());
     }
@@ -233,7 +231,7 @@ class Canvas2DLayerBridgeTest : public Test {
     EXPECT_EQ(nullptr, bridge->GetOrCreateResourceProvider());
     // The following passes by not crashing
     bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+    bridge->NewImageSnapshot(kPreferAcceleration);
   }
 
   void PrepareMailboxWhenContextIsLost() {
@@ -350,8 +348,8 @@ class Canvas2DLayerBridgeTest : public Test {
           CanvasColorParams())));
       PaintFlags flags;
       bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-      scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot(
-          kPreferAcceleration, kSnapshotReasonUnitTests);
+      scoped_refptr<StaticBitmapImage> image =
+          bridge->NewImageSnapshot(kPreferAcceleration);
       EXPECT_TRUE(bridge->IsValid());
       EXPECT_TRUE(bridge->IsAccelerated());
     }
@@ -362,8 +360,8 @@ class Canvas2DLayerBridgeTest : public Test {
           CanvasColorParams())));
       PaintFlags flags;
       bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-      scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot(
-          kPreferNoAcceleration, kSnapshotReasonUnitTests);
+      scoped_refptr<StaticBitmapImage> image =
+          bridge->NewImageSnapshot(kPreferNoAcceleration);
       EXPECT_TRUE(bridge->IsValid());
       EXPECT_FALSE(bridge->IsAccelerated());
     }
@@ -427,7 +425,7 @@ void DrawSomething(Canvas2DLayerBridgePtr& bridge) {
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   bridge->FinalizeFrame();
   // Grabbing an image forces a flush
-  bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+  bridge->NewImageSnapshot(kPreferAcceleration);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED
@@ -829,7 +827,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 
   // Take a snapshot and verify that it is not accelerated due to hibernation
   scoped_refptr<StaticBitmapImage> image =
-      bridge->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+      bridge->NewImageSnapshot(kPreferAcceleration);
   EXPECT_FALSE(image->IsTextureBacked());
   image = nullptr;
 
