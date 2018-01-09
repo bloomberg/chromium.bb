@@ -28287,6 +28287,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ExpireVisits.GetRedirectsDurationPercentage" units="%">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The percentage of time taken in ExpireHistoryBackend::ExpireVisits for
+    calculating the redirect parent.
+  </summary>
+</histogram>
+
+<histogram name="History.ExpireVisits.TotalDuration" units="ms">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The time taken to expire a list of visits. This is not scaled to the number
+    of visits deleted, but gives an idea of how long a single request to
+    ExpireHistoryBackend::ExpireVisits takes.
+  </summary>
+</histogram>
+
 <histogram name="History.FaviconDatabaseAdvancedMetricsTime" units="ticks">
   <owner>rogerm@chromium.org</owner>
   <summary>

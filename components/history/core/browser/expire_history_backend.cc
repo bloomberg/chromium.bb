@@ -12,11 +12,13 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
@@ -262,18 +264,31 @@ void ExpireHistoryBackend::ExpireVisits(const VisitVector& visits) {
   if (visits.empty())
     return;
 
+  base::TimeTicks start = base::TimeTicks::Now();
+
+  const VisitVector visits_and_redirects = GetVisitsAndRedirectParents(visits);
+  base::TimeDelta get_redirects_time = base::TimeTicks::Now() - start;
+
   DeleteEffects effects;
-  DeleteVisitRelatedInfo(visits, &effects);
+  DeleteVisitRelatedInfo(visits_and_redirects, &effects);
 
   // Delete or update the URLs affected. We want to update the visit counts
   // since this is called by the user who wants to delete their recent history,
   // and we don't want to leave any evidence.
-  ExpireURLsForVisits(visits, &effects);
+  ExpireURLsForVisits(visits_and_redirects, &effects);
   DeleteFaviconsIfPossible(&effects);
   BroadcastNotifications(&effects, DELETION_USER_INITIATED);
 
   // Pick up any bits possibly left over.
   ParanoidExpireHistory();
+
+  base::TimeDelta expire_visits_time = base::TimeTicks::Now() - start;
+  UMA_HISTOGRAM_TIMES("History.ExpireVisits.TotalDuration", expire_visits_time);
+  if (!expire_visits_time.is_zero()) {
+    UMA_HISTOGRAM_PERCENTAGE(
+        "History.ExpireVisits.GetRedirectsDurationPercentage",
+        get_redirects_time * 100 / expire_visits_time);
+  }
 }
 
 void ExpireHistoryBackend::ExpireHistoryBefore(base::Time end_time) {
@@ -355,6 +370,24 @@ void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
                                  effects->deleted_urls,
                                  effects->deleted_favicons);
   }
+}
+
+VisitVector ExpireHistoryBackend::GetVisitsAndRedirectParents(
+    const VisitVector& visits) {
+  base::flat_set<VisitID> seen_visits;
+  VisitVector visits_and_redirects;
+  for (const auto v : visits) {
+    VisitRow current_visit = v;
+    do {
+      if (!seen_visits.insert(current_visit.visit_id).second)
+        break;
+
+      visits_and_redirects.push_back(current_visit);
+    } while (current_visit.referring_visit &&
+             main_db_->GetRowForVisit(current_visit.referring_visit,
+                                      &current_visit));
+  }
+  return visits_and_redirects;
 }
 
 void ExpireHistoryBackend::DeleteVisitRelatedInfo(const VisitVector& visits,
