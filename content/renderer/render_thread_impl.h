@@ -539,6 +539,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   bool NeedsToRecordFirstActivePaint(int metric_type) const;
 
+  // Sets the current pipeline rendering color space.
+  void SetRenderingColorSpace(const gfx::ColorSpace& color_space);
+
  protected:
   RenderThreadImpl(
       const InProcessChildThreadParams& params,
@@ -777,6 +780,9 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_elastic_overscroll_enabled_;
   bool is_threaded_animation_enabled_;
   bool is_scroll_animator_enabled_;
+
+  // Target rendering ColorSpace.
+  gfx::ColorSpace rendering_color_space_;
 
   class PendingFrameCreate : public base::RefCounted<PendingFrameCreate> {
    public:

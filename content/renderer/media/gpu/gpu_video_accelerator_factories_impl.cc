@@ -358,6 +358,11 @@ GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
 }
 
+void GpuVideoAcceleratorFactoriesImpl::SetRenderingColorSpace(
+    const gfx::ColorSpace& color_space) {
+  rendering_color_space_ = color_space;
+}
+
 void GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   RecordContextProviderPhaseUmaEnum(

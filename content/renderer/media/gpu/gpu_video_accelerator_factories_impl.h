@@ -102,6 +102,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   viz::ContextProvider* GetMediaContextProvider() override;
 
+  void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
+
   void ReleaseContextProvider();
   scoped_refptr<ui::ContextProviderCommandBuffer> ContextProviderMainThread();
 
@@ -138,6 +140,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   bool enable_gpu_memory_buffer_video_frames_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
+
+  gfx::ColorSpace rendering_color_space_;
 
   gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
 
