@@ -57,6 +57,14 @@ public abstract class BaseMediaRouteProvider
     protected abstract MediaSource getSourceFromId(@Nonnull String sourceId);
 
     /**
+     * @return A CastSessionLaunchRequest encapsulating a session launch request.
+     */
+    @Nullable
+    protected abstract ChromeCastSessionManager.CastSessionLaunchRequest createSessionLaunchRequest(
+            MediaSource source, MediaSink sink, String presentationId, String origin, int tabId,
+            boolean isIncognito, int nativeRequestId);
+
+    /**
      * Forward the sinks back to the native counterpart.
      */
     protected void onSinksReceivedInternal(String sourceId, @Nonnull List<MediaSink> sinks) {
@@ -149,8 +157,30 @@ public abstract class BaseMediaRouteProvider
     }
 
     @Override
-    public abstract void createRoute(String sourceId, String sinkId, String presentationId,
-            String origin, int tabId, boolean isIncognito, int nativeRequestId);
+    public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
+            int tabId, boolean isIncognito, int nativeRequestId) {
+        if (mAndroidMediaRouter == null) {
+            mManager.onRouteRequestError("Not supported", nativeRequestId);
+            return;
+        }
+
+        MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
+        if (sink == null) {
+            mManager.onRouteRequestError("No sink", nativeRequestId);
+            return;
+        }
+
+        MediaSource source = getSourceFromId(sourceId);
+        if (source == null) {
+            mManager.onRouteRequestError("Unsupported source URL", nativeRequestId);
+            return;
+        }
+
+        ChromeCastSessionManager.CastSessionLaunchRequest request = createSessionLaunchRequest(
+                source, sink, presentationId, origin, tabId, isIncognito, nativeRequestId);
+
+        ChromeCastSessionManager.get().requestSessionLaunch(request);
+    }
 
     @Override
     public abstract void joinRoute(
