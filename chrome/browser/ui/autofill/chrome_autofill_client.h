@@ -29,10 +29,6 @@ namespace content {
 class WebContents;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace autofill {
 
 class AutofillPopupControllerImpl;
@@ -115,7 +111,6 @@ class ChromeAutofillClient
 #endif  // !defined(OS_ANDROID)
 
  private:
-  friend class SaveCardBubbleViewsBrowserTestBase;
   friend class content::WebContentsUserData<ChromeAutofillClient>;
 
   explicit ChromeAutofillClient(content::WebContents* web_contents);
@@ -127,13 +122,6 @@ class ChromeAutofillClient
 
   // The identity provider, used for Payments integration.
   std::unique_ptr<IdentityProvider> identity_provider_;
-
-  // An optional connector to expose test services. For example, if set, this
-  // connector is used when loading risk data. The test class that sets this
-  // pointer is responsible for the ownership of its object.
-  // TODO(crbug.com/791155): Necessary for testing due to leaks in the
-  // geolocation setup code when running browsertests.
-  service_manager::Connector* connector_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAutofillClient);
 };
