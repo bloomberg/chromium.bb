@@ -83,7 +83,7 @@ Image::Image(ImageObserver* observer, bool is_multipart)
       high_contrast_classification_(
           HighContrastClassification::kNotClassified) {}
 
-Image::~Image() {}
+Image::~Image() = default;
 
 Image* Image::NullImage() {
   DCHECK(IsMainThread());

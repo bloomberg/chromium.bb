@@ -20,7 +20,7 @@ LazyThreadControllerForTest::LazyThreadControllerForTest()
     task_runner_ = message_loop_->task_runner();
 }
 
-LazyThreadControllerForTest::~LazyThreadControllerForTest() {}
+LazyThreadControllerForTest::~LazyThreadControllerForTest() = default;
 
 void LazyThreadControllerForTest::EnsureMessageLoop() {
   if (message_loop_)

@@ -625,7 +625,8 @@ DequeIteratorBase<T, inlineCapacity, Allocator>::operator=(
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline DequeIteratorBase<T, inlineCapacity, Allocator>::~DequeIteratorBase() {}
+inline DequeIteratorBase<T, inlineCapacity, Allocator>::~DequeIteratorBase() =
+    default;
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline bool DequeIteratorBase<T, inlineCapacity, Allocator>::IsEqual(

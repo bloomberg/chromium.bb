@@ -28,7 +28,7 @@ VideoFrameSubmitter::VideoFrameSubmitter(
   DETACH_FROM_THREAD(media_thread_checker_);
 }
 
-VideoFrameSubmitter::~VideoFrameSubmitter() {}
+VideoFrameSubmitter::~VideoFrameSubmitter() = default;
 
 void VideoFrameSubmitter::StopUsingProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);

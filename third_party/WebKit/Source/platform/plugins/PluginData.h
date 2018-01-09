@@ -106,7 +106,7 @@ class PLATFORM_EXPORT PluginData final
   static void RefreshBrowserSidePluginCache();
 
  private:
-  PluginData() {}
+  PluginData() = default;
 
   HeapVector<Member<PluginInfo>> plugins_;
   HeapVector<Member<MimeClassInfo>> mimes_;

@@ -7,9 +7,9 @@
 namespace blink {
 namespace scheduler {
 
-CancelableClosureHolder::CancelableClosureHolder() {}
+CancelableClosureHolder::CancelableClosureHolder() = default;
 
-CancelableClosureHolder::~CancelableClosureHolder() {}
+CancelableClosureHolder::~CancelableClosureHolder() = default;
 
 void CancelableClosureHolder::Reset(const base::Closure& callback) {
   callback_ = callback;

@@ -42,7 +42,7 @@ ImageBufferSurface::ImageBufferSurface(const IntSize& size,
     : size_(size), color_params_(color_params) {
 }
 
-ImageBufferSurface::~ImageBufferSurface() {}
+ImageBufferSurface::~ImageBufferSurface() = default;
 
 void ImageBufferSurface::Clear() {
   // Clear the background transparent or opaque, as required. It would be nice

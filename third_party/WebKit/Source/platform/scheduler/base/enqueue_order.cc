@@ -13,7 +13,7 @@ namespace internal {
 EnqueueOrderGenerator::EnqueueOrderGenerator()
     : enqueue_order_(static_cast<EnqueueOrder>(EnqueueOrderValues::kFirst)) {}
 
-EnqueueOrderGenerator::~EnqueueOrderGenerator() {}
+EnqueueOrderGenerator::~EnqueueOrderGenerator() = default;
 
 EnqueueOrder EnqueueOrderGenerator::GenerateNext() {
   base::AutoLock lock(lock_);

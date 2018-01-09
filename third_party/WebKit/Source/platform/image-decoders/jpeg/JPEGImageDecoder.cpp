@@ -753,7 +753,7 @@ JPEGImageDecoder::JPEGImageDecoder(AlphaOption alpha_option,
                                    size_t max_decoded_bytes)
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes) {}
 
-JPEGImageDecoder::~JPEGImageDecoder() {}
+JPEGImageDecoder::~JPEGImageDecoder() = default;
 
 bool JPEGImageDecoder::SetSize(unsigned width, unsigned height) {
   if (!ImageDecoder::SetSize(width, height))

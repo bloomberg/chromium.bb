@@ -69,7 +69,7 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
                              std::move(task_runner),
                              time_source) {}
 
-  ~ThreadControllerForTest() override {}
+  ~ThreadControllerForTest() override = default;
 
   void AddNestingObserver(base::RunLoop::NestingObserver* observer) override {
     if (!message_loop_)
@@ -86,7 +86,7 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
 
 class TaskQueueManagerTest : public ::testing::Test {
  public:
-  TaskQueueManagerTest() {}
+  TaskQueueManagerTest() = default;
   void DeleteTaskQueueManager() { manager_.reset(); }
 
  protected:
@@ -1866,7 +1866,7 @@ namespace {
 
 class MockTaskQueueObserver : public TaskQueue::Observer {
  public:
-  ~MockTaskQueueObserver() override {}
+  ~MockTaskQueueObserver() override = default;
 
   MOCK_METHOD2(OnQueueNextWakeUpChanged, void(TaskQueue*, base::TimeTicks));
 };

@@ -174,7 +174,7 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
                                                  float sample_rate);
 
  protected:
-  AudioBus() {}
+  AudioBus() = default;
 
   AudioBus(unsigned number_of_channels, size_t length, bool allocate);
 

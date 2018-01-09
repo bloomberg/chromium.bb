@@ -54,7 +54,7 @@ class HeapTerminatedArray : public TerminatedArray<T> {
 
   // Prohibit construction. Allocator makes HeapTerminatedArray instances for
   // HeapTerminatedArrayBuilder by pointer casting.
-  HeapTerminatedArray();
+  HeapTerminatedArray() = delete;
 
   template <typename U, template <typename> class>
   friend class WTF::TerminatedArrayBuilder;

@@ -33,7 +33,7 @@ class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
     return base::AdoptRef(new CustomFontData());
   }
 
-  virtual ~CustomFontData() {}
+  virtual ~CustomFontData() = default;
 
   virtual void BeginLoadIfNeeded() const {}
   virtual bool IsLoading() const { return false; }
@@ -42,7 +42,7 @@ class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
   virtual void ClearFontFaceSource() {}
 
  protected:
-  CustomFontData() {}
+  CustomFontData() = default;
 };
 
 }  // namespace blink

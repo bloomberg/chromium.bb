@@ -36,7 +36,7 @@ UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(PaintImage image)
   DCHECK(paint_image_);
 }
 
-UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() {}
+UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() = default;
 
 IntSize UnacceleratedStaticBitmapImage::Size() const {
   return IntSize(paint_image_.width(), paint_image_.height());

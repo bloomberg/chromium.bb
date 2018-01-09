@@ -105,7 +105,7 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
     block_until_completion_ = flag;
   }
 
-  virtual ~AsyncFileSystemCallbacks() {}
+  virtual ~AsyncFileSystemCallbacks() = default;
 
  private:
   bool block_until_completion_;

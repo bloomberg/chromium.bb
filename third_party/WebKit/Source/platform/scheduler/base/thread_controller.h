@@ -24,7 +24,7 @@ class Sequence;
 // Interface for TaskQueueManager to schedule work to be run.
 class PLATFORM_EXPORT ThreadController {
  public:
-  virtual ~ThreadController() {}
+  virtual ~ThreadController() = default;
 
   // Notify the controller that its associated sequence has immediate work
   // to run. Shortly after this is called, the thread associated with this

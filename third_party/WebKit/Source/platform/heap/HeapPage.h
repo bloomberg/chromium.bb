@@ -372,7 +372,7 @@ class BasePage {
 
  public:
   BasePage(PageMemory*, BaseArena*);
-  virtual ~BasePage() {}
+  virtual ~BasePage() = default;
 
   void Link(BasePage** previous_next) {
     next_ = *previous_next;

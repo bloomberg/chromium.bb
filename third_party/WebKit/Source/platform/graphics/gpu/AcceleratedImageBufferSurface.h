@@ -52,7 +52,7 @@ class PLATFORM_EXPORT AcceleratedImageBufferSurface
  public:
   AcceleratedImageBufferSurface(const IntSize&,
                                 const CanvasColorParams& = CanvasColorParams());
-  ~AcceleratedImageBufferSurface() override {}
+  ~AcceleratedImageBufferSurface() override = default;
 
   PaintCanvas* Canvas() override { return canvas_.get(); }
   bool IsValid() const override;

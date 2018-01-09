@@ -70,10 +70,7 @@ WebThreadSafeData::WebThreadSafeData(const WebThreadSafeData& other) {
 }
 
 WebThreadSafeData& WebThreadSafeData::operator=(
-    const WebThreadSafeData& other) {
-  private_ = other.private_;
-  return *this;
-}
+    const WebThreadSafeData& other) = default;
 
 WebThreadSafeData& WebThreadSafeData::operator=(scoped_refptr<RawData> data) {
   private_ = std::move(data);

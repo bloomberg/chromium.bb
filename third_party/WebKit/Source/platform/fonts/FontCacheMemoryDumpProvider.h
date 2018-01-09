@@ -19,14 +19,14 @@ class PLATFORM_EXPORT FontCacheMemoryDumpProvider final
 
  public:
   static FontCacheMemoryDumpProvider* Instance();
-  ~FontCacheMemoryDumpProvider() override {}
+  ~FontCacheMemoryDumpProvider() override = default;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs&,
                     base::trace_event::ProcessMemoryDump*) override;
 
  private:
-  FontCacheMemoryDumpProvider() {}
+  FontCacheMemoryDumpProvider() = default;
 
   WTF_MAKE_NONCOPYABLE(FontCacheMemoryDumpProvider);
 };

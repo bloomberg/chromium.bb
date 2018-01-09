@@ -18,7 +18,7 @@ class WebViewScheduler;
 
 class WebFrameScheduler {
  public:
-  virtual ~WebFrameScheduler() {}
+  virtual ~WebFrameScheduler() = default;
 
   // Observer type that regulates conditions to invoke callbacks.
   enum class ObserverType { kLoader };
@@ -38,8 +38,8 @@ class WebFrameScheduler {
 
   class ActiveConnectionHandle {
    public:
-    ActiveConnectionHandle() {}
-    virtual ~ActiveConnectionHandle() {}
+    ActiveConnectionHandle() = default;
+    virtual ~ActiveConnectionHandle() = default;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandle);

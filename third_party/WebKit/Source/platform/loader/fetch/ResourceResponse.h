@@ -139,7 +139,7 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   class ExtraData : public RefCounted<ExtraData> {
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   explicit ResourceResponse(CrossThreadResourceResponseData*);
@@ -568,7 +568,7 @@ struct CrossThreadResourceResponseData {
   USING_FAST_MALLOC(CrossThreadResourceResponseData);
 
  public:
-  CrossThreadResourceResponseData() {}
+  CrossThreadResourceResponseData() = default;
   KURL url_;
   String mime_type_;
   long long expected_content_length_;

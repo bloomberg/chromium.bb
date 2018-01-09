@@ -704,7 +704,7 @@ template <typename T, size_t inlineCapacity = 0>
 class PersistentHeapDeque
     : public PersistentHeapCollectionBase<HeapDeque<T, inlineCapacity>> {
  public:
-  PersistentHeapDeque() {}
+  PersistentHeapDeque() = default;
 
   template <size_t otherCapacity>
   PersistentHeapDeque(const HeapDeque<T, otherCapacity>& other)

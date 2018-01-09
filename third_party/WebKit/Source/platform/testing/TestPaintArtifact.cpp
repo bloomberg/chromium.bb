@@ -41,7 +41,7 @@ class TestPaintArtifact::DummyRectClient : public FakeDisplayItemClient {
 
 TestPaintArtifact::TestPaintArtifact() : display_item_list_(0), built_(false) {}
 
-TestPaintArtifact::~TestPaintArtifact() {}
+TestPaintArtifact::~TestPaintArtifact() = default;
 
 TestPaintArtifact& TestPaintArtifact::Chunk(
     scoped_refptr<const TransformPaintPropertyNode> transform,

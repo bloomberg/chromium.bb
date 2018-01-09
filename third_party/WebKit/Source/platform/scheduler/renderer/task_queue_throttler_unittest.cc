@@ -55,7 +55,7 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
  public:
   AutoAdvancingTestClock(base::TimeDelta interval)
       : advancing_interval_(interval) {}
-  ~AutoAdvancingTestClock() override {}
+  ~AutoAdvancingTestClock() override = default;
 
   base::TimeTicks NowTicks() override {
     Advance(advancing_interval_);
@@ -72,8 +72,8 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
 
 class TaskQueueThrottlerTest : public ::testing::Test {
  public:
-  TaskQueueThrottlerTest() {}
-  ~TaskQueueThrottlerTest() override {}
+  TaskQueueThrottlerTest() = default;
+  ~TaskQueueThrottlerTest() override = default;
 
   void SetUp() override {
     clock_ = CreateClock();
@@ -147,7 +147,7 @@ class TaskQueueThrottlerWithAutoAdvancingTimeTest
       : auto_advance_time_interval_(GetParam()
                                         ? base::TimeDelta::FromMicroseconds(1)
                                         : base::TimeDelta()) {}
-  ~TaskQueueThrottlerWithAutoAdvancingTimeTest() override {}
+  ~TaskQueueThrottlerWithAutoAdvancingTimeTest() override = default;
 
  protected:
   std::unique_ptr<AutoAdvancingTestClock> CreateClock() override {

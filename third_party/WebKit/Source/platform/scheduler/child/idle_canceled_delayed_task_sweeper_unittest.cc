@@ -52,7 +52,7 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
-  ~IdleCanceledDelayedTaskSweeperTest() override {}
+  ~IdleCanceledDelayedTaskSweeperTest() override = default;
 
   void TearDown() override {
     // Check that all tests stop posting tasks.

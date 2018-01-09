@@ -17,7 +17,7 @@ TaskCostEstimator::TaskCostEstimator(base::TickClock* time_source,
       outstanding_task_count_(0),
       estimation_percentile_(estimation_percentile) {}
 
-TaskCostEstimator::~TaskCostEstimator() {}
+TaskCostEstimator::~TaskCostEstimator() = default;
 
 void TaskCostEstimator::WillProcessTask(const base::PendingTask& pending_task) {
   // Avoid measuring the duration in nested run loops.

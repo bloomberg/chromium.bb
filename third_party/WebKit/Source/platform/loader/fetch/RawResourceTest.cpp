@@ -48,8 +48,8 @@ namespace blink {
 
 class RawResourceTest : public ::testing::Test {
  public:
-  RawResourceTest() {}
-  ~RawResourceTest() override {}
+  RawResourceTest() = default;
+  ~RawResourceTest() override = default;
 
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
@@ -78,7 +78,7 @@ class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
 
  public:
   DummyClient() : called_(false), number_of_redirects_received_(0) {}
-  ~DummyClient() override {}
+  ~DummyClient() override = default;
 
   // ResourceClient implementation.
   void NotifyFinished(Resource* resource) override { called_ = true; }
@@ -119,7 +119,7 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
   AddingClient(DummyClient* client, Resource* resource)
       : dummy_client_(client), resource_(resource) {}
 
-  ~AddingClient() override {}
+  ~AddingClient() override = default;
 
   // ResourceClient implementation.
   void NotifyFinished(Resource* resource) override {
@@ -176,7 +176,7 @@ class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
  public:
   explicit RemovingClient(DummyClient* client) : dummy_client_(client) {}
 
-  ~RemovingClient() override {}
+  ~RemovingClient() override = default;
 
   // ResourceClient implementation.
   void NotifyFinished(Resource* resource) override {

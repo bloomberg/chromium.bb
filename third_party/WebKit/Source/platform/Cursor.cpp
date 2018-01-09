@@ -77,11 +77,7 @@ Cursor::Cursor(Image* image,
 
 Cursor::Cursor(Type type) : type_(type), image_scale_factor_(1) {}
 
-Cursor::Cursor(const Cursor& other)
-    : type_(other.type_),
-      image_(other.image_),
-      hot_spot_(other.hot_spot_),
-      image_scale_factor_(other.image_scale_factor_) {}
+Cursor::Cursor(const Cursor& other) = default;
 
 Cursor& Cursor::operator=(const Cursor& other) {
   type_ = other.type_;
@@ -91,7 +87,7 @@ Cursor& Cursor::operator=(const Cursor& other) {
   return *this;
 }
 
-Cursor::~Cursor() {}
+Cursor::~Cursor() = default;
 
 const Cursor& PointerCursor() {
   DEFINE_STATIC_LOCAL(Cursor, c, (Cursor::kPointer));

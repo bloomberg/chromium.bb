@@ -58,9 +58,9 @@ void IdleHelper::Shutdown() {
   idle_queue_->ShutdownTaskQueue();
 }
 
-IdleHelper::Delegate::Delegate() {}
+IdleHelper::Delegate::Delegate() = default;
 
-IdleHelper::Delegate::~Delegate() {}
+IdleHelper::Delegate::~Delegate() = default;
 
 scoped_refptr<SingleThreadIdleTaskRunner> IdleHelper::IdleTaskRunner() {
   helper_->CheckOnValidThread();
@@ -351,7 +351,7 @@ IdleHelper::State::State(SchedulerHelper* helper,
       running_idle_task_for_tracing_(false),
       idle_period_tracing_name_(idle_period_tracing_name) {}
 
-IdleHelper::State::~State() {}
+IdleHelper::State::~State() = default;
 
 IdleHelper::IdlePeriodState IdleHelper::State::idle_period_state() const {
   helper_->CheckOnValidThread();

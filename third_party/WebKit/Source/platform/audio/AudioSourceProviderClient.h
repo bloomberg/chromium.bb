@@ -45,7 +45,7 @@ class AudioSourceProviderClient : public GarbageCollectedMixin {
   void Trace(blink::Visitor* visitor) override {}
 
  protected:
-  virtual ~AudioSourceProviderClient() {}
+  virtual ~AudioSourceProviderClient() = default;
 };
 
 }  // namespace blink

@@ -11,7 +11,7 @@
 namespace blink {
 
 struct SameSizeAsScriptWrappable {
-  virtual ~SameSizeAsScriptWrappable() {}
+  virtual ~SameSizeAsScriptWrappable() = default;
   v8::Persistent<v8::Object> main_world_wrapper_;
 };
 

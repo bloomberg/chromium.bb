@@ -44,7 +44,7 @@ class PLATFORM_EXPORT SparseHeapBitmap {
     return WTF::WrapUnique(new SparseHeapBitmap(base));
   }
 
-  ~SparseHeapBitmap() {}
+  ~SparseHeapBitmap() = default;
 
   // Return the sparse bitmap subtree that at least covers the
   // [address, address + size) range, or nullptr if none.

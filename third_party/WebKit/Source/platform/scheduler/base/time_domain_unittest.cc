@@ -26,7 +26,7 @@ class MockTimeDomain : public TimeDomain {
   MockTimeDomain()
       : now_(base::TimeTicks() + base::TimeDelta::FromSeconds(1)) {}
 
-  ~MockTimeDomain() override {}
+  ~MockTimeDomain() override = default;
 
   using TimeDomain::CancelDelayedWork;
   using TimeDomain::NextScheduledRunTime;

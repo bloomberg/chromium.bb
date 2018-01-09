@@ -41,7 +41,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                      const LazyLineBreakIterator*,
                      ShapeResultSpacing<String>* = nullptr,
                      const Hyphenation* = nullptr);
-  ~ShapingLineBreaker() {}
+  ~ShapingLineBreaker() = default;
 
   // Represents details of the result of |ShapeLine()|.
   struct Result {

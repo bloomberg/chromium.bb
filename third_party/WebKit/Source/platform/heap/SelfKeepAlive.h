@@ -46,7 +46,7 @@ class SelfKeepAlive final {
   DISALLOW_NEW();
 
  public:
-  SelfKeepAlive() {}
+  SelfKeepAlive() = default;
 
   explicit SelfKeepAlive(Self* self) { Assign(self); }
 

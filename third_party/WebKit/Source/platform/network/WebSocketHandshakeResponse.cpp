@@ -36,9 +36,9 @@
 
 namespace blink {
 
-WebSocketHandshakeResponse::WebSocketHandshakeResponse() {}
+WebSocketHandshakeResponse::WebSocketHandshakeResponse() = default;
 
-WebSocketHandshakeResponse::~WebSocketHandshakeResponse() {}
+WebSocketHandshakeResponse::~WebSocketHandshakeResponse() = default;
 
 int WebSocketHandshakeResponse::StatusCode() const {
   return status_code_;

@@ -6,6 +6,6 @@
 
 namespace blink {
 
-CompositorAnimationPlayerClient::~CompositorAnimationPlayerClient() {}
+CompositorAnimationPlayerClient::~CompositorAnimationPlayerClient() = default;
 
 }  // namespace blink

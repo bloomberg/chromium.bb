@@ -30,7 +30,7 @@ WebSchedulerImpl::WebSchedulerImpl(
       v8_web_task_runner_(
           WebTaskRunnerImpl::Create(v8_task_runner, base::nullopt)) {}
 
-WebSchedulerImpl::~WebSchedulerImpl() {}
+WebSchedulerImpl::~WebSchedulerImpl() = default;
 
 void WebSchedulerImpl::Shutdown() {
   child_scheduler_->Shutdown();

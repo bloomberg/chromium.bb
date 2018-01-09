@@ -58,7 +58,7 @@ class PLATFORM_EXPORT IdentityTransformOperation final
 
   scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 
-  IdentityTransformOperation() {}
+  IdentityTransformOperation() = default;
 };
 
 }  // namespace blink

@@ -12,7 +12,7 @@ namespace blink {
 
 class PLATFORM_EXPORT CanvasResourceHost {
  public:
-  virtual ~CanvasResourceHost() {}
+  virtual ~CanvasResourceHost() = default;
   virtual void NotifySurfaceInvalid() = 0;
   virtual void SetNeedsCompositingUpdate() = 0;
   virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const = 0;

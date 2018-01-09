@@ -13,7 +13,7 @@ class FontSelector;
 
 class FontSelectorClient : public GarbageCollectedMixin {
  public:
-  virtual ~FontSelectorClient() {}
+  virtual ~FontSelectorClient() = default;
 
   virtual void FontsNeedUpdate(FontSelector*) = 0;
 

@@ -46,7 +46,7 @@ class WebMediaStreamObserver;
 class PLATFORM_EXPORT MediaStreamDescriptorClient
     : public GarbageCollectedMixin {
  public:
-  virtual ~MediaStreamDescriptorClient() {}
+  virtual ~MediaStreamDescriptorClient() = default;
 
   virtual void StreamEnded() = 0;
   virtual void AddTrackByComponent(MediaStreamComponent*) = 0;

@@ -52,7 +52,7 @@ PlatformSpeechSynthesizer::PlatformSpeechSynthesizer(
       web_speech_synthesizer_client_);
 }
 
-PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer() {}
+PlatformSpeechSynthesizer::~PlatformSpeechSynthesizer() = default;
 
 void PlatformSpeechSynthesizer::Speak(
     PlatformSpeechSynthesisUtterance* utterance) {

@@ -27,7 +27,7 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
           WebTaskRunnerImpl::Create(renderer_scheduler_->CompositorTaskQueue(),
                                     base::nullopt)) {}
 
-RendererWebSchedulerImpl::~RendererWebSchedulerImpl() {}
+RendererWebSchedulerImpl::~RendererWebSchedulerImpl() = default;
 
 WebTaskRunner* RendererWebSchedulerImpl::CompositorTaskRunner() {
   return compositor_task_runner_.get();

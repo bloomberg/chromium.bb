@@ -61,7 +61,7 @@ class TrackedAllocator final : public PODArena::FastMallocAllocator {
   int NumRegions() const { return allocated_regions_.size(); }
 
  private:
-  TrackedAllocator() {}
+  TrackedAllocator() = default;
   Vector<void*> allocated_regions_;
 };
 

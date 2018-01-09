@@ -42,7 +42,7 @@ inline EncodedFormData::EncodedFormData(const EncodedFormData& data)
       identifier_(data.identifier_),
       contains_password_data_(data.contains_password_data_) {}
 
-EncodedFormData::~EncodedFormData() {}
+EncodedFormData::~EncodedFormData() = default;
 
 scoped_refptr<EncodedFormData> EncodedFormData::Create() {
   return base::AdoptRef(new EncodedFormData);

@@ -44,9 +44,9 @@
 
 namespace blink {
 
-DrawLooperBuilder::DrawLooperBuilder() {}
+DrawLooperBuilder::DrawLooperBuilder() = default;
 
-DrawLooperBuilder::~DrawLooperBuilder() {}
+DrawLooperBuilder::~DrawLooperBuilder() = default;
 
 sk_sp<SkDrawLooper> DrawLooperBuilder::DetachDrawLooper() {
   return sk_draw_looper_builder_.detach();

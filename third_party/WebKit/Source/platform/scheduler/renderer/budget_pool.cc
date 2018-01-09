@@ -19,7 +19,7 @@ BudgetPool::BudgetPool(const char* name,
       budget_pool_controller_(budget_pool_controller),
       is_enabled_(true) {}
 
-BudgetPool::~BudgetPool() {}
+BudgetPool::~BudgetPool() = default;
 
 const char* BudgetPool::Name() const {
   return name_;

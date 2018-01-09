@@ -324,7 +324,7 @@ DragImage::DragImage(const SkBitmap& bitmap,
       resolution_scale_(resolution_scale),
       interpolation_quality_(interpolation_quality) {}
 
-DragImage::~DragImage() {}
+DragImage::~DragImage() = default;
 
 void DragImage::Scale(float scale_x, float scale_y) {
   skia::ImageOperations::ResizeMethod resize_method =

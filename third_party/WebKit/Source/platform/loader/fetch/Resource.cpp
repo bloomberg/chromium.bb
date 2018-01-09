@@ -118,7 +118,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
   static Resource::CachedMetadataHandlerImpl* Create(Resource* resource) {
     return new CachedMetadataHandlerImpl(resource);
   }
-  ~CachedMetadataHandlerImpl() override {}
+  ~CachedMetadataHandlerImpl() override = default;
   void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
@@ -217,7 +217,7 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
     return new ServiceWorkerResponseCachedMetadataHandler(resource,
                                                           security_origin);
   }
-  ~ServiceWorkerResponseCachedMetadataHandler() override {}
+  ~ServiceWorkerResponseCachedMetadataHandler() override = default;
   void Trace(blink::Visitor*) override;
 
  protected:

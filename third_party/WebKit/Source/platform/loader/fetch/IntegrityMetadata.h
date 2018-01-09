@@ -21,7 +21,7 @@ using IntegrityMetadataSet = WTF::HashSet<IntegrityMetadataPair>;
 
 class PLATFORM_EXPORT IntegrityMetadata {
  public:
-  IntegrityMetadata() {}
+  IntegrityMetadata() = default;
   IntegrityMetadata(String digest, IntegrityAlgorithm);
   IntegrityMetadata(IntegrityMetadataPair);
 

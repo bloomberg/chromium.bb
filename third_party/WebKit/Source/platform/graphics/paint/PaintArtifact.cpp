@@ -60,7 +60,7 @@ PaintArtifact::PaintArtifact(PaintArtifact&& source)
     : display_item_list_(std::move(source.display_item_list_)),
       paint_chunks_(std::move(source.paint_chunks_)) {}
 
-PaintArtifact::~PaintArtifact() {}
+PaintArtifact::~PaintArtifact() = default;
 
 PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source) {
   display_item_list_ = std::move(source.display_item_list_);

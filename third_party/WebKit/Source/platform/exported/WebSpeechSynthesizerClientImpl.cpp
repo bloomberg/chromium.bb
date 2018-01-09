@@ -34,7 +34,7 @@ WebSpeechSynthesizerClientImpl::WebSpeechSynthesizerClientImpl(
     PlatformSpeechSynthesizerClient* client)
     : synthesizer_(synthesizer), client_(client) {}
 
-WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl() {}
+WebSpeechSynthesizerClientImpl::~WebSpeechSynthesizerClientImpl() = default;
 
 void WebSpeechSynthesizerClientImpl::SetVoiceList(
     const WebVector<WebSpeechSynthesisVoice>& voices) {

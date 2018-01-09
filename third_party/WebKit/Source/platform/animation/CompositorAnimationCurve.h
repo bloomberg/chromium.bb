@@ -17,7 +17,7 @@ namespace blink {
 
 class PLATFORM_EXPORT CompositorAnimationCurve {
  public:
-  virtual ~CompositorAnimationCurve() {}
+  virtual ~CompositorAnimationCurve() = default;
   virtual std::unique_ptr<cc::AnimationCurve> CloneToAnimationCurve() const = 0;
 };
 

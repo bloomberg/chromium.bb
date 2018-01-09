@@ -62,7 +62,7 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
 
   class PLATFORM_EXPORT Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called when the scheduler tried to execute a task from a disabled
     // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked.

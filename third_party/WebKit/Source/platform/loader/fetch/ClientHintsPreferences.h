@@ -27,7 +27,7 @@ class PLATFORM_EXPORT ClientHintsPreferences {
     virtual void CountPersistentClientHintHeaders() = 0;
 
    protected:
-    virtual ~Context() {}
+    virtual ~Context() = default;
   };
 
   ClientHintsPreferences();

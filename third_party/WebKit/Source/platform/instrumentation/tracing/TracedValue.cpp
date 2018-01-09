@@ -13,9 +13,9 @@ std::unique_ptr<TracedValue> TracedValue::Create() {
   return WTF::WrapUnique(new TracedValue());
 }
 
-TracedValue::TracedValue() {}
+TracedValue::TracedValue() = default;
 
-TracedValue::~TracedValue() {}
+TracedValue::~TracedValue() = default;
 
 void TracedValue::SetInteger(const char* name, int value) {
   traced_value_.SetInteger(name, value);

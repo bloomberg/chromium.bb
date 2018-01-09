@@ -39,7 +39,7 @@ namespace blink {
 
 class PLATFORM_EXPORT PrerenderClient : public GarbageCollectedMixin {
  public:
-  virtual ~PrerenderClient() {}
+  virtual ~PrerenderClient() = default;
 
   virtual void DidStartPrerender() = 0;
   virtual void DidStopPrerender() = 0;

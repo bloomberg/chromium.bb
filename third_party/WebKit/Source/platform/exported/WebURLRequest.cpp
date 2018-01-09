@@ -51,7 +51,7 @@ class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
     return base::AdoptRef(new URLRequestExtraDataContainer(extra_data));
   }
 
-  ~URLRequestExtraDataContainer() override {}
+  ~URLRequestExtraDataContainer() override = default;
 
   WebURLRequest::ExtraData* GetExtraData() const { return extra_data_.get(); }
 
@@ -68,14 +68,14 @@ class URLRequestExtraDataContainer : public ResourceRequest::ExtraData {
 // heap, which is otherwise disallowed by DISALLOW_NEW_EXCEPT_PLACEMENT_NEW
 // annotation on ResourceRequest.
 struct WebURLRequest::ResourceRequestContainer {
-  ResourceRequestContainer() {}
+  ResourceRequestContainer() = default;
   explicit ResourceRequestContainer(const ResourceRequest& r)
       : resource_request(r) {}
 
   ResourceRequest resource_request;
 };
 
-WebURLRequest::~WebURLRequest() {}
+WebURLRequest::~WebURLRequest() = default;
 
 WebURLRequest::WebURLRequest()
     : owned_resource_request_(new ResourceRequestContainer()),

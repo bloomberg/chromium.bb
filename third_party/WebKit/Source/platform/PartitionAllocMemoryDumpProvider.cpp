@@ -172,9 +172,9 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
 
 // |m_allocationRegister| should be initialized only when necessary to avoid
 // waste of memory.
-PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider() {}
+PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider() = default;
 
-PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider() {}
+PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider() = default;
 
 void PartitionAllocMemoryDumpProvider::OnHeapProfilingEnabled(bool enabled) {
   if (enabled) {

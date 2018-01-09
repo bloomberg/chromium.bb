@@ -28,8 +28,9 @@
 
 namespace blink {
 
-WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession() {}
+WebContentDecryptionModuleSession::~WebContentDecryptionModuleSession() =
+    default;
 
-WebContentDecryptionModuleSession::Client::~Client() {}
+WebContentDecryptionModuleSession::Client::~Client() = default;
 
 }  // namespace blink

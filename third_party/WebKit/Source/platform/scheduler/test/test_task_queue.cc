@@ -14,7 +14,7 @@ TestTaskQueue::TestTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
     : TaskQueue(std::move(impl), spec),
       weak_factory_(this) {}
 
-TestTaskQueue::~TestTaskQueue() {}
+TestTaskQueue::~TestTaskQueue() = default;
 
 base::WeakPtr<TestTaskQueue> TestTaskQueue::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();

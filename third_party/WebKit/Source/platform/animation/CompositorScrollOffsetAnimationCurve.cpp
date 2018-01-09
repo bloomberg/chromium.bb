@@ -43,7 +43,8 @@ CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     cc::ScrollOffsetAnimationCurve* curve)
     : curve_(curve->CloneToScrollOffsetAnimationCurve()) {}
 
-CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve() {}
+CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve() =
+    default;
 
 void CompositorScrollOffsetAnimationCurve::SetInitialValue(
     FloatPoint initial_value) {

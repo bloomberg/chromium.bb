@@ -86,7 +86,7 @@ class PLATFORM_EXPORT ImageDecoder {
 
   enum AlphaOption { kAlphaPremultiplied, kAlphaNotPremultiplied };
 
-  virtual ~ImageDecoder() {}
+  virtual ~ImageDecoder() = default;
 
   // Returns a caller-owned decoder of the appropriate type.  Returns nullptr if
   // we can't sniff a supported type from the provided data (possibly

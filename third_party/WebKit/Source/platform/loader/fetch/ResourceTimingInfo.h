@@ -139,7 +139,7 @@ struct CrossThreadResourceTimingInfoData {
   USING_FAST_MALLOC(CrossThreadResourceTimingInfoData);
 
  public:
-  CrossThreadResourceTimingInfoData() {}
+  CrossThreadResourceTimingInfoData() = default;
 
   String type_;
   String original_timing_allow_origin_;

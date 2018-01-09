@@ -240,7 +240,7 @@ std::unique_ptr<JSONValue> JSONString::Clone() const {
   return JSONString::Create(string_value_);
 }
 
-JSONObject::~JSONObject() {}
+JSONObject::~JSONObject() = default;
 
 void JSONObject::SetBoolean(const String& name, bool value) {
   SetValue(name, JSONBasicValue::Create(value));
@@ -395,7 +395,7 @@ std::unique_ptr<JSONValue> JSONObject::Clone() const {
 
 JSONObject::JSONObject() : JSONValue(kTypeObject), data_(), order_() {}
 
-JSONArray::~JSONArray() {}
+JSONArray::~JSONArray() = default;
 
 void JSONArray::WriteJSON(StringBuilder* output) const {
   output->Append('[');

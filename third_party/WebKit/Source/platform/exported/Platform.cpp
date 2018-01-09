@@ -113,7 +113,7 @@ Platform::Platform() : main_thread_(nullptr) {
   WTF::Partitions::Initialize(MaxObservedSizeFunction);
 }
 
-Platform::~Platform() {}
+Platform::~Platform() = default;
 
 void Platform::Initialize(Platform* platform) {
   DCHECK(!g_platform);

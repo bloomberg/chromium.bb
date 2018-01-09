@@ -52,7 +52,7 @@ class PLATFORM_EXPORT Prerender final
  public:
   class ExtraData : public RefCounted<ExtraData> {
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   static Prerender* Create(PrerenderClient* client,

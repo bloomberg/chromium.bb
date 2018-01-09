@@ -18,7 +18,7 @@ class TimingFunction;
 
 class PLATFORM_EXPORT CompositorKeyframe {
  public:
-  virtual ~CompositorKeyframe() {}
+  virtual ~CompositorKeyframe() = default;
 
   virtual double Time() const = 0;
 

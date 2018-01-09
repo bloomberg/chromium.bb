@@ -26,7 +26,7 @@ Visitor::Visitor(ThreadState* state, MarkingMode marking_mode)
 #endif
 }
 
-Visitor::~Visitor() {}
+Visitor::~Visitor() = default;
 
 void Visitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
   visitor->MarkNoTracing(object);

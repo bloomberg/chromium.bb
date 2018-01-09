@@ -454,7 +454,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       virtual_time_stopped(false),
       nested_runloop(false) {}
 
-RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
+RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 RendererSchedulerImpl::AnyThread::AnyThread()
     : awaiting_touch_start_response(false),
@@ -466,13 +466,13 @@ RendererSchedulerImpl::AnyThread::AnyThread()
       waiting_for_meaningful_paint(false),
       have_seen_input_since_navigation(false) {}
 
-RendererSchedulerImpl::AnyThread::~AnyThread() {}
+RendererSchedulerImpl::AnyThread::~AnyThread() = default;
 
 RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
     : last_input_type(blink::WebInputEvent::kUndefined),
       main_thread_seems_unresponsive(false) {}
 
-RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
+RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() = default;
 
 RendererSchedulerImpl::RendererPauseHandleImpl::RendererPauseHandleImpl(
     RendererSchedulerImpl* scheduler)

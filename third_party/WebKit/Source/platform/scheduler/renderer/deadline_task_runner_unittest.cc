@@ -16,8 +16,8 @@ namespace scheduler {
 
 class DeadlineTaskRunnerTest : public ::testing::Test {
  public:
-  DeadlineTaskRunnerTest() {}
-  ~DeadlineTaskRunnerTest() override {}
+  DeadlineTaskRunnerTest() = default;
+  ~DeadlineTaskRunnerTest() override = default;
 
   void SetUp() override {
     clock_.reset(new base::SimpleTestTickClock());

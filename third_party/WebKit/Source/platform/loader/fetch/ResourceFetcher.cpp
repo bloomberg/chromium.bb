@@ -289,7 +289,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context)
       allow_stale_resources_(false),
       image_fetched_(false) {}
 
-ResourceFetcher::~ResourceFetcher() {}
+ResourceFetcher::~ResourceFetcher() = default;
 
 Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url);

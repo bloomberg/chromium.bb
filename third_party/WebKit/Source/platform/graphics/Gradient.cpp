@@ -48,7 +48,7 @@ Gradient::Gradient(Type type,
       color_interpolation_(interpolation),
       stops_sorted_(true) {}
 
-Gradient::~Gradient() {}
+Gradient::~Gradient() = default;
 
 static inline bool CompareStops(const Gradient::ColorStop& a,
                                 const Gradient::ColorStop& b) {

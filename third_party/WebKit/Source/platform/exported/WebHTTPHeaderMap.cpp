@@ -50,7 +50,8 @@ class WebHTTPHeaderMap::WebHTTPHeaderMapImpl {
   HTTPHeaderMap map_;
 };
 
-WebHTTPHeaderMap::~WebHTTPHeaderMap(){};
+WebHTTPHeaderMap::~WebHTTPHeaderMap() = default;
+;
 
 WebHTTPHeaderMap::WebHTTPHeaderMap(const HTTPHeaderMap& map) {
   implementation_ = std::make_unique<WebHTTPHeaderMapImpl>(map);

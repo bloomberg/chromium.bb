@@ -75,7 +75,7 @@ namespace {
 
 class Canvas2DLayerBridgePtr {
  public:
-  Canvas2DLayerBridgePtr() {}
+  Canvas2DLayerBridgePtr() = default;
   Canvas2DLayerBridgePtr(std::unique_ptr<Canvas2DLayerBridge> layer_bridge)
       : layer_bridge_(std::move(layer_bridge)) {}
 
@@ -414,7 +414,7 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
   MOCK_METHOD1(ReportHibernationEvent,
                void(Canvas2DLayerBridge::HibernationEvent));
   MOCK_METHOD0(DidStartHibernating, void());
-  virtual ~MockLogger() {}
+  virtual ~MockLogger() = default;
 };
 
 class MockImageBuffer : public ImageBuffer {
@@ -425,7 +425,7 @@ class MockImageBuffer : public ImageBuffer {
 
   MOCK_CONST_METHOD1(ResetCanvas, void(PaintCanvas*));
 
-  virtual ~MockImageBuffer() {}
+  virtual ~MockImageBuffer() = default;
 };
 
 class MockCanvasResourceHost : public CanvasResourceHost {

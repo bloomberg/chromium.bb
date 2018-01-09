@@ -301,7 +301,7 @@ class CrossThreadFunction<R(Args...)> {
   USING_FAST_MALLOC(CrossThreadFunction);
 
  public:
-  CrossThreadFunction() {}
+  CrossThreadFunction() = default;
   explicit CrossThreadFunction(base::Callback<R(Args...)> callback)
       : callback_(std::move(callback)) {}
   ~CrossThreadFunction() = default;

@@ -44,7 +44,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
     kRawResourceType
   };
 
-  virtual ~ResourceClient() {}
+  virtual ~ResourceClient() = default;
 
   // DataReceived() is called each time a chunk of data is received.
   // For cache hits, the data is replayed before NotifyFinished() is called.
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   void Trace(blink::Visitor* visitor) override { visitor->Trace(resource_); }
 
  protected:
-  ResourceClient() {}
+  ResourceClient() = default;
 
   void ClearResource() { SetResource(nullptr, nullptr); }
 

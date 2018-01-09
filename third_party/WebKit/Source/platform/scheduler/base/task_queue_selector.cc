@@ -22,7 +22,7 @@ TaskQueueSelector::TaskQueueSelector()
       num_blocked_queues_to_report_(0),
       task_queue_selector_observer_(nullptr) {}
 
-TaskQueueSelector::~TaskQueueSelector() {}
+TaskQueueSelector::~TaskQueueSelector() = default;
 
 void TaskQueueSelector::AddQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());

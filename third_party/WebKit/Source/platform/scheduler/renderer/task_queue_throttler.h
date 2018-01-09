@@ -47,7 +47,7 @@ enum class QueueBlockType { kAllTasks, kNewTasksOnly };
 // Interface for BudgetPool to interact with TaskQueueThrottler.
 class PLATFORM_EXPORT BudgetPoolController {
  public:
-  virtual ~BudgetPoolController() {}
+  virtual ~BudgetPoolController() = default;
 
   // To be used by BudgetPool only, use BudgetPool::{Add,Remove}Queue
   // methods instead.

@@ -30,7 +30,7 @@
 
 namespace WTF {
 
-TextCodec::~TextCodec() {}
+TextCodec::~TextCodec() = default;
 
 int TextCodec::GetUnencodableReplacement(
     unsigned code_point,

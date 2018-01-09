@@ -27,7 +27,7 @@ struct MimeRegistryPtrHolder {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&mime_registry));
   }
-  ~MimeRegistryPtrHolder() {}
+  ~MimeRegistryPtrHolder() = default;
 
   mojom::blink::MimeRegistryPtr mime_registry;
 };

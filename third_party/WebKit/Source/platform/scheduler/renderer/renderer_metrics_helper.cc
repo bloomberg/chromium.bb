@@ -109,7 +109,7 @@ RendererMetricsHelper::RendererMetricsHelper(
   }
 }
 
-RendererMetricsHelper::~RendererMetricsHelper() {}
+RendererMetricsHelper::~RendererMetricsHelper() = default;
 
 void RendererMetricsHelper::OnRendererForegrounded(base::TimeTicks now) {
   foreground_main_thread_load_tracker.Resume(now);

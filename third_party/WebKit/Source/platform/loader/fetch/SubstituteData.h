@@ -37,7 +37,7 @@ class SubstituteData {
   DISALLOW_NEW();
 
  public:
-  SubstituteData() {}
+  SubstituteData() = default;
 
   SubstituteData(scoped_refptr<SharedBuffer> content)
       : SubstituteData(content, "text/html", "UTF-8", KURL()) {}

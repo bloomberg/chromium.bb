@@ -92,7 +92,7 @@ class PLATFORM_EXPORT FloatPolygon {
 
 class PLATFORM_EXPORT VertexPair {
  public:
-  virtual ~VertexPair() {}
+  virtual ~VertexPair() = default;
 
   virtual const FloatPoint& Vertex1() const = 0;
   virtual const FloatPoint& Vertex2() const = 0;

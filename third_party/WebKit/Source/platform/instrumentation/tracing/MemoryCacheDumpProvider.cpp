@@ -40,8 +40,8 @@ bool MemoryCacheDumpProvider::OnMemoryDump(
   return client_->OnMemoryDump(level, &dump);
 }
 
-MemoryCacheDumpProvider::MemoryCacheDumpProvider() {}
+MemoryCacheDumpProvider::MemoryCacheDumpProvider() = default;
 
-MemoryCacheDumpProvider::~MemoryCacheDumpProvider() {}
+MemoryCacheDumpProvider::~MemoryCacheDumpProvider() = default;
 
 }  // namespace blink

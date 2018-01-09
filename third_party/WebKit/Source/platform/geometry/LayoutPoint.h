@@ -44,7 +44,7 @@ class PLATFORM_EXPORT LayoutPoint {
   DISALLOW_NEW();
 
  public:
-  LayoutPoint() {}
+  LayoutPoint() = default;
   LayoutPoint(LayoutUnit x, LayoutUnit y) : x_(x), y_(y) {}
   LayoutPoint(int x, int y) : x_(LayoutUnit(x)), y_(LayoutUnit(y)) {}
   LayoutPoint(const IntPoint& point) : x_(point.X()), y_(point.Y()) {}

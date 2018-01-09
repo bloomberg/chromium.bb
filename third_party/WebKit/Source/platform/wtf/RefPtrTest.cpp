@@ -50,7 +50,7 @@ class CustomDeleter : public RefCounted<CustomDeleter, Deleter> {
 
  private:
   friend struct Deleter;
-  ~CustomDeleter() {}
+  ~CustomDeleter() = default;
 
   bool* deleted_;
 };
@@ -83,7 +83,7 @@ class CustomDeleterThreadSafe
 
  private:
   friend struct DeleterThreadSafe;
-  ~CustomDeleterThreadSafe() {}
+  ~CustomDeleterThreadSafe() = default;
 
   bool* deleted_;
 };

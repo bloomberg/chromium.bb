@@ -29,8 +29,8 @@ namespace task_queue_selector_unittest {
 
 class MockObserver : public TaskQueueSelector::Observer {
  public:
-  MockObserver() {}
-  virtual ~MockObserver() {}
+  MockObserver() = default;
+  virtual ~MockObserver() = default;
 
   MOCK_METHOD1(OnTaskQueueEnabled, void(internal::TaskQueueImpl*));
   MOCK_METHOD1(OnTriedToSelectBlockedWorkQueue, void(internal::WorkQueue*));
@@ -50,7 +50,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
  public:
   TaskQueueSelectorTest()
       : test_closure_(base::Bind(&TaskQueueSelectorTest::TestFunction)) {}
-  ~TaskQueueSelectorTest() override {}
+  ~TaskQueueSelectorTest() override = default;
 
   TaskQueueSelectorForTest::PrioritizingSelector* enabled_selector() {
     return selector_.enabled_selector_for_test();

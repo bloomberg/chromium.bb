@@ -37,7 +37,7 @@ static_assert(!std::is_trivially_move_assignable<VirtualClass>::value,
               "VirtualClass should not be trivially move assignable");
 
 struct DestructorClass {
-  ~DestructorClass() {}
+  ~DestructorClass() = default;
 };
 static_assert(std::is_trivially_move_assignable<DestructorClass>::value,
               "DestructorClass should be trivially move assignable");

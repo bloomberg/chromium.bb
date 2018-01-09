@@ -13,7 +13,7 @@ namespace scheduler {
 
 RealTimeDomain::RealTimeDomain() : task_queue_manager_(nullptr) {}
 
-RealTimeDomain::~RealTimeDomain() {}
+RealTimeDomain::~RealTimeDomain() = default;
 
 void RealTimeDomain::OnRegisterWithTaskQueueManager(
     TaskQueueManager* task_queue_manager) {

@@ -38,7 +38,7 @@ class WorkerGlobalScopeSchedulerTest : public ::testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
-  ~WorkerGlobalScopeSchedulerTest() override {}
+  ~WorkerGlobalScopeSchedulerTest() override = default;
 
   void SetUp() override {
     scheduler_->Init();

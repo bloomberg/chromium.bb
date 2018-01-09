@@ -92,7 +92,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
   resource_->SetLoader(this);
 }
 
-ResourceLoader::~ResourceLoader() {}
+ResourceLoader::~ResourceLoader() = default;
 
 void ResourceLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);

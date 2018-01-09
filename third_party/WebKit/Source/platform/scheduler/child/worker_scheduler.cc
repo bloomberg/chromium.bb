@@ -16,7 +16,7 @@ namespace scheduler {
 WorkerScheduler::WorkerScheduler(std::unique_ptr<WorkerSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
-WorkerScheduler::~WorkerScheduler() {}
+WorkerScheduler::~WorkerScheduler() = default;
 
 // static
 std::unique_ptr<WorkerScheduler> WorkerScheduler::Create() {

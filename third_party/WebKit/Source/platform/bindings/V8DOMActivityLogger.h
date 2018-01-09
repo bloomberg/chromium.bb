@@ -45,7 +45,7 @@ class PLATFORM_EXPORT V8DOMActivityLogger {
   USING_FAST_MALLOC(V8DOMActivityLogger);
 
  public:
-  virtual ~V8DOMActivityLogger() {}
+  virtual ~V8DOMActivityLogger() = default;
 
   virtual void LogGetter(const String& api_name) {}
   virtual void LogSetter(const String& api_name,

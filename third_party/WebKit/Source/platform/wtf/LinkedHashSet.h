@@ -133,7 +133,7 @@ class LinkedHashSetNodeBase {
 
  private:
   // Should not be used.
-  LinkedHashSetNodeBase& operator=(const LinkedHashSetNodeBase& other);
+  LinkedHashSetNodeBase& operator=(const LinkedHashSetNodeBase& other) = delete;
 };
 
 template <typename ValueArg, typename Allocator>

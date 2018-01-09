@@ -46,7 +46,7 @@ WTF_EXPORT TimeFunction GetTimeFunctionForTesting();
 
 class TimeTicks {
  public:
-  TimeTicks() {}
+  TimeTicks() = default;
   TimeTicks(base::TimeTicks value) : value_(value) {}
 
   static TimeTicks UnixEpoch() {

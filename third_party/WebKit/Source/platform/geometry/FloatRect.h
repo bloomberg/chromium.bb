@@ -61,7 +61,7 @@ class PLATFORM_EXPORT FloatRect {
  public:
   enum ContainsMode { kInsideOrOnStroke, kInsideButNotOnStroke };
 
-  FloatRect() {}
+  FloatRect() = default;
   FloatRect(const FloatPoint& location, const FloatSize& size)
       : location_(location), size_(size) {}
   FloatRect(float x, float y, float width, float height)

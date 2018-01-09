@@ -11,7 +11,7 @@ namespace blink {
 
 class StubImage : public Image {
  public:
-  StubImage() {}
+  StubImage() = default;
 
   bool CurrentFrameKnownToBeOpaque(MetadataMode) override { return false; }
   IntSize Size() const override { return IntSize(10, 10); }

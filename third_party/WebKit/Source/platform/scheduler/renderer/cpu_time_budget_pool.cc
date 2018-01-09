@@ -26,7 +26,7 @@ CPUTimeBudgetPool::CPUTimeBudgetPool(
       last_checkpoint_(now),
       cpu_percentage_(1) {}
 
-CPUTimeBudgetPool::~CPUTimeBudgetPool() {}
+CPUTimeBudgetPool::~CPUTimeBudgetPool() = default;
 
 QueueBlockType CPUTimeBudgetPool::GetBlockType() const {
   return QueueBlockType::kAllTasks;

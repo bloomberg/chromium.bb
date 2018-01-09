@@ -155,7 +155,7 @@ class TaskRunnerTimer : public TimerBase {
                   TimerFiredFunction f)
       : TimerBase(std::move(web_task_runner)), object_(o), function_(f) {}
 
-  ~TaskRunnerTimer() override {}
+  ~TaskRunnerTimer() override = default;
 
  protected:
   void Fired() override { (object_->*function_)(this); }
@@ -186,7 +186,7 @@ class Timer : public TaskRunnerTimer<TimerFiredClass> {
   using TimerFiredFunction =
       typename TaskRunnerTimer<TimerFiredClass>::TimerFiredFunction;
 
-  ~Timer() override {}
+  ~Timer() override = default;
 
   Timer(TimerFiredClass* timer_fired_class,
         TimerFiredFunction timer_fired_function)

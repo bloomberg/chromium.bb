@@ -84,7 +84,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   bool IsNeutered() const { return is_neutered_; }
   bool IsShared() const { return contents_.IsShared(); }
 
-  ~ArrayBuffer() {}
+  ~ArrayBuffer() = default;
 
  protected:
   inline explicit ArrayBuffer(ArrayBufferContents&);

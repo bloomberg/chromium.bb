@@ -35,7 +35,7 @@ namespace blink {
 WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url)
     : url_(url) {}
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest() {}
+WebSocketHandshakeRequest::WebSocketHandshakeRequest() = default;
 
 WebSocketHandshakeRequest::WebSocketHandshakeRequest(
     const WebSocketHandshakeRequest& request)
@@ -43,7 +43,7 @@ WebSocketHandshakeRequest::WebSocketHandshakeRequest(
       header_fields_(request.header_fields_),
       headers_text_(request.headers_text_) {}
 
-WebSocketHandshakeRequest::~WebSocketHandshakeRequest() {}
+WebSocketHandshakeRequest::~WebSocketHandshakeRequest() = default;
 
 void WebSocketHandshakeRequest::AddAndMergeHeader(HTTPHeaderMap* map,
                                                   const AtomicString& name,

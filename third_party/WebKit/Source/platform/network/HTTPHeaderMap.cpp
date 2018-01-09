@@ -34,9 +34,9 @@
 
 namespace blink {
 
-HTTPHeaderMap::HTTPHeaderMap() {}
+HTTPHeaderMap::HTTPHeaderMap() = default;
 
-HTTPHeaderMap::~HTTPHeaderMap() {}
+HTTPHeaderMap::~HTTPHeaderMap() = default;
 
 std::unique_ptr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::CopyData() const {
   std::unique_ptr<CrossThreadHTTPHeaderMapData> data =

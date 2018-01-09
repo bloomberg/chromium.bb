@@ -37,7 +37,7 @@ class IdleTimeEstimatorTest : public ::testing::Test {
   IdleTimeEstimatorTest()
       : frame_length_(base::TimeDelta::FromMilliseconds(16)) {}
 
-  ~IdleTimeEstimatorTest() override {}
+  ~IdleTimeEstimatorTest() override = default;
 
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));

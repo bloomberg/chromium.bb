@@ -14,8 +14,8 @@ namespace scheduler {
 // TaskTimeObserver provides an API for observing completion of renderer tasks.
 class PLATFORM_EXPORT TaskTimeObserver {
  public:
-  TaskTimeObserver() {}
-  virtual ~TaskTimeObserver() {}
+  TaskTimeObserver() = default;
+  virtual ~TaskTimeObserver() = default;
 
   // Callback to be called when task is about to start.
   // |start_time| - time in seconds when task started to run,

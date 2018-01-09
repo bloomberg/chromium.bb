@@ -24,7 +24,7 @@ namespace blink {
 PlaceholderImage::PlaceholderImage(ImageObserver* observer, const IntSize& size)
     : Image(observer), size_(size) {}
 
-PlaceholderImage::~PlaceholderImage() {}
+PlaceholderImage::~PlaceholderImage() = default;
 
 PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
   auto builder = CreatePaintImageBuilder().set_completion_state(

@@ -35,7 +35,7 @@ WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
                                      base::Optional<TaskType> task_type)
     : task_queue_(std::move(task_queue)), task_type_(task_type) {}
 
-WebTaskRunnerImpl::~WebTaskRunnerImpl() {}
+WebTaskRunnerImpl::~WebTaskRunnerImpl() = default;
 
 base::TimeTicks WebTaskRunnerImpl::Now() const {
   TimeDomain* time_domain = task_queue_->GetTimeDomain();

@@ -199,7 +199,7 @@ struct GIFFrameContext {
         is_header_defined_(false),
         is_data_size_defined_(false) {}
 
-  ~GIFFrameContext() {}
+  ~GIFFrameContext() = default;
 
   void AddLzwBlock(size_t position, size_t size) {
     lzw_blocks_.push_back(GIFLZWBlock(position, size));
@@ -300,7 +300,7 @@ class PLATFORM_EXPORT GIFImageReader final {
         loop_count_(kCLoopCountNotSeen),
         parse_completed_(false) {}
 
-  ~GIFImageReader() {}
+  ~GIFImageReader() = default;
 
   void SetData(scoped_refptr<blink::SegmentReader> data) {
     data_ = std::move(data);

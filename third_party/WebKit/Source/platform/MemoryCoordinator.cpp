@@ -71,7 +71,7 @@ void MemoryCoordinator::UnregisterThread(WebThread* thread) {
   MemoryCoordinator::Instance().web_threads_.erase(thread);
 }
 
-MemoryCoordinator::MemoryCoordinator() {}
+MemoryCoordinator::MemoryCoordinator() = default;
 
 void MemoryCoordinator::RegisterClient(MemoryCoordinatorClient* client) {
   DCHECK(IsMainThread());

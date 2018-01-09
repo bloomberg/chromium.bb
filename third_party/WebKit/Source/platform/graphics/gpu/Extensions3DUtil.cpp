@@ -34,7 +34,7 @@ std::unique_ptr<Extensions3DUtil> Extensions3DUtil::Create(
 Extensions3DUtil::Extensions3DUtil(gpu::gles2::GLES2Interface* gl)
     : gl_(gl), is_valid_(true) {}
 
-Extensions3DUtil::~Extensions3DUtil() {}
+Extensions3DUtil::~Extensions3DUtil() = default;
 
 void Extensions3DUtil::InitializeExtensions() {
   if (gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {

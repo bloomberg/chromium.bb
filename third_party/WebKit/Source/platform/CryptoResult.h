@@ -41,7 +41,7 @@ namespace blink {
 // to query for status.
 class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
  public:
-  virtual ~CryptoResultCancel() {}
+  virtual ~CryptoResultCancel() = default;
 
   virtual bool Cancelled() const = 0;
 };
@@ -50,7 +50,7 @@ class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
 class PLATFORM_EXPORT CryptoResult
     : public GarbageCollectedFinalized<CryptoResult> {
  public:
-  virtual ~CryptoResult() {}
+  virtual ~CryptoResult() = default;
 
   virtual void CompleteWithError(WebCryptoErrorType, const WebString&) = 0;
   virtual void CompleteWithBuffer(const void* bytes, unsigned bytes_size) = 0;

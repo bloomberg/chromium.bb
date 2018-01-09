@@ -62,7 +62,7 @@ class PLATFORM_EXPORT JSONValue {
  public:
   static const int kMaxDepth = 1000;
 
-  virtual ~JSONValue() {}
+  virtual ~JSONValue() = default;
 
   static std::unique_ptr<JSONValue> Null() {
     return WTF::WrapUnique(new JSONValue());

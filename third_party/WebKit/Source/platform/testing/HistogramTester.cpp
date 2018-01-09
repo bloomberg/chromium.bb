@@ -12,7 +12,7 @@ namespace blink {
 HistogramTester::HistogramTester()
     : histogram_tester_(WTF::WrapUnique(new base::HistogramTester)) {}
 
-HistogramTester::~HistogramTester() {}
+HistogramTester::~HistogramTester() = default;
 
 void HistogramTester::ExpectUniqueSample(
     const std::string& name,

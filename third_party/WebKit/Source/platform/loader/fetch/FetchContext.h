@@ -88,7 +88,7 @@ class PLATFORM_EXPORT FetchContext
 
   static FetchContext& NullInstance();
 
-  virtual ~FetchContext() {}
+  virtual ~FetchContext() = default;
 
   virtual void Trace(blink::Visitor*);
 

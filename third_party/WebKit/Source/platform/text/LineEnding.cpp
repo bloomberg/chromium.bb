@@ -45,16 +45,16 @@ class OutputBuffer {
   WTF_MAKE_NONCOPYABLE(OutputBuffer);
 
  public:
-  OutputBuffer() {}
+  OutputBuffer() = default;
   virtual char* Allocate(size_t) = 0;
   virtual void Copy(const CString&) = 0;
-  virtual ~OutputBuffer() {}
+  virtual ~OutputBuffer() = default;
 };
 
 class CStringBuffer final : public OutputBuffer {
  public:
   CStringBuffer(CString& buffer) : buffer_(buffer) {}
-  ~CStringBuffer() override {}
+  ~CStringBuffer() override = default;
 
   char* Allocate(size_t size) override {
     char* ptr;
@@ -73,7 +73,7 @@ class CStringBuffer final : public OutputBuffer {
 class VectorCharAppendBuffer final : public OutputBuffer {
  public:
   VectorCharAppendBuffer(Vector<char>& buffer) : buffer_(buffer) {}
-  ~VectorCharAppendBuffer() override {}
+  ~VectorCharAppendBuffer() override = default;
 
   char* Allocate(size_t size) override {
     size_t old_size = buffer_.size();

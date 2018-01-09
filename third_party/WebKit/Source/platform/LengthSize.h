@@ -30,7 +30,7 @@ class LengthSize {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  LengthSize() {}
+  LengthSize() = default;
 
   LengthSize(const Length& width, const Length& height)
       : width_(width), height_(height) {}

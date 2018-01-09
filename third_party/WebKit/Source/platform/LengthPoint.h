@@ -39,7 +39,7 @@ struct LengthPoint {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  LengthPoint() {}
+  LengthPoint() = default;
 
   LengthPoint(const Length& x, const Length& y) : x_(x), y_(y) {}
 
