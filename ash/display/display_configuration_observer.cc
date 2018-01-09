@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/display/display_configuration_observer.h"
+#include "ash/display/display_configuration_observer.h"
 
 #include "ash/display/display_prefs.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -13,7 +13,7 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 DisplayConfigurationObserver::DisplayConfigurationObserver() {
   ash::Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -40,6 +40,8 @@ void DisplayConfigurationObserver::OnDisplayConfigurationChanged() {
 }
 
 void DisplayConfigurationObserver::OnTabletModeStarted() {
+  if (disable_tablet_mirror_mode_for_test_)
+    return;
   // TODO(oshima): Tablet mode defaults to mirror mode until we figure out
   // how to handle this scenario, and we shouldn't save this state.
   // http://crbug.com/733092.
@@ -53,6 +55,8 @@ void DisplayConfigurationObserver::OnTabletModeStarted() {
 }
 
 void DisplayConfigurationObserver::OnTabletModeEnded() {
+  if (disable_tablet_mirror_mode_for_test_)
+    return;
   if (!was_in_mirror_mode_)
     ash::Shell::Get()->display_manager()->SetMirrorMode(false);
   display::DisplayManager* display_manager =
@@ -61,4 +65,4 @@ void DisplayConfigurationObserver::OnTabletModeEnded() {
   save_preference_ = true;
 }
 
-}  // namespace chromeos
+}  // namespace ash

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/display/display_configuration_controller_test_api.h"
+#include "ash/display/display_configuration_observer.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -276,6 +277,12 @@ aura::Window* AshTestHelper::CurrentContext() {
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
+}
+
+void AshTestHelper::DisableTabletMirrorModeForTest() {
+  ash::Shell::Get()
+      ->display_configuration_observer_
+      ->set_disable_tablet_mirror_mode_for_test(true);
 }
 
 void AshTestHelper::CreateMashWindowManager() {

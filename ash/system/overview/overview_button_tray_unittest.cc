@@ -45,6 +45,8 @@ OverviewButtonTray* GetTray() {
 }
 
 OverviewButtonTray* GetSecondaryTray() {
+  if (!StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget())
+    return nullptr;
   return StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget()
       ->overview_button_tray();
 }
@@ -87,6 +89,11 @@ void OverviewButtonTrayTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
   AshTestBase::SetUp();
+  // TODO(jonross@/oshima@): Tablet mode tests are incorrect when
+  // DisplayConfigurationObserver exists (see
+  // DisplayConfigurationObserver::OnTabletModeStarted(). Disable auto
+  // mirrorring in tablet mode for now. http://crbug.com/798857
+  ash_test_helper()->DisableTabletMirrorModeForTest();
 }
 
 void OverviewButtonTrayTest::NotifySessionStateChanged() {
@@ -197,9 +204,11 @@ TEST_F(OverviewButtonTrayTest, TrayOverviewUserAction) {
 TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   UpdateDisplay("400x400,200x200");
   EXPECT_FALSE(GetTray()->visible());
+  ASSERT_TRUE(GetSecondaryTray());
   EXPECT_FALSE(GetSecondaryTray()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_TRUE(GetTray()->visible());
+  ASSERT_TRUE(GetSecondaryTray());
   EXPECT_TRUE(GetSecondaryTray()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }
@@ -209,6 +218,7 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
 TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   UpdateDisplay("400x400,200x200");
+  ASSERT_TRUE(GetSecondaryTray());
   EXPECT_TRUE(GetSecondaryTray()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
 }

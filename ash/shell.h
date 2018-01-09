@@ -93,6 +93,7 @@ class BrightnessControlDelegate;
 class CastConfigController;
 class DisplayColorManager;
 class DisplayConfigurationController;
+class DisplayConfigurationObserver;
 class DisplayErrorObserver;
 class DisplayPrefs;
 class DisplayShutdownObserver;
@@ -722,6 +723,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplayPrefs> display_prefs_;
   std::unique_ptr<DisplayConfigurationController>
       display_configuration_controller_;
+  std::unique_ptr<DisplayConfigurationObserver> display_configuration_observer_;
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 

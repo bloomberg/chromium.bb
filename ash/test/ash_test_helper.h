@@ -100,6 +100,10 @@ class AshTestHelper {
 
   display::Display GetSecondaryDisplay();
 
+  // Disables the auto mirror feature in tablet mode in
+  // Shell::display_configuration_observer_ for testing. Call after SetUp().
+  void DisableTabletMirrorModeForTest();
+
   // Null in classic ash.
   WindowManagerService* window_manager_service() {
     return window_manager_service_.get();

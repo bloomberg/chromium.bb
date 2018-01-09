@@ -2,26 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
-#define CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
+#ifndef ASH_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
+#define ASH_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
 
+#include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
-namespace chromeos {
+namespace ash {
+
+class AshTestHelper;
 
 // DisplayConfigurationObserver observes and saves
 // the change of display configurations.
-class DisplayConfigurationObserver
-    : public ash::WindowTreeHostManager::Observer,
-      public ash::TabletModeObserver {
+class ASH_EXPORT DisplayConfigurationObserver
+    : public WindowTreeHostManager::Observer,
+      public TabletModeObserver {
  public:
   DisplayConfigurationObserver();
   ~DisplayConfigurationObserver() override;
 
  protected:
+  friend class AshTestHelper;
+
+  void set_disable_tablet_mirror_mode_for_test(bool disable) {
+    disable_tablet_mirror_mode_for_test_ = disable;
+  }
+
   // ash::WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override;
   void OnDisplayConfigurationChanged() override;
@@ -36,9 +45,11 @@ class DisplayConfigurationObserver
   // tablet mode.
   bool was_in_mirror_mode_ = false;
 
+  bool disable_tablet_mirror_mode_for_test_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationObserver);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
-#endif  // CHROME_BROWSER_CHROMEOS_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
+#endif  // ASH_DISPLAY_DISPLAY_CONFIGURATION_OBSERVER_H_
