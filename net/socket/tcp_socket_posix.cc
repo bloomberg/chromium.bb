@@ -150,11 +150,57 @@ base::LazyInstance<FastOpenProbe>::Leaky g_fast_open_probe =
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(HAVE_TCP_INFO)
-bool GetTcpInfo(SocketDescriptor fd, tcp_info* info) {
+// Returns a zero value if the transport RTT is unavailable.
+base::TimeDelta GetTransportRtt(SocketDescriptor fd) {
+  tcp_info info;
+  // Reset |tcpi_rtt| to verify if getsockopt() actually updates |tcpi_rtt|.
+  info.tcpi_rtt = 0;
+
   socklen_t info_len = sizeof(tcp_info);
-  return getsockopt(fd, IPPROTO_TCP, TCP_INFO, info, &info_len) == 0 &&
-         info_len == sizeof(tcp_info);
+  if (getsockopt(fd, IPPROTO_TCP, TCP_INFO, &info, &info_len) != 0)
+    return base::TimeDelta();
+
+  // Verify that |tcpi_rtt| in tcp_info struct was updated. Note that it's
+  // possible that |info_len| is shorter than |sizeof(tcp_info)| which implies
+  // that only a subset of values in |info| may have been updated by
+  // getsockopt().
+  if (info_len < static_cast<socklen_t>(offsetof(tcp_info, tcpi_rtt) +
+                                        sizeof(info.tcpi_rtt))) {
+    return base::TimeDelta();
+  }
+
+  return base::TimeDelta::FromMicroseconds(info.tcpi_rtt);
 }
+
+// Returns true if getsockopt() call was successful. Sets
+// |server_acked_syn_data| to true if SYN-ACK acked data in SYN sent or
+// received.
+bool GetServerAckedDataInSyn(SocketDescriptor fd, bool* server_acked_syn_data) {
+  tcp_info info;
+  // Reset |tcpi_options| to verify if getsockopt() actually updates
+  // |tcpi_options|.
+  info.tcpi_options = 0;
+
+  socklen_t info_len = sizeof(tcp_info);
+  if (getsockopt(fd, IPPROTO_TCP, TCP_INFO, &info, &info_len) != 0) {
+    *server_acked_syn_data = false;
+    return false;
+  }
+
+  // Verify that |tcpi_options| in tcp_info struct was updated. Note that it's
+  // possible that |info_len| is shorter than |sizeof(tcp_info)| which implies
+  // that only a subset of values in |info| may have been updated by
+  // getsockopt().
+  if (info_len < static_cast<socklen_t>(offsetof(tcp_info, tcpi_options) +
+                                        sizeof(info.tcpi_options))) {
+    *server_acked_syn_data = false;
+    return false;
+  }
+
+  *server_acked_syn_data = (info.tcpi_options & TCPI_OPT_SYN_DATA);
+  return true;
+}
+
 #endif  // defined(TCP_INFO)
 
 }  // namespace
@@ -802,20 +848,11 @@ void TCPSocketPosix::NotifySocketPerformanceWatcher() {
     return;
   }
 
-  tcp_info info;
-  if (!GetTcpInfo(socket_->socket_fd(), &info))
+  base::TimeDelta rtt = GetTransportRtt(socket_->socket_fd());
+  if (rtt.is_zero())
     return;
 
-  // Only notify the |socket_performance_watcher_| if the RTT in |tcp_info|
-  // struct was populated. A value of 0 may be valid in certain cases
-  // (on very fast networks), but it is discarded. This means that
-  // some of the RTT values may be missed, but the values that are kept are
-  // guaranteed to be correct.
-  if (info.tcpi_rtt == 0 && info.tcpi_rttvar == 0)
-    return;
-
-  socket_performance_watcher_->OnUpdatedRTTAvailable(
-      base::TimeDelta::FromMicroseconds(info.tcpi_rtt));
+  socket_performance_watcher_->OnUpdatedRTTAvailable(rtt);
 #endif  // defined(TCP_INFO)
 }
 
@@ -833,24 +870,22 @@ void TCPSocketPosix::UpdateTCPFastOpenStatusAfterRead() {
   }
 
   bool getsockopt_success = false;
-  bool server_acked_data = false;
+  bool server_acked_syn_data = false;
 #if defined(HAVE_TCP_INFO)
   // Probe to see the if the socket used TCP FastOpen.
-  tcp_info info;
-  getsockopt_success = GetTcpInfo(socket_->socket_fd(), &info);
-  server_acked_data =
-      getsockopt_success && (info.tcpi_options & TCPI_OPT_SYN_DATA);
+  getsockopt_success =
+      GetServerAckedDataInSyn(socket_->socket_fd(), &server_acked_syn_data);
 #endif  // defined(TCP_INFO)
 
   if (getsockopt_success) {
     if (tcp_fastopen_status_ == TCP_FASTOPEN_FAST_CONNECT_RETURN) {
-      tcp_fastopen_status_ = (server_acked_data ?
-                              TCP_FASTOPEN_SYN_DATA_ACK :
-                              TCP_FASTOPEN_SYN_DATA_NACK);
+      tcp_fastopen_status_ =
+          (server_acked_syn_data ? TCP_FASTOPEN_SYN_DATA_ACK
+                                 : TCP_FASTOPEN_SYN_DATA_NACK);
     } else {
-      tcp_fastopen_status_ = (server_acked_data ?
-                              TCP_FASTOPEN_NO_SYN_DATA_ACK :
-                              TCP_FASTOPEN_NO_SYN_DATA_NACK);
+      tcp_fastopen_status_ =
+          (server_acked_syn_data ? TCP_FASTOPEN_NO_SYN_DATA_ACK
+                                 : TCP_FASTOPEN_NO_SYN_DATA_NACK);
     }
   } else {
     tcp_fastopen_status_ =
@@ -866,15 +901,11 @@ bool TCPSocketPosix::GetEstimatedRoundTripTime(base::TimeDelta* out_rtt) const {
     return false;
 
 #if defined(HAVE_TCP_INFO)
-  tcp_info info;
-  if (GetTcpInfo(socket_->socket_fd(), &info)) {
-    // tcpi_rtt is zero when the kernel doesn't have an RTT estimate,
-    // and possibly in other cases such as connections to localhost.
-    if (info.tcpi_rtt > 0) {
-      *out_rtt = base::TimeDelta::FromMicroseconds(info.tcpi_rtt);
-      return true;
-    }
-  }
+  base::TimeDelta rtt = GetTransportRtt(socket_->socket_fd());
+  if (rtt.is_zero())
+    return false;
+  *out_rtt = rtt;
+  return true;
 #endif  // defined(TCP_INFO)
   return false;
 }
