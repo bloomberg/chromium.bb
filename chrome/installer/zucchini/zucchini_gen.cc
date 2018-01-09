@@ -20,6 +20,7 @@
 #include "chrome/installer/zucchini/label_manager.h"
 #include "chrome/installer/zucchini/patch_writer.h"
 #include "chrome/installer/zucchini/suffix_array.h"
+#include "chrome/installer/zucchini/targets_affinity.h"
 
 namespace zucchini {
 
@@ -27,15 +28,8 @@ namespace {
 
 // Parameters for patch generation.
 constexpr double kMinEquivalenceSimilarity = 12.0;
-constexpr double kLargeEquivalenceSimilarity = 64.0;
-
-// Helper functions wrapping around MakeSuffixArray().
-// TODO(etiennep): Figure out if this should be a member function of ImageIndex.
-std::vector<offset_t> MakeSuffixArrayFromImageIndex(
-    const ImageIndex& image_index) {
-  EncodedView view(image_index);
-  return MakeSuffixArray<InducedSuffixSort>(view, view.Cardinality());
-}
+constexpr double kMinLabelAffinity = 64.0;
+constexpr size_t kNumIterations = 2;
 
 }  // namespace
 
@@ -101,62 +95,47 @@ std::vector<offset_t> FindExtraTargets(
   return targets;
 }
 
-EquivalenceMap CreateEquivalenceMap(
-    const std::vector<OrderedLabelManager>& old_label_managers,
-    ImageIndex* old_image_index,
-    ImageIndex* new_image_index) {
+EquivalenceMap CreateEquivalenceMap(const ImageIndex& old_image_index,
+                                    const ImageIndex& new_image_index) {
   // Label matching (between "old" and "new") can guide EquivalenceMap
   // construction; but EquivalenceMap induces Label matching. This apparent
-  // "chick and egg" problem is solved by bootstrapping a "coarse"
-  // EquivalenceMap using reference type data in |*image_index|.
-  size_t pool_count = old_image_index->PoolCount();
-  std::vector<UnorderedLabelManager> new_label_managers(pool_count);
+  // "chick and egg" problem is solved by multiple iterations alternating 2
+  // steps:
+  // - Association of targets based on previous EquivalenceMap. Note that the
+  //   EquivalenceMap is empty on first iteration, so this is a no-op.
+  // - Construction of refined EquivalenceMap based on new targets associations.
+  size_t pool_count = old_image_index.PoolCount();
+  // |target_affinities| is outside the loop to reduce allocation.
+  std::vector<TargetsAffinity> target_affinities(pool_count);
+
   EquivalenceMap equivalence_map;
+  for (size_t i = 0; i < kNumIterations; ++i) {
+    EncodedView old_view(old_image_index);
+    EncodedView new_view(new_image_index);
 
-  // Build coarse equivalence map, where references with same types are
-  // considered equivalent.
-  equivalence_map.Build(MakeSuffixArrayFromImageIndex(*old_image_index),
-                        EncodedView(*old_image_index),
-                        EncodedView(*new_image_index),
-                        kLargeEquivalenceSimilarity);
+    // Associate targets from "old" to "new" image based on |equivalence_map|
+    // for each reference pool.
+    for (const auto& old_pool_tag_and_targets :
+         old_image_index.target_pools()) {
+      PoolTag pool_tag = old_pool_tag_and_targets.first;
+      target_affinities[pool_tag.value()].InferFromSimilarities(
+          equivalence_map, old_pool_tag_and_targets.second.targets(),
+          new_image_index.pool(pool_tag).targets());
 
-  // Associate targets from "old" to "new" image based on coarse
-  // |equivalence_map| and label references accordingly.
-  for (const auto& old_pool_tag_and_targets : old_image_index->target_pools()) {
-    PoolTag pool_tag = old_pool_tag_and_targets.first;
-    const auto& old_label_manager = old_label_managers[pool_tag.value()];
-    auto& new_label_manager = new_label_managers[pool_tag.value()];
-
-    // Project "old" targets to "new". |new_label_manager| stores all "new"
-    // targets (for |pool|) that are successfully and exclusively matched to an
-    // "old" target.
-    std::vector<offset_t> new_labels = MakeNewTargetsFromEquivalenceMap(
-        old_label_manager.Labels(), equivalence_map.MakeForwardEquivalences());
-    new_label_manager.Init(std::move(new_labels));
-
-    // Encode matching into |*_image_index|: Matched "old" and "new" targets are
-    // assigned a common index to indicate that they share common semantics.
-    old_image_index->LabelAssociatedTargets(pool_tag, old_label_manager,
-                                            new_label_manager);
-    new_image_index->LabelTargets(pool_tag, new_label_manager);
-  }
-
-  // Build refined equivalence map, where references in "old" and "new" that
-  // share common semantics (i.e., their respective targets were matched earlier
-  // on) are considered equivalent. Note that a different |min_similarity| is
-  // used.
-  equivalence_map.Build(MakeSuffixArrayFromImageIndex(*old_image_index),
-                        EncodedView(*old_image_index),
-                        EncodedView(*new_image_index),
-                        kMinEquivalenceSimilarity);
-
-  // Restore |old_image_index| and |new_image_index| to offsets.
-  for (const auto& old_pool_tag_and_targets : old_image_index->target_pools()) {
-    PoolTag pool_tag = old_pool_tag_and_targets.first;
-    old_image_index->UnlabelTargets(pool_tag,
-                                    old_label_managers[pool_tag.value()]);
-    new_image_index->UnlabelTargets(pool_tag,
-                                    new_label_managers[pool_tag.value()]);
+      // Creates labels for strongly associated targets.
+      std::vector<uint32_t> old_labels;
+      std::vector<uint32_t> new_labels;
+      size_t label_bound = target_affinities[pool_tag.value()].AssignLabels(
+          kMinLabelAffinity, &old_labels, &new_labels);
+      old_view.SetLabels(pool_tag, std::move(old_labels), label_bound);
+      new_view.SetLabels(pool_tag, std::move(new_labels), label_bound);
+    }
+    // Build equivalence map, where references in "old" and "new" that share
+    // common semantics (i.e., their respective targets were associated earlier
+    // on) are considered equivalent.
+    equivalence_map.Build(
+        MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality()),
+        old_view, new_view, target_affinities, kMinEquivalenceSimilarity);
   }
 
   return equivalence_map;
@@ -286,7 +265,8 @@ bool GenerateRawElement(const std::vector<offset_t>& old_sa,
 
   EquivalenceMap equivalences;
   equivalences.Build(old_sa, EncodedView(old_image_index),
-                     EncodedView(new_image_index), kMinEquivalenceSimilarity);
+                     EncodedView(new_image_index), {},
+                     kMinEquivalenceSimilarity);
 
   patch_writer->SetReferenceDeltaSink({});
   return GenerateEquivalencesAndExtraData(new_image, equivalences,
@@ -321,16 +301,8 @@ bool GenerateExecutableElement(ExecutableType exe_type,
   DCHECK_EQ(old_image_index.PoolCount(), new_image_index.PoolCount());
   size_t pool_count = old_image_index.PoolCount();
 
-  // Initialize old LabelManagers.
-  std::vector<OrderedLabelManager> old_label_managers(pool_count);
-  for (const auto& old_pool_tag_and_targets : old_image_index.target_pools()) {
-    PoolTag pool_tag = old_pool_tag_and_targets.first;
-    old_label_managers[pool_tag.value()].InsertOffsets(
-        old_pool_tag_and_targets.second.targets());
-  }
-
-  EquivalenceMap equivalences = CreateEquivalenceMap(
-      old_label_managers, &old_image_index, &new_image_index);
+  EquivalenceMap equivalences =
+      CreateEquivalenceMap(old_image_index, new_image_index);
   std::vector<Equivalence> forward_equivalences =
       equivalences.MakeForwardEquivalences();
 

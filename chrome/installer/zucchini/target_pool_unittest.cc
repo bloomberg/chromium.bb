@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "chrome/installer/zucchini/image_utils.h"
-#include "chrome/installer/zucchini/label_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -51,40 +50,6 @@ TEST(TargetPoolTest, KeyOffset) {
   test_key_offset({1, 2});
   test_key_offset({1, 3});
   test_key_offset({1, 3, 7, 9, 13});
-}
-
-TEST(TargetPoolTest, LabelTargets) {
-  TargetPool target_pool;
-  target_pool.InsertTargets({{1, 0}, {8, 1}, {10, 2}});
-
-  OrderedLabelManager label_manager;
-  label_manager.InsertOffsets({0, 2, 3, 4});
-  target_pool.LabelTargets(label_manager);
-  EXPECT_EQ(4U, target_pool.label_bound());
-
-  EXPECT_EQ(std::vector<offset_t>({MarkIndex(0), 1, MarkIndex(1)}),
-            target_pool.targets());
-
-  target_pool.UnlabelTargets(label_manager);
-  EXPECT_EQ(0U, target_pool.label_bound());
-
-  EXPECT_EQ(std::vector<offset_t>({0, 1, 2}), target_pool.targets());
-}
-
-TEST(TargetPoolTest, LabelAssociatedTargets) {
-  TargetPool target_pool;
-  target_pool.InsertTargets({{1, 0}, {8, 1}, {10, 2}});
-
-  OrderedLabelManager label_manager;
-  label_manager.InsertOffsets({0, 1, 2, 3, 4});
-
-  UnorderedLabelManager reference_label_manager;
-  reference_label_manager.Init({0, kUnusedIndex, 2});
-
-  target_pool.LabelAssociatedTargets(label_manager, reference_label_manager);
-  EXPECT_EQ(5U, target_pool.label_bound());
-  EXPECT_EQ(std::vector<offset_t>({MarkIndex(0), 1, MarkIndex(2)}),
-            target_pool.targets());
 }
 
 }  // namespace zucchini

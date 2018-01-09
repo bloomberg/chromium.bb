@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <iterator>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/installer/zucchini/image_index.h"
@@ -145,6 +146,9 @@ class EncodedView {
   // values returned by Projection().
   value_type Cardinality() const;
 
+  // Associates |labels| to targets for a given |pool|, replacing previous
+  // association. Values in |labels| must be smaller than |bound|.
+  void SetLabels(PoolTag pool, std::vector<uint32_t>&& labels, size_t bound);
   const ImageIndex& image_index() const { return image_index_; }
 
   // Range functions.
@@ -157,7 +161,18 @@ class EncodedView {
   }
 
  private:
+  struct PoolInfo {
+    PoolInfo();
+    PoolInfo(PoolInfo&&);
+    ~PoolInfo();
+
+    // |labels| translates IndirectReference target_key to label.
+    std::vector<uint32_t> labels;
+    size_t bound = 0;
+  };
+
   const ImageIndex& image_index_;
+  std::vector<PoolInfo> pool_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(EncodedView);
 };

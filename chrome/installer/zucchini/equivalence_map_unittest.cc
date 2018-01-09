@@ -11,6 +11,7 @@
 #include "chrome/installer/zucchini/encoded_view.h"
 #include "chrome/installer/zucchini/image_index.h"
 #include "chrome/installer/zucchini/suffix_array.h"
+#include "chrome/installer/zucchini/targets_affinity.h"
 #include "chrome/installer/zucchini/test_disassembler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,68 +40,100 @@ ImageIndex MakeImageIndexForTesting(const char* a,
   return image_index;
 }
 
+std::vector<TargetsAffinity> MakeTargetsAffinitiesForTesting(
+    const ImageIndex& old_image_index,
+    const ImageIndex& new_image_index,
+    const EquivalenceMap& equivalence_map) {
+  std::vector<TargetsAffinity> target_affinities(old_image_index.PoolCount());
+  for (const auto& old_pool_tag_and_targets : old_image_index.target_pools()) {
+    PoolTag pool_tag = old_pool_tag_and_targets.first;
+    target_affinities[pool_tag.value()].InferFromSimilarities(
+        equivalence_map, old_pool_tag_and_targets.second.targets(),
+        new_image_index.pool(pool_tag).targets());
+  }
+  return target_affinities;
+}
+
 }  // namespace
 
 TEST(EquivalenceMapTest, GetTokenSimilarity) {
   ImageIndex old_index = MakeImageIndexForTesting(
-      "ab1122334455", {{2, MarkIndex(0)}, {4, MarkIndex(1)}, {6, 2}, {8, 2}},
-      {{10, 3}});
+      "ab1122334455", {{2, 0}, {4, 1}, {6, 2}, {8, 2}}, {{10, 3}});
+  // Note: {4, 1} -> {6, 3} and {6, 2} -> {4, 1}, then result is sorted.
   ImageIndex new_index = MakeImageIndexForTesting(
-      "ab1122334455",
-      {{2, MarkIndex(0)}, {4, 1}, {6, MarkIndex(1)}, {8, MarkIndex(1)}},
-      {{10, 3}});
+      "a11b33224455", {{1, 0}, {4, 1}, {6, 3}, {8, 1}}, {{10, 2}});
+  std::vector<TargetsAffinity> affinities = MakeTargetsAffinitiesForTesting(
+      old_index, new_index,
+      EquivalenceMap({{{0, 0, 1}, 1.0}, {{1, 3, 1}, 1.0}}));
 
   // Raw match.
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 0, 0));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 0, 0));
   // Raw mismatch.
-  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, 0, 1));
-  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, 1, 0));
+  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 0, 1));
+  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 1, 0));
 
   // Type mismatch.
-  EXPECT_EQ(kMismatchFatal, GetTokenSimilarity(old_index, new_index, 0, 2));
-  EXPECT_EQ(kMismatchFatal, GetTokenSimilarity(old_index, new_index, 2, 0));
-  EXPECT_EQ(kMismatchFatal, GetTokenSimilarity(old_index, new_index, 2, 10));
-  EXPECT_EQ(kMismatchFatal, GetTokenSimilarity(old_index, new_index, 10, 2));
+  EXPECT_EQ(kMismatchFatal,
+            GetTokenSimilarity(old_index, new_index, affinities, 0, 1));
+  EXPECT_EQ(kMismatchFatal,
+            GetTokenSimilarity(old_index, new_index, affinities, 2, 0));
+  EXPECT_EQ(kMismatchFatal,
+            GetTokenSimilarity(old_index, new_index, affinities, 2, 10));
+  EXPECT_EQ(kMismatchFatal,
+            GetTokenSimilarity(old_index, new_index, affinities, 10, 1));
 
   // Reference strong match.
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 2, 2));
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 4, 6));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 2, 1));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 4, 6));
 
   // Reference weak match.
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 6, 4));
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 4, 8));
-  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, 8, 4));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 6, 4));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 6, 8));
+  EXPECT_LT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 8, 4));
 
   // Weak match is not greater than strong match.
-  EXPECT_LE(GetTokenSimilarity(old_index, new_index, 6, 4),
-            GetTokenSimilarity(old_index, new_index, 2, 2));
+  EXPECT_LE(GetTokenSimilarity(old_index, new_index, affinities, 6, 4),
+            GetTokenSimilarity(old_index, new_index, affinities, 2, 1));
 
   // Reference mismatch.
-  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, 2, 4));
-  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, 2, 6));
+  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 2, 4));
+  EXPECT_GT(0.0, GetTokenSimilarity(old_index, new_index, affinities, 2, 6));
 }
 
 TEST(EquivalenceMapTest, GetEquivalenceSimilarity) {
   ImageIndex image_index =
       MakeImageIndexForTesting("abcdef1122", {{6, 0}}, {{8, 1}});
+  std::vector<TargetsAffinity> affinities =
+      MakeTargetsAffinitiesForTesting(image_index, image_index, {});
 
-  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, {0, 0, 0}));
-  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, {0, 3, 0}));
-  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, {3, 0, 0}));
+  // Sanity check. These are no-op with length-0 equivalences.
+  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {0, 0, 0}));
+  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {0, 3, 0}));
+  EXPECT_EQ(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {3, 0, 0}));
 
-  EXPECT_LT(0.0, GetEquivalenceSimilarity(image_index, image_index, {0, 0, 3}));
-  EXPECT_GE(0.0, GetEquivalenceSimilarity(image_index, image_index, {0, 3, 3}));
-  EXPECT_GE(0.0, GetEquivalenceSimilarity(image_index, image_index, {3, 0, 3}));
+  // Now examine larger equivalences.
+  EXPECT_LT(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {0, 0, 3}));
+  EXPECT_GE(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {0, 3, 3}));
+  EXPECT_GE(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {3, 0, 3}));
 
-  EXPECT_LT(0.0, GetEquivalenceSimilarity(image_index, image_index, {6, 6, 4}));
+  EXPECT_LT(0.0, GetEquivalenceSimilarity(image_index, image_index, affinities,
+                                          {6, 6, 4}));
 }
 
 TEST(EquivalenceMapTest, ExtendEquivalenceForward) {
   auto test_extend_forward =
       [](const ImageIndex old_index, const ImageIndex new_index,
          const EquivalenceCandidate& equivalence, double base_similarity) {
-        return ExtendEquivalenceForward(old_index, new_index, equivalence,
-                                        base_similarity)
+        return ExtendEquivalenceForward(
+                   old_index, new_index,
+                   MakeTargetsAffinitiesForTesting(old_index, new_index, {}),
+                   equivalence, base_similarity)
             .eq;
       };
 
@@ -159,8 +192,10 @@ TEST(EquivalenceMapTest, ExtendEquivalenceBackward) {
   auto test_extend_backward =
       [](const ImageIndex old_index, const ImageIndex new_index,
          const EquivalenceCandidate& equivalence, double base_similarity) {
-        return ExtendEquivalenceBackward(old_index, new_index, equivalence,
-                                         base_similarity)
+        return ExtendEquivalenceBackward(
+                   old_index, new_index,
+                   MakeTargetsAffinitiesForTesting(old_index, new_index, {}),
+                   equivalence, base_similarity)
             .eq;
       };
 
@@ -214,14 +249,27 @@ TEST(EquivalenceMapTest, Build) {
   auto test_build_equivalence = [](const ImageIndex old_index,
                                    const ImageIndex new_index,
                                    double minimum_similarity) {
+    auto affinities = MakeTargetsAffinitiesForTesting(old_index, new_index, {});
+
     EncodedView old_view(old_index);
     EncodedView new_view(new_index);
+
+    for (const auto& old_pool_tag_and_targets : old_index.target_pools()) {
+      PoolTag pool_tag = old_pool_tag_and_targets.first;
+      std::vector<uint32_t> old_labels;
+      std::vector<uint32_t> new_labels;
+      size_t label_bound = affinities[pool_tag.value()].AssignLabels(
+          1.0, &old_labels, &new_labels);
+      old_view.SetLabels(pool_tag, std::move(old_labels), label_bound);
+      new_view.SetLabels(pool_tag, std::move(new_labels), label_bound);
+    }
 
     std::vector<offset_t> old_sa =
         MakeSuffixArray<InducedSuffixSort>(old_view, old_view.Cardinality());
 
     EquivalenceMap equivalence_map;
-    equivalence_map.Build(old_sa, old_view, new_view, minimum_similarity);
+    equivalence_map.Build(old_sa, old_view, new_view, affinities,
+                          minimum_similarity);
 
     offset_t current_dst_offset = 0;
     offset_t coverage = 0;

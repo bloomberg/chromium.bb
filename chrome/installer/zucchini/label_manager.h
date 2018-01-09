@@ -20,17 +20,6 @@ namespace zucchini {
 // - Get the offset of a stored index.
 // - Get the index of a stored offset.
 // - Create new Labels.
-// A LabelManager allows to have a bijection between offsets and indices.
-// Since not all targets have associated labels from LabelManager, targets
-// represented both as offset or indices are mixed. Hence, indices are
-// represented as "marked" values (implemented by setting the MSB), and offsets
-// are "unmarked". So when working with stored targets:
-// - IsMarked() distinguishes offsets (false) from indexes (true).
-// - MarkIndex() is used to encode indexes to their stored value.
-// - UnmarkIndex() is used to decode stored indexes to their actual value.
-// - Target offsets are stored verbatim, but they must not be marked. This
-//   affects reference parsing, where we reject all references whose offsets
-//   happen to be marked.
 
 // Base class for OrderedLabelManager and UnorderedLabelManager.
 class BaseLabelManager {
@@ -39,42 +28,15 @@ class BaseLabelManager {
   BaseLabelManager(const BaseLabelManager&);
   virtual ~BaseLabelManager();
 
-  // Returns whether |offset_or_marked_index| is a valid offset.
-  static constexpr bool IsOffset(offset_t offset_or_marked_index) {
-    return !IsMarked(offset_or_marked_index);
-  }
-
-  // Returns whether |offset_or_marked_index| is a valid marked index.
-  static constexpr bool IsMarkedIndex(offset_t offset_or_marked_index) {
-    return IsMarked(offset_or_marked_index) &&
-           offset_or_marked_index != kUnusedIndex;
-  }
-
-  // Returns whether a given (unmarked) |index| is used by a stored Label.
-  bool IsIndexStored(offset_t index) const {
-    DCHECK(!IsMarked(index));
-    return index < labels_.size() && labels_[index] != kUnusedIndex;
-  }
-
-  // Returns the offset of a given (unmarked) |index| if it is associated with a
+  // Returns the offset of a given |index| if it is associated with a
   // stored Label, or |kUnusedIndex| otherwise.
   offset_t OffsetOfIndex(offset_t index) const {
     return index < labels_.size() ? labels_[index] : kUnusedIndex;
   }
 
-  // Returns the offset corresponding to |offset_or_marked_index|, which is a
-  // target that is stored either as a marked index, or as an (unmarked) offset.
-  offset_t OffsetFromMarkedIndex(offset_t offset_or_marked_index) const;
-
   // If |offset| has an associated stored Label, returns its index. Otherwise
   // returns |kUnusedIndex|.
   virtual offset_t IndexOfOffset(offset_t offset) const = 0;
-
-  // Returns the marked index corresponding to |offset_or_marked_index|, which
-  // is a target that is stored either as a marked index, or as an (unmarked)
-  // offset.
-  virtual offset_t MarkedIndexFromOffset(
-      offset_t offset_or_marked_index) const = 0;
 
   size_t size() const { return labels_.size(); }
 
@@ -97,8 +59,6 @@ class OrderedLabelManager : public BaseLabelManager {
 
   // BaseLabelManager:
   offset_t IndexOfOffset(offset_t offset) const override;
-  offset_t MarkedIndexFromOffset(
-      offset_t offset_or_marked_index) const override;
 
   // Creates and stores a new Label for each unique offset in |offsets|. This
   // invalidates all previous Label lookups.
@@ -125,8 +85,6 @@ class UnorderedLabelManager : public BaseLabelManager {
 
   // BaseLabelManager:
   offset_t IndexOfOffset(offset_t offset) const override;
-  offset_t MarkedIndexFromOffset(
-      offset_t offset_or_marked_index) const override;
 
   // Clears and reinitializes all stored data. Requires that |labels| consists
   // of unique offsets, but it may have "gaps" in the form of |kUnusedIndex|.

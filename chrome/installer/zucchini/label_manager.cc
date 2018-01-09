@@ -18,16 +18,6 @@ BaseLabelManager::BaseLabelManager() = default;
 BaseLabelManager::BaseLabelManager(const BaseLabelManager&) = default;
 BaseLabelManager::~BaseLabelManager() = default;
 
-offset_t BaseLabelManager::OffsetFromMarkedIndex(
-    offset_t offset_or_marked_index) const {
-  if (IsMarkedIndex(offset_or_marked_index)) {
-    offset_t offset = OffsetOfIndex(UnmarkIndex(offset_or_marked_index));
-    if (offset != kUnusedIndex)
-      return offset;
-  }
-  return offset_or_marked_index;
-}
-
 /******** OrderedLabelManager ********/
 
 OrderedLabelManager::OrderedLabelManager() = default;
@@ -39,17 +29,6 @@ offset_t OrderedLabelManager::IndexOfOffset(offset_t offset) const {
   if (it != labels_.end() && *it == offset)
     return static_cast<offset_t>(it - labels_.begin());
   return kUnusedIndex;
-}
-
-offset_t OrderedLabelManager::MarkedIndexFromOffset(
-    offset_t offset_or_marked_index) const {
-  if (IsOffset(offset_or_marked_index)) {
-    auto it = std::lower_bound(labels_.begin(), labels_.end(),
-                               offset_or_marked_index);
-    if (it != labels_.end() && *it == offset_or_marked_index)
-      return MarkIndex(static_cast<offset_t>(it - labels_.begin()));
-  }
-  return offset_or_marked_index;
 }
 
 void OrderedLabelManager::InsertOffsets(const std::vector<offset_t>& offsets) {
@@ -73,16 +52,6 @@ UnorderedLabelManager::~UnorderedLabelManager() = default;
 offset_t UnorderedLabelManager::IndexOfOffset(offset_t offset) const {
   auto it = labels_map_.find(offset);
   return it != labels_map_.end() ? it->second : kUnusedIndex;
-}
-
-offset_t UnorderedLabelManager::MarkedIndexFromOffset(
-    offset_t offset_or_marked_index) const {
-  if (IsOffset(offset_or_marked_index)) {
-    auto it = labels_map_.find(offset_or_marked_index);
-    if (it != labels_map_.end())
-      return MarkIndex(it->second);
-  }
-  return offset_or_marked_index;
 }
 
 void UnorderedLabelManager::Init(std::vector<offset_t>&& labels) {
