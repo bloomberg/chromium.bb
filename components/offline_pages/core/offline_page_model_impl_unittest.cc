@@ -217,19 +217,24 @@ class OfflinePageModelImplTest
 
   const base::FilePath& temporary_dir_path() const {
     if (temporary_dir_same_with_persistent_)
-      return persistent_dir_.GetPath();
+      return private_archive_dir_.GetPath();
     return temporary_dir_.GetPath();
   }
 
-  const base::FilePath& persistent_dir_path() const {
-    return persistent_dir_.GetPath();
+  const base::FilePath& private_archive_dir_path() const {
+    return private_archive_dir_.GetPath();
+  }
+
+  const base::FilePath& public_archive_dir_path() const {
+    return public_archive_dir_.GetPath();
   }
 
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temporary_dir_;
-  base::ScopedTempDir persistent_dir_;
+  base::ScopedTempDir private_archive_dir_;
+  base::ScopedTempDir public_archive_dir_;
 
   std::unique_ptr<OfflinePageModelImpl> model_;
   SavePageResult last_save_result_;
@@ -264,7 +269,8 @@ OfflinePageModelImplTest::~OfflinePageModelImplTest() {}
 
 void OfflinePageModelImplTest::SetUp() {
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(private_archive_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(public_archive_dir_.CreateUniqueTempDir());
   model_ = BuildModel(BuildStore());
   model_->GetPolicyController()->AddPolicyForTest(
       kOriginalTabNamespace,
@@ -344,8 +350,8 @@ std::unique_ptr<OfflinePageModelImpl> OfflinePageModelImplTest::BuildModel(
     std::unique_ptr<OfflinePageMetadataStore> store) {
   std::unique_ptr<ArchiveManager> archive_manager = nullptr;
   archive_manager = std::make_unique<ArchiveManager>(
-      temporary_dir_path(), persistent_dir_path(),
-      base::ThreadTaskRunnerHandle::Get());
+      temporary_dir_path(), private_archive_dir_path(),
+      public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
   return std::unique_ptr<OfflinePageModelImpl>(
       new OfflinePageModelImpl(std::move(store), std::move(archive_manager),
                                base::ThreadTaskRunnerHandle::Get()));
@@ -1601,11 +1607,11 @@ TEST_F(OfflinePageModelImplTest, MAYBE_CheckPagesSavedInSeparateDirs) {
   ASSERT_TRUE(persistent_page);
 
   base::FilePath temporary_page_path = temporary_page->file_path;
-  base::FilePath persistent_page_path = persistent_page->file_path;
+  base::FilePath private_archive_page_path = persistent_page->file_path;
 
   EXPECT_TRUE(temporary_dir_path().IsParent(temporary_page_path));
-  EXPECT_TRUE(persistent_dir_path().IsParent(persistent_page_path));
-  EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
+  EXPECT_TRUE(private_archive_dir_path().IsParent(private_archive_page_path));
+  EXPECT_NE(temporary_page_path.DirName(), private_archive_page_path.DirName());
 }
 
 }  // namespace offline_pages

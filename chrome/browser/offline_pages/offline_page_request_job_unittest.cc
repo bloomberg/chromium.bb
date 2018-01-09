@@ -311,14 +311,16 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
 
   base::FilePath test_data_dir_path;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path);
-  base::FilePath persistent_archives_dir =
+  base::FilePath private_archives_dir =
       test_data_dir_path.AppendASCII("offline_pages");
+  base::FilePath public_archives_dir(FILE_PATH_LITERAL("/sdcard/Download"));
 
   // We're not interested in saving any temporary file in this test.
   base::FilePath temporary_archives_dir;
 
-  std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
-      temporary_archives_dir, persistent_archives_dir, task_runner));
+  std::unique_ptr<ArchiveManager> archive_manager(
+      new ArchiveManager(temporary_archives_dir, private_archives_dir,
+                         public_archives_dir, task_runner));
   std::unique_ptr<base::Clock> clock(new base::DefaultClock);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(

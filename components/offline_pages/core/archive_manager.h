@@ -34,15 +34,16 @@ class ArchiveManager {
   // space of persistent archives is needed in future.
   struct StorageStats {
     int64_t total_archives_size() const {
-      return temporary_archives_size + persistent_archives_size;
+      return temporary_archives_size + private_archives_size;
     }
     int64_t free_disk_space;
     int64_t temporary_archives_size;
-    int64_t persistent_archives_size;
+    int64_t private_archives_size;
   };
 
   ArchiveManager(const base::FilePath& temporary_archives_dir,
-                 const base::FilePath& persistent_archives_dir_,
+                 const base::FilePath& private_archives_dir_,
+                 const base::FilePath& public_archives_dir,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~ArchiveManager();
 
@@ -80,7 +81,8 @@ class ArchiveManager {
 
   // Gets the archive directories.
   const base::FilePath& GetTemporaryArchivesDir() const;
-  const base::FilePath& GetPersistentArchivesDir() const;
+  const base::FilePath& GetPrivateArchivesDir() const;
+  const base::FilePath& GetPublicArchivesDir() const;
 
  protected:
   ArchiveManager();
@@ -88,8 +90,10 @@ class ArchiveManager {
  private:
   // Path under which all of the temporary archives should be stored.
   base::FilePath temporary_archives_dir_;
-  // Path under which all of the persistent archives should be stored.
-  base::FilePath persistent_archives_dir_;
+  // Path under which all of the persistent archives should be saved initially.
+  base::FilePath private_archives_dir_;
+  // Publically accessible path where archives should be moved once ready.
+  base::FilePath public_archives_dir_;
   // Task runner for running file operations.
   // Since the task_runner is a SequencedTaskRunner, it's guaranteed that the
   // second task will start after the first one. This is an important assumption

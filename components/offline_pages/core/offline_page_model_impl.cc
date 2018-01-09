@@ -394,7 +394,7 @@ void OfflinePageModelImpl::SavePage(
   create_archive_params.use_page_problem_detectors =
       save_page_params.use_page_problem_detectors;
   archiver->CreateArchive(
-      GetArchiveDirectory(save_page_params.client_id.name_space),
+      GetInternalArchiveDirectory(save_page_params.client_id.name_space),
       create_archive_params,
       base::Bind(&OfflinePageModelImpl::OnCreateArchiveDone,
                  weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
@@ -678,21 +678,21 @@ void OfflinePageModelImpl::GetPagesSupportedByDownloads(
                  base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
-const base::FilePath& OfflinePageModelImpl::GetArchiveDirectory(
+const base::FilePath& OfflinePageModelImpl::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   if (policy_controller_->IsRemovedOnCacheReset(name_space))
     return archive_manager_->GetTemporaryArchivesDir();
-  return archive_manager_->GetPersistentArchivesDir();
+  return archive_manager_->GetPrivateArchivesDir();
 }
 
 bool OfflinePageModelImpl::IsArchiveInInternalDir(
     const base::FilePath& file_path) const {
   DCHECK(!file_path.empty());
 
-  // TODO(jianli): Update this once persisten archives are moved into the public
-  // directory.
+  // TODO(jianli): Update this once persistent archives are moved into the
+  // public directory.
   return archive_manager_->GetTemporaryArchivesDir().IsParent(file_path) ||
-         archive_manager_->GetPersistentArchivesDir().IsParent(file_path);
+         archive_manager_->GetPrivateArchivesDir().IsParent(file_path);
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {

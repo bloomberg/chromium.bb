@@ -180,7 +180,7 @@ void OfflinePageModelTaskified::SavePage(
   create_archive_params.use_page_problem_detectors =
       save_page_params.use_page_problem_detectors;
   archiver->CreateArchive(
-      GetArchiveDirectory(save_page_params.client_id.name_space),
+      GetInternalArchiveDirectory(save_page_params.client_id.name_space),
       create_archive_params,
       base::Bind(&OfflinePageModelTaskified::OnCreateArchiveDone,
                  weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
@@ -308,11 +308,11 @@ void OfflinePageModelTaskified::GetOfflineIdsForClientId(
   task_queue_.AddTask(std::move(task));
 }
 
-const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
+const base::FilePath& OfflinePageModelTaskified::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   if (policy_controller_->IsRemovedOnCacheReset(name_space))
     return archive_manager_->GetTemporaryArchivesDir();
-  return archive_manager_->GetPersistentArchivesDir();
+  return archive_manager_->GetPrivateArchivesDir();
 }
 
 bool OfflinePageModelTaskified::IsArchiveInInternalDir(
@@ -322,7 +322,7 @@ bool OfflinePageModelTaskified::IsArchiveInInternalDir(
   // TODO(jianli): Update this once persistent archives are moved into the
   // public directory.
   return archive_manager_->GetTemporaryArchivesDir().IsParent(file_path) ||
-         archive_manager_->GetPersistentArchivesDir().IsParent(file_path);
+         archive_manager_->GetPrivateArchivesDir().IsParent(file_path);
 }
 
 ClientPolicyController* OfflinePageModelTaskified::GetPolicyController() {
@@ -469,7 +469,7 @@ void OfflinePageModelTaskified::ClearLegacyTemporaryPages() {
   // 'legacy' directory and replace the persistent one here.
   auto task = std::make_unique<ClearLegacyTemporaryPagesTask>(
       store_.get(), policy_controller_.get(),
-      archive_manager_->GetPersistentArchivesDir());
+      archive_manager_->GetPrivateArchivesDir());
   task_queue_.AddTask(std::move(task));
 }
 
@@ -538,7 +538,7 @@ void OfflinePageModelTaskified::CheckTemporaryPagesConsistency() {
 void OfflinePageModelTaskified::CheckPersistentPagesConsistency() {
   auto task = std::make_unique<PersistentPagesConsistencyCheckTask>(
       store_.get(), policy_controller_.get(),
-      archive_manager_->GetPersistentArchivesDir());
+      archive_manager_->GetPrivateArchivesDir());
   task_queue_.AddTask(std::move(task));
 }
 

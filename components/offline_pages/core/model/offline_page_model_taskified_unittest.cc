@@ -132,8 +132,11 @@ class OfflinePageModelTaskifiedTest
   const base::FilePath& temporary_dir_path() {
     return temporary_dir_.GetPath();
   }
-  const base::FilePath& persistent_dir_path() {
-    return persistent_dir_.GetPath();
+  const base::FilePath& private_archive_dir_path() {
+    return private_archive_dir_.GetPath();
+  }
+  const base::FilePath& public_archive_dir_path() {
+    return public_archive_dir_.GetPath();
   }
 
   const base::FilePath& last_path_created_by_archiver() {
@@ -157,7 +160,8 @@ class OfflinePageModelTaskifiedTest
   OfflinePageItemGenerator generator_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   base::ScopedTempDir temporary_dir_;
-  base::ScopedTempDir persistent_dir_;
+  base::ScopedTempDir private_archive_dir_;
+  base::ScopedTempDir public_archive_dir_;
 
   base::FilePath last_path_created_by_archiver_;
   bool observer_add_page_called_;
@@ -177,7 +181,8 @@ OfflinePageModelTaskifiedTest::~OfflinePageModelTaskifiedTest() {}
 void OfflinePageModelTaskifiedTest::SetUp() {
   BuildStore();
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(private_archive_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(public_archive_dir_.CreateUniqueTempDir());
   BuildModel();
   PumpLoop();
   CheckTaskQueueIdle();
@@ -191,9 +196,13 @@ void OfflinePageModelTaskifiedTest::TearDown() {
     if (!temporary_dir_.Delete())
       DLOG(ERROR) << "temporary_dir_ not created";
   }
-  if (persistent_dir_.IsValid()) {
-    if (!persistent_dir_.Delete())
-      DLOG(ERROR) << "persistent_dir not created";
+  if (private_archive_dir_.IsValid()) {
+    if (!private_archive_dir_.Delete())
+      DLOG(ERROR) << "private_persistent_dir not created";
+  }
+  if (public_archive_dir_.IsValid()) {
+    if (!public_archive_dir_.Delete())
+      DLOG(ERROR) << "public_archive_dir not created";
   }
   EXPECT_EQ(0UL, model_->pending_archivers_.size());
   model_->RemoveObserver(this);
@@ -208,8 +217,8 @@ void OfflinePageModelTaskifiedTest::BuildStore() {
 void OfflinePageModelTaskifiedTest::BuildModel() {
   ASSERT_TRUE(store_test_util_.store());
   auto archive_manager = std::make_unique<ArchiveManager>(
-      temporary_dir_path(), persistent_dir_path(),
-      base::ThreadTaskRunnerHandle::Get());
+      temporary_dir_path(), private_archive_dir_path(),
+      public_archive_dir_path(), base::ThreadTaskRunnerHandle::Get());
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
       base::ThreadTaskRunnerHandle::Get(), task_runner_->GetMockClock());
@@ -1142,7 +1151,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPagesSavedInSeparateDirs) {
   base::FilePath persistent_page_path = persistent_page->file_path;
 
   EXPECT_TRUE(temporary_dir_path().IsParent(temporary_page_path));
-  EXPECT_TRUE(persistent_dir_path().IsParent(persistent_page_path));
+  EXPECT_TRUE(private_archive_dir_path().IsParent(persistent_page_path));
   EXPECT_NE(temporary_page_path.DirName(), persistent_page_path.DirName());
 }
 
@@ -1208,11 +1217,11 @@ TEST_F(OfflinePageModelTaskifiedTest, ExtraActionTriggeredWhenSaveSuccess) {
 
 TEST_F(OfflinePageModelTaskifiedTest, GetArchiveDirectory) {
   base::FilePath temporary_dir =
-      model()->GetArchiveDirectory(kDefaultNamespace);
+      model()->GetInternalArchiveDirectory(kDefaultNamespace);
   EXPECT_EQ(temporary_dir_path(), temporary_dir);
   base::FilePath persistent_dir =
-      model()->GetArchiveDirectory(kDownloadNamespace);
-  EXPECT_EQ(persistent_dir_path(), persistent_dir);
+      model()->GetInternalArchiveDirectory(kDownloadNamespace);
+  EXPECT_EQ(private_archive_dir_path(), persistent_dir);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, GetAllPages) {
@@ -1249,7 +1258,7 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
   OfflinePageItem temp_page2 = page_generator()->CreateItemWithTempFile();
   // Page in temporary namespace saved in persistent directory to simulate pages
   // saved in legacy directory.
-  page_generator()->SetArchiveDirectory(persistent_dir_path());
+  page_generator()->SetArchiveDirectory(private_archive_dir_path());
   OfflinePageItem temp_page3 = page_generator()->CreateItemWithTempFile();
   InsertPageIntoStore(temp_page1);
   InsertPageIntoStore(temp_page3);
@@ -1270,7 +1279,8 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 
   EXPECT_EQ(4LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
-  EXPECT_EQ(3UL, test_utils::GetFileCountInDirectory(persistent_dir_path()));
+  EXPECT_EQ(3UL,
+            test_utils::GetFileCountInDirectory(private_archive_dir_path()));
 
   // Rebuild the model in order to trigger consistency check.
   BuildModel();
@@ -1279,7 +1289,8 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_StartUp_ConsistencyCheckExecuted) {
 
   EXPECT_EQ(1LL, store_test_util()->GetPageCount());
   EXPECT_EQ(0UL, test_utils::GetFileCountInDirectory(temporary_dir_path()));
-  EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(persistent_dir_path()));
+  EXPECT_EQ(1UL,
+            test_utils::GetFileCountInDirectory(private_archive_dir_path()));
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {

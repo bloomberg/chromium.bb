@@ -198,7 +198,7 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual ClientPolicyController* GetPolicyController() = 0;
 
   // Get the archive directory based on client policy of the namespace.
-  virtual const base::FilePath& GetArchiveDirectory(
+  virtual const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const = 0;
 
   // Returns whether given archive file is in the internal directory.
