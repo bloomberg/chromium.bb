@@ -124,7 +124,6 @@
 #include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutBoxItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -654,11 +653,9 @@ void Element::NativeApplyScroll(ScrollState& scroll_state) {
   if (!box_to_scroll)
     return;
 
-  ScrollResult result = LayoutBoxItem(box_to_scroll)
-                            .EnclosingBox()
-                            .Scroll(ScrollGranularity(static_cast<int>(
-                                        scroll_state.deltaGranularity())),
-                                    delta);
+  ScrollResult result = box_to_scroll->EnclosingBox()->Scroll(
+      ScrollGranularity(static_cast<int>(scroll_state.deltaGranularity())),
+      delta);
 
   if (!result.DidScroll())
     return;

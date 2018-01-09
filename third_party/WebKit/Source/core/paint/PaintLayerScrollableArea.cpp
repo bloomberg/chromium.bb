@@ -68,7 +68,6 @@
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/ng/legacy_layout_tree_walking.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"

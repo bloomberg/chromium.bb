@@ -52,7 +52,6 @@
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutAPIShim.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"

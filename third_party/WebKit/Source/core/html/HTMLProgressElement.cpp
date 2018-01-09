@@ -28,7 +28,6 @@
 #include "core/html/shadow/ProgressShadowElement.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutProgress.h"
-#include "core/layout/api/LayoutProgressItem.h"
 
 namespace blink {
 
@@ -83,8 +82,8 @@ void HTMLProgressElement::ParseAttribute(
 
 void HTMLProgressElement::AttachLayoutTree(AttachContext& context) {
   LabelableElement::AttachLayoutTree(context);
-  if (LayoutProgressItem layout_item = LayoutProgressItem(GetLayoutProgress()))
-    layout_item.UpdateFromElement();
+  if (LayoutProgress* layout_progress = GetLayoutProgress())
+    layout_progress->UpdateFromElement();
 }
 
 double HTMLProgressElement::value() const {
@@ -127,8 +126,8 @@ bool HTMLProgressElement::IsDeterminate() const {
 
 void HTMLProgressElement::DidElementStateChange() {
   SetValueWidthPercentage(position() * 100);
-  if (LayoutProgressItem layout_item = LayoutProgressItem(GetLayoutProgress()))
-    layout_item.UpdateFromElement();
+  if (LayoutProgress* layout_progress = GetLayoutProgress())
+    layout_progress->UpdateFromElement();
 }
 
 void HTMLProgressElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

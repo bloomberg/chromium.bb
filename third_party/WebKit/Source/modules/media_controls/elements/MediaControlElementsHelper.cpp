@@ -9,7 +9,6 @@
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutSliderItem.h"
 #include "modules/media_controls/elements/MediaControlDivElement.h"
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 #include "public/platform/WebSize.h"
@@ -37,13 +36,12 @@ bool MediaControlElementsHelper::IsUserInteractionEventForSlider(
     return true;
 
   // Some events are only captured during a slider drag.
-  const LayoutSliderItem& slider =
-      LayoutSliderItem(ToLayoutSlider(layout_object));
+  const LayoutSlider* slider = ToLayoutSlider(layout_object);
   // TODO(crbug.com/695459#c1): LayoutSliderItem::inDragMode is incorrectly
   // false for drags that start from the track instead of the thumb.
   // Use SliderThumbElement::m_inDragMode and
   // SliderContainerElement::m_touchStarted instead.
-  if (!slider.IsNull() && !slider.InDragMode())
+  if (slider && !slider->InDragMode())
     return false;
 
   const AtomicString& type = event->type();

@@ -46,7 +46,6 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutAPIShim.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/geometry/IntRect.h"

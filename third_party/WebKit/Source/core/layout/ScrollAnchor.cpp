@@ -12,8 +12,8 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTable.h"
-#include "core/layout/api/LayoutBoxItem.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -47,17 +47,12 @@ void ScrollAnchor::SetScroller(ScrollableArea* scroller) {
   ClearSelf();
 }
 
-// TODO(pilgrim): Replace all instances of scrollerLayoutBox with
-// scrollerLayoutBoxItem, https://crbug.com/499321
 static LayoutBox* ScrollerLayoutBox(const ScrollableArea* scroller) {
   LayoutBox* box = scroller->GetLayoutBox();
   DCHECK(box);
   return box;
 }
 
-static LayoutBoxItem ScrollerLayoutBoxItem(const ScrollableArea* scroller) {
-  return LayoutBoxItem(ScrollerLayoutBox(scroller));
-}
 
 // TODO(skobes): Storing a "corner" doesn't make much sense anymore since we
 // adjust only on the block flow axis.  This could probably be refactored to
@@ -294,7 +289,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
 
   LayoutRect candidate_rect = RelativeBounds(candidate, scroller_);
   LayoutRect visible_rect =
-      ScrollerLayoutBoxItem(scroller_).OverflowClipRect(LayoutPoint());
+      ScrollerLayoutBox(scroller_)->OverflowClipRect(LayoutPoint());
 
   bool occupies_space =
       candidate_rect.Width() > 0 && candidate_rect.Height() > 0;
