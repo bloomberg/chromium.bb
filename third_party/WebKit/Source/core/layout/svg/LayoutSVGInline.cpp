@@ -36,8 +36,9 @@ bool LayoutSVGInline::IsChildAllowed(LayoutObject* child,
     return SVGLayoutSupport::IsLayoutableTextNode(child);
 
   if (IsSVGAElement(*GetNode())) {
+    Node* child_node = child->GetNode();
     // Disallow direct descendant 'a'.
-    if (IsSVGAElement(*child->GetNode()))
+    if (child_node && IsSVGAElement(*child_node))
       return false;
   }
 
