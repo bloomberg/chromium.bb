@@ -32,16 +32,17 @@ void PrintQueriesQueue::QueuePrinterQuery(PrinterQuery* job) {
 scoped_refptr<PrinterQuery> PrintQueriesQueue::PopPrinterQuery(
     int document_cookie) {
   base::AutoLock lock(lock_);
-  for (PrinterQueries::iterator itr = queued_queries_.begin();
-       itr != queued_queries_.end(); ++itr) {
-    if ((*itr)->cookie() == document_cookie && !(*itr)->is_callback_pending()) {
-      scoped_refptr<PrinterQuery> current_query(*itr);
-      queued_queries_.erase(itr);
-      DCHECK(current_query->is_valid());
-      return current_query;
-    }
+  for (auto it = queued_queries_.begin(); it != queued_queries_.end(); ++it) {
+    scoped_refptr<PrinterQuery>& query = *it;
+    if (query->cookie() != document_cookie || query->is_callback_pending())
+      continue;
+
+    scoped_refptr<PrinterQuery> current_query = query;
+    queued_queries_.erase(it);
+    DCHECK(current_query->is_valid());
+    return current_query;
   }
-  return NULL;
+  return nullptr;
 }
 
 scoped_refptr<PrinterQuery> PrintQueriesQueue::CreatePrinterQuery(
@@ -59,13 +60,12 @@ void PrintQueriesQueue::Shutdown() {
   // Stop all pending queries, requests to generate print preview do not have
   // corresponding PrintJob, so any pending preview requests are not covered
   // by PrintJobManager::StopJobs and should be stopped explicitly.
-  for (PrinterQueries::iterator itr = queries_to_stop.begin();
-       itr != queries_to_stop.end(); ++itr) {
-    (*itr)->PostTask(FROM_HERE, base::Bind(&PrinterQuery::StopWorker, *itr));
+  for (auto& query : queries_to_stop) {
+    query->PostTask(FROM_HERE, base::Bind(&PrinterQuery::StopWorker, query));
   }
 }
 
-PrintJobManager::PrintJobManager() : is_shutdown_(false) {
+PrintJobManager::PrintJobManager() {
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::NotificationService::AllSources());
 }
@@ -75,8 +75,8 @@ PrintJobManager::~PrintJobManager() {
 
 scoped_refptr<PrintQueriesQueue> PrintJobManager::queue() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!queue_.get())
-    queue_ = new PrintQueriesQueue();
+  if (!queue_)
+    queue_ = base::MakeRefCounted<PrintQueriesQueue>();
   return queue_;
 }
 
@@ -86,9 +86,10 @@ void PrintJobManager::Shutdown() {
   is_shutdown_ = true;
   registrar_.RemoveAll();
   StopJobs(true);
-  if (queue_.get())
+  if (queue_) {
     queue_->Shutdown();
-  queue_ = NULL;
+    queue_ = nullptr;
+  }
 }
 
 void PrintJobManager::StopJobs(bool wait_for_finish) {
@@ -121,14 +122,14 @@ void PrintJobManager::OnPrintJobEvent(
     const JobEventDetails& event_details) {
   switch (event_details.type()) {
     case JobEventDetails::NEW_DOC: {
-      DCHECK(current_jobs_.end() == current_jobs_.find(print_job));
       // Causes a AddRef().
-      current_jobs_.insert(print_job);
+      bool inserted = current_jobs_.insert(print_job).second;
+      DCHECK(inserted);
       break;
     }
     case JobEventDetails::JOB_DONE: {
-      DCHECK(current_jobs_.end() != current_jobs_.find(print_job));
-      current_jobs_.erase(print_job);
+      size_t erased = current_jobs_.erase(print_job);
+      DCHECK_EQ(1U, erased);
       break;
     }
     case JobEventDetails::FAILED: {
