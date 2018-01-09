@@ -1585,17 +1585,18 @@ def CMDreproduce(parser, args):
   if properties.get('env'):
     logging.info('env: %r', properties['env'])
     for i in properties['env']:
-      key = i['key'].encode('utf-8')
+      key = i['key']
       if not i['value']:
         env.pop(key, None)
       else:
-        env[key] = i['value'].encode('utf-8')
+        env[key] = i['value']
 
   if properties.get('env_prefixes'):
-    env_prefixes = properties['env']
+    env_prefixes = properties['env_prefixes']
     logging.info('env_prefixes: %r', env_prefixes)
-    for key, paths in env_prefixes.iteritems():
-      paths = [os.path.normpath(os.path.join(workdir, p)) for p in paths]
+    for i in env_prefixes:
+      key = i['key']
+      paths = [os.path.normpath(os.path.join(workdir, p)) for p in i['value']]
       cur = env.get(key)
       if cur:
         paths.append(cur)

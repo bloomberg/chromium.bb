@@ -1494,6 +1494,9 @@ class TestMain(NetTestCase):
         self.assertEqual([os.path.join(w, 'foo'), '--bar'], cmd)
         expected = os.environ.copy()
         expected['aa'] = 'bb'
+        expected['PATH'] = os.pathsep.join(
+            (os.path.join(w, 'foo', 'bar'), os.path.join(w, 'second'),
+              expected['PATH']))
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
         self.assertEqual(expected, env)
@@ -1512,6 +1515,9 @@ class TestMain(NetTestCase):
                   'command': ['foo'],
                   'env': [
                     {'key': 'aa', 'value': 'bb'},
+                  ],
+                  'env_prefixes': [
+                    {'key': 'PATH', 'value': ['foo/bar', 'second']},
                   ],
                   'secret_bytes': None,
                 },
