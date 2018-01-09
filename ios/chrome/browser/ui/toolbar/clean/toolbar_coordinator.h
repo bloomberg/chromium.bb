@@ -16,6 +16,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolbarButtonUpdater;
+@protocol ToolbarCommands;
 @protocol ToolbarCoordinatorDelegate;
 @protocol UrlLoader;
 class WebStateList;
@@ -35,7 +36,9 @@ class WebState;
 // Weak reference to ChromeBrowserState;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
-@property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+@property(nonatomic, weak)
+    id<ApplicationCommands, BrowserCommands, ToolbarCommands>
+        dispatcher;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Delegate for this coordinator.

@@ -44,7 +44,6 @@
 
 // ToolbarController public interface.
 - (void)updateToolbarState;
-- (void)triggerToolsMenuButtonAnimation;
 
 @end
 

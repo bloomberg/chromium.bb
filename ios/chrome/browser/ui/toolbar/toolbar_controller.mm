@@ -124,9 +124,10 @@ using ios::material::TimingFunction;
 @synthesize trailingSafeAreaConstraint = _trailingSafeAreaConstraint;
 @dynamic view;
 
-- (instancetype)initWithStyle:(ToolbarControllerStyle)style
-                   dispatcher:
-                       (id<ApplicationCommands, BrowserCommands>)dispatcher {
+- (instancetype)
+initWithStyle:(ToolbarControllerStyle)style
+   dispatcher:
+       (id<ApplicationCommands, BrowserCommands, ToolbarCommands>)dispatcher {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     style_ = style;

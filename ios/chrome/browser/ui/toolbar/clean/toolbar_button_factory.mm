@@ -7,6 +7,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_visibility_configuration.h"

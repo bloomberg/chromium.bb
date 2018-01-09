@@ -20,7 +20,8 @@
 @synthesize URLLoader = _URLLoader;
 
 - (instancetype)initWithDispatcher:
-                    (id<ApplicationCommands, BrowserCommands>)dispatcher
+                    (id<ApplicationCommands, BrowserCommands, ToolbarCommands>)
+                        dispatcher
                       browserState:(ios::ChromeBrowserState*)browserState
                       webStateList:(WebStateList*)webStateList {
   self = [super init];

@@ -25,12 +25,14 @@
 - (instancetype)initWithDispatcher:(id<ApplicationCommands,
                                        BrowserCommands,
                                        OmniboxFocuser,
+                                       ToolbarCommands,
                                        UrlLoader,
                                        WebToolbarDelegate>)dispatcher;
 
 @property(nonatomic, readonly, weak) id<ApplicationCommands,
                                         BrowserCommands,
                                         OmniboxFocuser,
+                                        ToolbarCommands,
                                         UrlLoader,
                                         WebToolbarDelegate>
     dispatcher;

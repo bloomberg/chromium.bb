@@ -598,8 +598,9 @@ NSString* const kTransitionToolbarAnimationKey =
   return nil;
 }
 
-- (id<ApplicationCommands, BrowserCommands>)dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
+- (id<ApplicationCommands, BrowserCommands, ToolbarCommands>)dispatcher {
+  return static_cast<id<ApplicationCommands, BrowserCommands, ToolbarCommands>>(
+      _dispatcher);
 }
 
 - (void)setUpWithMainCardSet:(CardSet*)mainCardSet

@@ -134,6 +134,7 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
+#import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
@@ -1016,11 +1017,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       BrowserCommands,
       OmniboxFocuser,
       SnackbarCommands,
+      ToolbarCommands,
       UrlLoader,
       WebToolbarDelegate>)dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                        SnackbarCommands, UrlLoader, WebToolbarDelegate>>(
-      _dispatcher);
+  return static_cast<
+      id<ApplicationCommands, BrowserCommands, OmniboxFocuser, SnackbarCommands,
+         ToolbarCommands, UrlLoader, WebToolbarDelegate>>(_dispatcher);
 }
 
 - (void)setActive:(BOOL)active {
@@ -2542,7 +2544,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       presentInViewController:self
                          view:self.view
                   anchorPoint:toolsButtonAnchor];
-  [_toolbarCoordinator triggerToolsMenuButtonAnimation];
+  [self.dispatcher triggerToolsMenuButtonAnimation];
 }
 
 #pragma mark - Private Methods: Find Bar UI
