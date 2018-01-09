@@ -30,7 +30,6 @@ extern const struct backend backend_evdi;
 #ifdef DRV_EXYNOS
 extern const struct backend backend_exynos;
 #endif
-extern const struct backend backend_gma500;
 #ifdef DRV_I915
 extern const struct backend backend_i915;
 #endif
@@ -78,7 +77,6 @@ static const struct backend *drv_get_backend(int fd)
 #ifdef DRV_EXYNOS
 		&backend_exynos,
 #endif
-		&backend_gma500,
 #ifdef DRV_I915
 		&backend_i915,
 #endif
