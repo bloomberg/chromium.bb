@@ -44,7 +44,16 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     // Resets the listener so that the listener can go out of scope.
     void ResetListener() { listener_ = nullptr; }
 
+   protected:
+    // views::ImageButton:
+    std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+    std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+        const override;
+    std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+
    private:
+    int GetInkDropRadius() const;
+
     DISALLOW_COPY_AND_ASSIGN(OverviewCloseButton);
   };
 
