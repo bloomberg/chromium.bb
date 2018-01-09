@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -107,13 +107,8 @@ IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
       .WillRepeatedly(::testing::Return(false));
   chrome::FocusLocationBar(browser());
 
-  // At the top this test should be a no-op if the experimental controller is
-  // used. Otherwise, we know the cast from TabStrip->TabStripImpl is safe.
-  TabStripImpl* tab_strip = BrowserView::GetBrowserViewForBrowser(browser())
-                                ->tabstrip()
-                                ->AsTabStripImpl();
-  ASSERT_TRUE(tab_strip);
-
+  TabStrip* tab_strip =
+      BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   EXPECT_TRUE(
       tab_strip->new_tab_button()->new_tab_promo()->GetWidget()->IsVisible());
 

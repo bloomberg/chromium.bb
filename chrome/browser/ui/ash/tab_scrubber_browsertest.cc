@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chromeos/chromeos_switches.h"
@@ -98,15 +98,13 @@ class TabScrubberTest : public InProcessBrowserTest,
     browser()->tab_strip_model()->RemoveObserver(this);
   }
 
-  TabStripImpl* GetTabStrip(Browser* browser) {
+  TabStrip* GetTabStrip(Browser* browser) {
     aura::Window* window = browser->window()->GetNativeWindow();
     // This test depends on TabStrip impl.
-    TabStripImpl* tab_strip_impl =
-        BrowserView::GetBrowserViewForNativeWindow(window)
-            ->tabstrip()
-            ->AsTabStripImpl();
-    DCHECK(tab_strip_impl);
-    return tab_strip_impl;
+    TabStrip* tab_strip =
+        BrowserView::GetBrowserViewForNativeWindow(window)->tabstrip();
+    DCHECK(tab_strip);
+    return tab_strip;
   }
 
   float GetStartX(Browser* browser,
@@ -230,7 +228,7 @@ class TabScrubberTest : public InProcessBrowserTest,
   }
 
   void AddTabs(Browser* browser, int num_tabs) {
-    TabStripImpl* tab_strip = GetTabStrip(browser);
+    TabStrip* tab_strip = GetTabStrip(browser);
     for (int i = 0; i < num_tabs; ++i)
       AddBlankTabAndShow(browser);
     ASSERT_EQ(num_tabs + 1, browser->tab_strip_model()->count());

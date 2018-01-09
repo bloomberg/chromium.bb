@@ -18,7 +18,6 @@
 
 class Browser;
 class Tab;
-class TabStripImpl;
 struct TabRendererData;
 
 namespace content {
@@ -37,7 +36,7 @@ class BrowserTabStripController : public TabStripController,
   BrowserTabStripController(TabStripModel* model, BrowserView* browser_view);
   ~BrowserTabStripController() override;
 
-  void InitFromModel(TabStripImpl* tabstrip);
+  void InitFromModel(TabStrip* tabstrip);
 
   TabStripModel* model() const { return model_; }
 
@@ -67,7 +66,7 @@ class BrowserTabStripController : public TabStripController,
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   void PerformDrop(bool drop_before, int index, const GURL& url) override;
-  bool IsCompatibleWith(TabStripImpl* other) const override;
+  bool IsCompatibleWith(TabStrip* other) const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   bool IsIncognito() override;
@@ -147,7 +146,7 @@ class BrowserTabStripController : public TabStripController,
 
   TabStripModel* model_;
 
-  TabStripImpl* tabstrip_;
+  TabStrip* tabstrip_;
 
   BrowserView* browser_view_;
 

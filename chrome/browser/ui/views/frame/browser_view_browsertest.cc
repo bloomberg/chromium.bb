@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -258,10 +258,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, TitleAndLoadState) {
   content::TestNavigationObserver navigation_watcher(
       contents, 1, content::MessageLoopRunner::QuitMode::DEFERRED);
 
-  // This test only works for the TabStripImpl.
-  TabStripImpl* tab_strip = browser_view()->tabstrip()->AsTabStripImpl();
-  if (!tab_strip)
-    return;
+  TabStrip* tab_strip = browser_view()->tabstrip();
 
   // Navigate without blocking.
   ui_test_utils::NavigateToURLWithDispositionBlockUntilNavigationsComplete(

@@ -10,8 +10,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/base/models/list_selection_model.h"
 
-class TabStripImpl;
-
 class FakeBaseTabStripController : public TabStripController {
  public:
   FakeBaseTabStripController();
@@ -23,7 +21,7 @@ class FakeBaseTabStripController : public TabStripController {
 
   ui::ListSelectionModel* selection_model() { return &selection_model_; }
 
-  void set_tab_strip(TabStripImpl* tab_strip) { tab_strip_ = tab_strip; }
+  void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
 
   // TabStripController overrides:
   const ui::ListSelectionModel& GetSelectionModel() const override;
@@ -45,7 +43,7 @@ class FakeBaseTabStripController : public TabStripController {
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   void PerformDrop(bool drop_before, int index, const GURL& url) override;
-  bool IsCompatibleWith(TabStripImpl* other) const override;
+  bool IsCompatibleWith(TabStrip* other) const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   bool IsIncognito() override;
@@ -58,7 +56,7 @@ class FakeBaseTabStripController : public TabStripController {
   Profile* GetProfile() const override;
 
  private:
-  TabStripImpl* tab_strip_ = nullptr;
+  TabStrip* tab_strip_ = nullptr;
 
   int num_tabs_ = 0;
   int active_index_ = -1;
