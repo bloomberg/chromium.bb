@@ -8,9 +8,11 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/model/speech/speech_ui_model.h"
 #include "base/strings/string16.h"
 
@@ -55,6 +57,8 @@ class AppListModelUpdater {
       app_list::SpeechRecognitionState state) {}
   virtual void UpdateSearchBox(const base::string16& text,
                                bool initiated_by_user) {}
+  virtual void PublishSearchResults(
+      std::vector<std::unique_ptr<app_list::SearchResult>> results) {}
 
   // For AppListModel:
   virtual ChromeAppListItem* FindItem(const std::string& id) = 0;

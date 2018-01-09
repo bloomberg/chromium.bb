@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_SEARCH_CONTROLLER_H_
-#define UI_APP_LIST_SEARCH_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
 
 #include <stddef.h>
 
 #include <memory>
 #include <vector>
 
-#include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/speech/speech_ui_model_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/app_list_export.h"
-#include "ui/app_list/search/mixer.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
+
+class AppListModelUpdater;
 
 namespace app_list {
 
@@ -25,9 +25,9 @@ class SearchResult;
 // Controller that collects query from given SearchBoxModel, dispatches it
 // to all search providers, then invokes the mixer to mix and to publish the
 // results to the given SearchResults UI model.
-class APP_LIST_EXPORT SearchController {
+class SearchController {
  public:
-  SearchController(SearchModel::SearchResults* results, History* history);
+  SearchController(AppListModelUpdater* model_updater, History* history);
   virtual ~SearchController();
 
   // TODO(hejq): can we accept a trimmed query here?
@@ -65,4 +65,4 @@ class APP_LIST_EXPORT SearchController {
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_SEARCH_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_CONTROLLER_H_
