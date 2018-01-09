@@ -137,6 +137,8 @@ public class AwContentsTest {
             // we fail gracefully and do not crash when APIs are invoked after destruction.
             // Due to the large number of APIs we only test a representative selection here.
             awContents.clearHistory();
+            Assert.assertNull(awContents.getOriginalUrl());
+            Assert.assertNull(awContents.getNavigationHistory());
             awContents.loadUrl("http://www.google.com");
             awContents.findAllAsync("search");
             Assert.assertNull(awContents.getUrl());

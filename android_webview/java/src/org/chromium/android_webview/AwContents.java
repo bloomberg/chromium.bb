@@ -2152,7 +2152,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * @see ContentViewCore#getNavigationHistory()
+     * @see NavigationController#getNavigationHistory()
      */
     public NavigationHistory getNavigationHistory() {
         return isDestroyedOrNoOperation(WARN) ? null : mNavigationController.getNavigationHistory();
