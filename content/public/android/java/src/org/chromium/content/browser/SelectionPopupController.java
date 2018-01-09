@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -290,7 +291,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mUnselectAllOnDismiss = true;
 
         if (hasSelection()) {
-            if (mSelectionMetricsLogger != null) {
+            // Device is not provisioned, don't trigger SelectionClient logic at all.
+            boolean blockSelectionClient = !ApiCompatibilityUtils.isDeviceProvisioned(mContext);
+
+            if (!blockSelectionClient && mSelectionMetricsLogger != null) {
                 switch (sourceType) {
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION:
                         mSelectionMetricsLogger.logSelectionModified(
@@ -310,13 +314,15 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             }
 
             // From selection adjustment, show menu directly.
-            if (sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
+            if (!blockSelectionClient
+                    && sourceType == MenuSourceType.MENU_SOURCE_ADJUST_SELECTION) {
                 showActionModeOrClearOnFailure();
                 return;
             }
 
-            // Show menu if there is no updates from SelectionClient.
-            if (mSelectionClient == null
+            // Show menu if we need to block SelectionClient or there is no updates from
+            // SelectionClient.
+            if (blockSelectionClient || mSelectionClient == null
                     || !mSelectionClient.requestSelectionPopupUpdates(shouldSuggest)) {
                 showActionModeOrClearOnFailure();
             }
