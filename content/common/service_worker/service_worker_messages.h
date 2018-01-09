@@ -47,11 +47,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::FetchResponseType,
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchType,
                           content::ServiceWorkerFetchType::LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(content::ExtendableMessageEventSource)
-  IPC_STRUCT_TRAITS_MEMBER(client_info)
-  IPC_STRUCT_TRAITS_MEMBER(service_worker_info)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(is_main_resource_load)
@@ -90,13 +85,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob_uuid)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob_size)
   IPC_STRUCT_TRAITS_MEMBER(side_data_blob)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerObjectInfo)
-  IPC_STRUCT_TRAITS_MEMBER(handle_id)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(state)
-  IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerClientInfo)

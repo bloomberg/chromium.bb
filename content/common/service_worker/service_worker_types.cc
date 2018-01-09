@@ -151,14 +151,4 @@ ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
     : client_type(blink::mojom::ServiceWorkerClientType::kWindow),
       include_uncontrolled(false) {}
 
-ExtendableMessageEventSource::ExtendableMessageEventSource() {}
-
-ExtendableMessageEventSource::ExtendableMessageEventSource(
-    const blink::mojom::ServiceWorkerClientInfo& client_info)
-    : client_info(client_info) {}
-
-ExtendableMessageEventSource::ExtendableMessageEventSource(
-    const blink::mojom::ServiceWorkerObjectInfo& service_worker_info)
-    : service_worker_info(service_worker_info) {}
-
 }  // namespace content
