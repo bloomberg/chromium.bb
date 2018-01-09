@@ -1919,6 +1919,7 @@ using ios::material::TimingFunction;
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
+  [self adjustToolbarHeight];
   if (!IsIPadIdiom()) {
     if (IsSafeAreaCompatibleToolbarEnabled()) {
       // The clipping view's height is supposed to match the toolbar's height.

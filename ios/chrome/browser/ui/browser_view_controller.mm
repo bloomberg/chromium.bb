@@ -1597,12 +1597,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   if (IsIPhoneX()) {
     [self setUpViewLayout:NO];
   }
-  if (IsSafeAreaCompatibleToolbarEnabled()) {
-    // TODO(crbug.com/778236): Check if this call can be removed once the
-    // Toolbar is a contained ViewController.
-    [_toolbarCoordinator.toolbarViewController viewSafeAreaInsetsDidChange];
-    [_toolbarCoordinator adjustToolbarHeight];
-  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
