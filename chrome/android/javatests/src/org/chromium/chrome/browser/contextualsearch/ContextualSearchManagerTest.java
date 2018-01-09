@@ -1951,6 +1951,7 @@ public class ContextualSearchManagerTest {
      * Tests the counter for the number of taps between opens.
      */
     @Test
+    @DisabledTest(message = "crbug.com/800334")
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapCountDLD() throws InterruptedException, TimeoutException {
