@@ -45,12 +45,6 @@ namespace printing {
 
 namespace {
 
-// Helper function to ensure |owner| is valid until at least |callback| returns.
-void HoldRefCallback(const scoped_refptr<PrintJobWorkerOwner>& owner,
-                     const base::Closure& callback) {
-  callback.Run();
-}
-
 class PrintingContextDelegate : public PrintingContext::Delegate {
  public:
   PrintingContextDelegate(int render_process_id, int render_frame_id);
