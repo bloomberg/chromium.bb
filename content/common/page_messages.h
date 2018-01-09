@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 // IPC messages for page-level actions.
+// TODO(https://crbug.com/775827): Convert to mojo.
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
