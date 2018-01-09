@@ -1532,24 +1532,25 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->is_installed = IsInstalled(status_);
   params->pause_after_download = pause_after_download_;
 
-  blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info;
   if (ServiceWorkerUtils::IsScriptStreamingEnabled() && IsInstalled(status()) &&
       !pause_after_download_) {
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
         std::make_unique<ServiceWorkerInstalledScriptsSender>(this);
-    installed_scripts_info = installed_scripts_sender_->CreateInfoAndBind();
+    params->installed_scripts_info =
+        installed_scripts_sender_->CreateInfoAndBind();
     installed_scripts_sender_->Start();
   }
 
-  auto event_dispatcher_request = mojo::MakeRequest(&event_dispatcher_);
+  params->dispatcher_request = mojo::MakeRequest(&event_dispatcher_);
   // TODO(horo): These CHECKs are for debugging crbug.com/759938.
   CHECK(event_dispatcher_.is_bound());
-  CHECK(event_dispatcher_request.is_pending());
+  CHECK(params->dispatcher_request.is_pending());
 
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host_ptr_info;
   binding_.Close();
-  binding_.Bind(mojo::MakeRequest(&service_worker_host_ptr_info));
+  binding_.Bind(mojo::MakeRequest(&params->service_worker_host));
+
+  params->controller_request = mojo::MakeRequest(&controller_ptr_);
 
   embedded_worker_->Start(
       std::move(params),
@@ -1557,9 +1558,6 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       // |embedded_worker_| whose owner is |this|.
       base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
                      std::move(provider_host), context()),
-      mojo::MakeRequest(&event_dispatcher_),
-      mojo::MakeRequest(&controller_ptr_), std::move(installed_scripts_info),
-      std::move(service_worker_host_ptr_info),
       base::BindOnce(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                      weak_factory_.GetWeakPtr()));
   event_dispatcher_.set_connection_error_handler(base::BindOnce(

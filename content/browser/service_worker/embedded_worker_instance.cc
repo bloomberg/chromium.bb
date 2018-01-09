@@ -470,15 +470,9 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   process_handle_.reset();
 }
 
-void EmbeddedWorkerInstance::Start(
-    mojom::EmbeddedWorkerStartParamsPtr params,
-    ProviderInfoGetter provider_info_getter,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-    mojom::ControllerServiceWorkerRequest controller_request,
-    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo
-        service_worker_host_ptr_info,
-    StatusCallback callback) {
+void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
+                                   ProviderInfoGetter provider_info_getter,
+                                   StatusCallback callback) {
   restart_count_++;
   if (!context_) {
     std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
@@ -509,11 +503,6 @@ void EmbeddedWorkerInstance::Start(
       mojo::MakeRequest(&client_);
   client_.set_connection_error_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
-  pending_dispatcher_request_ = std::move(dispatcher_request);
-  pending_controller_request_ = std::move(controller_request);
-  pending_installed_scripts_info_ = std::move(installed_scripts_info);
-  pending_service_worker_host_ptr_info_ =
-      std::move(service_worker_host_ptr_info);
   inflight_start_task_.reset(
       new StartTask(this, params->script_url, std::move(request)));
   inflight_start_task_->Start(std::move(params), std::move(callback));
@@ -643,30 +632,21 @@ ServiceWorkerStatusCode EmbeddedWorkerInstance::SendStartWorker(
     // Mojo doesn't consider it an error. See https://crbug.com/732729.
     return SERVICE_WORKER_ERROR_IPC_FAILED;
   }
-  DCHECK(pending_dispatcher_request_.is_pending());
-  DCHECK(pending_controller_request_.is_pending());
-  DCHECK(pending_service_worker_host_ptr_info_.is_valid());
-
+  DCHECK(params->dispatcher_request.is_pending());
+  DCHECK(params->controller_request.is_pending());
+  DCHECK(params->service_worker_host.is_valid());
   DCHECK(!instance_host_binding_.is_bound());
-  mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo host_ptr_info;
-  instance_host_binding_.Bind(mojo::MakeRequest(&host_ptr_info));
+  instance_host_binding_.Bind(mojo::MakeRequest(&params->instance_host));
 
   blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy_ptr_info;
   content_settings_ = std::make_unique<ServiceWorkerContentSettingsProxyImpl>(
       params->script_url, context_,
-      mojo::MakeRequest(&content_settings_proxy_ptr_info));
+      mojo::MakeRequest(&params->content_settings_proxy));
 
-  const bool is_script_streaming = !pending_installed_scripts_info_.is_null();
+  const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
-  mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info =
-      std::move(provider_info_getter_).Run(process_id());
-  client_->StartWorker(std::move(params),
-                       std::move(pending_dispatcher_request_),
-                       std::move(pending_controller_request_),
-                       std::move(pending_installed_scripts_info_),
-                       std::move(pending_service_worker_host_ptr_info_),
-                       std::move(host_ptr_info), std::move(provider_info),
-                       std::move(content_settings_proxy_ptr_info));
+  params->provider_info = std::move(provider_info_getter_).Run(process_id());
+  client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
   OnStartWorkerMessageSent(is_script_streaming);
   return SERVICE_WORKER_OK;

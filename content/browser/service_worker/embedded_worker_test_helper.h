@@ -79,17 +79,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
    protected:
     // mojom::EmbeddedWorkerInstanceClient implementation.
-    void StartWorker(
-        mojom::EmbeddedWorkerStartParamsPtr params,
-        mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-        mojom::ControllerServiceWorkerRequest controller_request,
-        blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
-            installed_scripts_info,
-        blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-        mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-        mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-        blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
-        override;
+    void StartWorker(mojom::EmbeddedWorkerStartParamsPtr params) override;
     void StopWorker() override;
     void ResumeAfterDownload() override;
     void AddMessageToConsole(blink::WebConsoleMessage::Level level,
@@ -301,15 +291,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void DidSimulateWorkerScriptCached(int embedded_worker_id,
                                      bool pause_after_download);
 
-  void OnStartWorkerStub(
-      mojom::EmbeddedWorkerStartParamsPtr params,
-      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-      mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-      mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-      blink::mojom::ServiceWorkerInstalledScriptsInfoPtr
-          installed_scripts_info);
+  void OnStartWorkerStub(mojom::EmbeddedWorkerStartParamsPtr params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,

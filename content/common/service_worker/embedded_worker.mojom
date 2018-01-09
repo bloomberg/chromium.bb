@@ -48,6 +48,23 @@ struct EmbeddedWorkerStartParams {
   V8CacheOptions v8_cache_options;
   // True if Data Saver is enabled.
   bool data_saver_enabled;
+
+  // Used to dispatch events from (via) the browser process.
+  ServiceWorkerEventDispatcher& dispatcher_request;
+  // S13nServiceWorker: cloned and passed to each controllee to directly
+  // dispatch events from the controllees.
+  ControllerServiceWorker& controller_request;
+  // Information to transfer installed scripts from the browser to the renderer.
+  blink.mojom.ServiceWorkerInstalledScriptsInfo? installed_scripts_info;
+  // Interface for the renderer to ask the browser to do operations needed for
+  // ServiceWorkerGlobalScope functionalities.
+  associated blink.mojom.ServiceWorkerHost service_worker_host;
+  // Interface for the renderer to send the status updates to the browser.
+  associated EmbeddedWorkerInstanceHost instance_host;
+  // Information for creating ServiceWorkerNetworkProvider on the renderer.
+  ServiceWorkerProviderInfoForStartWorker provider_info;
+  // Interface for the renderer to query the content settings in the browser.
+  blink.mojom.WorkerContentSettingsProxy content_settings_proxy;
 };
 
 // Holds timing information about the start worker sequence for UMA.
@@ -65,20 +82,7 @@ struct EmbeddedWorkerStartTiming {
 interface EmbeddedWorkerInstanceClient {
   // Called back as various functions in EmbeddedWorkerInstanceHost, such
   // as OnThreadStarted(), OnStarted().
-  // |dispatcher_request| is used to dispatch events from (via) the browser
-  // process.
-  //
-  // S13nServiceWorker:
-  // |controller_request| is cloned and passed to each
-  // controllee to directly dispatch events from the controllees.
-  StartWorker(EmbeddedWorkerStartParams params,
-              ServiceWorkerEventDispatcher& dispatcher_request,
-              ControllerServiceWorker& controller_request,
-              blink.mojom.ServiceWorkerInstalledScriptsInfo? installed_scripts_info,
-              associated blink.mojom.ServiceWorkerHost service_worker_host,
-              associated EmbeddedWorkerInstanceHost instance_host,
-              ServiceWorkerProviderInfoForStartWorker provider_info,
-              blink.mojom.WorkerContentSettingsProxy content_settings_proxy);
+  StartWorker(EmbeddedWorkerStartParams params);
   // The response is sent back via EmbeddedWorkerInstanceHost.OnStopped().
   StopWorker();
   ResumeAfterDownload();
