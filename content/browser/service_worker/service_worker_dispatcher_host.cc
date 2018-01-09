@@ -237,7 +237,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
           sender_provider_host,
           base::Bind(&ServiceWorkerDispatcherHost::
                          DispatchExtendableMessageEventInternal<
-                             ServiceWorkerClientInfo>,
+                             blink::mojom::ServiceWorkerClientInfo>,
                      this, worker, message, source_origin, sent_message_ports,
                      base::nullopt, callback));
       break;
@@ -390,7 +390,7 @@ void ServiceWorkerDispatcherHost::
 
   // Hide the client url if the client has a unique origin.
   if (source_origin.unique()) {
-    if (event->source.client_info.IsValid())
+    if (IsValidSourceInfo(event->source.client_info))
       event->source.client_info.url = GURL();
     else
       event->source.service_worker_info.url = GURL();
@@ -412,18 +412,18 @@ void ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent(
 }
 
 bool ServiceWorkerDispatcherHost::IsValidSourceInfo(
-    const ServiceWorkerClientInfo& source_info) {
-  return source_info.IsValid();
+    const blink::mojom::ServiceWorkerClientInfo& source_info) const {
+  return !source_info.client_uuid.empty();
 }
 
 bool ServiceWorkerDispatcherHost::IsValidSourceInfo(
-    const blink::mojom::ServiceWorkerObjectInfo& source_info) {
+    const blink::mojom::ServiceWorkerObjectInfo& source_info) const {
   return source_info.handle_id != blink::mojom::kInvalidServiceWorkerHandleId &&
          source_info.version_id != blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
 void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
-    const ServiceWorkerClientInfo& source_info) {
+    const blink::mojom::ServiceWorkerClientInfo& source_info) {
   // ServiceWorkerClientInfo is just a snapshot of the client. There is no need
   // to do anything for it.
 }

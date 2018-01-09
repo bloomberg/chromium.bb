@@ -4,6 +4,11 @@
 
 module blink.mojom;
 
+import "mojo/common/time.mojom";
+import "services/network/public/interfaces/request_context_frame_type.mojom";
+import "third_party/WebKit/common/page/page_visibility_state.mojom";
+import "url/mojo/url.mojom";
+
 // Indicates the service worker client type.
 // See https://w3c.github.io/ServiceWorker/#service-worker-client-concept
 // and https://w3c.github.io/ServiceWorker/#dom-clientqueryoptions-type.
@@ -12,4 +17,39 @@ enum ServiceWorkerClientType {
   kSharedWorker,
   kAll,
   kLast = kAll
+};
+
+// Holds the information related to a service worker window or non-window
+// client.
+// https://w3c.github.io/ServiceWorker/#client
+// An invalid client info can be indicated by setting the client_uuid to the
+// empty string. Sometimes this is needed when the browser process couldn't
+// find a client.
+struct ServiceWorkerClientInfo {
+  // Client#url
+  url.mojom.Url url;
+
+  // Client#id
+  string client_uuid;
+
+  // Client#type
+  ServiceWorkerClientType client_type;
+
+  // WindowClient#visibilityState
+  // Set to |kHidden| if it's a non-window client.
+  PageVisibilityState page_visibility_state = PageVisibilityState.kHidden;
+
+  // WindowClient#focused
+  // Set to false if it's a non-window client.
+  bool is_focused = false;
+
+  // Set to |kNone| if it's a non-window client.
+  network.mojom.RequestContextFrameType frame_type = network.mojom.RequestContextFrameType.kNone;
+
+  // The time this window was last focused. Set to base::TimeTicks() if it's
+  // a non-window client.
+  mojo.common.mojom.TimeTicks last_focus_time;
+
+  // The time this client was created.
+  mojo.common.mojom.TimeTicks creation_time;
 };

@@ -61,6 +61,7 @@
 #include "third_party/WebKit/common/blob/blob.mojom.h"
 #include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -169,9 +170,9 @@ WebURLRequest::RequestContext GetBlinkRequestContext(
   return static_cast<WebURLRequest::RequestContext>(request_context_type);
 }
 
-blink::WebServiceWorkerClientInfo
-ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
-  DCHECK(client_info.IsValid());
+blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
+    const blink::mojom::ServiceWorkerClientInfo& client_info) {
+  DCHECK(!client_info.client_uuid.empty());
 
   blink::WebServiceWorkerClientInfo web_client_info;
 
@@ -1475,7 +1476,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
       CreateAbortCallback(&context_->message_event_callbacks));
   context_->message_event_callbacks.emplace(request_id, std::move(callback));
 
-  if (event->source.client_info.IsValid()) {
+  if (!event->source.client_info.client_uuid.empty()) {
     blink::WebServiceWorkerClientInfo web_client =
         ToWebServiceWorkerClientInfo(event->source.client_info);
     proxy_->DispatchExtendableMessageEvent(
@@ -1623,7 +1624,7 @@ void ServiceWorkerContextClient::DispatchPushEvent(
 
 void ServiceWorkerContextClient::OnDidGetClient(
     int request_id,
-    const ServiceWorkerClientInfo& client) {
+    const blink::mojom::ServiceWorkerClientInfo& client) {
   TRACE_EVENT0("ServiceWorker", "ServiceWorkerContextClient::OnDidGetClient");
   blink::WebServiceWorkerClientCallbacks* callbacks =
       context_->client_callbacks.Lookup(request_id);
@@ -1632,8 +1633,7 @@ void ServiceWorkerContextClient::OnDidGetClient(
     return;
   }
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client.IsEmpty()) {
-    DCHECK(client.IsValid());
+  if (!client.client_uuid.empty()) {
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
@@ -1642,7 +1642,8 @@ void ServiceWorkerContextClient::OnDidGetClient(
 }
 
 void ServiceWorkerContextClient::OnDidGetClients(
-    int request_id, const std::vector<ServiceWorkerClientInfo>& clients) {
+    int request_id,
+    const std::vector<blink::mojom::ServiceWorkerClientInfo>& clients) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnDidGetClients");
   blink::WebServiceWorkerClientsCallbacks* callbacks =
@@ -1663,7 +1664,7 @@ void ServiceWorkerContextClient::OnDidGetClients(
 
 void ServiceWorkerContextClient::OnOpenWindowResponse(
     int request_id,
-    const ServiceWorkerClientInfo& client) {
+    const blink::mojom::ServiceWorkerClientInfo& client) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnOpenWindowResponse");
   blink::WebServiceWorkerClientCallbacks* callbacks =
@@ -1673,8 +1674,7 @@ void ServiceWorkerContextClient::OnOpenWindowResponse(
     return;
   }
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client.IsEmpty()) {
-    DCHECK(client.IsValid());
+  if (!client.client_uuid.empty()) {
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }
@@ -1700,7 +1700,8 @@ void ServiceWorkerContextClient::OnOpenWindowError(
 }
 
 void ServiceWorkerContextClient::OnFocusClientResponse(
-    int request_id, const ServiceWorkerClientInfo& client) {
+    int request_id,
+    const blink::mojom::ServiceWorkerClientInfo& client) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnFocusClientResponse");
   blink::WebServiceWorkerClientCallbacks* callback =
@@ -1709,8 +1710,7 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
     NOTREACHED() << "Got stray response: " << request_id;
     return;
   }
-  if (!client.IsEmpty()) {
-    DCHECK(client.IsValid());
+  if (!client.client_uuid.empty()) {
     std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client(
         new blink::WebServiceWorkerClientInfo(
             ToWebServiceWorkerClientInfo(client)));
@@ -1726,7 +1726,7 @@ void ServiceWorkerContextClient::OnFocusClientResponse(
 
 void ServiceWorkerContextClient::OnNavigateClientResponse(
     int request_id,
-    const ServiceWorkerClientInfo& client) {
+    const blink::mojom::ServiceWorkerClientInfo& client) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnNavigateClientResponse");
   blink::WebServiceWorkerClientCallbacks* callbacks =
@@ -1736,8 +1736,7 @@ void ServiceWorkerContextClient::OnNavigateClientResponse(
     return;
   }
   std::unique_ptr<blink::WebServiceWorkerClientInfo> web_client;
-  if (!client.IsEmpty()) {
-    DCHECK(client.IsValid());
+  if (!client.client_uuid.empty()) {
     web_client.reset(new blink::WebServiceWorkerClientInfo(
         ToWebServiceWorkerClientInfo(client)));
   }

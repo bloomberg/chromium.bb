@@ -154,7 +154,7 @@ ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
 ExtendableMessageEventSource::ExtendableMessageEventSource() {}
 
 ExtendableMessageEventSource::ExtendableMessageEventSource(
-    const ServiceWorkerClientInfo& client_info)
+    const blink::mojom::ServiceWorkerClientInfo& client_info)
     : client_info(client_info) {}
 
 ExtendableMessageEventSource::ExtendableMessageEventSource(

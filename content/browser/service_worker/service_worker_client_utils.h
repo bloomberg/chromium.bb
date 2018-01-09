@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 
 class GURL;
@@ -20,17 +21,16 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
-struct ServiceWorkerClientInfo;
 struct ServiceWorkerClientQueryOptions;
 
 namespace service_worker_client_utils {
 
-using NavigationCallback =
-    base::Callback<void(ServiceWorkerStatusCode status,
-                        const ServiceWorkerClientInfo& client_info)>;
-using ClientCallback =
-    base::Callback<void(const ServiceWorkerClientInfo& client_info)>;
-using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
+using NavigationCallback = base::Callback<void(
+    ServiceWorkerStatusCode status,
+    const blink::mojom::ServiceWorkerClientInfo& client_info)>;
+using ClientCallback = base::Callback<void(
+    const blink::mojom::ServiceWorkerClientInfo& client_info)>;
+using ServiceWorkerClients = std::vector<blink::mojom::ServiceWorkerClientInfo>;
 using ClientsCallback =
     base::Callback<void(std::unique_ptr<ServiceWorkerClients> clients)>;
 

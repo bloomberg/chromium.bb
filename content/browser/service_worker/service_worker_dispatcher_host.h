@@ -179,10 +179,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const SourceInfo& source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);
-  bool IsValidSourceInfo(const ServiceWorkerClientInfo& source_info);
   bool IsValidSourceInfo(
-      const blink::mojom::ServiceWorkerObjectInfo& source_info);
-  void ReleaseSourceInfo(const ServiceWorkerClientInfo& source_info);
+      const blink::mojom::ServiceWorkerClientInfo& source_info) const;
+  bool IsValidSourceInfo(
+      const blink::mojom::ServiceWorkerObjectInfo& source_info) const;
+  void ReleaseSourceInfo(
+      const blink::mojom::ServiceWorkerClientInfo& source_info);
   void ReleaseSourceInfo(
       const blink::mojom::ServiceWorkerObjectInfo& source_info);
 
