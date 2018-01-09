@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
-#include "extensions/utility/scoped_callback_runner.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace extensions {
 
@@ -236,9 +236,9 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
     set_receive_timeout(*options.receive_timeout);
   if (options.send_timeout.get())
     set_send_timeout(*options.send_timeout);
-  io_handler_->Open(port_,
-                    device::mojom::SerialConnectionOptions::From(options),
-                    ScopedCallbackRunner(std::move(callback), false));
+  io_handler_->Open(
+      port_, device::mojom::SerialConnectionOptions::From(options),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
@@ -248,7 +248,7 @@ bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
   DCHECK(io_handler_);
   receive_complete_ = std::move(callback);
   io_handler_->Read(buffer_size_,
-                    ScopedCallbackRunner(
+                    mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                         base::BindOnce(&SerialConnection::OnAsyncReadComplete,
                                        weak_factory_.GetWeakPtr()),
                         std::vector<uint8_t>(),
@@ -273,7 +273,7 @@ bool SerialConnection::Send(const std::vector<char>& data,
   send_complete_ = std::move(callback);
   io_handler_->Write(
       std::vector<uint8_t>(data.data(), data.data() + data.size()),
-      ScopedCallbackRunner(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
                          weak_factory_.GetWeakPtr()),
           static_cast<uint32_t>(0),
@@ -305,7 +305,7 @@ void SerialConnection::Configure(const api::serial::ConnectionOptions& options,
     set_send_timeout(*options.send_timeout);
   io_handler_->ConfigurePort(
       device::mojom::SerialConnectionOptions::From(options),
-      ScopedCallbackRunner(std::move(callback), false));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
   io_handler_->CancelRead(device::mojom::SerialReceiveError::NONE);
 }
 
@@ -339,13 +339,14 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
         std::move(callback).Run(true, std::move(info));
       },
       std::move(callback), std::move(info));
-  io_handler_->GetPortInfo(
-      ScopedCallbackRunner(std::move(resp_callback), nullptr));
+  io_handler_->GetPortInfo(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(resp_callback), nullptr));
 }
 
 void SerialConnection::Flush(FlushCompleteCallback callback) const {
   DCHECK(io_handler_);
-  return io_handler_->Flush(ScopedCallbackRunner(std::move(callback), false));
+  return io_handler_->Flush(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::GetControlSignals(
@@ -367,8 +368,8 @@ void SerialConnection::GetControlSignals(
         std::move(callback).Run(std::move(control_signals));
       },
       std::move(callback));
-  io_handler_->GetControlSignals(
-      ScopedCallbackRunner(std::move(resp_callback), nullptr));
+  io_handler_->GetControlSignals(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      std::move(resp_callback), nullptr));
 }
 
 void SerialConnection::SetControlSignals(
@@ -377,17 +378,19 @@ void SerialConnection::SetControlSignals(
   DCHECK(io_handler_);
   io_handler_->SetControlSignals(
       device::mojom::SerialHostControlSignals::From(control_signals),
-      ScopedCallbackRunner(std::move(callback), false));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::SetBreak(SetBreakCompleteCallback callback) {
   DCHECK(io_handler_);
-  io_handler_->SetBreak(ScopedCallbackRunner(std::move(callback), false));
+  io_handler_->SetBreak(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::ClearBreak(ClearBreakCompleteCallback callback) {
   DCHECK(io_handler_);
-  io_handler_->ClearBreak(ScopedCallbackRunner(std::move(callback), false));
+  io_handler_->ClearBreak(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
 void SerialConnection::OnReceiveTimeout() {

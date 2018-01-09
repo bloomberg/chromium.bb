@@ -17,11 +17,11 @@
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/scoped_callback_runner.h"
 #include "media/base/video_frame.h"
 #include "media/gpu//android/codec_image.h"
 #include "media/gpu//android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -164,14 +164,14 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   // release callback lifetime should be separate from MCVD or
   // MojoVideoDecoderService (http://crbug.com/737220).
   texture_refs_[texture_ref.get()] = texture_ref;
-  auto drop_texture_ref = base::Bind(&GpuVideoFrameFactory::DropTextureRef,
-                                     weak_factory_.GetWeakPtr(),
-                                     base::Unretained(texture_ref.get()));
+  auto drop_texture_ref = base::BindOnce(&GpuVideoFrameFactory::DropTextureRef,
+                                         weak_factory_.GetWeakPtr(),
+                                         base::Unretained(texture_ref.get()));
 
   // Guarantee that the TextureRef is released even if the VideoFrame is
   // dropped. Otherwise we could keep TextureRefs we don't need alive.
-  auto release_cb = ScopedCallbackRunner(
-      ToOnceCallback(BindToCurrentLoop(drop_texture_ref)), gpu::SyncToken());
+  auto release_cb = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      BindToCurrentLoop(std::move(drop_texture_ref)), gpu::SyncToken());
   frame->SetReleaseMailboxCB(std::move(release_cb));
   task_runner->PostTask(FROM_HERE, base::BindOnce(output_cb, std::move(frame)));
 }

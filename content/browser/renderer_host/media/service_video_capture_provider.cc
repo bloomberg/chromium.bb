@@ -8,7 +8,7 @@
 #include "content/browser/renderer_host/media/video_capture_factory_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
-#include "media/base/scoped_callback_runner.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/interfaces/constants.mojom.h"
 #include "services/video_capture/public/uma/video_capture_service_event.h"
@@ -77,7 +77,7 @@ void ServiceVideoCaptureProvider::GetDeviceInfosAsync(
   LazyConnectToService();
   // Use a ScopedCallbackRunner to make sure that |result_callback| gets
   // invoked with an empty result in case that the service drops the request.
-  device_factory_->GetDeviceInfos(media::ScopedCallbackRunner(
+  device_factory_->GetDeviceInfos(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&ServiceVideoCaptureProvider::OnDeviceInfosReceived,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(result_callback)),

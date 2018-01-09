@@ -15,8 +15,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/scoped_callback_runner.h"
 #include "media/capture/video/video_capture_device.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -106,8 +106,10 @@ void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
                                      GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetPhotoStateCallback scoped_callback = media::ScopedCallbackRunner(
-      media::BindToCurrentLoop(std::move(callback)), MakeEmptyCapabilities());
+  GetPhotoStateCallback scoped_callback =
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          media::BindToCurrentLoop(std::move(callback)),
+          MakeEmptyCapabilities());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&GetPhotoStateOnIOThread, source_id,
@@ -120,8 +122,9 @@ void ImageCaptureImpl::SetOptions(const std::string& source_id,
                                   SetOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  SetOptionsCallback scoped_callback = media::ScopedCallbackRunner(
-      media::BindToCurrentLoop(std::move(callback)), false);
+  SetOptionsCallback scoped_callback =
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          media::BindToCurrentLoop(std::move(callback)), false);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SetOptionsOnIOThread, source_id,
@@ -133,8 +136,10 @@ void ImageCaptureImpl::TakePhoto(const std::string& source_id,
                                  TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  TakePhotoCallback scoped_callback = media::ScopedCallbackRunner(
-      media::BindToCurrentLoop(std::move(callback)), media::mojom::Blob::New());
+  TakePhotoCallback scoped_callback =
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          media::BindToCurrentLoop(std::move(callback)),
+          media::mojom::Blob::New());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&TakePhotoOnIOThread, source_id,

@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "media/base/scoped_callback_runner.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 
 namespace media {
 
@@ -28,13 +28,14 @@ MojoMediaDrmStorage::~MojoMediaDrmStorage() {}
 void MojoMediaDrmStorage::Initialize(InitCB init_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->Initialize(
-      ScopedCallbackRunner(std::move(init_cb), base::UnguessableToken()));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(init_cb),
+                                                  base::UnguessableToken()));
 }
 
 void MojoMediaDrmStorage::OnProvisioned(ResultCB result_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->OnProvisioned(
-      ScopedCallbackRunner(std::move(result_cb), false));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::SavePersistentSession(const std::string& session_id,
@@ -44,7 +45,7 @@ void MojoMediaDrmStorage::SavePersistentSession(const std::string& session_id,
   media_drm_storage_ptr_->SavePersistentSession(
       session_id,
       mojom::SessionData::New(session_data.key_set_id, session_data.mime_type),
-      ScopedCallbackRunner(std::move(result_cb), false));
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::LoadPersistentSession(
@@ -53,7 +54,7 @@ void MojoMediaDrmStorage::LoadPersistentSession(
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->LoadPersistentSession(
       session_id,
-      ScopedCallbackRunner(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&MojoMediaDrmStorage::OnPersistentSessionLoaded,
                          weak_factory_.GetWeakPtr(),
                          base::Passed(&load_persistent_session_cb)),
@@ -64,7 +65,8 @@ void MojoMediaDrmStorage::RemovePersistentSession(const std::string& session_id,
                                                   ResultCB result_cb) {
   DVLOG(1) << __func__;
   media_drm_storage_ptr_->RemovePersistentSession(
-      session_id, ScopedCallbackRunner(std::move(result_cb), false));
+      session_id,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(result_cb), false));
 }
 
 void MojoMediaDrmStorage::OnPersistentSessionLoaded(
