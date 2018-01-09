@@ -86,9 +86,10 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
     return *GetDocument().View()->GetLayoutView();
   }
 
-  Document& ChildDocument() {
-    return *ToLocalFrame(GetFrame().Tree().FirstChild())->GetDocument();
+  LocalFrame& ChildFrame() {
+    return *ToLocalFrame(GetFrame().Tree().FirstChild());
   }
+  Document& ChildDocument() { return *ChildFrame().GetDocument(); }
 
   void SetChildFrameHTML(const String&);
 

@@ -21,8 +21,10 @@ void PaintPropertyTreeBuilderTest::LoadTestData(const char* file_name) {
 }
 
 const TransformPaintPropertyNode*
-PaintPropertyTreeBuilderTest::FramePreTranslation() {
-  LocalFrameView* frame_view = GetDocument().View();
+PaintPropertyTreeBuilderTest::FramePreTranslation(
+    const LocalFrameView* frame_view) {
+  if (!frame_view)
+    frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     return frame_view->GetLayoutView()
         ->FirstFragment()
@@ -33,8 +35,10 @@ PaintPropertyTreeBuilderTest::FramePreTranslation() {
 }
 
 const TransformPaintPropertyNode*
-PaintPropertyTreeBuilderTest::FrameScrollTranslation() {
-  LocalFrameView* frame_view = GetDocument().View();
+PaintPropertyTreeBuilderTest::FrameScrollTranslation(
+    const LocalFrameView* frame_view) {
+  if (!frame_view)
+    frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     return frame_view->GetLayoutView()
         ->FirstFragment()
@@ -44,8 +48,10 @@ PaintPropertyTreeBuilderTest::FrameScrollTranslation() {
   return frame_view->ScrollTranslation();
 }
 
-const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip() {
-  LocalFrameView* frame_view = GetDocument().View();
+const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip(
+    const LocalFrameView* frame_view) {
+  if (!frame_view)
+    frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     return frame_view->GetLayoutView()
         ->FirstFragment()
@@ -56,7 +62,7 @@ const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip() {
 }
 
 const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameScroll(
-    LocalFrameView* frame_view) {
+    const LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
   if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
@@ -4697,6 +4703,53 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
   EXPECT_EQ(FrameContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(FramePreTranslation(), border_radius_clip->LocalTransformSpace());
   EXPECT_EQ(nullptr, properties->OverflowClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
+  SetBodyInnerHTML("<iframe></iframe>");
+  SetChildFrameHTML("");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // When not printing, both main and child frame views have content clip.
+  const auto& main_frame_view = GetDocument().View();
+  const auto& child_frame_view = ChildDocument().View();
+  ASSERT_NE(nullptr, FrameContentClip(main_frame_view));
+  EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
+            FrameContentClip(main_frame_view)->ClipRect().Rect());
+  ASSERT_NE(nullptr, FrameContentClip(child_frame_view));
+  EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
+            FrameContentClip(child_frame_view)->ClipRect().Rect());
+
+  // When the main frame is printing, it should not have content clip.
+  FloatSize page_size(100, 100);
+  GetFrame().SetPrinting(true, page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    EXPECT_EQ(nullptr, FrameContentClip(main_frame_view));
+  } else {
+    EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
+              FrameContentClip(main_frame_view)->ClipRect().Rect());
+  }
+  ASSERT_NE(nullptr, FrameContentClip(child_frame_view));
+  EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
+            FrameContentClip(child_frame_view)->ClipRect().Rect());
+
+  GetFrame().SetPrinting(false, page_size, page_size, 1);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // When only the child frame is printing, it should not have content clip but
+  // the main frame still have (which doesn't matter though).
+  ChildFrame().SetPrinting(true, page_size, page_size, 1);
+  GetDocument().View()->UpdateLifecyclePhasesForPrinting();
+  ASSERT_NE(nullptr, FrameContentClip(main_frame_view));
+  EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
+            FrameContentClip(main_frame_view)->ClipRect().Rect());
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    EXPECT_EQ(nullptr, FrameContentClip(child_frame_view));
+  } else {
+    EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
+              FrameContentClip(child_frame_view)->ClipRect().Rect());
+  }
 }
 
 }  // namespace blink
