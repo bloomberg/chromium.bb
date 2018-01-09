@@ -58,7 +58,8 @@ suite('<bookmarks-command-manager>', function() {
               [
                 createFolder('21', []),
               ]),
-          createFolder('3', bulkChildren)),
+          createFolder('3', bulkChildren),
+          createFolder('4', [], {unmodifiable: 'managed'})),
       selectedFolder: '1',
     });
     store.replaceSingleton();
@@ -81,7 +82,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['11', '13']);
     store.notifyObservers();
 
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     Polymer.dom.flush();
 
     var commandHidden = {};
@@ -177,7 +178,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['12']);
     store.notifyObservers();
 
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     Polymer.dom.flush();
 
     var showInFolderItem = commandManager.root.querySelector(
@@ -191,7 +192,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.search.results = ['12', '13'];
     store.notifyObservers();
     commandManager.closeCommandMenu();
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     assertFalse(showInFolderItem.hidden);
 
     // Show in Folder hidden when menu is opened from the sidebar.
@@ -203,7 +204,7 @@ suite('<bookmarks-command-manager>', function() {
     store.data.selection.items = new Set(['12', '13']);
     store.notifyObservers();
     commandManager.closeCommandMenu();
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     assertTrue(showInFolderItem.hidden);
 
     // Executing the command selects the parent folder.
@@ -294,7 +295,7 @@ suite('<bookmarks-command-manager>', function() {
 
     store.data.selection.items = items;
 
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     Polymer.dom.flush();
 
     var commandItem = {};
@@ -325,7 +326,7 @@ suite('<bookmarks-command-manager>', function() {
     assertFalse(commandManager.canExecute(Command.REDO, items));
 
     // No divider line should be visible when only 'Open' commands are enabled.
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     commandManager.root.querySelectorAll('hr').forEach(element => {
       assertTrue(element.hidden);
     });
@@ -338,14 +339,11 @@ suite('<bookmarks-command-manager>', function() {
     assertFalse(commandManager.canExecute(Command.EDIT, items));
     assertFalse(commandManager.canExecute(Command.DELETE, items));
 
-    store.data.nodes['12'].unmodifiable = 'managed';
-    store.notifyObservers();
-
-    items = new Set(['12']);
+    items = new Set(['4']);
     assertFalse(commandManager.canExecute(Command.EDIT, items));
     assertFalse(commandManager.canExecute(Command.DELETE, items));
 
-    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.LIST);
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
     var commandItem = {};
     commandManager.root.querySelectorAll('.dropdown-item').forEach(element => {
       commandItem[element.getAttribute('command')] = element;
@@ -367,6 +365,67 @@ suite('<bookmarks-command-manager>', function() {
 
     MockInteractions.pressAndReleaseKeyOn(document.body, '', '', 'Delete');
     commandManager.assertLastCommand(null);
+  });
+
+  test('toolbar menu options are disabled when appropriate', function() {
+    store.data.selectedFolder = '1';
+    store.data.prefs.canEdit = true;
+    store.notifyObservers();
+
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.TOOLBAR);
+    assertTrue(commandManager.canExecute(Command.SORT, new Set()));
+    assertTrue(commandManager.canExecute(Command.ADD_BOOKMARK, new Set()));
+    assertTrue(commandManager.canExecute(Command.ADD_FOLDER, new Set()));
+
+    store.data.selectedFolder = '4';
+    store.notifyObservers();
+
+    assertFalse(commandManager.canExecute(Command.SORT, new Set()));
+    assertFalse(commandManager.canExecute(Command.ADD_BOOKMARK, new Set()));
+    assertFalse(commandManager.canExecute(Command.ADD_FOLDER, new Set()));
+    assertTrue(commandManager.canExecute(Command.IMPORT, new Set()));
+
+    store.data.selectedFolder = '1';
+    store.data.prefs.canEdit = false;
+    store.notifyObservers();
+
+    assertFalse(commandManager.canExecute(Command.SORT, new Set()));
+    assertFalse(commandManager.canExecute(Command.IMPORT, new Set()));
+    assertFalse(commandManager.canExecute(Command.ADD_BOOKMARK, new Set()));
+    assertFalse(commandManager.canExecute(Command.ADD_FOLDER, new Set()));
+  });
+
+  test('sort button is disabled when folder is empty', function() {
+    store.data.selectedFolder = '3';
+    store.notifyObservers();
+
+    commandManager.openCommandMenuAtPosition(0, 0, MenuSource.TOOLBAR);
+    assertTrue(commandManager.canExecute(Command.SORT, new Set()));
+
+    store.data.selectedFolder = '21';
+    store.notifyObservers();
+
+    assertFalse(commandManager.canExecute(Command.SORT, new Set()));
+
+    // Adding 2 bookmarks should enable sorting.
+    store.setReducersEnabled(true);
+    var item1 = {
+      id: '211',
+      parentId: '21',
+      index: 0,
+      url: 'https://www.example.com',
+    };
+    store.dispatch(bookmarks.actions.createBookmark(item1.id, item1));
+    assertFalse(commandManager.canExecute(Command.SORT, new Set()));
+
+    var item2 = {
+      id: '212',
+      parentId: '21',
+      index: 1,
+      url: 'https://www.example.com',
+    };
+    store.dispatch(bookmarks.actions.createBookmark(item2.id, item2));
+    assertTrue(commandManager.canExecute(Command.SORT, new Set()));
   });
 });
 

@@ -39,8 +39,14 @@ const Command = {
   COPY: 12,
   CUT: 13,
   PASTE: 14,
+  SORT: 15,
+  ADD_BOOKMARK: 16,
+  ADD_FOLDER: 17,
+  IMPORT: 18,
+  EXPORT: 19,
+
   // Append new values to the end of the enum.
-  MAX_VALUE: 15,
+  MAX_VALUE: 20,
 };
 
 /**
@@ -49,8 +55,9 @@ const Command = {
  */
 const MenuSource = {
   NONE: 0,
-  LIST: 1,
+  ITEM: 1,
   TREE: 2,
+  TOOLBAR: 3,
 };
 
 /**
