@@ -252,7 +252,7 @@ void ChromeAutofillClient::ConfirmCreditCardFillAssist(
 
 void ChromeAutofillClient::LoadRiskData(
     const base::Callback<void(const std::string&)>& callback) {
-  ::autofill::LoadRiskData(0, web_contents(), callback, connector_);
+  ::autofill::LoadRiskData(0, web_contents(), callback);
 }
 
 bool ChromeAutofillClient::HasCreditCardScanFeature() {
