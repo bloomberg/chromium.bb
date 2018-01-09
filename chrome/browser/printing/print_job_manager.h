@@ -43,11 +43,11 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
 
  private:
   friend class base::RefCountedThreadSafe<PrintQueriesQueue>;
-  typedef std::vector<scoped_refptr<PrinterQuery> > PrinterQueries;
+  using PrinterQueries = std::vector<scoped_refptr<PrinterQuery>>;
 
   virtual ~PrintQueriesQueue();
 
-  // Used to serialize access to queued_workers_.
+  // Used to serialize access to |queued_queries_|.
   base::Lock lock_;
 
   PrinterQueries queued_queries_;
@@ -73,7 +73,7 @@ class PrintJobManager : public content::NotificationObserver {
   scoped_refptr<PrintQueriesQueue> queue();
 
  private:
-  typedef std::set<scoped_refptr<PrintJob> > PrintJobs;
+  using PrintJobs = std::set<scoped_refptr<PrintJob>>;
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnPrintJobEvent(PrintJob* print_job,
@@ -90,7 +90,7 @@ class PrintJobManager : public content::NotificationObserver {
 
   scoped_refptr<PrintQueriesQueue> queue_;
 
-  bool is_shutdown_;
+  bool is_shutdown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobManager);
 };
