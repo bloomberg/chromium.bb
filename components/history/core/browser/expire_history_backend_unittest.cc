@@ -46,13 +46,31 @@
 namespace history {
 
 namespace {
+
+base::Time PretendNow() {
+  base::Time::Exploded exploded_reference_time;
+  exploded_reference_time.year = 2015;
+  exploded_reference_time.month = 1;
+  exploded_reference_time.day_of_month = 2;
+  exploded_reference_time.day_of_week = 5;
+  exploded_reference_time.hour = 11;
+  exploded_reference_time.minute = 0;
+  exploded_reference_time.second = 0;
+  exploded_reference_time.millisecond = 0;
+
+  base::Time out_time;
+  EXPECT_TRUE(
+      base::Time::FromLocalExploded(exploded_reference_time, &out_time));
+  return out_time;
+}
+
 // Returns whether |url| can be added to history.
 bool MockCanAddURLToHistory(const GURL& url) {
   return url.is_valid();
 }
 
 base::Time GetOldFaviconThreshold() {
-  return base::Time::Now() -
+  return PretendNow() -
          base::TimeDelta::FromDays(internal::kOnDemandFaviconIsOldAfterDays);
 }
 
@@ -67,7 +85,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
         expirer_(this,
                  backend_client_.get(),
                  scoped_task_environment_.GetMainThreadTaskRunner()),
-        now_(base::Time::Now()) {}
+        now_(PretendNow()) {}
 
  protected:
   // Called by individual tests when they want data populated.
@@ -209,7 +227,7 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3],
     return;
 
   // Four times for each visit.
-  visit_times[3] = base::Time::Now();
+  visit_times[3] = PretendNow();
   visit_times[2] = visit_times[3] - base::TimeDelta::FromDays(1);
   visit_times[1] = visit_times[3] - base::TimeDelta::FromDays(2);
   visit_times[0] = visit_times[3] - base::TimeDelta::FromDays(3);
@@ -243,7 +261,7 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3],
 
   // Thumbnails for each URL.
   gfx::Image thumbnail = CreateGoogleThumbnailForTest();
-  ThumbnailScore score(0.25, true, true, base::Time::Now());
+  ThumbnailScore score(0.25, true, true, PretendNow());
 
   base::Time time;
   GURL gurl;
@@ -278,7 +296,7 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
   if (!main_db_)
     return;
 
-  base::Time last_visit_time = base::Time::Now();
+  base::Time last_visit_time = PretendNow();
   // Add one URL.
   URLRow url_row1(url);
   url_row1.set_last_visit(last_visit_time);
@@ -1025,7 +1043,7 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
       expirer_.GetAutoSubframeVisitsReader();
 
   VisitVector visits;
-  base::Time now = base::Time::Now();
+  base::Time now = PretendNow();
 
   // Verify that the early expiration threshold, stored in the meta table is
   // initialized.
@@ -1187,6 +1205,89 @@ TEST_F(ExpireHistoryTest,
   EXPECT_EQ(2u, icon_mapping.size());
   EXPECT_EQ(icon_id, icon_mapping[0].icon_id);
   EXPECT_EQ(icon_id, icon_mapping[1].icon_id);
+}
+
+// Test that all visits that are redirect parents of specified visits are also
+// removed. See crbug.com/786878.
+TEST_F(ExpireHistoryTest, DeleteVisitAndRedirects) {
+  // Set up the example data.
+  base::Time now = PretendNow();
+  URLRow url_row1(GURL("http://google.com/1"));
+  url_row1.set_last_visit(now - base::TimeDelta::FromDays(1));
+  url_row1.set_visit_count(1);
+  URLID url1 = main_db_->AddURL(url_row1);
+
+  URLRow url_row2(GURL("http://www.google.com/1"));
+  url_row2.set_last_visit(now);
+  url_row2.set_visit_count(1);
+  URLID url2 = main_db_->AddURL(url_row2);
+
+  // Add a visit to "http://google.com/1" that is redirected to
+  // "http://www.google.com/1".
+  VisitRow visit_row1;
+  visit_row1.url_id = url1;
+  visit_row1.visit_time = now - base::TimeDelta::FromDays(1);
+  main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
+
+  VisitRow visit_row2;
+  visit_row2.url_id = url2;
+  visit_row2.visit_time = now;
+  visit_row2.referring_visit = visit_row1.visit_id;
+  main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
+
+  // Expiring visit_row2 should also expire visit_row1 which is its redirect
+  // parent.
+  expirer_.ExpireVisits({visit_row2});
+
+  VisitRow v;
+  EXPECT_FALSE(main_db_->GetRowForVisit(visit_row1.visit_id, &v));
+  EXPECT_FALSE(main_db_->GetRowForVisit(visit_row2.visit_id, &v));
+  URLRow u;
+  EXPECT_FALSE(main_db_->GetURLRow(url1, &u));
+  EXPECT_FALSE(main_db_->GetURLRow(url2, &u));
+}
+
+// Test that loops in redirect parents are handled. See crbug.com/798234.
+TEST_F(ExpireHistoryTest, DeleteVisitAndRedirectsWithLoop) {
+  // Set up the example data.
+  base::Time now = PretendNow();
+  URLRow url_row1(GURL("http://google.com/1"));
+  url_row1.set_last_visit(now - base::TimeDelta::FromDays(1));
+  url_row1.set_visit_count(1);
+  URLID url1 = main_db_->AddURL(url_row1);
+
+  URLRow url_row2(GURL("http://www.google.com/1"));
+  url_row2.set_last_visit(now);
+  url_row2.set_visit_count(1);
+  URLID url2 = main_db_->AddURL(url_row2);
+
+  // Add a visit to "http://google.com/1" that is redirected to
+  // "http://www.google.com/1".
+  VisitRow visit_row1;
+  visit_row1.url_id = url1;
+  visit_row1.visit_time = now - base::TimeDelta::FromDays(1);
+  main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
+
+  VisitRow visit_row2;
+  visit_row2.url_id = url2;
+  visit_row2.visit_time = now;
+  visit_row2.referring_visit = visit_row1.visit_id;
+  main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
+
+  // Set the first visit to be redirect parented to the second visit.
+  visit_row1.referring_visit = visit_row2.visit_id;
+  main_db_->UpdateVisitRow(visit_row1);
+
+  // Expiring visit_row2 should also expire visit_row1 which is its redirect
+  // parent, without infinite looping.
+  expirer_.ExpireVisits({visit_row2});
+
+  VisitRow v;
+  EXPECT_FALSE(main_db_->GetRowForVisit(visit_row1.visit_id, &v));
+  EXPECT_FALSE(main_db_->GetRowForVisit(visit_row2.visit_id, &v));
+  URLRow u;
+  EXPECT_FALSE(main_db_->GetURLRow(url1, &u));
+  EXPECT_FALSE(main_db_->GetURLRow(url2, &u));
 }
 
 // TODO(brettw) add some visits with no URL to make sure everything is updated
