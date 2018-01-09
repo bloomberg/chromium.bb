@@ -178,6 +178,11 @@ def build_gn_with_ninja_manually(tempdir, options):
   root_gen_dir = os.path.join(tempdir, 'gen')
   mkdir_p(root_gen_dir)
 
+  write_buildflag_header_manually(
+      root_gen_dir,
+      'base/synchronization/synchronization_flags.h',
+      {'ENABLE_MUTEX_PRIORITY_INHERITANCE': 'false'})
+
   write_buildflag_header_manually(root_gen_dir, 'base/allocator/features.h',
       {'USE_ALLOCATOR_SHIM': 'true' if is_linux else 'false'})
 
