@@ -3856,6 +3856,12 @@
                     "enable_features": [
                         "UseHeuristicLanguageModel"
                     ]
+                },
+                {
+                    "name": "Beta_Experiment",
+                    "enable_features": [
+                        "UseHeuristicLanguageModel"
+                    ]
                 }
             ]
         }
