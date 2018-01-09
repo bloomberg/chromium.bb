@@ -120,17 +120,21 @@ using content::RenderViewHost;
   // TODO(groby): Clarify who sends this and if toggleContinuousSpellChecking:
   // is still necessary.
   if (action == @selector(toggleContinuousSpellChecking:)) {
+    content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
+    Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+    DCHECK(profile);
+    PrefService* pref = profile->GetPrefs();
     if ([(id)item respondsToSelector:@selector(setState:)]) {
-      content::RenderProcessHost* host = renderWidgetHost_->GetProcess();
-      Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-      DCHECK(profile);
       NSCellStateValue checkedState =
-          profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable)
-              ? NSOnState
-              : NSOffState;
+          pref->GetBoolean(spellcheck::prefs::kSpellCheckEnable) ? NSOnState
+                                                                 : NSOffState;
       [(id)item setState:checkedState];
     }
-    *valid = YES;
+    const PrefService::Preference* spellCheckEnablePreference =
+        pref->FindPreference(spellcheck::prefs::kSpellCheckEnable);
+    DCHECK(spellCheckEnablePreference);
+    // Disable the spellcheck menu item if the preference is managed.
+    *valid = spellCheckEnablePreference->IsUserModifiable() ? YES : NO;
     return YES;
   }
 
