@@ -63,6 +63,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CanvasUnacceleratedLowLatency2D',
         ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
 
+    # Rebaseline Pixel_CSS3DBlueBox
+    self.Fail('Pixel_CSS3DBlueBox', bug=796558)
+
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
