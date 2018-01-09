@@ -18,7 +18,6 @@
 #include "modules/canvas/canvas2d/CanvasPattern.h"
 #include "modules/canvas/canvas2d/HitRegionOptions.h"
 #include "modules/webgl/WebGLRenderingContext.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

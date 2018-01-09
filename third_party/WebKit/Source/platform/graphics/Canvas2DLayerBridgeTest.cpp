@@ -39,9 +39,7 @@
 #include "platform/WebTaskRunner.h"
 #include "platform/graphics/CanvasResourceHost.h"
 #include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/paint/PaintFlags.h"
@@ -417,17 +415,6 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
   virtual ~MockLogger() = default;
 };
 
-class MockImageBuffer : public ImageBuffer {
- public:
-  MockImageBuffer()
-      : ImageBuffer(WTF::WrapUnique(
-            new UnacceleratedImageBufferSurface(IntSize(1, 1)))) {}
-
-  MOCK_CONST_METHOD1(ResetCanvas, void(PaintCanvas*));
-
-  virtual ~MockImageBuffer() = default;
-};
-
 class MockCanvasResourceHost : public CanvasResourceHost {
  public:
   void NotifySurfaceInvalid() {}
@@ -654,9 +641,10 @@ TEST_F(
       CanvasColorParams())));
   bridge->DontUseIdleSchedulingForTesting();
   DrawSomething(bridge);
-  MockImageBuffer mock_image_buffer;
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
-  bridge->SetImageBuffer(&mock_image_buffer);
+  MockCanvasResourceHost mock_canvas_resource_host;
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AnyNumber());
+  bridge->SetCanvasResourceHost(&mock_canvas_resource_host);
   bridge->DisableDeferral(kDisableDeferralReasonUnknown);
 
   // Register an alternate Logger for tracking hibernation events
@@ -672,7 +660,7 @@ TEST_F(
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -682,19 +670,21 @@ TEST_F(
               ReportHibernationEvent(
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AtLeast(1));
   DrawSomething(bridge);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
 
   // Unhide
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AtLeast(1));
   bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
@@ -715,9 +705,10 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->DontUseIdleSchedulingForTesting();
   DrawSomething(bridge);
 
-  MockImageBuffer mock_image_buffer;
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
-  bridge->SetImageBuffer(&mock_image_buffer);
+  MockCanvasResourceHost mock_canvas_resource_host;
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AnyNumber());
+  bridge->SetCanvasResourceHost(&mock_canvas_resource_host);
 
   // Register an alternate Logger for tracking hibernation events
   std::unique_ptr<MockLogger> mock_logger = WTF::WrapUnique(new MockLogger);
@@ -732,7 +723,7 @@ TEST_F(Canvas2DLayerBridgeTest,
   bridge->SetIsHidden(true);
   platform->RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_TRUE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
@@ -742,27 +733,30 @@ TEST_F(Canvas2DLayerBridgeTest,
               ReportHibernationEvent(
                   Canvas2DLayerBridge::
                       kHibernationEndedWithSwitchToBackgroundRendering));
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AtLeast(1));
   bridge->DisableDeferral(kDisableDeferralReasonUnknown);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_FALSE(bridge->IsAccelerated());
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
 
   // Unhide
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AtLeast(1));
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AtLeast(1));
   bridge->SetIsHidden(false);
   ::testing::Mock::VerifyAndClearExpectations(mock_logger_ptr);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
   EXPECT_TRUE(
       bridge->IsAccelerated());  // Becoming visible causes switch back to GPU
   EXPECT_FALSE(bridge->IsHibernating());
   EXPECT_TRUE(bridge->IsValid());
 
-  EXPECT_CALL(mock_image_buffer, ResetCanvas(_)).Times(AnyNumber());
+  EXPECT_CALL(mock_canvas_resource_host, RestoreCanvasMatrixClipStack(_))
+      .Times(AnyNumber());
   bridge.Clear();
-  ::testing::Mock::VerifyAndClearExpectations(&mock_image_buffer);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_canvas_resource_host);
 }
 
 #if CANVAS2D_HIBERNATION_ENABLED

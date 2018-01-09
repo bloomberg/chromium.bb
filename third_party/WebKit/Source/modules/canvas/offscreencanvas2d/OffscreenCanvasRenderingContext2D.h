@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CanvasResourceProvider;
 class Font;
 class TextMetrics;
 
@@ -89,7 +90,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool HasCanvas2DBuffer() const final;
   bool CanCreateCanvas2DBuffer() const final;
-  ImageBuffer* GetImageBuffer() const;
+  CanvasResourceProvider* GetCanvasResourceProvider() const;
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 

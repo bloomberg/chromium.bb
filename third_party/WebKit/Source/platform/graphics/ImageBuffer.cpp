@@ -34,7 +34,6 @@
 
 #include <memory>
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/paint/PaintImage.h"
 #include "platform/image-encoders/ImageEncoder.h"

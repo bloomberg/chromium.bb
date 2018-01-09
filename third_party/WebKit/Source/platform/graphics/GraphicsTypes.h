@@ -148,11 +148,6 @@ enum HighContrastClassification {
   kDoNotApplyHighContrastFilter,
 };
 
-enum ImageInitializationMode {
-  kInitializeImagePixels,
-  kDoNotInitializeImagePixels,
-};
-
 // TODO(junov): crbug.com/453113 Relocate ShadowMode to
 // CanvasRenderingContext2DState.h once GraphicsContext no longer uses it.
 enum ShadowMode {

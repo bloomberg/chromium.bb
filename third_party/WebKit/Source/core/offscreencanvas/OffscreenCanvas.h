@@ -23,8 +23,8 @@
 namespace blink {
 
 class CanvasContextCreationAttributes;
+class CanvasResourceProvider;
 class ImageBitmap;
-class ImageBuffer;
 class
     OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext;
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
@@ -86,8 +86,10 @@ class CORE_EXPORT OffscreenCanvas final
   }
 
   void DiscardImageBuffer() override;
-  ImageBuffer* GetImageBuffer() const { return image_buffer_.get(); }
-  ImageBuffer* GetOrCreateImageBuffer();
+  CanvasResourceProvider* GetResourceProvider() const {
+    return resource_provider_.get();
+  }
+  CanvasResourceProvider* GetOrCreateResourceProvider();
 
   void SetFrameSinkId(uint32_t client_id, uint32_t sink_id) {
     client_id_ = client_id;
@@ -184,7 +186,7 @@ class CORE_EXPORT OffscreenCanvas final
   scoped_refptr<StaticBitmapImage> current_frame_;
   SkIRect current_frame_damage_rect_;
 
-  std::unique_ptr<ImageBuffer> image_buffer_;
+  std::unique_ptr<CanvasResourceProvider> resource_provider_;
   bool needs_matrix_clip_restore_ = false;
 
   // cc::FrameSinkId is broken into two integer components as this can be used
