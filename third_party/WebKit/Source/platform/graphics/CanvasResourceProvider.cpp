@@ -381,6 +381,29 @@ bool CanvasResourceProvider::IsGpuContextLost() const {
   return !gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
+bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
+                                         const void* pixels,
+                                         size_t row_bytes,
+                                         int x,
+                                         int y) {
+  DCHECK(IsValid());
+  return GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes,
+                                                  x, y);
+}
+
+void CanvasResourceProvider::Clear() {
+  // Clear the background transparent or opaque, as required. It would be nice
+  // if this wasn't required, but the canvas is currently filled with the magic
+  // transparency color. Can we have another way to manage this?
+  if (IsValid()) {
+    if (color_params_.GetOpacityMode() == kOpaque) {
+      Canvas()->clear(SK_ColorBLACK);
+    } else {
+      Canvas()->clear(SK_ColorTRANSPARENT);
+    }
+  }
+}
+
 void CanvasResourceProvider::ClearRecycledResources() {
   recycled_resources_.clear();
 }

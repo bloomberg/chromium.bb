@@ -89,6 +89,12 @@ class PLATFORM_EXPORT CanvasResourceProvider {
   void SetResourceRecyclingEnabled(bool);
   SkSurface* GetSkSurface() const;
   bool IsGpuContextLost() const;
+  bool WritePixels(const SkImageInfo& orig_info,
+                   const void* pixels,
+                   size_t row_bytes,
+                   int x,
+                   int y);
+  void Clear();
   virtual ~CanvasResourceProvider();
 
  protected:

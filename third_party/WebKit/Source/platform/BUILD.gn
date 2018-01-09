@@ -1039,8 +1039,6 @@ jumbo_component("platform") {
     "graphics/SurfaceLayerBridge.h",
     "graphics/TextureHolder.h",
     "graphics/TouchAction.h",
-    "graphics/UnacceleratedImageBufferSurface.cpp",
-    "graphics/UnacceleratedImageBufferSurface.h",
     "graphics/UnacceleratedStaticBitmapImage.cpp",
     "graphics/UnacceleratedStaticBitmapImage.h",
     "graphics/VideoFrameResourceProvider.cpp",

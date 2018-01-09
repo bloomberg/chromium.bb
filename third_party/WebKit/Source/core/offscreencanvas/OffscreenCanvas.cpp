@@ -19,12 +19,10 @@
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "platform/graphics/CanvasResourceProvider.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/UnacceleratedImageBufferSurface.h"
-#include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
@@ -233,12 +231,12 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::GetOrCreateFrameDispatcher() {
 }
 
 void OffscreenCanvas::DiscardImageBuffer() {
-  image_buffer_.reset();
+  resource_provider_.reset();
   needs_matrix_clip_restore_ = true;
 }
 
-ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
-  if (!image_buffer_) {
+CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
+  if (!resource_provider_) {
     bool is_accelerated_2d_canvas_blacklisted = true;
     if (SharedGpuContext::IsGpuCompositingEnabled()) {
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -255,27 +253,34 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
     }
 
     IntSize surface_size(width(), height());
-    std::unique_ptr<ImageBufferSurface> surface;
     if (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
         !is_accelerated_2d_canvas_blacklisted) {
-      surface.reset(new AcceleratedImageBufferSurface(surface_size,
-                                                      context_->ColorParams()));
+      resource_provider_ = CanvasResourceProvider::Create(
+          surface_size, CanvasResourceProvider::kAcceleratedResourceUsage,
+          SharedGpuContext::ContextProviderWrapper(), 0,
+          context_->ColorParams());
     }
 
-    if (!surface || !surface->IsValid()) {
-      surface.reset(new UnacceleratedImageBufferSurface(
-          surface_size, kInitializeImagePixels, context_->ColorParams()));
+    if (!resource_provider_ || !resource_provider_->IsValid()) {
+      resource_provider_ = CanvasResourceProvider::Create(
+          surface_size, CanvasResourceProvider::kSoftwareResourceUsage, nullptr,
+          0, context_->ColorParams());
     }
 
-    image_buffer_ = ImageBuffer::Create(std::move(surface));
+    if (resource_provider_ && resource_provider_->IsValid()) {
+      resource_provider_->Clear();
+      // Always save an initial frame, to support resetting the top level matrix
+      // and clip.
+      resource_provider_->Canvas()->save();
+    }
 
-    if (image_buffer_ && needs_matrix_clip_restore_) {
+    if (resource_provider_ && needs_matrix_clip_restore_) {
       needs_matrix_clip_restore_ = false;
-      context_->RestoreCanvasMatrixClipStack(image_buffer_->Canvas());
+      context_->RestoreCanvasMatrixClipStack(resource_provider_->Canvas());
     }
   }
 
-  return image_buffer_.get();
+  return resource_provider_.get();
 }
 
 ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
