@@ -16,6 +16,7 @@ using std::tr1::tuple;
 using std::tr1::make_tuple;
 using libaom_test::ACMRandom;
 using libaom_test::AV1Convolve2D::AV1Convolve2DTest;
+using libaom_test::AV1Convolve2D::AV1Convolve2DSrTest;
 #if CONFIG_JNT_COMP
 using libaom_test::AV1Convolve2D::AV1JntConvolve2DTest;
 #endif
@@ -71,6 +72,14 @@ INSTANTIATE_TEST_CASE_P(
     AVX2, AV1Convolve2DTest,
     libaom_test::AV1Convolve2D::BuildParams(av1_convolve_2d_avx2, 1, 1, 1));
 #endif
+
+TEST_P(AV1Convolve2DSrTest, DISABLED_Speed) { RunSpeedTest(GET_PARAM(0)); }
+
+TEST_P(AV1Convolve2DSrTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }
+
+INSTANTIATE_TEST_CASE_P(SSE2_COPY, AV1Convolve2DSrTest,
+                        libaom_test::AV1Convolve2D::BuildParams(
+                            av1_convolve_2d_copy_sr_sse2, 0, 0, 1));
 
 #if CONFIG_JNT_COMP && HAVE_SSE4_1
 TEST_P(AV1JntConvolve2DTest, CheckOutput) { RunCheckOutput(GET_PARAM(0)); }

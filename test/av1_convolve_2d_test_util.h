@@ -50,6 +50,20 @@ class AV1Convolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
   libaom_test::ACMRandom rnd_;
 };
 
+class AV1Convolve2DSrTest : public ::testing::TestWithParam<Convolve2DParam> {
+ public:
+  virtual ~AV1Convolve2DSrTest();
+  virtual void SetUp();
+
+  virtual void TearDown();
+
+ protected:
+  void RunCheckOutput(convolve_2d_func test_impl);
+  void RunSpeedTest(convolve_2d_func test_impl);
+
+  libaom_test::ACMRandom rnd_;
+};
+
 #if CONFIG_JNT_COMP
 class AV1JntConvolve2DTest : public ::testing::TestWithParam<Convolve2DParam> {
  public:
