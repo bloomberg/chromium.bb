@@ -612,6 +612,7 @@ void ArcAppWindowLauncherController::RegisterApp(
       arc::UpdatePlayStoreShowTime(
           base::Time::Now() - opt_in_management_check_start_time_,
           owner()->profile());
+      VLOG(1) << "Play Store is initially shown.";
     }
     opt_in_management_check_start_time_ = base::Time();
   }
