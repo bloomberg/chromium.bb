@@ -1,11 +1,11 @@
-CREDIT_CARD_TYPE | CreditCardViewModels[0].CardTypeCode | Select card type* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NUMBER | CreditCardViewModels[0].CardNumber | Card number* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NUMBER |  | Card number* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NUMBER |  | Card number* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_EXP_MONTH | CreditCardViewModels[0].ExpMonth | Expiration month* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardViewModels[0].ExpYear | Year* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_VERIFICATION_CODE | CreditCardViewModels[0].SecurityCode | Security code* |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NAME_FULL | CreditCardViewModels[0].CardHolderName | Full name as it appears on your card* |  | CreditCardViewModels[0].CardTypeCode_1-cc
+CREDIT_CARD_TYPE | CreditCardViewModels[0].CardTypeCode | Select card type* |  | credit-card-cc
+CREDIT_CARD_NUMBER | CreditCardViewModels[0].CardNumber | Card number* |  | credit-card-cc
+CREDIT_CARD_NUMBER |  | Card number* |  | credit-card-cc
+CREDIT_CARD_NUMBER |  | Card number* |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | CreditCardViewModels[0].ExpMonth | Expiration month* |  | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | CreditCardViewModels[0].ExpYear | Year* |  | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | CreditCardViewModels[0].SecurityCode | Security code* |  | credit-card-cc
+CREDIT_CARD_NAME_FULL | CreditCardViewModels[0].CardHolderName | Full name as it appears on your card* |  | credit-card-cc
 ADDRESS_HOME_LINE1 | CreditCardViewModels[0].AddressLine1 | Billing address line 1* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_LINE2 | CreditCardViewModels[0].AddressLine2 | Billing address line 2 (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_LINE3 | CreditCardViewModels[0].AddressLine3 | Billing address line 3 (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default
@@ -14,8 +14,8 @@ ADDRESS_HOME_STATE | CreditCardViewModels[0].StateCode | State/province/region/c
 ADDRESS_HOME_ZIP | CreditCardViewModels[0].PostalCode | ZIP/Postal code* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_COUNTRY | CreditCardViewModels[0].CountryCode | Country* | US | CreditCardViewModels[0].CardTypeCode_1-default
 UNKNOWN_TYPE | FOPOption | Other forms of payment | OtherFop | CreditCardViewModels[0].CardTypeCode_1-default
-CREDIT_CARD_TYPE | OtherFOPType | Form of payment |  | CreditCardViewModels[0].CardTypeCode_1-cc
-CREDIT_CARD_NAME_FULL | AlipayCardHolderName | Full name as it appears on your card* |  | CreditCardViewModels[0].CardTypeCode_1-cc
+CREDIT_CARD_TYPE | OtherFOPType | Form of payment |  | credit-card-cc
+CREDIT_CARD_NAME_FULL | AlipayCardHolderName | Full name as it appears on your card* |  | credit-card-cc
 ADDRESS_HOME_LINE1 | AlipayBillingAddressLine1 | Billing address line 1* |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_LINE2 | AlipayBillingAddressLine2 | Billing address line 2 (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default
 ADDRESS_HOME_LINE3 | AlipayBillingAddressLine3 | Billing address line 3 (Optional) |  | CreditCardViewModels[0].CardTypeCode_1-default

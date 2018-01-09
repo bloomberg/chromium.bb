@@ -29,8 +29,8 @@ UNKNOWN_TYPE | PaymentMethod | PayByCafeCash | PayByCafeCash | ShipName_1-defaul
 UNKNOWN_TYPE | PaymentMethod | PayByGC | PayByGC | ShipName_1-default
 UNKNOWN_TYPE | PaymentMethod | PayByCCGC | PayByCCGC | ShipName_1-default
 UNKNOWN_TYPE | PaymentMethod | PayByCC | PayByCC | ShipName_1-default
-CREDIT_CARD_NUMBER | txtCCAccount | Credit Card No.* |  | ShipName_1-cc
-CREDIT_CARD_EXP_MONTH | ccExp$MonthDrop | Expiration Date* | 06 (June) | ShipName_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | ccExp$YearDrop | Expiration Date* | 2011 | ShipName_1-cc
+CREDIT_CARD_NUMBER | txtCCAccount | Credit Card No.* |  | credit-card-cc
+CREDIT_CARD_EXP_MONTH | ccExp$MonthDrop | Expiration Date* | 06 (June) | credit-card-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | ccExp$YearDrop | Expiration Date* | 2011 | credit-card-cc
 UNKNOWN_TYPE | PaymentMethod | Expiration Date* | PayByCheck | ShipName_1-default
 UNKNOWN_TYPE | PaymentMethod | PayByPayPal | PayByPayPal | ShipName_1-default

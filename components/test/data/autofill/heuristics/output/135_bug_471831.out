@@ -1,6 +1,6 @@
 EMAIL_ADDRESS | email | Email |  | email_1-default
-CREDIT_CARD_NUMBER | card_number | Card number |  | email_1-cc
-CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | cc-exp | MM / YY |  | email_1-cc
+CREDIT_CARD_NUMBER | card_number | Card number |  | credit-card-cc
+CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR | cc-exp | MM / YY |  | credit-card-cc
 UNKNOWN_TYPE | cc-exp-year | CardBitcoin | Year | email_1-default
 UNKNOWN_TYPE | cc-exp-month | CardBitcoin | Month | email_1-default
 UNKNOWN_TYPE | cc-csc | CVC |  | email_1-default

@@ -10,10 +10,10 @@ UNKNOWN_TYPE | selBirthYear | * Date of Birth: | Year | PaymentMethod_1-default
 UNKNOWN_TYPE | chkTAC | I agree to have the | on | PaymentMethod_1-default
 UNKNOWN_TYPE | PaymentMethod | CK | CK | PaymentMethod_1-default
 UNKNOWN_TYPE | PaymentMethod | AddNew | AddNew | PaymentMethod_1-default
-CREDIT_CARD_TYPE | cardType | Type: | VI | PaymentMethod_1-cc
-CREDIT_CARD_NUMBER | CreditCardNumber | Number: |  | PaymentMethod_1-cc
-CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | CreditCardExpYYMM | Expiration: | 092011 | PaymentMethod_1-cc
-CREDIT_CARD_VERIFICATION_CODE | CVV | Security Code: |  | PaymentMethod_1-cc
+CREDIT_CARD_TYPE | cardType | Type: | VI | credit-card-cc
+CREDIT_CARD_NUMBER | CreditCardNumber | Number: |  | credit-card-cc
+CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR | CreditCardExpYYMM | Expiration: | 092011 | credit-card-cc
+CREDIT_CARD_VERIFICATION_CODE | CVV | Security Code: |  | credit-card-cc
 UNKNOWN_TYPE | useGiftCard | Use a Gift Card. | on | PaymentMethod_1-default
 UNKNOWN_TYPE | GiftCardNum | Card Number: |  | PaymentMethod_1-default
 UNKNOWN_TYPE | GiftCardPIN | Security ID Number: |  | PaymentMethod_1-default
