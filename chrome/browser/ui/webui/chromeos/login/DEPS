@@ -25,7 +25,6 @@ specific_include_rules = {
     "+ui/events/devices/device_data_manager.h",
   ],
   "signin_screen_handler\.cc": [
-    "+ash/login/ui/login_constants.h",
     "+ash/shell.h",
     "+ash/wallpaper/wallpaper_controller.h",
   ],
