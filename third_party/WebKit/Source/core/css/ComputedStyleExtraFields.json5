@@ -248,7 +248,7 @@
       field_template: "external",
       include_paths: ["platform/fonts/Font.h"],
       type_name: "Font",
-      field_group: "inherited",
+      field_group: "inherited->font",
       inherited: true,
       default_value: "Font()",
       computed_style_custom_functions: ["getter", "setter"],
