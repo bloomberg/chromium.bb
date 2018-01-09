@@ -1894,17 +1894,29 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
 
     generic_allocator.root()->Free(ptr2);
   }
+  // kSystemPageSize is 16384 byte on Loongson platform.
+  // Test purge discardable memory requirements need to
+  // be modified as follows:
   {
+#if defined(_MIPS_ARCH_LOONGSON)
+    size_t requestedSize = 36864;
+#else
+    size_t requestedSize = 9216;
+#endif
     char* ptr1 = reinterpret_cast<char*>(
-        generic_allocator.root()->Alloc(9216 - kExtraAllocSize, type_name));
+        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
+                                        type_name));
     void* ptr2 =
-        generic_allocator.root()->Alloc(9216 - kExtraAllocSize, type_name);
+        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
+                                        type_name);
     void* ptr3 =
-        generic_allocator.root()->Alloc(9216 - kExtraAllocSize, type_name);
+        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
+                                        type_name);
     void* ptr4 =
-        generic_allocator.root()->Alloc(9216 - kExtraAllocSize, type_name);
-    memset(ptr1, 'A', 9216 - kExtraAllocSize);
-    memset(ptr2, 'A', 9216 - kExtraAllocSize);
+        generic_allocator.root()->Alloc(requestedSize - kExtraAllocSize,
+                                        type_name);
+    memset(ptr1, 'A', requestedSize - kExtraAllocSize);
+    memset(ptr2, 'A', requestedSize - kExtraAllocSize);
     generic_allocator.root()->Free(ptr2);
     generic_allocator.root()->Free(ptr1);
     {
@@ -1913,12 +1925,13 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
                                           false /* detailed dump */, &dumper);
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
-      const PartitionBucketMemoryStats* stats = dumper.GetBucketStats(9216);
+      const PartitionBucketMemoryStats* stats =
+          dumper.GetBucketStats(requestedSize);
       EXPECT_TRUE(stats);
       EXPECT_TRUE(stats->is_valid);
       EXPECT_EQ(0u, stats->decommittable_bytes);
       EXPECT_EQ(2 * kSystemPageSize, stats->discardable_bytes);
-      EXPECT_EQ(9216u * 2, stats->active_bytes);
+      EXPECT_EQ(requestedSize * 2, stats->active_bytes);
       EXPECT_EQ(9 * kSystemPageSize, stats->resident_bytes);
     }
     CHECK_PAGE_IN_CORE(ptr1 - kPointerOffset, true);
@@ -1937,6 +1950,47 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     generic_allocator.root()->Free(ptr3);
     generic_allocator.root()->Free(ptr4);
   }
+  // kSystemPageSize is 16384 byte on Loongson platform.
+  // 64*kSystemPageSize is 2G and exceeded maximum application
+  // value that partitionalloc, so must be reduce the application
+  // value.
+  // On Loongson, 64*kSystemPageSize was changed to 32*kSystemPageSize.
+#if defined(_MIPS_ARCH_LOONGSON)
+  {
+    char* ptr1 = reinterpret_cast<char*>(PartitionAllocGeneric(
+        generic_allocator.root(), (32 * kSystemPageSize) - kExtraAllocSize,
+        type_name));
+    memset(ptr1, 'A', (32 * kSystemPageSize) - kExtraAllocSize);
+    PartitionFreeGeneric(generic_allocator.root(), ptr1);
+    ptr1 = reinterpret_cast<char*>(PartitionAllocGeneric(
+        generic_allocator.root(), (31 * kSystemPageSize) - kExtraAllocSize,
+        type_name));
+    {
+      MockPartitionStatsDumper dumper;
+      PartitionDumpStatsGeneric(generic_allocator.root(),
+                                "mock_generic_allocator",
+                                false /* detailed dump */, &dumper);
+      EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
+
+      const PartitionBucketMemoryStats* stats =
+          dumper.GetBucketStats(32 * kSystemPageSize);
+      EXPECT_TRUE(stats);
+      EXPECT_TRUE(stats->is_valid);
+      EXPECT_EQ(0u, stats->decommittable_bytes);
+      EXPECT_EQ(kSystemPageSize, stats->discardable_bytes);
+      EXPECT_EQ(31 * kSystemPageSize, stats->active_bytes);
+      EXPECT_EQ(32 * kSystemPageSize, stats->resident_bytes);
+    }
+    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 30), true);
+    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 31), true);
+    PartitionPurgeMemoryGeneric(generic_allocator.root(),
+                                PartitionPurgeDiscardUnusedSystemPages);
+    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 30), true);
+    CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 31), false);
+
+    PartitionFreeGeneric(generic_allocator.root(), ptr1);
+  }
+#else
   {
     char* ptr1 = reinterpret_cast<char*>(generic_allocator.root()->Alloc(
         (64 * kSystemPageSize) - kExtraAllocSize, type_name));
@@ -1972,6 +2026,7 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
 
     generic_allocator.root()->Free(ptr1);
   }
+#endif
   // This sub-test tests truncation of the provisioned slots in a trickier
   // case where the freelist is rewritten.
   generic_allocator.root()->PurgeMemory(PartitionPurgeDecommitEmptyPages);
