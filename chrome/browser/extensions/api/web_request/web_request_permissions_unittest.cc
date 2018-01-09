@@ -179,6 +179,16 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
     EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
                                                    sensitive_request_info));
   }
+
+  // Check that requests are for a non-sensitive URL is rejected if it's a PAC
+  // script fetch.
+  std::unique_ptr<net::URLRequest> request(
+      context.CreateRequest(non_sensitive_url, net::DEFAULT_PRIORITY, NULL,
+                            TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->set_is_pac_request(true);
+  extensions::WebRequestInfo request_info(request.get());
+  EXPECT_TRUE(WebRequestPermissions::HideRequest(extension_info_map_.get(),
+                                                 request_info));
 }
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest,

@@ -116,6 +116,7 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
       method(url_request->method()),
       initiator(url_request->initiator()),
       extra_request_headers(url_request->extra_request_headers()),
+      is_pac_request(url_request->is_pac_request()),
       request_body_data(ExtractRequestBodyData(url_request)),
       logger(std::make_unique<NetLogLogger>(url_request)) {
   if (url.SchemeIsWSOrWSS()) {

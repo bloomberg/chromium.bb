@@ -30,6 +30,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "net/base/escape.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
 #include "net/filter/filter_source_stream_test_util.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -668,6 +669,20 @@ std::unique_ptr<HttpResponse> HandleGzipBody(const HttpRequest& request) {
   return std::move(http_response);
 }
 
+// /self.pac
+// Returns a response that is a PAC script making requests use the
+// EmbeddedTestServer itself as a proxy.
+std::unique_ptr<HttpResponse> HandleSelfPac(const HttpRequest& request) {
+  std::unique_ptr<BasicHttpResponse> http_response =
+      std::make_unique<BasicHttpResponse>();
+  http_response->set_content(base::StringPrintf(
+      "function FindProxyForURL(url, host) {\n"
+      "return 'PROXY %s';\n"
+      "}",
+      net::HostPortPair::FromURL(request.base_url).ToString().c_str()));
+  return std::move(http_response);
+}
+
 }  // anonymous namespace
 
 #define PREFIXED_HANDLER(prefix, handler) \
@@ -717,6 +732,7 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       PREFIXED_HANDLER("/hung-after-headers", &HandleHungAfterHeadersResponse));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/gzip-body", &HandleGzipBody));
+  server->RegisterDefaultHandler(PREFIXED_HANDLER("/self.pac", &HandleSelfPac));
 
   // TODO(svaldez): HandleDownload
   // TODO(svaldez): HandleDownloadFinish
