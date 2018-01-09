@@ -192,6 +192,7 @@ const char kEsnProperty[] = "Cellular.ESN";
 const char kMdnProperty[] = "Cellular.MDN";
 const char kMinProperty[] = "Cellular.MIN";
 const char kModelIdProperty[] = "Cellular.ModelID";
+const char kEquipmentIdProperty[] = "Cellular.EquipmentID";
 const char kManufacturerProperty[] = "Cellular.Manufacturer";
 const char kFirmwareRevisionProperty[] = "Cellular.FirmwareRevision";
 const char kHardwareRevisionProperty[] = "Cellular.HardwareRevision";
