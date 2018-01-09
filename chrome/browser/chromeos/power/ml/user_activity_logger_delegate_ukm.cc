@@ -63,8 +63,7 @@ void UserActivityLoggerDelegateUkm::LogActivity(
       .SetLastActivityDay(event.features().last_activity_day())
       .SetRecentTimeActive(event.features().recent_time_active_sec())
       .SetDeviceType(event.features().device_type())
-      .SetDeviceMode(event.features().device_mode())
-      .SetOnBattery(event.features().on_battery());
+      .SetDeviceMode(event.features().device_mode());
 
   if (event.features().has_last_user_activity_time_sec()) {
     user_activity.SetLastUserActivityTime(
@@ -78,8 +77,15 @@ void UserActivityLoggerDelegateUkm::LogActivity(
     user_activity.SetTimeSinceLastKey(
         event.features().time_since_last_key_sec());
   }
-  user_activity.SetBatteryPercent(
-      BucketEveryFivePercents(std::floor(event.features().battery_percent())));
+
+  if (event.features().has_on_battery()) {
+    user_activity.SetOnBattery(event.features().on_battery());
+  }
+
+  if (event.features().has_battery_percent()) {
+    user_activity.SetBatteryPercent(BucketEveryFivePercents(
+        std::floor(event.features().battery_percent())));
+  }
 
   user_activity.Record(ukm_recorder_);
 
