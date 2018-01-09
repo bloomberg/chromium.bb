@@ -196,24 +196,6 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
     DCHECK_EQ(kIOReturnSuccess, r);
   }
 
-  bool force_color_space = false;
-
-  // Displaying an IOSurface that does not have a color space using an
-  // AVSampleBufferDisplayLayer can result in a black screen. Ensure that
-  // a color space always be specified.
-  // https://crbug.com/608879
-  if (format == gfx::BufferFormat::YUV_420_BIPLANAR)
-    force_color_space = true;
-
-  // On Sierra, all IOSurfaces are color corrected as though they are in sRGB
-  // color space by default. Prior to Sierra, IOSurfaces were not color
-  // corrected (they were treated as though they were in the display color
-  // space). Override this by defaulting IOSurfaces to be in the main display
-  // color space.
-  // https://crbug.com/654488
-  if (base::mac::IsAtLeastOS10_12())
-    force_color_space = true;
-
   // Ensure that all IOSurfaces start as sRGB.
   CGColorSpaceRef color_space = base::mac::GetSRGBColorSpace();
   base::ScopedCFTypeRef<CFDataRef> color_space_icc(
