@@ -79,7 +79,6 @@ class BacklightsForcedOffSetterTest : public AshTestBase {
     backlights_forced_off_observer_.reset();
     backlights_forced_off_setter_.reset();
     AshTestBase::TearDown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
   void ResetBacklightsForcedOffSetter() {
