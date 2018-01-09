@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -92,8 +91,8 @@ public class SignInPromo extends OptionalLeaf {
     }
 
     /**
-     * Suppress signin promos in New Tab Page for {@link SUPPRESSION_PERIOD_MS}. This will not
-     * affect promos that were created before this call.
+     * Suppress signin promos in New Tab Page for {@link SignInPromo#SUPPRESSION_PERIOD_MS}. This
+     * will not affect promos that were created before this call.
      */
     public static void temporarilySuppressPromos() {
         ChromePreferenceManager.getInstance().setNewTabPageSigninPromoSuppressionPeriodStart(
@@ -347,56 +346,6 @@ public class SignInPromo extends OptionalLeaf {
             super.onBindViewHolder();
             PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) itemView;
             mSigninPromoController.setupPromoView(view.getContext(), view, profileData, null);
-        }
-    }
-
-    /** Defines the appearance and the behaviour of a generic Sign In Promo card. */
-    @VisibleForTesting
-    public static class GenericSigninPromoData implements StatusCardViewHolder.DataSource {
-        @Override
-        @StringRes
-        public int getHeader() {
-            return R.string.snippets_disabled_generic_prompt;
-        }
-
-        @Override
-        public String getDescription() {
-            return ContextUtils.getApplicationContext().getString(
-                    R.string.snippets_disabled_signed_out_instructions);
-        }
-
-        @Override
-        @StringRes
-        public int getActionLabel() {
-            return R.string.sign_in_button;
-        }
-
-        @Override
-        public void performAction(Context context) {
-            AccountSigninActivity.startIfAllowed(
-                    context, SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
-        }
-    }
-
-    /**
-     * View Holder for {@link SignInPromo} if the generic promo is to be shown.
-     */
-    public static class GenericPromoViewHolder extends StatusCardViewHolder {
-        public GenericPromoViewHolder(SuggestionsRecyclerView parent,
-                ContextMenuManager contextMenuManager, UiConfig config) {
-            super(parent, contextMenuManager, config);
-            if (!FeatureUtilities.isChromeHomeEnabled()) {
-                getParams().topMargin = parent.getResources().getDimensionPixelSize(
-                        R.dimen.ntp_sign_in_promo_margin_top);
-            }
-        }
-
-        @DrawableRes
-        @Override
-        protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
-            // Modern does not update the card background.
-            assert !SuggestionsConfig.useModernLayout();
-            return R.drawable.ntp_signin_promo_card_single;
         }
     }
 }
