@@ -117,7 +117,6 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
 scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
-    SnapshotReason reason,
     const FloatSize& size) {
   if (!context_) {
     *status = kInvalidSourceImageStatus;
@@ -130,7 +129,7 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
   }
-  scoped_refptr<Image> image = context_->GetImage(hint, reason);
+  scoped_refptr<Image> image = context_->GetImage(hint);
   if (!image)
     image = CreateTransparentImage(Size());
   *status = image ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
@@ -389,9 +388,8 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* script_state,
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> snapshot =
-      context_
-          ? context_->GetImage(kPreferNoAcceleration, kSnapshotReasonUnknown)
-          : CreateTransparentImage(size_);
+      context_ ? context_->GetImage(kPreferNoAcceleration)
+               : CreateTransparentImage(size_);
   if (snapshot) {
     String encoding_mime_type = ImageEncoderUtils::ToEncodingMimeType(
         options.type(), ImageEncoderUtils::kEncodeReasonConvertToBlobPromise);

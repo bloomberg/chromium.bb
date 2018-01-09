@@ -178,7 +178,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
       WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
   EXPECT_TRUE(surface->IsValid());
   scoped_refptr<StaticBitmapImage> image =
-      surface->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+      surface->NewImageSnapshot(kPreferAcceleration);
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
@@ -214,7 +214,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
       WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
   EXPECT_TRUE(surface->IsValid());
   scoped_refptr<StaticBitmapImage> image =
-      surface->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+      surface->NewImageSnapshot(kPreferAcceleration);
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 
   FakeMailboxGenerator mailboxGenerator;
@@ -241,8 +241,7 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   // Re-creating surface should recycle the old GrTexture inside skia
   surface = WTF::WrapUnique(new AcceleratedImageBufferSurface(size));
   EXPECT_TRUE(surface->IsValid());
-  image =
-      surface->NewImageSnapshot(kPreferAcceleration, kSnapshotReasonUnitTests);
+  image = surface->NewImageSnapshot(kPreferAcceleration);
 
   ::testing::Mock::VerifyAndClearExpectations(&gl_);
 

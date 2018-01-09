@@ -136,7 +136,6 @@ class CORE_EXPORT OffscreenCanvas final
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
-                                               SnapshotReason,
                                                const FloatSize&) final;
   bool WouldTaintOrigin(const SecurityOrigin*) const final {
     return !origin_clean_;

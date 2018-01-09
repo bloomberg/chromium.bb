@@ -590,8 +590,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     // object.
   };
 
-  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
-                                            SnapshotReason) const override;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() { return Version() >= 2; }
 
@@ -1011,8 +1010,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     kTexImage3D,
     kTexSubImage3D
   };
-
-  static SnapshotReason FunctionIDToSnapshotReason(TexImageFunctionID);
 
   enum TexImageDimension { kTex2D, kTex3D };
   void TexImage2DBase(GLenum target,

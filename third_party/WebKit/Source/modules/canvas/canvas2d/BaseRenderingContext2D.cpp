@@ -1204,7 +1204,6 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
                                 ? kPreferAcceleration
                                 : kPreferNoAcceleration;
     image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
-                                                  kSnapshotReasonDrawImage,
                                                   default_object_size);
     if (source_image_status == kUndecodableSourceImageStatus) {
       exception_state.ThrowDOMException(
@@ -1381,7 +1380,6 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   FloatSize default_object_size(Width(), Height());
   scoped_refptr<Image> image_for_rendering =
       image_source->GetSourceImageForCanvas(&status, kPreferNoAcceleration,
-                                            kSnapshotReasonCreatePattern,
                                             default_object_size);
 
   switch (status) {
@@ -1591,8 +1589,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   WTF::ArrayBufferContents contents;
 
   const CanvasColorParams& color_params = ColorParams();
-  scoped_refptr<StaticBitmapImage> snapshot =
-      GetImage(kPreferNoAcceleration, kSnapshotReasonGetImageData);
+  scoped_refptr<StaticBitmapImage> snapshot = GetImage(kPreferNoAcceleration);
 
   if (!StaticBitmapImage::ConvertToArrayBufferContents(
           snapshot, contents, image_data_rect, color_params, IsAccelerated())) {

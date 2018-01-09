@@ -629,11 +629,10 @@ bool CanvasRenderingContext2D::CanCreateCanvas2DBuffer() const {
 }
 
 scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
-    AccelerationHint hint,
-    SnapshotReason reason) const {
+    AccelerationHint hint) const {
   if (!HasCanvas2DBuffer())
     return nullptr;
-  return canvas()->Canvas2DBuffer()->NewImageSnapshot(hint, reason);
+  return canvas()->Canvas2DBuffer()->NewImageSnapshot(hint);
 }
 
 bool CanvasRenderingContext2D::ParseColorOrCurrentColor(

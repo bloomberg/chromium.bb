@@ -92,8 +92,7 @@ ScriptPromise ShapeDetector::detect(
 
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   scoped_refptr<Image> image = canvas_image_source->GetSourceImageForCanvas(
-      &source_image_status, kPreferNoAcceleration, kSnapshotReasonDrawImage,
-      size);
+      &source_image_status, kPreferNoAcceleration, size);
   if (!image || source_image_status != kNormalSourceImageStatus) {
     resolver->Reject(
         DOMException::Create(kInvalidStateError, "Invalid element or state."));

@@ -78,8 +78,7 @@ bool AcceleratedImageBufferSurface::IsValid() const {
 }
 
 scoped_refptr<StaticBitmapImage>
-AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint,
-                                                SnapshotReason) {
+AcceleratedImageBufferSurface::NewImageSnapshot(AccelerationHint) {
   if (!IsValid())
     return nullptr;
   // Must make a copy of the WeakPtr because CreateFromSkImage only takes

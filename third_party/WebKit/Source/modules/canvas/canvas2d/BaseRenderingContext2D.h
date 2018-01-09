@@ -354,8 +354,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     NOTREACHED();
     return false;
   }
-  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
-                                                    SnapshotReason) const {
+  virtual scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const {
     NOTREACHED();
     return nullptr;
   }

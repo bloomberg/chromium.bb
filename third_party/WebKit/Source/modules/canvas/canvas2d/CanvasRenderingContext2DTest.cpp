@@ -53,7 +53,6 @@ class FakeImageSource : public CanvasImageSource {
 
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
-                                               SnapshotReason,
                                                const FloatSize&) override;
 
   bool WouldTaintOrigin(
@@ -86,7 +85,6 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
 scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
-    SnapshotReason,
     const FloatSize&) {
   if (status)
     *status = kNormalSourceImageStatus;
@@ -1097,8 +1095,7 @@ TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
 
   EXPECT_TRUE(CanvasElement().Canvas2DBuffer()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
-  CanvasElement().Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration,
-                                                     kSnapshotReasonUnknown);
+  CanvasElement().Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration);
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
   PaintLayer* layer = CanvasElement().GetLayoutBoxModelObject()->Layer();
   EXPECT_TRUE(layer);

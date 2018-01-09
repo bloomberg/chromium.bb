@@ -759,8 +759,7 @@ WebGLRenderingContextBase::GetStaticBitmapImage() {
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
-    AccelerationHint hint,
-    SnapshotReason reason) const {
+    AccelerationHint hint) const {
   if (!GetDrawingBuffer())
     return nullptr;
   // If on the main thread, directly access the drawing buffer and create the
@@ -779,7 +778,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
       NOTREACHED();
       return nullptr;
     }
-    return surface->NewImageSnapshot(hint, reason);
+    return surface->NewImageSnapshot(hint);
   }
 
   // If on a worker thread, create a copy from the drawing buffer and create
@@ -4952,22 +4951,6 @@ bool WebGLRenderingContextBase::CanUseTexImageByGPU(GLenum format,
   return true;
 }
 
-SnapshotReason WebGLRenderingContextBase::FunctionIDToSnapshotReason(
-    TexImageFunctionID id) {
-  switch (id) {
-    case kTexImage2D:
-      return kSnapshotReasonWebGLTexImage2D;
-    case kTexSubImage2D:
-      return kSnapshotReasonWebGLTexSubImage2D;
-    case kTexImage3D:
-      return kSnapshotReasonWebGLTexImage3D;
-    case kTexSubImage3D:
-      return kSnapshotReasonWebGLTexSubImage3D;
-  }
-  NOTREACHED();
-  return kSnapshotReasonUnknown;
-}
-
 void WebGLRenderingContextBase::TexImageCanvasByGPU(
     TexImageFunctionID function_id,
     HTMLCanvasElement* canvas,
@@ -4980,8 +4963,7 @@ void WebGLRenderingContextBase::TexImageCanvasByGPU(
     if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target) &&
         canvas->TryCreateImageBuffer()) {
       scoped_refptr<StaticBitmapImage> image =
-          canvas->Canvas2DBuffer()->NewImageSnapshot(
-              kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
+          canvas->Canvas2DBuffer()->NewImageSnapshot(kPreferAcceleration);
       if (!!image && image->CopyToTexture(
                          ContextGL(), target, target_texture,
                          unpack_premultiply_alpha_, unpack_flip_y_,
@@ -5144,10 +5126,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     if (!canvas->IsAccelerated() || !CanUseTexImageByGPU(format, type)) {
       TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                    zoffset, format, type,
-                   canvas
-                       ->CopiedImage(kBackBuffer, kPreferAcceleration,
-                                     FunctionIDToSnapshotReason(function_id))
-                       .get(),
+                   canvas->CopiedImage(kBackBuffer, kPreferAcceleration).get(),
                    WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                    unpack_premultiply_alpha_, source_sub_rectangle, 1, 0);
       return;
@@ -5178,10 +5157,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     // textures, and elements of 2D texture arrays.
     TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                  zoffset, format, type,
-                 canvas
-                     ->CopiedImage(kBackBuffer, kPreferAcceleration,
-                                   FunctionIDToSnapshotReason(function_id))
-                     .get(),
+                 canvas->CopiedImage(kBackBuffer, kPreferAcceleration).get(),
                  WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
                  unpack_premultiply_alpha_, source_sub_rectangle, depth,
                  unpack_image_height);
@@ -5349,8 +5325,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                      video->videoHeight(), 0, format, type, nullptr);
 
       if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target)) {
-        scoped_refptr<StaticBitmapImage> image = surface->NewImageSnapshot(
-            kPreferAcceleration, FunctionIDToSnapshotReason(function_id));
+        scoped_refptr<StaticBitmapImage> image =
+            surface->NewImageSnapshot(kPreferAcceleration);
         if (!!image &&
             image->CopyToTexture(
                 ContextGL(), target, texture->Object(),

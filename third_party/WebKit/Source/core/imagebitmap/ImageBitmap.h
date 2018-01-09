@@ -107,7 +107,6 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
-                                               SnapshotReason,
                                                const FloatSize&) override;
   bool WouldTaintOrigin(const SecurityOrigin*) const override {
     return !image_->OriginClean();

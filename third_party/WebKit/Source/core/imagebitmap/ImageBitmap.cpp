@@ -535,8 +535,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          const ImageBitmapOptions& options) {
   SourceImageStatus status;
   scoped_refptr<Image> image_input = canvas->GetSourceImageForCanvas(
-      &status, kPreferAcceleration, kSnapshotReasonCreateImageBitmap,
-      FloatSize());
+      &status, kPreferAcceleration, FloatSize());
   if (status != kNormalSourceImageStatus)
     return;
   DCHECK(image_input->IsStaticBitmapImage());
@@ -561,8 +560,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
                          const ImageBitmapOptions& options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
-      &status, kPreferNoAcceleration, kSnapshotReasonCreateImageBitmap,
-      FloatSize(offscreen_canvas->Size()));
+      &status, kPreferNoAcceleration, FloatSize(offscreen_canvas->Size()));
   DCHECK(raw_input->IsStaticBitmapImage());
   scoped_refptr<StaticBitmapImage> input =
       static_cast<StaticBitmapImage*>(raw_input.get());
@@ -993,7 +991,6 @@ ScriptPromise ImageBitmap::CreateImageBitmap(
 scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
-    SnapshotReason,
     const FloatSize&) {
   *status = kNormalSourceImageStatus;
   if (!image_)

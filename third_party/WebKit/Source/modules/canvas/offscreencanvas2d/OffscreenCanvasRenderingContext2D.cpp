@@ -139,12 +139,12 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
 }
 
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
-    AccelerationHint hint,
-    SnapshotReason reason) const {
+    AccelerationHint hint) const {
   if (!HasCanvas2DBuffer())
     return nullptr;
   scoped_refptr<StaticBitmapImage> image =
       GetCanvasResourceProvider()->Snapshot();
+
   return image;
 }
 

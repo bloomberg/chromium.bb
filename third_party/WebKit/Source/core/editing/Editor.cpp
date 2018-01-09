@@ -571,8 +571,7 @@ static scoped_refptr<Image> ImageFromNode(const Node& node) {
 
   if (layout_object->IsCanvas()) {
     return ToHTMLCanvasElement(const_cast<Node&>(node))
-        .CopiedImage(kFrontBuffer, kPreferNoAcceleration,
-                     kSnapshotReasonCopyToClipboard);
+        .CopiedImage(kFrontBuffer, kPreferNoAcceleration);
   }
 
   if (layout_object->IsImage()) {

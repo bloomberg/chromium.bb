@@ -121,7 +121,6 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
                                                AccelerationHint,
-                                               SnapshotReason,
                                                const FloatSize&) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin(const SecurityOrigin*) const override;
