@@ -204,7 +204,13 @@ TEST_F(LoggingTest, LoggingIsLazyByDestination) {
 // Official builds have CHECKs directly call BreakDebugger.
 #if !defined(OFFICIAL_BUILD)
 
-TEST_F(LoggingTest, CheckStreamsAreLazy) {
+// https://crbug.com/709067 tracks test flakiness on iOS.
+#if defined(OS_IOS)
+#define MAYBE_CheckStreamsAreLazy DISABLED_CheckStreamsAreLazy
+#else
+#define MAYBE_CheckStreamsAreLazy CheckStreamsAreLazy
+#endif
+TEST_F(LoggingTest, MAYBE_CheckStreamsAreLazy) {
   MockLogSource mock_log_source, uncalled_mock_log_source;
   EXPECT_CALL(mock_log_source, Log()).Times(8).
       WillRepeatedly(Return("check message"));
@@ -220,7 +226,7 @@ TEST_F(LoggingTest, CheckStreamsAreLazy) {
       << mock_log_source.Log();
 }
 
-#endif  // !defined(OFFICIAL_BUILD)
+#endif
 
 #if defined(OFFICIAL_BUILD) && defined(OS_WIN)
 NOINLINE void CheckContainingFunc(int death_location) {
@@ -420,7 +426,13 @@ class ScopedDcheckSeverity {
 };
 #endif  // DCHECK_IS_ON() && defined(SYZYASAN)
 
-TEST_F(LoggingTest, Dcheck) {
+// https://crbug.com/709067 tracks test flakiness on iOS.
+#if defined(OS_IOS)
+#define MAYBE_Dcheck DISABLED_Dcheck
+#else
+#define MAYBE_Dcheck Dcheck
+#endif
+TEST_F(LoggingTest, MAYBE_Dcheck) {
 #if DCHECK_IS_ON() && defined(SYZYASAN)
   // When DCHECKs are enabled in SyzyASAN builds, LOG_DCHECK is mutable but
   // defaults to non-fatal. Set it to LOG_FATAL to get the expected behavior
