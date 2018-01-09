@@ -39,9 +39,10 @@ class U2fBleDiscovery : public U2fDiscovery, BluetoothAdapter::Observer {
 
   // BluetoothAdapter::Observer:
   void DeviceAdded(BluetoothAdapter* adapter, BluetoothDevice* device) override;
+  void DeviceChanged(BluetoothAdapter* adapter,
+                     BluetoothDevice* device) override;
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
-
   void OnStopped(bool success);
 
   scoped_refptr<BluetoothAdapter> adapter_;

@@ -162,7 +162,7 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
   BluetoothDevice* device = adapter_->GetDevice(device_address);
   if (device) {
     fake_bluetooth_device_client_->UpdateServiceAndManufacturerData(
-        GetDevicePath(device), service_data, manufacturer_data);
+        GetDevicePath(device), service_uuids, service_data, manufacturer_data);
     return device;
   }
 
