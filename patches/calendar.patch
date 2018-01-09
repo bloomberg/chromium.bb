@@ -1,5 +1,5 @@
 diff --git a/source/i18n/calendar.cpp b/source/i18n/calendar.cpp
-index 12966a73..b2089017 100644
+index 12966a73..90931512 100644
 --- a/source/i18n/calendar.cpp
 +++ b/source/i18n/calendar.cpp
 @@ -708,6 +708,8 @@ fZone(NULL),
@@ -20,12 +20,9 @@ index 12966a73..b2089017 100644
      if (U_FAILURE(success)) {
          return;
      }
-@@ -764,8 +768,10 @@ fTime(0),
- fLenient(TRUE),
- fZone(NULL),
+@@ -766,6 +770,8 @@ fZone(NULL),
  fRepeatedWallTime(UCAL_WALLTIME_LAST),
--fSkippedWallTime(UCAL_WALLTIME_LAST)
-+fSkippedWallTime(UCAL_WALLTIME_LAST),
+ fSkippedWallTime(UCAL_WALLTIME_LAST)
  {
 +    validLocale[0] = 0;
 +    actualLocale[0] = 0;

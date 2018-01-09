@@ -768,7 +768,7 @@ fTime(0),
 fLenient(TRUE),
 fZone(NULL),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST),
+fSkippedWallTime(UCAL_WALLTIME_LAST)
 {
     validLocale[0] = 0;
     actualLocale[0] = 0;
