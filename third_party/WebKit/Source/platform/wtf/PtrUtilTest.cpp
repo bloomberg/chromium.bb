@@ -15,12 +15,4 @@ TEST(WTF_PtrUtilTest, canWrapUnique) {
   ASSERT_TRUE(wrapped_char_ptr.get());
 }
 
-TEST(WTF_PtrUtilTest, canWrapUniqueArray) {
-  constexpr size_t kBufferSize = 20;
-  auto char_array = new char[kBufferSize];
-  auto wrapped_char_array = WrapArrayUnique(char_array);
-
-  ASSERT_TRUE(wrapped_char_array.get());
-}
-
 }  // namespace WTF

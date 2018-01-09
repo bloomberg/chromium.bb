@@ -152,8 +152,7 @@ sk_sp<PaintFilter> FEConvolveMatrix::CreateImageFilter() {
   SkIPoint target = SkIPoint::Make(target_offset_.X(), target_offset_.Y());
   MatrixConvolutionPaintFilter::TileMode tile_mode = ToSkiaTileMode(edge_mode_);
   bool convolve_alpha = !preserve_alpha_;
-  std::unique_ptr<SkScalar[]> kernel =
-      WrapArrayUnique(new SkScalar[num_elements]);
+  auto kernel = std::make_unique<SkScalar[]>(num_elements);
   for (int i = 0; i < num_elements; ++i)
     kernel[i] = SkFloatToScalar(kernel_matrix_[num_elements - 1 - i]);
   PaintFilter::CropRect crop_rect = GetCropRect();

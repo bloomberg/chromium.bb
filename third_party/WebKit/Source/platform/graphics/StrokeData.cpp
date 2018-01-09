@@ -47,7 +47,7 @@ void StrokeData::SetLineDash(const DashArray& dashes, float dash_offset) {
   }
 
   size_t count = !(dash_length % 2) ? dash_length : dash_length * 2;
-  std::unique_ptr<SkScalar[]> intervals = WrapArrayUnique(new SkScalar[count]);
+  auto intervals = std::make_unique<SkScalar[]>(count);
 
   for (unsigned i = 0; i < count; i++)
     intervals[i] = dashes[i % dash_length];

@@ -96,7 +96,7 @@ class PLATFORM_EXPORT PNGImageReader final {
 
   png_bytep InterlaceBuffer() const { return interlace_buffer_.get(); }
   void CreateInterlaceBuffer(int size) {
-    interlace_buffer_ = WrapArrayUnique(new png_byte[size]);
+    interlace_buffer_ = std::make_unique<png_byte[]>(size);
   }
   void ClearInterlaceBuffer() { interlace_buffer_.reset(); }
 

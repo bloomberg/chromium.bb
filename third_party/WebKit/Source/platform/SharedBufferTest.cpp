@@ -51,7 +51,7 @@ TEST(SharedBufferTest, getAsBytes) {
   shared_buffer->Append(test_data2, strlen(test_data2));
 
   const size_t size = shared_buffer->size();
-  std::unique_ptr<char[]> data = WrapArrayUnique(new char[size]);
+  auto data = std::make_unique<char[]>(size);
   ASSERT_TRUE(shared_buffer->GetBytes(data.get(), size));
 
   char expected_concatenation[] = "HelloWorldGoodbye";
@@ -77,7 +77,7 @@ TEST(SharedBufferTest, getPartAsBytes) {
       {17, "HelloWorldGoodbye"}, {7, "HelloWo"}, {3, "Hel"},
   };
   for (TestData& test : test_data) {
-    std::unique_ptr<char[]> data = WrapArrayUnique(new char[test.size]);
+    auto data = std::make_unique<char[]>(test.size);
     ASSERT_TRUE(shared_buffer->GetBytes(data.get(), test.size));
     EXPECT_EQ(0, memcmp(test.expected, data.get(), test.size));
   }
@@ -100,7 +100,7 @@ TEST(SharedBufferTest, getAsBytesLargeSegments) {
   shared_buffer->Append(vector2);
 
   const size_t size = shared_buffer->size();
-  std::unique_ptr<char[]> data = WrapArrayUnique(new char[size]);
+  auto data = std::make_unique<char[]>(size);
   ASSERT_TRUE(shared_buffer->GetBytes(data.get(), size));
 
   ASSERT_EQ(0x4000U + 0x4000U + 0x4000U, size);

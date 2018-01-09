@@ -52,8 +52,7 @@ TEST(BlobDataTest, Consolidation) {
   EXPECT_EQ(12u, data.items_[0].data->length());
   EXPECT_EQ(0, memcmp(data.items_[0].data->data(), "abcdefps1ps2", 12));
 
-  std::unique_ptr<char[]> large_data =
-      WrapArrayUnique(new char[kMaxConsolidatedItemSizeInBytes]);
+  auto large_data = std::make_unique<char[]>(kMaxConsolidatedItemSizeInBytes);
   data.AppendBytes(large_data.get(), kMaxConsolidatedItemSizeInBytes);
 
   EXPECT_EQ(2u, data.items_.size());
