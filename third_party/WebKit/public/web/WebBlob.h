@@ -53,7 +53,7 @@ class WebBlob {
  public:
   ~WebBlob() { Reset(); }
 
-  WebBlob() {}
+  WebBlob() = default;
   WebBlob(const WebBlob& b) { Assign(b); }
   WebBlob& operator=(const WebBlob& b) {
     Assign(b);

@@ -47,7 +47,7 @@ class WebImageCache {
   BLINK_EXPORT static void Clear();
 
  private:
-  WebImageCache();  // Not intended to be instanced.
+  WebImageCache() = delete;  // Not intended to be instanced.
 };
 
 }  // namespace blink

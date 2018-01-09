@@ -23,7 +23,7 @@ class WebInputMethodController {
     kKeepSelection,
   };
 
-  virtual ~WebInputMethodController() {}
+  virtual ~WebInputMethodController() = default;
 
   // Called to inform the WebInputMethodController of a new composition text. If
   // selectionStart and selectionEnd has the same value, then it indicates the

@@ -104,7 +104,7 @@ class WebSecurityPolicy {
       const WebString&);
 
  private:
-  WebSecurityPolicy();
+  WebSecurityPolicy() = delete;
 };
 
 }  // namespace blink

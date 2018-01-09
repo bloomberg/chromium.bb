@@ -43,7 +43,7 @@ class WebDateTimeChooserCompletion {
   virtual void DidCancelChooser() = 0;
 
  protected:
-  virtual ~WebDateTimeChooserCompletion() {}
+  virtual ~WebDateTimeChooserCompletion() = default;
 };
 
 }  // namespace blink

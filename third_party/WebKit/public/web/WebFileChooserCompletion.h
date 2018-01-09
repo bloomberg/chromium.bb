@@ -76,7 +76,7 @@ class WebFileChooserCompletion {
   virtual void DidChooseFile(const WebVector<SelectedFileInfo>&) {}
 
  protected:
-  virtual ~WebFileChooserCompletion() {}
+  virtual ~WebFileChooserCompletion() = default;
 };
 
 }  // namespace blink

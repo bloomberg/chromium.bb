@@ -60,7 +60,7 @@ struct WebWindowFeatures;
 // easily reused as part of an implementation of WebViewClient.
 class WebViewClient : protected WebWidgetClient {
  public:
-  ~WebViewClient() override {}
+  ~WebViewClient() override = default;
   // Factory methods -----------------------------------------------------
 
   // Create a new related WebView.  This method must clone its session storage

@@ -59,7 +59,7 @@ class BLINK_EXPORT WebEmbeddedWorker {
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle interface_provider);
 
-  virtual ~WebEmbeddedWorker() {}
+  virtual ~WebEmbeddedWorker() = default;
 
   // Starts and terminates WorkerThread and WorkerGlobalScope.
   virtual void StartWorkerContext(const WebEmbeddedWorkerStartData&) = 0;

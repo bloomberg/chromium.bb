@@ -42,7 +42,7 @@ struct WebPoint;
 // time, for example in the instance of an <img> inside an <a>.
 class WebHitTestResult {
  public:
-  WebHitTestResult() {}
+  WebHitTestResult() = default;
   WebHitTestResult(const WebHitTestResult& info) { Assign(info); }
   ~WebHitTestResult() { Reset(); }
 

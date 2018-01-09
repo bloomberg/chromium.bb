@@ -40,7 +40,7 @@ namespace blink {
 
 class WebDOMActivityLogger {
  public:
-  virtual ~WebDOMActivityLogger() {}
+  virtual ~WebDOMActivityLogger() = default;
 
   virtual void LogGetter(const WebString& api_name,
                          const WebURL& url,

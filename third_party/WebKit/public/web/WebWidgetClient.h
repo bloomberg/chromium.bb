@@ -58,7 +58,7 @@ struct WebFloatSize;
 
 class WebWidgetClient {
  public:
-  virtual ~WebWidgetClient() {}
+  virtual ~WebWidgetClient() = default;
 
   // Called when a region of the WebWidget needs to be re-painted.
   virtual void DidInvalidateRect(const WebRect&) {}

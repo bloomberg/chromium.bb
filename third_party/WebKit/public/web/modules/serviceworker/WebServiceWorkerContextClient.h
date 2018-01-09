@@ -64,7 +64,7 @@ class WebString;
 // thread.
 class WebServiceWorkerContextClient {
  public:
-  virtual ~WebServiceWorkerContextClient() {}
+  virtual ~WebServiceWorkerContextClient() = default;
 
   // For Clients#get(id). Requests the embedder to return the specified Client.
   virtual void GetClient(const WebString& client_id,

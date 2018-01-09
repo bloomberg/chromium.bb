@@ -145,7 +145,7 @@ class WebPluginContainer {
   virtual void CancelFullscreen() = 0;
 
  protected:
-  ~WebPluginContainer() {}
+  ~WebPluginContainer() = default;
 };
 
 }  // namespace blink

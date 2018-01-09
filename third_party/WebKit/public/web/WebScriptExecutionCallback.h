@@ -18,7 +18,7 @@ class WebVector;
 
 class WebScriptExecutionCallback {
  public:
-  virtual ~WebScriptExecutionCallback() {}
+  virtual ~WebScriptExecutionCallback() = default;
 
   // Method to be invoked when the asynchronous script is about to execute.
   virtual void WillExecute() {}

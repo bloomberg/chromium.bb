@@ -41,8 +41,8 @@ class WebPlugin;
 // Wraps a WebDocument for full page plugins.
 class WebPluginDocument final : public WebDocument {
  public:
-  WebPluginDocument() {}
-  WebPluginDocument(const WebPluginDocument& e) : WebDocument(e) {}
+  WebPluginDocument() = default;
+  WebPluginDocument(const WebPluginDocument& e) = default;
 
   WebPluginDocument& operator=(const WebPluginDocument& e) {
     WebNode::Assign(e);

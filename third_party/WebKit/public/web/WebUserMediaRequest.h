@@ -60,7 +60,7 @@ class BLINK_EXPORT WebUserMediaRequest {
     kKillSwitchOn
   };
 
-  WebUserMediaRequest() {}
+  WebUserMediaRequest() = default;
   WebUserMediaRequest(const WebUserMediaRequest& request) { Assign(request); }
   ~WebUserMediaRequest() { Reset(); }
 

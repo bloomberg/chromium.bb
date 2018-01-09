@@ -43,7 +43,7 @@ struct WebRect;
 class BLINK_EXPORT WebElement : public WebNode {
  public:
   WebElement() : WebNode() {}
-  WebElement(const WebElement& e) : WebNode(e) {}
+  WebElement(const WebElement& e) = default;
 
   WebElement& operator=(const WebElement& e) {
     WebNode::Assign(e);

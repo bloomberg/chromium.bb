@@ -59,7 +59,7 @@ class WebAutofillClient {
   virtual void DidReceiveLeftMouseDownOrGestureTapInNode(const WebNode&) {}
 
  protected:
-  virtual ~WebAutofillClient() {}
+  virtual ~WebAutofillClient() = default;
 };
 
 }  // namespace blink

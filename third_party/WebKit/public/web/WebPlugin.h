@@ -249,7 +249,7 @@ class WebPlugin {
   virtual bool IsErrorPlaceholder() { return false; }
 
  protected:
-  virtual ~WebPlugin() {}
+  virtual ~WebPlugin() = default;
 };
 
 }  // namespace blink

@@ -39,7 +39,7 @@ class WebTextCheckClient {
   virtual void CancelAllPendingRequests() {}
 
  protected:
-  virtual ~WebTextCheckClient() {}
+  virtual ~WebTextCheckClient() = default;
 };
 
 }  // namespace blink

@@ -62,8 +62,8 @@ class WebDocument : public WebNode {
  public:
   enum CSSOrigin { kAuthorOrigin, kUserOrigin };
 
-  WebDocument() {}
-  WebDocument(const WebDocument& e) : WebNode(e) {}
+  WebDocument() = default;
+  WebDocument(const WebDocument& e) = default;
 
   WebDocument& operator=(const WebDocument& e) {
     WebNode::Assign(e);

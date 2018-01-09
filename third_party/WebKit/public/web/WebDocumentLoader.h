@@ -55,7 +55,7 @@ class BLINK_EXPORT WebDocumentLoader {
  public:
   class ExtraData {
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   // Returns the original request that resulted in this datasource.
@@ -141,7 +141,7 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual void ResetSourceLocation() = 0;
 
  protected:
-  ~WebDocumentLoader() {}
+  ~WebDocumentLoader() = default;
 };
 
 }  // namespace blink

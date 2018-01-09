@@ -9,7 +9,7 @@ namespace blink {
 
 class WebFormElementObserverCallback {
  public:
-  virtual ~WebFormElementObserverCallback() {}
+  virtual ~WebFormElementObserverCallback() = default;
 
   // Invoked when the observed element was either removed from the DOM, it's
   // action attribute changed, or it's computed style changed to display: none.

@@ -63,7 +63,7 @@ class WebHistoryItem {
  public:
   ~WebHistoryItem() { Reset(); }
 
-  WebHistoryItem() {}
+  WebHistoryItem() = default;
   WebHistoryItem(const WebHistoryItem& h) { Assign(h); }
   WebHistoryItem& operator=(const WebHistoryItem& h) {
     Assign(h);

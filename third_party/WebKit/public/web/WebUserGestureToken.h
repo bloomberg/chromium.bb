@@ -42,7 +42,7 @@ class UserGestureToken;
 // processing the user gesture in case it was not consumed meanwhile.
 class WebUserGestureToken {
  public:
-  WebUserGestureToken() {}
+  WebUserGestureToken() = default;
   WebUserGestureToken(const WebUserGestureToken& other) { Assign(other); }
   WebUserGestureToken& operator=(const WebUserGestureToken& other) {
     Assign(other);
