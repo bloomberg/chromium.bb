@@ -786,6 +786,22 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sad4x8_avg          msa sse2/;
   specialize qw/aom_sad4x4_avg          msa sse2/;
 
+  if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
+    specialize qw/aom_sad4x16      sse2/;
+    specialize qw/aom_sad16x4      sse2/;
+    specialize qw/aom_sad8x32      sse2/;
+    specialize qw/aom_sad32x8      sse2/;
+    specialize qw/aom_sad16x64     sse2/;
+    specialize qw/aom_sad64x16     sse2/;
+
+    specialize qw/aom_sad4x16_avg  sse2/;
+    specialize qw/aom_sad16x4_avg  sse2/;
+    specialize qw/aom_sad8x32_avg  sse2/;
+    specialize qw/aom_sad32x8_avg  sse2/;
+    specialize qw/aom_sad16x64_avg sse2/;
+    specialize qw/aom_sad64x16_avg sse2/;
+  }
+
   if (aom_config("CONFIG_JNT_COMP") eq "yes") {
     specialize qw/aom_jnt_sad128x128_avg ssse3/;
     specialize qw/aom_jnt_sad128x64_avg  ssse3/;
@@ -846,27 +862,42 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_highbd_sad128x128 avx2/;
     specialize qw/aom_highbd_sad128x64  avx2/;
     specialize qw/aom_highbd_sad64x128  avx2/;
-    specialize qw/aom_highbd_sad64x64   avx2/;
-    specialize qw/aom_highbd_sad64x32   avx2/;
-    specialize qw/aom_highbd_sad32x64   avx2/;
-    specialize qw/aom_highbd_sad32x32   avx2/;
-    specialize qw/aom_highbd_sad32x16   avx2/;
-    specialize qw/aom_highbd_sad16x32   avx2/;
-    specialize qw/aom_highbd_sad16x16   avx2/;
-    specialize qw/aom_highbd_sad16x8    avx2/;
+    specialize qw/aom_highbd_sad64x64   avx2 sse2/;
+    specialize qw/aom_highbd_sad64x32   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x64   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x32   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x16   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x32   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x16   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x8    avx2 sse2/;
+    specialize qw/aom_highbd_sad8x4     sse2/;
 
     specialize qw/aom_highbd_sad128x128_avg avx2/;
     specialize qw/aom_highbd_sad128x64_avg  avx2/;
     specialize qw/aom_highbd_sad64x128_avg  avx2/;
-    specialize qw/aom_highbd_sad64x64_avg   avx2/;
-    specialize qw/aom_highbd_sad64x32_avg   avx2/;
-    specialize qw/aom_highbd_sad32x64_avg   avx2/;
-    specialize qw/aom_highbd_sad32x32_avg   avx2/;
-    specialize qw/aom_highbd_sad32x16_avg   avx2/;
-    specialize qw/aom_highbd_sad16x32_avg   avx2/;
-    specialize qw/aom_highbd_sad16x16_avg   avx2/;
-    specialize qw/aom_highbd_sad16x8_avg    avx2/;
+    specialize qw/aom_highbd_sad64x64_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad64x32_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x64_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x32_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad32x16_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x32_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x16_avg   avx2 sse2/;
+    specialize qw/aom_highbd_sad16x8_avg    avx2 sse2/;
+    specialize qw/aom_highbd_sad8x4_avg     sse2/;
 
+    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
+      specialize qw/aom_highbd_sad16x4       sse2/;
+      specialize qw/aom_highbd_sad8x32       sse2/;
+      specialize qw/aom_highbd_sad32x8       sse2/;
+      specialize qw/aom_highbd_sad16x64      sse2/;
+      specialize qw/aom_highbd_sad64x16      sse2/;
+
+      specialize qw/aom_highbd_sad16x4_avg   sse2/;
+      specialize qw/aom_highbd_sad8x32_avg   sse2/;
+      specialize qw/aom_highbd_sad32x8_avg   sse2/;
+      specialize qw/aom_highbd_sad16x64_avg  sse2/;
+      specialize qw/aom_highbd_sad64x16_avg  sse2/;
+    }
   #
   # Masked SAD
   #
@@ -984,6 +1015,15 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_sad4x8x4d               msa sse2/;
   specialize qw/aom_sad4x4x4d               msa sse2/;
 
+  if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
+    specialize qw/aom_sad4x16x4d  sse2/;
+    specialize qw/aom_sad16x4x4d  sse2/;
+    specialize qw/aom_sad8x32x4d  sse2/;
+    specialize qw/aom_sad32x8x4d  sse2/;
+    specialize qw/aom_sad16x64x4d sse2/;
+    specialize qw/aom_sad64x16x4d sse2/;
+  }
+
     #
     # Multi-block SAD, comparing a reference to N independent blocks
     #
@@ -997,14 +1037,28 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_highbd_sad128x128x4d avx2/;
     specialize qw/aom_highbd_sad128x64x4d  avx2/;
     specialize qw/aom_highbd_sad64x128x4d  avx2/;
-    specialize qw/aom_highbd_sad64x64x4d   avx2/;
-    specialize qw/aom_highbd_sad64x32x4d   avx2/;
-    specialize qw/aom_highbd_sad32x64x4d   avx2/;
-    specialize qw/aom_highbd_sad32x32x4d   avx2/;
-    specialize qw/aom_highbd_sad32x16x4d   avx2/;
-    specialize qw/aom_highbd_sad16x32x4d   avx2/;
-    specialize qw/aom_highbd_sad16x16x4d   avx2/;
-    specialize qw/aom_highbd_sad16x8x4d    avx2/;
+    specialize qw/aom_highbd_sad64x64x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad64x32x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad32x64x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad32x32x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad32x16x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad16x32x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad16x16x4d   sse2 avx2/;
+    specialize qw/aom_highbd_sad16x8x4d    sse2 avx2/;
+    specialize qw/aom_highbd_sad8x16x4d    sse2/;
+    specialize qw/aom_highbd_sad8x8x4d     sse2/;
+    specialize qw/aom_highbd_sad8x4x4d     sse2/;
+    specialize qw/aom_highbd_sad4x8x4d     sse2/;
+    specialize qw/aom_highbd_sad4x4x4d     sse2/;
+
+    if (aom_config("CONFIG_EXT_PARTITION_TYPES") eq "yes") {
+      specialize qw/aom_highbd_sad4x16x4d  sse2/;
+      specialize qw/aom_highbd_sad16x4x4d  sse2/;
+      specialize qw/aom_highbd_sad8x32x4d  sse2/;
+      specialize qw/aom_highbd_sad32x8x4d  sse2/;
+      specialize qw/aom_highbd_sad16x64x4d sse2/;
+      specialize qw/aom_highbd_sad64x16x4d sse2/;
+    }
 
 
   #
