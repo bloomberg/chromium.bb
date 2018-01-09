@@ -321,7 +321,10 @@ def PrepareSetupExec(options, current_version, prev_version):
     CompressUsingLZMA(options.build_dir, setup_file_path, patch_file,
                       options.verbose)
   else:
-    cmd = ['makecab.exe',
+    # Use makecab.py instead of makecab.exe so that this works when building
+    # on non-Windows hosts too.
+    makecab_py = os.path.join(os.path.dirname(__file__), 'makecab.py')
+    cmd = [sys.executable, makecab_py,
            '/D', 'CompressionType=LZX',
            '/V1',
            '/L', options.output_dir,

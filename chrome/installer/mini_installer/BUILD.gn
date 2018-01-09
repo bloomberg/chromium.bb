@@ -133,6 +133,7 @@ template("generate_mini_installer") {
       "$root_out_dir/locales/en-US.pak",
       "$root_out_dir/setup.exe",
       "$root_out_dir/v8_context_snapshot.bin",
+      "//chrome/tools/build/win/makecab.py",
       release_file,
     ]
 
