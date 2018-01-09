@@ -17371,6 +17371,7 @@ Called by update_net_error_codes.py.-->
   <int value="2320" label="FilterAsContainingBlockMayChangeOutput"/>
   <int value="2321" label="DispatchMouseUpDownEventOnDisabledFormControl"/>
   <int value="2322" label="CSSSelectorPseudoMatches"/>
+  <int value="2323" label="V8RTCRtpSender_ReplaceTrack_Method"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -172,6 +172,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   RTCDTMFSender* createDTMFSender(MediaStreamTrack*, ExceptionState&);
 
+  bool IsClosed() { return closed_; }
   void close();
 
   // We allow getStats after close, but not other calls or callbacks.

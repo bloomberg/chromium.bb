@@ -5,6 +5,7 @@
 #ifndef RTCRtpSender_h
 #define RTCRtpSender_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Member.h"
@@ -15,15 +16,21 @@
 namespace blink {
 
 class MediaStreamTrack;
+class RTCPeerConnection;
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  RTCRtpSender(std::unique_ptr<WebRTCRtpSender>, MediaStreamTrack*);
+  // TODO(hbos): Get rid of sender's reference to RTCPeerConnection?
+  // https://github.com/w3c/webrtc-pc/issues/1712
+  RTCRtpSender(RTCPeerConnection*,
+               std::unique_ptr<WebRTCRtpSender>,
+               MediaStreamTrack*);
 
   MediaStreamTrack* track();
+  ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
 
   WebRTCRtpSender* web_sender();
   // Sets the track. This must be called when the |WebRTCRtpSender| has its
@@ -33,6 +40,7 @@ class RTCRtpSender final : public ScriptWrappable {
   virtual void Trace(blink::Visitor*);
 
  private:
+  Member<RTCPeerConnection> pc_;
   std::unique_ptr<WebRTCRtpSender> sender_;
   Member<MediaStreamTrack> track_;
 };

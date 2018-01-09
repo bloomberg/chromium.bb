@@ -1274,7 +1274,7 @@ HeapVector<Member<RTCRtpSender>> RTCPeerConnection::getSenders() {
         DCHECK(track);
       }
       RTCRtpSender* rtp_sender =
-          new RTCRtpSender(std::move(web_rtp_senders[i]), track);
+          new RTCRtpSender(this, std::move(web_rtp_senders[i]), track);
       rtp_senders_.insert(id, rtp_sender);
       rtp_senders[i] = rtp_sender;
     }
@@ -1324,7 +1324,8 @@ RTCRtpSender* RTCPeerConnection::addTrack(MediaStreamTrack* track,
 
   uintptr_t id = web_rtp_sender->Id();
   DCHECK(rtp_senders_.find(id) == rtp_senders_.end());
-  RTCRtpSender* rtp_sender = new RTCRtpSender(std::move(web_rtp_sender), track);
+  RTCRtpSender* rtp_sender =
+      new RTCRtpSender(this, std::move(web_rtp_sender), track);
   tracks_.insert(track->Component(), track);
   rtp_senders_.insert(id, rtp_sender);
   return rtp_sender;
