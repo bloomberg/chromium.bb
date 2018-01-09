@@ -124,7 +124,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
      */
     public static final int MINIMUM_LOAD_PROGRESS = 5;
 
-    private static final String CHROME_MEMEX_URL = "https://chrome-memex.corp.google.com";
+    private static final String CHROME_MEMEX_URL = "https://chrome-memex.appspot.com";
 
     private final ToolbarLayout mToolbar;
     private final ToolbarControlContainer mControlContainer;
