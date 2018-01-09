@@ -75,7 +75,6 @@
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/layout_ng_list_item.h"
 #include "core/layout/ng/layout_ng_table_cell.h"

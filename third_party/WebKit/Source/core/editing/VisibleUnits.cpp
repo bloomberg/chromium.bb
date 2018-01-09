@@ -58,7 +58,6 @@
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutItem.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"

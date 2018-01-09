@@ -14,7 +14,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutAPIShim.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/PageTestBase.h"
 #include "platform/testing/UseMockScrollbarSettings.h"

@@ -34,7 +34,6 @@
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/api/LayoutItem.h"
 
 namespace blink {
 
@@ -85,24 +84,24 @@ PositionTemplate<Strategy> StartOfParagraphAlgorithm(
         break;
     }
 
-    const LayoutItem layout_item =
-        LayoutItem(previous_node_iterator->GetLayoutObject());
-    if (layout_item.IsNull()) {
+    const LayoutObject* layout_object =
+        previous_node_iterator->GetLayoutObject();
+    if (!layout_object) {
       previous_node_iterator =
           Strategy::PreviousPostOrder(*previous_node_iterator, start_block);
       continue;
     }
-    const ComputedStyle& style = layout_item.StyleRef();
+    const ComputedStyle& style = layout_object->StyleRef();
     if (style.Visibility() != EVisibility::kVisible) {
       previous_node_iterator =
           Strategy::PreviousPostOrder(*previous_node_iterator, start_block);
       continue;
     }
 
-    if (layout_item.IsBR() || IsEnclosingBlock(previous_node_iterator))
+    if (layout_object->IsBR() || IsEnclosingBlock(previous_node_iterator))
       break;
 
-    if (layout_item.IsText() &&
+    if (layout_object->IsText() &&
         ToLayoutText(previous_node_iterator->GetLayoutObject())
             ->ResolvedTextLength()) {
       SECURITY_DCHECK(previous_node_iterator->IsTextNode());

@@ -50,7 +50,6 @@
 #include "core/layout/AdjustForAbsoluteZoom.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
-#include "core/layout/api/LayoutImageItem.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/media_type_names.h"
@@ -235,8 +234,8 @@ void HTMLImageElement::SetBestFitURLAndDPRFromImageCandidate(
     UseCounter::Count(GetDocument(), WebFeature::kSrcsetXDescriptor);
   }
   if (GetLayoutObject() && GetLayoutObject()->IsImage()) {
-    LayoutImageItem(ToLayoutImage(GetLayoutObject()))
-        .SetImageDevicePixelRatio(image_device_pixel_ratio_);
+    ToLayoutImage(GetLayoutObject())
+        ->SetImageDevicePixelRatio(image_device_pixel_ratio_);
 
     if (old_image_device_pixel_ratio != image_device_pixel_ratio_)
       ToLayoutImage(GetLayoutObject())->IntrinsicSizeChanged();

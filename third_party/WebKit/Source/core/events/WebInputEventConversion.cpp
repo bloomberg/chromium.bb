@@ -39,7 +39,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/input/Touch.h"
 #include "core/input/TouchList.h"
-#include "core/layout/api/LayoutItem.h"
+#include "core/layout/LayoutObject.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"

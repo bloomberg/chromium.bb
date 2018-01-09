@@ -31,7 +31,6 @@
 #include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/api/LayoutTextFragmentItem.h"
 #include "platform/wtf/text/WTFString.h"
 #include "platform/wtf/text/icu/UnicodeIcu.h"
 
@@ -218,19 +217,18 @@ void FirstLetterPseudoElement::UpdateTextFragments() {
        child = child->NextSibling()) {
     if (!child->IsText() || !ToLayoutText(child)->IsTextFragment())
       continue;
-    LayoutTextFragmentItem child_fragment =
-        LayoutTextFragmentItem(ToLayoutTextFragment(child));
-    if (child_fragment.GetFirstLetterPseudoElement() != this)
+    LayoutTextFragment* child_fragment = ToLayoutTextFragment(child);
+    if (child_fragment->GetFirstLetterPseudoElement() != this)
       continue;
 
-    child_fragment.SetTextFragment(old_text.Impl()->Substring(0, length), 0,
-                                   length);
-    child_fragment.DirtyLineBoxes();
+    child_fragment->SetTextFragment(old_text.Impl()->Substring(0, length), 0,
+                                    length);
+    child_fragment->DirtyLineBoxes();
 
     // Make sure the first-letter layoutObject is set to require a layout as it
     // needs to re-create the line boxes. The remaining text layoutObject
     // will be marked by the LayoutText::setText.
-    child_fragment.SetNeedsLayoutAndPrefWidthsRecalc(
+    child_fragment->SetNeedsLayoutAndPrefWidthsRecalc(
         LayoutInvalidationReason::kTextChanged);
     break;
   }

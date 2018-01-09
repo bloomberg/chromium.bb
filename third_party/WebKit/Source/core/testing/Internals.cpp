@@ -107,7 +107,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/api/LayoutMenuListItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
@@ -2988,9 +2987,8 @@ String Internals::selectMenuListText(HTMLSelectElement* select) {
   if (!layout_object || !layout_object->IsMenuList())
     return String();
 
-  LayoutMenuListItem menu_list_item =
-      LayoutMenuListItem(ToLayoutMenuList(layout_object));
-  return menu_list_item.GetText();
+  LayoutMenuList* menu_list = ToLayoutMenuList(layout_object);
+  return menu_list->GetText();
 }
 
 bool Internals::isSelectPopupVisible(Node* node) {

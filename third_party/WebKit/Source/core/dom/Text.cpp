@@ -36,7 +36,6 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutTextFragment.h"
-#include "core/layout/api/LayoutTextItem.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
 #include "core/svg/SVGForeignObjectElement.h"
 #include "core/svg_names.h"
@@ -383,7 +382,7 @@ void Text::ReattachLayoutTreeIfNeeded(const AttachContext& context) {
 }
 
 void Text::RecalcTextStyle(StyleRecalcChange change) {
-  if (LayoutTextItem layout_item = LayoutTextItem(GetLayoutObject())) {
+  if (LayoutText* layout_text = GetLayoutObject()) {
     if (change != kNoChange || NeedsStyleRecalc()) {
       scoped_refptr<ComputedStyle> new_style =
           GetDocument().EnsureStyleResolver().StyleForText(this);
@@ -396,10 +395,10 @@ void Text::RecalcTextStyle(StyleRecalcChange change) {
         SetNeedsReattachLayoutTree();
         return;
       }
-      layout_item.SetStyle(std::move(new_style));
+      layout_text->SetStyle(std::move(new_style));
     }
     if (NeedsStyleRecalc())
-      layout_item.SetText(DataImpl());
+      layout_text->SetText(DataImpl());
     ClearNeedsStyleRecalc();
   } else if (NeedsStyleRecalc() || NeedsWhitespaceLayoutObject()) {
     SetNeedsReattachLayoutTree();
