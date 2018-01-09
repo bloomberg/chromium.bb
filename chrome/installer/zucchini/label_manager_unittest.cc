@@ -134,48 +134,4 @@ TEST(LabelManagerTest, Unordered) {
   EXPECT_EQ(5U, label_manager.IndexOfOffset(0x77));
 }
 
-TEST(LabelManagerTest, OrderedBatch) {
-  // Initialize Label Manager.
-  OrderedLabelManager label_manager;
-  label_manager.InsertOffsets({0x33, 0x11, 0x11, 0x55, 0x00, 0x55});
-  EXPECT_EQ(OffsetVector({0x00, 0x11, 0x33, 0x55}), label_manager.Labels());
-
-  // Test data for array conversions.
-  OffsetVector values = {0x22, 0x33, 0x44, MarkIndex(3), 0x11};
-
-  // Convert all stored offsets for marked index.
-  for (auto& v : values)
-    v = label_manager.MarkedIndexFromOffset(v);
-  EXPECT_EQ(
-      OffsetVector({0x22, MarkIndex(2), 0x44, MarkIndex(3), MarkIndex(1)}),
-      values);
-
-  // Convert all marked index (assumed to be all stored) to offsets.
-  for (auto& v : values)
-    v = label_manager.OffsetFromMarkedIndex(v);
-  EXPECT_EQ(OffsetVector({0x22, 0x33, 0x44, 0x55, 0x11}), values);
-}
-
-TEST(LabelManagerTest, UnorderedBatch) {
-  // Initialize Label Manager.
-  UnorderedLabelManager label_manager;
-  OffsetVector labels = {0x00, BAD, 0x33, BAD, 0x11, BAD, 0x55};
-  label_manager.Init(std::move(labels));
-
-  // Test data for array conversions.
-  OffsetVector values = {0x22, 0x33, 0x44, MarkIndex(6), 0x11};
-
-  // Convert all stored offsets for marked index.
-  for (auto& v : values)
-    v = label_manager.MarkedIndexFromOffset(v);
-  EXPECT_EQ(
-      OffsetVector({0x22, MarkIndex(2), 0x44, MarkIndex(6), MarkIndex(4)}),
-      values);
-
-  // Convert all marked index (assumed to be all stored) to offsets.
-  for (auto& v : values)
-    v = label_manager.OffsetFromMarkedIndex(v);
-  EXPECT_EQ(OffsetVector({0x22, 0x33, 0x44, 0x55, 0x11}), values);
-}
-
 }  // namespace zucchini

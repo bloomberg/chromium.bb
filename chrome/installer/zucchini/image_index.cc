@@ -15,7 +15,7 @@ namespace zucchini {
 ImageIndex::ImageIndex(ConstBufferView image)
     : image_(image), type_tags_(image.size(), kNoTypeTag) {}
 
-ImageIndex::ImageIndex(ImageIndex&& that) = default;
+ImageIndex::ImageIndex(ImageIndex&&) = default;
 
 ImageIndex::~ImageIndex() = default;
 

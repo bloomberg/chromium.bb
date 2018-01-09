@@ -13,8 +13,6 @@
 
 namespace zucchini {
 
-class BaseLabelManager;
-
 // Ordered container of distinct targets that have the same semantics, along
 // with a list of associated reference types, only used during patch generation.
 class TargetPool {
@@ -43,8 +41,6 @@ class TargetPool {
   // this class.
   offset_t OffsetForKey(key_t key) const { return targets_[key]; }
 
-  size_t label_bound() const { return label_bound_; }
-
   // Accessors for testing.
   const std::vector<offset_t>& targets() const { return targets_; }
   const std::vector<TypeTag>& types() const { return types_; }
@@ -54,33 +50,9 @@ class TargetPool {
   const_iterator begin() const;
   const_iterator end() const;
 
-  // The three functions below are transition hacks that mark targets, which
-  // will disappear.
-
-  // Replaces every target represented as offset whose Label is in
-  // |label_manager| by the index of this Label, and updates the Label bound
-  // associated with |pool|.
-  void LabelTargets(const BaseLabelManager& label_manager);
-
-  // Replaces every associated target represented as offset whose Label is in
-  // |label_manager| by the index of this Label, and updates the Label bound
-  // associated with |pool|. A target is associated iff its Label index is also
-  // used in |reference_label_manager|. All targets must have a Label in
-  // |label_manager|, and must be represented as offset when calling this
-  // function, implying it can only be called once for each |pool|, until
-  // UnlabelTargets() (below) is called.
-  void LabelAssociatedTargets(const BaseLabelManager& label_manager,
-                              const BaseLabelManager& reference_label_manager);
-
-  // Replaces every target represented as a Label index by its original offset,
-  // assuming that |label_manager| still holds the same Labels referered to by
-  // target indices. Resets Label bound associated with |pool| to 0.
-  void UnlabelTargets(const BaseLabelManager& label_manager);
-
  private:
   std::vector<TypeTag> types_;     // Enumerates type_tag for this pool.
   std::vector<offset_t> targets_;  // Targets for pool in ascending order.
-  size_t label_bound_ = 0;
 };
 
 }  // namespace zucchini
