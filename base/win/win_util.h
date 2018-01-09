@@ -144,16 +144,27 @@ BASE_EXPORT void SetAbortBehaviorForCrashReporting();
 BASE_EXPORT bool IsWindows10TabletMode(HWND hwnd);
 
 // A tablet is a device that is touch enabled and also is being used
-// "like a tablet". This is used by the following:-
-// 1. Metrics:- To gain insight into how users use Chrome.
-// 2. Physical keyboard presence :- If a device is in tablet mode, it means
+// "like a tablet". This is used by the following:
+// 1. Metrics: To gain insight into how users use Chrome.
+// 2. Physical keyboard presence: If a device is in tablet mode, it means
 //    that there is no physical keyboard attached.
-// 3. To set the right interactions media queries,
-//    see https://drafts.csswg.org/mediaqueries-4/#mf-interaction
 // This function optionally sets the |reason| parameter to determine as to why
 // or why not a device was deemed to be a tablet.
-// Returns true if the device is in tablet mode.
+// Returns true if the user has set Windows 10 in tablet mode.
 BASE_EXPORT bool IsTabletDevice(std::string* reason, HWND hwnd);
+
+// Return true if the device is physically used as a tablet independently of
+// Windows tablet mode. It checks if the device:
+// - Is running Windows 8 or newer,
+// - Has a touch digitizer,
+// - Is not docked,
+// - Has a supported rotation sensor,
+// - Is not in laptop mode,
+// - prefers the mobile or slate power management profile (per OEM choice), and
+// - Is in slate mode.
+// This function optionally sets the |reason| parameter to determine as to why
+// or why not a device was deemed to be a tablet.
+BASE_EXPORT bool IsDeviceUsedAsATablet(std::string* reason);
 
 // A slate is a touch device that may have a keyboard attached. This function
 // returns true if a keyboard is attached and optionally will set the |reason|

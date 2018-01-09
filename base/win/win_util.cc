@@ -458,6 +458,21 @@ bool IsTabletDevice(std::string* reason, HWND hwnd) {
   if (IsWindows10TabletMode(hwnd))
     return true;
 
+  return IsDeviceUsedAsATablet(reason);
+}
+
+// This method is used to set the right interactions media queries,
+// see https://drafts.csswg.org/mediaqueries-4/#mf-interaction. It doesn't
+// check the Windows 10 tablet mode because it doesn't reflect the actual
+// input configuration of the device and can be manually triggered by the user
+// independently from the hardware state.
+bool IsDeviceUsedAsATablet(std::string* reason) {
+  if (GetVersion() < VERSION_WIN8) {
+    if (reason)
+      *reason = "Tablet device detection not supported below Windows 8\n";
+    return false;
+  }
+
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {
     if (reason) {
       *reason += "Device does not support touch.\n";
@@ -485,22 +500,16 @@ bool IsTabletDevice(std::string* reason, HWND hwnd) {
           GetModuleHandle(L"user32.dll"), "GetAutoRotationState"));
 
   if (get_auto_rotation_state_func) {
-    AR_STATE rotation_state;
-    ZeroMemory(&rotation_state, sizeof(AR_STATE));
-    if (get_auto_rotation_state_func(&rotation_state)) {
-      if ((rotation_state & AR_NOT_SUPPORTED) || (rotation_state & AR_LAPTOP) ||
-          (rotation_state & AR_NOSENSOR))
-        return false;
-    }
+    AR_STATE rotation_state = AR_ENABLED;
+    if (get_auto_rotation_state_func(&rotation_state) &&
+        (rotation_state & (AR_NOT_SUPPORTED | AR_LAPTOP | AR_NOSENSOR)) != 0)
+      return false;
   }
 
   // PlatformRoleSlate was added in Windows 8+.
   POWER_PLATFORM_ROLE role = GetPlatformRole();
-  bool mobile_power_profile = (role == PlatformRoleMobile);
-  bool slate_power_profile = (role == PlatformRoleSlate);
-
   bool is_tablet = false;
-  if (mobile_power_profile || slate_power_profile) {
+  if (role == PlatformRoleMobile || role == PlatformRoleSlate) {
     is_tablet = !GetSystemMetrics(SM_CONVERTIBLESLATEMODE);
     if (!is_tablet) {
       if (reason) {
