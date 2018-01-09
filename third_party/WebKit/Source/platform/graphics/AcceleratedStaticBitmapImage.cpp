@@ -28,7 +28,7 @@ AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper) {
-  DCHECK(image->isTextureBacked());
+  CHECK(image && image->isTextureBacked());
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       std::move(image), std::move(context_provider_wrapper)));
 }
@@ -50,6 +50,7 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
         context_provider_wrapper) {
+  CHECK(image && image->isTextureBacked());
   texture_holder_ = WTF::WrapUnique(new SkiaTextureHolder(
       std::move(image), std::move(context_provider_wrapper)));
   thread_checker_.DetachFromThread();
