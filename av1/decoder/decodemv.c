@@ -936,7 +936,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         *tx_type = av1_ext_tx_inv[tx_set_type][aom_read_symbol(
             r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
             av1_num_ext_tx_set[tx_set_type], ACCT_STR)];
-      } else if (ALLOW_INTRA_EXT_TX) {
+      } else {
 #if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
         if (mbmi->filter_intra_mode_info.use_filter_intra)

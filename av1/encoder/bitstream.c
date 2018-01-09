@@ -1070,7 +1070,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
         aom_write_symbol(w, av1_ext_tx_ind[tx_set_type][tx_type],
                          ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
                          av1_num_ext_tx_set[tx_set_type]);
-      } else if (ALLOW_INTRA_EXT_TX) {
+      } else {
 #if CONFIG_FILTER_INTRA
         PREDICTION_MODE intra_dir;
         if (mbmi->filter_intra_mode_info.use_filter_intra)

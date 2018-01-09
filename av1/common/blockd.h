@@ -718,8 +718,6 @@ static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
   return bsize > BLOCK_4X4;
 }
 
-#define ALLOW_INTRA_EXT_TX 1
-
 // Number of transform types in each set type
 static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
   1, 2, 5, 7, 7, 10, 12, 16, 16,
@@ -992,10 +990,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
 #endif
     return DCT_DCT;
   if (plane_type == PLANE_TYPE_Y) {
-#if !ALLOW_INTRA_EXT_TX
-    if (is_inter_block(mbmi))
-#endif  // ALLOW_INTRA_EXT_TX
-      return mbmi->tx_type;
+    return mbmi->tx_type;
   }
 
   if (is_inter_block(mbmi)) {
