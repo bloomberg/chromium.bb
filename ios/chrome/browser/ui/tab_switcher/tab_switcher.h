@@ -16,6 +16,7 @@
 @class Tab;
 @class TabModel;
 @protocol TabSwitcher;
+@protocol ToolbarCommands;
 @protocol ToolbarOwner;
 
 // This delegate is used to drive the TabSwitcher dismissal and execute code
@@ -65,8 +66,9 @@
 @property(nonatomic, assign) id<TabSwitcherAnimationDelegate> animationDelegate;
 
 // Dispatcher for anything that acts in a "browser" role.
-@property(nonatomic, readonly) id<ApplicationCommands, BrowserCommands>
-    dispatcher;
+@property(nonatomic, readonly)
+    id<ApplicationCommands, BrowserCommands, ToolbarCommands>
+        dispatcher;
 
 // Restores the internal state of the tab switcher with the given tab models,
 // which must not be nil. |activeTabModel| is the model which starts active,

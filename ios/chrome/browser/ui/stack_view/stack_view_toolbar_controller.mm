@@ -36,7 +36,7 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
 }
 
 - (instancetype)initWithDispatcher:
-    (id<ApplicationCommands, BrowserCommands>)dispatcher {
+    (id<ApplicationCommands, BrowserCommands, ToolbarCommands>)dispatcher {
   self = [super initWithStyle:ToolbarControllerStyleDarkMode
                    dispatcher:dispatcher];
   if (self) {

@@ -22,7 +22,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface LegacyToolbarCoordinator () {
+@interface LegacyToolbarCoordinator ()<ToolbarCommands> {
   // Coordinator for the tools menu UI.
   ToolsMenuCoordinator* _toolsMenuCoordinator;
   // The fullscreen updater.

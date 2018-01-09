@@ -27,6 +27,7 @@ class GURL;
 @class Tab;
 @class TabModel;
 @protocol TabStripFoldAnimation;
+@protocol ToolbarCommands;
 
 namespace ios {
 class ChromeBrowserState;
@@ -60,6 +61,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
                                   BrowserCommands,
                                   OmniboxFocuser,
                                   SnackbarCommands,
+                                  ToolbarCommands,
                                   UrlLoader,
                                   WebToolbarDelegate>
     dispatcher;

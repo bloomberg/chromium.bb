@@ -62,11 +62,12 @@
   return new ToolbarModelImplIOS(delegate);
 }
 
-- (id<Toolbar>)
-newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
-                       urlLoader:(id<UrlLoader>)urlLoader
-                      dispatcher:
-                          (id<ApplicationCommands, BrowserCommands>)dispatcher {
+- (id<Toolbar>)newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
+                                      urlLoader:(id<UrlLoader>)urlLoader
+                                     dispatcher:
+                                         (id<ApplicationCommands,
+                                             BrowserCommands,
+                                             ToolbarCommands>)dispatcher {
   id<Toolbar> toolbarController;
   if (base::FeatureList::IsEnabled(kCleanToolbar)) {
     ToolbarAdapter* adapter =

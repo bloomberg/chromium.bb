@@ -16,6 +16,7 @@
 @class PKAddPassesViewController;
 @class TabModel;
 @protocol Toolbar;
+@protocol ToolbarCommands;
 class ToolbarModelDelegateIOS;
 class ToolbarModelIOS;
 class WebStateList;
@@ -49,11 +50,11 @@ class ChromeBrowserState;
 - (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
     (ToolbarModelDelegateIOS*)delegate;
 
-- (id<Toolbar>)
-newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
-                       urlLoader:(id<UrlLoader>)urlLoader
-                      dispatcher:
-                          (id<ApplicationCommands, BrowserCommands>)dispatcher;
+- (id<Toolbar>)newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
+                                      urlLoader:(id<UrlLoader>)urlLoader
+                                     dispatcher:(id<ApplicationCommands,
+                                                    BrowserCommands,
+                                                    ToolbarCommands>)dispatcher;
 
 // Returns a new keyboard commands coordinator to handle keyboard commands.
 - (KeyCommandsProvider*)newKeyCommandsProvider;

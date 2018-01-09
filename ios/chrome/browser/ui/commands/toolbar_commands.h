@@ -9,6 +9,8 @@
 @protocol ToolbarCommands
 // Contracts the Toolbar to its regular form.
 - (void)contractToolbar;
+// Triggers the animation of the tools menu button.
+- (void)triggerToolsMenuButtonAnimation;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_TOOLBAR_COMMANDS_H_
