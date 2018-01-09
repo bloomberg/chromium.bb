@@ -49,6 +49,9 @@ NSString* const kCreditCardAutofillTouchBarId = @"credit-card-autofill";
 NSString* const kCreditCardTouchId = @"CREDIT-CARD";
 NSString* const kCreditCardItemsTouchId = @"CREDIT-CARD-ITEMS";
 
+// Maximum number of autofill items that can appear on the touch bar.
+constexpr int maxTouchBarItems = 3;
+
 // Returns the credit card image.
 NSImage* GetCreditCardTouchBarImage(int iconId) {
   if (iconId == -1)
@@ -185,7 +188,8 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
     return nil;
 
   NSMutableArray* creditCardItems = [NSMutableArray array];
-  for (int i = 0; i < controller_->GetLineCount(); i++) {
+  for (int i = 0; i < controller_->GetLineCount() && i < maxTouchBarItems;
+       i++) {
     const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (suggestion.frontend_id < autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
       continue;
