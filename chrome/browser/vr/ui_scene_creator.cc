@@ -1482,7 +1482,6 @@ void UiSceneCreator::CreateOmnibox() {
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](TextInput* e, Model* m, const bool& v) {
-            m->omnibox_text_field_info = TextInputInfo();
             if (v) {
               e->RequestFocus();
             } else {
@@ -1491,11 +1490,21 @@ void UiSceneCreator::CreateOmnibox() {
           },
           base::Unretained(omnibox_text_field.get()),
           base::Unretained(model_))));
+  omnibox_text_field->AddBinding(base::MakeUnique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) { return m->has_mode_in_stack(kModeEditingOmnibox); },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](TextInput* e, Model* m, const bool& unused) {
+            m->omnibox_text_field_info = TextInputInfo();
+          },
+          base::Unretained(omnibox_text_field.get()),
+          base::Unretained(model_))));
   omnibox_text_field->AddBinding(base::MakeUnique<Binding<AutocompleteStatus>>(
       VR_BIND_LAMBDA(
           [](Model* m) {
             AutocompleteStatus state;
-            state.active = m->omnibox_editing_enabled();
+            state.active = m->has_mode_in_stack(kModeEditingOmnibox);
             state.input = m->omnibox_text_field_info.text;
             return state;
           },
@@ -1531,15 +1540,9 @@ void UiSceneCreator::CreateOmnibox() {
   mic_icon_box->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                         kOmniboxTextFieldIconButtonSizeDMM);
   mic_icon_box->set_corner_radius(kOmniboxTextFieldIconButtonRadiusDMM);
-  mic_icon_box->AddBinding(base::MakeUnique<Binding<bool>>(
-      VR_BIND_LAMBDA(
-          [](Model* m) {
-            return !m->incognito &&
-                   m->speech.has_or_can_request_audio_permission;
-          },
-          base::Unretained(model_)),
-      VR_BIND_LAMBDA([](UiElement* e, const bool& v) { e->SetVisible(v); },
-                     mic_icon_box.get())));
+  VR_BIND_VISIBILITY(
+      mic_icon_box,
+      !model->incognito && model->speech.has_or_can_request_audio_permission);
   VR_BIND_BUTTON_COLORS(model_, mic_icon_box.get(),
                         &ColorScheme::omnibox_voice_search_button_colors,
                         &Button::SetButtonColors);

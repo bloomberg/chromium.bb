@@ -75,6 +75,14 @@ UiMode Model::get_last_opaque_mode() const {
   return kModeBrowsing;
 }
 
+bool Model::has_mode_in_stack(UiMode mode) const {
+  for (auto stacked_mode : ui_modes) {
+    if (mode == stacked_mode)
+      return true;
+  }
+  return false;
+}
+
 bool Model::browsing_enabled() const {
   return !web_vr_enabled();
 }
