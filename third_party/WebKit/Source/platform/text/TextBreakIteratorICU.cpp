@@ -26,6 +26,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "platform/text/ICUError.h"
 #include "platform/text/TextBreakIteratorInternalICU.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashMap.h"
@@ -780,12 +781,14 @@ void NonSharedCharacterBreakIterator::CreateIteratorForBuffer(
       iterator_ &&
       CompareAndSwapNonSharedCharacterBreakIterator(iterator_, nullptr);
   if (!created_iterator) {
-    UErrorCode error_code = U_ZERO_ERROR;
+    ICUError error_code;
     iterator_ = icu::BreakIterator::createCharacterInstance(
         icu::Locale(CurrentTextBreakLocaleID()), error_code);
-    DCHECK(U_SUCCESS(error_code))
+    CHECK(U_SUCCESS(error_code) && iterator_)
         << "ICU could not open a break iterator: " << u_errorName(error_code)
         << " (" << error_code << ")";
+  } else {
+    CHECK(iterator_);
   }
 
   SetText16(iterator_, buffer, length);
