@@ -26,7 +26,8 @@ PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
       waiting_for_sign_in_(false),
       waiting_for_refresh_token_(false),
       access_token_retried_(false),
-      mode_(mode) {
+      mode_(mode),
+      weak_factory_(this) {
   Start();
 }
 
@@ -80,10 +81,12 @@ void PrimaryAccountAccessTokenFetcher::WaitForRefreshToken() {
 void PrimaryAccountAccessTokenFetcher::ScheduleStartAccessTokenRequest() {
   // Fire off the request asynchronously to mimic the asynchronous flow that
   // will occur when this request is going through the Identity Service.
+  // NOTE: Posting the task using a WeakPtr is necessary as this instance
+  // might die before the posted task runs (https://crbug.com/800263).
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PrimaryAccountAccessTokenFetcher::StartAccessTokenRequest() {
