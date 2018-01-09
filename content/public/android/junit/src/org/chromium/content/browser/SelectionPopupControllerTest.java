@@ -17,8 +17,10 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 import android.view.ActionMode;
 import android.view.View;
 
@@ -28,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog;
 
@@ -55,6 +58,7 @@ public class SelectionPopupControllerTest {
     private PackageManager mPackageManager;
     private SmartSelectionMetricsLogger mLogger;
     private RenderCoordinates mRenderCoordinates;
+    private ContentResolver mContentResolver;
 
     private static final String MOUNTAIN_FULL = "585 Franklin Street, Mountain View, CA 94041";
     private static final String MOUNTAIN = "Mountain";
@@ -126,7 +130,12 @@ public class SelectionPopupControllerTest {
         mRenderCoordinates = Mockito.mock(RenderCoordinates.class);
         mLogger = Mockito.mock(SmartSelectionMetricsLogger.class);
 
+        mContentResolver = RuntimeEnvironment.application.getContentResolver();
+        // To let isDeviceProvisioned() call in showSelectionMenu() return true.
+        Settings.System.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 1);
+
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mContext.getContentResolver()).thenReturn(mContentResolver);
         when(mWebContents.getRenderCoordinates()).thenReturn(mRenderCoordinates);
         when(mRenderCoordinates.getDeviceScaleFactor()).thenReturn(1.f);
 
