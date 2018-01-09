@@ -144,11 +144,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public float getMouseWheelTickMultiplier() {
-        return 0.f;
-    }
-
-    @Override
     public String getSelectedText() {
         return null;
     }

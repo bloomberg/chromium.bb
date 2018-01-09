@@ -86,11 +86,6 @@ public interface ContentViewCore {
         void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix);
 
         /**
-         * @see View#awakenScrollBars()
-         */
-        boolean awakenScrollBars();
-
-        /**
          * @see View#awakenScrollBars(int, boolean)
          */
         boolean super_awakenScrollBars(int startDelay, boolean invalidate);
@@ -224,11 +219,6 @@ public interface ContentViewCore {
      * @return Viewport height in physical pixels as set from onSizeChanged.
      */
     int getViewportHeightPix();
-
-    /**
-     * @return The number of pixels (DIPs) each tick of the mouse wheel should scroll.
-     */
-    float getMouseWheelTickMultiplier();
 
     /**
      * @return Whether the current focused node is editable.

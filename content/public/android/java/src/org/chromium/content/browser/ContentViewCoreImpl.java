@@ -526,9 +526,11 @@ public class ContentViewCoreImpl
         return mContainerView.getHeight();
     }
 
-    @Override
+    /**
+     * @return The number of pixels (DIPs) each tick of the mouse wheel should scroll.
+     */
     @CalledByNative
-    public float getMouseWheelTickMultiplier() {
+    private float getMouseWheelTickMultiplier() {
         return mRenderCoordinates.getWheelScrollFactor()
                 / mRenderCoordinates.getDeviceScaleFactor();
     }

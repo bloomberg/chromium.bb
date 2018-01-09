@@ -239,11 +239,6 @@ public class FullScreenView extends FrameLayout {
         }
 
         @Override
-        public boolean awakenScrollBars() {
-            return FullScreenView.this.awakenScrollBars(0);
-        }
-
-        @Override
         public boolean super_awakenScrollBars(int startDelay, boolean invalidate) {
             return FullScreenView.super.awakenScrollBars(startDelay, invalidate);
         }
