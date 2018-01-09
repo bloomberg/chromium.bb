@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "content/browser/browser_main_loop.h"
@@ -22,6 +23,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #endif
 
@@ -43,6 +45,10 @@ class ConnectionFilterImpl : public ConnectionFilter {
   ConnectionFilterImpl() {
 #if defined(OS_WIN)
     registry_.AddInterface(base::BindRepeating(&FontCacheDispatcher::Create));
+    registry_.AddInterface(
+        base::BindRepeating(&DWriteFontProxyImpl::Create),
+        base::CreateSequencedTaskRunnerWithTraits(
+            {base::TaskPriority::USER_BLOCKING, base::MayBlock()}));
 #endif
     if (!IsRunningWithMus()) {
       // For mus, the mojom::discardable_memory::DiscardableSharedMemoryManager

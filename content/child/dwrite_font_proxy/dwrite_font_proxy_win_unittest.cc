@@ -11,11 +11,8 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "content/common/dwrite_font_proxy_messages.h"
-#include "content/common/view_messages.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/test/dwrite_font_fake_sender_win.h"
-#include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mswr = Microsoft::WRL;
@@ -27,10 +24,10 @@ namespace {
 class DWriteFontProxyUnitTest : public testing::Test {
  public:
   DWriteFontProxyUnitTest() {
-    fake_collection_ = new FakeFontCollection();
+    fake_collection_ = std::make_unique<FakeFontCollection>();
     SetupFonts(fake_collection_.get());
     DWriteFontCollectionProxy::Create(&collection_, factory.Get(),
-                                      fake_collection_->GetTrackingSender());
+                                      fake_collection_->CreatePtr());
     EXPECT_TRUE(collection_.Get());
   }
 
@@ -43,14 +40,14 @@ class DWriteFontProxyUnitTest : public testing::Test {
     fonts->AddFont(L"Aardvark")
         .AddFamilyName(L"en-us", L"Aardvark")
         .AddFamilyName(L"de-de", L"Erdferkel")
-        .AddFilePath(L"X:\\Nonexistent\\Folder\\Aardvark.ttf");
+        .AddFilePath(base::FilePath(L"X:\\Nonexistent\\Folder\\Aardvark.ttf"));
     FakeFont& arial =
         fonts->AddFont(L"Arial").AddFamilyName(L"en-us", L"Arial");
     for (auto& path : arial_font_files)
-      arial.AddFilePath(path);
+      arial.AddFilePath(base::FilePath(path));
     fonts->AddFont(L"Times New Roman")
         .AddFamilyName(L"en-us", L"Times New Roman")
-        .AddFilePath(L"X:\\Nonexistent\\Folder\\Times.ttf");
+        .AddFilePath(base::FilePath(L"X:\\Nonexistent\\Folder\\Times.ttf"));
   }
 
   static void SetUpTestCase() {
@@ -70,7 +67,8 @@ class DWriteFontProxyUnitTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<FakeFontCollection> fake_collection_;
+  base::test::ScopedTaskEnvironment task_environment;
+  std::unique_ptr<FakeFontCollection> fake_collection_;
   mswr::ComPtr<DWriteFontCollectionProxy> collection_;
 
   static std::vector<base::string16> arial_font_files;
@@ -84,8 +82,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFamilyCount) {
 
   EXPECT_EQ(3u, family_count);
   ASSERT_EQ(1u, fake_collection_->MessageCount());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyCount::ID),
-            fake_collection_->GetIpcMessage(0)->type());
+  EXPECT_EQ(FakeFontCollection::MessageType::kGetFamilyCount,
+            fake_collection_->GetMessageType(0));
 
   // Calling again should not cause another message to be sent.
   family_count = collection_->GetFontFamilyCount();
@@ -104,10 +102,10 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
   EXPECT_EQ(1u, index);
   EXPECT_TRUE(exists);
   ASSERT_EQ(2u, fake_collection_->MessageCount());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_FindFamily::ID),
-            fake_collection_->GetIpcMessage(0)->type());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyCount::ID),
-            fake_collection_->GetIpcMessage(1)->type());
+  EXPECT_EQ(FakeFontCollection::MessageType::kFindFamily,
+            fake_collection_->GetMessageType(0));
+  EXPECT_EQ(FakeFontCollection::MessageType::kGetFamilyCount,
+            fake_collection_->GetMessageType(1));
 }
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
@@ -121,8 +119,8 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
   EXPECT_EQ(UINT32_MAX, index);
   EXPECT_FALSE(exists);
   ASSERT_EQ(1u, fake_collection_->MessageCount());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_FindFamily::ID),
-            fake_collection_->GetIpcMessage(0)->type());
+  EXPECT_EQ(FakeFontCollection::MessageType::kFindFamily,
+            fake_collection_->GetMessageType(0));
 }
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldNotSendDuplicateIPC) {
@@ -202,8 +200,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
   hr = family->GetFamilyNames(&names);
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(3u, fake_collection_->MessageCount());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFamilyNames::ID),
-            fake_collection_->GetIpcMessage(2)->type());
+  EXPECT_EQ(FakeFontCollection::MessageType::kGetFamilyNames,
+            fake_collection_->GetMessageType(2));
 
   EXPECT_EQ(2u, names->GetCount());
   UINT32 locale_index = 0;
@@ -288,8 +286,8 @@ TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
   UINT32 font_count = family->GetFontCount();
   EXPECT_LT(0u, font_count);
   EXPECT_EQ(3u, fake_collection_->MessageCount());
-  EXPECT_EQ(static_cast<uint32_t>(DWriteFontProxyMsg_GetFontFiles::ID),
-            fake_collection_->GetIpcMessage(2)->type());
+  EXPECT_EQ(FakeFontCollection::MessageType::kGetFontFiles,
+            fake_collection_->GetMessageType(2));
   mswr::ComPtr<IDWriteFont> font;
   hr = family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL,
                                     DWRITE_FONT_STRETCH_NORMAL,
@@ -335,17 +333,17 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFromFontFaceShouldFindFont) {
 }
 
 TEST_F(DWriteFontProxyUnitTest, TestCustomFontFiles) {
-  scoped_refptr<FakeFontCollection> fonts = new FakeFontCollection();
-  FakeFont& arial = fonts->AddFont(L"Arial").AddFamilyName(L"en-us", L"Arial");
+  FakeFontCollection fonts;
+  FakeFont& arial = fonts.AddFont(L"Arial").AddFamilyName(L"en-us", L"Arial");
   for (auto& path : arial_font_files) {
     base::File file(base::FilePath(path), base::File::FLAG_OPEN |
                                               base::File::FLAG_READ |
                                               base::File::FLAG_EXCLUSIVE_WRITE);
-    arial.AddFileHandle(IPC::TakePlatformFileForTransit(std::move(file)));
+    arial.AddFileHandle(std::move(file));
   }
   mswr::ComPtr<DWriteFontCollectionProxy> collection;
   DWriteFontCollectionProxy::Create(&collection, factory.Get(),
-                                    fonts->GetTrackingSender());
+                                    fonts.CreatePtr());
 
   // Check that we can get the font family and match a font.
   UINT32 index = UINT_MAX;

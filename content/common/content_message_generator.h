@@ -165,11 +165,3 @@
     "Failed to include content/common/media/surface_view_manager_messages_android.h"
 #endif
 #endif  // defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-#undef CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
-#include "content/common/dwrite_font_proxy_messages.h"
-#ifndef CONTENT_COMMON_DWRITE_FONT_PROXY_MESSAGES_H_
-#error "Failed to include content/common/dwrite_font_proxy_messages.h"
-#endif
-#endif  // defined(OS_WIN)

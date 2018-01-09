@@ -227,7 +227,6 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
-#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
@@ -1777,8 +1776,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::WrapRefCounted(storage_partition_impl_->GetFileSystemContext())));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
-#elif defined(OS_WIN)
-  AddFilter(new DWriteFontProxyMessageFilter());
 #endif
 
   scoped_refptr<CacheStorageDispatcherHost> cache_storage_filter =
