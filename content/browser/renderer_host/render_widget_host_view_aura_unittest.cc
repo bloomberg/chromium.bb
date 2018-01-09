@@ -2359,7 +2359,13 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
 
 // Checks that InputMsg_CursorVisibilityChange IPC messages are dispatched
 // to the renderer at the correct times.
-TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
+// Flaky on OS_FUCHSIA: http://crbug.com/800415
+#if defined(OS_FUCHSIA)
+#define MAYBE_CursorVisibilityChange DISABLED_CursorVisibilityChange
+#else
+#define MAYBE_CursorVisibilityChange CursorVisibilityChange
+#endif
+TEST_F(RenderWidgetHostViewAuraTest, MAYBE_CursorVisibilityChange) {
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(),
