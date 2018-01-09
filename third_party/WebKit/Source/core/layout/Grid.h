@@ -10,7 +10,7 @@
 #include "core/style/GridArea.h"
 #include "core/style/GridPositionsResolver.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/LinkedHashSet.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
@@ -18,7 +18,7 @@ namespace blink {
 // TODO(svillar): Perhaps we should use references here.
 typedef Vector<LayoutBox*, 1> GridCell;
 typedef Vector<Vector<GridCell>> GridAsMatrix;
-typedef ListHashSet<size_t> OrderedTrackIndexSet;
+typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
 
 class LayoutGrid;
 class GridIterator;
@@ -62,7 +62,7 @@ class Grid final {
   size_t AutoRepeatTracks(GridTrackSizingDirection) const;
   void SetAutoRepeatTracks(size_t auto_repeat_rows, size_t auto_repeat_columns);
 
-  typedef ListHashSet<size_t> OrderedTrackIndexSet;
+  typedef LinkedHashSet<size_t> OrderedTrackIndexSet;
   void SetAutoRepeatEmptyColumns(std::unique_ptr<OrderedTrackIndexSet>);
   void SetAutoRepeatEmptyRows(std::unique_ptr<OrderedTrackIndexSet>);
 
