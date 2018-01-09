@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
+#include "chrome/browser/platform_util.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class Profile;
@@ -121,7 +122,12 @@ class DevToolsFileHelper {
   // granted.
   bool IsFileSystemAdded(const std::string& file_system_path);
 
+  // Opens and reveals file in OS's default file manager.
+  void ShowItemInFolder(const std::string& file_system_path);
+
  private:
+  void OnOpenItemComplete(const base::FilePath& path,
+                          platform_util::OpenOperationResult result);
   void SaveAsFileSelected(const std::string& url,
                           const std::string& content,
                           const SaveCallback& callback,

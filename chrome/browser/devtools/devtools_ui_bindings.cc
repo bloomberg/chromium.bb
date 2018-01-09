@@ -699,6 +699,11 @@ void DevToolsUIBindings::OpenInNewTab(const std::string& url) {
   delegate_->OpenInNewTab(url);
 }
 
+void DevToolsUIBindings::ShowItemInFolder(const std::string& file_system_path) {
+  CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
+  file_helper_->ShowItemInFolder(file_system_path);
+}
+
 void DevToolsUIBindings::SaveToFile(const std::string& url,
                                     const std::string& content,
                                     bool save_as) {
