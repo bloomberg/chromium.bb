@@ -210,26 +210,12 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   TestSystemTrayIsVisible(false);
 }
 
-// Verifies the cursor is not hidden at startup when user is logged in.
-IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
-
-  TestSystemTrayIsVisible(false);
-}
-
 // After a guest login, we should get the OTR default profile.
 IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   Profile* profile = browser()->profile();
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
   EXPECT_TRUE(extensions::ExtensionSystem::Get(profile)->extension_service());
-
-  TestSystemTrayIsVisible(true);
-}
-
-// Verifies the cursor is not hidden at startup when running guest session.
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
-  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
 
   TestSystemTrayIsVisible(true);
 }

@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/accessibility/accessibility_controller_client.h"
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_shell_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
@@ -98,7 +98,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (ash_util::ShouldOpenAshOnStartup())
-    ash_init_ = base::MakeUnique<AshInit>();
+    ash_shell_init_ = std::make_unique<AshShellInit>();
 
   if (ash_util::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
@@ -172,5 +172,5 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   cast_config_client_media_router_.reset();
   session_controller_client_.reset();
 
-  ash_init_.reset();
+  ash_shell_init_.reset();
 }

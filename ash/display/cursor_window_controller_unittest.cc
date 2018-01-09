@@ -35,6 +35,10 @@ class CursorWindowControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableNightLight);
     AshTestBase::SetUp();
+
+    // Shell hides the cursor by default; show it for these tests.
+    Shell::Get()->cursor_manager()->ShowCursor();
+
     cursor_window_controller_ =
         Shell::Get()->window_tree_host_manager()->cursor_window_controller();
     SetCursorCompositionEnabled(true);
