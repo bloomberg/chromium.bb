@@ -16,6 +16,8 @@ jumbo_source_set("generator") {
     "//third_party/WebKit/common:mojo_platform_bindings_blink__generator",
     "//url/mojo:url_mojom_gurl_blink__generator",
     "//url/mojo:url_mojom_gurl_shared__generator",
+    "//url/mojo:url_mojom_origin_blink__generator",
+    "//url/mojo:url_mojom_origin_shared__generator",
   ]
 }
 
