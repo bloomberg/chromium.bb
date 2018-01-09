@@ -11,31 +11,32 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/extension_id.h"
 
 class ExtensionService;
-class Profile;
+class InfoBarService;
 class ThemeService;
-
-namespace extensions {
-class Extension;
-}
 
 // When a user installs a theme, we display it immediately, but provide an
 // infobar allowing them to cancel.
 class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public content::NotificationObserver {
  public:
-  // Creates a theme installed infobar and delegate and adds the infobar to the
-  // last active tab on |profile|.
-  static void Create(const extensions::Extension* new_theme,
-                     Profile* profile,
+  // Creates a theme installed infobar and delegate and adds the infobar to
+  // |infobar_service|, replacing any previous theme infobar.
+  static void Create(InfoBarService* infobar_service,
+                     ExtensionService* extension_service,
+                     ThemeService* theme_service,
+                     const std::string& theme_name,
+                     const std::string& theme_id,
                      const std::string& previous_theme_id,
                      bool previous_using_system_theme);
 
  private:
   ThemeInstalledInfoBarDelegate(ExtensionService* extension_service,
                                 ThemeService* theme_service,
-                                const extensions::Extension* new_theme,
+                                const std::string& theme_name,
+                                const std::string& theme_id,
                                 const std::string& previous_theme_id,
                                 bool previous_using_system_theme);
   ~ThemeInstalledInfoBarDelegate() override;
@@ -59,7 +60,7 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
   ThemeService* theme_service_;
 
   // Name of theme that's just been installed.
-  std::string name_;
+  std::string theme_name_;
 
   // ID of theme that's just been installed.
   std::string theme_id_;
