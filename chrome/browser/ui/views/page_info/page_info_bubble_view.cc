@@ -752,11 +752,16 @@ void PageInfoBubbleView::SetCookieInfo(const CookieInfoList& cookie_info_list) {
 void PageInfoBubbleView::SetPermissionInfo(
     const PermissionInfoList& permission_info_list,
     ChosenObjectInfoList chosen_object_info_list) {
-  // When a permission is changed, PageInfo::OnSitePermissionChanged()
-  // calls this method with updated permissions. However, PermissionSelectorRow
-  // will have already updated its state, so it's already reflected in the UI.
-  // In addition, if a permission is set to the default setting, PageInfo
-  // removes it from |permission_info_list|, but the button should remain.
+  // This method is called when Page Info is constructed/displayed, then called
+  // again whenever permissions/chosen objects change while the bubble is still
+  // opened. Once Page Info is displaying a non-zero number of permissions, all
+  // future calls to this will return early, based on the assumption that
+  // permission rows won't need to be added or removed. Theoretically this
+  // assumption is incorrect and it is actually possible that the number of
+  // permission rows will need to change, but this should be an extremely rare
+  // case that can be recovered from by closing & reopening the bubble.
+  // TODO(patricialor): Investigate removing callsites to this method other than
+  // the constructor.
   if (permissions_view_->has_children())
     return;
 
