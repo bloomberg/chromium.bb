@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 
 FakeBaseTabStripController::FakeBaseTabStripController() {}
 
@@ -112,7 +112,7 @@ void FakeBaseTabStripController::PerformDrop(bool drop_before,
                                              const GURL& url) {
 }
 
-bool FakeBaseTabStripController::IsCompatibleWith(TabStripImpl* other) const {
+bool FakeBaseTabStripController::IsCompatibleWith(TabStrip* other) const {
   return false;
 }
 

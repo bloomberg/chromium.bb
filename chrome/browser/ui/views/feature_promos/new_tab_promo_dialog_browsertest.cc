@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 
 class NewTabPromoDialogTest : public DialogBrowserTest {
  public:
@@ -13,13 +13,10 @@ class NewTabPromoDialogTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    // The promo only exists in the TabStripImpl.
-    TabStripImpl* tab_strip_impl =
-        BrowserView::GetBrowserViewForBrowser(browser())
-            ->tabstrip()
-            ->AsTabStripImpl();
-    if (tab_strip_impl)
-      tab_strip_impl->new_tab_button()->ShowPromo();
+    BrowserView::GetBrowserViewForBrowser(browser())
+        ->tabstrip()
+        ->new_tab_button()
+        ->ShowPromo();
   }
 
  private:

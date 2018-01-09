@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,8 +99,7 @@ class TabStripTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
-    tab_strip_ =
-        new TabStripImpl(std::unique_ptr<TabStripController>(controller_));
+    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);
@@ -140,7 +139,7 @@ class TabStripTest : public views::ViewsTestBase {
   FakeBaseTabStripController* controller_ = nullptr;
   // Owns |tab_strip_|.
   views::View parent_;
-  TabStripImpl* tab_strip_ = nullptr;
+  TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:
@@ -171,8 +170,8 @@ TEST_F(TabStripTest, AddTabAt) {
 // Confirms that TabStripObserver::TabStripDeleted() is sent.
 TEST_F(TabStripTest, TabStripDeleted) {
   FakeBaseTabStripController* controller = new FakeBaseTabStripController;
-  std::unique_ptr<TabStripImpl> tab_strip(
-      new TabStripImpl(std::unique_ptr<TabStripController>(controller)));
+  std::unique_ptr<TabStrip> tab_strip(
+      new TabStrip(std::unique_ptr<TabStripController>(controller)));
   controller->set_tab_strip(tab_strip.get());
   TestTabStripObserver observer(tab_strip.get());
   tab_strip.reset();

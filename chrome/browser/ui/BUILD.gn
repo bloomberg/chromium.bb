@@ -3103,8 +3103,6 @@ split_static_library("ui") {
         "views/tabs/tab_strip.cc",
         "views/tabs/tab_strip.h",
         "views/tabs/tab_strip_controller.h",
-        "views/tabs/tab_strip_impl.cc",
-        "views/tabs/tab_strip_impl.h",
         "views/tabs/tab_strip_layout.cc",
         "views/tabs/tab_strip_layout.h",
         "views/tabs/window_finder.cc",

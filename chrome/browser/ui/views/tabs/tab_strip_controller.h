@@ -13,7 +13,7 @@
 
 class GURL;
 class Tab;
-class TabStripImpl;
+class TabStrip;
 
 namespace gfx {
 class Point;
@@ -88,7 +88,7 @@ class TabStripController {
 
   // Return true if this tab strip is compatible with the provided tab strip.
   // Compatible tab strips can transfer tabs during drag and drop.
-  virtual bool IsCompatibleWith(TabStripImpl* other) const = 0;
+  virtual bool IsCompatibleWith(TabStrip* other) const = 0;
 
   // Creates the new tab.
   virtual void CreateNewTab() = 0;

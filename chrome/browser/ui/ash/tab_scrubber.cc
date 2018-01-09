@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/aura/window.h"
@@ -44,7 +44,7 @@ TabScrubber* TabScrubber::GetInstance() {
 }
 
 // static
-gfx::Point TabScrubber::GetStartPoint(TabStripImpl* tab_strip,
+gfx::Point TabScrubber::GetStartPoint(TabStrip* tab_strip,
                                       int index,
                                       TabScrubber::Direction direction) {
   int initial_tab_offset = Tab::GetPinnedWidth() / 2;
@@ -109,11 +109,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeWindow());
-  TabStripImpl* tab_strip = browser_view->tabstrip()->AsTabStripImpl();
-  if (!tab_strip) {
-    DLOG(WARNING) << "TabScrubber disabled for experimental tab strip.";
-    return;
-  }
+  TabStrip* tab_strip = browser_view->tabstrip();
 
   if (tab_strip->IsAnimating()) {
     FinishScrub(false);
@@ -237,12 +233,7 @@ void TabScrubber::BeginScrub(Browser* browser,
   DCHECK(browser);
   DCHECK(browser_view);
 
-  tab_strip_ = browser_view->tabstrip()->AsTabStripImpl();
-  if (!tab_strip_) {
-    DLOG(WARNING) << "TabScrubber disabled for experimental tab strip.";
-    return;
-  }
-
+  tab_strip_ = browser_view->tabstrip();
   scrubbing_ = true;
   browser_ = browser;
 
@@ -265,18 +256,16 @@ void TabScrubber::FinishScrub(bool activate) {
   if (browser_ && browser_->window()) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
         browser_->window()->GetNativeWindow());
-    TabStripImpl* tab_strip = browser_view->tabstrip()->AsTabStripImpl();
-    if (tab_strip) {
-      if (activate && highlighted_tab_ != -1) {
-        Tab* tab = tab_strip->tab_at(highlighted_tab_);
-        tab->hover_controller()->HideImmediately();
-        int distance = std::abs(highlighted_tab_ -
-                                browser_->tab_strip_model()->active_index());
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 1, 20, 21);
-        browser_->tab_strip_model()->ActivateTabAt(highlighted_tab_, true);
-      }
-      tab_strip->RemoveObserver(this);
+    TabStrip* tab_strip = browser_view->tabstrip();
+    if (activate && highlighted_tab_ != -1) {
+      Tab* tab = tab_strip->tab_at(highlighted_tab_);
+      tab->hover_controller()->HideImmediately();
+      int distance = std::abs(highlighted_tab_ -
+                              browser_->tab_strip_model()->active_index());
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 1, 20, 21);
+      browser_->tab_strip_model()->ActivateTabAt(highlighted_tab_, true);
     }
+    tab_strip->RemoveObserver(this);
   }
 
   browser_ = nullptr;

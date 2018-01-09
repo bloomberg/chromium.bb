@@ -87,7 +87,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
@@ -2121,11 +2121,10 @@ void BrowserView::InitViews() {
   // TabStrip takes ownership of the controller.
   BrowserTabStripController* tabstrip_controller =
       new BrowserTabStripController(browser_->tab_strip_model(), this);
-  TabStripImpl* tab_strip_impl = new TabStripImpl(
-      std::unique_ptr<TabStripController>(tabstrip_controller));
-  tabstrip_ = tab_strip_impl;
+  tabstrip_ =
+      new TabStrip(std::unique_ptr<TabStripController>(tabstrip_controller));
   top_container_->AddChildView(tabstrip_);  // Takes ownership.
-  tabstrip_controller->InitFromModel(tab_strip_impl);
+  tabstrip_controller->InitFromModel(tabstrip_);
 
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
