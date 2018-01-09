@@ -33,7 +33,11 @@ std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
   return std::unique_ptr<T[]>(ptr);
 }
 
+#if defined(_MIPS_ARCH_LOONGSON)
+const size_t kTestMaxAllocation = 16384;
+#else
 const size_t kTestMaxAllocation = 4096;
+#endif
 
 bool IsLargeMemoryDevice() {
   // Treat any device with 2GiB or more of physical memory as a "large memory
