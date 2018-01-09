@@ -101,6 +101,9 @@ class GlobalErrorWithStandardBubble
   // bubble will stick around until the user explicitly acknowledges it.
   // Defaults to true.
   virtual bool ShouldCloseOnDeactivate() const;
+  // Return true if 'cancel' button should be created as an extra view placed on
+  // the left edge across from the 'ok' button.
+  virtual bool ShouldUseExtraView() const;
 
   // GlobalError overrides:
   bool HasBubbleView() override;

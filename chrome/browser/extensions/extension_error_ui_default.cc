@@ -108,6 +108,10 @@ void ExtensionErrorUIDefault::ExtensionGlobalError::
   error_ui_->BubbleViewCancelButtonPressed();
 }
 
+bool ExtensionErrorUIDefault::ExtensionGlobalError::ShouldUseExtraView() const {
+  return true;
+}
+
 // static
 ExtensionErrorUI* ExtensionErrorUI::Create(
     ExtensionErrorUI::Delegate* delegate) {

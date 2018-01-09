@@ -44,6 +44,7 @@ class ExtensionErrorUIDefault : public ExtensionErrorUI {
     void OnBubbleViewDidClose(Browser* browser) override;
     void BubbleViewAcceptButtonPressed(Browser* browser) override;
     void BubbleViewCancelButtonPressed(Browser* browser) override;
+    bool ShouldUseExtraView() const override;
 
     // The ExtensionErrorUIDefault who owns us.
     ExtensionErrorUIDefault* error_ui_;
