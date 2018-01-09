@@ -21,7 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/download/download_prefs.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/pref_names.h"
@@ -421,6 +420,24 @@ bool DevToolsFileHelper::IsFileSystemAdded(
   const base::DictionaryValue* file_systems_paths_value =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
   return file_systems_paths_value->HasKey(file_system_path);
+}
+
+void DevToolsFileHelper::OnOpenItemComplete(
+    const base::FilePath& path,
+    platform_util::OpenOperationResult result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (result == platform_util::OPEN_FAILED_INVALID_TYPE)
+    platform_util::ShowItemInFolder(profile_, path);
+}
+
+void DevToolsFileHelper::ShowItemInFolder(const std::string& file_system_path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (file_system_path.empty())
+    return;
+  base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
+  platform_util::OpenItem(profile_, path, platform_util::OPEN_FOLDER,
+                          base::Bind(&DevToolsFileHelper::OnOpenItemComplete,
+                                     weak_factory_.GetWeakPtr(), path));
 }
 
 void DevToolsFileHelper::FileSystemPathsSettingChanged() {
