@@ -244,6 +244,13 @@ void ResourceLoadScheduler::TrafficMonitor::ReportAll() {
   // Currently we only care about stats from frames.
   if (!IsMainThread())
     return;
+
+  // Blink has several cases to create DocumentLoader not for an actual page
+  // load use. I.e., per a XMLHttpRequest in "document" type response.
+  // We just ignore such uninteresting cases in following metrics.
+  if (!total_throttled_request_count_ && !total_not_throttled_request_count_)
+    return;
+
   if (report_all_is_called_)
     return;
   report_all_is_called_ = true;
@@ -346,6 +353,10 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
 
   if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled() &&
       !Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
+    // Initialize TrafficMonitor's state to be |kNotThrottled| so that it
+    // reports metrics in a reasonable state group.
+    traffic_monitor_->OnThrottlingStateChanged(
+        WebFrameScheduler::ThrottlingState::kNotThrottled);
     return;
   }
 
