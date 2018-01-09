@@ -398,6 +398,10 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   web_view()->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
   web_view()->web_contents()->Focus();
+
+  content::WebUI* web_ui = GetWebUI();
+  if (web_ui)
+    web_ui->CallJavascriptFunctionUnsafe("cr.ui.Oobe.focusReturned");
 }
 
 void WebUILoginView::Observe(int type,
