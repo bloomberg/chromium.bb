@@ -2301,28 +2301,6 @@
       # chromium.fyi
       'Fuchsia ARM64',
     ],
-    'modifications': {
-      'KitKat Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-      'Lollipop Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 600,
-        },
-      },
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 960,
-        },
-      },
-      'Marshmallow Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 600,
-        },
-      },
-    },
   },
   'message_center_unittests': {
     'remove_from': [
