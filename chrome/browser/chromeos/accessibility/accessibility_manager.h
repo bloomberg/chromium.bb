@@ -8,6 +8,7 @@
 #include <set>
 
 #include "ash/public/cpp/accessibility_types.h"
+#include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
@@ -28,10 +29,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Profile;
-
-namespace ash {
-class ScopedBacklightsForcedOff;
-}  // namespace ash
 
 namespace gfx {
 class Rect;
@@ -443,10 +440,10 @@ class AccessibilityManager
   std::unique_ptr<chromeos::SwitchAccessEventHandler>
       switch_access_event_handler_;
 
-  // Used to force the backlights off to darken the screen.
-  std::unique_ptr<ash::ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
-
   std::unique_ptr<ScopedKeyboardStateSetter> keyboard_state_setter_;
+
+  // Ash's mojom::AccessibilityController used to SetDarkenScreen.
+  ash::mojom::AccessibilityControllerPtr accessibility_controller_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
