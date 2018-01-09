@@ -13,6 +13,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/time/time.h"
@@ -99,6 +100,7 @@ void TrayRotationLockTest::SetUp() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kUseFirstDisplayAsInternal);
   AshTestBase::SetUp();
+  ash_test_helper()->DisableTabletMirrorModeForTest();
   SetUpForStatusAreaWidget(StatusAreaWidgetTestHelper::GetStatusAreaWidget());
 }
 

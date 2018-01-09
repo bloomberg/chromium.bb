@@ -36,8 +36,6 @@ bool TestShellDelegate::IsForceMaximizeOnFirstRun() const {
 
 void TestShellDelegate::PreInit() {}
 
-void TestShellDelegate::PreShutdown() {}
-
 std::unique_ptr<keyboard::KeyboardUI> TestShellDelegate::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }

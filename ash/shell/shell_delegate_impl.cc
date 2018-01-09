@@ -48,8 +48,6 @@ bool ShellDelegateImpl::IsForceMaximizeOnFirstRun() const {
 
 void ShellDelegateImpl::PreInit() {}
 
-void ShellDelegateImpl::PreShutdown() {}
-
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateImpl::CreateKeyboardUI() {
   return std::make_unique<TestKeyboardUI>();
 }

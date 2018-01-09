@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -75,6 +76,8 @@ class TabletModeControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTabletMode);
     AshTestBase::SetUp();
+    ash_test_helper()->DisableTabletMirrorModeForTest();
+
     chromeos::AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
 

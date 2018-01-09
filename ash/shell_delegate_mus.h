@@ -27,7 +27,6 @@ class ShellDelegateMus : public ShellDelegate {
   bool CanShowWindowForUser(aura::Window* window) const override;
   bool IsForceMaximizeOnFirstRun() const override;
   void PreInit() override;
-  void PreShutdown() override;
   std::unique_ptr<keyboard::KeyboardUI> CreateKeyboardUI() override;
   void OpenUrlFromArc(const GURL& url) override;
   NetworkingConfigDelegate* GetNetworkingConfigDelegate() override;

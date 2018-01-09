@@ -71,10 +71,6 @@ void ShellDelegateMus::PreInit() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void ShellDelegateMus::PreShutdown() {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 std::unique_ptr<keyboard::KeyboardUI> ShellDelegateMus::CreateKeyboardUI() {
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;

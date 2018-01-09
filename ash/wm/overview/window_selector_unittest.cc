@@ -21,6 +21,7 @@
 #include "ash/shell_test_api.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
@@ -1938,6 +1939,7 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
 
   void SetUp() override {
     WindowSelectorTest::SetUp();
+    ash_test_helper()->DisableTabletMirrorModeForTest();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
