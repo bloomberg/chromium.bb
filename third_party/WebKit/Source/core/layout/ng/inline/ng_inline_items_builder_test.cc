@@ -13,6 +13,11 @@ namespace blink {
 
 namespace {
 
+#define EXPECT_ITEM_OFFSET(item, type, start, end) \
+  EXPECT_EQ(type, (item).Type());                  \
+  EXPECT_EQ(start, (item).StartOffset());          \
+  EXPECT_EQ(end, (item).EndOffset());
+
 static scoped_refptr<ComputedStyle> CreateWhitespaceStyle(
     EWhiteSpace whitespace) {
   scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
@@ -361,6 +366,28 @@ TEST_F(NGInlineItemsBuilderTest, NewLines) {
   EXPECT_EQ(NGInlineItem::kControl, items_[3].Type());
   EXPECT_EQ(NGInlineItem::kText, items_[4].Type());
   EXPECT_EQ(NGInlineItem::kControl, items_[5].Type());
+}
+
+TEST_F(NGInlineItemsBuilderTest, IgnorablePre) {
+  SetWhiteSpace(EWhiteSpace::kPre);
+  EXPECT_EQ(
+      "apple"
+      "\x0c"
+      "orange"
+      "\n"
+      "grape",
+      TestAppend("apple"
+                 "\x0c"
+                 "orange"
+                 "\n"
+                 "grape"));
+  EXPECT_EQ("{}", collapsed_);
+  EXPECT_EQ(5u, items_.size());
+  EXPECT_ITEM_OFFSET(items_[0], NGInlineItem::kText, 0u, 5u);
+  EXPECT_ITEM_OFFSET(items_[1], NGInlineItem::kControl, 5u, 6u);
+  EXPECT_ITEM_OFFSET(items_[2], NGInlineItem::kText, 6u, 12u);
+  EXPECT_ITEM_OFFSET(items_[3], NGInlineItem::kControl, 12u, 13u);
+  EXPECT_ITEM_OFFSET(items_[4], NGInlineItem::kText, 13u, 18u);
 }
 
 TEST_F(NGInlineItemsBuilderTest, Empty) {
