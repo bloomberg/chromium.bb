@@ -26,7 +26,6 @@
 
 #include "core/html/ListItemOrdinal.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
 
 namespace blink {
 
@@ -35,8 +34,6 @@ class LayoutListMarker;
 class LayoutListItem final : public LayoutBlockFlow {
  public:
   explicit LayoutListItem(Element*);
-
-  void UpdateBlockLayout(bool relayout_children) override;
 
   int Value() const;
 
