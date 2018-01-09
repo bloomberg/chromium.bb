@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-app>', function() {
-  var app;
-  var store;
+  let app;
+  let store;
 
   function resetStore() {
     store = new bookmarks.TestStore({});
@@ -35,8 +35,8 @@ suite('<bookmarks-app>', function() {
   });
 
   test('write and load closed folder state', function() {
-    var folderOpenStateList = [['1', true]];
-    var folderOpenState = new Map(folderOpenStateList);
+    const folderOpenStateList = [['1', true]];
+    const folderOpenState = new Map(folderOpenStateList);
     store.data.folderOpenState = folderOpenState;
     store.notifyObservers();
 
@@ -57,7 +57,7 @@ suite('<bookmarks-app>', function() {
   test('write and load sidebar width', function() {
     assertEquals(getComputedStyle(app.$.sidebar).width, app.sidebarWidth_);
 
-    var sidebarWidth = '500px';
+    const sidebarWidth = '500px';
     app.$.sidebar.style.width = sidebarWidth;
     cr.dispatchSimpleEvent(app.$.splitter, 'resize');
     assertEquals(
@@ -71,9 +71,9 @@ suite('<bookmarks-app>', function() {
 
   test('focus ring hides and restores', function() {
     return PolymerTest.flushTasks().then(() => {
-      var list = app.$$('bookmarks-list');
-      var item = list.root.querySelectorAll('bookmarks-item')[0];
-      var getFocusAttribute = () =>
+      const list = app.$$('bookmarks-list');
+      const item = list.root.querySelectorAll('bookmarks-item')[0];
+      const getFocusAttribute = () =>
           app.getAttribute(bookmarks.HIDE_FOCUS_RING_ATTRIBUTE);
 
       assertEquals(null, getFocusAttribute());

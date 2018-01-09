@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('drawer-test', function() {
-  var app;
+  let app;
 
   suiteSetup(function() {
     app = $('history-app');
@@ -13,15 +13,15 @@ suite('drawer-test', function() {
     app.selectedPage_ = 'syncedTabs';
     app.hasDrawer_ = true;
     return PolymerTest.flushTasks().then(function() {
-      var drawer = /** @type {CrLazyRenderElement} */ (app.$.drawer);
-      var drawerSideBar = app.$$('#drawer-side-bar');
+      const drawer = /** @type {CrLazyRenderElement} */ (app.$.drawer);
+      let drawerSideBar = app.$$('#drawer-side-bar');
 
       assertTrue(!!drawer);
       // Drawer side bar doesn't exist until the first time the drawer is
       // opened.
       assertFalse(!!drawerSideBar);
 
-      var menuButton = app.$.toolbar.$['main-toolbar'].$$('#menuButton');
+      const menuButton = app.$.toolbar.$['main-toolbar'].$$('#menuButton');
       assertTrue(!!menuButton);
 
       MockInteractions.tap(menuButton);

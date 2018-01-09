@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-router>', function() {
-  var store;
-  var router;
+  let store;
+  let router;
 
   function navigateTo(route) {
     window.history.replaceState({}, '', route);
@@ -12,7 +12,7 @@ suite('<bookmarks-router>', function() {
   }
 
   setup(function() {
-    var nodes = testTree(createFolder('1', [createFolder('2', [])]));
+    const nodes = testTree(createFolder('1', [createFolder('2', [])]));
     store = new bookmarks.TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
@@ -112,7 +112,7 @@ suite('URL preload', function() {
   }
 
   test('loading a search URL performs a search', function() {
-    var lastQuery;
+    let lastQuery;
     chrome.bookmarks.search = function(query) {
       lastQuery = query;
       return ['11'];
@@ -124,14 +124,14 @@ suite('URL preload', function() {
 
   test('loading a folder URL selects that folder', function() {
     setupWithUrl('/?id=2');
-    var state = bookmarks.Store.getInstance().data;
+    const state = bookmarks.Store.getInstance().data;
     assertEquals('2', state.selectedFolder);
     assertDeepEquals(['21'], bookmarks.util.getDisplayedList(state));
   });
 
   test('loading an invalid folder URL selects the Bookmarks Bar', function() {
     setupWithUrl('/?id=42');
-    var state = bookmarks.Store.getInstance().data;
+    const state = bookmarks.Store.getInstance().data;
     assertEquals('1', state.selectedFolder);
     return Promise.resolve().then(function() {
       assertEquals('chrome://bookmarks/', window.location.href);

@@ -4,7 +4,7 @@
 
 suite('util', function() {
   test('getDescendants collects all children', function() {
-    var nodes = testTree(createFolder('0', [
+    const nodes = testTree(createFolder('0', [
       createFolder('1', []),
       createFolder(
           '2',
@@ -20,7 +20,7 @@ suite('util', function() {
           ]),
     ]));
 
-    var descendants = bookmarks.util.getDescendants(nodes, '1');
+    let descendants = bookmarks.util.getDescendants(nodes, '1');
     assertDeepEquals(['1'], normalizeIterable(descendants));
 
     descendants = bookmarks.util.getDescendants(nodes, '4');
@@ -35,15 +35,15 @@ suite('util', function() {
   });
 
   test('removeIdsFromObject', function() {
-    var obj = {
+    const obj = {
       '1': true,
       '2': false,
       '4': true,
     };
 
-    var nodes = new Set([2, 3, 4]);
+    const nodes = new Set([2, 3, 4]);
 
-    var newMap = bookmarks.util.removeIdsFromObject(obj, nodes);
+    const newMap = bookmarks.util.removeIdsFromObject(obj, nodes);
 
     assertEquals(undefined, newMap['2']);
     assertEquals(undefined, newMap['4']);
@@ -54,15 +54,15 @@ suite('util', function() {
   });
 
   test('removeIdsFromSet', function() {
-    var set = new Set(['1', '3', '5']);
-    var toRemove = new Set(['1', '2', '3']);
+    const set = new Set(['1', '3', '5']);
+    const toRemove = new Set(['1', '2', '3']);
 
-    var newSet = bookmarks.util.removeIdsFromSet(set, toRemove);
+    const newSet = bookmarks.util.removeIdsFromSet(set, toRemove);
     assertDeepEquals(['5'], normalizeIterable(newSet));
   });
 
   test('canEditNode and canReorderChildren', function() {
-    var store = new bookmarks.TestStore({
+    const store = new bookmarks.TestStore({
       nodes: testTree(
           createFolder(
               '1',

@@ -4,7 +4,7 @@
 
 suiteSetup(function() {
   cr.define('bookmarks', function() {
-    var TestStore = function(data) {
+    const TestStore = function(data) {
       bookmarks.Store.call(this);
       this.data_ = Object.assign(bookmarks.util.createEmptyState(), data);
       this.initialized_ = true;

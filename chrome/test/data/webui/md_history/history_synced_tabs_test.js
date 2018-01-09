@@ -12,16 +12,16 @@ function numWindowSeparators(card) {
 
 function assertNoSyncedTabsMessageShown(manager, stringID) {
   assertFalse(manager.$['no-synced-tabs'].hidden);
-  var message = loadTimeData.getString(stringID);
+  const message = loadTimeData.getString(stringID);
   assertNotEquals(
       -1,
       manager.$['no-synced-tabs'].textContent.indexOf(message));
 }
 
 suite('<history-synced-device-manager>', function() {
-  var element;
+  let element;
 
-  var setForeignSessions = function(sessions) {
+  const setForeignSessions = function(sessions) {
     element.sessionList = sessions;
   };
 
@@ -33,7 +33,7 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('single card, single window', function() {
-    var sessionList = [
+    const sessionList = [
       createSession(
           'Nexus 5',
           [createWindow(['http://www.google.com', 'http://example.com'])]
@@ -42,7 +42,7 @@ suite('<history-synced-device-manager>', function() {
     setForeignSessions(sessionList);
 
     return PolymerTest.flushTasks().then(function() {
-      var card = element.$$('history-synced-device-card');
+      const card = element.$$('history-synced-device-card');
       assertEquals(
           'http://www.google.com',
           Polymer.dom(card.root)
@@ -53,7 +53,7 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('two cards, multiple windows', function() {
-    var sessionList = [
+    const sessionList = [
       createSession(
           'Nexus 5',
           [createWindow(['http://www.google.com', 'http://example.com'])]
@@ -69,7 +69,7 @@ suite('<history-synced-device-manager>', function() {
     setForeignSessions(sessionList);
 
     return PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertEquals(2, cards.length);
 
       // Ensure separators between windows are added appropriately.
@@ -79,18 +79,18 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('updating sessions', function() {
-    var session1 = createSession(
+    const session1 = createSession(
         'Chromebook',
         [createWindow(['http://www.example.com', 'http://crbug.com'])]);
     session1.timestamp = 1000;
 
-    var session2 =
+    const session2 =
         createSession('Nexus 5', [createWindow(['http://www.google.com'])]);
 
     setForeignSessions([session1, session2]);
 
     return PolymerTest.flushTasks().then(function() {
-      var session1updated = createSession('Chromebook', [
+      const session1updated = createSession('Chromebook', [
         createWindow(['http://www.example.com', 'http://crbug.com/new']),
         createWindow(['http://web.site'])
       ]);
@@ -101,7 +101,7 @@ suite('<history-synced-device-manager>', function() {
       return PolymerTest.flushTasks();
     }).then(function() {
       // There should only be two cards.
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertEquals(2, cards.length);
 
       // There are now 2 windows in the first device.
@@ -117,7 +117,7 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('two cards, multiple windows, search', function() {
-    var sessionList = [
+    const sessionList = [
       createSession(
           'Nexus 5',
           [createWindow(['http://www.google.com', 'http://example.com'])]
@@ -134,7 +134,7 @@ suite('<history-synced-device-manager>', function() {
     setForeignSessions(sessionList);
 
     return PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertEquals(2, cards.length);
 
       // Ensure separators between windows are added appropriately.
@@ -144,7 +144,7 @@ suite('<history-synced-device-manager>', function() {
 
       return PolymerTest.flushTasks();
     }).then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
 
       assertEquals(0, numWindowSeparators(cards[0]));
       assertEquals(1, cards[0].tabs.length);
@@ -172,7 +172,7 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('delete a session', function(done) {
-    var sessionList = [
+    const sessionList = [
       createSession('Nexus 5', [createWindow(['http://www.example.com'])]),
       createSession('Pixel C', [createWindow(['http://www.badssl.com'])]),
     ];
@@ -180,7 +180,7 @@ suite('<history-synced-device-manager>', function() {
     setForeignSessions(sessionList);
 
     return PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertEquals(2, cards.length);
 
       MockInteractions.tap(cards[0].$['menu-button']);
@@ -205,14 +205,14 @@ suite('<history-synced-device-manager>', function() {
   });
 
   test('delete a collapsed session', function() {
-    var sessionList = [
+    const sessionList = [
       createSession('Nexus 5', [createWindow(['http://www.example.com'])]),
       createSession('Pixel C', [createWindow(['http://www.badssl.com'])]),
     ];
 
     setForeignSessions(sessionList);
     return PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       MockInteractions.tap(cards[0].$['card-heading']);
       assertFalse(cards[0].opened);
 
@@ -220,7 +220,7 @@ suite('<history-synced-device-manager>', function() {
       setForeignSessions([sessionList[1]]);
       return PolymerTest.flushTasks();
     }).then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertTrue(cards[0].opened);
     });
   });
@@ -242,8 +242,8 @@ suite('<history-synced-device-manager>', function() {
     });
 
     PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
-      var anchor = cards[0].root.querySelector('a');
+      const cards = getCards(element);
+      const anchor = cards[0].root.querySelector('a');
       MockInteractions.tap(anchor);
     });
   });
@@ -254,7 +254,7 @@ suite('<history-synced-device-manager>', function() {
             'Chromebook', [createWindow(['https://example.com'])])]);
 
     return PolymerTest.flushTasks().then(function() {
-      var cards = getCards(element);
+      const cards = getCards(element);
       MockInteractions.tap(cards[0].$['menu-button']);
       assertTrue(element.$.menu.getIfExists().open);
     });
@@ -278,7 +278,7 @@ suite('<history-synced-device-manager>', function() {
     return PolymerTest.flushTasks().then(function() {
       assertTrue(element.$['no-synced-tabs'].hidden);
 
-      var cards = getCards(element);
+      const cards = getCards(element);
       assertEquals(0, cards.length);
 
       element.signInState = true;
@@ -288,7 +288,7 @@ suite('<history-synced-device-manager>', function() {
       // When user signs in, first show loading message.
       assertNoSyncedTabsMessageShown(element, 'loading');
 
-      var sessionList = [];
+      const sessionList = [];
       setForeignSessions(sessionList);
       return PolymerTest.flushTasks();
     }).then(function() {

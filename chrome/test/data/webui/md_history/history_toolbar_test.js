@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 suite('history-toolbar', function() {
-  var app;
-  var element;
-  var toolbar;
-  var TEST_HISTORY_RESULTS;
+  let app;
+  let element;
+  let toolbar;
+  let TEST_HISTORY_RESULTS;
 
   suiteSetup(function() {
     TEST_HISTORY_RESULTS =
@@ -24,7 +24,7 @@ suite('history-toolbar', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
 
     return PolymerTest.flushTasks().then(function() {
-      var item = element.$$('history-item');
+      const item = element.$$('history-item');
       MockInteractions.tap(item.$.checkbox);
 
       // Ensure that when an item is selected that the count held by the

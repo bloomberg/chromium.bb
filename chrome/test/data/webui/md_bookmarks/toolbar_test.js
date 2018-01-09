@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-toolbar>', function() {
-  var toolbar;
-  var store;
-  var commandManager;
+  let toolbar;
+  let store;
+  let commandManager;
 
   suiteSetup(function() {
     chrome.bookmarkManagerPrivate.removeTrees = function() {};
   });
 
   setup(function() {
-    var nodes = testTree(createFolder('1', [
+    const nodes = testTree(createFolder('1', [
       createItem('2'),
       createItem('3'),
       createFolder('4', [], {unmodifiable: 'managed'}),
@@ -65,7 +65,7 @@ suite('<bookmarks-toolbar>', function() {
     store.notifyObservers();
 
     Polymer.dom.flush();
-    var button = toolbar.$$('cr-toolbar-selection-overlay').deleteButton;
+    const button = toolbar.$$('cr-toolbar-selection-overlay').deleteButton;
     assertFalse(button.disabled);
     MockInteractions.tap(button);
 
@@ -76,8 +76,8 @@ suite('<bookmarks-toolbar>', function() {
     store.data.selection.items = new Set(['2']);
     store.notifyObservers();
 
-    var input = toolbar.$$('cr-toolbar').getSearchField().getSearchInput();
-    var modifier = cr.isMac ? 'meta' : 'ctrl';
+    const input = toolbar.$$('cr-toolbar').getSearchField().getSearchInput();
+    const modifier = cr.isMac ? 'meta' : 'ctrl';
     MockInteractions.pressAndReleaseKeyOn(input, 67, modifier, 'c');
 
     commandManager.assertLastCommand(null);

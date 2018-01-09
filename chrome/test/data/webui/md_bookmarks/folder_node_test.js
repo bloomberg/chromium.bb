@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-folder-node>', function() {
-  var rootNode;
-  var store;
+  let rootNode;
+  let store;
 
   function getFolderNode(id) {
     return findFolderNode(rootNode, id);
   }
 
   setup(function() {
-    var nodes = testTree(
+    const nodes = testTree(
         createFolder(
             '1',
             [
@@ -39,10 +39,10 @@ suite('<bookmarks-folder-node>', function() {
   });
 
   test('selecting and deselecting folders dispatches action', function() {
-    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
-    var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
+    const rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
+    const firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
-    var secondGen =
+    const secondGen =
         firstGen[0].$['descendants'].querySelectorAll('bookmarks-folder-node');
 
     // Select nested folder.
@@ -65,10 +65,10 @@ suite('<bookmarks-folder-node>', function() {
   });
 
   test('depth calculation', function() {
-    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
-    var firstGen = rootFolders[0].$['descendants'].querySelectorAll(
+    const rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
+    const firstGen = rootFolders[0].$['descendants'].querySelectorAll(
         'bookmarks-folder-node');
-    var secondGen =
+    const secondGen =
         firstGen[0].$['descendants'].querySelectorAll('bookmarks-folder-node');
 
     Array.prototype.forEach.call(rootFolders, function(f) {
@@ -86,7 +86,7 @@ suite('<bookmarks-folder-node>', function() {
   });
 
   test('doesn\'t highlight selected folder while searching', function() {
-    var rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
+    const rootFolders = rootNode.root.querySelectorAll('bookmarks-folder-node');
 
     assertEquals('1', rootFolders['0'].itemId);
     assertTrue(rootFolders['0'].isSelectedFolder_);
@@ -151,10 +151,10 @@ suite('<bookmarks-folder-node>', function() {
   });
 
   test('right click opens context menu', function() {
-    var commandManager = new TestCommandManager();
+    const commandManager = new TestCommandManager();
     document.body.appendChild(commandManager);
 
-    var node = getFolderNode('2');
+    const node = getFolderNode('2');
     node.$.container.dispatchEvent(new MouseEvent('contextmenu'));
 
     assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);

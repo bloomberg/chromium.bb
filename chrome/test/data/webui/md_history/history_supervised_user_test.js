@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 suite('history-list supervised-user', function() {
-  var app;
-  var historyList;
-  var toolbar;
-  var TEST_HISTORY_RESULTS;
+  let app;
+  let historyList;
+  let toolbar;
+  let TEST_HISTORY_RESULTS;
 
   suiteSetup(function() {
     TEST_HISTORY_RESULTS =
@@ -22,7 +22,7 @@ suite('history-list supervised-user', function() {
 
   test('checkboxes disabled for supervised user', function() {
     return PolymerTest.flushTasks().then(function() {
-      var items =
+      const items =
           Polymer.dom(historyList.root).querySelectorAll('history-item');
 
       MockInteractions.tap(items[0].$['checkbox']);
@@ -42,7 +42,7 @@ suite('history-list supervised-user', function() {
   });
 
   test('remove history menu button disabled', function() {
-    var listContainer = app.$['history'];
+    const listContainer = app.$['history'];
     listContainer.$.sharedMenu.get();
     assertTrue(listContainer.$$('#menuRemoveButton').hidden);
   });

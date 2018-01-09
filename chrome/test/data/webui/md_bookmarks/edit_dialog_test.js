@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-edit-dialog>', function() {
-  var dialog;
-  var lastUpdate;
-  var lastCreation;
+  let dialog;
+  let lastUpdate;
+  let lastCreation;
 
   suiteSetup(function() {
     chrome.bookmarks.update = function(id, edit) {
@@ -25,14 +25,14 @@ suite('<bookmarks-edit-dialog>', function() {
   });
 
   test('editing an item shows the url field', function() {
-    var item = createItem('0');
+    const item = createItem('0');
     dialog.showEditDialog(item);
 
     assertFalse(dialog.$.url.hidden);
   });
 
   test('editing a folder hides the url field', function() {
-    var folder = createFolder('0', []);
+    const folder = createFolder('0', []);
     dialog.showEditDialog(folder);
 
     assertTrue(dialog.$.url.hidden);
@@ -45,7 +45,7 @@ suite('<bookmarks-edit-dialog>', function() {
 
   test('editing passes the correct details to the update', function() {
     // Editing an item without changing anything.
-    var item = createItem('1', {url: 'http://website.com', title: 'website'});
+    const item = createItem('1', {url: 'http://website.com', title: 'website'});
     dialog.showEditDialog(item);
 
     MockInteractions.tap(dialog.$.saveButton);
@@ -55,7 +55,7 @@ suite('<bookmarks-edit-dialog>', function() {
     assertEquals(item.title, lastUpdate.edit.title);
 
     // Editing a folder, changing the title.
-    var folder = createFolder('2', [], {title: 'Cool Sites'});
+    const folder = createFolder('2', [], {title: 'Cool Sites'});
     dialog.showEditDialog(folder);
     dialog.titleValue_ = 'Awesome websites';
 
@@ -98,7 +98,7 @@ suite('<bookmarks-edit-dialog>', function() {
   });
 
   test('doesn\'t save when URL is invalid', function() {
-    var item = createItem('0');
+    const item = createItem('0');
     dialog.showEditDialog(item);
 
     dialog.urlValue_ = '';

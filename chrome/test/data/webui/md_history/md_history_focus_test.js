@@ -7,7 +7,7 @@
  * Should be used for tests which care about focus.
  */
 
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_interactive_ui_test.js']);
@@ -39,9 +39,9 @@ MaterialHistoryFocusTest.prototype = {
 
 TEST_F('MaterialHistoryFocusTest', 'All', function() {
   suite('<history-toolbar>', function() {
-    var app;
-    var toolbar;
-    var TEST_HISTORY_RESULTS =
+    let app;
+    let toolbar;
+    const TEST_HISTORY_RESULTS =
         [createHistoryEntry('2016-03-15', 'https://google.com')];
 
     setup(function() {
@@ -79,7 +79,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
     });
 
     test('shortcuts to open search field', function() {
-      var field = toolbar.$['main-toolbar'].getSearchField();
+      const field = toolbar.$['main-toolbar'].getSearchField();
       field.blur();
       assertFalse(field.showingSearch);
 
@@ -93,7 +93,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       assertFalse(field.showingSearch, 'Pressing escape closes field.');
       assertNotEquals(field.$.searchInput, field.root.activeElement);
 
-      var modifier = 'ctrl';
+      let modifier = 'ctrl';
       if (cr.isMac)
         modifier = 'meta';
 
@@ -105,9 +105,9 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
   });
 
   suite('<history-list>', function() {
-    var app;
-    var element;
-    var TEST_HISTORY_RESULTS;
+    let app;
+    let element;
+    let TEST_HISTORY_RESULTS;
 
     suiteSetup(function() {
       TEST_HISTORY_RESULTS = [
@@ -127,9 +127,9 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
     test('list focus and keyboard nav', function(done) {
       app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
       PolymerTest.flushTasks().then(function() {
-        var items = polymerSelectAll(element, 'history-item');
+        const items = polymerSelectAll(element, 'history-item');
 
-        var focused = items[2].$.checkbox;
+        let focused = items[2].$.checkbox;
         focused.focus();
 
         // Wait for next render to ensure that focus handlers have been
@@ -180,7 +180,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
   });
 
   suite('<history-synced-device-manager>', function() {
-    var element;
+    let element;
 
     setup(function() {
       element = document.createElement('history-synced-device-manager');
@@ -190,7 +190,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
     });
 
     test('focus and keyboard nav', function() {
-      var sessionList = [
+      const sessionList = [
         createSession('Nexus 5', [createWindow([
                         'http://www.example.com', 'http://www.google.com'
                       ])]),
@@ -200,10 +200,10 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
 
       element.sessionList = sessionList;
 
-      var lastFocused;
-      var cards;
-      var focused;
-      var onFocusHandler = element.focusGrid_.onFocus;
+      let lastFocused;
+      let cards;
+      let focused;
+      const onFocusHandler = element.focusGrid_.onFocus;
       element.focusGrid_.onFocus = function(row, e) {
         onFocusHandler.call(element.focusGrid_, row, e);
         lastFocused = e.currentTarget;

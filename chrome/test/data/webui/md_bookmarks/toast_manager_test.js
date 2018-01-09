@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-toast-manager>', function() {
-  var toastManager;
+  let toastManager;
 
   setup(function() {
     toastManager = document.createElement('bookmarks-toast-manager');

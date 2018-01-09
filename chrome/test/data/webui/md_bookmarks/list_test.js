@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-list>', function() {
-  var list;
-  var store;
+  let list;
+  let store;
 
   setup(function() {
-    var nodes = testTree(createFolder('10', [
+    const nodes = testTree(createFolder('10', [
       createItem('1'),
       createFolder('3', []),
       createItem('5'),
@@ -30,14 +30,14 @@ suite('<bookmarks-list>', function() {
   });
 
   test('renders correct <bookmark-item> elements', function() {
-    var items = list.root.querySelectorAll('bookmarks-item');
-    var ids = Array.from(items).map((item) => item.itemId);
+    const items = list.root.querySelectorAll('bookmarks-item');
+    const ids = Array.from(items).map((item) => item.itemId);
 
     assertDeepEquals(['1', '3', '5', '7'], ids);
   });
 
   test('shift-selects multiple items', function() {
-    var items = list.root.querySelectorAll('bookmarks-item');
+    const items = list.root.querySelectorAll('bookmarks-item');
 
     customClick(items[0]);
 
@@ -80,9 +80,9 @@ suite('<bookmarks-list>', function() {
 });
 
 suite('<bookmarks-list> integration test', function() {
-  var list;
-  var store;
-  var items;
+  let list;
+  let store;
+  let items;
 
   setup(function() {
     store = new bookmarks.TestStore({
