@@ -217,8 +217,19 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
       }
 
       ChosenObjectInfoList chosen_object_list;
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
-          ->SetPermissionInfo(permissions_list, std::move(chosen_object_list));
+
+      PageInfoBubbleView* page_info_bubble_view =
+          static_cast<PageInfoBubbleView*>(
+              PageInfoBubbleView::GetPageInfoBubble());
+      // Normally |PageInfoBubbleView| doesn't update the permissions already
+      // shown if they change while it's still open. For this test, manually
+      // force an update by clearing the existing permission views here.
+      page_info_bubble_view->GetFocusManager()->SetFocusedView(nullptr);
+      page_info_bubble_view->selector_rows_.clear();
+      page_info_bubble_view->permissions_view_->RemoveAllChildViews(true);
+
+      page_info_bubble_view->SetPermissionInfo(permissions_list,
+                                               std::move(chosen_object_list));
     }
 
     if (name != kInsecure && name.find(kInternal) == std::string::npos) {
