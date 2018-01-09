@@ -377,7 +377,7 @@
   // Stack views constraints.
   // Layout: |[leadingStackView]-[locationBarContainer]-[trailingStackView]|.
   // Safe Area constraints.
-  UILayoutGuide* viewSafeAreaGuide = SafeAreaLayoutGuideForView(self);
+  id<LayoutGuideProvider> viewSafeAreaGuide = SafeAreaLayoutGuideForView(self);
   self.leadingSafeAreaConstraint = [self.leadingStackView.leadingAnchor
       constraintEqualToAnchor:viewSafeAreaGuide.leadingAnchor
                      constant:self.leadingMargin];
@@ -454,7 +454,7 @@
 
   // LocationBarStackView constraints. The StackView inside the
   // LocationBarContainer View.
-  UILayoutGuide* locationBarContainerSafeAreaGuide =
+  id<LayoutGuideProvider> locationBarContainerSafeAreaGuide =
       SafeAreaLayoutGuideForView(self.locationBarContainer);
   [NSLayoutConstraint activateConstraints:@[
     [self.locationBarContainerStackView.bottomAnchor

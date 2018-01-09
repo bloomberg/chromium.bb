@@ -16,27 +16,12 @@ namespace {
 
 using ConstraintsUIUtilTest = PlatformTest;
 
-// Tests that SafeAreaLayoutGuideForView returns and attach a single
-// safeAreaLayoutGuide before iOS 11.
+// Tests that SafeAreaLayoutGuideForView returns self on iOS 10.
 TEST_F(ConstraintsUIUtilTest, SafeAreaLayoutGuideForView) {
   if (@available(iOS 11, *)) {
   } else {
     UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
-    NSUInteger originalLayoutGuideCount = [view.layoutGuides count];
-
-    // Check that calling |SafeAreaLayoutGuideForView| increases the
-    // layout guides associated with |view|.
-    UILayoutGuide* safeArea1 = SafeAreaLayoutGuideForView(view);
-    EXPECT_EQ(originalLayoutGuideCount + 1, [view.layoutGuides count]);
-
-    // Check that calling |SafeAreaLayoutGuideForView| again does not
-    // increase the layout guides associated with |view|.
-    UILayoutGuide* safeArea2 = SafeAreaLayoutGuideForView(view);
-    EXPECT_EQ(originalLayoutGuideCount + 1, [view.layoutGuides count]);
-
-    // Check that multiple calls to |SafeAreaLayoutGuideForView| return the
-    // same object.
-    EXPECT_EQ(safeArea1, safeArea2);
+    EXPECT_EQ(view, SafeAreaLayoutGuideForView(view));
   }
 }
 
