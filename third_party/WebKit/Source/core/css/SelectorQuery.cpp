@@ -94,12 +94,6 @@ struct AllElementsSelectorQueryTrait {
   }
 };
 
-// TODO(esprehn): Move this to Element and update callers elsewhere.
-inline bool HasClassName(const Element& element,
-                         const AtomicString& class_name) {
-  return element.HasClass() && element.ClassNames().Contains(class_name);
-}
-
 inline bool SelectorMatches(const CSSSelector& selector,
                             Element& element,
                             const ContainerNode& root_node) {
@@ -159,7 +153,7 @@ static void CollectElementsByClassName(
     typename SelectorQueryTrait::OutputType& output) {
   for (Element& element : ElementTraversal::DescendantsOf(root_node)) {
     QUERY_STATS_INCREMENT(fast_class);
-    if (!HasClassName(element, class_name))
+    if (!element.HasClassName(class_name))
       continue;
     if (selector && !SelectorMatches(*selector, element, root_node))
       continue;
@@ -207,7 +201,7 @@ inline bool AncestorHasClassName(ContainerNode& root_node,
 
   for (Element* element = &ToElement(root_node); element;
        element = element->parentElement()) {
-    if (HasClassName(*element, class_name))
+    if (element->HasClassName(class_name))
       return true;
   }
   return false;
@@ -243,7 +237,7 @@ void SelectorQuery::FindTraverseRootsAndExecute(
       Element* element = ElementTraversal::FirstWithin(root_node);
       while (element) {
         QUERY_STATS_INCREMENT(fast_class);
-        if (HasClassName(*element, class_name)) {
+        if (element->HasClassName(class_name)) {
           ExecuteForTraverseRoot<SelectorQueryTrait>(*element, root_node,
                                                      output);
           if (SelectorQueryTrait::kShouldOnlyMatchFirstElement &&

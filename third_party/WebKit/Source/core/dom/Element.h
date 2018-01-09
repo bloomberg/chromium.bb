@@ -784,6 +784,7 @@ class CORE_EXPORT Element : public ContainerNode {
   bool HasID() const;
   bool HasClass() const;
   const SpaceSplitString& ClassNames() const;
+  bool HasClassName(const AtomicString& class_name) const;
 
   ScrollOffset SavedLayerScrollOffset() const;
   void SetSavedLayerScrollOffset(const ScrollOffset&);
@@ -1186,6 +1187,10 @@ inline const SpaceSplitString& Element::ClassNames() const {
   DCHECK(HasClass());
   DCHECK(GetElementData());
   return GetElementData()->ClassNames();
+}
+
+inline bool Element::HasClassName(const AtomicString& class_name) const {
+  return HasClass() && ClassNames().Contains(class_name);
 }
 
 inline bool Element::HasID() const {
