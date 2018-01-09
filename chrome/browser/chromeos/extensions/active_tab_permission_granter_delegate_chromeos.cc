@@ -4,12 +4,17 @@
 
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 
-#include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
 
 namespace extensions {
+
+namespace {
+
+permission_helper::RequestResolvedCallback* g_resolved_callback;
+
+}
 
 ActiveTabPermissionGranterDelegateChromeOS::
     ActiveTabPermissionGranterDelegateChromeOS() {}
@@ -17,12 +22,22 @@ ActiveTabPermissionGranterDelegateChromeOS::
 ActiveTabPermissionGranterDelegateChromeOS::
     ~ActiveTabPermissionGranterDelegateChromeOS() {}
 
+// static
+void ActiveTabPermissionGranterDelegateChromeOS::
+    SetRequestResolvedCallbackForTesting(
+        permission_helper::RequestResolvedCallback* callback) {
+  g_resolved_callback = callback;
+}
+
 bool ActiveTabPermissionGranterDelegateChromeOS::ShouldGrantActiveTab(
     const Extension* extension,
     content::WebContents* web_contents) {
+  permission_helper::RequestResolvedCallback callback;
+  if (g_resolved_callback)
+    callback = *g_resolved_callback;
+
   bool already_handled = permission_helper::HandlePermissionRequest(
-      *extension, {APIPermission::kActiveTab}, web_contents,
-      permission_helper::RequestResolvedCallback(),
+      *extension, {APIPermission::kActiveTab}, web_contents, callback,
       permission_helper::PromptFactory());
 
   return already_handled && permission_helper::PermissionAllowed(
