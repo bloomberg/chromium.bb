@@ -26,7 +26,10 @@ void TableSectionPainter::PaintRepeatingHeaderGroup(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      // TODO(wangxianzhu): Use the PaintPropertyTreeBuilder path for printing.
+      (!paint_info.IsPrinting() ||
+       layout_table_section_.FirstFragment().NextFragment()))
     return;
 
   if (!layout_table_section_.IsRepeatingHeaderGroup())
@@ -94,7 +97,10 @@ void TableSectionPainter::PaintRepeatingFooterGroup(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     ItemToPaint item_to_paint) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+      // TODO(wangxianzhu): Use the PaintPropertyTreeBuilder path for printing.
+      (!paint_info.IsPrinting() ||
+       layout_table_section_.FirstFragment().NextFragment()))
     return;
 
   if (!layout_table_section_.IsRepeatingFooterGroup())

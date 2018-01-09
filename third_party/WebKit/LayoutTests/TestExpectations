@@ -1318,6 +1318,8 @@ crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 # Printing Layout broken in these tests.
 crbug.com/377696 printing/setPrinting.html [ Skip ]
 crbug.com/377696 printing/width-overflow.html [ Skip ]
+crbug.com/377696 virtual/spv175/printing/setPrinting.html [ Skip ]
+crbug.com/377696 virtual/spv175/printing/width-overflow.html [ Skip ]
 
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
