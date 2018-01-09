@@ -10,7 +10,6 @@
 namespace offline_pages {
 
 enum class OfflinePagesNamespaceEnumeration;
-struct ClientId;
 
 namespace model_utils {
 
@@ -18,7 +17,7 @@ namespace model_utils {
 OfflinePagesNamespaceEnumeration ToNamespaceEnum(const std::string& name_space);
 
 // Metric collection related.
-std::string AddHistogramSuffix(const ClientId& client_id,
+std::string AddHistogramSuffix(const std::string& name_space,
                                const char* histogram_name);
 
 }  // namespace model_utils

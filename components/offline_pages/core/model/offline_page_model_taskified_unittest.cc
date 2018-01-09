@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/model/clear_storage_task.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
@@ -45,6 +46,7 @@ using testing::UnorderedElementsAre;
 namespace offline_pages {
 
 using ArchiverResult = OfflinePageArchiver::ArchiverResult;
+using ClearStorageResult = ClearStorageTask::ClearStorageResult;
 
 namespace {
 const GURL kTestUrl("http://example.com");
@@ -116,9 +118,6 @@ class OfflinePageModelTaskifiedTest
   std::unique_ptr<OfflinePageTestArchiver> BuildArchiver(const GURL& url,
                                                          ArchiverResult result);
   void CheckTaskQueueIdle();
-  void SetTestingClock(std::unique_ptr<base::Clock> clock) {
-    model_->clock_ = std::move(clock);
-  }
 
   // Getters for private fields.
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
@@ -335,14 +334,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessful) {
           model_utils::ToNamespaceEnum(saved_page_ptr->client_id.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::SUCCESS), 1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       kTestFileSize / 1024, 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       1);
 }
@@ -370,14 +370,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithSameOriginalUrl) {
           model_utils::ToNamespaceEnum(saved_page_ptr->client_id.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::SUCCESS), 1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       kTestFileSize / 1024, 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       1);
 }
@@ -410,14 +411,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageSuccessfulWithRequestOrigin) {
           model_utils::ToNamespaceEnum(saved_page_ptr->client_id.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::SUCCESS), 1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       kTestFileSize / 1024, 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       1);
 }
@@ -433,14 +435,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverCancelled) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::CANCELLED), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -456,14 +459,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverDeviceFull) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::DEVICE_FULL), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -481,14 +485,15 @@ TEST_F(OfflinePageModelTaskifiedTest,
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::CONTENT_UNAVAILABLE), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -505,14 +510,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineCreationFailed) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::ARCHIVE_CREATION_FAILED), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -529,14 +535,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverReturnedWrongUrl) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::ARCHIVE_CREATION_FAILED), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -557,14 +564,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageLocalFileFailed) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::SKIPPED), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       0);
 }
@@ -639,14 +647,15 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
       static_cast<int>(model_utils::ToNamespaceEnum(kTestClientId1.name_space)),
       2);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::SUCCESS), 2);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1, "OfflinePages.PageSize"),
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
+                                      "OfflinePages.PageSize"),
       kTestFileSize / 1024, 2);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageTime"),
       2);
 }
@@ -677,7 +686,7 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageWithNullArchiver) {
                              kEmptyRequestOrigin, nullptr,
                              SavePageResult::CONTENT_UNAVAILABLE);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.SavePageResult"),
       static_cast<int>(SavePageResult::CONTENT_UNAVAILABLE), 1);
 }
@@ -784,11 +793,11 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
       "OfflinePages.DeletePageResult",
       static_cast<int>(DeletePageResult::SUCCESS), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       1);
 }
@@ -831,11 +840,11 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
       "OfflinePages.DeletePageResult",
       static_cast<int>(DeletePageResult::SUCCESS), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       1);
 }
@@ -1034,11 +1043,11 @@ TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
       "OfflinePages.DeletePageResult",
       static_cast<int>(DeletePageResult::SUCCESS), 1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.PageLifetime"),
       1);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(kTestClientId1,
+      model_utils::AddHistogramSuffix(kTestClientId1.name_space,
                                       "OfflinePages.AccessCount"),
       1);
 }
@@ -1279,7 +1288,6 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   ResetModel();
   BuildStore();
   BuildModel();
-  SetTestingClock(task_runner()->GetMockClock());
 
   PumpLoop();
   EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
@@ -1303,6 +1311,11 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
       std::move(archiver), SavePageResult::SUCCESS);
   PumpLoop();
   EXPECT_EQ(task_runner()->Now(), last_clear_page_time());
+  histogram_tester()->ExpectUniqueSample(
+      "OfflinePages.ClearTemporaryPages.Result",
+      static_cast<int>(ClearStorageResult::UNNECESSARY), 2);
+  histogram_tester()->ExpectTotalCount(
+      "OfflinePages.ClearTemporaryPages.BatchSize", 0);
 }
 
 }  // namespace offline_pages

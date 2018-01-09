@@ -93,14 +93,14 @@ void ReportPageHistogramAfterSuccessfulSaving(
     const OfflinePageItem& offline_page,
     const base::Time& save_time) {
   base::UmaHistogramCustomTimes(
-      model_utils::AddHistogramSuffix(offline_page.client_id,
+      model_utils::AddHistogramSuffix(offline_page.client_id.name_space,
                                       "OfflinePages.SavePageTime"),
       save_time - offline_page.creation_time,
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
       50);
 
   base::UmaHistogramCustomCounts(
-      model_utils::AddHistogramSuffix(offline_page.client_id,
+      model_utils::AddHistogramSuffix(offline_page.client_id.name_space,
                                       "OfflinePages.PageSize"),
       offline_page.file_size / 1024, 1, 10000, 50);
 }
@@ -342,7 +342,8 @@ void OfflinePageModelTaskified::InformSavePageDone(
                             model_utils::ToNamespaceEnum(client_id.name_space),
                             OfflinePagesNamespaceEnumeration::RESULT_COUNT);
   base::UmaHistogramEnumeration(
-      model_utils::AddHistogramSuffix(client_id, "OfflinePages.SavePageResult"),
+      model_utils::AddHistogramSuffix(client_id.name_space,
+                                      "OfflinePages.SavePageResult"),
       result, SavePageResult::RESULT_COUNT);
 
   if (result == SavePageResult::ARCHIVE_CREATION_FAILED)
@@ -503,6 +504,12 @@ void OfflinePageModelTaskified::OnClearCachedPagesDone(
     base::Time start_time,
     size_t deleted_page_count,
     ClearStorageResult result) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearTemporaryPages.Result", result,
+                            ClearStorageResult::RESULT_COUNT);
+  if (deleted_page_count > 0) {
+    UMA_HISTOGRAM_COUNTS("OfflinePages.ClearTemporaryPages.BatchSize",
+                         deleted_page_count);
+  }
   last_clear_cached_pages_time_ = start_time;
 }
 

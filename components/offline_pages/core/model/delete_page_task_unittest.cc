@@ -170,19 +170,19 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineId) {
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_TRUE(CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       2);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       2);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0, 1);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       200, 1);
 }
@@ -215,11 +215,11 @@ TEST_F(DeletePageTaskTest, DeletePageByOfflineIdNotFound) {
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_FALSE(CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0);
 }
@@ -252,19 +252,19 @@ TEST_F(DeletePageTaskTest, DeletePageByClientId) {
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_TRUE(CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       2);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       2);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0, 1);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       200, 1);
 }
@@ -293,11 +293,11 @@ TEST_F(DeletePageTaskTest, DeletePageByClientIdNotFound) {
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
   EXPECT_EQ(3LL, store_test_util()->GetPageCount());
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0);
 }
@@ -336,19 +336,19 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
   EXPECT_EQ(predicate.Run(page2.url), CheckPageDeleted(page2));
   EXPECT_EQ(predicate.Run(page3.url), CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       2);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       2);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0, 1);
   histogram_tester()->ExpectBucketCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       200, 1);
 }
@@ -385,11 +385,11 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_FALSE(CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0);
 }
@@ -427,11 +427,11 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
   EXPECT_FALSE(CheckPageDeleted(page2));
   EXPECT_FALSE(CheckPageDeleted(page3));
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       1);
   histogram_tester()->ExpectUniqueSample(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0, 1);
 }
@@ -464,11 +464,11 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.PageLifetime"),
       0);
   histogram_tester()->ExpectTotalCount(
-      model_utils::AddHistogramSuffix(page1.client_id,
+      model_utils::AddHistogramSuffix(page1.client_id.name_space,
                                       "OfflinePages.AccessCount"),
       0);
 }
