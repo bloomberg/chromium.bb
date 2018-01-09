@@ -9,11 +9,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/optional.h"
+#include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "net/ssl/ssl_info.h"
-
-namespace chrome_browser_ssl {
-class SSLErrorAssistantConfig;
-}  // namespace chrome_browser_ssl
+#include "url/gurl.h"
 
 namespace net {
 class SSLInfo;
@@ -29,6 +28,27 @@ struct MITMSoftwareType {
   const std::string name;
   const std::string issuer_common_name_regex;
   const std::string issuer_organization_regex;
+};
+
+// Struct which stores data about a dynamic interstitial pulled from the
+// SSLErrorAssistant proto.
+struct DynamicInterstitialInfo {
+  DynamicInterstitialInfo(
+      const std::unordered_set<std::string>& spki_hashes,
+      chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
+          interstitial_type,
+      int cert_error,
+      const GURL& support_url);
+
+  DynamicInterstitialInfo(const DynamicInterstitialInfo& other);
+
+  ~DynamicInterstitialInfo();
+
+  const std::unordered_set<std::string> spki_hashes;
+  const chrome_browser_ssl::DynamicInterstitial::InterstitialPageType
+      interstitial_type;
+  const int cert_error;
+  const GURL support_url;
 };
 
 // Helper class for SSLErrorHandler. This class is responsible for reading in
@@ -50,6 +70,12 @@ class SSLErrorAssistant {
   const std::string MatchKnownMITMSoftware(
       const scoped_refptr<net::X509Certificate>& cert);
 
+  // Returns a DynamicInterstitialInfo from |dynamic_interstitial_list_| that
+  // matches with |ssl_info|. If there is no match, returns null. Loads
+  // |dynamic_interstitial_list_| on the first use.
+  base::Optional<DynamicInterstitialInfo> MatchDynamicInterstitial(
+      const net::SSLInfo& ssl_info);
+
   void SetErrorAssistantProto(
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> proto);
 
@@ -66,6 +92,11 @@ class SSLErrorAssistant {
   // Data about a known MITM software pulled from the SSLErrorAssistant proto.
   // Null until MatchKnownMITMSoftware() is called.
   std::unique_ptr<std::vector<MITMSoftwareType>> mitm_software_list_;
+
+  // Dynamic interstitial data pulled from the SSLErrorAssistant proto. Null
+  // until MatchDynamicInterstitial() is called.
+  std::unique_ptr<std::vector<DynamicInterstitialInfo>>
+      dynamic_interstitial_list_;
 
   // Error assistant configuration.
   std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>

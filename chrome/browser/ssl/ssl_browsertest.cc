@@ -51,6 +51,7 @@
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ssl/ssl_error_tab_helper.h"
@@ -5197,7 +5198,8 @@ class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     return SSLBlockingPage::Create(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
-        base::Time::NowFromSystemTime(), nullptr, false /* is superfish */,
+        base::Time::NowFromSystemTime(), GURL(), nullptr,
+        false /* is superfish */,
         base::Callback<void(content::CertificateRequestResultType)>());
   }
 };
@@ -6835,6 +6837,223 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, SimpleURLLoaderCertError) {
                 partition->GetNetworkContext(),
                 https_server_mismatched_.GetURL("/anchor_download_test.png"),
                 frame->GetProcess()->GetID(), frame->GetRoutingID()));
+}
+
+// This SPKI hash is from a self signed certificate generated using the
+// following openssl command:
+//  openssl req -new -x509 -keyout server.pem -out server.pem -days 365 -nodes
+//  openssl x509 -noout -in certificate.pem -pubkey | \
+//  openssl asn1parse -noout -inform pem -out public.key;
+//  openssl dgst -sha256 -binary public.key | openssl enc -base64
+// The actual value of the hash doesn't matter as long it's a valid SPKI hash.
+const char kDynamicInterstitialCert[] =
+    "sha256/eFi0afYJLdI0YsZFu4U8ra2B5/5ynzfKkI88M94iVFA=";
+
+namespace {
+
+std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
+MakeDynamicInterstitial(const std::vector<DynamicInterstitialInfo>& list) {
+  auto config_proto =
+      base::MakeUnique<chrome_browser_ssl::SSLErrorAssistantConfig>();
+  config_proto->set_version_id(kLargeVersionId);
+
+  for (const DynamicInterstitialInfo& info : list) {
+    chrome_browser_ssl::DynamicInterstitial* filter =
+        config_proto->add_dynamic_interstitial();
+    filter->set_interstitial_type(info.interstitial_type);
+    filter->set_cert_error(
+        (chrome_browser_ssl::DynamicInterstitial_CertError)info.cert_error);
+
+    for (const std::string& hash : info.spki_hashes)
+      filter->add_sha256_hash(hash);
+  }
+
+  return config_proto;
+}
+
+class SSLUIDynamicInterstitialTest : public CertVerifierBrowserTest {
+ public:
+  SSLUIDynamicInterstitialTest()
+      : CertVerifierBrowserTest(),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~SSLUIDynamicInterstitialTest() override {}
+
+  void SetUpCertVerifier() {
+    scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
+    net::CertVerifyResult verify_result;
+    verify_result.verified_cert = cert;
+    verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+    net::HashValue hash;
+    ASSERT_TRUE(hash.FromString(kDynamicInterstitialCert));
+    verify_result.public_key_hashes.push_back(hash);
+
+    mock_cert_verifier()->AddResultForCert(cert, verify_result,
+                                           net::ERR_CERT_COMMON_NAME_INVALID);
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLUIDynamicInterstitialTest);
+};
+
+}  // namespace
+
+// Tests that the dynamic interstitial list is used when the feature is
+// enabled via Finch. The list is passed to SSLErrorHandler via a proto.
+IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, Match) {
+  ASSERT_TRUE(https_server()->Start());
+
+  SetUpCertVerifier();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    std::vector<DynamicInterstitialInfo> list;
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{"sha256/kingfisher",
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::INTERSTITIAL_PAGE_SSL,
+        chrome_browser_ssl::DynamicInterstitial::ERR_CERT_COMMON_NAME_INVALID,
+        GURL()));
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{kDynamicInterstitialCert,
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::
+            INTERSTITIAL_PAGE_CAPTIVE_PORTAL,
+        0, GURL()));
+
+    SSLErrorHandler::SetErrorAssistantProto(MakeDynamicInterstitial(list));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
+
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    WaitForInterstitial(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    interstitial_page->DontProceed();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MatchUnknownCertError) {
+  ASSERT_TRUE(https_server()->Start());
+
+  SetUpCertVerifier();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    std::vector<DynamicInterstitialInfo> list;
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{"sha256/kingfisher",
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::INTERSTITIAL_PAGE_SSL,
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR, GURL()));
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{kDynamicInterstitialCert,
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::
+            INTERSTITIAL_PAGE_CAPTIVE_PORTAL,
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR, GURL()));
+
+    SSLErrorHandler::SetErrorAssistantProto(MakeDynamicInterstitial(list));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
+
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    WaitForInterstitial(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    ASSERT_EQ(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+    interstitial_page->DontProceed();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchHash) {
+  ASSERT_TRUE(https_server()->Start());
+
+  SetUpCertVerifier();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // Dynamically update the SSL error assistant config without the dynamic
+    // interstitial SPKI hash.
+    std::vector<DynamicInterstitialInfo> list;
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{"sha256/kingfisher",
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::
+            INTERSTITIAL_PAGE_CAPTIVE_PORTAL,
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR, GURL()));
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{"sha256/sapsucker"},
+        chrome_browser_ssl::DynamicInterstitial::
+            INTERSTITIAL_PAGE_CAPTIVE_PORTAL,
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR, GURL()));
+
+    SSLErrorHandler::SetErrorAssistantProto(MakeDynamicInterstitial(list));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
+
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    WaitForInterstitial(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(SSLUIDynamicInterstitialTest, MismatchCertError) {
+  ASSERT_TRUE(https_server()->Start());
+
+  SetUpCertVerifier();
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  {
+    // Dynamically update the SSL error assistant config without the dynamic
+    // interstitial cert error.
+    std::vector<DynamicInterstitialInfo> list;
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{"sha256/kingfisher",
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::INTERSTITIAL_PAGE_SSL,
+        chrome_browser_ssl::DynamicInterstitial::UNKNOWN_CERT_ERROR, GURL()));
+    list.push_back(DynamicInterstitialInfo(
+        std::unordered_set<std::string>{kDynamicInterstitialCert,
+                                        "sha256/flycatcher"},
+        chrome_browser_ssl::DynamicInterstitial::
+            INTERSTITIAL_PAGE_CAPTIVE_PORTAL,
+        chrome_browser_ssl::DynamicInterstitial::ERR_CERT_AUTHORITY_INVALID,
+        GURL()));
+
+    SSLErrorHandler::SetErrorAssistantProto(MakeDynamicInterstitial(list));
+    ASSERT_TRUE(SSLErrorHandler::GetErrorAssistantProtoVersionIdForTesting() >
+                0);
+
+    SSLInterstitialTimerObserver interstitial_timer_observer(tab);
+    ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/"));
+    WaitForInterstitial(tab);
+
+    InterstitialPage* interstitial_page = tab->GetInterstitialPage();
+    ASSERT_TRUE(interstitial_page);
+    EXPECT_NE(CaptivePortalBlockingPage::kTypeForTesting,
+              interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
+  }
 }
 
 // TODO(jcampan): more tests to do below.

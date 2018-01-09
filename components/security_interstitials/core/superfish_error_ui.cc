@@ -31,6 +31,7 @@ SuperfishErrorUI::SuperfishErrorUI(
                  ssl_info,
                  display_options,
                  time_triggered,
+                 GURL(),
                  controller) {}
 
 void SuperfishErrorUI::PopulateStringsForHTML(

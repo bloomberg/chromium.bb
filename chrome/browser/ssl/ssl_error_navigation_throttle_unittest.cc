@@ -37,10 +37,10 @@ void MockHandleSSLError(
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
-  std::unique_ptr<SSLBlockingPage> blocking_page(
-      SSLBlockingPage::Create(web_contents, cert_error, ssl_info, request_url,
-                              0, base::Time::NowFromSystemTime(), nullptr,
-                              false /* is superfish */, decision_callback));
+  std::unique_ptr<SSLBlockingPage> blocking_page(SSLBlockingPage::Create(
+      web_contents, cert_error, ssl_info, request_url, 0,
+      base::Time::NowFromSystemTime(), GURL(), nullptr,
+      false /* is superfish */, decision_callback));
   if (async) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback),
