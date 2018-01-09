@@ -7,7 +7,9 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
 #include "core/frame/UseCounter.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -28,6 +30,15 @@ const CSSValue* OffsetPosition::ParseSingleValue(
   if (value && value->IsValuePair())
     context.Count(WebFeature::kCSSOffsetInEffect);
   return value;
+}
+
+const CSSValue* OffsetPosition::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForPosition(style.OffsetPosition(), style);
 }
 
 }  // namespace CSSLonghand

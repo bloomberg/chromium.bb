@@ -70,6 +70,13 @@ class ComputedStyleUtils {
                                           const ComputedStyle&);
   static CSSValue* ValueForReflection(const StyleReflection*,
                                       const ComputedStyle&);
+  static CSSValue* ValueForPosition(const LengthPoint& position,
+                                    const ComputedStyle&);
+
+  static CSSValue* ValueForOffset(const ComputedStyle&,
+                                  const LayoutObject*,
+                                  Node*,
+                                  bool allow_visited_style);
 };
 
 }  // namespace blink
