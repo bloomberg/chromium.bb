@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 #include <stddef.h>
 
@@ -425,7 +425,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
 TEST_F(TabStripModelTest, TestBasicAPI) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   MockTabStripModelObserver observer(&tabstrip);
   tabstrip.AddObserver(&observer);
 
@@ -661,7 +661,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
 TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // This is a basic test of opener functionality. opener is created
@@ -734,12 +734,12 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-static int GetInsertionIndex(TabStripModelImpl* tabstrip) {
+static int GetInsertionIndex(TabStripModel* tabstrip) {
   return tabstrip->order_controller()->DetermineInsertionIndex(
       ui::PAGE_TRANSITION_LINK, false);
 }
 
-static void InsertWebContentses(TabStripModelImpl* tabstrip,
+static void InsertWebContentses(TabStripModel* tabstrip,
                                 WebContents* contents1,
                                 WebContents* contents2,
                                 WebContents* contents3) {
@@ -754,7 +754,7 @@ static void InsertWebContentses(TabStripModelImpl* tabstrip,
 // Tests opening background tabs.
 TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   WebContents* opener = CreateWebContents();
@@ -782,7 +782,7 @@ TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
 // end of the strip, not bundled to any existing context.
 TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   WebContents* opener = CreateWebContents();
@@ -854,7 +854,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
 // to position tabs.
 TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Start with three tabs, of which the first is active.
@@ -905,7 +905,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationAfterDragged) {
 // tab when deciding where to position tabs.
 TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Start with two tabs, of which the first is active:
@@ -981,7 +981,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDeterminationNestedOpener) {
 //
 TEST_F(TabStripModelTest, TestSelectOnClose) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   WebContents* opener = CreateWebContents();
@@ -1056,7 +1056,7 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
 // CommandCloseTab.
 TEST_F(TabStripModelTest, CommandCloseTab) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Make sure can_close is honored.
@@ -1107,7 +1107,7 @@ TEST_F(TabStripModelTest, CommandCloseTab) {
 // CommandCloseTabs.
 TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Create three tabs, select two tabs, CommandCloseOtherTabs should be enabled
@@ -1169,7 +1169,7 @@ TEST_F(TabStripModelTest, CommandCloseOtherTabs) {
 // CommandCloseTabsToRight.
 TEST_F(TabStripModelTest, CommandCloseTabsToRight) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Create three tabs, select last two tabs, CommandCloseTabsToRight should
@@ -1192,7 +1192,7 @@ TEST_F(TabStripModelTest, CommandCloseTabsToRight) {
 // CommandTogglePinned.
 TEST_F(TabStripModelTest, CommandTogglePinned) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Create three tabs with one pinned, pin the first two.
@@ -1225,7 +1225,7 @@ TEST_F(TabStripModelTest, CommandTogglePinned) {
 //  - Close Tabs To Right
 TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   WebContents* opener = CreateWebContents();
@@ -1270,7 +1270,7 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
 // Tests GetIndicesClosedByCommand.
 TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   WebContents* contents1 = CreateWebContents();
@@ -1320,7 +1320,7 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
 // of links on the home page.
 TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
@@ -1386,7 +1386,7 @@ TEST_F(TabStripModelTest, AddWebContents_MiddleClickLinksAndClose) {
 // it.
 TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
@@ -1435,7 +1435,7 @@ TEST_F(TabStripModelTest, AddWebContents_LeftClickPopup) {
 // in the middle.
 TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
@@ -1488,7 +1488,7 @@ TEST_F(TabStripModelTest, AddWebContents_CreateNewBlankTab) {
 // context.
 TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
@@ -1549,7 +1549,7 @@ TEST_F(TabStripModelTest, AddWebContents_ForgetOpeners) {
 // Added for http://b/issue?id=958960
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page.
@@ -1581,7 +1581,7 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
 // Added for http://b/issue?id=1027661
 TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open page A
   WebContents* page_a_contents = CreateWebContents();
@@ -1631,7 +1631,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
 
 TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open page A
   WebContents* page_a_contents = CreateWebContents();
@@ -1707,7 +1707,7 @@ TEST_F(TabStripModelTest, AddWebContents_NewTabAtEndOfStripInheritsGroup) {
 // not preserved.
 TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open page A
   WebContents* page_a_contents = CreateWebContents();
@@ -1755,7 +1755,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
 // selected (Test 2 below).
 TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open a tab and several tabs from it, then select one of the tabs that was
   // opened.
@@ -1821,7 +1821,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 // Tests that fast shutdown is attempted appropriately.
 TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   MockTabStripModelObserver observer(&tabstrip);
   tabstrip.AddObserver(&observer);
 
@@ -1879,7 +1879,7 @@ TEST_F(TabStripModelTest, MAYBE_FastShutdown) {
 // Tests various permutations of pinning tabs.
 TEST_F(TabStripModelTest, Pinning) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl tabstrip(&delegate, profile());
+  TabStripModel tabstrip(&delegate, profile());
   MockTabStripModelObserver observer(&tabstrip);
   tabstrip.AddObserver(&observer);
 
@@ -2041,7 +2041,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   typedef MockTabStripModelObserver::State State;
 
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   WebContents* first_contents = CreateWebContents();
   strip.AddWebContents(first_contents, -1, ui::PAGE_TRANSITION_TYPED,
@@ -2091,7 +2091,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 // another tab.
 TEST_F(TabStripModelTest, DeleteFromDestroy) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   WebContents* contents1 = CreateWebContents();
   WebContents* contents2 = CreateWebContents();
   MockTabStripModelObserver tab_strip_model_observer(&strip);
@@ -2116,7 +2116,7 @@ TEST_F(TabStripModelTest, DeleteFromDestroy) {
 // TabStrip while removing another tab.
 TEST_F(TabStripModelTest, DeleteTabStripFromDestroy) {
   TabStripDummyDelegate delegate;
-  TabStripModel* strip = new TabStripModelImpl(&delegate, profile());
+  TabStripModel* strip = new TabStripModel(&delegate, profile());
   MockTabStripModelObserver tab_strip_model_observer(strip);
   strip->AddObserver(&tab_strip_model_observer);
   WebContents* contents1 = CreateWebContents();
@@ -2134,7 +2134,7 @@ TEST_F(TabStripModelTest, DeleteTabStripFromDestroy) {
 // MoveWebContentsAt.
 TEST_F(TabStripModelTest, MoveWebContentsAtWithPinned) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(&strip, 6, 3, "0"));
   EXPECT_EQ("0p 1p 2p 3 4 5", GetTabStripStateString(strip));
 
@@ -2211,7 +2211,7 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     TabStripDummyDelegate delegate;
-    TabStripModelImpl strip(&delegate, profile());
+    TabStripModel strip(&delegate, profile());
     ASSERT_NO_FATAL_FAILURE(PrepareTabstripForSelectionTest(
         &strip, test_data[i].tab_count, test_data[i].pinned_count,
         test_data[i].selected_tabs));
@@ -2225,7 +2225,7 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
 // Tests that moving a tab forgets all groups referencing it.
 TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open page A as a new tab and then A1 in the background from A.
   WebContents* page_a_contents = CreateWebContents();
@@ -2281,7 +2281,7 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo_ForgetGroups) {
 
 TEST_F(TabStripModelTest, CloseSelectedTabs) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   WebContents* contents1 = CreateWebContents();
   WebContents* contents2 = CreateWebContents();
   WebContents* contents3 = CreateWebContents();
@@ -2299,7 +2299,7 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   typedef MockTabStripModelObserver::State State;
 
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   MockTabStripModelObserver observer(&strip);
   WebContents* contents0 = CreateWebContents();
   WebContents* contents1 = CreateWebContents();
@@ -2399,7 +2399,7 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
   typedef MockTabStripModelObserver::State State;
 
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   WebContents* contents1 = CreateWebContents();
   WebContents* contents2 = CreateWebContents();
   strip.AppendWebContents(contents1, false);
@@ -2427,7 +2427,7 @@ TEST_F(TabStripModelTest, MultipleToSingle) {
 TEST_F(TabStripModelTest, TabBlockedState) {
   // Start with a source tab strip.
   TabStripDummyDelegate dummy_tab_strip_delegate;
-  TabStripModelImpl strip_src(&dummy_tab_strip_delegate, profile());
+  TabStripModel strip_src(&dummy_tab_strip_delegate, profile());
   TabBlockedStateTestBrowser browser_src(&strip_src);
 
   // Add a tab.
@@ -2441,7 +2441,7 @@ TEST_F(TabStripModelTest, TabBlockedState) {
   strip_src.AppendWebContents(contents2, false);
 
   // Create a destination tab strip.
-  TabStripModelImpl strip_dst(&dummy_tab_strip_delegate, profile());
+  TabStripModel strip_dst(&dummy_tab_strip_delegate, profile());
   TabBlockedStateTestBrowser browser_dst(&strip_dst);
 
   // Setup a SingleWebContentsDialogManager for tab |contents2|.
@@ -2476,7 +2476,7 @@ TEST_F(TabStripModelTest, TabBlockedState) {
 // subsequent pinned tab.
 TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
 
   // Open two pages, pinned.
   WebContents* page_a_contents = CreateWebContents();
@@ -2508,7 +2508,7 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
 // select_after_move (as an int) was selected rather than |to_position|.
 TEST_F(TabStripModelTest, MoveWebContentsAt) {
   TabStripDummyDelegate delegate;
-  TabStripModelImpl strip(&delegate, profile());
+  TabStripModel strip(&delegate, profile());
   MockTabStripModelObserver observer(&strip);
   strip.AppendWebContents(CreateWebContents(), false);
   strip.AppendWebContents(CreateWebContents(), false);

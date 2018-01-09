@@ -11,16 +11,18 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/web_contents_closer.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
 class Profile;
 class TabStripModelDelegate;
-class TabStripModelExperimental;
 
 namespace content {
 class WebContents;
@@ -117,11 +119,10 @@ class TabStripModel : public WebContentsCloseDelegate {
 
   static const int kNoTab = -1;
 
-  explicit TabStripModel(TabStripModelDelegate* delegate);
+  // Construct a TabStripModel with a delegate to help it do certain things
+  // (see the TabStripModelDelegate documentation). |delegate| cannot be NULL.
+  explicit TabStripModel(TabStripModelDelegate* delegate, Profile* profile);
   ~TabStripModel() override;
-
-  // Returns the experimental implementation if there is one, nullptr otherwise.
-  virtual TabStripModelExperimental* AsTabStripModelExperimental() = 0;
 
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
   TabStripModelDelegate* delegate() const { return delegate_; }
@@ -131,32 +132,31 @@ class TabStripModel : public WebContentsCloseDelegate {
   void RemoveObserver(TabStripModelObserver* observer);
 
   // Retrieve the number of WebContentses/emptiness of the TabStripModel.
-  virtual int count() const = 0;
-  virtual bool empty() const = 0;
+  int count() const { return static_cast<int>(contents_data_.size()); }
+  bool empty() const { return contents_data_.empty(); }
 
   // Retrieve the Profile associated with this TabStripModel.
-  virtual Profile* profile() const = 0;
+  Profile* profile() const { return profile_; }
 
   // Retrieve the index of the currently active WebContents. This will be
   // ui::ListSelectionModel::kUnselectedIndex if no tab is currently selected
   // (this happens while the tab strip is being initialized or is empty).
-  virtual int active_index() const = 0;
+  int active_index() const { return selection_model_.active(); }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
   // call to CloseAllTabs). As tabs close, the selection in the tabstrip
   // changes which notifies observers, which can use this as an optimization to
   // avoid doing meaningless or unhelpful work.
-  virtual bool closing_all() const = 0;
+  bool closing_all() const { return closing_all_; }
 
   // Basic API /////////////////////////////////////////////////////////////////
 
   // Determines if the specified index is contained within the TabStripModel.
-  virtual bool ContainsIndex(int index) const = 0;
+  bool ContainsIndex(int index) const;
 
   // Adds the specified WebContents in the default location. Tabs opened
   // in the foreground inherit the group of the previously active tab.
-  virtual void AppendWebContents(content::WebContents* contents,
-                                 bool foreground) = 0;
+  void AppendWebContents(content::WebContents* contents, bool foreground);
 
   // Adds the specified WebContents at the specified location.
   // |add_types| is a bitmask of AddTabTypes; see it for details.
@@ -168,9 +168,9 @@ class TabStripModel : public WebContentsCloseDelegate {
   // the |index| is changed is if using the index would result in breaking the
   // constraint that all pinned tabs occur before non-pinned tabs.
   // See also AddWebContents.
-  virtual void InsertWebContentsAt(int index,
-                                   content::WebContents* contents,
-                                   int add_types) = 0;
+  void InsertWebContentsAt(int index,
+                           content::WebContents* contents,
+                           int add_types);
 
   // Closes the WebContents at the specified index. This causes the
   // WebContents to be destroyed, but it may not happen immediately.
@@ -178,30 +178,30 @@ class TabStripModel : public WebContentsCloseDelegate {
   // WebContents was closed immediately, false if it was not closed (we
   // may be waiting for a response from an onunload handler, or waiting for the
   // user to confirm closure).
-  virtual bool CloseWebContentsAt(int index, uint32_t close_types) = 0;
+  bool CloseWebContentsAt(int index, uint32_t close_types);
 
   // Replaces the WebContents at |index| with |new_contents|. The
   // WebContents that was at |index| is returned and its ownership returns
   // to the caller.
-  virtual content::WebContents* ReplaceWebContentsAt(
+  content::WebContents* ReplaceWebContentsAt(
       int index,
-      content::WebContents* new_contents) = 0;
+      content::WebContents* new_contents);
 
   // Detaches the WebContents at the specified index from this strip. The
   // WebContents is not destroyed, just removed from display. The caller
   // is responsible for doing something with it (e.g. stuffing it into another
   // strip). Returns the detached WebContents.
-  virtual content::WebContents* DetachWebContentsAt(int index) = 0;
+  content::WebContents* DetachWebContentsAt(int index);
 
   // Makes the tab at the specified index the active tab. |user_gesture| is true
   // if the user actually clicked on the tab or navigated to it using a keyboard
   // command, false if the tab was activated as a by-product of some other
   // action.
-  virtual void ActivateTabAt(int index, bool user_gesture) = 0;
+  void ActivateTabAt(int index, bool user_gesture);
 
   // Adds tab at |index| to the currently selected tabs, without changing the
   // active tab index.
-  virtual void AddTabAtToSelection(int index) = 0;
+  void AddTabAtToSelection(int index);
 
   // Move the WebContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
@@ -209,9 +209,7 @@ class TabStripModel : public WebContentsCloseDelegate {
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but its index may have incremented or decremented
   // one slot.
-  virtual void MoveWebContentsAt(int index,
-                                 int to_position,
-                                 bool select_after_move) = 0;
+  void MoveWebContentsAt(int index, int to_position, bool select_after_move);
 
   // Moves the selected tabs to |index|. |index| is treated as if the tab strip
   // did not contain any of the selected tabs. For example, if the tabstrip
@@ -229,96 +227,92 @@ class TabStripModel : public WebContentsCloseDelegate {
   // index were 3, then the result would be [b c A f D F]. A, being pinned, can
   // move no further than index 2. The non-pinned tabs are moved to the target
   // index + selected-pinned tab-count (3 + 1).
-  virtual void MoveSelectedTabsTo(int index) = 0;
+  void MoveSelectedTabsTo(int index);
 
   // Returns the currently active WebContents, or NULL if there is none.
-  virtual content::WebContents* GetActiveWebContents() const = 0;
+  content::WebContents* GetActiveWebContents() const;
 
   // Returns the WebContents at the specified index, or NULL if there is
   // none.
-  virtual content::WebContents* GetWebContentsAt(int index) const = 0;
+  content::WebContents* GetWebContentsAt(int index) const;
 
   // Returns the index of the specified WebContents, or TabStripModel::kNoTab
   // if the WebContents is not in this TabStripModel.
-  virtual int GetIndexOfWebContents(
-      const content::WebContents* contents) const = 0;
+  int GetIndexOfWebContents(const content::WebContents* contents) const;
 
   // Notify any observers that the WebContents at the specified index has
   // changed in some way. See TabChangeType for details of |change_type|.
-  virtual void UpdateWebContentsStateAt(int index,
-                                        TabChangeType change_type) = 0;
+  void UpdateWebContentsStateAt(int index, TabChangeType change_type);
 
   // Cause a tab to display a UI indication to the user that it needs their
   // attention.
-  virtual void SetTabNeedsAttentionAt(int index, bool attention) = 0;
+  void SetTabNeedsAttentionAt(int index, bool attention);
 
   // Close all tabs at once. Code can use closing_all() above to defer
   // operations that might otherwise by invoked by the flurry of detach/select
   // notifications this method causes.
-  virtual void CloseAllTabs() = 0;
+  void CloseAllTabs();
 
   // Returns true if there are any WebContentses that are currently loading.
-  virtual bool TabsAreLoading() const = 0;
+  bool TabsAreLoading() const;
 
   // Returns the WebContents that opened the WebContents at |index|, or NULL if
   // there is no opener on record.
-  virtual content::WebContents* GetOpenerOfWebContentsAt(int index) = 0;
+  content::WebContents* GetOpenerOfWebContentsAt(int index);
 
   // Changes the |opener| of the WebContents at |index|.
   // Note: |opener| must be in this tab strip.
-  virtual void SetOpenerOfWebContentsAt(int index,
-                                        content::WebContents* opener) = 0;
+  void SetOpenerOfWebContentsAt(int index, content::WebContents* opener);
 
   // Returns the index of the last WebContents in the model opened by the
   // specified opener, starting at |start_index|.
-  virtual int GetIndexOfLastWebContentsOpenedBy(
-      const content::WebContents* opener,
-      int start_index) const = 0;
+  int GetIndexOfLastWebContentsOpenedBy(const content::WebContents* opener,
+                                        int start_index) const;
 
   // To be called when a navigation is about to occur in the specified
   // WebContents. Depending on the tab, and the transition type of the
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
-  virtual void TabNavigating(content::WebContents* contents,
-                             ui::PageTransition transition) = 0;
+  void TabNavigating(content::WebContents* contents,
+                     ui::PageTransition transition);
 
   // Changes the blocked state of the tab at |index|.
-  virtual void SetTabBlocked(int index, bool blocked) = 0;
+  void SetTabBlocked(int index, bool blocked);
 
   // Changes the pinned state of the tab at |index|. See description above
   // class for details on this.
-  virtual void SetTabPinned(int index, bool pinned) = 0;
+  void SetTabPinned(int index, bool pinned);
 
   // Returns true if the tab at |index| is pinned.
   // See description above class for details on pinned tabs.
-  virtual bool IsTabPinned(int index) const = 0;
+  bool IsTabPinned(int index) const;
 
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
-  virtual bool IsTabBlocked(int index) const = 0;
+  bool IsTabBlocked(int index) const;
 
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
-  virtual int IndexOfFirstNonPinnedTab() const = 0;
+  int IndexOfFirstNonPinnedTab() const;
 
   // Extends the selection from the anchor to |index|.
-  virtual void ExtendSelectionTo(int index) = 0;
+  void ExtendSelectionTo(int index);
 
   // Toggles the selection at |index|. This does nothing if |index| is selected
   // and there are no other selected tabs.
-  virtual void ToggleSelectionAt(int index) = 0;
+  void ToggleSelectionAt(int index);
 
   // Makes sure the tabs from the anchor to |index| are selected. This only
   // adds to the selection.
-  virtual void AddSelectionFromAnchorTo(int index) = 0;
+  void AddSelectionFromAnchorTo(int index);
 
   // Returns true if the tab at |index| is selected.
-  virtual bool IsTabSelected(int index) const = 0;
+  bool IsTabSelected(int index) const;
 
   // Sets the selection to match that of |source|.
-  virtual void SetSelectionFromModel(ui::ListSelectionModel source) = 0;
+  void SetSelectionFromModel(ui::ListSelectionModel source);
 
-  virtual const ui::ListSelectionModel& selection_model() const = 0;
+  const ui::ListSelectionModel& selection_model() const;
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -327,30 +321,30 @@ class TabStripModel : public WebContentsCloseDelegate {
   // AddTabTypes; see it for details. This method ends up calling into
   // InsertWebContentsAt to do the actual insertion. Pass kNoTab for |index| to
   // append the contents to the end of the tab strip.
-  virtual void AddWebContents(content::WebContents* contents,
-                              int index,
-                              ui::PageTransition transition,
-                              int add_types) = 0;
+  void AddWebContents(content::WebContents* contents,
+                      int index,
+                      ui::PageTransition transition,
+                      int add_types);
 
   // Closes the selected tabs.
-  virtual void CloseSelectedTabs() = 0;
+  void CloseSelectedTabs();
 
   // Select adjacent tabs
-  virtual void SelectNextTab() = 0;
-  virtual void SelectPreviousTab() = 0;
+  void SelectNextTab();
+  void SelectPreviousTab();
 
   // Selects the last tab in the tab strip.
-  virtual void SelectLastTab() = 0;
+  void SelectLastTab();
 
   // Swap adjacent tabs.
-  virtual void MoveTabNext() = 0;
-  virtual void MoveTabPrevious() = 0;
+  void MoveTabNext();
+  void MoveTabPrevious();
 
   // View API //////////////////////////////////////////////////////////////////
 
   // Context menu functions.
   enum ContextMenuCommand {
-    CommandFirst = 0,
+    CommandFirst,
     CommandNewTab,
     CommandReload,
     CommandDuplicate,
@@ -369,41 +363,79 @@ class TabStripModel : public WebContentsCloseDelegate {
 
   // Returns true if the specified command is enabled. If |context_index| is
   // selected the response applies to all selected tabs.
-  virtual bool IsContextMenuCommandEnabled(
-      int context_index,
-      ContextMenuCommand command_id) const = 0;
+  bool IsContextMenuCommandEnabled(int context_index,
+                                   ContextMenuCommand command_id) const;
 
   // Performs the action associated with the specified command for the given
   // TabStripModel index |context_index|.  If |context_index| is selected the
   // command applies to all selected tabs.
-  virtual void ExecuteContextMenuCommand(int context_index,
-                                         ContextMenuCommand command_id) = 0;
+  void ExecuteContextMenuCommand(int context_index,
+                                 ContextMenuCommand command_id);
 
   // Returns a vector of indices of the tabs that will close when executing the
   // command |id| for the tab at |index|. The returned indices are sorted in
   // descending order.
-  virtual std::vector<int> GetIndicesClosedByCommand(
-      int index,
-      ContextMenuCommand id) const = 0;
+  std::vector<int> GetIndicesClosedByCommand(int index,
+                                             ContextMenuCommand id) const;
 
   // Returns true if 'CommandToggleTabAudioMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
-  virtual bool WillContextMenuMute(int index) = 0;
+  bool WillContextMenuMute(int index);
 
   // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
-  virtual bool WillContextMenuMuteSites(int index) = 0;
+  bool WillContextMenuMuteSites(int index);
 
   // Returns true if 'CommandTogglePinned' will pin. |index| is the index
   // supplied to |ExecuteContextMenuCommand|.
-  virtual bool WillContextMenuPin(int index) = 0;
+  bool WillContextMenuPin(int index);
 
   // Convert a ContextMenuCommand into a browser command. Returns true if a
   // corresponding browser command exists, false otherwise.
   static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
 
- protected:
-  base::ObserverList<TabStripModelObserver>& observers() { return observers_; }
+  // Access the order controller. Exposed only for unit tests.
+  TabStripModelOrderController* order_controller() const {
+    return order_controller_.get();
+  }
+
+  // Returns the index of the next WebContents in the sequence of WebContentses
+  // spawned by the specified WebContents after |start_index|. If |use_group| is
+  // true, the group property of the tab is used instead of the opener to find
+  // the next tab. Under some circumstances the group relationship may exist but
+  // the opener may not.
+  int GetIndexOfNextWebContentsOpenedBy(const content::WebContents* opener,
+                                        int start_index,
+                                        bool use_group) const;
+
+  // Forget all Opener relationships that are stored (but _not_ group
+  // relationships!) This is to reduce unpredictable tab switching behavior
+  // in complex session states. The exact circumstances under which this method
+  // is called are left up to the implementation of the selected
+  // TabStripModelOrderController.
+  void ForgetAllOpeners();
+
+  // Forgets the group affiliation of the specified WebContents. This
+  // should be called when a WebContents that is part of a logical group
+  // of tabs is moved to a new logical context by the user (e.g. by typing a new
+  // URL or selecting a bookmark). This also forgets the opener, which is
+  // considered a weaker relationship than group.
+  void ForgetGroup(content::WebContents* contents);
+
+  // Returns true if the group/opener relationships present for |contents|
+  // should be reset when _any_ selection change occurs in the model.
+  bool ShouldResetGroupOnSelect(content::WebContents* contents) const;
+
+ private:
+  class WebContentsData;
+
+  // Used when making selection notifications.
+  enum class Notify {
+    kDefault,
+
+    // The selection is changing from a user gesture.
+    kUserGesture,
+  };
 
   // WebContentsCloseDelegate:
   bool ContainsWebContents(content::WebContents* contents) override;
@@ -413,9 +445,122 @@ class TabStripModel : public WebContentsCloseDelegate {
   bool ShouldRunUnloadListenerBeforeClosing(
       content::WebContents* contents) override;
 
- private:
+  int ConstrainInsertionIndex(int index, bool pinned_tab);
+
+  // Convenience for converting a vector of indices into a vector of
+  // WebContents.
+  std::vector<content::WebContents*> GetWebContentsFromIndices(
+      const std::vector<int>& indices) const;
+
+  // Gets the set of tab indices whose domain matches the tab at |index|.
+  void GetIndicesWithSameDomain(int index, std::vector<int>* indices);
+
+  // Gets the set of tab indices that have the same opener as the tab at
+  // |index|.
+  void GetIndicesWithSameOpener(int index, std::vector<int>* indices);
+
+  // If |index| is selected all the selected indices are returned, otherwise a
+  // vector with |index| is returned. This is used when executing commands to
+  // determine which indices the command applies to.
+  std::vector<int> GetIndicesForCommand(int index) const;
+
+  // Returns true if the specified WebContents is a New Tab at the end of
+  // the tabstrip. We check for this because opener relationships are _not_
+  // forgotten for the New Tab page opened as a result of a New Tab gesture
+  // (e.g. Ctrl+T, etc) since the user may open a tab transiently to look up
+  // something related to their current activity.
+  bool IsNewTabAtEndOfTabStrip(content::WebContents* contents) const;
+
+  // Closes the WebContentses at the specified indices. This causes the
+  // WebContentses to be destroyed, but it may not happen immediately. If
+  // the page in question has an unload event the WebContents will not be
+  // destroyed until after the event has completed, which will then call back
+  // into this method.
+  //
+  // Returns true if the WebContentses were closed immediately, false if we
+  // are waiting for the result of an onunload handler.
+  bool InternalCloseTabs(base::span<content::WebContents* const> items,
+                         uint32_t close_types);
+
+  // Gets the WebContents at an index. Does no bounds checking.
+  content::WebContents* GetWebContentsAtImpl(int index) const;
+
+  // Returns the WebContentses at the specified indices. This does no checking
+  // of the indices, it is assumed they are valid.
+  std::vector<content::WebContents*> GetWebContentsesByIndices(
+      const std::vector<int>& indices);
+
+  // Notifies the observers if the active tab is being deactivated.
+  void NotifyIfTabDeactivated(content::WebContents* contents);
+
+  // Notifies the observers if the active tab has changed.
+  void NotifyIfActiveTabChanged(content::WebContents* old_contents,
+                                Notify notify_types);
+
+  // Notifies the observers if the active tab or the tab selection has changed.
+  // |old_model| is a snapshot of |selection_model_| before the change.
+  // Note: This function might end up sending 0 to 2 notifications in the
+  // following order: ActiveTabChanged, TabSelectionChanged.
+  void NotifyIfActiveOrSelectionChanged(
+      content::WebContents* old_contents,
+      Notify notify_types,
+      const ui::ListSelectionModel& old_model);
+
+  // Sets the selection to |new_model| and notifies any observers.
+  // Note: This function might end up sending 0 to 3 notifications in the
+  // following order: TabDeactivated, ActiveTabChanged, TabSelectionChanged.
+  void SetSelection(ui::ListSelectionModel new_model, Notify notify_types);
+
+  // Selects either the next tab (|forward| is true), or the previous tab
+  // (|forward| is false).
+  void SelectRelativeTab(bool forward);
+
+  // Does the work of MoveWebContentsAt. This has no checks to make sure the
+  // position is valid, those are done in MoveWebContentsAt.
+  void MoveWebContentsAtImpl(int index,
+                             int to_position,
+                             bool select_after_move);
+
+  // Implementation of MoveSelectedTabsTo. Moves |length| of the selected tabs
+  // starting at |start| to |index|. See MoveSelectedTabsTo for more details.
+  void MoveSelectedTabsToImpl(int index, size_t start, size_t length);
+
+  // Returns true if the tab represented by the specified data has an opener
+  // that matches the specified one. If |use_group| is true, then this will
+  // fall back to check the group relationship as well.
+  static bool OpenerMatches(const std::unique_ptr<WebContentsData>& data,
+                            const content::WebContents* opener,
+                            bool use_group);
+
+  // Sets the group/opener of any tabs that reference the tab at |index| to that
+  // tab's group/opener respectively.
+  void FixOpenersAndGroupsReferencing(int index);
+
+  // The WebContents data currently hosted within this TabStripModel.
+  std::vector<std::unique_ptr<WebContentsData>> contents_data_;
+
   TabStripModelDelegate* delegate_;
   base::ObserverList<TabStripModelObserver> observers_;
+
+  // A profile associated with this TabStripModel.
+  Profile* profile_;
+
+  // True if all tabs are currently being closed via CloseAllTabs.
+  bool closing_all_ = false;
+
+  // An object that determines where new Tabs should be inserted and where
+  // selection should move when a Tab is closed.
+  std::unique_ptr<TabStripModelOrderController> order_controller_;
+
+  ui::ListSelectionModel selection_model_;
+
+  // Indicates if observers are currently being notified to catch reentrancy
+  // bugs. See for example http://crbug.com/529407
+  bool in_notify_ = false;
+
+  base::WeakPtrFactory<TabStripModel> weak_factory_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(TabStripModel);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

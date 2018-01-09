@@ -4,14 +4,14 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 
-#include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, public:
 
 TabStripModelOrderController::TabStripModelOrderController(
-    TabStripModelImpl* tabstrip)
+    TabStripModel* tabstrip)
     : tabstrip_(tabstrip) {
   tabstrip_->AddObserver(this);
 }

@@ -919,8 +919,6 @@ split_static_library("ui") {
       "tabs/tab_strip_model.cc",
       "tabs/tab_strip_model.h",
       "tabs/tab_strip_model_delegate.h",
-      "tabs/tab_strip_model_impl.cc",
-      "tabs/tab_strip_model_impl.h",
       "tabs/tab_strip_model_observer.cc",
       "tabs/tab_strip_model_observer.h",
       "tabs/tab_strip_model_order_controller.cc",
