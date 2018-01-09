@@ -21,6 +21,7 @@ namespace cdm {
 class FileIO;
 class FileIOClient;
 class CdmProxy;
+class CdmProxyClient;
 }  // namespace cdm
 
 namespace media {
@@ -50,7 +51,7 @@ class MEDIA_EXPORT CdmAuxiliaryHelper : public CdmAllocator,
   // The caller does not own the returned object and should not delete it
   // directly. Instead, it should call cdm::CdmProxy::Destroy() after it's not
   // needed anymore.
-  virtual cdm::CdmProxy* CreateCdmProxy();
+  virtual cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client);
 
   // CdmAllocator implementation.
   cdm::Buffer* CreateCdmBuffer(size_t capacity) override;

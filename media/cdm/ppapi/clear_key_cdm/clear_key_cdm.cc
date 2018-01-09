@@ -382,6 +382,13 @@ void ClearKeyCdm::Initialize(bool allow_distinctive_identifier,
   // to check persistent state permission.
   allow_persistent_state_ = allow_persistent_state;
 
+  // CdmProxy must be created during initialization time. OnInitialized() will
+  // be called in OnCdmProxyTestComplete().
+  if (key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
+    StartCdmProxyTest();
+    return;
+  }
+
   cdm_host_proxy_->OnInitialized(true);
 }
 
@@ -430,6 +437,8 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
       std::vector<uint8_t>(init_data, init_data + init_data_size),
       std::move(promise));
 
+  // Run unit tests if applicable. Unit test results are reported in the form of
+  // a session message. Therefore it can only be called after session creation.
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem) {
     StartFileIOTest();
   } else if (key_system_ == kExternalClearKeyOutputProtectionTestKeySystem) {
@@ -438,11 +447,11 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
              kExternalClearKeyPlatformVerificationTestKeySystem) {
     StartPlatformVerificationTest();
   } else if (key_system_ == kExternalClearKeyVerifyCdmHostTestKeySystem) {
-    VerifyCdmHostTest();
+    ReportVerifyCdmHostTestResult();
   } else if (key_system_ == kExternalClearKeyStorageIdTestKeySystem) {
     StartStorageIdTest();
   } else if (key_system_ == kExternalClearKeyCdmProxyTestKeySystem) {
-    StartCdmProxyTest();
+    ReportCdmProxyTestResult();
   }
 }
 
@@ -967,7 +976,7 @@ void ClearKeyCdm::StartPlatformVerificationTest() {
                                          challenge.data(), challenge.size());
 }
 
-void ClearKeyCdm::VerifyCdmHostTest() {
+void ClearKeyCdm::ReportVerifyCdmHostTestResult() {
   // VerifyCdmHost() should have already been called and test result stored
   // in |g_verify_host_files_result|.
   OnUnitTestComplete(g_verify_host_files_result);
@@ -995,7 +1004,15 @@ void ClearKeyCdm::OnCdmProxyTestComplete(bool success) {
   DCHECK(cdm_proxy_test_);
 
   cdm_proxy_test_.reset();
-  OnUnitTestComplete(success);
+  has_cdm_proxy_test_passed_ = success;
+
+  // Ignore test result here. It will be reported in ReportCdmProxyTestResult().
+  cdm_host_proxy_->OnInitialized(true);
+}
+
+void ClearKeyCdm::ReportCdmProxyTestResult() {
+  // StartCdmProxyTest() should have already been called and finished.
+  OnUnitTestComplete(has_cdm_proxy_test_passed_);
 }
 
 }  // namespace media

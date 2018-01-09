@@ -17,7 +17,7 @@ cdm::FileIO* CdmAuxiliaryHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return nullptr;
 }
 
-cdm::CdmProxy* CdmAuxiliaryHelper::CreateCdmProxy() {
+cdm::CdmProxy* CdmAuxiliaryHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
   return nullptr;
 }
 

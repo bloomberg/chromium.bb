@@ -42,7 +42,7 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // CdmAuxiliaryHelper implementation.
   void SetFileReadCB(FileReadCB file_read_cb) final;
   cdm::FileIO* CreateCdmFileIO(cdm::FileIOClient* client) final;
-  cdm::CdmProxy* CreateCdmProxy() final;
+  cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client) final;
   cdm::Buffer* CreateCdmBuffer(size_t capacity) final;
   std::unique_ptr<VideoFrameImpl> CreateCdmVideoFrame() final;
   void QueryStatus(QueryStatusCB callback) final;
@@ -84,7 +84,8 @@ class MEDIA_MOJO_EXPORT MojoCdmHelper final : public CdmAuxiliaryHelper,
   // A list of open cdm::FileIO objects.
   // TODO(xhwang): Switch to use UniquePtrComparator.
   std::vector<std::unique_ptr<MojoCdmFileIO>> cdm_file_io_set_;
-  std::vector<std::unique_ptr<MojoCdmProxy>> cdm_proxy_set_;
+
+  std::unique_ptr<MojoCdmProxy> cdm_proxy_;
 
   base::WeakPtrFactory<MojoCdmHelper> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(MojoCdmHelper);

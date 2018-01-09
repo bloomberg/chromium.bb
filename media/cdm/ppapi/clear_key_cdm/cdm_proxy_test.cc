@@ -23,11 +23,13 @@ void CdmProxyTest::Run(CompletionCB completion_cb) {
   DVLOG(1) << __func__;
   completion_cb_ = std::move(completion_cb);
 
-  cdm_proxy_ = cdm_host_proxy_->CreateCdmProxy();
-  if (!cdm_proxy_)
+  cdm_proxy_ = cdm_host_proxy_->CreateCdmProxy(this);
+  if (!cdm_proxy_) {
     OnTestComplete(false);
+    return;
+  }
 
-  cdm_proxy_->Initialize(this);
+  cdm_proxy_->Initialize();
 }
 
 void CdmProxyTest::OnTestComplete(bool success) {
@@ -42,6 +44,12 @@ void CdmProxyTest::OnInitialized(Status status,
 
   if (status != Status::kOk ||
       crypto_session_id != kClearKeyCdmProxyCryptoSessionId) {
+    OnTestComplete(false);
+    return;
+  }
+
+  // Only one CdmProxy can be created during the lifetime of the CDM instance.
+  if (cdm_host_proxy_->CreateCdmProxy(this)) {
     OnTestComplete(false);
     return;
   }
@@ -74,6 +82,13 @@ void CdmProxyTest::OnMediaCryptoSessionCreated(Status status,
 
   if (status != Status::kOk ||
       crypto_session_id != kClearKeyCdmProxyMediaCryptoSessionId) {
+    OnTestComplete(false);
+    return;
+  }
+
+  // Cannot create another CdmProxy even after destroying the first one.
+  cdm_proxy_->Destroy();
+  if (cdm_host_proxy_->CreateCdmProxy(this)) {
     OnTestComplete(false);
     return;
   }

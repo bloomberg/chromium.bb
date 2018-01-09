@@ -37,18 +37,20 @@ cdm::FileIO* MojoCdmHelper::CreateCdmFileIO(cdm::FileIOClient* client) {
   return cdm_file_io;
 }
 
-cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy() {
+cdm::CdmProxy* MojoCdmHelper::CreateCdmProxy(cdm::CdmProxyClient* client) {
+  DVLOG(3) << __func__;
+
+  if (cdm_proxy_) {
+    DVLOG(1) << __func__ << ": Only one outstanding CdmProxy allowed.";
+    return nullptr;
+  }
+
   mojom::CdmProxyPtr cdm_proxy_ptr;
   service_manager::GetInterface<mojom::CdmProxy>(interface_provider_,
                                                  &cdm_proxy_ptr);
-  auto mojo_cdm_proxy =
-      std::make_unique<MojoCdmProxy>(this, std::move(cdm_proxy_ptr));
-
-  cdm::CdmProxy* cdm_proxy = mojo_cdm_proxy.get();
-  DVLOG(3) << __func__ << ": cdm_proxy = " << cdm_proxy;
-
-  cdm_proxy_set_.push_back(std::move(mojo_cdm_proxy));
-  return cdm_proxy;
+  cdm_proxy_ =
+      std::make_unique<MojoCdmProxy>(this, std::move(cdm_proxy_ptr), client);
+  return cdm_proxy_.get();
 }
 
 cdm::Buffer* MojoCdmHelper::CreateCdmBuffer(size_t capacity) {
@@ -103,10 +105,13 @@ void MojoCdmHelper::CloseCdmFileIO(MojoCdmFileIO* cdm_file_io) {
 
 void MojoCdmHelper::DestroyCdmProxy(MojoCdmProxy* cdm_proxy) {
   DVLOG(3) << __func__ << ": cdm_proxy = " << cdm_proxy;
-  base::EraseIf(cdm_proxy_set_,
-                [cdm_proxy](const std::unique_ptr<MojoCdmProxy>& ptr) {
-                  return ptr.get() == cdm_proxy;
-                });
+
+  if (cdm_proxy != cdm_proxy_.get()) {
+    DVLOG(3) << __func__ << ": Invalid CdmProxy to destroy.";
+    return;
+  }
+
+  cdm_proxy_.reset();
 }
 
 void MojoCdmHelper::ReportFileReadSize(int file_size_bytes) {
