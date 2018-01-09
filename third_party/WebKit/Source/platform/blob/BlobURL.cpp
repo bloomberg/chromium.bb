@@ -52,10 +52,6 @@ String BlobURL::GetOrigin(const KURL& url) {
   return url.GetString().Substring(start_index, end_index - start_index - 1);
 }
 
-KURL BlobURL::CreateInternalStreamURL() {
-  return CreateBlobURL("blobinternal://");
-}
-
 KURL BlobURL::CreateBlobURL(const String& origin_string) {
   DCHECK(!origin_string.IsEmpty());
   String url_string =
