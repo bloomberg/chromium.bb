@@ -47,6 +47,7 @@ bool TokenServiceTable::CreateTablesIfNecessary() {
                       "service VARCHAR PRIMARY KEY NOT NULL,"
                       "encrypted_token BLOB)")) {
       NOTREACHED();
+      LOG(ERROR) << "Failed creating token_service table";
       return false;
     }
   }
@@ -63,10 +64,12 @@ bool TokenServiceTable::MigrateToVersion(int version,
 }
 
 bool TokenServiceTable::RemoveAllTokens() {
-  sql::Statement s(db_->GetUniqueStatement(
-      "DELETE FROM token_service"));
+  VLOG(1) << "Remove all tokens";
+  sql::Statement s(db_->GetUniqueStatement("DELETE FROM token_service"));
 
-  return s.Run();
+  bool result = s.Run();
+  LOG_IF(ERROR, result) << "Failed to remove all tokens";
+  return result;
 }
 
 bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
@@ -74,7 +77,9 @@ bool TokenServiceTable::RemoveTokenForService(const std::string& service) {
       "DELETE FROM token_service WHERE service = ?"));
   s.BindString(0, service);
 
-  return s.Run();
+  bool result = s.Run();
+  LOG_IF(ERROR, result) << "Failed to remove token for " << service;
+  return result;
 }
 
 bool TokenServiceTable::SetTokenForService(const std::string& service,
@@ -82,6 +87,7 @@ bool TokenServiceTable::SetTokenForService(const std::string& service,
   std::string encrypted_token;
   bool encrypted = OSCrypt::EncryptString(token, &encrypted_token);
   if (!encrypted) {
+    LOG(ERROR) << "Failed to encrypt token (token will not be saved to DB).";
     return false;
   }
 
@@ -94,7 +100,9 @@ bool TokenServiceTable::SetTokenForService(const std::string& service,
   s.BindBlob(1, encrypted_token.data(),
              static_cast<int>(encrypted_token.length()));
 
-  return s.Run();
+  bool result = s.Run();
+  LOG_IF(ERROR, result) << "Failed to insert or replace token for " << service;
+  return result;
 }
 
 TokenServiceTable::Result TokenServiceTable::GetAllTokens(
@@ -110,6 +118,8 @@ TokenServiceTable::Result TokenServiceTable::GetAllTokens(
     return TOKEN_DB_RESULT_SQL_INVALID_STATEMENT;
   }
 
+  int number_of_tokens_loaded = 0;
+
   Result read_all_tokens_result = TOKEN_DB_RESULT_SUCCESS;
   while (s.Step()) {
     ReadOneTokenResult read_token_result = READ_ONE_TOKEN_MAX_VALUE;
@@ -124,6 +134,7 @@ TokenServiceTable::Result TokenServiceTable::GetAllTokens(
       if (OSCrypt::DecryptString(encrypted_token, &decrypted_token)) {
         (*tokens)[service] = decrypted_token;
         read_token_result = READ_ONE_TOKEN_SUCCESS;
+        number_of_tokens_loaded++;
       } else {
         // Chrome relies on native APIs to encrypt and decrypt the tokens which
         // may fail (see http://crbug.com/686485).
@@ -141,5 +152,7 @@ TokenServiceTable::Result TokenServiceTable::GetAllTokens(
                               read_token_result,
                               READ_ONE_TOKEN_MAX_VALUE);
   }
+  VLOG(1) << "Loaded tokens: result = " << read_all_tokens_result
+          << " ; number of tokens loaded = " << number_of_tokens_loaded;
   return read_all_tokens_result;
 }

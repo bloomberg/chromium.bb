@@ -107,6 +107,10 @@ std::string TokenServiceLoadCredentialsStateToLabel(
         LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
       return "Load credentials failed with decrypt errors";
     case OAuth2TokenServiceDelegate::
+        LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
+      return "Load credentials failed with no refresh token for signed in "
+             "account";
+    case OAuth2TokenServiceDelegate::
         LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
       return "Load credentials failed with unknown errors";
   }
@@ -536,7 +540,7 @@ AboutSigninInternals::SigninStatus::ToValue(
       signin_manager->IsAuthenticated() ? "Signed In" : "Not Signed In");
   OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
       token_service->GetDelegate()->GetLoadCredentialsState();
-  AddSectionEntry(basic_info, "TokenService Status",
+  AddSectionEntry(basic_info, "TokenService Load Status",
                   TokenServiceLoadCredentialsStateToLabel(load_tokens_state));
 
   if (signin_manager->IsAuthenticated()) {
@@ -642,6 +646,10 @@ AboutSigninInternals::SigninStatus::ToValue(
   for (const std::string& account_id : accounts_in_token_service) {
     auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString("accountId", account_id);
+    entry->SetBoolean("hasRefreshToken",
+                      token_service->RefreshTokenIsAvailable(account_id));
+    entry->SetBoolean("hasAuthError",
+                      token_service->RefreshTokenHasError(account_id));
     account_info->Append(std::move(entry));
   }
 

@@ -346,6 +346,10 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
          signin::IsDicePrepareMigrationEnabled());
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
+    if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+      load_credentials_state_ =
+          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT;
+    }
     refresh_tokens_[loading_primary_account_id_].reset(new AccountStatus(
         signin_error_controller_, loading_primary_account_id_, std::string()));
   }
@@ -386,8 +390,11 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 
       if (IsLegacyServiceId(prefixed_account_id)) {
         scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
-        if (token_web_data.get())
+        if (token_web_data.get()) {
+          VLOG(1) << "MutablePO2TS remove legacy refresh token for account id "
+                  << prefixed_account_id;
           token_web_data->RemoveTokenForService(prefixed_account_id);
+        }
       } else {
         DCHECK(!refresh_token.empty());
         std::string account_id = RemoveAccountIdPrefix(prefixed_account_id);
@@ -400,8 +407,8 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
           // id. This could happen if the chrome was closed in the middle of
           // migration.
           if (!account_info.gaia.empty()) {
-            PersistCredentials(account_info.gaia, refresh_token);
             ClearPersistedCredentials(account_id);
+            PersistCredentials(account_info.gaia, refresh_token);
             account_id = account_info.gaia;
           }
 
