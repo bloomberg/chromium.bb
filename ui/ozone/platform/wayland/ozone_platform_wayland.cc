@@ -77,7 +77,7 @@ class OzonePlatformWayland : public OzonePlatform {
   void InitializeUI(const InitParams& args) override {
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        std::make_unique<WaylandXkbKeyboardLayoutEngine>(
+        std::make_unique<WaylandXkbKeyboardLayoutEngineImpl>(
             xkb_evdev_code_converter_));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(

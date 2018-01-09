@@ -7,10 +7,15 @@
 
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_features.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
+
+#if BUILDFLAG(USE_XKBCOMMON)
+#include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
+#endif
 
 namespace ui {
 
@@ -43,6 +48,10 @@ class WaylandTest : public ::testing::TestWithParam<uint32_t> {
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
 
  private:
+#if BUILDFLAG(USE_XKBCOMMON)
+  XkbEvdevCodes xkb_evdev_code_converter_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(WaylandTest);
 };
 

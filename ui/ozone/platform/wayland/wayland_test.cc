@@ -5,6 +5,13 @@
 #include "ui/ozone/platform/wayland/wayland_test.h"
 
 #include "base/run_loop.h"
+#include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+
+#if BUILDFLAG(USE_XKBCOMMON)
+#include "ui/ozone/platform/wayland/mock_wayland_xkb_keyboard_layout_engine.h"
+#else
+#include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
+#endif
 
 using ::testing::SaveArg;
 using ::testing::_;
@@ -12,8 +19,14 @@ using ::testing::_;
 namespace ui {
 
 WaylandTest::WaylandTest() {
-  // TODO(tonikitoo): Set the proper KeyboardLayoutEngine instance here,
-  // before the WaylandConnection is instantiated.
+#if BUILDFLAG(USE_XKBCOMMON)
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<MockWaylandXkbKeyboardLayoutEngine>(
+          xkb_evdev_code_converter_));
+#else
+  KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
+      std::make_unique<StubKeyboardLayoutEngine>());
+#endif
   connection.reset(new WaylandConnection);
   window = std::make_unique<WaylandWindow>(&delegate, connection.get(),
                                            gfx::Rect(0, 0, 800, 600));

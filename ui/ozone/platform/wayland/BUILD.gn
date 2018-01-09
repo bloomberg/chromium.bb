@@ -95,12 +95,22 @@ source_set("wayland_unittests") {
     "wayland_window_unittest.cc",
   ]
 
+  import("//ui/base/ui_features.gni")
+  if (use_xkbcommon) {
+    sources += [
+      "mock_wayland_xkb_keyboard_layout_engine.cc",
+      "mock_wayland_xkb_keyboard_layout_engine.h",
+    ]
+  }
+
   deps = [
     ":wayland",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/wayland:wayland_server",
     "//third_party/wayland-protocols:xdg_shell_protocol",
+    "//ui/base:ui_features",
+    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx:test_support",
     "//ui/ozone:platform",
   ]
