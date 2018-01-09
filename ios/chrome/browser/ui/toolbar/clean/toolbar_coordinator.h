@@ -89,6 +89,9 @@ class WebState;
 - (void)activateFakeSafeAreaInsets:(UIEdgeInsets)fakeSafeAreaInsets;
 // Deactivates the constraints used to create a fake safe area.
 - (void)deactivateFakeSafeAreaInsets;
+// Navigates to the Memex tab switcher.
+// TODO(crbug.com/799601): Delete this once its not needed.
+- (void)navigateToMemexTabSwitcher;
 
 @end
 

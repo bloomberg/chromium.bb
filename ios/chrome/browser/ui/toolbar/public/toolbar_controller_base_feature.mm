@@ -13,3 +13,6 @@ const base::Feature kCleanToolbar{"CleanToolbar",
 
 const base::Feature kAdaptiveToolbar{"AdaptiveToolbar",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMemexTabSwitcher{"MemexTabSwitcher",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
