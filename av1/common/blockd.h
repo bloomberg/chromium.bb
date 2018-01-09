@@ -591,11 +591,6 @@ typedef struct macroblockd {
   /* pointer to current frame */
   const YV12_BUFFER_CONFIG *cur_buf;
 
-#if CONFIG_INTRABC
-  /* Scale of the current frame with respect to itself */
-  struct scale_factors sf_identity;
-#endif
-
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
   ENTROPY_CONTEXT left_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
 

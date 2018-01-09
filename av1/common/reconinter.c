@@ -1019,7 +1019,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_INTRABC
           const struct scale_factors *const sf =
-              is_intrabc ? &xd->sf_identity : &ref_buf->sf;
+              is_intrabc ? &cm->sf_identity : &ref_buf->sf;
           struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 #else
           const struct scale_factors *const sf = &ref_buf->sf;
@@ -1127,7 +1127,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_INTRABC
       const struct scale_factors *const sf =
-          is_intrabc ? &xd->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 #else
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
@@ -1198,7 +1198,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_INTRABC
       const struct scale_factors *const sf =
-          is_intrabc ? &xd->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 #else
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;

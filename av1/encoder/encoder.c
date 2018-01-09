@@ -4967,11 +4967,9 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     }
   }
 
-#if CONFIG_INTRABC
-  av1_setup_scale_factors_for_frame(&xd->sf_identity, cm->width, cm->height,
+  av1_setup_scale_factors_for_frame(&cm->sf_identity, cm->width, cm->height,
                                     cm->width, cm->height,
                                     cm->use_highbitdepth);
-#endif  // CONFIG_INTRABC
 
   set_ref_ptrs(cm, xd, LAST_FRAME, LAST_FRAME);
 }

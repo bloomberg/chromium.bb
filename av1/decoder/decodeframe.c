@@ -3291,10 +3291,12 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   YV12_BUFFER_CONFIG *new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_INTRABC
-  av1_setup_scale_factors_for_frame(
-      &xd->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
-      xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
-      cm->use_highbitdepth);
+  if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
+    av1_setup_scale_factors_for_frame(
+        &cm->sf_identity, xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+        xd->cur_buf->y_crop_width, xd->cur_buf->y_crop_height,
+        cm->use_highbitdepth);
+  }
 #endif  // CONFIG_INTRABC
 
   if (cm->show_existing_frame) {

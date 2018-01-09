@@ -5597,7 +5597,6 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   const int refs[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
   int_mv ref_mv[2];
   int ite, ref;
-  struct scale_factors sf;
   // ic and ir are the 4x4 coordinates of the sub8x8 at index "block"
   const int ic = block & 1;
   const int ir = (block - ic) >> 1;
@@ -5639,16 +5638,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     }
   }
 
-  // Since we have scaled the reference frames to match the size of the current
-  // frame we must use a unit scaling factor during mode selection.
   assert(IMPLIES(scaled_ref_frame[0] != NULL,
                  cm->width == scaled_ref_frame[0]->y_crop_width &&
                      cm->height == scaled_ref_frame[0]->y_crop_height));
   assert(IMPLIES(scaled_ref_frame[1] != NULL,
                  cm->width == scaled_ref_frame[1]->y_crop_width &&
                      cm->height == scaled_ref_frame[1]->y_crop_height));
-  av1_setup_scale_factors_for_frame(&sf, cm->width, cm->height, cm->width,
-                                    cm->height, cm->use_highbitdepth);
 
   // Allow joint search multiple times iteratively for each reference frame
   // and break out of the search loop if it couldn't find a better mv.
@@ -5681,30 +5676,32 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     InterpFilters interp_filters = EIGHTTAP_REGULAR;
 #endif  // CONFIG_JNT_COMP
 
+    // Since we have scaled the reference frames to match the size of the
+    // current frame we must use a unit scaling factor during mode selection.
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);
       av1_highbd_build_inter_predictor(
           ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
           &frame_mv[refs[!id]].as_mv,
 #if CONFIG_JNT_COMP
-          &sf, pw, ph, 0, interp_filters,
+          &cm->sf_identity, pw, ph, 0, interp_filters,
 #else
-          &sf, pw, ph, 0, mbmi->interp_filters,
+          &cm->sf_identity, pw, ph, 0, mbmi->interp_filters,
 #endif  // CONFIG_JNT_COMP
           &warp_types, p_col, p_row, plane, MV_PRECISION_Q3, mi_col * MI_SIZE,
           mi_row * MI_SIZE, xd);
     } else {
       second_pred = (uint8_t *)second_pred_alloc_16;
-      av1_build_inter_predictor(ref_yv12[!id].buf, ref_yv12[!id].stride,
-                                second_pred, pw, &frame_mv[refs[!id]].as_mv,
+      av1_build_inter_predictor(
+          ref_yv12[!id].buf, ref_yv12[!id].stride, second_pred, pw,
+          &frame_mv[refs[!id]].as_mv,
 #if CONFIG_JNT_COMP
-                                &sf, pw, ph, &conv_params, interp_filters,
+          &cm->sf_identity, pw, ph, &conv_params, interp_filters,
 #else
-                                &sf, pw, ph, &conv_params, mbmi->interp_filters,
+          &cm->sf_identity, pw, ph, &conv_params, mbmi->interp_filters,
 #endif  // CONFIG_JNT_COMP
-                                &warp_types, p_col, p_row, plane, !id,
-                                MV_PRECISION_Q3, mi_col * MI_SIZE,
-                                mi_row * MI_SIZE, xd);
+          &warp_types, p_col, p_row, plane, !id, MV_PRECISION_Q3,
+          mi_col * MI_SIZE, mi_row * MI_SIZE, xd);
     }
 
 #if CONFIG_JNT_COMP

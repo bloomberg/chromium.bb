@@ -248,6 +248,9 @@ typedef struct AV1Common {
   int subsampling_y;
   int largest_tile_id;
 
+  // Scale of the current frame with respect to itself.
+  struct scale_factors sf_identity;
+
   // Marks if we need to use 16bit frame buffers (1: yes, 0: no).
   int use_highbitdepth;
   YV12_BUFFER_CONFIG *frame_to_show;
