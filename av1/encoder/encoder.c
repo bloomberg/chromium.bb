@@ -4089,9 +4089,12 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
         new_denom = oxcf->superres_scale_denominator;
       break;
     case SUPERRES_RANDOM: new_denom = lcg_rand16(&seed) % 9 + 8; break;
-    case SUPERRES_QTHRESH:
-      qthresh = (cpi->common.frame_type == KEY_FRAME ? oxcf->superres_kf_qthresh
-                                                     : oxcf->superres_qthresh);
+    case SUPERRES_QTHRESH: {
+      const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+      const RATE_FACTOR_LEVEL rf_level = gf_group->rf_level[gf_group->index];
+      const double rate_factor_delta = rate_factor_deltas[rf_level];
+      qthresh = (rate_factor_delta <= 1.0) ? oxcf->superres_qthresh
+                                           : oxcf->superres_kf_qthresh;
       av1_set_target_rate(cpi, cpi->oxcf.width, cpi->oxcf.height);
       q = av1_rc_pick_q_and_bounds(cpi, cpi->oxcf.width, cpi->oxcf.height,
                                    &bottom_index, &top_index);
@@ -4112,6 +4115,7 @@ static uint8_t calculate_next_superres_scale(AV1_COMP *cpi) {
         }
       }
       break;
+    }
     default: assert(0);
   }
   return new_denom;
@@ -4177,7 +4181,8 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
     } while (!dimensions_are_ok(owidth, oheight, rsz) &&
              (resize_denom > SCALE_NUMERATOR ||
               rsz->superres_denom > SCALE_NUMERATOR));
-  } else {  // We are allowed to alter neither resize scale nor superres scale.
+  } else {  // We are allowed to alter neither resize scale nor superres
+            // scale.
     return 0;
   }
   return dimensions_are_ok(owidth, oheight, rsz);
@@ -4242,7 +4247,8 @@ static void superres_post_encode(AV1_COMP *cpi) {
   } else {
     assert(cpi->unscaled_source->y_crop_width != cm->superres_upscaled_width);
     assert(cpi->unscaled_source->y_crop_height != cm->superres_upscaled_height);
-    // Do downscale. cm->(width|height) has been updated by av1_superres_upscale
+    // Do downscale. cm->(width|height) has been updated by
+    // av1_superres_upscale
     if (aom_realloc_frame_buffer(
             &cpi->scaled_source, cm->superres_upscaled_width,
             cm->superres_upscaled_height, cm->subsampling_x, cm->subsampling_y,
@@ -4444,7 +4450,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
                                        &frame_over_shoot_limit);
     }
 
-    // if frame was scaled calculate global_motion_search again if already done
+    // if frame was scaled calculate global_motion_search again if already
+    // done
     if (loop_count > 0 && cpi->source && cpi->global_motion_search_done)
       if (cpi->source->y_crop_width != cm->width ||
           cpi->source->y_crop_height != cm->height)
@@ -4943,7 +4950,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // NOTE:
   // (1) Move the setup of the ref_frame_flags upfront as it would be
   //     determined by the current frame properties;
-  // (2) The setup of the ref_frame_flags applies to both show_existing_frame's
+  // (2) The setup of the ref_frame_flags applies to both
+  // show_existing_frame's
   //     and the other cases.
   if (cm->current_video_frame > 0)
     cpi->ref_frame_flags = get_ref_frame_flags(cpi);
@@ -4993,9 +5001,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     //     update has been done previously when handling the LAST_BIPRED_FRAME
     //     right before BWDREF_FRAME (in the display order);
     // (2) For INTNL_OVERLAY as the show_existing_frame, the reference frame
-    //     update will be done when the following is called, which will exchange
+    //     update will be done when the following is called, which will
+    //     exchange
     //     the virtual indexes between LAST_FRAME and ALTREF2_FRAME, so that
-    //     LAST3 will get retired, LAST2 becomes LAST3, LAST becomes LAST2, and
+    //     LAST3 will get retired, LAST2 becomes LAST3, LAST becomes LAST2,
+    //     and
     //     ALTREF2_FRAME will serve as the new LAST_FRAME.
     update_reference_frames(cpi);
 
@@ -5305,7 +5315,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->lf.mode_ref_delta_update = 0;
 
   if (cm->show_frame) {
-    // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that are
+    // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that
+    // are
     // being used as reference.
     swap_mi_and_prev_mi(cm);
     // Don't increment frame counters if this was an altref buffer
@@ -5364,8 +5375,10 @@ static int Pass2Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
           cm->cum_txcoeff_cost_timer);
 #endif
 
-  // Do not do post-encoding update for those frames that do not have a spot in
-  // a gf group, but note that an OVERLAY frame always has a spot in a gf group,
+  // Do not do post-encoding update for those frames that do not have a spot
+  // in
+  // a gf group, but note that an OVERLAY frame always has a spot in a gf
+  // group,
   // even when show_existing_frame is used.
   if (!cpi->common.show_existing_frame || cpi->rc.is_src_frame_alt_ref) {
     av1_twopass_postencode_update(cpi);
@@ -5875,7 +5888,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     // We need to adjust frame rate for an overlay frame
     if (cpi->rc.is_src_frame_alt_ref) adjust_frame_rate(cpi, source);
 
-    // Find a free buffer for the new frame, releasing the reference previously
+    // Find a free buffer for the new frame, releasing the reference
+    // previously
     // held.
     if (cm->new_fb_idx != INVALID_IDX) {
       --pool->frame_bufs[cm->new_fb_idx].ref_count;
