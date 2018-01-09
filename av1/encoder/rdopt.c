@@ -6049,8 +6049,6 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     av1_setup_pre_planes(xd, ref_idx, scaled_ref_frame, mi_row, mi_col, NULL);
   }
 
-  av1_set_mv_search_range(&x->mv_limits, &ref_mv);
-
   av1_set_mvcost(
       x, ref, ref_idx,
       mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
@@ -6105,6 +6103,8 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
   }
 
+  // Note: MV limits are modified here. Always restore the original values
+  // after full-pixel motion search.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
@@ -7011,6 +7011,7 @@ typedef struct {
   // Pointer to array of motion vectors to use for each ref and their rates
   // Should point to first of 2 arrays in 2D array
   int *single_newmv_rate;
+  int *single_newmv_valid;
   // Pointer to array of predicted rate-distortion
   // Should point to first of 2 arrays in 2D array
   int64_t (*modelled_rd)[TOTAL_REFS_PER_FRAME];
@@ -7088,16 +7089,17 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
   } else {
-    if (is_comp_interintra_pred) {
+    if (is_comp_interintra_pred && args->single_newmv_valid[refs[0]]) {
       x->best_mv = args->single_newmv[refs[0]];
       *rate_mv = args->single_newmv_rate[refs[0]];
     } else {
       single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, rate_mv);
+      if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
+
       args->single_newmv[refs[0]] = x->best_mv;
       args->single_newmv_rate[refs[0]] = *rate_mv;
+      args->single_newmv_valid[refs[0]] = 1;
     }
-
-    if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
     frame_mv[refs[0]] = x->best_mv;
 
@@ -7310,9 +7312,8 @@ static int64_t motion_mode_rd(
     int mi_col, HandleInterModeArgs *const args, const int64_t ref_best_rd,
     const int *refs, int rate_mv,
     // only used when WARPED_MOTION is on?
-    int_mv *const single_newmv, int rate2_bmc_nocoeff,
-    MB_MODE_INFO *best_bmc_mbmi, int rate_mv_bmc, int rs, int *skip_txfm_sb,
-    int64_t *skip_sse_sb, BUFFER_SET *orig_dst) {
+    int rate2_bmc_nocoeff, MB_MODE_INFO *best_bmc_mbmi, int rate_mv_bmc, int rs,
+    int *skip_txfm_sb, int64_t *skip_sse_sb, BUFFER_SET *orig_dst) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   MODE_INFO *mi = xd->mi[0];
@@ -7454,8 +7455,6 @@ static int64_t motion_mode_rd(
 
             if (cpi->sf.adaptive_motion_search)
               x->pred_mv[ref] = mbmi->mv[0].as_mv;
-
-            single_newmv[ref] = mbmi->mv[0];
 
             if (discount_newmv_test(cpi, this_mode, mbmi->mv[0], mode_mv,
                                     refs[0])) {
@@ -8381,11 +8380,11 @@ static int64_t handle_inter_mode(
 
     rd_stats->rate += compmode_interinter_cost;
 
-    ret_val = motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
-                             disable_skip, mode_mv, mi_row, mi_col, args,
-                             ref_best_rd, refs, rate_mv, single_newmv,
-                             rate2_bmc_nocoeff, &best_bmc_mbmi, rate_mv_bmc, rs,
-                             &skip_txfm_sb, &skip_sse_sb, &orig_dst);
+    ret_val =
+        motion_mode_rd(cpi, x, bsize, rd_stats, rd_stats_y, rd_stats_uv,
+                       disable_skip, mode_mv, mi_row, mi_col, args, ref_best_rd,
+                       refs, rate_mv, rate2_bmc_nocoeff, &best_bmc_mbmi,
+                       rate_mv_bmc, rs, &skip_txfm_sb, &skip_sse_sb, &orig_dst);
 #if CONFIG_JNT_COMP
     if (is_comp_pred && ret_val != INT64_MAX) {
       int64_t tmp_rd;
@@ -8975,8 +8974,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int comp_pred, i, k;
   int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
   struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME][MAX_MB_PLANE];
-  int_mv single_newmv[TOTAL_REFS_PER_FRAME] = { { 0 } };
-  int single_newmv_rate[TOTAL_REFS_PER_FRAME] = { 0 };
+  // Save a set of single_newmv for each checked ref_mv.
+  int_mv single_newmv[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { { 0 } } };
+  int single_newmv_rate[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { 0 } };
+  int single_newmv_valid[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { 0 } };
   int64_t modelled_rd[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
   static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
                                                        AOM_LAST_FLAG,
@@ -9031,10 +9032,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   const int mode_search_skip_flags = sf->mode_search_skip_flags;
 
   HandleInterModeArgs args = {
-    { NULL }, { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    { NULL }, { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
-    NULL,     NULL,
-    NULL,     { { 0 } },
+    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+    { NULL },  { MAX_SB_SIZE, MAX_SB_SIZE, MAX_SB_SIZE },
+    NULL,      NULL,
+    NULL,      NULL,
+    { { 0 } },
   };
 
   const int rows = block_size_high[bsize];
@@ -9785,8 +9787,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         rd_stats.rate = rate2;
 
         // Point to variables that are maintained between loop iterations
-        args.single_newmv = single_newmv;
-        args.single_newmv_rate = single_newmv_rate;
+        args.single_newmv = single_newmv[0];
+        args.single_newmv_rate = single_newmv_rate[0];
+        args.single_newmv_valid = single_newmv_valid[0];
         args.modelled_rd = modelled_rd;
         this_rd = handle_inter_mode(cpi, x, bsize, &rd_stats, &rd_stats_y,
                                     &rd_stats_uv, &disable_skip, frame_mv,
@@ -9814,7 +9817,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // TODO(jingning): This should be deprecated shortly.
         int idx_offset = have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0;
         int ref_set =
-            AOMMIN(2, mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
+            AOMMIN(MAX_REF_MV_SERCH - 1,
+                   mbmi_ext->ref_mv_count[ref_frame_type] - 1 - idx_offset);
 
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx_offset);
@@ -9904,22 +9908,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           clamp_mv2(&cur_mv.as_mv, xd);
 
           if (!mv_check_bounds(&x->mv_limits, &cur_mv.as_mv)) {
-            int_mv dummy_single_newmv[TOTAL_REFS_PER_FRAME] = { { 0 } };
-            int dummy_single_newmv_rate[TOTAL_REFS_PER_FRAME] = { 0 };
-
             frame_mv[NEARMV][ref_frame] = cur_mv;
             av1_init_rd_stats(&tmp_rd_stats);
 
-            // Point to variables that are not maintained between iterations
-            args.single_newmv = dummy_single_newmv;
-            args.single_newmv_rate = dummy_single_newmv_rate;
             args.modelled_rd = NULL;
+            args.single_newmv = single_newmv[mbmi->ref_mv_idx];
+            args.single_newmv_rate = single_newmv_rate[mbmi->ref_mv_idx];
+            args.single_newmv_valid = single_newmv_valid[mbmi->ref_mv_idx];
+
             tmp_alt_rd = handle_inter_mode(
                 cpi, x, bsize, &tmp_rd_stats, &tmp_rd_stats_y, &tmp_rd_stats_uv,
                 &dummy_disable_skip, frame_mv, mi_row, mi_col, &args, best_rd);
             // Prevent pointers from escaping local scope
-            args.single_newmv = NULL;
-            args.single_newmv_rate = NULL;
+            args.single_newmv = single_newmv[0];
+            args.single_newmv_rate = single_newmv_rate[0];
+            args.single_newmv_valid = single_newmv_valid[0];
           }
 
           for (i = 0; i < mbmi->ref_mv_idx; ++i) {

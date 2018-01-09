@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#define MAX_REF_MV_SERCH 3
+
 struct TileInfo;
 struct macroblock;
 struct RD_STATS;
