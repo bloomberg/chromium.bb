@@ -57,6 +57,10 @@ bool WifiDataProviderCommon::GetData(WifiData* data) {
 }
 
 void WifiDataProviderCommon::DoWifiScanTask() {
+  // Abort the wifi scan if the provider is already being torn down.
+  if (!wlan_api_)
+    return;
+
   bool update_available = false;
   WifiData new_data;
   if (!wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
