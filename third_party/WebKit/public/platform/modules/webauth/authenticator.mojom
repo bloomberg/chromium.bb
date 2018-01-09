@@ -20,9 +20,9 @@ enum AuthenticatorStatus {
   UNKNOWN_ERROR,
 };
 
-// The public key and attestation that is returned by an authenticator's
-// call to makeCredential.
-struct PublicKeyCredentialInfo {
+// Credential information returned by both Authenticator::MakeCredential 
+// and Authenticator::GetAssertion.
+ struct CommonCredentialInfo {
   // The base64url encoding of |raw_id|.
   string id;
 
@@ -32,22 +32,29 @@ struct PublicKeyCredentialInfo {
   // A blob of data containing the JSON serialization of client data passed
   // to the authenticator.
   array<uint8> client_data_json;
-
-  // The response data from the authenticator.
-  AuthenticatorResponse response;
 };
 
-// Contains the authenticator's response to the request to either
-// create a public key credential, or generate an authentication assertion.
-struct AuthenticatorResponse {
+// The public key and attestation returned by Authenticator::MakeCredential.
+struct MakeCredentialAuthenticatorResponse {
+  CommonCredentialInfo info;
+
   // A blob of data returned by the authenticator after creating a credential.
   array<uint8> attestation_object;
+};
+
+struct GetAssertionResponse {
+  CommonCredentialInfo info;
 
   // A blob of data returned by the authenticator after generating an assertion.
   array<uint8> authenticator_data;
 
   // Cryptographic signature proving possession of the credential private key.
   array<uint8> signature;
+
+   // Only supported by CTAP devices, not by U2F devices.
+   // Equivalent of the `user.id` passed into create().
+   // Maximum 64 bytes.
+   array<uint8>? user_handle;
 };
 
 // Information about the relying party. These fields take arbitrary input.
@@ -134,7 +141,7 @@ enum AuthenticatorTransport {
 interface Authenticator {
   // Gets the credential info for a new public key credential created by an
   // authenticator for the given |MakePublicKeyCredentialOptions|
-  // [PublicKeyCredentialInfo] will only be set if status == SUCCESS.
+  // [MakeCredentialAuthenticatorResponse] will only be set if status == SUCCESS.
   MakeCredential(MakePublicKeyCredentialOptions options)
-      => (AuthenticatorStatus status, PublicKeyCredentialInfo? credential);
+      => (AuthenticatorStatus status, MakeCredentialAuthenticatorResponse? credential);
 };
