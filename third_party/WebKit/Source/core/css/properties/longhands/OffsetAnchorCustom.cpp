@@ -8,6 +8,8 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/css/properties/ComputedStyleUtils.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 namespace CSSLonghand {
@@ -23,6 +25,15 @@ const CSSValue* OffsetAnchor::ParseSingleValue(
     return ConsumeIdent(range);
   return ConsumePosition(range, context, UnitlessQuirk::kForbid,
                          Optional<WebFeature>());
+}
+
+const CSSValue* OffsetAnchor::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForPosition(style.OffsetAnchor(), style);
 }
 
 }  // namespace CSSLonghand

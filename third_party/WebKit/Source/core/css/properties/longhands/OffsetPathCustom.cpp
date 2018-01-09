@@ -4,6 +4,7 @@
 
 #include "core/css/properties/longhands/OffsetPath.h"
 
+#include "core/css/BasicShapeFunctions.h"
 #include "core/css/properties/CSSParsingUtils.h"
 
 namespace blink {
@@ -14,6 +15,17 @@ const CSSValue* OffsetPath::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSParsingUtils::ConsumeOffsetPath(range, context);
+}
+
+const CSSValue* OffsetPath::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    Node*,
+    bool allow_visited_style) const {
+  if (const BasicShape* style_motion_path = style.OffsetPath())
+    return ValueForBasicShape(style, style_motion_path);
+  return CSSIdentifierValue::Create(CSSValueNone);
 }
 
 }  // namespace CSSLonghand

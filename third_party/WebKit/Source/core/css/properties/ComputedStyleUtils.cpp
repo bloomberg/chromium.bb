@@ -12,11 +12,63 @@
 #include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/StyleColor.h"
 #include "core/css/ZoomAdjustedPixelValue.h"
 
 namespace blink {
+
+CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
+                                               const ComputedStyle& style) {
+  DCHECK_EQ(position.X().IsAuto(), position.Y().IsAuto());
+  if (position.X().IsAuto())
+    return CSSIdentifierValue::Create(CSSValueAuto);
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      position.X(), style));
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      position.Y(), style));
+  return list;
+}
+
+CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
+                                             const LayoutObject* layout_object,
+                                             Node* styled_node,
+                                             bool allow_visited_style) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    CSSValue* position = ValueForPosition(style.OffsetPosition(), style);
+    if (!position->IsIdentifierValue())
+      list->Append(*position);
+    else
+      DCHECK(ToCSSIdentifierValue(position)->GetValueID() == CSSValueAuto);
+  }
+
+  static const CSSProperty* longhands[3] = {&GetCSSPropertyOffsetPath(),
+                                            &GetCSSPropertyOffsetDistance(),
+                                            &GetCSSPropertyOffsetRotate()};
+  for (const CSSProperty* longhand : longhands) {
+    const CSSValue* value = longhand->CSSValueFromComputedStyle(
+        style, layout_object, styled_node, allow_visited_style);
+    DCHECK(value);
+    list->Append(*value);
+  }
+
+  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
+    CSSValue* anchor = ValueForPosition(style.OffsetAnchor(), style);
+    if (!anchor->IsIdentifierValue()) {
+      // Add a slash before anchor.
+      CSSValueList* result = CSSValueList::CreateSlashSeparated();
+      result->Append(*list);
+      result->Append(*anchor);
+      return result;
+    }
+    DCHECK(ToCSSIdentifierValue(anchor)->GetValueID() == CSSValueAuto);
+  }
+  return list;
+}
 
 CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
     const ComputedStyle& style,

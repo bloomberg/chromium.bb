@@ -386,20 +386,6 @@ static CSSValue* ValueForLineHeight(const ComputedStyle& style) {
       style);
 }
 
-static CSSValue* ValueForPosition(const LengthPoint& position,
-                                  const ComputedStyle& style) {
-  DCHECK_EQ(position.X().IsAuto(), position.Y().IsAuto());
-  if (position.X().IsAuto())
-    return CSSIdentifierValue::Create(CSSValueAuto);
-
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      position.X(), style));
-  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      position.Y(), style));
-  return list;
-}
-
 static CSSValueID IdentifierForFamily(const AtomicString& family) {
   if (family == FontFamilyNames::webkit_cursive)
     return CSSValueCursive;
@@ -1686,45 +1672,6 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFilter(
   return list;
 }
 
-CSSValue* ComputedStyleCSSValueMapping::ValueForOffset(
-    const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    Node* styled_node,
-    bool allow_visited_style) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    CSSValue* position = ValueForPosition(style.OffsetPosition(), style);
-    if (!position->IsIdentifierValue())
-      list->Append(*position);
-    else
-      DCHECK(ToCSSIdentifierValue(position)->GetValueID() == CSSValueAuto);
-  }
-
-  static const CSSProperty* longhands[3] = {&GetCSSPropertyOffsetPath(),
-                                            &GetCSSPropertyOffsetDistance(),
-                                            &GetCSSPropertyOffsetRotate()};
-  for (const CSSProperty* longhand : longhands) {
-    const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-        *longhand, style, layout_object, styled_node, allow_visited_style);
-    DCHECK(value);
-    list->Append(*value);
-  }
-
-  if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
-    CSSValue* anchor = ValueForPosition(style.OffsetAnchor(), style);
-    if (!anchor->IsIdentifierValue()) {
-      // Add a slash before anchor.
-      CSSValueList* result = CSSValueList::CreateSlashSeparated();
-      result->Append(*list);
-      result->Append(*anchor);
-      return result;
-    } else {
-      DCHECK(ToCSSIdentifierValue(anchor)->GetValueID() == CSSValueAuto);
-    }
-  }
-  return list;
-}
-
 CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
     const ComputedStyle& style) {
   // Add a slash between size and line-height.
@@ -2870,29 +2817,6 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return ValuesForInlineBlockShorthand(scrollSnapMarginInlineShorthand(),
                                            style, layout_object, styled_node,
                                            allow_visited_style);
-    case CSSPropertyOffset:
-      return ValueForOffset(style, layout_object, styled_node,
-                            allow_visited_style);
-
-    case CSSPropertyOffsetAnchor:
-      return ValueForPosition(style.OffsetAnchor(), style);
-
-    case CSSPropertyOffsetPosition:
-      return ValueForPosition(style.OffsetPosition(), style);
-
-    case CSSPropertyOffsetPath:
-      if (const BasicShape* style_motion_path = style.OffsetPath())
-        return ValueForBasicShape(style, style_motion_path);
-      return CSSIdentifierValue::Create(CSSValueNone);
-
-    case CSSPropertyOffsetRotate: {
-      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-      if (style.OffsetRotate().type == kOffsetRotationAuto)
-        list->Append(*CSSIdentifierValue::Create(CSSValueAuto));
-      list->Append(*CSSPrimitiveValue::Create(
-          style.OffsetRotate().angle, CSSPrimitiveValue::UnitType::kDegrees));
-      return list;
-    }
     // SVG properties.
     case CSSPropertyFill:
       return AdjustSVGPaintForCurrentColor(
