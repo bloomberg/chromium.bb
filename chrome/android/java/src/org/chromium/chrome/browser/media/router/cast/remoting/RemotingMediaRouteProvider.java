@@ -5,6 +5,7 @@ package org.chromium.chrome.browser.media.router.cast.remoting;
 
 import android.support.v7.media.MediaRouter;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.media.router.BaseMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
@@ -34,23 +35,45 @@ public class RemotingMediaRouteProvider extends BaseMediaRouteProvider {
         return RemotingMediaSource.from(sourceId);
     }
 
-    // TODO(avayvod): implement the methods below. See https://crbug.com/517102.
     @Override
-    public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, boolean isIncognito, int nativeRequestId) {}
+    protected ChromeCastSessionManager.CastSessionLaunchRequest createSessionLaunchRequest(
+            MediaSource source, MediaSink sink, String presentationId, String origin, int tabId,
+            boolean isIncognito, int nativeRequestId) {
+        return new CreateRouteRequest(source, sink, presentationId, origin, tabId, isIncognito,
+                nativeRequestId, this, CreateRouteRequest.RequestedCastSessionType.REMOTE, null);
+    }
 
     @Override
-    public void joinRoute(String sourceId, String presentationId, String origin, int tabId,
-            int nativeRequestId) {}
+    public void joinRoute(
+            String sourceId, String presentationId, String origin, int tabId, int nativeRequestId) {
+        mManager.onRouteRequestError(
+                "Remote playback doesn't support joining routes", nativeRequestId);
+    }
 
     @Override
-    public void closeRoute(String routeId) {}
+    public void closeRoute(String routeId) {
+        MediaRoute route = mRoutes.get(routeId);
+        if (route == null) return;
+
+        if (mSession == null) {
+            mRoutes.remove(routeId);
+            mManager.onRouteClosed(routeId);
+            return;
+        }
+
+        ChromeCastSessionManager.get().stopApplication();
+    }
 
     @Override
-    public void detachRoute(String routeId) {}
+    public void detachRoute(String routeId) {
+        mRoutes.remove(routeId);
+    }
 
     @Override
-    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {}
+    public void sendStringMessage(String routeId, String message, int nativeCallbackId) {
+        Log.e(TAG, "Remote playback does not support sending messages");
+        mManager.onMessageSentResult(false, nativeCallbackId);
+    }
 
     @VisibleForTesting
     RemotingMediaRouteProvider(MediaRouter androidMediaRouter, MediaRouteManager manager) {

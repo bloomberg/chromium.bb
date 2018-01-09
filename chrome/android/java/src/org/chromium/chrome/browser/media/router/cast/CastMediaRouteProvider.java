@@ -115,30 +115,12 @@ public class CastMediaRouteProvider extends BaseMediaRouteProvider {
     }
 
     @Override
-    public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, boolean isIncognito, int nativeRequestId) {
-        if (mAndroidMediaRouter == null) {
-            mManager.onRouteRequestError("Not supported", nativeRequestId);
-            return;
-        }
-
-        MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
-        if (sink == null) {
-            mManager.onRouteRequestError("No sink", nativeRequestId);
-            return;
-        }
-
-        MediaSource source = CastMediaSource.from(sourceId);
-        if (source == null) {
-            mManager.onRouteRequestError("Unsupported presentation URL", nativeRequestId);
-            return;
-        }
-
-        CreateRouteRequest createRouteRequest = new CreateRouteRequest(source, sink, presentationId,
-                origin, tabId, isIncognito, nativeRequestId, this,
-                CreateRouteRequest.RequestedCastSessionType.CAST, mMessageHandler);
-
-        ChromeCastSessionManager.get().requestSessionLaunch(createRouteRequest);
+    protected ChromeCastSessionManager.CastSessionLaunchRequest createSessionLaunchRequest(
+            MediaSource source, MediaSink sink, String presentationId, String origin, int tabId,
+            boolean isIncognito, int nativeRequestId) {
+        return new CreateRouteRequest(source, sink, presentationId, origin, tabId, isIncognito,
+                nativeRequestId, this, CreateRouteRequest.RequestedCastSessionType.CAST,
+                mMessageHandler);
     }
 
     @Override
