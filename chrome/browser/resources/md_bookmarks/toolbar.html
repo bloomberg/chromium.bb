@@ -1,11 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://bookmarks/edit_dialog.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 
 <dom-module id="bookmarks-toolbar">
@@ -62,42 +59,6 @@
         <div></div>
       </button>
     </cr-toolbar>
-    <template is="cr-lazy-render" id="dropdown">
-      <dialog is="cr-action-menu">
-        <button id="sortButton"
-            class="dropdown-item"
-            on-tap="onSortTap_"
-            disabled="[[!canSortFolder_]]">
-          $i18n{menuSort}
-        </button>
-        <hr aria-hidden="true">
-        <button id="addBookmarkButton"
-            class="dropdown-item"
-            on-tap="onAddBookmarkTap_"
-            disabled="[[!canChangeList_]]">
-          $i18n{menuAddBookmark}
-        </button>
-        <button class="dropdown-item"
-            on-tap="onAddFolderTap_"
-            disabled="[[!canChangeList_]]">
-          $i18n{menuAddFolder}
-        </button>
-        <hr aria-hidden="true">
-        <button id="importBookmarkButton"
-            class="dropdown-item"
-            on-tap="onImportTap_"
-            disabled="[[!globalCanEdit_]]">
-          $i18n{menuImport}
-        </button>
-        <button class="dropdown-item"
-            on-tap="onExportTap_">
-          $i18n{menuExport}
-        </button>
-      </dialog>
-    </template>
-    <template is="cr-lazy-render" id="addDialog">
-      <bookmarks-edit-dialog></bookmarks-edit-dialog>
-    </template>
     <template is="dom-if" if="[[showSelectionOverlay]]">
       <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
           cancel-label="$i18n{cancel}"
