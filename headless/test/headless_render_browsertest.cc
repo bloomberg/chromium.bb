@@ -1208,7 +1208,7 @@ class ContentSecurityPolicy : public HeadlessRenderTest {
  private:
   GURL GetPageUrl(HeadlessDevToolsClient* client) override {
     // Only first 3 scripts of 4 on the page are whitelisted for execution.
-    // Therefore only 3 linest in the log are expected.
+    // Therefore only 3 lines in the log are expected.
     GetProtocolHandler()->InsertResponse(
         "http://example.com/",
         {"HTTP/1.1 200 OK\r\n"
@@ -1238,5 +1238,94 @@ class ContentSecurityPolicy : public HeadlessRenderTest {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(ContentSecurityPolicy);
+
+class FrameLoadEvents : public HeadlessRenderTest {
+ private:
+  std::map<std::string, std::string> frame_navigated_;
+  std::map<std::string, std::string> frame_scheduled_;
+
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://example.com/", HttpRedirect(302, "http://example.com/1"));
+
+    GetProtocolHandler()->InsertResponse("http://example.com/1", HttpOk(R"|(
+<html><frameset>
+ <frame src="http://example.com/frameA/" id="frameA">
+ <frame src="http://example.com/frameB/" id="frameB">
+</frameset></html>
+)|"));
+
+    GetProtocolHandler()->InsertResponse("http://example.com/frameA/",
+                                         HttpOk(R"|(
+<html><head><script>
+ document.location="http://example.com/frameA/1"
+</script></head></html>
+)|"));
+
+    GetProtocolHandler()->InsertResponse("http://example.com/frameB/",
+                                         HttpOk(R"|(
+<html><head><script>
+ document.location="http://example.com/frameB/1"
+</script></head></html>
+)|"));
+
+    GetProtocolHandler()->InsertResponse(
+        "http://example.com/frameA/1",
+        HttpOk("<html><body>FRAME A 1</body></html>"));
+
+    GetProtocolHandler()->InsertResponse("http://example.com/frameB/1",
+                                         HttpOk(R"|(
+<html><body>FRAME B 1
+ <iframe src="http://example.com/frameB/1/iframe/" id="iframe"></iframe>
+</body></html>
+)|"));
+
+    GetProtocolHandler()->InsertResponse("http://example.com/frameB/1/iframe/",
+                                         HttpOk(R"|(
+<html><head><script>
+ document.location="http://example.com/frameB/1/iframe/1"
+</script></head></html>
+)|"));
+
+    GetProtocolHandler()->InsertResponse(
+        "http://example.com/frameB/1/iframe/1",
+        HttpOk("<html><body>IFRAME 1</body><html>"));
+
+    return GURL("http://example.com/");
+  }
+
+  void OnFrameNavigated(const page::FrameNavigatedParams& params) override {
+    frame_navigated_.insert(std::make_pair(params.GetFrame()->GetId(),
+                                           params.GetFrame()->GetUrl()));
+    HeadlessRenderTest::OnFrameNavigated(params);
+  }
+
+  void OnFrameScheduledNavigation(
+      const page::FrameScheduledNavigationParams& params) override {
+    frame_scheduled_.insert(
+        std::make_pair(params.GetFrameId(), params.GetUrl()));
+    HeadlessRenderTest::OnFrameScheduledNavigation(params);
+  }
+
+  void VerifyDom(GetSnapshotResult* dom_snapshot) override {
+    std::vector<std::string> urls;
+    for (const auto& kv : frame_navigated_) {
+      urls.push_back(kv.second);
+    }
+    EXPECT_THAT(urls, UnorderedElementsAre(
+                          "http://example.com/1", "http://example.com/frameA/",
+                          "http://example.com/frameB/",
+                          "http://example.com/frameB/1/iframe/"));
+    urls.clear();
+    for (const auto& kv : frame_scheduled_) {
+      urls.push_back(kv.second);
+    }
+    EXPECT_THAT(urls,
+                UnorderedElementsAre("http://example.com/frameA/1",
+                                     "http://example.com/frameB/1",
+                                     "http://example.com/frameB/1/iframe/1"));
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(FrameLoadEvents);
 
 }  // namespace headless
