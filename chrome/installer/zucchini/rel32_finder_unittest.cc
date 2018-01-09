@@ -9,12 +9,13 @@
 
 #include <algorithm>
 #include <iterator>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/image_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,13 +39,13 @@ TEST(Abs32GapFinderTest, All) {
         ConstBufferView::FromRange(image.begin() + rlo, image.begin() + rhi);
     Abs32GapFinder gap_finder(image, region, abs32_locations, abs32_width);
 
-    std::ostringstream oss;
+    std::string out_str;
     for (auto gap = gap_finder.GetNext(); gap; gap = gap_finder.GetNext()) {
-      std::ptrdiff_t lo = gap->begin() - image.begin();
-      std::ptrdiff_t hi = gap->end() - image.begin();
-      oss << "[" << lo << "," << hi << ")";
+      size_t lo = static_cast<size_t>(gap->begin() - image.begin());
+      size_t hi = static_cast<size_t>(gap->end() - image.begin());
+      out_str.append(base::StringPrintf("[%" PRIuS ",%" PRIuS ")", lo, hi));
     }
-    return oss.str();
+    return out_str;
   };
 
   // Empty regions yield empty segments.
