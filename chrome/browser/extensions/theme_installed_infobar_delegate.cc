@@ -17,46 +17,28 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-void ThemeInstalledInfoBarDelegate::Create(
-    const extensions::Extension* new_theme,
-    Profile* profile,
-    const std::string& previous_theme_id,
-    bool previous_using_system_theme) {
-  DCHECK(new_theme);
-  if (!new_theme->is_theme())
-    return;
-
+void ThemeInstalledInfoBarDelegate::Create(InfoBarService* infobar_service,
+                                           ExtensionService* extension_service,
+                                           ThemeService* theme_service,
+                                           const std::string& theme_name,
+                                           const std::string& theme_id,
+                                           const std::string& previous_theme_id,
+                                           bool previous_using_system_theme) {
   // Create the new infobar.
-  // FindTabbedBrowser() is called with |match_original_profiles| true because a
-  // theme install in either a normal or incognito window for a profile affects
-  // all normal and incognito windows for that profile.
-  Browser* browser = chrome::FindTabbedBrowser(profile, true);
-  if (!browser)
-    return;
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return;
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
   std::unique_ptr<infobars::InfoBar> new_infobar(
       infobar_service->CreateConfirmInfoBar(
-          std::unique_ptr<
-              ConfirmInfoBarDelegate>(new ThemeInstalledInfoBarDelegate(
-              extensions::ExtensionSystem::Get(profile)->extension_service(),
-              theme_service, new_theme, previous_theme_id,
-              previous_using_system_theme))));
+          std::unique_ptr<ConfirmInfoBarDelegate>(
+              new ThemeInstalledInfoBarDelegate(
+                  extension_service, theme_service, theme_name, theme_id,
+                  previous_theme_id, previous_using_system_theme))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
@@ -68,7 +50,7 @@ void ThemeInstalledInfoBarDelegate::Create(
       // If the user installed the same theme twice, ignore the second install
       // and keep the first install info bar, so that they can easily undo to
       // get back the previous theme.
-      if (theme_infobar->theme_id_ != new_theme->id()) {
+      if (theme_infobar->theme_id_ != theme_id) {
         infobar_service->ReplaceInfoBar(old_infobar, std::move(new_infobar));
         theme_service->OnInfobarDisplayed();
       }
@@ -84,14 +66,15 @@ void ThemeInstalledInfoBarDelegate::Create(
 ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     ExtensionService* extension_service,
     ThemeService* theme_service,
-    const extensions::Extension* new_theme,
+    const std::string& theme_name,
+    const std::string& theme_id,
     const std::string& previous_theme_id,
     bool previous_using_system_theme)
     : ConfirmInfoBarDelegate(),
       extension_service_(extension_service),
       theme_service_(theme_service),
-      name_(new_theme->name()),
-      theme_id_(new_theme->id()),
+      theme_name_(theme_name),
+      theme_id_(theme_id),
       previous_theme_id_(previous_theme_id),
       previous_using_system_theme_(previous_using_system_theme) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -126,7 +109,7 @@ ThemeInstalledInfoBarDelegate*
 
 base::string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
-                                    base::UTF8ToUTF16(name_));
+                                    base::UTF8ToUTF16(theme_name_));
 }
 
 int ThemeInstalledInfoBarDelegate::GetButtons() const {

@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
@@ -224,6 +225,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"extension_dev_tools", IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE},
       {"incognito_connectability",
        IBD::INCOGNITO_CONNECTABILITY_INFOBAR_DELEGATE},
+      {"theme_installed", IBD::THEME_INSTALLED_INFOBAR_DELEGATE},
       {"nacl", IBD::NACL_INFOBAR_DELEGATE},
       {"pepper_broker", IBD::PEPPER_BROKER_INFOBAR_DELEGATE},
       {"outdated_plugin", IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE},
@@ -283,6 +285,13 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           base::Bind([](Tracker::Mode m) {}));
       break;
     }
+
+    case IBD::THEME_INSTALLED_INFOBAR_DELEGATE:
+      ThemeInstalledInfoBarDelegate::Create(
+          GetInfoBarService(), nullptr,
+          ThemeServiceFactory::GetForProfile(browser()->profile()), "New Theme",
+          "id", ThemeService::kDefaultThemeID, true);
+      break;
 
     case IBD::NACL_INFOBAR_DELEGATE:
 #if BUILDFLAG(ENABLE_NACL)
@@ -459,6 +468,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_extension_dev_tools) {
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_incognito_connectability) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_theme_installed) {
   ShowAndVerifyUi();
 }
 
