@@ -599,15 +599,27 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
       browser()->profile(), true);
   params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(params);
+  AddBlankTabAndShow(browser);
+
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
       browser->window()->GetNativeWindow());
-
   BrowserNonClientFrameViewAsh* frame_view =
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
   ASSERT_TRUE(frame_view->back_button_);
   EXPECT_TRUE(frame_view->back_button_->visible());
+  // The back button should be disabled initially.
+  EXPECT_FALSE(frame_view->back_button_->enabled());
+
+  // Nagivate to a page. The back button should now be enabled.
+  const GURL kAppStartURL("http://example.org/");
+  NavigateParams nav_params(browser, kAppStartURL, ui::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&nav_params);
   EXPECT_TRUE(frame_view->back_button_->enabled());
+
+  // Go back to the blank. The back button should be disabled again.
+  chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(frame_view->back_button_->enabled());
 }
 
 // Test the normal type browser's kTopViewInset is always 0.
