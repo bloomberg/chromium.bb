@@ -48,6 +48,8 @@ class PasswordsModelDelegateMock
   MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
   MOCK_METHOD0(NavigateToChromeSignIn, void());
   MOCK_METHOD0(OnDialogHidden, void());
+  MOCK_METHOD0(AuthenticateUser, bool());
+  MOCK_CONST_METHOD0(ArePasswordsRevealedWhenBubbleIsOpened, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordsModelDelegateMock);
