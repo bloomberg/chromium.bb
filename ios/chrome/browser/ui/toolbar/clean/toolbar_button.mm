@@ -46,36 +46,40 @@
 
 - (void)updateHiddenInCurrentSizeClass {
   BOOL newHiddenValue = YES;
-  if (!IsIPadIdiom()) {
-    if (self.visibilityMask &
-        ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled) {
-      newHiddenValue = !self.enabled;
-    } else if (self.visibilityMask & ToolbarComponentVisibilityCompactWidth ||
-               self.visibilityMask & ToolbarComponentVisibilityIPhoneOnly) {
-      newHiddenValue = NO;
-    }
-  } else {
-    switch (self.traitCollection.horizontalSizeClass) {
-      case UIUserInterfaceSizeClassRegular:
-        newHiddenValue =
-            !(self.visibilityMask & ToolbarComponentVisibilityRegularWidth);
-        break;
-      case UIUserInterfaceSizeClassCompact:
-        // First check if the button should be visible only when it's enabled,
-        // if not, check if it should be visible in this case.
-        if (self.visibilityMask &
-            ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled) {
-          newHiddenValue = !self.enabled;
-        } else if (self.visibilityMask &
-                   ToolbarComponentVisibilityCompactWidth) {
-          newHiddenValue = NO;
-        }
-        break;
-      case UIUserInterfaceSizeClassUnspecified:
-      default:
-        break;
-    }
+
+  BOOL isCompactWidth = self.traitCollection.horizontalSizeClass ==
+                        UIUserInterfaceSizeClassCompact;
+  BOOL isCompactHeight =
+      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassCompact;
+  BOOL isRegularWidth = self.traitCollection.horizontalSizeClass ==
+                        UIUserInterfaceSizeClassRegular;
+  BOOL isRegularHeight =
+      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
+
+  if (isCompactWidth && isCompactHeight) {
+    newHiddenValue = !(self.visibilityMask &
+                       ToolbarComponentVisibilityCompactWidthCompactHeight);
+  } else if (isCompactWidth && isRegularHeight) {
+    newHiddenValue = !(self.visibilityMask &
+                       ToolbarComponentVisibilityCompactWidthRegularHeight);
+  } else if (isRegularWidth && isCompactHeight) {
+    newHiddenValue = !(self.visibilityMask &
+                       ToolbarComponentVisibilityRegularWidthCompactHeight);
+  } else if (isRegularWidth && isRegularHeight) {
+    newHiddenValue = !(self.visibilityMask &
+                       ToolbarComponentVisibilityRegularWidthRegularHeight);
   }
+
+  if (!IsIPadIdiom() &&
+      self.visibilityMask & ToolbarComponentVisibilityIPhoneOnly) {
+    newHiddenValue = NO;
+  }
+  if (isCompactWidth &&
+      (self.visibilityMask &
+       ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled)) {
+    newHiddenValue = !self.enabled;
+  }
+
   if (newHiddenValue != self.hiddenInCurrentSizeClass) {
     self.hiddenInCurrentSizeClass = newHiddenValue;
     [self setHiddenForCurrentStateAndSizeClass];
