@@ -111,8 +111,13 @@ params_add(struct wl_client *client,
 	buffer->attributes.fd[plane_idx] = name_fd;
 	buffer->attributes.offset[plane_idx] = offset;
 	buffer->attributes.stride[plane_idx] = stride;
-	buffer->attributes.modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
-	                                         modifier_lo;
+
+	if (wl_resource_get_version(params_resource) < ZWP_LINUX_DMABUF_V1_MODIFIER_SINCE_VERSION)
+		buffer->attributes.modifier[plane_idx] = DRM_FORMAT_MOD_INVALID;
+	else
+		buffer->attributes.modifier[plane_idx] = ((uint64_t)modifier_hi << 32) |
+							 modifier_lo;
+
 	buffer->attributes.n_planes++;
 }
 

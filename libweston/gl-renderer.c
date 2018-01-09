@@ -2164,7 +2164,7 @@ gl_renderer_import_dmabuf(struct weston_compositor *ec,
 
 	for (i = 0; i < dmabuf->attributes.n_planes; i++) {
 		/* return if EGL doesn't support import modifiers */
-		if (dmabuf->attributes.modifier[i] != 0)
+		if (dmabuf->attributes.modifier[i] != DRM_FORMAT_MOD_INVALID)
 			if (!gr->has_dmabuf_import_modifiers)
 				return false;
 
