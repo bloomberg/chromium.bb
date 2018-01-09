@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -101,10 +102,9 @@ class BluetoothRemoteGattServiceBlueZ
   // here since |device_| owns this instance.
   BluetoothDeviceBlueZ* device_;
 
-  // TODO(rkc): Investigate and fix ownership of the characteristic objects in
-  // this map. See crbug.com/604166.
   using CharacteristicMap =
-      std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicBlueZ*>;
+      std::map<dbus::ObjectPath,
+               std::unique_ptr<BluetoothRemoteGattCharacteristicBlueZ>>;
 
   // Mapping from GATT characteristic object paths to characteristic objects.
   // owned by this service. Since the BlueZ implementation uses object
