@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search_controller.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 
 #include <algorithm>
 #include <memory>
@@ -15,18 +15,18 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/search/history.h"
 #include "ui/app_list/search_provider.h"
 
 namespace app_list {
 
-SearchController::SearchController(SearchModel::SearchResults* results,
+SearchController::SearchController(AppListModelUpdater* model_updater,
                                    History* history)
-    : mixer_(new Mixer(results)), history_(history) {}
+    : mixer_(new Mixer(model_updater)), history_(history) {}
 
-SearchController::~SearchController() {
-}
+SearchController::~SearchController() {}
 
 void SearchController::Start(const base::string16& raw_query) {
   last_raw_query_ = raw_query;

@@ -86,6 +86,11 @@ void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
   search_model_->search_box()->Update(text, initiated_by_user);
 }
 
+void ChromeAppListModelUpdater::PublishSearchResults(
+    std::vector<std::unique_ptr<app_list::SearchResult>> results) {
+  search_model_->PublishResults(std::move(results));
+}
+
 void ChromeAppListModelUpdater::ActivateChromeItem(const std::string& id,
                                                    int event_flags) {
   app_list::AppListItem* item = model_->FindItem(id);

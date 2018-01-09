@@ -18,15 +18,15 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
+#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/suggestions/suggestions_search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/search/mixer.h"
-#include "ui/app_list/search_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
@@ -71,12 +71,10 @@ bool IsSuggestionsSearchProviderEnabled() {
 std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModelUpdater* model_updater,
-    SearchModel* search_model,
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
       std::make_unique<SearchController>(
-          search_model->results(),
-          HistoryFactory::GetForBrowserContext(profile));
+          model_updater, HistoryFactory::GetForBrowserContext(profile));
 
   // Add mixer groups. There are four main groups: answer card, apps, webstore
   // and omnibox. Each group has a "soft" maximum number of results. However, if

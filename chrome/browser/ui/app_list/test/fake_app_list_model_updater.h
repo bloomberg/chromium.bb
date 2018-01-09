@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/model/search/search_result.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 
 class ChromeAppListItem;
@@ -32,6 +33,8 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
                        const syncer::StringOrdinal& new_position) override;
   // For SearchModel:
   void SetSearchEngineIsGoogle(bool is_google) override;
+  void PublishSearchResults(
+      std::vector<std::unique_ptr<app_list::SearchResult>> results) override;
 
   // For AppListModel:
   ChromeAppListItem* FindItem(const std::string& id) override;
@@ -45,10 +48,15 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   // For SearchModel:
   bool TabletMode() override;
   bool SearchEngineIsGoogle() override;
+  const std::vector<std::unique_ptr<app_list::SearchResult>>& search_results()
+      const {
+    return search_results_;
+  }
 
  private:
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
+  std::vector<std::unique_ptr<app_list::SearchResult>> search_results_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppListModelUpdater);
 };

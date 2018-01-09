@@ -46,6 +46,8 @@ class APP_LIST_MODEL_EXPORT SearchModel {
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
 
+  void PublishResults(std::vector<std::unique_ptr<SearchResult>> new_results);
+
  private:
   std::unique_ptr<SearchBoxModel> search_box_;
   std::unique_ptr<SearchResults> results_;

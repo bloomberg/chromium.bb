@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
 
 #include <algorithm>
 #include <map>
@@ -14,20 +14,13 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/search_provider.h"
 
 namespace app_list {
 
 namespace {
-
-void UpdateResult(const SearchResult& source, SearchResult* target) {
-  target->set_display_type(source.display_type());
-  target->set_title(source.title());
-  target->set_title_tags(source.title_tags());
-  target->set_details(source.details());
-  target->set_details_tags(source.details_tags());
-}
 
 const std::string& GetComparableId(const SearchResult& result) {
   return !result.comparable_id().empty() ? result.comparable_id() : result.id();
@@ -38,8 +31,7 @@ const std::string& GetComparableId(const SearchResult& result) {
 Mixer::SortData::SortData() : result(nullptr), score(0.0) {}
 
 Mixer::SortData::SortData(SearchResult* result, double score)
-    : result(result), score(score) {
-}
+    : result(result), score(score) {}
 
 bool Mixer::SortData::operator<(const SortData& other) const {
   // This data precedes (less than) |other| if it has higher score.
@@ -130,10 +122,10 @@ class Mixer::Group {
   DISALLOW_COPY_AND_ASSIGN(Group);
 };
 
-Mixer::Mixer(SearchModel::SearchResults* ui_results)
-    : ui_results_(ui_results) {}
-Mixer::~Mixer() {
-}
+Mixer::Mixer(AppListModelUpdater* model_updater)
+    : model_updater_(model_updater) {}
+
+Mixer::~Mixer() = default;
 
 size_t Mixer::AddGroup(size_t max_results, double multiplier, double boost) {
   groups_.push_back(std::make_unique<Group>(max_results, multiplier, boost));
@@ -184,51 +176,14 @@ void Mixer::MixAndPublish(const KnownResults& known_results,
     std::sort(results.begin() + original_size, results.end());
   }
 
-  Publish(results, ui_results_);
-}
-
-void Mixer::Publish(const SortedResults& new_results,
-                    SearchModel::SearchResults* ui_results) {
-  // The following algorithm is used:
-  // 1. Transform the |ui_results| list into an unordered map from result ID
-  // to item.
-  // 2. Use the order of items in |new_results| to build an ordered list. If the
-  // result IDs exist in the map, update and use the item in the map and delete
-  // it from the map afterwards. Otherwise, clone new items from |new_results|.
-  // 3. Delete the objects remaining in the map as they are unused.
-
-  // We have to erase all results at once so that observers are notified with
-  // meaningful indexes.
-  auto current_results = ui_results->RemoveAll();
-  std::map<std::string, std::unique_ptr<SearchResult>> ui_results_map;
-  for (auto& ui_result : current_results)
-    ui_results_map[ui_result->id()] = std::move(ui_result);
-
-  // Add items back to |ui_results| in the order of |new_results|.
-  for (const SortData& sort_data : new_results) {
-    const SearchResult& new_result = *sort_data.result;
-    auto ui_result_it = ui_results_map.find(new_result.id());
-    if (ui_result_it != ui_results_map.end() &&
-        new_result.view() == ui_result_it->second->view()) {
-      // Update and use the old result if it exists.
-      std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
-      UpdateResult(new_result, ui_result.get());
-      ui_result->set_relevance(sort_data.score);
-
-      ui_results->Add(std::move(ui_result));
-
-      // Remove the item from the map so that it ends up only with unused
-      // results.
-      ui_results_map.erase(ui_result_it);
-    } else {
-      std::unique_ptr<SearchResult> result_copy = new_result.Duplicate();
-      result_copy->set_relevance(sort_data.score);
-      // Copy the result from |new_results| otherwise.
-      ui_results->Add(std::move(result_copy));
-    }
+  std::vector<std::unique_ptr<app_list::SearchResult>> new_results;
+  for (const SortData& sort_data : results) {
+    std::unique_ptr<app_list::SearchResult> new_result =
+        sort_data.result->Duplicate();
+    new_result->set_relevance(sort_data.score);
+    new_results.push_back(std::move(new_result));
   }
-
-  // Any remaining results in |ui_results_map| will be automatically deleted.
+  model_updater_->PublishSearchResults(std::move(new_results));
 }
 
 void Mixer::RemoveDuplicates(SortedResults* results) {

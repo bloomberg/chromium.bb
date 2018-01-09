@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/app_list/search/mixer.h"
+#include "chrome/browser/ui/app_list/search/mixer.h"
 
 #include <stddef.h>
 
@@ -11,18 +11,19 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/app_list_model.h"
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/search/history_types.h"
 #include "ui/app_list/search_provider.h"
+
+class FakeAppListModelUpdater;
 
 namespace app_list {
 namespace test {
@@ -121,13 +122,13 @@ class MixerTest : public testing::Test {
 
   // testing::Test overrides:
   void SetUp() override {
-    results_.reset(new SearchModel::SearchResults);
+    model_updater_ = std::make_unique<FakeAppListModelUpdater>();
 
     providers_.push_back(std::make_unique<TestSearchProvider>("app"));
     providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
     providers_.push_back(std::make_unique<TestSearchProvider>("webstore"));
 
-    mixer_.reset(new Mixer(results_.get()));
+    mixer_ = std::make_unique<Mixer>(model_updater_.get());
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
     // to (1) test answer card/apps group having relevance boost, (2) remove
@@ -151,12 +152,13 @@ class MixerTest : public testing::Test {
   }
 
   std::string GetResults() const {
+    auto& results = model_updater_->search_results();
     std::string result;
-    for (size_t i = 0; i < results_->item_count(); ++i) {
+    for (size_t i = 0; i < results.size(); ++i) {
       if (!result.empty())
         result += ',';
 
-      result += base::UTF16ToUTF8(results_->GetItemAt(i)->title());
+      result += base::UTF16ToUTF8(results[i]->title());
     }
 
     return result;
@@ -173,7 +175,7 @@ class MixerTest : public testing::Test {
 
  private:
   std::unique_ptr<Mixer> mixer_;
-  std::unique_ptr<SearchModel::SearchResults> results_;
+  std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   KnownResults known_results_;
 
   std::vector<std::unique_ptr<TestSearchProvider>> providers_;
@@ -311,94 +313,6 @@ TEST_F(MixerTest, VoiceQuery) {
   omnibox_provider()->set_as_voice_result(1);
   RunQuery();
   EXPECT_EQ("omnibox0,omnibox1,omnibox2", GetResults());
-}
-
-TEST_F(MixerTest, Publish) {
-  std::unique_ptr<SearchResult> result1(new TestSearchResult("app1", 0));
-  std::unique_ptr<SearchResult> result2(new TestSearchResult("app2", 0));
-  std::unique_ptr<SearchResult> result3(new TestSearchResult("app3", 0));
-  std::unique_ptr<SearchResult> result3_copy = result3->Duplicate();
-  std::unique_ptr<SearchResult> result4(new TestSearchResult("app4", 0));
-  std::unique_ptr<SearchResult> result5(new TestSearchResult("app5", 0));
-
-  SearchModel::SearchResults ui_results;
-
-  // Publish the first three results to |ui_results|.
-  Mixer::SortedResults new_results;
-  new_results.push_back(Mixer::SortData(result1.get(), 1.0f));
-  new_results.push_back(Mixer::SortData(result2.get(), 1.0f));
-  new_results.push_back(Mixer::SortData(result3.get(), 1.0f));
-
-  Mixer::Publish(new_results, &ui_results);
-  EXPECT_EQ(3u, ui_results.item_count());
-  // The objects in |ui_results| should be new copies because the input results
-  // are owned and |ui_results| needs to own its results as well.
-  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[0].result),
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
-  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[1].result),
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(1)));
-  EXPECT_NE(TestSearchResult::GetInstanceId(new_results[2].result),
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
-
-  // Save the current |ui_results| instance ids for comparison later.
-  std::vector<int> old_ui_result_ids;
-  for (size_t i = 0; i < ui_results.item_count(); ++i) {
-    old_ui_result_ids.push_back(
-        TestSearchResult::GetInstanceId(ui_results.GetItemAt(i)));
-  }
-
-  // Change the first result to a totally new object (with a new ID).
-  new_results[0] = Mixer::SortData(result4.get(), 1.0f);
-
-  // Change the second result's title, but keep the same id. (The result will
-  // keep the id "app2" but change its title to "New App 2 Title".)
-  const base::string16 kNewAppTitle = base::UTF8ToUTF16("New App 2 Title");
-  new_results[1].result->set_title(kNewAppTitle);
-
-  // Change the third result's object address (it points to an object with the
-  // same data).
-  new_results[2] = Mixer::SortData(result3_copy.get(), 1.0f);
-
-  Mixer::Publish(new_results, &ui_results);
-  EXPECT_EQ(3u, ui_results.item_count());
-
-  // The first result will be a new object, as the ID has changed.
-  EXPECT_NE(old_ui_result_ids[0],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
-
-  // The second result will still use the original object, but have a different
-  // title, since the ID did not change.
-  EXPECT_EQ(old_ui_result_ids[1],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(1)));
-  EXPECT_EQ(kNewAppTitle, ui_results.GetItemAt(1)->title());
-
-  // The third result will use the original object as the ID did not change.
-  EXPECT_EQ(old_ui_result_ids[2],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
-
-  // Save the current |ui_results| order which should is app4, app2, app3.
-  old_ui_result_ids.clear();
-  for (size_t i = 0; i < ui_results.item_count(); ++i) {
-    old_ui_result_ids.push_back(
-        TestSearchResult::GetInstanceId(ui_results.GetItemAt(i)));
-  }
-
-  // Reorder the existing results and add a new one in the second place.
-  new_results[0] = Mixer::SortData(result2.get(), 1.0f);
-  new_results[1] = Mixer::SortData(result5.get(), 1.0f);
-  new_results[2] = Mixer::SortData(result3.get(), 1.0f);
-  new_results.push_back(Mixer::SortData(result4.get(), 1.0f));
-
-  Mixer::Publish(new_results, &ui_results);
-  EXPECT_EQ(4u, ui_results.item_count());
-
-  // The reordered results should use the original objects.
-  EXPECT_EQ(old_ui_result_ids[0],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(3)));
-  EXPECT_EQ(old_ui_result_ids[1],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(0)));
-  EXPECT_EQ(old_ui_result_ids[2],
-            TestSearchResult::GetInstanceId(ui_results.GetItemAt(2)));
 }
 
 }  // namespace test
