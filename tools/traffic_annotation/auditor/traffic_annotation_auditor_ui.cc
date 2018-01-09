@@ -59,7 +59,9 @@ Options:
   --annotations-file  Optional path to a TSV output file with all annotations.
   --limit             Limit for the maximum number of returned errors.
                       Use 0 for unlimited.
-  path_filters        Optional paths to filter what files the tool is run on.
+  path_filters        Optional paths to filter which files the tool is run on.
+                      It can also include deleted files names when auditor is
+                      run on a partial repository.
 
 Example:
   traffic_annotation_auditor --build-dir=out/Debug summary-file=report.txt
@@ -331,8 +333,11 @@ int main(int argc, char* argv[]) {
   }
 
 #if defined(OS_WIN)
-  for (const auto& path : command_line.GetArgs())
-    path_filters.push_back(base::UTF16ToASCII(path));
+  for (const auto& path : command_line.GetArgs()) {
+    std::string repaired_path(base::UTF16ToASCII(path));
+    base::ReplaceChars(repaired_path, "\\", "/", &repaired_path);
+    path_filters.push_back(repaired_path);
+  }
 #else
   path_filters = command_line.GetArgs();
 #endif
@@ -390,7 +395,7 @@ int main(int argc, char* argv[]) {
     return 1;
 
   // Perform checks.
-  if (!auditor.RunAllChecks()) {
+  if (!auditor.RunAllChecks(path_filters, test_only)) {
     LOG(ERROR) << "Running checks failed.";
     return 1;
   }
@@ -411,27 +416,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  std::vector<AuditorResult> errors = auditor.errors();
+  const std::vector<AuditorResult>& errors = auditor.errors();
 
-  // Test/Update annotations.xml if everything else is OK and the auditor is
-  // run on the whole repository (without path filters).
-  if (errors.empty() && path_filters.empty()) {
-    TrafficAnnotationExporter exporter(source_path);
-    if (!exporter.UpdateAnnotations(
-            auditor.extracted_annotations(),
-            TrafficAnnotationAuditor::GetReservedIDsMap())) {
+  // Update annotations.xml if everything else is OK and the auditor is not
+  // run in test-only mode.
+  if (errors.empty() && !test_only && auditor.exporter().modified()) {
+    if (!auditor.exporter().SaveAnnotationsXML() ||
+        !RunAnnotationDownstreamUpdater(source_path)) {
+      LOG(ERROR) << "Could not update annotations XML or downstream files.";
       return 1;
-    }
-    if (exporter.modified()) {
-      if (test_only) {
-        errors.push_back(
-            AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
-                          exporter.GetRequiredUpdates()));
-      } else if (!exporter.SaveAnnotationsXML() ||
-                 !RunAnnotationDownstreamUpdater(source_path)) {
-        LOG(ERROR) << "Could not update annotations XML or downstream files.";
-        return 1;
-      }
     }
   }
 

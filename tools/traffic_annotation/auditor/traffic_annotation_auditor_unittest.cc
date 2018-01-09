@@ -916,7 +916,7 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationsXML) {
   TrafficAnnotationExporter exporter(source_path());
 
   EXPECT_TRUE(exporter.LoadAnnotationsXML());
-  EXPECT_TRUE(exporter.CheckAnnotationItems());
+  EXPECT_TRUE(exporter.CheckArchivedAnnotations());
 }
 
 // Tests if downstream files depending on of Annotations.xml are updated.
