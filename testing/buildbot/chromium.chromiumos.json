@@ -855,8 +855,7 @@
         "args": [
           "--mus"
         ],
-        "name": "ash_unittests-mus",
-        "override_isolate_target": "ash_unittests",
+        "name": "mus_ash_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -972,11 +971,9 @@
       },
       {
         "args": [
-          "--mus",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mus.content_browsertests.filter"
+          "--mus"
         ],
-        "name": "content_browsertests --mus",
-        "override_isolate_target": "content_browsertests",
+        "name": "mus_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 2
@@ -1289,6 +1286,16 @@
         "test": "ui_touch_selection_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--mus"
+        ],
+        "name": "mus_unit_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
