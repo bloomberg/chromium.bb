@@ -1141,7 +1141,6 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   // This is unconditionally true on mac, no need to test for it at runtime.
   caps.iosurface = true;
 #endif
-  caps.flips_vertically = surface_->FlipsVertically();
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
   caps.blend_equation_advanced_coherent =
@@ -1167,6 +1166,10 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.occlusion_query_boolean =
       feature_info_->feature_flags().occlusion_query_boolean;
   caps.timer_queries = feature_info_->feature_flags().ext_disjoint_timer_query;
+  caps.gpu_rasterization =
+      group_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
   caps.post_sub_buffer = surface_->SupportsPostSubBuffer();
   caps.surfaceless = !offscreen_ && surface_->IsSurfaceless();
   caps.flips_vertically = !offscreen_ && surface_->FlipsVertically();
