@@ -448,8 +448,8 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   if (take_mdp_ownership_and_delete_async) {
     // The MDP will be deleted whenever the MDPInfo struct will, that is either:
     // - At the end of this function, if no dump is in progress.
-    // - Either in SetupNextMemoryDump() or InvokeOnMemoryDump() when MDPInfo is
-    //   removed from |pending_dump_providers|.
+    // - In ContinueAsyncProcessDump() when MDPInfo is removed from
+    //   |pending_dump_providers|.
     // - When the provider is removed from other clients (MemoryPeakDetector).
     DCHECK(!(*mdp_iter)->owned_dump_provider);
     (*mdp_iter)->owned_dump_provider = std::move(owned_mdp);
@@ -564,192 +564,164 @@ void MemoryDumpManager::CreateProcessDump(
 
   // Start the process dump. This involves task runner hops as specified by the
   // MemoryDumpProvider(s) in RegisterDumpProvider()).
-  SetupNextMemoryDump(std::move(pmd_async_state));
+  ContinueAsyncProcessDump(pmd_async_state.release());
 }
 
-// PostTask InvokeOnMemoryDump() to the dump provider's sequenced task runner. A
-// PostTask is always required for a generic SequencedTaskRunner to ensure that
-// no other task is running on it concurrently. SetupNextMemoryDump() and
-// InvokeOnMemoryDump() are called alternatively which linearizes the dump
-// provider's OnMemoryDump invocations.
-// At most one of either SetupNextMemoryDump() or InvokeOnMemoryDump() can be
-// active at any time for a given PMD, regardless of status of the |lock_|.
-// |lock_| is used in these functions purely to ensure consistency w.r.t.
-// (un)registrations of |dump_providers_|.
-void MemoryDumpManager::SetupNextMemoryDump(
-    std::unique_ptr<ProcessMemoryDumpAsyncState> pmd_async_state) {
+// Invokes OnMemoryDump() on all MDPs that are next in the pending list and run
+// on the current sequenced task runner. If the next MDP does not run in current
+// sequenced task runner, then switches to that task runner and continues. All
+// OnMemoryDump() invocations are linearized. |lock_| is used in these functions
+// purely to ensure consistency w.r.t. (un)registrations of |dump_providers_|.
+void MemoryDumpManager::ContinueAsyncProcessDump(
+    ProcessMemoryDumpAsyncState* owned_pmd_async_state) {
   HEAP_PROFILER_SCOPED_IGNORE;
   // Initalizes the ThreadLocalEventBuffer to guarantee that the TRACE_EVENTs
   // in the PostTask below don't end up registering their own dump providers
   // (for discounting trace memory overhead) while holding the |lock_|.
   TraceLog::GetInstance()->InitializeThreadLocalEventBufferIfSupported();
 
-  if (pmd_async_state->pending_dump_providers.empty())
-    return FinishAsyncProcessDump(std::move(pmd_async_state));
+  // In theory |owned_pmd_async_state| should be a unique_ptr. The only reason
+  // why it isn't is because of the corner case logic of |did_post_task|
+  // above, which needs to take back the ownership of the |pmd_async_state| when
+  // the PostTask() fails.
+  // Unfortunately, PostTask() destroys the unique_ptr arguments upon failure
+  // to prevent accidental leaks. Using a unique_ptr would prevent us to to
+  // skip the hop and move on. Hence the manual naked -> unique ptr juggling.
+  auto pmd_async_state = WrapUnique(owned_pmd_async_state);
+  owned_pmd_async_state = nullptr;
 
-  // Read MemoryDumpProviderInfo thread safety considerations in
-  // memory_dump_manager.h when accessing |mdpinfo| fields.
-  MemoryDumpProviderInfo* mdpinfo =
-      pmd_async_state->pending_dump_providers.back().get();
+  while (!pmd_async_state->pending_dump_providers.empty()) {
+    // Read MemoryDumpProviderInfo thread safety considerations in
+    // memory_dump_manager.h when accessing |mdpinfo| fields.
+    MemoryDumpProviderInfo* mdpinfo =
+        pmd_async_state->pending_dump_providers.back().get();
 
+    if (!IsDumpProviderAllowedToDump(pmd_async_state->req_args, *mdpinfo)) {
+      pmd_async_state->pending_dump_providers.pop_back();
+      continue;
+    }
+
+    // If the dump provider did not specify a task runner affinity, dump on
+    // |dump_thread_|.
+    scoped_refptr<SequencedTaskRunner> task_runner = mdpinfo->task_runner;
+    if (!task_runner) {
+      DCHECK(mdpinfo->options.dumps_on_single_thread_task_runner);
+      task_runner = pmd_async_state->dump_thread_task_runner;
+      DCHECK(task_runner);
+    }
+
+    // If |RunsTasksInCurrentSequence()| is true then no PostTask is
+    // required since we are on the right SequencedTaskRunner.
+    if (task_runner->RunsTasksInCurrentSequence()) {
+      InvokeOnMemoryDump(mdpinfo, pmd_async_state->process_memory_dump.get());
+      pmd_async_state->pending_dump_providers.pop_back();
+      continue;
+    }
+
+    bool did_post_task = task_runner->PostTask(
+        FROM_HERE,
+        BindOnce(&MemoryDumpManager::ContinueAsyncProcessDump, Unretained(this),
+                 Unretained(pmd_async_state.get())));
+
+    if (did_post_task) {
+      // Ownership is tranferred to the posted task.
+      ignore_result(pmd_async_state.release());
+      return;
+    }
+
+    // PostTask usually fails only if the process or thread is shut down. So,
+    // the dump provider is disabled here. But, don't disable unbound dump
+    // providers, since the |dump_thread_| is controlled by MDM.
+    if (mdpinfo->task_runner) {
+      // A locked access is required to R/W |disabled| (for the
+      // UnregisterAndDeleteDumpProviderSoon() case).
+      AutoLock lock(lock_);
+      mdpinfo->disabled = true;
+    }
+
+    // PostTask failed. Ignore the dump provider and continue.
+    pmd_async_state->pending_dump_providers.pop_back();
+  }
+
+  FinishAsyncProcessDump(std::move(pmd_async_state));
+}
+
+bool MemoryDumpManager::IsDumpProviderAllowedToDump(
+    const MemoryDumpRequestArgs& req_args,
+    const MemoryDumpProviderInfo& mdpinfo) const {
   // If we are in background tracing, we should invoke only the whitelisted
   // providers. Ignore other providers and continue.
-  if (pmd_async_state->req_args.level_of_detail ==
-      MemoryDumpLevelOfDetail::BACKGROUND) {
-    // TODO(ssid): This is a temporary hack to fix crashes
-    // https://crbug.com/797784. We could still cause stack overflow in a
-    // detailed mode dump or when there are lot of providers whitelisted.
-    while (!mdpinfo->whitelisted_for_background_mode) {
-      pmd_async_state->pending_dump_providers.pop_back();
-      if (pmd_async_state->pending_dump_providers.empty())
-        return FinishAsyncProcessDump(std::move(pmd_async_state));
-      mdpinfo = pmd_async_state->pending_dump_providers.back().get();
-    }
+  if (req_args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND &&
+      !mdpinfo.whitelisted_for_background_mode) {
+    return false;
   }
 
   // If we are in summary mode, we only need to invoke the providers
   // whitelisted for summary mode.
-  if (pmd_async_state->req_args.dump_type == MemoryDumpType::SUMMARY_ONLY) {
-    // TODO(ssid): This is a temporary hack to fix crashes
-    // https://crbug.com/797784. We could still cause stack overflow in a
-    // detailed mode dump or when there are lot of providers whitelisted. It is
-    // assumed here that a provider whitelisted for summary mode is also
-    // whitelisted for background mode and skip the check.
-    while (!mdpinfo->whitelisted_for_summary_mode) {
-      pmd_async_state->pending_dump_providers.pop_back();
-      if (pmd_async_state->pending_dump_providers.empty())
-        return FinishAsyncProcessDump(std::move(pmd_async_state));
-      mdpinfo = pmd_async_state->pending_dump_providers.back().get();
-    }
+  if (req_args.dump_type == MemoryDumpType::SUMMARY_ONLY &&
+      !mdpinfo.whitelisted_for_summary_mode) {
+    return false;
   }
 
-  // If the dump provider did not specify a task runner affinity, dump on
-  // |dump_thread_|.
-  scoped_refptr<SequencedTaskRunner> task_runner = mdpinfo->task_runner;
-  if (!task_runner) {
-    DCHECK(mdpinfo->options.dumps_on_single_thread_task_runner);
-    task_runner = pmd_async_state->dump_thread_task_runner;
-    DCHECK(task_runner);
-  }
-
-  if (mdpinfo->options.dumps_on_single_thread_task_runner &&
-      task_runner->RunsTasksInCurrentSequence()) {
-    // If |dumps_on_single_thread_task_runner| is true then no PostTask is
-    // required if we are on the right thread.
-    return InvokeOnMemoryDump(pmd_async_state.release());
-  }
-
-  bool did_post_task = task_runner->PostTask(
-      FROM_HERE, BindOnce(&MemoryDumpManager::InvokeOnMemoryDump,
-                          Unretained(this), Unretained(pmd_async_state.get())));
-
-  if (did_post_task) {
-    // Ownership is tranferred to InvokeOnMemoryDump().
-    ignore_result(pmd_async_state.release());
-    return;
-  }
-
-  // PostTask usually fails only if the process or thread is shut down. So, the
-  // dump provider is disabled here. But, don't disable unbound dump providers.
-  // The utility thread is normally shutdown when disabling the trace and
-  // getting here in this case is expected.
-  if (mdpinfo->task_runner) {
-    DLOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
-                << "\". Failed to post task on the task runner provided.";
-
-    // A locked access is required to R/W |disabled| (for the
-    // UnregisterAndDeleteDumpProviderSoon() case).
-    AutoLock lock(lock_);
-    mdpinfo->disabled = true;
-  }
-
-  // PostTask failed. Ignore the dump provider and continue.
-  pmd_async_state->pending_dump_providers.pop_back();
-  SetupNextMemoryDump(std::move(pmd_async_state));
+  return true;
 }
 
 // This function is called on the right task runner for current MDP. It is
 // either the task runner specified by MDP or |dump_thread_task_runner| if the
 // MDP did not specify task runner. Invokes the dump provider's OnMemoryDump()
 // (unless disabled).
-void MemoryDumpManager::InvokeOnMemoryDump(
-    ProcessMemoryDumpAsyncState* owned_pmd_async_state) {
+void MemoryDumpManager::InvokeOnMemoryDump(MemoryDumpProviderInfo* mdpinfo,
+                                           ProcessMemoryDump* pmd) {
   HEAP_PROFILER_SCOPED_IGNORE;
-  // In theory |owned_pmd_async_state| should be a scoped_ptr. The only reason
-  // why it isn't is because of the corner case logic of |did_post_task|
-  // above, which needs to take back the ownership of the |pmd_async_state| when
-  // the PostTask() fails.
-  // Unfortunately, PostTask() destroys the scoped_ptr arguments upon failure
-  // to prevent accidental leaks. Using a scoped_ptr would prevent us to to
-  // skip the hop and move on. Hence the manual naked -> scoped ptr juggling.
-  auto pmd_async_state = WrapUnique(owned_pmd_async_state);
-  owned_pmd_async_state = nullptr;
-
-  // Read MemoryDumpProviderInfo thread safety considerations in
-  // memory_dump_manager.h when accessing |mdpinfo| fields.
-  MemoryDumpProviderInfo* mdpinfo =
-      pmd_async_state->pending_dump_providers.back().get();
-
   DCHECK(!mdpinfo->task_runner ||
          mdpinfo->task_runner->RunsTasksInCurrentSequence());
 
-  // Limit the scope of the TRACE_EVENT1 below to not include the
-  // SetupNextMemoryDump(). Don't replace with a BEGIN/END pair or change the
-  // event name, as the slow-reports pipeline relies on this event.
+  TRACE_EVENT1(kTraceCategory, "MemoryDumpManager::InvokeOnMemoryDump",
+               "dump_provider.name", mdpinfo->name);
+
+  // Do not add any other TRACE_EVENT macro (or function that might have them)
+  // below this point. Under some rare circunstances, they can re-initialize
+  // and invalide the current ThreadLocalEventBuffer MDP, making the
+  // |should_dump| check below susceptible to TOCTTOU bugs
+  // (https://crbug.com/763365).
+
+  bool is_thread_bound;
   {
-    TRACE_EVENT1(kTraceCategory, "MemoryDumpManager::InvokeOnMemoryDump",
-                 "dump_provider.name", mdpinfo->name);
+    // A locked access is required to R/W |disabled| (for the
+    // UnregisterAndDeleteDumpProviderSoon() case).
+    AutoLock lock(lock_);
 
-    // Do not add any other TRACE_EVENT macro (or function that might have them)
-    // below this point. Under some rare circunstances, they can re-initialize
-    // and invalide the current ThreadLocalEventBuffer MDP, making the
-    // |should_dump| check below susceptible to TOCTTOU bugs (crbug.com/763365).
-
-    bool should_dump;
-    bool is_thread_bound;
-    {
-      // A locked access is required to R/W |disabled| (for the
-      // UnregisterAndDeleteDumpProviderSoon() case).
-      AutoLock lock(lock_);
-
-      // Unregister the dump provider if it failed too many times consecutively.
-      if (!mdpinfo->disabled &&
-          mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
-        mdpinfo->disabled = true;
-        LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
-                   << "\". Dump failed multiple times consecutively.";
-      }
-      should_dump = !mdpinfo->disabled;
-      is_thread_bound = mdpinfo->task_runner != nullptr;
-    }  // AutoLock lock(lock_);
-
-    if (should_dump) {
-      // Invoke the dump provider.
-
-      // A stack allocated string with dump provider name is useful to debug
-      // crashes while invoking dump after a |dump_provider| is not unregistered
-      // in safe way.
-      // TODO(ssid): Remove this after fixing crbug.com/643438.
-      char provider_name_for_debugging[16];
-      strncpy(provider_name_for_debugging, mdpinfo->name,
-              sizeof(provider_name_for_debugging) - 1);
-      provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] =
-          '\0';
-      base::debug::Alias(provider_name_for_debugging);
-
-      ProcessMemoryDump* pmd = pmd_async_state->process_memory_dump.get();
-      ANNOTATE_BENIGN_RACE(&mdpinfo->disabled, "best-effort race detection");
-      CHECK(!is_thread_bound ||
-            !*(static_cast<volatile bool*>(&mdpinfo->disabled)));
-      bool dump_successful =
-          mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
-      mdpinfo->consecutive_failures =
-          dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
+    // Unregister the dump provider if it failed too many times consecutively.
+    if (!mdpinfo->disabled &&
+        mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
+      mdpinfo->disabled = true;
+      DLOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
+                  << "\". Dump failed multiple times consecutively.";
     }
-  }
+    if (mdpinfo->disabled)
+      return;
 
-  pmd_async_state->pending_dump_providers.pop_back();
-  SetupNextMemoryDump(std::move(pmd_async_state));
+    is_thread_bound = mdpinfo->task_runner != nullptr;
+  }  // AutoLock lock(lock_);
+
+  // Invoke the dump provider.
+
+  // A stack allocated string with dump provider name is useful to debug
+  // crashes while invoking dump after a |dump_provider| is not unregistered
+  // in safe way.
+  char provider_name_for_debugging[16];
+  strncpy(provider_name_for_debugging, mdpinfo->name,
+          sizeof(provider_name_for_debugging) - 1);
+  provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] = '\0';
+  base::debug::Alias(provider_name_for_debugging);
+
+  ANNOTATE_BENIGN_RACE(&mdpinfo->disabled, "best-effort race detection");
+  CHECK(!is_thread_bound ||
+        !*(static_cast<volatile bool*>(&mdpinfo->disabled)));
+  bool dump_successful =
+      mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
+  mdpinfo->consecutive_failures =
+      dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
 }
 
 void MemoryDumpManager::FinishAsyncProcessDump(

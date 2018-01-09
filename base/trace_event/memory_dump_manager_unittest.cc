@@ -527,16 +527,14 @@ TEST_F(MemoryDumpManagerTest, PostTaskForSequencedTaskRunner) {
   task_runner1->set_enabled(false);
   EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                                         MemoryDumpLevelOfDetail::DETAILED));
-  // Tasks should be individually posted even if |mdps[1]| and |mdps[2]| belong
-  // to same task runner.
   EXPECT_EQ(1u, task_runner1->no_of_post_tasks());
-  EXPECT_EQ(2u, task_runner2->no_of_post_tasks());
+  EXPECT_EQ(1u, task_runner2->no_of_post_tasks());
 
   task_runner1->set_enabled(true);
   EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
                                         MemoryDumpLevelOfDetail::DETAILED));
   EXPECT_EQ(2u, task_runner1->no_of_post_tasks());
-  EXPECT_EQ(4u, task_runner2->no_of_post_tasks());
+  EXPECT_EQ(2u, task_runner2->no_of_post_tasks());
   DisableTracing();
 }
 
@@ -1024,6 +1022,68 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingIfNeededUnsupported) {
   mdm_->EnableHeapProfilingIfNeeded();
   EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeInvalid);
 #endif  //  BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+}
+
+// Mock MDP class that tests if the number of OnMemoryDump() calls are expected.
+// It is implemented without gmocks since EXPECT_CALL implementation is slow
+// when there are 1000s of instances, as required in
+// NoStackOverflowWithTooManyMDPs test.
+class SimpleMockMemoryDumpProvider : public MemoryDumpProvider {
+ public:
+  SimpleMockMemoryDumpProvider(int expected_num_dump_calls)
+      : expected_num_dump_calls_(expected_num_dump_calls), num_dump_calls_(0) {}
+
+  ~SimpleMockMemoryDumpProvider() override {
+    EXPECT_EQ(expected_num_dump_calls_, num_dump_calls_);
+  }
+
+  bool OnMemoryDump(const MemoryDumpArgs& args,
+                    ProcessMemoryDump* pmd) override {
+    ++num_dump_calls_;
+    return true;
+  }
+
+ private:
+  int expected_num_dump_calls_;
+  int num_dump_calls_;
+};
+
+TEST_F(MemoryDumpManagerTest, NoStackOverflowWithTooManyMDPs) {
+  InitializeMemoryDumpManagerForInProcessTesting(false /* is_coordinator */);
+  SetDumpProviderWhitelistForTesting(kTestMDPWhitelist);
+  SetDumpProviderSummaryWhitelistForTesting(kTestMDPWhitelistForSummary);
+
+  int kMDPCount = 1000;
+  std::vector<std::unique_ptr<SimpleMockMemoryDumpProvider>> mdps;
+  for (int i = 0; i < kMDPCount; ++i) {
+    mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(1));
+    RegisterDumpProvider(mdps.back().get(), nullptr);
+  }
+  for (int i = 0; i < kMDPCount; ++i) {
+    mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(2));
+    RegisterDumpProvider(mdps.back().get(), nullptr, kDefaultOptions,
+                         kBackgroundButNotSummaryWhitelistedMDPName);
+  }
+  for (int i = 0; i < kMDPCount; ++i) {
+    mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(3));
+    RegisterDumpProvider(mdps.back().get(), nullptr, kDefaultOptions,
+                         kWhitelistedMDPName);
+  }
+  std::unique_ptr<Thread> stopped_thread(new Thread("test thread"));
+  stopped_thread->Start();
+  for (int i = 0; i < kMDPCount; ++i) {
+    mdps.push_back(std::make_unique<SimpleMockMemoryDumpProvider>(0));
+    RegisterDumpProvider(mdps.back().get(), stopped_thread->task_runner(),
+                         kDefaultOptions, kWhitelistedMDPName);
+  }
+  stopped_thread->Stop();
+
+  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                        MemoryDumpLevelOfDetail::DETAILED));
+  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
+                                        MemoryDumpLevelOfDetail::BACKGROUND));
+  EXPECT_TRUE(RequestProcessDumpAndWait(MemoryDumpType::SUMMARY_ONLY,
+                                        MemoryDumpLevelOfDetail::BACKGROUND));
 }
 
 }  // namespace trace_event
