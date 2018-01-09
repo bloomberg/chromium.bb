@@ -1298,6 +1298,10 @@ void RenderWidget::Resize(const ResizeParams& params) {
 
   screen_info_ = params.screen_info;
 
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread)
+    render_thread->SetRenderingColorSpace(screen_info_.color_space);
+
   if (device_scale_factor_ != screen_info_.device_scale_factor) {
     device_scale_factor_ = screen_info_.device_scale_factor;
     OnDeviceScaleFactorChanged();
