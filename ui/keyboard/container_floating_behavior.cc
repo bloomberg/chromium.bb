@@ -156,10 +156,10 @@ bool ContainerFloatingBehavior::IsDragHandle(
 }
 
 void ContainerFloatingBehavior::HandlePointerEvent(
-    bool isMouseButtonPressed,
-    const gfx::Vector2d& kb_offset) {
+    const ui::LocatedEvent& event) {
   // Cannot call UI-backed operations without a KeyboardController
   DCHECK(controller_);
+  auto kb_offset = gfx::Vector2d(event.x(), event.y());
 
   aura::Window* container = controller_->GetContainerWindow();
 
@@ -169,15 +169,26 @@ void ContainerFloatingBehavior::HandlePointerEvent(
   if (keyboard_bounds.height() <= 0)
     return;
 
-  if (isMouseButtonPressed &&
-      (drag_descriptor_ || IsDragHandle(kb_offset, keyboard_bounds.size()))) {
-    if (!drag_descriptor_) {
-      // If there is no active drag, start a new one.
-      drag_descriptor_.reset(
-          new DragDescriptor(keyboard_bounds.origin(), kb_offset));
-    } else {
-      // If there is an active drag, use it to determine the new location of the
-      // keyboard.
+  bool handle_drag = false;
+  if (IsDragHandle(kb_offset, keyboard_bounds.size())) {
+    auto type = event.type();
+    if (type == ui::ET_TOUCH_PRESSED ||
+        (type == ui::ET_MOUSE_PRESSED &&
+         ((const ui::MouseEvent*)&event)->IsOnlyLeftMouseButton())) {
+      // Mouse events are limited to just the left mouse button.
+
+      drag_started_by_touch_ = (type == ui::ET_TOUCH_PRESSED);
+      if (!drag_descriptor_) {
+        // If there is no active drag descriptor, start a new one.
+        drag_descriptor_.reset(
+            new DragDescriptor(keyboard_bounds.origin(), kb_offset));
+      }
+      handle_drag = true;
+    } else if (drag_descriptor_ &&
+               (type == ui::ET_MOUSE_DRAGGED ||
+                (drag_started_by_touch_ && type == ui::ET_TOUCH_MOVED))) {
+      // If there is an active drag, use it to determine the new location
+      // of the keyboard.
       const gfx::Point original_click_location =
           drag_descriptor_->original_keyboard_location() +
           drag_descriptor_->original_click_offset();
@@ -191,16 +202,13 @@ void ContainerFloatingBehavior::HandlePointerEvent(
       const gfx::Rect new_bounds =
           gfx::Rect(new_keyboard_location, keyboard_bounds.size());
       controller_->MoveKeyboard(new_bounds);
+      SavePosition(container->bounds().origin());
+      handle_drag = true;
     }
-
-    // re-query the container for the new bounds
-    SavePosition(container->bounds().origin());
-  } else if (drag_descriptor_) {
+  }
+  if (!handle_drag && drag_descriptor_) {
     // drag has ended
     drag_descriptor_ = nullptr;
-
-    // save the current bounds.
-    SavePosition(keyboard_bounds.origin());
   }
 }
 
