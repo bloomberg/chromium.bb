@@ -449,3 +449,17 @@ std::string TrafficAnnotationExporter::GetXMLDifferences(
 
   return message;
 }
+
+bool TrafficAnnotationExporter::GetOtherPlatformsAnnotationIDs(
+    std::vector<std::string>* ids) const {
+  if (archive_.empty())
+    return false;
+
+  ids->clear();
+  for (const std::pair<std::string, ArchivedAnnotation>& item : archive_) {
+    if (item.second.deprecation_date.empty() &&
+        !MatchesCurrentPlatform(item.second))
+      ids->push_back(item.first);
+  }
+  return true;
+}

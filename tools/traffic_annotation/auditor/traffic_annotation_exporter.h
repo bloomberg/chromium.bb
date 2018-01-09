@@ -72,6 +72,10 @@ class TrafficAnnotationExporter {
     return base::ContainsValue(annotation.os_list, current_platform_);
   }
 
+  // Produces the list of annotations that are not defined in this platform.
+  // Returns false if annotations.xml is not loaded.
+  bool GetOtherPlatformsAnnotationIDs(std::vector<std::string>* ids) const;
+
   // Returns the number of items in annotations.xml for testing.
   unsigned GetXMLItemsCountForTesting();
 

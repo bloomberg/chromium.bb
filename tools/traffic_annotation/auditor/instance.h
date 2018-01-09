@@ -121,8 +121,6 @@ class AnnotationInstance : public InstanceBase {
   // The hash code of annotation content for archived annotations.
   int archive_content_hash_code;
 
-  std::string comments;
-
   // Flag stating if annotation is loaded from annotations.xml.
   bool is_loaded_from_archive;
 
