@@ -6,15 +6,23 @@ module content.mojom;
 
 import "services/network/public/interfaces/network_change_manager.mojom";
 
+[Native]
+struct CertVerifyResult;
+
+[Native]
+struct X509Certificate;
+
 struct Rule {
   string host_pattern;
   string replacement;
 };
 
 // Testing interface to the network service.
+// Methods are sometimes synchronous to avoid race conditions since this test
+// interface is on a different pipe than interfaces which are impacted.
 interface NetworkServiceTest {
-  // Adds the given host resolver rules in the process where the network
-  // service is running.
+  // Adds the given host resolver rules in the process where the network service
+  // is running.
   [Sync]
   AddRules(array<Rule> rules) => ();
 
@@ -25,4 +33,15 @@ interface NetworkServiceTest {
 
   // Crash the process where network service is running.
   SimulateCrash();
+
+  // These methods mirror the net::MockCertVerifier interface.
+  [Sync]
+  MockCertVerifierSetDefaultResult(int32 default_result) => ();
+
+  [Sync]
+  MockCertVerifierAddResultForCertAndHost(
+      X509Certificate cert,
+      string host_pattern,
+      CertVerifyResult verify_result,
+      int32 rv) => ();
 };

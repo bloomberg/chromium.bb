@@ -303,6 +303,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 #endif
       switches::kUseFakeDeviceForMediaStream,
       switches::kUseFileForFakeVideoCapture,
+      switches::kUseMockCertVerifierForTesting,
 #if defined(OS_WIN)
       switches::kForceMediaFoundationVideoCapture,
 #endif  // defined(OS_WIN)

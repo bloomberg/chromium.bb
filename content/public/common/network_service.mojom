@@ -152,6 +152,13 @@ interface NetworkContext {
   // Passing null NetworkConditions disables the throttling.
   // TODO(caseq): get rid of header, make profile_id part of ResourceRequest.
   SetNetworkConditions(string profile_id, NetworkConditions? conditions);
+
+  [Sync]
+  // Adds explicitly-specified data as if it was processed from an
+  // HSTS header.
+  AddHSTSForTesting(string host,
+                    mojo.common.mojom.Time expiry,
+                    bool include_subdomains) => ();
 };
 
 // Network service interface to the browser.

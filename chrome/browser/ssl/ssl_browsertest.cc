@@ -120,6 +120,7 @@
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/escape.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
@@ -421,16 +422,38 @@ bool ComparePreAndPostInterstitialSSLStatuses(const content::SSLStatus& one,
          one.pkp_bypassed == two.pkp_bypassed;
 }
 
-// Set HSTS for the test host name, so that all errors thrown on this domain
-// will be nonoverridable.
-void SetHSTSForHostName(
-    scoped_refptr<net::URLRequestContextGetter> context_getter) {
+void SetHSTSForHostNameOnIO(
+    scoped_refptr<net::URLRequestContextGetter> context_getter,
+    const std::string& hostname,
+    base::Time expiry,
+    bool include_subdomains) {
   net::TransportSecurityState* state =
       context_getter->GetURLRequestContext()->transport_security_state();
-  const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   EXPECT_FALSE(state->ShouldUpgradeToSSL(kHstsTestHostName));
-  state->AddHSTS(kHstsTestHostName, expiry, false);
+  state->AddHSTS(hostname, expiry, false);
   EXPECT_TRUE(state->ShouldUpgradeToSSL(kHstsTestHostName));
+}
+
+// Set HSTS for the test host name, so that all errors thrown on this domain
+// will be nonoverridable.
+void SetHSTSForHostName(Profile* profile) {
+  std::string hostname = kHstsTestHostName;
+  const base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
+  bool include_subdomains = false;
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    content::StoragePartition* partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    partition->GetNetworkContext()->AddHSTSForTesting(hostname, expiry,
+                                                      include_subdomains);
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(SetHSTSForHostNameOnIO,
+                     base::RetainedRef(profile->GetRequestContext()), hostname,
+                     expiry, include_subdomains));
 }
 
 bool IsShowingInterstitial(content::WebContents* tab) {
@@ -1091,11 +1114,7 @@ class SSLUITestHSTS : public SSLUITest {
  public:
   void SetUpOnMainThread() override {
     SSLUITest::SetUpOnMainThread();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &SetHSTSForHostName,
-            base::RetainedRef(browser()->profile()->GetRequestContext())));
+    SetHSTSForHostName(browser()->profile());
   }
 };
 
@@ -6024,11 +6043,7 @@ class SSLUIMITMSoftwareTest : public CertVerifierBrowserTest,
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &SetHSTSForHostName,
-            base::RetainedRef(browser()->profile()->GetRequestContext())));
+    SetHSTSForHostName(browser()->profile());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -13,9 +13,12 @@
 #include "base/logging.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
+#include "content/network/network_context.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_host_resolver.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -31,17 +34,34 @@
 namespace content {
 
 class NetworkServiceTestHelper::NetworkServiceTestImpl
-    : public content::mojom::NetworkServiceTest {
+    : public mojom::NetworkServiceTest {
  public:
-  NetworkServiceTestImpl() = default;
-  ~NetworkServiceTestImpl() override = default;
+  NetworkServiceTestImpl() {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseMockCertVerifierForTesting)) {
+      mock_cert_verifier_ = std::make_unique<net::MockCertVerifier>();
+      NetworkContext::SetCertVerifierForTesting(mock_cert_verifier_.get());
+    }
 
-  // content::mojom::NetworkServiceTest:
-  void AddRules(std::vector<content::mojom::RulePtr> rules,
+    // This class is constructed in all test processes but we only want to
+    // add it in the utility process where the network service is run, to avoid
+    // clashing with the other HostResolver in browsertests.
+    if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kProcessType) == switches::kUtilityProcess) {
+      test_host_resolver_ = std::make_unique<TestHostResolver>();
+    }
+  }
+
+  ~NetworkServiceTestImpl() override {
+    NetworkContext::SetCertVerifierForTesting(nullptr);
+  }
+
+  // mojom::NetworkServiceTest:
+  void AddRules(std::vector<mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
     for (const auto& rule : rules) {
-      test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
-                                                   rule->replacement);
+      test_host_resolver_->host_resolver()->AddRule(rule->host_pattern,
+                                                    rule->replacement);
     }
     std::move(callback).Run();
   }
@@ -62,18 +82,38 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     base::Process::Current().Terminate(1, false);
   }
 
-  void BindRequest(content::mojom::NetworkServiceTestRequest request) {
+  void MockCertVerifierSetDefaultResult(
+      int32_t default_result,
+      MockCertVerifierSetDefaultResultCallback callback) override {
+    mock_cert_verifier_->set_default_result(default_result);
+    std::move(callback).Run();
+  }
+
+  void MockCertVerifierAddResultForCertAndHost(
+      const scoped_refptr<net::X509Certificate>& cert,
+      const std::string& host_pattern,
+      const net::CertVerifyResult& verify_result,
+      int32_t rv,
+      MockCertVerifierAddResultForCertAndHostCallback callback) override {
+    mock_cert_verifier_->AddResultForCertAndHost(cert, host_pattern,
+                                                 verify_result, rv);
+    std::move(callback).Run();
+  }
+
+  void BindRequest(mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
  private:
-  mojo::BindingSet<content::mojom::NetworkServiceTest> bindings_;
-  content::TestHostResolver test_host_resolver_;
+  mojo::BindingSet<mojom::NetworkServiceTest> bindings_;
+  std::unique_ptr<TestHostResolver> test_host_resolver_;
+  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
 };
 
-NetworkServiceTestHelper::NetworkServiceTestHelper() = default;
+NetworkServiceTestHelper::NetworkServiceTestHelper()
+    : network_service_test_impl_(new NetworkServiceTestImpl) {}
 
 NetworkServiceTestHelper::~NetworkServiceTestHelper() = default;
 
@@ -106,9 +146,7 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
 }
 
 void NetworkServiceTestHelper::BindNetworkServiceTestRequest(
-    content::mojom::NetworkServiceTestRequest request) {
-  if (!network_service_test_impl_)
-    network_service_test_impl_ = std::make_unique<NetworkServiceTestImpl>();
+    mojom::NetworkServiceTestRequest request) {
   network_service_test_impl_->BindRequest(std::move(request));
 }
 

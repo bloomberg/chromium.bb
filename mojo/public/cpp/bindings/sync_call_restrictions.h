@@ -46,6 +46,7 @@ class ClipboardMus;
 }
 
 namespace mojo {
+class ScopedAllowSyncCallForTesting;
 
 // In some processes, sync calls are disallowed. For example, in the browser
 // process we don't want any sync calls to child processes for performance,
@@ -81,6 +82,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   friend class prefs::PersistentPrefStoreClient;
   // Incognito pref service instances are created synchronously.
   friend class sync_preferences::PrefServiceSyncable;
+  friend class mojo::ScopedAllowSyncCallForTesting;
   // For file open and save dialogs created synchronously.
   friend class ::ChromeSelectFileDialogFactory;
   // END ALLOWED USAGE.
@@ -123,6 +125,17 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   };
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncCallRestrictions);
+};
+
+class ScopedAllowSyncCallForTesting {
+ public:
+  ScopedAllowSyncCallForTesting() {}
+  ~ScopedAllowSyncCallForTesting() {}
+
+ private:
+  SyncCallRestrictions::ScopedAllowSyncCall scoped_allow_sync_call_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedAllowSyncCallForTesting);
 };
 
 }  // namespace mojo
