@@ -31,13 +31,8 @@ Now, when you build, you will build with Chromium OS features turned on.
 See [GN Build Configuration](https://www.chromium.org/developers/gn-build-configuration)
 for more information about configuring your build.
 
-If you have not already done so, be sure to set the following to prevent
-'gclient runhooks' from executing 'gyp_chromium':
-
-    export GYP_CHROMIUM_NO_ACTION=1
-
-Some additional options you may wish to set by passing in **--args** to
-**gn gen** or running **gn args out/Default**:
+Some additional options you may wish to set by passing in `--args` to `gn gen`
+or running `gn args out/Default`:
 
     is_component_build = true
     use_goma = true
@@ -59,9 +54,9 @@ The Chromium OS build requires a functioning GL so if you plan on
 testing it through Chromium Remote Desktop you might face drawing
 problems (e.g. Aura window not painting anything). Possible remedies:
 
-*   --ui-enable-software-compositing --ui-disable-threaded-compositing
-*   --use-gl=osmesa, but it's ultra slow, and you'll have to build
-    osmesa yourself.
+*   `--ui-enable-software-compositing --ui-disable-threaded-compositing`
+*   `--use-gl=osmesa`, but it's ultra slow, and you'll have to build osmesa
+    yourself.
 *   ... or just don't use Remote Desktop. :)
 
 To more closely match the UI used on devices, you can install fonts used
@@ -70,14 +65,14 @@ by Chrome OS, such as Roboto, on your Linux distro.
 To specify a logged in user:
 
 *   For first run, add the following options to the command line:
-    **--user-data-dir=/tmp/chrome --login-manager**
+    `--user-data-dir=/tmp/chrome --login-manager`
 *   Go through the out-of-the-box UX and sign in as
-    **username@gmail.com**
+    **username@gmail.com**.
 *   For subsequent runs, add the following to the command line:
-    **--user-data-dir=/tmp/chrome --login-user=username@gmail.com**.
-*   To run in guest mode instantly, you can run add the arguments
-    **--user-data-dir=/tmp/chrome --bwsi --incognito
-    --login-user='$guest' --login-profile=user**
+    `--user-data-dir=/tmp/chrome --login-user=username@gmail.com`
+*   To run in guest mode instantly, you can run add the arguments:
+    `--user-data-dir=/tmp/chrome --bwsi --incognito --login-user='$guest'
+    --login-profile=user`
 
 Signing in as a specific user is useful for debugging features like sync
 that require a logged in user.
