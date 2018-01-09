@@ -1749,12 +1749,6 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     support_copy_nv12_textures_ = false;
   }
 
-  // The MS VP9 MFT doesn't pass through the bind flags we specify, so
-  // textures aren't created with D3D11_BIND_SHADER_RESOURCE and can't be used
-  // from ANGLE.
-  if (using_ms_vp9_mft_)
-    support_share_nv12_textures_ = false;
-
   return true;
 }
 
@@ -1803,15 +1797,8 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
     RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
   }
 
-  hr = decoder_->SetInputType(0, media_type.Get(), 0);  // No flags
-  RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
-  return true;
-}
-
-bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
-    const GUID& subtype) {
-  bool result = SetTransformOutputType(decoder_.Get(), subtype, 0, 0);
-
+  // These bind flags _must_ be set before SetInputType or SetOutputType to
+  // ensure that we get the proper surfaces created under the hood.
   if (GetPictureBufferMechanism() == PictureBufferMechanism::BIND) {
     Microsoft::WRL::ComPtr<IMFAttributes> out_attributes;
     HRESULT hr =
@@ -1827,7 +1814,14 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     out_attributes->SetUINT32(MF_SA_D3D11_SHARED_WITHOUT_MUTEX, TRUE);
   }
 
-  return result;
+  hr = decoder_->SetInputType(0, media_type.Get(), 0);  // No flags
+  RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
+  return true;
+}
+
+bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
+    const GUID& subtype) {
+  return SetTransformOutputType(decoder_.Get(), subtype, 0, 0);
 }
 
 bool DXVAVideoDecodeAccelerator::SendMFTMessage(MFT_MESSAGE_TYPE msg,
