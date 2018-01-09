@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.util.Pair;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
@@ -27,6 +29,7 @@ import org.chromium.net.test.util.TestWebServer;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 /**
  * Tests for the {@link android.webkit.WebView#loadDataWithBaseURL(String, String, String, String,
@@ -39,15 +42,18 @@ public class LoadDataWithBaseUrlTest {
 
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
+    private AwCookieManager mCookieManager;
     private WebContents mWebContents;
 
     @Before
     public void setUp() throws Exception {
         mContentsClient = new TestAwContentsClient();
+        mCookieManager = new AwCookieManager();
         final AwTestContainerView testContainerView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
         mWebContents = mAwContents.getWebContents();
+        mCookieManager.setAcceptCookie(true);
     }
 
     protected void loadDataWithBaseUrlSync(
@@ -183,6 +189,53 @@ public class LoadDataWithBaseUrlTest {
         loadDataWithBaseUrlSync(pageHtml, "text/html", false, null, null);
         Assert.assertEquals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL,
                 mActivityTestRule.getTitleOnUiThread(mAwContents));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSetCookieInIframe() throws Throwable {
+        // Regression test for http://crrev/c/822572 (the first half of crbug.com/793648).
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            List<Pair<String, String>> responseHeaders = CommonResources.getTextHtmlHeaders(true);
+            final String cookie = "key=value";
+            responseHeaders.add(Pair.create("Set-Cookie", cookie));
+            final String frameUrl = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, responseHeaders);
+            final String html = getCrossOriginAccessTestPageHtml(frameUrl);
+            final String baseUrl = frameUrl;
+
+            loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
+            Assert.assertEquals(cookie, mCookieManager.getCookie(frameUrl));
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testThirdPartyCookieInIframe() throws Throwable {
+        // Regression test for http://crrev/c/827018 (the second half of crbug.com/793648).
+        mActivityTestRule.getAwSettingsOnUiThread(mAwContents).setAcceptThirdPartyCookies(true);
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            List<Pair<String, String>> responseHeaders = CommonResources.getTextHtmlHeaders(true);
+            final String cookie = "key=value";
+            final String expectedCookieHeader = "Cookie: " + cookie;
+            final String frameUrl = webServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
+                    CommonResources.ABOUT_HTML, responseHeaders);
+            mCookieManager.setCookie(frameUrl, cookie);
+            final String html = getCrossOriginAccessTestPageHtml(frameUrl);
+            final String baseUrl = "http://www.google.com/"; // Treat the iframe as 3P.
+            loadDataWithBaseUrlSync(html, "text/html", false, baseUrl, null);
+            List<String> request = webServer.getLastRequest("/" + CommonResources.ABOUT_FILENAME);
+            Assert.assertTrue("Should send 3P cookies, expected '" + expectedCookieHeader + "'",
+                    request.contains(expectedCookieHeader));
+        } finally {
+            webServer.shutdown();
+        }
     }
 
     @Test
