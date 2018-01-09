@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">Despre Chromium</translation>
 <translation id="1298199220304005244">Obțineți ajutor în legătură cu utilizarea sistemului de operare Chromium</translation>
 <translation id="1396446129537741364">Chromium încearcă să afișeze parolele.</translation>
-<translation id="1403254041219632970">Versiunile Chromium ulterioare nu vor mai accepta Mac OS X 10.6, 10.7 sau 10.8.</translation>
 <translation id="1414495520565016063">V-ați conectat la Chromium!</translation>
-<translation id="1440917365206527807">Chromium a oprit acest site să te direcționeze către</translation>
 <translation id="1444754455097148408">Licențe open source Chromium</translation>
 <translation id="1502360822835740515">Setează Chromium ca browser prestabilit</translation>
 <translation id="151962892725702025">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
-<translation id="1559451348202814456">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Mac OS X 10.6, 10.7 sau 10.8.</translation>
 <translation id="1585657529869845941">Dă clic pe <ph name="BEGIN_BOLD" />Comută oricum<ph name="END_BOLD" />, dacă apare</translation>
 <translation id="1653828314016431939">OK - Reporniți acum</translation>
 <translation id="1668054258064581266">După ce eliminați contul din Chromium, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">Pentru a se aplica actualizarea, sistemul de operare Chromium trebuie să fie repornit.</translation>
 <translation id="2647554856022461007">Este posibil ca Chromium să folosească servicii web pentru a-ți îmbunătăți experiența de navigare. Poți să dezactivezi aceste servicii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">S-a produs o eroare de sistem de operare în timpul instalării. Descărcați din nou Chromium.</translation>
-<translation id="2685838254101182273">Chromium nu se mai actualizează și nu mai acceptă această versiune a sistemului dvs. de operare.</translation>
 <translation id="2705403826523567092">Conectează-te pentru o experiență de navigare personalizată, sincronizată pe toate dispozitivele</translation>
 <translation id="2711502716910134313">Fila Chromium</translation>
 <translation id="2718390899429598676">Pentru un plus de securitate, Chromium îți va cripta datele.</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
 <translation id="4469812139324097969">Chromium este neactualizat, deoarece în ultimul timp nu a fost repornit. Este disponibilă o actualizare, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="4488554488975128561">Ne poți ajuta să facem Chromium mai sigur și mai ușor de folosit trimițând automat anumite informații despre sistem și conținutul paginii la Google pentru a detecta aplicațiile și site-urile periculoase.</translation>
-<translation id="4549794359424059447">Versiunile Chromium ulterioare nu vor mai accepta Windows XP sau Windows Vista.</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="459535195905078186">Aplicații Chromium</translation>
 <translation id="4611246891205775468">Chromium are nevoie de permisiune ca să acceseze microfonul pentru acest site.</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
 <translation id="5479196819031988440">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
-<translation id="5524843473235508879">Redirecționarea a fost blocată.</translation>
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>
 <translation id="5680901439334282664">conectează-te la Chromium</translation>
 <translation id="5698481217667032250">Afișează Chromium în această limbă</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">Eroare privind certificatul de autentificare. Conectează-te la Chromium din nou sau contactează administratorul pentru mai multe informații. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Aproape actualizat! Repornește dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="5942520288919337908">Extensia <ph name="EXTENSION_NAME" /> a fost adăugată la Chromium.</translation>
-<translation id="59625444380784159">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chromium.</translation>
 <translation id="5987687638152509985">Actualizează Chromium pentru a începe sincronizarea</translation>
 <translation id="6055895534982063517">Este disponibilă o nouă versiune Chromium, iar aceasta este mai rapidă ca oricând.</translation>
 <translation id="6063093106622310249">&amp;Deschide în Chromium</translation>
@@ -173,12 +166,10 @@
 Este posibil ca unele funcții să nu fie disponibile. Specificați un director de profil diferit sau utilizați o versiune mai nouă de Chromium.</translation>
 <translation id="6734080038664603509">Actualizați &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
-<translation id="6777817260680419853">Redirecționarea a fost blocată</translation>
 <translation id="6810143991807788455">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
-<translation id="694592694773692225">Redirecționarea a fost blocată pe această pagină.</translation>
 <translation id="6964305034639999644">Deschide linkul într-o fereastră Chromium inco&amp;gnito</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
 <translation id="705851970750939768">Actualizează Chromium</translation>

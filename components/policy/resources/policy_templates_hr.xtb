@@ -146,6 +146,7 @@
 
           Detaljnije primjere možete pronaći ovdje:
           <ph name="PROXY_HELP_URL" />.</translation>
+<translation id="1503487916067509762">Omogućuje blokiranje ubacivanja softvera treće strane</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
@@ -287,6 +288,11 @@
 
           Ako se to pravilo ne postavi, upotrebljavat će se sve četiri sheme.</translation>
 <translation id="2067011586099792101">Blokiraj pristup web-lokacijama izvan paketa sadržaja</translation>
+<translation id="2075030897098958514">Kontrolira je li omogućen NTLMv2.
+
+          Sve novije verzije poslužitelja Samba i Windows podržavaju NTLMv2. To treba biti onemogućeno samo za kompatibilnost sa starijim verzijama i smanjuje sigurnost autentifikacije.
+
+          Zadana vrijednost kada to pravilo nije definirano trenutačno je False za kompatibilnost sa starijim verzijama, ali će se promijeniti na True.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2077273864382355561">Odgoda isključivanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="2082205219176343977">Konfiguriraj najmanju dopuštenu verziju Chromea za uređaj.</translation>
@@ -374,6 +380,7 @@
 <translation id="2303795211377219696">Omogući Automatsko popunjavanje za kreditne kartice</translation>
 <translation id="2309390639296060546">Zadana postavka zemljopisnog položaja</translation>
 <translation id="2312134445771258233">Omogućuje konfiguriranje stranica koje se učitavaju prilikom pokretanja. Sadržaj popisa "URL-ovi za otvaranje prilikom pokretanja" zanemaruje se, osim ako odaberete "Otvori popis URL-ova" pod "Radnje prilikom pokretanja".</translation>
+<translation id="2327252517317514801">Definira domene kojima je dopušten pristup G Suiteu</translation>
 <translation id="2334591568684482454">Konfigurira dostupnost i ponašanje funkcije ažuriranja <ph name="TPM_FIRMWARE_UPDATE_TPM" /> opreme.
 
       Pojedinačne postavke mogu se navesti u JSON entitetima:
@@ -757,6 +764,13 @@
       Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
+<translation id="3732106275571017176">Ova postavka korisnicima omogućuje prebacivanje između Google računa unutar područja sadržaja u prozoru preglednika nakon što se prijave na svojem <ph name="PRODUCT_OS_NAME" /> uređaju.
+
+      Ako je ovo pravilo postavljeno na False, neće biti dopušteno standardno prijavljivanje na drugi račun iz područja sadržaja preglednika.
+
+      Ako ovo pravilo nije postavljeno ili je postavljeno na True, upotrebljavat će se zadano ponašanje: prijavljivanje na drugi račun iz područja sadržaja preglednika bit će dopušteno, osim za dječje račune za koje će biti blokirano za područje sadržaja koje nije anonimno.
+
+      U slučaju da prijavljivanje na drugi račun ne treba biti dopušteno u anonimnom načinu, razmislite o blokiranju tog načina rada pomoću pravila IncognitoModeAvailability.</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
 <translation id="3737544779868348650">Naziv hosta mreže uređaja</translation>
 <translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
@@ -775,6 +789,7 @@
       Ako se ta pravila ne postave, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3758249152301468420">Onemogući Razvojne alate</translation>
 <translation id="3765260570442823273">Trajanje poruke upozorenja za odjavu u stanju mirovanja</translation>
+<translation id="377044054160169374">Provedi intervenciju za uvredljiv sadržaj</translation>
 <translation id="3780152581321609624">Uključi nestandardni port u Kerberos SPN-u</translation>
 <translation id="3780319008680229708">Ako se to pravilo postavi na "istinito", ikona Casta na alatnoj traci uvijek će se prikazivati na alatnoj traci ili u dodatnom izborniku te je korisnici neće moći ukloniti.
 
@@ -947,6 +962,7 @@
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
+<translation id="4285674129118156176">Omogućuje nepridruženim korisnicima da upotrebljavaju ARC</translation>
 <translation id="4294280661005713627">Postavlja ciljnu verziju za Automatska ažuriranja.
 
       Određuje prefiks ciljne verzije na koju bi se proizvod <ph name="PRODUCT_OS_NAME" /> trebao ažurirati. Ako je verzija na uređaju starija od navedenog prefiksa, ažurirat će se na najnoviju verziju s navedenim prefiksom. Ako uređaj već ima noviju verziju, ništa se neće promijeniti (tj. neće se vratiti na stariju verziju) i uređaj će ostati na trenutačnoj verziji. Format prefiksa funkcionira prema komponentama kao što je prikazano u sljedećem primjeru:
@@ -1028,10 +1044,19 @@
 <translation id="4531706050939927436">Instaliranje Android aplikacija može se nametnuti s konzole Google Admina putem Google Playa. One ne upotrebljavaju to pravilo.</translation>
 <translation id="4534500438517478692">Naziv ograničenja za Android:</translation>
 <translation id="4541530620466526913">Lokalni računi na uređaju</translation>
+<translation id="4544079461524242527">Konfigurira postavke upravljanja proširenjima za <ph name="PRODUCT_NAME" />.
+
+          Ovo pravilo kontrolira više postavki, uključujući postavke kojima upravljaju postojeća pravila za proširenja. To će pravilo nadjačati sva naslijeđena pravila ako su postavljena.
+
+          To pravilo mapira ID proširenja ili URL ažuriranja na svoju konfiguraciju. S ID-jem proširenja konfiguracija će se primijeniti samo na određeno proširenje. Zadana konfiguracija može se postaviti za posebni ID <ph name="DEFAULT_SCOPE" />, tako da se primjenjuje na sva proširenja za koje u tom pravilu nije postavljena prilagođena konfiguracija. S URL-om ažuriranja konfiguracija će se primijeniti na sva proširenja s istim URL-om ažuriranja navedenim u manifestu proširenja kako je opisano u dokumentu <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Cijeli opis mogućih postavki i strukture tog pravila potražite na stranici https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="4555850956567117258">Omogući daljinsku ovjeru za korisnika</translation>
 <translation id="4557134566541205630">URL web-stranice nove kartice zadanog davatelja usluge pretraživanja</translation>
 <translation id="4600786265870346112">Omogućivanje velikog pokazivača</translation>
 <translation id="4604931264910482931">Konfiguriraj popis nedopuštenih za lokalno slanje poruka</translation>
+<translation id="4613508646038788144">Ako je pravilo postavljeno na False, softver treće strane moći će ubaciti izvršni kôd u Chromeove procese. Ako pravilo nije postavljeno ili je postavljeno na True, softver treće strane neće moći ubaciti izvršni kôd u Chromeove procese.</translation>
 <translation id="4617338332148204752">Preskoči provjeru metaoznaka u okviru <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfiguriraj bijelu listu instalacije proširenja</translation>
 <translation id="4632343302005518762">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje navedenim vrstama sadržaja</translation>
@@ -1045,6 +1070,12 @@
 <translation id="465099050592230505">URL web-trgovine tvrtke (obustavljeno)</translation>
 <translation id="4665897631924472251">Postavke upravljanja proširenjima</translation>
 <translation id="4668325077104657568">Zadana postavka slika</translation>
+<translation id="4671708336564240458">Omogućuje vam da postavite hoće li se web-lokacijama s uvredljivim sadržajima onemogućiti otvaranje novih prozora i kartica.
+
+      Ako se to pravilo postavi na True, web-lokacijama s uvredljivim sadržajima onemogućit će se otvaranje novih prozora i kartica.
+      No to se ponašanje neće aktivirati ako se pravilo SafeBrowsingEnabled postavi na False.
+      Ako se to pravilo postavi na False, web-lokacijama s uvredljivim sadržajima dopustit će se otvaranje novih prozora i kartica.
+      Ako se to pravilo ne postavi, upotrebljavat će se True.</translation>
 <translation id="467236746355332046">Podržane značajke:</translation>
 <translation id="4674167212832291997">Prilagođava popis uzoraka URL-ova koje bi <ph name="PRODUCT_FRAME_NAME" /> uvijek trebao generirati.
 
@@ -1111,6 +1142,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
 
           Ako je to pravilo postavljeno na netočno, ti će se zahtjevi zanemarivati.</translation>
+<translation id="487460824085252184">Migrira automatski, bez traženja pristanka korisnika.</translation>
 <translation id="4876805738539874299">Maksimalna verzija SSL-a omogućena</translation>
 <translation id="4881315447528084360">Određuje popis aplikacija i proširenja koja se instaliraju u pozadini,
           bez interakcije s korisnikom, i koje korisnik ne može deinstalirati niti
@@ -1217,6 +1249,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5272684451155669299">Ako se postavi na True, korisnik može upotrebljavati hardver na Chrome uređajima za daljinsko atestiranje identiteta CA-u privatnosti putem API-ja <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> pomoću funkcije <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Ako se postavi na False ili ako se ne postavi, pozivi API-ju vratit će kôd pogreške.</translation>
+<translation id="5283457834853986457">Onemogućuje alat za traženje dodataka (obustavljen)</translation>
 <translation id="5288772341821359899">Ako se to pravilo postavi, raspon UDP priključaka kojima se koristi WebRTC ograničen je na navedeni interval priključaka (krajnje točke uključene).
 
       Ako se pravilo ne postavi ili se postavi na prazni niz ili nevažeći raspon priključaka, WebRTC može upotrebljavati bilo koji dostupni lokalni UDP priključak.</translation>
@@ -1240,6 +1273,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako se to pravilo postavi na False, korisnici neće moći emitirati sadržaj na svom uređaju. Ako se pravilo postavi na True, korisnici će moći emitirati sadržaj. Ako se pravilo ne postavi, korisnici neće moći emitirati sadržaj na registrirane uređaje s OS-om Chrome, ali će moći emitirati na neregistrirane uređaje.</translation>
 <translation id="5330684698007383292">Dopusti proizvodu <ph name="PRODUCT_FRAME_NAME" /> rukovanje sljedećim vrstama sadržaja</translation>
 <translation id="5365946944967967336">Prikaži gumb Početna na alatnoj traci</translation>
+<translation id="5366745336748853475">Omogućuje vam da navedete popis uzoraka URL-ova koji određuju web-lokacije za koje je certifikat klijenta automatski odabran na zaslonu za prijavu u okviru koji hostira SAML protok, ako web-lokacija zahtijeva certifikat. Primjer upotrebe je konfiguracija certifikata za cijeli uređaj koji će se pojaviti za SAML IdP.
+
+      Vrijednost mora biti polje JSON rječnika u nizovima. Svaki rječnik mora biti u obliku { "pattern": "$URL_PATTERN", "filter" : $FILTER }, pri čemu je $URL_PATTERN uzorak postavke sadržaja. $FILTER ograničava između kojih će klijentskih certifikata preglednik automatski birati. Neovisno o filtru, birat će se samo certifikati koji se podudaraju sa zahtjevom poslužitelja za certifikat. Ako je $FILTER u obliku { "ISSUER": { "CN": "$ISSUER_CN" } }, dodatno se biraju samo klijentski certifikati koje izdaje certifikat koji ima CommonName $ISSUER_CN. Ako je $FILTER prazan rječnik {}, odabir klijentskih certifikata nije dodatno ograničen.
+
+      Ako se to pravilo ne postavi, neće biti automatskog odabira ni za jednu web-lokaciju.</translation>
 <translation id="5366977351895725771">Ako je postavljeno na netočno, korisnik neće moći izrađivati nadzirane korisnike. Postojeći nadzirani korisnici i dalje će biti dostupni.
 
           Ako je postavljeno na točno ili nije konfigurirano, korisnik može izrađivati nadzirane korisnike i upravljati njima.</translation>
@@ -1299,6 +1337,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako je naveden, parametar upita pod nazivom "restrict" dodat će se URL-u za dohvaćanje vrijednosti varijacija. Vrijednost parametra bit će vrijednost navedena u ovom pravilu.
 
       Ako nije naveden, URL vrijednosti varijacija neće se izmijeniti.</translation>
+<translation id="5561811616825571914">Automatski odabir klijentskih certifikata za te web-lokacije na zaslonu za prijavu</translation>
 <translation id="556941986578702361">Kontroliraj automatsko skrivanje police proizvoda <ph name="PRODUCT_OS_NAME" />.
 
       Ako je ta polica postavljena na "AlwaysAutoHideShelf", polica će uvijek biti automatski skrivena.
@@ -1359,6 +1398,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se ta postavka ne postavi, upotrebljavat će se zadani direktorij profila.</translation>
 <translation id="5826047473100157858">Određuje može li korisnik otvarati stranice u anonimnom načinu u proizvodu <ph name="PRODUCT_NAME" />. Ako je odabrano "Enabled" (omogućeno) ili pravilo nije postavljeno, stranice se mogu otvarati u anonimnom načinu. Ako je odabrano "Disabled" (onemogućeno), stranice se ne mogu otvarati u anonimnom načinu. Ako je odabrano "Forced" (prisilno), stranice se mogu otvarati SAMO u anonimnom načinu.</translation>
+<translation id="583091600226586337">
+      Ako je to pravilo omogućeno, od korisnika će se prije preuzimanja tražiti da odredi gdje će svaka datoteka biti spremljena.
+      Ako je pravilo onemogućeno, preuzimanja će započeti odmah, a korisnik neće dobiti upit gdje treba spremiti datoteku.
+      Ako pravilo nije konfigurirano, korisnik će moći promijeniti tu postavku.
+      </translation>
 <translation id="5835124959204887277">Određuje URL-ove i domene za koje se neće prikazivati upit kada se od sigurnosnih ključeva zatraže certifikati za ovjeru. Osim toga, sigurnosnom ključu bit će poslan signal koji pokazuje da se pojedina ovjera može upotrebljavati. Bez toga, korisnicima će se u Chromeu 65+ prikazati upit kada web-lokacije zatraže ovjeru sigurnosnih ključeva.
 
       URL-ovi (primjerice https://example.com/some/path) bit će odgovarajući samo kao ID-ovi aplikacija za U2F. Domene (primjerice example.com) bit će odgovarajuće samo kao RP ID-ovi za mrežnu provjeru autentičnosti. Znači, kako bi se obuhvatili API-ji i za U2F i za mrežnu provjeru autentičnosti za određenu web-lokaciju, moraju biti navedeni i URL i domena ID-a aplikacije.</translation>
@@ -1417,6 +1461,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5966615072639944554">Proširenja koja smiju upotrebljavati API za daljinsku ovjeru</translation>
 <translation id="5983708779415553259">Zadano ponašanje za web-lokacije koje nisu ni u jednom paketu sadržaja</translation>
 <translation id="5997543603646547632">Upotrijebi sat s 24-satnim prikazom prema zadanim postavkama</translation>
+<translation id="5997846976342452720">Određuje treba li onemogućiti alat za traženje dodataka (obustavljen)</translation>
 <translation id="6005179188836322782">Omogućuje značajku Sigurno pregledavanje usluge <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
 
       Ako omogućite tu postavku, Sigurno pregledavanje uvijek je aktivno.
@@ -1651,6 +1696,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako se to pravilo onemogući ili ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.
 
       Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući RoamingProfileSupportEnabled.</translation>
+<translation id="6735701345096330595">Nametni omogućivanje provjere pravopisa za jezike</translation>
 <translation id="6757438632136860443">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
@@ -1669,6 +1715,18 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6903814433019432303">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje set URL-ova za učitavanje kada se pokrene demonstracijska sesija. To će pravilo premostiti sve druge mehanizme za postavljanje početnog URL-a, pa se može primijeniti samo na sesiju koja nije povezana s određenim korisnikom.</translation>
+<translation id="6908347296939885026">Omogućuje značajku ograničene prijave za <ph name="PRODUCT_NAME" /> u G Suiteu i korisnicima onemogućuje da promijene tu postavku.
+
+      Ako definirate tu postavku, korisnik će Google Appsu moći pristupiti samo pomoću računa s određenih domena (napominjemo da to ne vrijedi za 
+ gmail.com/googlemail.com).
+
+      Ta postavka NE sprječava korisnika da se prijavi s upravljanog uređaja koji zahtijeva Google autentifikaciju. Korisnik će se i dalje moći prijavljivati na račune s drugih domena, ali će primiti pogrešku pri pokušaju upotrebe G Suitea s tim računima.
+
+      Ako tu postavku ostavite praznom ili je ne konfigurirate, korisnik će moći pristupiti G Suiteu bilo kojim računom.
+
+      To pravilo uzrokuje dodavanje zaglavlja X-GoogApps-Allowed-Domains svim HTTP i HTTPS zahtjevima za sve google.com domene kao što je opisano na stranici https://support.google.com/a/answer/1668854.
+
+      Korisnici ne mogu promijeniti ni nadjačati tu postavku.</translation>
 <translation id="6908640907898649429">Konfigurira zadanog davatelja usluge pretraživanja. Možete odrediti zadanog davatelja usluge pretraživanja koji će korisnik upotrebljavati ili onemogućiti zadano pretraživanje.</translation>
 <translation id="6915442654606973733">Omogući značajku pristupačnosti izgovaranja povratnih informacija.
 
@@ -1786,6 +1844,9 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
 <translation id="7261252191178797385">Slika pozadine uređaja</translation>
+<translation id="7266471712301230894">To je pravilo uklonjeno od verzije 64 sustava <ph name="PRODUCT_NAME" />.
+
+      Automatsko pretraživanje i instalacija dodataka koji nedostaju nisu više podržani.</translation>
 <translation id="7267809745244694722">Medijske tipke postavi kao zadane funkcijske tipke</translation>
 <translation id="7271085005502526897">Uvoz početne stranice iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="7273823081800296768">Ako je ta postavka omogućena ili nije konfigurirana, tada korisnici mogu odabrati hoće li upariti klijente i hostove u trenutku povezivanja tako da ne moraju svaki put unositi PIN.
@@ -1837,6 +1898,10 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se to pravilo ne postavi ili se postavi na "False", omogućit će se <ph name="TLS_FALSE_START" />. Ako se postavi na "True", neće se omogućiti <ph name="TLS_FALSE_START" />.</translation>
 <translation id="7433714841194914373">Omogući Instant</translation>
+<translation id="7443061725198440541">Ako ovo pravilo nije postavljeno ili omogućeno, korisnik će moći upotrebljavati provjeru pravopisa.
+
+      Ako je pravilo onemogućeno, korisnik neće moći upotrebljavati provjeru pravopisa. Pravilo SpellcheckLanguage zanemarit će se i kad je ovo pravilo onemogućeno.
+      </translation>
 <translation id="7443616896860707393">Zahtjevi za Cross-origin HTTP Basic Auth</translation>
 <translation id="7469554574977894907">Omogući prijedloge pretraživanja</translation>
 <translation id="7474249562477552702">Jesu li dopušteni certifikati s SHA-1 potpisom koje izdaju lokalna pouzdana sidra</translation>
@@ -2064,6 +2129,14 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako pravilo nije postavljeno, proizvod <ph name="PRODUCT_OS_NAME" /> upotrijebit će ID računa e-pošte lokalnog računa uređaja kao naziv za prikaz na zaslonu prijave.
 
       Ovo se pravilo zanemaruje za redovite korisničke račune.</translation>
+<translation id="8259375588339409826">Chromium i Google Chrome podržavaju isti skup pravila. Napominjemo da ovaj dokument može sadržavati neobjavljena pravila (to jest, unos "podržano na" odnosi se na neobjavljene verzije proizvoda <ph name="PRODUCT_NAME" />) podložna promjeni ili uklanjanju bez prethodne najave i za koja se ne pružaju nikakva jamstva, što znači da nema jamstava ni za sigurnost ni privatnost.
+
+Ta su pravila namijenjena isključivo konfiguriranju instanci preglednika <ph name="PRODUCT_NAME" /> za unutarnju upotrebu u vašoj organizaciji. Upotreba tih pravila izvan vaše organizacije (na primjer u javno distribuiranom programu) smatra se zlonamjernim softverom, pa će je Google i dobavljači antivirusnih programa vjerojatno označiti kao takvu.
+
+Te se postavke ne moraju konfigurirati ručno! Jednostavne predloške za Windows, Mac i Linux možete preuzeti na web-lokaciji <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pružanje pravila putem registra i dalje podržava za instance Windowsa pridružene domeni <ph name="MS_AD_NAME" />.</translation>
+<translation id="8274603902181597201">Briše početni direktorij korisnika za ecryptfs i započinje novi ext4-šifrirani početni direktorij.</translation>
 <translation id="8279832363395120715">Uklanja osjetljive dijelove https:// URL-ova koji se odnose na privatnost i sigurnost prije nego što se URL-ovi proslijede PAC skriptama (Proxy Auto Config) koje <ph name="PRODUCT_NAME" /> koristi tijekom razrješavanja proxyja.
 
       Kada se pravilo postavi na True, sigurnosna je značajka omogućena i osjetljivi
@@ -2148,6 +2221,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8549772397068118889">Upozori kada se posjećuju web-lokacije izvan paketa sadržaja</translation>
 <translation id="8566842294717252664">Skrivanje web-trgovine na web-stranici nove kartice i pokretaču aplikacija</translation>
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
+<translation id="8598350264853261122">Ako se to pravilo postavi na False, nepridruženim korisnicima neće biti dopuštena upotreba ARC-a.
+
+      Ako se pravilo ne postavi ili se postavi na True, svim će korisnicima biti dopuštena upotreba ARC-a (osim ako je ARC onemogućen na drugi način).
+
+      Promjene pravila primjenjuju se samo kada se ARC ne izvodi, primjerice prilikom pokretanja OS Chromea.</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
 <translation id="8631434304112909927">do verzije <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">Za Android aplikacije to pravilo utječe samo na ugrađenu kameru. Kada se to pravilo postavi na True, kamera je onemogućena za sve Android aplikacije, bez iznimke.</translation>
@@ -2211,6 +2289,20 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako ta postavka nije postavljena, korisnik može odlučiti hoće li upotrebljavati tu funkciju.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
 <translation id="8882006618241293596">Blokiraj dodatak <ph name="FLASH_PLUGIN_NAME" /> na ovim web-lokacijama</translation>
+<translation id="8894962626537183708">
+      Pravilo navodi popis izvora (URL-ova) koji će se tretirati kao siguran kontekst. Namjera je dopustiti organizacijama postavljanje poslužitelja u pokusne svrhe za interni razvoj na webu, tako da njihovi razvojni programeri mogu testirati naše značajke koje zahtijevaju siguran kontekst bez potrebe za implementacijom TLS-a na pokusnom poslužitelju.
+      Postavljanje popisa URL-ova u ovom pravilu ima isti učinak kao i postavljanje oznake naredbenog retka '--unsafely-treat-insecure-origin-as-secure' na popis odijeljen zarezima istih URL-ova. Ako je pravilo postavljeno, nadjačat će oznaku naredbenog retka.
+      Više informacija o sigurnim kontekstima potražite na https://www.w3.org/TR/secure-contexts/
+      </translation>
+<translation id="890403179930035128">Nameće provjeru pravopisa za jezike. Neprepoznati jezici na popisu zanemarit će se.
+
+      Ako omogućite ovo pravilo, provjera pravopisa bit će omogućena za navedene jezike, kao i za jezike za koje je korisnik omogućio provjeru pravopisa.
+
+      Ako ne postavite ovo pravilo ili ga onemogućite, korisnikove postavke provjere pravopisa neće se promijeniti.
+
+      Ako je pravilo SpellcheckEnabled postavljeno na "onemogućeno", ovo pravilo neće imati učinka.
+
+      Trenutačno podržani jezici: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Omogući način gosta</translation>
 <translation id="8908294717014659003">Omogućuje vam da postavite hoće li web-lokacijama biti dopušten pristup medijskim uređajima za snimanje. Pristup medijskim uređajima za snimanje može biti dopušten prema zadanim postavkama ili se korisniku može postaviti pitanje svaki put kada web-lokacija želi pristupiti tim uređajima.
 
@@ -2282,6 +2374,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Na primjer, da biste dopustili sve brze načine otključavanja, upotrijebite ["all"]. Da biste dopustili samo otključavanje PIN-om, upotrijebite ["PIN"]. Da biste onemogućili sve brze načine otključavanja, upotrijebite [].
 
           Prema zadanim postavkama za upravljane uređaje nije dostupan nijedan brzi način otključavanja.</translation>
+<translation id="9136399279941091445">Razdoblja prekida rada kada se izdaju navedena pravila za uređaje</translation>
 <translation id="9147029539363974059">Šalje zapisnike sustava poslužitelju za upravljanje da bi se administratorima
       omogućilo praćenje zapisnika sustava.
 
@@ -2290,14 +2383,10 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="9150416707757015439">Ovo je pravilo zastarjelo. Umjesto njega upotrijebite "IncognitoModeAvailability". Omogućuje anonimni način u proizvodu <ph name="PRODUCT_NAME" />. Ako je ova postavka omogućena ili nije konfigurirana, korisnici mogu otvarati web-stranice u anonimnom načinu. Ako je postavka onemogućena, korisnici ne mogu otvarati stranice u anonimnom načinu. Ako ovo pravilo nije postavljeno, to će biti omogućeno i korisnik će moći upotrebljavati anonimni način.</translation>
 <translation id="915194831143859291">Ako se to pravilo postavi na "netočno" ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> dopustit će korisniku isključivanje uređaja.
       Ako se pravilo postavi na "točno", <ph name="PRODUCT_OS_NAME" /> ponovo će pokrenuti uređaj kada ga korisnik isključi. <ph name="PRODUCT_OS_NAME" /> zamjenjuje sve gumbe za isključivanje na korisničkom sučelju gumbima za ponovno pokretanje. Ako korisnik isključi uređaj tipkom za uključivanje/isključivanje, uređaj se neće automatski ponovo pokrenuti, čak ni ako je to pravilo omogućeno.</translation>
+<translation id="9158929520101169054">Omogući višestruku prijavu u pregledniku</translation>
 <translation id="9187743794267626640">Onemogući priključivanje vanjske pohrane</translation>
 <translation id="9197740283131855199">Postotak skaliranja odgode zatamnjivanja zaslona ako korisnik postane aktivan nakon zatamnjivanja</translation>
 <translation id="9200828125069750521">Parametri za URL slike koji upotrebljava POST</translation>
-<translation id="9212233969680267790">Upozorenje: pravilo o maksimalnoj verziji TLS-a u potpunosti će se ukloniti iz značajke <ph name="PRODUCT_NAME" /> oko verzije 66 (oko veljače 2018.).
-
-      Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu maksimalnu verziju.
-
-      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
 
       Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:
@@ -2315,4 +2404,5 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="930930237275114205">Postavi direktorij korisničkih podataka za pravilo <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="934390688529359269">Omogućuje nametanje prijave za <ph name="PRODUCT_NAME" /></translation>
 <translation id="944817693306670849">Postavi veličinu predmemorije diska</translation>
+<translation id="982497069985795632">Omogući provjeru pravopisa</translation>
 </translationbundle>

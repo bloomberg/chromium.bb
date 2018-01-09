@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">lưới dạng cây</translation>
 <translation id="1822429046913737220">SA/CH</translation>
 <translation id="1832974991323546415">phát trên thiết bị từ xa</translation>
-<translation id="1854180393107901205">Dừng truyền</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">trạng thái</translation>
 <translation id="1938124657309484470">Giá trị phải là <ph name="MAXIMUM_DATE_OR_TIME" /> hoặc sớm hơn.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Khác...</translation>
 <translation id="9138385573473225930">thông báo</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, bắt đầu vào <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Ảnh trong ảnh</translation>
 <translation id="947831847158436616">ô</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

@@ -118,7 +118,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY" /> Пб/сек.</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{Залишився 1 рік}one{Залишився # рік}few{Залишилося # роки}many{Залишилося # років}other{Залишилося # року}}</translation>
 <translation id="6945221475159498467">Вибрати</translation>
-<translation id="6965382102122355670">ТАК</translation>
+<translation id="6965382102122355670">OK</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">НАЙІМОВІРНІШЕ</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -150,6 +150,7 @@
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек.</translation>
 <translation id="8725488761726303204">і ще <ph name="NUMBER" /></translation>
+<translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 год}one{# год}few{# год}many{# год}other{# год}}</translation>
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Додати нотатку до зображення</translation>

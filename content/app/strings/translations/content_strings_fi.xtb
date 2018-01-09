@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">puuruudukko</translation>
 <translation id="1822429046913737220">AP/IP</translation>
 <translation id="1832974991323546415">toista etälaitteella</translation>
-<translation id="1854180393107901205">Lopeta suoratoisto</translation>
 <translation id="1921819250265091946">pp</translation>
 <translation id="1930711995431081526">tila</translation>
 <translation id="1938124657309484470">Arvon on oltava <ph name="MAXIMUM_DATE_OR_TIME" /> tai aiempi.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Muu...</translation>
 <translation id="9138385573473225930">ilmoitus</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, alkupäivä: <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="947831847158436616">solu</translation>
 <translation id="966787709310836684">valikko</translation>
 </translationbundle>

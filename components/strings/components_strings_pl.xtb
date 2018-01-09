@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Akceptowane karty kredytowe i debetowe</translation>
 <translation id="1519264250979466059">Data kompilacji</translation>
 <translation id="1527263332363067270">Czekam na połączenie…</translation>
-<translation id="1532118530259321453">Komunikat z bieżącej strony</translation>
 <translation id="153384715582417236">Na razie to wszystko</translation>
 <translation id="154408704832528245">Wybierz adres dostawy</translation>
 <translation id="1549470594296187301">Aby można było korzystać z tej funkcji, musi być włączony JavaScript.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Lokalny dostęp do danych</translation>
 <translation id="1594030484168838125">Wybierz</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1629803312968146339">Czy Chrome ma zapisać tę kartę?</translation>
 <translation id="1639239467298939599">Wczytuję</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Błąd HTTP</translation>
 <translation id="2270484714375784793">Numer telefonu</translation>
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
-<translation id="2298151730144880294">Komunikat z elementu umieszczonego na bieżącej stronie</translation>
 <translation id="230155334948463882">Nowa karta?</translation>
 <translation id="2316887270356262533">Zwolni się mniej niż 1 MB. Podczas następnej wizyty niektóre strony mogą ładować się wolniej.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> wymaga nazwy użytkownika i hasła.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Wyczyść formularz</translation>
 <translation id="2851634818064021665">Musisz mieć pozwolenie, by wejść na tę stronę</translation>
 <translation id="2856444702002559011">Osoby atakujące mogą próbować wykraść Twoje informacje ze strony <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (na przykład hasła, wiadomości lub dane kart kredytowych). <ph name="BEGIN_LEARN_MORE_LINK" />Więcej informacji<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Nie ładuj ponownie</translation>
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
 <translation id="2916038427272391327">Zamknij inne programy</translation>
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Brak wyników wyszukiwania</translation>
 <translation id="3305707030755673451">Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph name="TIME" />. Wpisz je, by rozpocząć synchronizację.</translation>
 <translation id="3320021301628644560">Dodaj adres rozliczeniowy</translation>
-<translation id="333371639341676808">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie.</translation>
 <translation id="3338095232262050444">Bezpieczna</translation>
 <translation id="3340978935015468852">ustawienia</translation>
 <translation id="3345135638360864351">Nie udało się wysłać żądania dostępu do strony do <ph name="NAME" />. Spróbuj ponownie.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Twój menedżer może ją dla Ciebie odblokować</translation>
 <translation id="3566021033012934673">Połączenie nie jest prywatne</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Komunikat z elementu umieszczonego na stronie <ph name="SITE" /></translation>
 <translation id="358285529439630156">Karty kredytowe i przedpłacone są akceptowane.</translation>
 <translation id="3582930987043644930">Dodaj nazwę</translation>
 <translation id="3583757800736429874">&amp;Ponów przeniesienie</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Płatność</translation>
 <translation id="4926049483395192435">Musi być określona.</translation>
-<translation id="4926159001844873046">Komunikat ze strony <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4958444002117714549">Rozwiń listę</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Jeśli to nie jest język <ph name="ORIGINAL_LANGUAGE" />, zgłoś błąd</translation>
 <translation id="5190835502935405962">Pasek zakładek</translation>
 <translation id="5199729219167945352">Eksperymenty</translation>
-<translation id="5201306358585911203">Komunikat z elementu umieszczonego na bieżącej stronie</translation>
 <translation id="5205222826937269299">Nazwa jest wymagana</translation>
 <translation id="5222812217790122047">E-mail jest wymagany</translation>
 <translation id="522700295135997067">Możliwe, że ta strona właśnie wykradła Twoje hasło</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Połącz</translation>
 <translation id="5308689395849655368">Funkcja zgłaszania awarii jest wyłączona.</translation>
 <translation id="5317780077021120954">Zapisz</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Wybierz dane kontaktowe</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5332219387342487447">Metoda wysyłki</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
-<translation id="662080504995468778">Zostań</translation>
 <translation id="6624427990725312378">Dane kontaktowe</translation>
 <translation id="6626291197371920147">Dodaj prawidłowy numer karty</translation>
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">Certyfikat nie określa mechanizmu do sprawdzania, czy został on unieważniony.</translation>
 <translation id="8620436878122366504">Twoi rodzice jeszcze na to nie zezwolili</translation>
 <translation id="8625384913736129811">Zapisz tę kartę na tym urządzeniu</translation>
+<translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
 <translation id="8647750283161643317">Przywróć wszystkie ustawienia domyślne</translation>
 <translation id="8660471606262461360">Z Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpowiedź, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Akceptowane karty kredytowe i przedpłacone</translation>
 <translation id="8952525071319348207">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej szczegółowe dane. Po potwierdzeniu dane karty z konta Google Payments zostaną udostępnione tej stronie.</translation>
 <translation id="8957210676456822347">Autoryzacja portalu przechwytującego</translation>
-<translation id="8958260976055043711">Komunikat z bieżącej strony</translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>
 <translation id="8978053250194585037">Bezpieczne przeglądanie Google <ph name="BEGIN_LINK" />wykryło ostatnio próbę wyłudzenia informacji<ph name="END_LINK" /> na stronie <ph name="SITE" />. Strony wyłudzające informacje udają inne strony, by Cię oszukać.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="917450738466192189">Certyfikat serwera jest nieprawidłowy.</translation>
 <translation id="9183425211371246419">Serwer <ph name="HOST_NAME" /> używa nieobsługiwanego protokołu.</translation>
-<translation id="9198587359415855350">Komunikat ze strony <ph name="SITE" /></translation>
 <translation id="9205078245616868884">Twoje dane są szyfrowane z użyciem hasła synchronizacji. Wpisz je, by rozpocząć synchronizację.</translation>
 <translation id="9207861905230894330">Nie udało się dodać artykułu.</translation>
-<translation id="9209577707918422353">Komunikat z elementu umieszczonego na stronie <ph name="SITE" /></translation>
 <translation id="9215416866750762878">Aplikacja uniemożliwia Chrome bezpieczne połączenie się z tą stroną</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="933612690413056017">Brak połączenia z internetem</translation>

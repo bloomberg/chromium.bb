@@ -11,13 +11,10 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1298199220304005244">Få hjälp med att använda Chromium OS</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
-<translation id="1403254041219632970">Framtida versioner av Chromium kommer inte att ha stöd för Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
-<translation id="1440917365206527807">Chromium förhindrade att den har webbplatsen omdirigerade dig till</translation>
 <translation id="1444754455097148408">Licenser för öppen källkod för Chromium</translation>
 <translation id="1502360822835740515">Gör Chromium till din standardwebbläsare</translation>
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
-<translation id="1559451348202814456">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.6, 10.7 och 10.8.</translation>
 <translation id="1585657529869845941">Klicka på <ph name="BEGIN_BOLD" />Byt ändå<ph name="END_BOLD" /> om det visas</translation>
 <translation id="1653828314016431939">OK - starta om nu</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
@@ -50,7 +47,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2587578672395088481">Chromium OS måste startas om för att uppdateringen ska börja gälla.</translation>
 <translation id="2647554856022461007">Chromium kan använda webbtjänster för att förbättra din upplevelse på webben. Du kan inaktivera dessa tjänster om du vill. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Ett operativsystemsfel inträffade under installationen. Ladda ned Chromium igen.</translation>
-<translation id="2685838254101182273">Chromium uppdateras inte längre och har inte längre stöd för den här versionen av ditt operativsystem.</translation>
 <translation id="2705403826523567092">Logga in för en anpassad surfupplevelse som synkroniseras på alla enheter</translation>
 <translation id="2711502716910134313">Chromium-flik</translation>
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
@@ -108,7 +104,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
 <translation id="4469812139324097969">Chromium är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="4488554488975128561">Du kan bidra till att göra Chromium säkrare och enklare att använda genom låta viss systeminformation och visst sidinnehåll skickas till Google automatiskt i syfte att identifiera skadliga appar och webbplatser.</translation>
-<translation id="4549794359424059447">Framtida versioner av Chromium kommer inte att ha stöd för Windows XP och Windows Vista.</translation>
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="459535195905078186">Chromium-appar</translation>
 <translation id="4611246891205775468">Du behöver ge Chromium behörighet att använda mikrofonen på den här webbplatsen.</translation>
@@ -133,7 +128,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
 <translation id="5479196819031988440">Det går inte att öppna den här sidan i Chromium OS.</translation>
 <translation id="549669000822060376">Vänta medan de senaste systemuppdateringarna installeras av Chromium.</translation>
-<translation id="5524843473235508879">Omdirigeringen blockerades.</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5698481217667032250">Visa Chromium på det här språket</translation>
@@ -148,7 +142,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5902536751647951209">Autentiseringscertifikatet fungerade inte. Logga in i Chromium igen eller kontakta administratören. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har lagts till i Chromium.</translation>
-<translation id="59625444380784159">Du kan fylla i formulär snabbare i Chromium med hjälp av uppgifter från dina kontakter.</translation>
 <translation id="5987687638152509985">Du måste uppdatera Chromium innan synkroniseringen kan starta</translation>
 <translation id="6055895534982063517">Det finns en ny version av Chromium och den är snabbare än någonsin.</translation>
 <translation id="6063093106622310249">&amp;Öppna i Chromium</translation>
@@ -175,12 +168,10 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
-<translation id="6777817260680419853">Omdirigeringen blockerades</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="6944967875980567883">Moduler som är inlästa i Chromium</translation>
-<translation id="694592694773692225">Omdirigering blockerad på den här sidan.</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6970811910055250180">Enheten uppdateras ...</translation>
 <translation id="705851970750939768">Uppdatera Chromium</translation>

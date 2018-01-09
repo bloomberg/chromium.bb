@@ -218,6 +218,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5327248766486351172">Nama</translation>
+<translation id="533632423981297619">Sandi akan terlihat oleh orang yang dapat melihat file yang diekspor. Jangan bagikan file ini ke semua orang.</translation>
 <translation id="5388358297987318779">Buka Gambar</translation>
 <translation id="5409365236829784218">Tidak ada aplikasi terpasang yang dapat membuka file ini.</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
@@ -243,7 +244,7 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="5857090052475505287">Folder Baru</translation>
 <translation id="5857770089550859117">Perlu frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
-<translation id="5869029295770560994">Oke, paham</translation>
+<translation id="5869029295770560994">Oke, Mengerti</translation>
 <translation id="5871497086027727873">1 item dipindah</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
 <translation id="5916664084637901428">Aktif</translation>
@@ -325,7 +326,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="722055596168483966">Personalisasi layanan Google</translation>
 <translation id="7272437679830969316">Tidak dapat memverifikasi identitas. Sandi tidak disalin.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> persen berhasil didownload</translation>
-<translation id="7346909386216857016">Oke, paham</translation>
+<translation id="7346909386216857016">Oke, mengerti</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">Perubahan pada bookmark, histori, sandi, dan setelan lainnya tidak akan disinkronkan lagi dengan Akun Google. Namun, data yang sudah ada akan tetap disimpan di Akun Google Anda.</translation>
 <translation id="744343212394640790">Bukan <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7859704718976024901">Histori Browsing</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Ekspor Sandi...</translation>
 <translation id="7947953824732555851">Terima dan masuk</translation>
 <translation id="7961015016161918242">Jangan pernah</translation>
 <translation id="7971521879845308059">Blokir Pop-up</translation>
@@ -395,7 +397,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8881801611828450202">Telusuri Gambar Ini di <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Sinkronisasi Chrome</translation>
 <translation id="895541991026785598">Laporkan Masalah</translation>
-<translation id="8971089644512329999">Oke, paham</translation>
+<translation id="8971089644512329999">Oke, Mengerti</translation>
 <translation id="8981454092730389528">Kontrol Aktivitas Google</translation>
 <translation id="8985320356172329008">Masuk ke Google sebagai</translation>
 <translation id="902659348151742535">Google dapat menggunakan histori penjelajahan Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya.</translation>

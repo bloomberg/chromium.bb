@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Elfogadott hitel- és bankkártyák</translation>
 <translation id="1519264250979466059">Build dátuma</translation>
 <translation id="1527263332363067270">Várakozás a kapcsolódásra…</translation>
-<translation id="1532118530259321453">Az oldal közlendője</translation>
 <translation id="153384715582417236">Egyelőre ennyi</translation>
 <translation id="154408704832528245">Kézbesítési cím kiválasztása</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Helyi adatok elérése</translation>
 <translation id="1594030484168838125">Kiválaszt</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
 <translation id="1629803312968146339">Szeretné, hogy a Chrome mentse ezt a kártyát?</translation>
 <translation id="1639239467298939599">Betöltés</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP hiba</translation>
 <translation id="2270484714375784793">Telefonszám</translation>
 <translation id="2292556288342944218">Az internethez való hozzáférést a rendszer letiltotta</translation>
-<translation id="2298151730144880294">Az oldal egyik beágyazott oldalának közlendője</translation>
 <translation id="230155334948463882">Új kártya?</translation>
 <translation id="2316887270356262533">1 MB-nál kevesebb hely szabadul fel. Előfordulhat, hogy egyes webhelyek lassabban töltődnek be, amikor legközelebb felkeresi őket.</translation>
 <translation id="2317259163369394535">A(z) <ph name="DOMAIN" /> felhasználónevet és jelszót kér.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Űrlap törlése</translation>
 <translation id="2851634818064021665">A webhely felkereséséhez jogosultságra van szüksége</translation>
 <translation id="2856444702002559011">A támadók megpróbálhatják ellopni a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhelyen lévő adatait (például jelszavait, üzeneteit és hitelkártyaadatait). <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
-<translation id="2889159643044928134">Ne töltse újra</translation>
 <translation id="2909946352844186028">Változást érzékeltünk a hálózatban.</translation>
 <translation id="2916038427272391327">Zárja be a többi programot</translation>
 <translation id="2922350208395188000">A szerver tanúsítványát nem sikerült leellenőrizni.</translation>
@@ -328,7 +326,6 @@
 <translation id="3303855915957856445">Nincs találat</translation>
 <translation id="3305707030755673451">Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
-<translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
 <translation id="3338095232262050444">Biztonságos</translation>
 <translation id="3340978935015468852">beállítások</translation>
 <translation id="3345135638360864351">A webhelyhez való hozzáférésre irányuló kérelme nem jutott el <ph name="NAME" /> felhasználóhoz. Kérjük, próbálkozzon újra.</translation>
@@ -369,7 +366,6 @@
 <translation id="3556433843310711081">A letiltást a kezelő oldhatja fel</translation>
 <translation id="3566021033012934673">Az Ön kapcsolata nem privát</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">A(z) <ph name="SITE" /> egyik beágyazott oldalának közlendője</translation>
 <translation id="358285529439630156">Elfogadott hitel- és feltöltőkártyák.</translation>
 <translation id="3582930987043644930">Név hozzáadása</translation>
 <translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
@@ -534,7 +530,6 @@
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4923459931733593730">Fizetés</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
-<translation id="4926159001844873046">A(z) <ph name="SITE" /> közlendője</translation>
 <translation id="4926340098269537727"><ph name="TOTAL_MATCHCOUNT" />/<ph name="ACTIVE_MATCH" /></translation>
 <translation id="495170559598752135">Műveletek</translation>
 <translation id="4958444002117714549">Lista részletes nézete</translation>
@@ -570,7 +565,6 @@
 <translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE" /> nyelven van? Hiba bejelentése</translation>
 <translation id="5190835502935405962">Könyvjelzősáv</translation>
 <translation id="5199729219167945352">Kísérletek</translation>
-<translation id="5201306358585911203">Az oldal egyik beágyazott oldalának közlendője</translation>
 <translation id="5205222826937269299">A név megadása kötelező</translation>
 <translation id="5222812217790122047">Az e-mail-cím megadása kötelező</translation>
 <translation id="522700295135997067">Előfordulhat, hogy a webhely éppen most lopta el a jelszavát</translation>
@@ -593,6 +587,7 @@
 <translation id="5308380583665731573">Csatlakozás</translation>
 <translation id="5308689395849655368">A hibabejelentés ki van kapcsolva.</translation>
 <translation id="5317780077021120954">Mentés</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="NUM_MATCHES" /> elemből a következő pozícióban: <ph name="MATCH_POSITION" />.</translation>
 <translation id="5324080437450482387">Kapcsolatfelvételi adatok kiválasztása</translation>
 <translation id="5327248766486351172">Név</translation>
 <translation id="5332219387342487447">Szállítási mód</translation>
@@ -752,7 +747,6 @@
 <translation id="6563469144985748109">A kezelő még nem hagyta jóvá</translation>
 <translation id="6569060085658103619">Jelenleg bővítményoldalt tekint meg</translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
-<translation id="662080504995468778">Mégse</translation>
 <translation id="6624427990725312378">Kapcsolatfelvételi adatok</translation>
 <translation id="6626291197371920147">Adjon meg érvényes kártyaszámot</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
@@ -999,6 +993,7 @@
 <translation id="859285277496340001">Ez a tanúsítvány nem határoz meg olyan mechanizmust, amely ellenőrizné, hogy visszavonták-e.</translation>
 <translation id="8620436878122366504">A szüleid még nem hagyták jóvá</translation>
 <translation id="8625384913736129811">Kártya mentése az eszközre</translation>
+<translation id="8639963783467694461">Automatikus kitöltési beállítások</translation>
 <translation id="8647750283161643317">Minden visszaállítása az alapértékre</translation>
 <translation id="8660471606262461360">A Google Payments szolgáltatásból</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />. A válasz: <ph name="ANSWER" /></translation>
@@ -1032,7 +1027,6 @@
 <translation id="8938939909778640821">Elfogadott hitel- és feltöltőkártyák</translation>
 <translation id="8952525071319348207">A(z) <ph name="CREDIT_CARD" /> kártyához tartozó CVC-kód lejárati dátumának megadásával frissítheti a kártyaadatokat. A megerősítést követően a böngésző megosztja az Ön Google Payments-fiókjából származó kártyaadatokat ezzel a webbhellyel.</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
-<translation id="8958260976055043711">Az oldal közlendője</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
 <translation id="8978053250194585037">A Google Biztonságos Böngészés funkciója nemrégiben <ph name="BEGIN_LINK" />adathalászatot észlelt<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />. Az adathalász webhelyek más webhelynek adják ki magukat, hogy félrevezessék Önt.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1070,10 +1064,8 @@
 <translation id="9170848237812810038">&amp;Visszavonás</translation>
 <translation id="917450738466192189">A szerver tanúsítványa érvénytelen.</translation>
 <translation id="9183425211371246419">A(z) <ph name="HOST_NAME" /> egy nem támogatott protokollt használ.</translation>
-<translation id="9198587359415855350">A(z) <ph name="SITE" /> közlendője</translation>
 <translation id="9205078245616868884">Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
-<translation id="9209577707918422353">A(z) <ph name="SITE" /> egyik beágyazott oldalának közlendője</translation>
 <translation id="9215416866750762878">Valamelyik alkalmazás megakadályozza a Chrome-ot abban, hogy biztonságosan csatlakozzon a webhelyhez</translation>
 <translation id="9219103736887031265">Képek</translation>
 <translation id="933612690413056017">Nincs internetkapcsolat</translation>

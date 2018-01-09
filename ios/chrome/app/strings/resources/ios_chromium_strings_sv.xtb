@@ -40,7 +40,6 @@
 <translation id="7400689562045506105">Använd Chromium överallt</translation>
 <translation id="7674213385180944843">Öppna Inställningar &gt; Sekretess &gt; Kamera &gt; Chromium och aktivera kameran.</translation>
 <translation id="786327964234957808">Du håller på att byta synkroniseringskonto från <ph name="USER_EMAIL1" /> till <ph name="USER_EMAIL2" />. Befintlig data i Chromium hanteras av <ph name="DOMAIN" />. Åtgärden raderar din data från den här enheten men den finns kvar på <ph name="USER_EMAIL1" />.</translation>
-<translation id="8111736072665034317">Genom att använda det här programmet godkänner du Chromiums <ph name="BEGIN_LINK" />användarvillkor<ph name="END_LINK" />.</translation>
 <translation id="8175055321229419309">Tips! <ph name="BEGIN_LINK" />Flytta Chromium till Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Ange din plats och få en bättre upplevelse av Google när du använder Chromium.</translation>
 <translation id="8353224596138547809">Vill du att Chromium sparar lösenordet för den här webbplatsen?</translation>

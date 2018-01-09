@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">siatka drzewa</translation>
 <translation id="1822429046913737220">rano/po południu</translation>
 <translation id="1832974991323546415">odtwarzanie na urządzeniu zdalnym</translation>
-<translation id="1854180393107901205">Zatrzymaj przesyłanie</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">stan</translation>
 <translation id="1938124657309484470">Musisz podać wartość <ph name="MAXIMUM_DATE_OR_TIME" /> lub wcześniejszą.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Inny...</translation>
 <translation id="9138385573473225930">alert</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, początek <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Obraz w obrazie</translation>
 <translation id="947831847158436616">komórka</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

@@ -116,7 +116,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3024255823539804759">Do dia anterior</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3112556859945124369">Marcar...</translation>
-<translation id="3151924044251363314">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="3151924044251363314">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou quiser alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>
 <translation id="3172213052701798825">Google Smart Lock para senhas</translation>
 <translation id="3175081911749765310">Serviços da Web</translation>
@@ -142,7 +142,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="3519193562722059437">Abra uma guia para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3551320343578183772">Fechar guia</translation>
-<translation id="3567664240939803299">Deseja que o Google Smart Lock salve sua senha para este site?</translation>
+<translation id="3567664240939803299">Quer que o Google Smart Lock salve sua senha para este site?</translation>
 <translation id="3588820906588687999">Abrir imagem em "Nova guia"</translation>
 <translation id="3603009562372709545">Copiar URL do link</translation>
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
@@ -196,7 +196,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
 <translation id="4854345657858711387">Defina uma senha</translation>
 <translation id="4860895144060829044">Ligar</translation>
-<translation id="4875622588773761625">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
+<translation id="4875622588773761625">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha para este site?</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
@@ -219,6 +219,7 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="533632423981297619">Suas senhas ficarão visíveis para qualquer pessoa que tiver acesso ao arquivo exportado. Não compartilhe esse arquivo com ninguém.</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5409365236829784218">Nenhum aplicativo instalado pode abrir este arquivo.</translation>
 <translation id="5433691172869980887">Nome de usuário copiado</translation>
@@ -257,7 +258,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6012140227487808125">Criptografando…</translation>
 <translation id="6021332621416007159">Abrir no...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
-<translation id="6039694632319341016">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha de <ph name="USERNAME" /> para este site?</translation>
+<translation id="6039694632319341016">Quer que <ph name="PASSWORD_MANAGER_BRAND" /> atualize sua senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
@@ -281,7 +282,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6342069812937806050">Neste instante</translation>
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
-<translation id="6380866119319257197">Se você esquecer a senha longa ou desejar alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
+<translation id="6380866119319257197">Se você esquecer a senha longa ou quiser alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
 <translation id="6417838470969808600">Você tem favoritos, histórico, senhas e outras configurações da conta <ph name="USER_EMAIL1" />.</translation>
@@ -351,6 +352,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="780301667611848630">Não</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportar senhas…</translation>
 <translation id="7947953824732555851">Aceitar/fazer login</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>

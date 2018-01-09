@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">Tentang Chromium</translation>
 <translation id="1298199220304005244">Dapatkan bantuan tentang penggunaan Chromium OS</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
-<translation id="1403254041219632970">Versi Chromium berikutnya tidak mendukung lagi Mac OS X 10.6, 10.7, atau 10.8.</translation>
 <translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
-<translation id="1440917365206527807">Chromium menghentikan situs ini agar tidak mengarahkan Anda ke</translation>
 <translation id="1444754455097148408">Lisensi sumber terbuka Chromium</translation>
 <translation id="1502360822835740515">Jadikan Chromium sebagai browser default</translation>
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
-<translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan semestinya karena sudah tidak didukung di Mac OS X 10.6, 10.7, atau 10.8.</translation>
 <translation id="1585657529869845941">Klik <ph name="BEGIN_BOLD" />Ganti saja<ph name="END_BOLD" />, jika muncul</translation>
 <translation id="1653828314016431939">Oke - Mulai ulang sekarang</translation>
 <translation id="1668054258064581266">Setelah membuang akun dari Chromium, Anda mungkin perlu memuat ulang tab terbuka untuk mulai menerapkannya.</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">Chromium OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
 <translation id="2647554856022461007">Chromium dapat mengunakan layanan web agar pengalaman mengakses internet lebih menyenangkan. Anda dapat memilih untuk menonaktifkan layanan ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Terjadi kesalahan pada sistem operasi saat pemasangan berlangsung. Download Chromium lagi.</translation>
-<translation id="2685838254101182273">Chromium telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi ini.</translation>
 <translation id="2705403826523567092">Login untuk mendapatkan pengalaman browsing yang dipersonalisasi, yang disinkronkan di seluruh perangkat</translation>
 <translation id="2711502716910134313">Tab Chromium</translation>
 <translation id="2718390899429598676">Untuk keamanan tambahan, Chromium akan mengenkripsi data Anda.</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">Keluar dan masuk lagi agar perubahan ini diterapkan.</translation>
 <translation id="4469812139324097969">Chromium telah kedaluwarsa karena tidak diluncurkan selama beberapa waktu. Pembaruan telah tersedia dan akan diterapkan setelah Anda meluncurkan ulang.</translation>
 <translation id="4488554488975128561">Anda dapat membantu menjadikan Chromium lebih aman dan lebih mudah digunakan, dengan mengirim sebagian informasi sistem dan konten halaman secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya.</translation>
-<translation id="4549794359424059447">Versi Chromium berikutnya tidak mendukung lagi Windows XP atau Windows Vista.</translation>
 <translation id="4567424176335768812">Anda masuk sebagai <ph name="USER_EMAIL_ADDRESS" />. Kini Anda dapat mengakses bookmark, histori, dan setelan lainnya pada seluruh perangkat yang Anda masuki.</translation>
 <translation id="459535195905078186">Aplikasi Chromium</translation>
 <translation id="4611246891205775468">Chromium memerlukan izin akses ke mikrofon untuk situs ini.</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru. Saat download ini selesai, Chromium akan dimulai ulang dan siap digunakan.</translation>
 <translation id="5479196819031988440">Chromium OS tidak dapat membuka halaman ini.</translation>
 <translation id="549669000822060376">Harap tunggu selagi Chromium memasang pembaruan sistem terkini.</translation>
-<translation id="5524843473235508879">Pengalihan diblokir.</translation>
 <translation id="5634636535844844681">Chromium memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="5680901439334282664">masuk ke Chromium</translation>
 <translation id="5698481217667032250">Tampilkan Chromium dalam bahasa ini</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">Gagal mengautentikasi sertifikat. Harap login kembali ke Chromium atau hubungi administrator untuk informasi lebih lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Hampir selesai diperbarui! Mulai ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> telah ditambahkan ke Chromium.</translation>
-<translation id="59625444380784159">Detail dari kontak dapat membantu Anda mengisi formulir lebih cepat di Chromium.</translation>
 <translation id="5987687638152509985">Perbarui Chromium untuk memulai sinkronisasi</translation>
 <translation id="6055895534982063517">Tersedia Chromium versi baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="6063093106622310249">&amp;Buka di Chromium</translation>
@@ -173,12 +166,10 @@
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="6734080038664603509">Pembaruan &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium sudah terpasang untuk semua pengguna di komputer Anda.</translation>
-<translation id="6777817260680419853">Pengalihan diblokir</translation>
 <translation id="6810143991807788455">Bantu menjadikan Chromium lebih baik dengan melaporkan setelan saat ini</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
-<translation id="694592694773692225">Pengalihan diblokir di halaman ini.</translation>
 <translation id="6964305034639999644">Buka link di jendela sa&amp;maran Chromium</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
 <translation id="705851970750939768">Perbarui Chromium</translation>

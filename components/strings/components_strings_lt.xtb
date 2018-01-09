@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Tinkamos kredito ir debeto kortelės</translation>
 <translation id="1519264250979466059">Sukūrimo data</translation>
 <translation id="1527263332363067270">Laukiama ryšio…</translation>
-<translation id="1532118530259321453">Šiame puslapyje nurodyta:</translation>
 <translation id="153384715582417236">Kol kas tiek</translation>
 <translation id="154408704832528245">Pasirinkti pristatymo adresą</translation>
 <translation id="1549470594296187301">Norint naudoti šią funkciją, reikia įgalinti „JavaScript“.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Prieiga prie vietinių duomenų</translation>
 <translation id="1594030484168838125">Pasirinkti</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Neleisti šiam puslapiui kurti papildomų dialogo langų</translation>
 <translation id="1629803312968146339">Ar norite, kad „Chrome“ išsaugotų šią kortelę?</translation>
 <translation id="1639239467298939599">Įkeliama</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP klaida</translation>
 <translation id="2270484714375784793">Telefono numeris</translation>
 <translation id="2292556288342944218">Interneto prieiga užblokuota</translation>
-<translation id="2298151730144880294">Šiame puslapyje įterptame puslapyje nurodyta:</translation>
 <translation id="230155334948463882">Nauja kortelė?</translation>
 <translation id="2316887270356262533">Atlaisvina mažiau nei 1 MB. Per kitą jūsų apsilankymą kai kurios svetainės gali būti įkeliamos lėčiau.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> būtina įvesti naudotojo vardą ir slaptažodį.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Valyti formą</translation>
 <translation id="2851634818064021665">Jums reikalingas leidimas, kad galėtumėte apsilankykite šioje svetainėje</translation>
 <translation id="2856444702002559011">Užpuolikai gali bandyti pavogti jūsų informaciją iš <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (pvz., slaptažodžius, pranešimus ar kredito kortelių duomenis). <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Neįkelti iš naujo</translation>
 <translation id="2909946352844186028">Aptiktas tinklo pasikeitimas.</translation>
 <translation id="2916038427272391327">Uždarykite kitas programas</translation>
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
@@ -331,7 +329,6 @@
 <translation id="3303855915957856445">Nerasta jokių paieškos rezultatų</translation>
 <translation id="3305707030755673451"><ph name="TIME" /> duomenys buvo užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="3320021301628644560">Atsiskaitymo adreso pridėjimas</translation>
-<translation id="333371639341676808">Neleiskite šiam puslapiui kurti papildomų dialogo langų.</translation>
 <translation id="3338095232262050444">Saugi</translation>
 <translation id="3340978935015468852">nustatymų</translation>
 <translation id="3345135638360864351">Nepavyko <ph name="NAME" /> išsiųsti jūsų prieigos prie šios svetainės užklausos. Bandykite dar kartą.</translation>
@@ -372,7 +369,6 @@
 <translation id="3556433843310711081">Jūsų valdytojas gali atblokuoti ją už jus</translation>
 <translation id="3566021033012934673">Jūsų ryšys nėra privatus</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Svetainėje <ph name="SITE" /> įterptame puslapyje nurodyta:</translation>
 <translation id="358285529439630156">Kredito ir išankstinio mokėjimo kortelės tinkamos.</translation>
 <translation id="3582930987043644930">Pridėti vardą</translation>
 <translation id="3583757800736429874">&amp;Perkelti dar kartą</translation>
@@ -537,7 +533,6 @@
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>
 <translation id="4923459931733593730">Mokėjimas</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
-<translation id="4926159001844873046">Svetainėje <ph name="SITE" /> nurodyta:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
@@ -573,7 +568,6 @@
 <translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE" /> k.? Pranešti apie šią klaidą</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5199729219167945352">Bandymai</translation>
-<translation id="5201306358585911203">Šiame puslapyje įterptame puslapyje nurodyta:</translation>
 <translation id="5205222826937269299">Būtina nurodyti pavadinimą</translation>
 <translation id="5222812217790122047">Būtina nurodyti el. paštą</translation>
 <translation id="522700295135997067">Gali būti, kad ši svetainė ką tik pavogė jūsų slaptažodį</translation>
@@ -596,6 +590,7 @@
 <translation id="5308380583665731573">Prisijungti</translation>
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> iš <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Pasirinkti kontaktinę informaciją</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
 <translation id="5332219387342487447">Pristatymo metodas</translation>
@@ -755,7 +750,6 @@
 <translation id="6563469144985748109">Jūsų valdytojas dar jos nepatvirtino</translation>
 <translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6596325263575161958">Šifravimo parinktys</translation>
-<translation id="662080504995468778">Likti</translation>
 <translation id="6624427990725312378">Kontaktinė informacija</translation>
 <translation id="6626291197371920147">Galiojančios kortelės numerio pridėjimas</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
@@ -1002,6 +996,7 @@
 <translation id="859285277496340001">Sertifikatas nenurodo mechanizmo, skirto patikrinti, ar jis buvo panaikintas.</translation>
 <translation id="8620436878122366504">Jūsų tėvai dar jos nepatvirtino</translation>
 <translation id="8625384913736129811">Išsaugoti šią kortelę šiame įrenginyje</translation>
+<translation id="8639963783467694461">Automatinio pildymo nustatymai</translation>
 <translation id="8647750283161643317">Viską nustatyti į numatytuosius nustatymus</translation>
 <translation id="8660471606262461360">Iš „Google Payments“</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, atsakymas, <ph name="ANSWER" /></translation>
@@ -1035,7 +1030,6 @@
 <translation id="8938939909778640821">Tinkamos kredito ir išankstinio mokėjimo kortelės</translation>
 <translation id="8952525071319348207">Jei norite atnaujinti išsamią kortelės informaciją, įveskite „<ph name="CREDIT_CARD" />“ galiojimo pabaigos datą ir kortelės saugos kodą (CVC). Kai patvirtinsite, „Google“ mokamojoje paskyroje nurodyta išsami kortelės informacija bus bendrinama su šia svetaine.</translation>
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
-<translation id="8958260976055043711">Šiame puslapyje nurodyta:</translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8978053250194585037">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko, kad svetainėje <ph name="SITE" /> sukčiaujama<ph name="END_LINK" />. Sukčiavimo svetainės apsimeta kitomis svetainėmis, kad jus apgautų.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1073,10 +1067,8 @@
 <translation id="9170848237812810038">&amp;Atšaukti</translation>
 <translation id="917450738466192189">Serverio sertifikatas negalioja.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> naudojamas nepalaikomas protokolas.</translation>
-<translation id="9198587359415855350">Svetainėje <ph name="SITE" /> nurodyta:</translation>
 <translation id="9205078245616868884">Duomenys užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją, kad pradėtumėte sinchronizuoti.</translation>
 <translation id="9207861905230894330">Nepavyko pridėti straipsnio.</translation>
-<translation id="9209577707918422353">Svetainėje <ph name="SITE" /> įterptame puslapyje nurodyta:</translation>
 <translation id="9215416866750762878">Programa neleidžia „Chrome“ saugiai prisijungti prie svetainės</translation>
 <translation id="9219103736887031265">Vaizdai</translation>
 <translation id="933612690413056017">Nėra interneto ryšio</translation>

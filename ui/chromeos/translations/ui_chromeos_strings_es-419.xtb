@@ -115,6 +115,7 @@
 <translation id="4694604912444486114">Mono</translation>
 <translation id="4711094779914110278">Turco</translation>
 <translation id="4725511304875193254">Corgi</translation>
+<translation id="4737050008115666127">Aterrizaje</translation>
 <translation id="4747271164117300400">Macedonio</translation>
 <translation id="4749157430980974800">Teclado georgiano</translation>
 <translation id="4755240240651974342">Teclado finlandés</translation>
@@ -148,6 +149,7 @@
 <translation id="5465122519792752163">Teclado nepalí (caracteres indios)</translation>
 <translation id="5469868506864199649">Italiano</translation>
 <translation id="5500122897333236901">Islandés</translation>
+<translation id="5508696409934741614">Puntos</translation>
 <translation id="5533555070048896610">Transliteración (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">Inglés (Estados Unidos; Dvorak)</translation>
 <translation id="5640179856859982418">Teclado suizo</translation>
@@ -208,6 +210,7 @@
 <translation id="7474889694310679759">Teclado en inglés de Canadá</translation>
 <translation id="751507702149411736">Bielorruso</translation>
 <translation id="7547811415869834682">Holandés</translation>
+<translation id="7603724359189955920">Cuadrículas</translation>
 <translation id="770015031906360009">Griego</translation>
 <translation id="7706319470528945664">Teclado portugués</translation>
 <translation id="7774365994322694683">Pájaro</translation>
@@ -238,6 +241,7 @@
 <translation id="8432745813735585631">Teclado Colemak en inglés de EE.UU.</translation>
 <translation id="8437209419043462667">Inglés (Estados Unidos)</translation>
 <translation id="8467473010914675605">Método de entrada coreano</translation>
+<translation id="8477649328507734757">Círculos</translation>
 <translation id="8521441079177373948">Inglés (Reino Unido)</translation>
 <translation id="8551494947769799688">Letón</translation>
 <translation id="8561206103590473338">Elefante</translation>
@@ -256,4 +260,5 @@
 <translation id="913758436357682283">Teclado Myansan de Myanmar</translation>
 <translation id="9153744823707037316">Método de entrada de matriz</translation>
 <translation id="9206487995878691001">Método de entrada cangjie</translation>
+<translation id="9219908252191632183">Superficie lunar</translation>
 </translationbundle>

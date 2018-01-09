@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">boomstructuur</translation>
 <translation id="1822429046913737220">a.m./p.m.</translation>
 <translation id="1832974991323546415">afspelen op extern apparaat</translation>
-<translation id="1854180393107901205">Casten stoppen</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">status</translation>
 <translation id="1938124657309484470">Waarde moet <ph name="MAXIMUM_DATE_OR_TIME" /> of eerder zijn.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Anders...</translation>
 <translation id="9138385573473225930">melding</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, die begint op <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Scherm-in-scherm</translation>
 <translation id="947831847158436616">cel</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

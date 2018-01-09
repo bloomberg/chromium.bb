@@ -11,13 +11,10 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1185134272377778587">Tungkol sa Chromium</translation>
 <translation id="1298199220304005244">Kumuha ng tulong sa paggamit ng Chromium OS</translation>
 <translation id="1396446129537741364">Sinusubukan ng Chromium na magpakita ng mga password.</translation>
-<translation id="1403254041219632970">Hindi na susuportahan ng mga bersyon ng Chromium ang Mac OS X 10.6, 10.7 o 10.8 sa hinaharap.</translation>
 <translation id="1414495520565016063">Naka-sign in ka sa Chromium!</translation>
-<translation id="1440917365206527807">Pinigilan ng Chromium ang site na ito na dalhin ka sa</translation>
 <translation id="1444754455097148408">Mga lisensya ng open source ng Chromium</translation>
 <translation id="1502360822835740515">Gawing default mong browser ang Chromium</translation>
 <translation id="151962892725702025">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
-<translation id="1559451348202814456">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1585657529869845941">I-click ang <ph name="BEGIN_BOLD" />Lumipat pa rin<ph name="END_BOLD" />, kung lalabas ito</translation>
 <translation id="1653828314016431939">OK - I-restart ngayon</translation>
 <translation id="1668054258064581266">Pagkatapos alisin ang iyong account sa Chromium, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
@@ -50,7 +47,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="2587578672395088481">Kailangang ma-restart ang Chromium OS upang mailapat ang update.</translation>
 <translation id="2647554856022461007">Maaaring gumamit ang Chromium ng mga serbisyo sa web upang mapahusay ang iyong karanasan sa pag-browse. Opsyonal mong madi-disable ang mga serbisyong ito. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">May naganap na error sa operating system sa panahon ng pag-install. Mangyaring i-download muli ang Chromium.</translation>
-<translation id="2685838254101182273">Huminto na sa pag-update ang Chromium at hindi na nito sinusuportahan ang bersyong ito ng iyong operating system.</translation>
 <translation id="2705403826523567092">Mag-sign in para sa naka-personalize na karanasan sa pag-browse na naka-sync sa lahat ng device</translation>
 <translation id="2711502716910134313">Tab ng Chromium</translation>
 <translation id="2718390899429598676">Para sa karagdagang seguridad, ie-encrypt ng Chromium ang iyong data.</translation>
@@ -108,7 +104,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4458285410772214805">Mangyaring mag-sign out at mag-sign in muli upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4469812139324097969">Luma na ang Chromium dahil matagal na itong hindi muling nailunsad. Available ang isang update at ilalapat ito sa sandaling muli mo itong inilunsad.</translation>
 <translation id="4488554488975128561">Makakatulong kang gawing mas ligtas at madaling gamitin ang Chromium sa pamamagitan ng awtomatikong pagpapadala ng ilang impormasyon ng system at content ng page sa Google upang makatulong na tumukoy ng mga mapanganib na app at site.</translation>
-<translation id="4549794359424059447">Hindi na susuportahan ng mga bersyon ng Chromium ang Windows XP o Windows Vista sa hinaharap.</translation>
 <translation id="4567424176335768812">Naka-sign in ka bilang <ph name="USER_EMAIL_ADDRESS" />. Maaari mo na ngayong i-access ang iyong mga bookmark, kasaysayan, at iba pang setting sa lahat ng iyong device na naka-sign in.</translation>
 <translation id="459535195905078186">Chromium Apps</translation>
 <translation id="4611246891205775468">Kailangan ng Chromium ng pahintulot na i-access ang iyong mikropono para sa site na ito.</translation>
@@ -133,7 +128,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5466153949126434691">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon. Kapag nakumpleto ang pag-download na ito, magre-restart ang Chromium at makakapagpatuloy ka na.</translation>
 <translation id="5479196819031988440">Hindi mabuksan ng Chromium OS ang page na ito.</translation>
 <translation id="549669000822060376">Mangyaring maghintay habang ini-install ng Chromium ang mga pinakabagong update sa system.</translation>
-<translation id="5524843473235508879">Na-block ang pag-redirect.</translation>
 <translation id="5634636535844844681">Kailangan ng Chromium ng Windows 7 o mas bago.</translation>
 <translation id="5680901439334282664">mag-sign in sa Chromium</translation>
 <translation id="5698481217667032250">Ipakita ang Chromium sa wikang ito</translation>
@@ -148,7 +142,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5902536751647951209">Hindi nagtagumpay ang certificate ng pag-authenticate. Mag-sign in muli sa Chromium o makipag-ugnayan sa iyong administrator para sa higit pang impormasyon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-a-update.</translation>
 <translation id="5942520288919337908">Naidagdag na sa Chromium ang <ph name="EXTENSION_NAME" />.</translation>
-<translation id="59625444380784159">Ang mga detalye mula sa iyong mga contact ay maaaring makatulong sa iyong sumagot ng mga form nang mas mabilis sa Chromium.</translation>
 <translation id="5987687638152509985">I-update ang Chromium upang simulan ang pag-sync</translation>
 <translation id="6055895534982063517">May available na bagong bersyon ng Chromium, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="6063093106622310249">&amp;Buksan sa Chromium</translation>
@@ -175,12 +168,10 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 Maaaring hindi available ang ilang tampok. Mangyaring tumukoy ng ibang direktoryo ng profile o gumamit ng mas bagong bersyon ng Chromium.</translation>
 <translation id="6734080038664603509">I-update ang &amp;Chromium</translation>
 <translation id="6734291798041940871">Naka-install na ang Chromium para sa lahat ng user sa iyong computer.</translation>
-<translation id="6777817260680419853">Na-block ang pag-redirect</translation>
 <translation id="6810143991807788455">Tumulong na pahusayin ang Chromium sa pamamagitan ng pag-uulat sa mga kasalukuyang setting</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Na-update na ang Chromium, ngunit hindi mo pa ito nagagamit sa loob ng hindi bababa sa 30 araw.</translation>
 <translation id="6944967875980567883">Mga module na nai-load sa Chromium</translation>
-<translation id="694592694773692225">Na-block ang pag-redirect sa page na ito.</translation>
 <translation id="6964305034639999644">Buksan ang link sa inco&amp;gnito window ng Chromium</translation>
 <translation id="6970811910055250180">Ina-update ang iyong device...</translation>
 <translation id="705851970750939768">I-update ang Chromium</translation>

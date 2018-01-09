@@ -218,6 +218,7 @@
 <translation id="5300589172476337783">显示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名称</translation>
+<translation id="533632423981297619">所有能查看此导出文件的人员都能看到您的密码。因此，请勿与任何人共享该文件。</translation>
 <translation id="5388358297987318779">打开图片</translation>
 <translation id="5409365236829784218">没有安装可打开此文件的应用。</translation>
 <translation id="5433691172869980887">已复制用户名</translation>
@@ -350,6 +351,7 @@
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">导出密码…</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
@@ -370,7 +372,7 @@
 <translation id="8428045167754449968">市/镇</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8458397775385147834">删除了1项</translation>
-<translation id="8487700953926739672">可离线查看</translation>
+<translation id="8487700953926739672">可离线使用</translation>
 <translation id="8503813439785031346">用户名</translation>
 <translation id="850600235656508448">在无痕模式下打开</translation>
 <translation id="8517375800490286174">开放源代码许可</translation>

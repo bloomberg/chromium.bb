@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">ട്രീ ഗ്രിഡ്</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">വിദൂര ഉപകരണത്തിൽ പ്ലേ ചെയ്യുക</translation>
-<translation id="1854180393107901205">കാസ്റ്റ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="1921819250265091946">തീയതി</translation>
 <translation id="1930711995431081526">നില</translation>
 <translation id="1938124657309484470">മൂല്യം <ph name="MAXIMUM_DATE_OR_TIME" /> എന്നതോ അതിനുമുമ്പുള്ള തീയതിയോ ആയിരിക്കണം.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">മറ്റുള്ളവ...</translation>
 <translation id="9138385573473225930">അലേർട്ട്</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" />-ന് ആരംഭിക്കുന്നു</translation>
+<translation id="916607977885256133">ചിത്രത്തിനുള്ളിൽ ചിത്രം</translation>
 <translation id="947831847158436616">സെൽ</translation>
 <translation id="966787709310836684">മെനു</translation>
 </translationbundle>

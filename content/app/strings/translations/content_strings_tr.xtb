@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">ağaç tablo</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">uzaktan cihazda oynat</translation>
-<translation id="1854180393107901205">Yayını durdur</translation>
 <translation id="1921819250265091946">gg</translation>
 <translation id="1930711995431081526">durum</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME" /> veya daha geri olmalıdır.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Diğer...</translation>
 <translation id="9138385573473225930">uyarı</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> tarihinde başlayan <ph name="WEEK" /></translation>
+<translation id="916607977885256133">Pencere içinde Pencere</translation>
 <translation id="947831847158436616">hücre</translation>
 <translation id="966787709310836684">menü</translation>
 </translationbundle>

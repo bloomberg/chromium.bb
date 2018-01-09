@@ -218,6 +218,7 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>
+<translation id="533632423981297619">Toute personne ayant accès au fichier exporté pourra voir vos mots de passe. Veillez à ne jamais partager ce fichier avec des tiers.</translation>
 <translation id="5388358297987318779">Ouvrir l'image</translation>
 <translation id="5409365236829784218">Aucune application installée ne peut ouvrir ce fichier.</translation>
 <translation id="5433691172869980887">Nom d'utilisateur copié</translation>
@@ -350,6 +351,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Export mots de passe…</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>

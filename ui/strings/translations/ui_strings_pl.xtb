@@ -150,6 +150,7 @@
 <translation id="8602707065186045623">Plik <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
 <translation id="8725488761726303204">i jeszcze <ph name="NUMBER" /></translation>
+<translation id="8730621377337864115">Gotowe</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 godz.}few{# godz.}many{# godz.}other{# godz.}}</translation>
 <translation id="8806053966018712535">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Dodaj notatkę na grafice</translation>

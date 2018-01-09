@@ -8,6 +8,7 @@
 <translation id="1104959162601287462">Informazioni su &amp;Chrome OS</translation>
 <translation id="110877069173485804">Questo è il tuo Chrome</translation>
 <translation id="1142745911746664600">Impossibile aggiornare Chrome</translation>
+<translation id="1154147086299354128">&amp;Apri in Chrome</translation>
 <translation id="123620459398936149">Impossibile sincronizzare i tuoi dati in Chrome OS. Aggiorna la passphrase di sincronizzazione.</translation>
 <translation id="127345590676626841">Chrome si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chrome si riavvierà e potrai procedere.</translation>
 <translation id="1302523850133262269">Attendi mentre Chrome installa gli aggiornamenti di sistema più recenti.</translation>
@@ -30,7 +31,6 @@
 <translation id="1698376642261615901">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
 <translation id="1718131156967340976">Seleziona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Impossibile sincronizzare i dati in Google Chrome a causa di un errore durante l'accesso.</translation>
-<translation id="1759301979429102118">I dati dei tuoi contatti possono consentirti di compilare più rapidamente i moduli in Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Ricevi assistenza per l'utilizzo di Chrome OS</translation>
 <translation id="1795405610103747296">Installa Chrome sul telefono. Invieremo un SMS al tuo numero di telefono: <ph name="PHONE_NUMBER" /></translation>
@@ -108,8 +108,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="3898493977366060150">Navigazione sul Web con l'esperienza di Google</translation>
 <translation id="4028693306634653894">Apri Chrome più velocemente</translation>
-<translation id="4031074602479304239">Chrome ha impedito a questo sito di portarti alla pagina</translation>
-<translation id="4042449298237264661">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non sono più supportati.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
 <translation id="4147555960264124640">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
@@ -153,12 +151,12 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="5243785881901838525">Google Payments (copiato in Chrome)</translation>
 <translation id="5251420635869119124">Gli ospiti possono utilizzare Chrome senza lasciare tracce.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome sarà riavviato tra 1 secondo.}other{Google Chrome sarà riavviato tra # secondi.}}</translation>
+<translation id="532046782124376502">Avviso: Google Chrome non è in grado di impedire alle estensioni di registrare la tua cronologia di navigazione. Per disattivare questa estensione in modalità di navigazione in incognito, deseleziona questa opzione.</translation>
 <translation id="5334545119300433702">Questo modulo è in conflitto con Google Chrome.</translation>
 <translation id="5386244825306882791">Controlla anche la pagina visualizzata all'avvio di Chrome o quando esegui ricerche dalla Omnibox.</translation>
 <translation id="5430073640787465221">Il file delle preferenze è danneggiato o non valido. Google Chrome non è in grado di recuperare le impostazioni.</translation>
 <translation id="5453904507266736060">Lascia Google Chrome in esecuzione in background</translation>
 <translation id="5495581687705680288">Moduli caricati in Google Chrome</translation>
-<translation id="5524843473235508879">Reindirizzamento bloccato.</translation>
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere al microfono.</translation>
@@ -179,15 +177,12 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Aggiorna &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Regola inbound per consentire il traffico mDNS in Google Chrome.</translation>
-<translation id="6236285698028833233">Google Chrome non verrà più aggiornato e non supporta più questa versione del sistema operativo.</translation>
 <translation id="6291089322031436445">App di Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome è già installato per tutti gli utenti sul computer.</translation>
 <translation id="6338556085225130112">Aggiornamento di Google Chrome in corso</translation>
 <translation id="6368958679917195344">Chrome OS è reso possibile da <ph name="BEGIN_LINK_CROS_OSS" />software open source<ph name="END_LINK_CROS_OSS" /> aggiuntivi.</translation>
 <translation id="6393863479814692971">Per questo sito Chrome ha bisogno dell'autorizzazione ad accedere alla fotocamera e al microfono.</translation>
-<translation id="6400076122676892962">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché Mac OS X 10.6, 10.7 e 10.8 non saranno più supportati.</translation>
 <translation id="6410540444482791104">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare inviando automaticamente a Google alcune informazioni sul sistema e alcuni contenuti delle pagine per contribuire a rilevare app e siti pericolosi.</translation>
-<translation id="6470176598693778404">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Mac OS X 10.6, 10.7 e 10.8 non sono più supportati.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{È in corso un download. Vuoi annullare il download e uscire da Google Chrome?}other{Sono in corso # download. Vuoi annullare i download e uscire da Google Chrome?}}</translation>
 <translation id="6566149418543181476">Aggiornamento di Google Chrome in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Stai utilizzando <ph name="PROFILE_EMAIL" /> per sincronizzare i tuoi contenuti di Chrome. Per aggiornare la tua preferenza di sincronizzazione o per utilizzare Chrome senza un account Google, accedi alla pagina <ph name="SETTINGS_LINK" />.</translation>
@@ -195,11 +190,9 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="6634887557811630702">Google Chrome è aggiornato.</translation>
 <translation id="6676384891291319759">Accesso a Internet</translation>
 <translation id="6697947395630195233">Chrome deve poter accedere alla tua posizione per condividerla con questo sito.</translation>
-<translation id="6777817260680419853">Reindirizzamento bloccato</translation>
 <translation id="683440813066116847">Regola inbound per consentire il traffico mDNS in Google Chrome Canary.</translation>
 <translation id="686561893457936865">Porta Chrome ovunque</translation>
 <translation id="6885412569789873916">App di Chrome Beta</translation>
-<translation id="694592694773692225">Reindirizzamento bloccato in questa pagina.</translation>
 <translation id="6967962315388095737">Regola inbound per consentire il traffico mDNS in Google Chrome Beta.</translation>
 <translation id="6970811910055250180">Aggiornamento del dispositivo in corso...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> richiede di leggere e accettare i seguenti Termini di servizio prima di utilizzare il dispositivo. Questi termini non ampliano, modificano o limitano i Termini di Google Chrome OS.</translation>
@@ -210,7 +203,6 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7164397146364144019">Puoi contribuire a rendere Chrome più sicuro e più facile da utilizzare segnalando automaticamente a Google i dettagli dei possibili problemi di sicurezza.</translation>
 <translation id="7185038942300673794">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chrome.</translation>
 <translation id="7242029209006116544">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Google Chrome. I tuoi dati di Chrome, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. Se preferisci puoi creare un nuovo profilo per mantenere separati i dati di Chrome esistenti. <ph name="LEARN_MORE" /></translation>
-<translation id="729375352412857283">A breve questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non saranno più supportati.</translation>
 <translation id="7330164299247909639">Errore del certificato di autenticazione. Accedi di nuovo a Google Chrome come <ph name="USER_NAME" /> o contatta il tuo amministratore per avere ulteriori informazioni. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="7369650938475876456">Usa una password sicura generata da Chrome</translation>

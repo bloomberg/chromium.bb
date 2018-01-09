@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Carduri de credit și de debit acceptate</translation>
 <translation id="1519264250979466059">Dată versiune:</translation>
 <translation id="1527263332363067270">Se așteaptă conectarea…</translation>
-<translation id="1532118530259321453">Această pagină afișează mesajul</translation>
 <translation id="153384715582417236">Asta este tot</translation>
 <translation id="154408704832528245">Alege adresa de livrare</translation>
 <translation id="1549470594296187301">Trebuie să activezi JavaScript pentru a folosi această funcție.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Accesul la datele locale</translation>
 <translation id="1594030484168838125">Alegeți</translation>
 <translation id="1620510694547887537">Camera</translation>
+<translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
 <translation id="1629803312968146339">Dorești ca acest card să fie salvat în Chrome?</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="2270484714375784793">Număr telefon</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
-<translation id="2298151730144880294">O pagină încorporată de pe această pagină afișează mesajul</translation>
 <translation id="230155334948463882">Card nou?</translation>
 <translation id="2316887270356262533">Eliberează mai puțin de 1 MB. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> necesită un nume de utilizator și o parolă.</translation>
@@ -245,7 +244,7 @@
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />să rulezi Diagnostice conectivitate<ph name="END_LINK" />;</translation>
 <translation id="2738330467931008676">Alege adresa de preluare</translation>
-<translation id="2740531572673183784">Ok</translation>
+<translation id="2740531572673183784">OK</translation>
 <translation id="2742870351467570537">Elimină elementele selectate</translation>
 <translation id="277133753123645258">Metodă de expediere</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Golește formularul</translation>
 <translation id="2851634818064021665">Ai nevoie de permisiune ca să accesezi acest site</translation>
 <translation id="2856444702002559011">Atacatorii pot încerca să îți fure informațiile de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (de exemplu, parole, mesaje sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Nu reîncărca</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Nu s-au găsit rezultate de căutare</translation>
 <translation id="3305707030755673451">Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TIME" />. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="3320021301628644560">Adaugă o adresă de facturare</translation>
-<translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
 <translation id="3338095232262050444">Securizat</translation>
 <translation id="3340978935015468852">setări</translation>
 <translation id="3345135638360864351">Solicitarea de a accesa acest site nu a putut fi trimisă la <ph name="NAME" />. Încearcă din nou.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Administratorul îl poate debloca pentru tine</translation>
 <translation id="3566021033012934673">Conexiunea nu este privată</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">O pagină încorporată de pe <ph name="SITE" /> afișează mesajul</translation>
 <translation id="358285529439630156">Se acceptă carduri de credit și preplătite.</translation>
 <translation id="3582930987043644930">Adăugați un nume</translation>
 <translation id="3583757800736429874">&amp;Repetați mutarea</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Plată</translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> afișează mesajul</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Nu este în <ph name="ORIGINAL_LANGUAGE" />? Semnalează această eroare.</translation>
 <translation id="5190835502935405962">Bară de marcaje</translation>
 <translation id="5199729219167945352">Experimente</translation>
-<translation id="5201306358585911203">O pagină încorporată de pe această pagină afișează mesajul</translation>
 <translation id="5205222826937269299">Numele este obligatoriu</translation>
 <translation id="5222812217790122047">Adresa de e-mail este obligatorie</translation>
 <translation id="522700295135997067">Este posibil ca acest site să îți fi furat chiar acum parola</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5308689395849655368">Raportarea blocărilor este dezactivată.</translation>
 <translation id="5317780077021120954">Salvează</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> din <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Alege informațiile de contact</translation>
 <translation id="5327248766486351172">Nume</translation>
 <translation id="5332219387342487447">Metoda de expediere</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
-<translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6624427990725312378">Informații de contact</translation>
 <translation id="6626291197371920147">Adaugă un număr de card valid</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
@@ -1001,6 +995,7 @@
 <translation id="859285277496340001">Certificatul nu specifică un mecanism pentru a verifica dacă acesta a fost revocat.</translation>
 <translation id="8620436878122366504">Părinții tăi nu l-au aprobat încă</translation>
 <translation id="8625384913736129811">Salvează cardul pe acest dispozitiv</translation>
+<translation id="8639963783467694461">Setări pentru Completare automată</translation>
 <translation id="8647750283161643317">Resetați-le pe toate la valorile prestabilite</translation>
 <translation id="8660471606262461360">Din Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, răspuns, <ph name="ANSWER" /></translation>
@@ -1034,7 +1029,6 @@
 <translation id="8938939909778640821">Carduri de credit și preplătite acceptate</translation>
 <translation id="8952525071319348207">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" />, pentru a actualiza detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău din contul Google Payments.</translation>
 <translation id="8957210676456822347">Autorizarea prin portalul captiv</translation>
-<translation id="8958260976055043711">Această pagină afișează mesajul</translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>
 <translation id="8978053250194585037">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat phishing<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile de phishing falsifică alte site-uri, pentru a te înșela.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1072,10 +1066,8 @@
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="917450738466192189">Certificatul serverului nu este valid.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> folosește un protocol neacceptat.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> afișează mesajul</translation>
 <translation id="9205078245616868884">Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
-<translation id="9209577707918422353">O pagină încorporată de pe <ph name="SITE" /> afișează mesajul</translation>
 <translation id="9215416866750762878">O aplicație împiedică browserul Chrome să se conecteze în siguranță la acest site</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="933612690413056017">Nu există conexiune la internet</translation>

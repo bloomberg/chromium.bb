@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1298199220304005244">Chromium OS ব্যবহারে সাহায্য পেতে</translation>
 <translation id="1396446129537741364">Chromium পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
-<translation id="1403254041219632970">Chromium এর ভবিষ্যত সংস্করণ আর ম্যাক OS X 10.6, 10.7, বা 10.8 সমর্থন করবে না।</translation>
 <translation id="1414495520565016063">আপনি Chromium এ প্রবেশ করেছেন!</translation>
-<translation id="1440917365206527807">Chromium আপনার এই সাইটে যাওয়া বন্ধ করেছে</translation>
 <translation id="1444754455097148408">Chromium মুক্ত উৎসের লাইসেন্সগুলি</translation>
 <translation id="1502360822835740515">Chromium কে আপনার ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="151962892725702025">আপনার ডোমেনে সিঙ্ক উপলব্ধ না থাকার কারণে Chromium OS আপনার ডেটা সিঙ্ক করতে পারেনি৷</translation>
-<translation id="1559451348202814456">Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর ম্যাক OS X 10.6, 10.7, বা 10.8 সমর্থিত নয়।</translation>
 <translation id="1585657529869845941">এটি দেখানো হলে <ph name="BEGIN_BOLD" />যেকোনওভাবে পরিবর্তন করতে<ph name="END_BOLD" /> ক্লিক করুন</translation>
 <translation id="1653828314016431939">ঠিক আছে - এখন পুর্নসূচনা করুন</translation>
 <translation id="1668054258064581266">Chromium থেকে আপনার অ্যাকাউন্ট সরানোর পরে, কার্য়করী করতে আপনাকে খোলা ট্যাবগুলিকে  পুনরায় লোড করার প্রয়োজন হতে পারে।</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">আপডেটটি প্রয়োগ করতে Chromium OS আবার চালু করা প্রয়োজন।</translation>
 <translation id="2647554856022461007">Chromium আপনার ব্রাউজিংয়ের অভিজ্ঞতাকে উন্নত করতে ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷ আপনি আপনার ইচ্ছা অনুযায়ী এই পরিষেবাগুলিকে অক্ষম করতে পারেন৷ <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">ইনস্টলেশনের সময় একটি অপারেটিং সিস্টেম ত্রুটি ঘটেছে৷ দয়া করে Chromium পুনরায় ডাউনলোড করুন৷</translation>
-<translation id="2685838254101182273">Chromium আপডেট করা বন্ধ করেছে এবং আপনার অপারেটিং সিস্টেমের এই সংস্করণটিকে আর সমর্থন করে না৷</translation>
 <translation id="2705403826523567092">সমস্ত ডিভাইস জুড়ে সিঙ্ক করা ব্যক্তিগতকৃত ব্রাউজিংয়ের অভিজ্ঞতার জন্য সাইন-ইন করুন</translation>
 <translation id="2711502716910134313">Chromium ট্যাব</translation>
 <translation id="2718390899429598676">অতিরিক্ত নিরাপত্তার জন্য Chromium আপনার ডেটা এনক্রিপ্ট করবে।</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে প্রস্থান করুন এবং পুনরায় প্রবেশ করুন৷</translation>
 <translation id="4469812139324097969">Chromium পুরানো হয়ে গেছে কারণ কিছু সময় ধরে এটিকে পুনঃলঞ্চ করা হয়নি। একটি আপডেট উপলব্ধ রয়েছে এবং আপনি পুনঃলঞ্চ করার সাথে সাথেই এটি প্রয়োগ করা হবে।</translation>
 <translation id="4488554488975128561">বিপজ্জনক অ্যাপ্লিকেশান এবং সাইট সনাক্ত করতে সহায়তা দিতে স্বয়ংক্রিয়ভাবে কিছু তথ্য ও পৃষ্ঠা সামগ্রী Google এ পাঠানোর মাধ্যমে Chromium কে আরও নিরাপদ ও সহজে ব্যবহারযোগ্য করে তুলতে সাহায্য করতে পারেন।</translation>
-<translation id="4549794359424059447">Chromium এর ভবিষ্যত সংস্করণ আর Windows XP বা Windows Vista সমর্থন করবে না।</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে প্রবেশ করেছেন৷ এখন আপনি আপনার সমস্ত প্রবেশ করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
 <translation id="459535195905078186">Chromium অ্যাপ্লিকেশানগুলি</translation>
 <translation id="4611246891205775468">এই সাইটটির জন্য Chromium কে আপনার মাইক্রোফোনে অ্যাক্সেস দিতে হবে।</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনার কাছে সর্বদা নবীনতম সংস্করণটি থাকে৷ এই ডাউনলোডটি সম্পূর্ণ হলে, Chromium আবার চালু হবে এবং আপনি আবার আগের মতো Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="5479196819031988440">Chromium OS এই পৃষ্ঠাটি খুলতে পারবে না।</translation>
 <translation id="549669000822060376">Chromium যখন সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
-<translation id="5524843473235508879">রিডাইরেক্ট ব্লক করা হয়েছে।</translation>
 <translation id="5634636535844844681">Chromium এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>
 <translation id="5680901439334282664">Chromium এ প্রবেশ করুন</translation>
 <translation id="5698481217667032250">এই ভাষায় Chromium প্রদর্শন করুন</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">প্রমাণীকরণের শংসাপত্রটি কাজ করেনি। অনুগ্রহ করে আবার Google Chrome এ সাইন-ইন করুন বা আরও তথ্যের জন্য আপনার প্রশাসকের সাথে যোগাযোগ করুন। <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">প্রায় আপ-টু-ডেট হয়েছে! আপডেট শেষ করতে আপনার ডিভাইস আবার চালু করুন।</translation>
 <translation id="5942520288919337908">Chromium-এ <ph name="EXTENSION_NAME" /> জোড়া হয়েছে৷</translation>
-<translation id="59625444380784159">আপনার পরিচিতিগুলির বিশদ বিবরণ আপনাকে Chromium এ আরও দ্রুত ফর্মগুলি পূরণ করতে সাহায্য করতে পারে৷</translation>
 <translation id="5987687638152509985">সিঙ্ক শুরু করতে Chromium আপডেট করুন</translation>
 <translation id="6055895534982063517">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷ এবং এটি আগের তুলনায় আরও দ্রুত৷</translation>
 <translation id="6063093106622310249">Chromium এ খুলুন</translation>
@@ -171,12 +164,10 @@
 <translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="6734080038664603509">&amp;Chromium আপডেট করুন</translation>
 <translation id="6734291798041940871">Chromium ইতোমধ্যে আপনার কম্পিউটারের সকল ব্যবহারকারীর জন্য ইনস্টল করা হয়েছে।</translation>
-<translation id="6777817260680419853">রিডাইরেক্ট ব্লক করা হয়েছে</translation>
 <translation id="6810143991807788455">বর্তমান সেটিংসের প্রতিবেদন করার মাধ্যম Chromium-কে আরও উন্নত করতে সহায়তা করুন</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474"> Chromium আপডেট করা হয়েছে৷ কিন্তু আপনি এটি অন্ততঃপক্ষে 30 দিন ব্যবহার করতে পারবেন না৷</translation>
 <translation id="6944967875980567883">Chromium-এ মডিউলগুলি লোড হয়েছে</translation>
-<translation id="694592694773692225">এই পৃষ্ঠাতে ব্লক রিডাইরেক্ট করুন।</translation>
 <translation id="6964305034639999644">Chromium ছদ্ম&amp;বেশী উইন্ডোতে লিঙ্কটি খুলুন</translation>
 <translation id="6970811910055250180">আপনার ডিভাইস আপডেট করা হচ্ছে ...</translation>
 <translation id="705851970750939768">Chromium আপডেট করুন</translation>

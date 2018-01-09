@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">gridi ya mti</translation>
 <translation id="1822429046913737220">AM / PM</translation>
 <translation id="1832974991323546415">cheza kwenye kifaa cha mbali</translation>
-<translation id="1854180393107901205">Acha kutuma</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">hali</translation>
 <translation id="1938124657309484470">Thamani lazima iwe <ph name="MAXIMUM_DATE_OR_TIME" /> au mapema.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Nyingine...</translation>
 <translation id="9138385573473225930">arifa</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, itaanza tarehe <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Picha ndani ya Picha</translation>
 <translation id="947831847158436616">kisanduku</translation>
 <translation id="966787709310836684">menyu</translation>
 </translationbundle>

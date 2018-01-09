@@ -8,6 +8,7 @@
 <translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
 <translation id="110877069173485804">Ini Chrome anda</translation>
 <translation id="1142745911746664600">Tidak dapat mengemas kini Chrome</translation>
+<translation id="1154147086299354128">&amp;Buka dalam Chrome</translation>
 <translation id="123620459398936149">OS Chrome tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
 <translation id="127345590676626841">Chrome dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu. Apabila muat turun ini selesai, Chrome akan dimulakan semula dan anda sudah boleh menggunakannya.</translation>
 <translation id="1302523850133262269">Sila tunggu sementara Chrome memasang kemas kini sistem terkini.</translation>
@@ -30,7 +31,6 @@
 <translation id="1698376642261615901">Google Chrome ialah penyemak imbas web yang menjalankan halaman web dan aplikasi dengan kelajuan kilat. Ia pantas, stabil dan mudah digunakan. Semak imbas web dengan lebih selamat dengan perlindungan daripada perisian berniat jahat dan pancingan data yang terbina dalam Google Chrome.</translation>
 <translation id="1718131156967340976">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome tidak dapat menyegerakkan data anda disebabkan ralat melog masuk.</translation>
-<translation id="1759301979429102118">Butiran daripada kenalan anda dapat membantu anda mengisi borang dengan lebih cepat di Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Dapatkan bantuan untuk menggunakan Chrome OS</translation>
 <translation id="1795405610103747296">Pasang Chrome pada telefon anda. Kami akan menghantar SMS ke telefon anda: <ph name="PHONE_NUMBER" /></translation>
@@ -107,8 +107,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="3889417619312448367">Nyahpasang Google Chrome</translation>
 <translation id="3898493977366060150">Penyemakan imbas web dengan Google smarts</translation>
 <translation id="4028693306634653894">Akses Chrome dengan lebih cepat</translation>
-<translation id="4031074602479304239">Chrome menghentikan tapak ini daripada membawa anda ke</translation>
-<translation id="4042449298237264661">Komputer ini tidak lagi akan menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista sudah tidak disokong.</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
 <translation id="4053720452172726777">Sesuaikan dan kawal Google Chrome</translation>
 <translation id="4147555960264124640">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. <ph name="LEARN_MORE" /></translation>
@@ -152,12 +150,12 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="5243785881901838525">Google Payments (disalin ke Chrome)</translation>
 <translation id="5251420635869119124">Tetamu boleh menggunakan Chrome tanpa meninggalkan apa-apa.</translation>
 <translation id="5284703908158630707">{SECONDS,plural, =1{Google Chrome akan dimulakan semula dalam 1 saat.}other{Google Chrome akan dimulakan semula dalam # saat.}}</translation>
+<translation id="532046782124376502">Amaran: Google Chrome tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
 <translation id="5334545119300433702">Modul ini diketahui bercanggah dengan Google Chrome.</translation>
 <translation id="5386244825306882791">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chrome atau membuat carian dari Kotak Omni.</translation>
 <translation id="5430073640787465221">Fail pilihan anda rosak atau tidak sah. Google Chrome tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="5453904507266736060">Biarkan Google Chrome Dijalankan Di Latar Belakang</translation>
 <translation id="5495581687705680288">Modul dimuatkan ke dalam Google Chrome</translation>
-<translation id="5524843473235508879">Ubah hala disekat.</translation>
 <translation id="556024056938947818">Google Chrome sedang cuba memaparkan kata laluan.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="557283862590186398">Chrome memerlukan kebenaran untuk mengakses mikrofon anda bagi tapak ini.</translation>
@@ -178,15 +176,12 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6169866489629082767"><ph name="PAGE_TITLE" /> - Google Chrome</translation>
 <translation id="61852838583753520">Kemas kini &amp;Chrome OS</translation>
 <translation id="6235018212288296708">Peraturan masuk bagi Google Chrome untuk membenarkan trafik mDNS.</translation>
-<translation id="6236285698028833233">Google Chrome telah berhenti mengemas kini dan tidak lagi menyokong versi sistem pengendalian anda ini.</translation>
 <translation id="6291089322031436445">Apl Chrome Dev</translation>
 <translation id="6291549208091401781">Google Chrome telah dipasang untuk semua pengguna pada komputer anda.</translation>
 <translation id="6338556085225130112">Mengemas kini Google Chrome</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="6393863479814692971">Chrome memerlukan kebenaran untuk mengakses kamera dan mikrofon anda bagi tapak ini.</translation>
-<translation id="6400076122676892962">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 tidak lagi akan disokong.</translation>
 <translation id="6410540444482791104">Anda boleh membantu kami menjadikan Chrome lebih selamat dan mudah digunakan dengan menghantar secara automatik beberapa maklumat sistem dan kandungan halaman kepada Google untuk membantu mengesan apl dan tapak yang berbahaya.</translation>
-<translation id="6470176598693778404">Komputer ini tidak lagi akan menerima kemas kini Google Chrome kerana Mac OS X 10.6, 10.7 dan 10.8 sudah tidak disokong.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Muat turun sedang berlangsung. Adakah anda ingin membatalkan muat turun dan keluar daripada Chrome?}other{# muat turun sedang berlangsung pada masa ini. Adakah anda ingin membatalkan muat turun dan keluar daripada Google Chrome?}}</translation>
 <translation id="6566149418543181476">Mengemas kini Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Anda menggunakan <ph name="PROFILE_EMAIL" /> untuk menyegerakkan bahan digital Chrome anda. Untuk mengemas kini pilihan penyegerakan anda atau menggunakan Chrome tanpa akaun Google, lawati <ph name="SETTINGS_LINK" />.</translation>
@@ -194,11 +189,9 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="6634887557811630702">Google Chrome telah dikemas kini.</translation>
 <translation id="6676384891291319759">Akses Internet</translation>
 <translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
-<translation id="6777817260680419853">Ubah hala disekat</translation>
 <translation id="683440813066116847">Peraturan masuk bagi Google Chrome Canary untuk membenarkan trafik mDNS.</translation>
 <translation id="686561893457936865">Bawa Chrome ke mana-mana sahaja</translation>
 <translation id="6885412569789873916">Apl Chrome Beta</translation>
-<translation id="694592694773692225">Ubah hala disekat pada halaman ini.</translation>
 <translation id="6967962315388095737">Peraturan masuk bagi Google Chrome Beta untuk membenarkan trafik mDNS.</translation>
 <translation id="6970811910055250180">Mengemas kini peranti anda...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak memperluas, mengubah suai atau mengehadkan Syarat OS Google Chrome.</translation>
@@ -209,7 +202,6 @@ Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</trans
 <translation id="7164397146364144019">Anda boleh membantu menjadikan Chrome lebih selamat dan lebih mudah untuk digunakan dengan melaporkan butiran kemungkinan insiden keselamatan secara automatik kepada Google.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> telah ditambahkan pada Chrome.</translation>
 <translation id="7242029209006116544">Anda log masuk menggunakan akaun terurus dan memberikan pentadbirnya kawalan terhadap profil Google Chrome anda. Data Chrome anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME" /> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih membuat profil baharu untuk mengasingkan data Chrome anda yang sedia ada. <ph name="LEARN_MORE" /></translation>
-<translation id="729375352412857283">Tidak lama lagi komputer ini akan berhenti menerima kemas kini Google Chrome kerana Windows XP dan Windows Vista tidak lagi akan disokong.</translation>
 <translation id="7330164299247909639">Sijil pengesahan gagal. Sila log masuk ke Google Chrome sekali lagi sebagai <ph name="USER_NAME" /> atau hubungi pentadbir anda untuk mendapatkan maklumat lanjut. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="7369650938475876456">Gunakan kata laluan kukuh yang dijana oleh Chrome</translation>

@@ -218,6 +218,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="533632423981297619">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado. Não partilhe este ficheiro com ninguém.</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
@@ -350,6 +351,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportar palavras-passe...</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear Pop-ups</translation>

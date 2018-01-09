@@ -118,7 +118,7 @@
 <translation id="6907759265145635167"><ph name="QUANTITY" /> ПБ/с</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{остался 1 год}one{остался # год}few{осталось # года}many{осталось # лет}other{осталось # года}}</translation>
 <translation id="6945221475159498467">Выбрать</translation>
-<translation id="6965382102122355670">OK</translation>
+<translation id="6965382102122355670">ОК</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7130207228079676353">САМЫЕ ПОДХОДЯЩИЕ</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -150,6 +150,7 @@
 <translation id="8602707065186045623">Файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/с</translation>
 <translation id="8725488761726303204">Ещё <ph name="NUMBER" /></translation>
+<translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ч.}one{# ч.}few{# ч.}many{# ч.}other{# ч.}}</translation>
 <translation id="8806053966018712535">Папка <ph name="FOLDER_NAME" />.</translation>
 <translation id="883911313571074303">Добавить примечание к изображению</translation>

@@ -218,6 +218,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
+<translation id="533632423981297619">Vaše zaporke bit će vidljive svima koji vide izvezenu datoteku. Nemojte dijeliti datoteku ni s kim.</translation>
 <translation id="5388358297987318779">Otvori sliku</translation>
 <translation id="5409365236829784218">Nema instalirane aplikacije za otvaranje ove datoteke.</translation>
 <translation id="5433691172869980887">Korisničko je ime kopirano</translation>
@@ -350,6 +351,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Izvoz zaporki...</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7971521879845308059">Blokiraj skočne</translation>

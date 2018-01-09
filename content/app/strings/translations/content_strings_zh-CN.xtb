@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">树状网格</translation>
 <translation id="1822429046913737220">上午/下午</translation>
 <translation id="1832974991323546415">在远程设备上播放</translation>
-<translation id="1854180393107901205">停止投射</translation>
 <translation id="1921819250265091946">日</translation>
 <translation id="1930711995431081526">状态</translation>
 <translation id="1938124657309484470">指定的值不得晚于<ph name="MAXIMUM_DATE_OR_TIME" />。</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">其他...</translation>
 <translation id="9138385573473225930">提醒</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />，从 <ph name="WEEK_START_DATE" />开始</translation>
+<translation id="916607977885256133">画中画</translation>
 <translation id="947831847158436616">单元格</translation>
 <translation id="966787709310836684">菜单</translation>
 </translationbundle>

@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Hyväksytyt luotto- ja maksukortit</translation>
 <translation id="1519264250979466059">Koontipäivä</translation>
 <translation id="1527263332363067270">Odotetaan yhteyttä…</translation>
-<translation id="1532118530259321453">Viesti tältä sivulta</translation>
 <translation id="153384715582417236">Siinä kaikki toistaiseksi</translation>
 <translation id="154408704832528245">Valitse jakeluosoite</translation>
 <translation id="1549470594296187301">Tämän ominaisuuden käyttö edellyttää JavaScriptiä.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Tietojen paikallinen käyttö</translation>
 <translation id="1594030484168838125">Valitse</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
 <translation id="1629803312968146339">Haluatko, että Chrome tallentaa tämän kortin?</translation>
 <translation id="1639239467298939599">Ladataan</translation>
 <translation id="1640180200866533862">Käyttäjäkäytännöt</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP-virhe</translation>
 <translation id="2270484714375784793">Puhelinnumero</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
-<translation id="2298151730144880294">Viesti tälle sivulle upotetulta sivulta</translation>
 <translation id="230155334948463882">Uusi kortti?</translation>
 <translation id="2316887270356262533">Vapauttaa alle 1 Mt. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> pyytää käyttäjänimeä ja salasanaa.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Tyhjennä lomake</translation>
 <translation id="2851634818064021665">Tarvitset luvan tälle sivustolle siirtymiseen.</translation>
 <translation id="2856444702002559011">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää varastaa tietojasi (esimerkiksi salasanoja, viestejä tai luottokorttitietoja). <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Älä päivitä</translation>
 <translation id="2909946352844186028">Verkossa havaittiin muutos.</translation>
 <translation id="2916038427272391327">Sulje muita ohjelmia.</translation>
 <translation id="2922350208395188000">Palvelimen varmennetta ei voi tarkistaa.</translation>
@@ -331,7 +329,6 @@
 <translation id="3303855915957856445">Ei hakutuloksia</translation>
 <translation id="3305707030755673451">Tietosi salattiin synkronoinnin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="3320021301628644560">Lisää laskutusosoite</translation>
-<translation id="333371639341676808">Estä tätä sivua luomasta muita viestejä.</translation>
 <translation id="3338095232262050444">Turvallinen</translation>
 <translation id="3340978935015468852">asetuksissa</translation>
 <translation id="3345135638360864351">Tämän sivuston käyttöpyyntöä ei voitu lähettää henkilölle <ph name="NAME" />. Yritä uudelleen.</translation>
@@ -372,7 +369,6 @@
 <translation id="3556433843310711081">Ylläpitäjä voi kumota eston puolestasi.</translation>
 <translation id="3566021033012934673">Yhteytesi ei ole salattu</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Viesti upotetulta sivulta osoitteessa <ph name="SITE" /></translation>
 <translation id="358285529439630156">Luotto- ja prepaid-kortit hyväksytään.</translation>
 <translation id="3582930987043644930">Lisää nimi</translation>
 <translation id="3583757800736429874">&amp;Toista siirto</translation>
@@ -537,7 +533,6 @@
 <translation id="4923417429809017348">Tämä sivu on käännetty tuntemattomasta kielestä kielelle <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Maksu</translation>
 <translation id="4926049483395192435">On määritettävä.</translation>
-<translation id="4926159001844873046">Viesti osoitteesta <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Toiminnot</translation>
 <translation id="4958444002117714549">Laajenna luettelo</translation>
@@ -573,7 +568,6 @@
 <translation id="5179510805599951267">Eikö kieli ole <ph name="ORIGINAL_LANGUAGE" />? Ilmoita virheestä</translation>
 <translation id="5190835502935405962">Kirjanmerkkipalkki</translation>
 <translation id="5199729219167945352">Kokeilut</translation>
-<translation id="5201306358585911203">Viesti tälle sivulle upotetulta sivulta</translation>
 <translation id="5205222826937269299">Nimi vaaditaan</translation>
 <translation id="5222812217790122047">Sähköposti vaaditaan</translation>
 <translation id="522700295135997067">Tämä sivusto saattoi juuri varastaa salasanasi.</translation>
@@ -596,6 +590,7 @@
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5308689395849655368">Kaatumisraportit on poistettu käytöstä.</translation>
 <translation id="5317780077021120954">Tallenna</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" />/<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Valitse yhteystiedot</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5332219387342487447">Toimitustapa</translation>
@@ -755,7 +750,6 @@
 <translation id="6563469144985748109">Ylläpitäjä ei ole hyväksynyt sitä vielä.</translation>
 <translation id="6569060085658103619">Tämä on laajennussivu.</translation>
 <translation id="6596325263575161958">Salausasetukset</translation>
-<translation id="662080504995468778">Jää</translation>
 <translation id="6624427990725312378">Yhteystiedot</translation>
 <translation id="6626291197371920147">Lisää kelvollinen kortin numero</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" />-haku</translation>
@@ -1002,6 +996,7 @@
 <translation id="859285277496340001">Varmenne ei määritä mekanismia, jonka avulla voitaisiin tarkistaa, onko varmenne kumottu.</translation>
 <translation id="8620436878122366504">Vanhempasi eivät ole hyväksyneet sitä vielä.</translation>
 <translation id="8625384913736129811">Tallenna kortti tälle laitteelle</translation>
+<translation id="8639963783467694461">Automaattisen täytön asetukset</translation>
 <translation id="8647750283161643317">Palauta kaikki oletusarvoon</translation>
 <translation id="8660471606262461360">Google Paymentsista</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, vastaus, <ph name="ANSWER" /></translation>
@@ -1035,7 +1030,6 @@
 <translation id="8938939909778640821">Hyväksytyt luotto- ja prepaid-kortit</translation>
 <translation id="8952525071319348207">Päivitä kortin <ph name="CREDIT_CARD" /> tiedot antamalla sen vanhentumispäivä ja CVC. Vahvistamisen jälkeen Google-maksutilisi korttitiedot jaetaan tämän sivuston kanssa.</translation>
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
-<translation id="8958260976055043711">Viesti tältä sivulta</translation>
 <translation id="8971063699422889582">Palvelimen varmenne on vanhentunut.</translation>
 <translation id="8978053250194585037">Googlen selaussuoja havaitsi äskettäin <ph name="BEGIN_LINK" />tietojenkalasteluyrityksen<ph name="END_LINK" /> sivustolla <ph name="SITE" />. Tietojenkalastelusivustot yrittävät huijata käyttäjiä tekeytymällä toisiksi sivustoiksi.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1073,10 +1067,8 @@
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="917450738466192189">Palvelimen varmenne ei kelpaa.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> käyttää protokollaa, jota ei tueta.</translation>
-<translation id="9198587359415855350">Viesti osoitteesta <ph name="SITE" /></translation>
 <translation id="9205078245616868884">Tietosi on salattu synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antamalla tunnuslause.</translation>
 <translation id="9207861905230894330">Artikkelin lisääminen epäonnistui.</translation>
-<translation id="9209577707918422353">Viesti upotetulta sivulta osoitteessa <ph name="SITE" /></translation>
 <translation id="9215416866750762878">Sovellus estää Chromea muodostamasta turvallista yhteyttä tähän sivustoon</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="933612690413056017">Ei internetyhteyttä</translation>

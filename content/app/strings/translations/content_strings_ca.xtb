@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">quadrícula d'arbre</translation>
 <translation id="1822429046913737220">a. m./p. m.</translation>
 <translation id="1832974991323546415">reprodueix al dispositiu remot</translation>
-<translation id="1854180393107901205">Atura l'emissió</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">estat</translation>
 <translation id="1938124657309484470">El valor ha de ser <ph name="MAXIMUM_DATE_OR_TIME" /> o anterior.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Altres...</translation>
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del dia <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="947831847158436616">cel·la</translation>
 <translation id="966787709310836684">menú</translation>
 </translationbundle>

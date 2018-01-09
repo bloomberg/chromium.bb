@@ -173,6 +173,7 @@
 <translation id="5430931332414098647">Chia sẻ kết nối tức thì</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Tất cả người dùng hiện có mặt đã được thêm vào phiên này.</translation>
+<translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
 <translation id="553675580533261935">Thoát phiên</translation>
 <translation id="5548285847212963613">Tiện ích "<ph name="EXTENSION_NAME" />" có thể giúp kết nối với mạng này.</translation>
 <translation id="5571066253365925590">Đã bật bluetooth</translation>
@@ -183,6 +184,7 @@
 <translation id="5744083938413354016">Kéo nhấn</translation>
 <translation id="5777841717266010279">Bạn muốn dừng chia sẻ màn hình?</translation>
 <translation id="57838592816432529">Tắt tiếng</translation>
+<translation id="5832805196449965646">Thêm người</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -268,7 +270,7 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>
 <translation id="776344839111254542">Nhấp để xem chi tiết cập nhật</translation>
-<translation id="7796353162336583443">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng Trợ lý Google, con trỏ laser hoặc kính lúp.</translation>
+<translation id="7796353162336583443">Hãy nhấn vào nút bút cảm ứng trên giá để ghi chú, chụp ảnh màn hình, sử dụng Trợ lý Google, chế độ con trỏ laser hoặc kính lúp.</translation>
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>

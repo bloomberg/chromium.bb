@@ -218,6 +218,7 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5327248766486351172">Nazwa</translation>
+<translation id="533632423981297619">Twoje hasła będą widoczne dla każdego, kto może zobaczyć wyeksportowany plik. Nie udostępniaj nikomu tego pliku.</translation>
 <translation id="5388358297987318779">Otwórz obraz</translation>
 <translation id="5409365236829784218">Nie masz aplikacji, w których można otworzyć ten plik.</translation>
 <translation id="5433691172869980887">Nazwa użytkownika została skopiowana</translation>
@@ -243,7 +244,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5857090052475505287">Nowy folder</translation>
 <translation id="5857770089550859117">Wpisz hasło, by rozpocząć synchronizację.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
-<translation id="5869029295770560994">OK</translation>
+<translation id="5869029295770560994">Rozumiem</translation>
 <translation id="5871497086027727873">Przeniosłeś 1 element</translation>
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5916664084637901428">Włączone</translation>
@@ -325,7 +326,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="722055596168483966">Dostosowywanie usług Google</translation>
 <translation id="7272437679830969316">Nie można zweryfikować Twojej tożsamości. Hasło nie zostało skopiowane.</translation>
 <translation id="7336264872878993241">Pobrano <ph name="PERCENT" /> procent</translation>
-<translation id="7346909386216857016">OK</translation>
+<translation id="7346909386216857016">Rozumiem</translation>
 <translation id="7400418766976504921">Adres URL</translation>
 <translation id="7425346204213733349">Zmiany w zakładkach, historii, hasłach i innych ustawieniach nie będą już synchronizowane z kontem Google. Twoje istniejące dane będą jednak nadal na nim przechowywane.</translation>
 <translation id="744343212394640790">Konto <ph name="EMAIL" /> nie jest moje</translation>
@@ -350,6 +351,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7859704718976024901">Historia przeglądania</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Eksportuj hasła…</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7971521879845308059">Blokuj wyskakujące okienka</translation>
@@ -395,7 +397,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="8881801611828450202">Szukaj tego obrazu w: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Synchronizacja Chrome</translation>
 <translation id="895541991026785598">Zgłaszanie problemu</translation>
-<translation id="8971089644512329999">OK</translation>
+<translation id="8971089644512329999">Rozumiem</translation>
 <translation id="8981454092730389528">Zarządzanie aktywnością w Google</translation>
 <translation id="8985320356172329008">Jesteś zalogowany w Google jako</translation>
 <translation id="902659348151742535">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania, reklamy i działanie innych usług.</translation>

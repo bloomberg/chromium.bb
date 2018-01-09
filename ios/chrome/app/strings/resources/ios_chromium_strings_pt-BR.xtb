@@ -11,8 +11,8 @@
 <translation id="2075400798887076382">Acesse aqui as guias abertas no computador. Basta abrir o Chromium no computador, ir para o menu e selecionar "Fazer login no Chromium…”</translation>
 <translation id="2168108852149185974">Alguns complementos causam falhas no Chromium. Desinstale-os:</translation>
 <translation id="2178608107313874732">O Chromium não pode usar a câmera agora</translation>
-<translation id="2195025571279539885">Deseja que na próxima vez o Chromium ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
-<translation id="2647554856022461007">O Chromium pode usar serviços da Web para melhorar sua experiência de navegação. Se desejar, você pode desativar esses serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="2195025571279539885">Quer que na próxima vez o Chromium ofereça a tradução de páginas em <ph name="LANGUAGE_NAME" /> deste site?</translation>
+<translation id="2647554856022461007">O Chromium pode usar serviços da Web para melhorar sua experiência de navegação. Se preferir, você pode desativar esses serviços. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2730884209570016437">O Chromium não pode usar a câmera porque ela está sendo usada por outro app</translation>
 <translation id="3256316712990552818">Copiado no Chromium</translation>
 <translation id="3413120535237193088">Para ter seus favoritos em todos os seus dispositivos, faça login no Chromium.</translation>
@@ -40,10 +40,9 @@
 <translation id="7400689562045506105">Use o Chromium em qualquer lugar</translation>
 <translation id="7674213385180944843">Abra Ajustes &gt; Privacidade &gt; Câmera &gt; Chromium e ative a câmera.</translation>
 <translation id="786327964234957808">Você está trocando a conta de sincronização de <ph name="USER_EMAIL1" /> para <ph name="USER_EMAIL2" />. Os dados do Chromium são gerenciados por <ph name="DOMAIN" />. Eles serão excluídos deste dispositivo, mas permanecerão no <ph name="USER_EMAIL1" />.</translation>
-<translation id="8111736072665034317">Ao usar este app, você concorda com os <ph name="BEGIN_LINK" />Termos de Serviço<ph name="END_LINK" /> do Chromium.</translation>
 <translation id="8175055321229419309">Dica: <ph name="BEGIN_LINK" />mova o Chromium para a dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Melhore sua experiência do Google no Chromium de acordo com seu local.</translation>
-<translation id="8353224596138547809">Deseja que o Chromium salve sua senha para este site?</translation>
+<translation id="8353224596138547809">Quer que o Chromium salve sua senha para este site?</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="8809780021347235332">Para salvar imagens, toque em Ajustes para permitir que o Chromium use suas fotos.</translation>
 <translation id="9022552996538154597">Fazer login no Chromium</translation>

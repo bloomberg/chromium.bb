@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">ተቀባይነት ያላቸው ክሬዲት እና ዴቢት ካርዶች</translation>
 <translation id="1519264250979466059">የግንብ ቀን</translation>
 <translation id="1527263332363067270">ግንኙነትን በመጠበቅ ላይ…</translation>
-<translation id="1532118530259321453">ይህ ገጽ እንዲህ ይላል፦</translation>
 <translation id="153384715582417236">ለአሁን ያለው ይኸው ነው</translation>
 <translation id="154408704832528245">የማድረሻ አድራሻ ይምረጡ</translation>
 <translation id="1549470594296187301">ይህን ባህሪ ለመጠቀም ጃቫስክሪፕት መንቃት አለበት።</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">አካባቢያዊ የውሂብ መድረሻ</translation>
 <translation id="1594030484168838125">ምረጥ</translation>
 <translation id="1620510694547887537">ካሜራ</translation>
+<translation id="1623104350909869708">ይህ ገጽ ተጨማሪ መገናኛዎችን እንዳይፈጥር አግድ</translation>
 <translation id="1629803312968146339">ይህን ካርድ Chrome እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
 <translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="1640180200866533862">የተጠቃሚ መምሪያዎች</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">የኤች ቲ ቲ ፒ ስህተት</translation>
 <translation id="2270484714375784793">ስልክ ቁጥር</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
-<translation id="2298151730144880294">በዚህ ገጽ ላይ ያለ የተካተተ ገጽ እንዲህ ይላል፦</translation>
 <translation id="230155334948463882">አዲስ ካርድ?</translation>
 <translation id="2316887270356262533">እስከ 1 ሜባ ቦታ ድረስ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> የተጠቃሚ ስም እና የይለፍ ቃል ያስፈልገዋል።</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
 <translation id="2851634818064021665">ይህን ጣቢያ ለመጎብኘት ፈቃድ ያስፈልገዎታል</translation>
 <translation id="2856444702002559011">አጥቂዎች የእርስዎን መረጃ (ለምሳሌ፦ የይለፍ ቃላትን፣ መልዕክቶችን፣ ወይም የክሬዲት ካርዶችን የመሳሰሉ) ከ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ለመስረቅ እየሞከሩ ሊሆኑ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">ዳግም አትጫን</translation>
 <translation id="2909946352844186028">የአውታረ መረብ ለውጥ ተገኝቷል።</translation>
 <translation id="2916038427272391327">ሌሎች ፕሮግራሞችን ይዝጉ</translation>
 <translation id="2922350208395188000">የአገልጋይ እውቅና ማረጋገጫ ሊረጋገጥ አልቻለም።</translation>
@@ -329,7 +327,6 @@
 <translation id="3303855915957856445">ምንም የፍለጋ ውጤቶች አልተገኙም</translation>
 <translation id="3305707030755673451">የእርስዎ ውሂብ <ph name="TIME" /> ላይ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="3320021301628644560">የመክፈያ አድራሻ አክል</translation>
-<translation id="333371639341676808">ይህ ገጽ ተጨማሪ ማገናኛዎችን እንዳይፈጥር አግድ።</translation>
 <translation id="3338095232262050444">ደህንነቱ የተጠበቀ ነው</translation>
 <translation id="3340978935015468852">ቅንብሮች</translation>
 <translation id="3345135638360864351">ይህን ጣቢያ ለመድረስ ያቀረቡት ጥያቄ ወደ <ph name="NAME" /> ሊላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።</translation>
@@ -370,7 +367,6 @@
 <translation id="3556433843310711081">የእርስዎ አስተዳዳሪ እገዳውን ሊያነሱልዎ ይችላሉ</translation>
 <translation id="3566021033012934673">ግንኙነትዎ የግል አይደለም</translation>
 <translation id="3574305903863751447"><ph name="CITY" />፣ <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635"><ph name="SITE" /> ላይ የተካተተ ገጽ እንዲህ ይላል፦</translation>
 <translation id="358285529439630156">የክሬዲት እና የቅድመ-ክፍያ ካርዶች ተቀባይነት አላቸው።</translation>
 <translation id="3582930987043644930">ስም ያክሉ</translation>
 <translation id="3583757800736429874">&amp;ውሰድን ድገም</translation>
@@ -535,7 +531,6 @@
 <translation id="4923417429809017348">ገጹ ከማይታወቅ ቋንቋ ወደ <ph name="LANGUAGE_LANGUAGE" /> ተተርጉሟል</translation>
 <translation id="4923459931733593730">ክፍያ</translation>
 <translation id="4926049483395192435">መገለጽ አለበት።</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> እንዲህ ይላል፦</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">እርምጃዎች</translation>
 <translation id="4958444002117714549">ዝርዝሩን ዘርጋ</translation>
@@ -571,7 +566,6 @@
 <translation id="5179510805599951267">በ<ph name="ORIGINAL_LANGUAGE" /> አይደለም? ይህን ስህተት ሪፖርት ያድርጉ</translation>
 <translation id="5190835502935405962">የዕልባቶች አሞሌ</translation>
 <translation id="5199729219167945352">ሙከራዎች</translation>
-<translation id="5201306358585911203">በዚህ ድረ-ገጽ ላይ ያለ የተካተተ ገጽ እንዲህ ይላል፦</translation>
 <translation id="5205222826937269299">ስም ያስፈልጋል</translation>
 <translation id="5222812217790122047">ኢሜይል ያስፈልጋል</translation>
 <translation id="522700295135997067">ይህ ጣቢያ አሁን የይለፍ ቃልዎን ሰርቆት ሊሆን ይችላል</translation>
@@ -594,6 +588,7 @@
 <translation id="5308380583665731573">ይገናኙ</translation>
 <translation id="5308689395849655368">የብልሽት ሪፖርት ማድረግ ተሰናክሏል።</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />፣ <ph name="MATCH_POSITION" /> ከ<ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">የእውቂያ መረጃ ይምረጡ</translation>
 <translation id="5327248766486351172">ስም</translation>
 <translation id="5332219387342487447">የመላኪያ መንገድ</translation>
@@ -753,7 +748,6 @@
 <translation id="6563469144985748109">የእርስዎ አስተዳዳሪ ገና አላጸደቁትም</translation>
 <translation id="6569060085658103619">የቅጥያ ገጽ እየተመለከቱ ነው</translation>
 <translation id="6596325263575161958">የምስጠራ አማራጮች</translation>
-<translation id="662080504995468778">ቆይ</translation>
 <translation id="6624427990725312378">የዕውቂያ መረጃ</translation>
 <translation id="6626291197371920147">የሚሰራ የካርድ ቁጥር ያክሉ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ፍለጋ</translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">የእውቅና ማረጋገጫው ተሽሮ እንደሆነ የሚታይበት ምንም ስልት አይገልጽም።</translation>
 <translation id="8620436878122366504">የእርስዎ ወላጆች ገና አላጸደቁትም</translation>
 <translation id="8625384913736129811">ይህን ካርድ ወደዚህ መሣሪያ አስቀምጥ</translation>
+<translation id="8639963783467694461">የራስ-ሙላ ቅንብሮች</translation>
 <translation id="8647750283161643317">ሁሉንም ወደ ነባሪ ዳግም አስጀምር</translation>
 <translation id="8660471606262461360">ከGoogle ክፍያዎች</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />፣ መልስ፣ <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">ተቀባይነት ያላቸው የክሬዲት እና የቅድመ-ክፍያ ካርዶች</translation>
 <translation id="8952525071319348207">የካርድ ዝርዝሮችዎን ለማዘመን የ<ph name="CREDIT_CARD" /> ማብቂያ ቀን እና CVC ያስገቡ። ካረጋገጡ በኋላ የGoogle Payments ካርድ ዝርዝሮችዎ ለዚህ ጣቢያ ይጋራል።</translation>
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
-<translation id="8958260976055043711">ይህ ገጽ እንዲህ ይላል፦</translation>
 <translation id="8971063699422889582">የአገልጋይ እውቅና ማረጋገጫ ጊዜው አልፎበታል።</translation>
 <translation id="8978053250194585037">Google የጥንቃቄ አሰሳ በቅርቡ በ<ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ማስገር አግኝቷል<ph name="END_LINK" />። የማስገር ጣቢያዎች እርስዎን ለማታለል ሌሎች ድር ጣቢያዎች እንደሆኑ ያስመስላሉ።</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="917450738466192189">የአገልጋይ እውቅና ማረጋገጫ ልክ ያልኾነ ነው።</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> የማይጠቀም ፕሮቶኮል ይጠቀማል።</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> እንዲህ ይላል፦</translation>
 <translation id="9205078245616868884">የእርስዎ ውሂብ በእርስዎ የስምረት የይለፍ ቃል ተመስጥሯል። ስምረትን ለመጀመር ያስገቡት።</translation>
 <translation id="9207861905230894330">ጽሑፍ ማከል አልተቻለም።</translation>
-<translation id="9209577707918422353"><ph name="SITE" /> ላይ የተካተተ ገጽ እንዲህ ይላል፦</translation>
 <translation id="9215416866750762878">አንድ መተግበሪያ Chrome ከዚህ ጣቢያ ጋር ደህንነቱ በተጠበቀ ሁኔታ እንዳይገናኝ እያቆመው ነው</translation>
 <translation id="9219103736887031265">ምስሎች</translation>
 <translation id="933612690413056017">ምንም የበይነመረብ ግንኙነት የለም</translation>

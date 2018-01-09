@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">关于 Chromium</translation>
 <translation id="1298199220304005244">获取 Chromium 操作系统使用帮助</translation>
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
-<translation id="1403254041219632970">Chromium 的后续版本将不再支持 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
-<translation id="1440917365206527807">Chromium 已阻止此网站将您重定向至</translation>
 <translation id="1444754455097148408">Chromium开放源代码许可</translation>
 <translation id="1502360822835740515">将 Chromium 设置为您的默认浏览器</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
-<translation id="1559451348202814456">Chromium 可能无法正常运行，因为它不再支持 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1585657529869845941">请点击<ph name="BEGIN_BOLD" />确定切换<ph name="END_BOLD" />（如果显示该按钮的话）</translation>
 <translation id="1653828314016431939">确定 - 立即重新启动</translation>
 <translation id="1668054258064581266">从Chromium移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">需要重新启动 Chromium 操作系统以应用更新。</translation>
 <translation id="2647554856022461007">Chromium 可能会使用网络服务来改善您的浏览体验。不过，您可以选择停用这些服务。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
-<translation id="2685838254101182273">Chromium 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="2705403826523567092">登录后可畅享合乎个人需求的浏览体验，并在不同设备间保持同步</translation>
 <translation id="2711502716910134313">Chromium 标签页</translation>
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
 <translation id="4469812139324097969">Chromium 已有一段时间未重新启动，因此现在已不是最新版本。目前有可用更新，系统会在您重新启动 Chromium 后应用这些更新。</translation>
 <translation id="4488554488975128561">通过允许自动向 Google 发送某些系统信息和网页内容以帮助检测危险应用和网站，您可助力我们提高 Chromium 的安全性和易用性。</translation>
-<translation id="4549794359424059447">Chromium 的后续版本将不再支持 Windows XP 或 Windows Vista。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
 <translation id="4611246891205775468">Chromium 需要获得相应权限，才能允许此网站使用您的麦克风。</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>
 <translation id="5479196819031988440">Chromium 操作系统无法打开此网页。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
-<translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
 <translation id="5680901439334282664">登录 Chromium</translation>
 <translation id="5698481217667032250">以这种语言显示 Chromium</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">身份验证失败。请重新登录 Chromium，或者与您的管理员联系以了解详情。<ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME" />”已添加到 Chromium。</translation>
-<translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>
 <translation id="6055895534982063517">Chromium 现已推出速度更快的新版本。</translation>
 <translation id="6063093106622310249">在 Chromium 中打开(&amp;O)</translation>
@@ -173,12 +166,10 @@
 某些功能可能会无法使用。请指定其他个人资料目录或使用更高版本的 Chromium。</translation>
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="6734291798041940871">已为您计算机上的所有用户都安装 Chromium。</translation>
-<translation id="6777817260680419853">已阻止重定向</translation>
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6944967875980567883">模块已加载到 Chromium 中</translation>
-<translation id="694592694773692225">已在此网页上阻止重定向。</translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="705851970750939768">更新 Chromium</translation>

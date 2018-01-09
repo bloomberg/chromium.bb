@@ -9,13 +9,10 @@
 <translation id="1185134272377778587">Teave Chromiumi kohta</translation>
 <translation id="1298199220304005244">Hangi abi Chromium OS-i kasutamise kohta</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
-<translation id="1403254041219632970">Chromiumi tulevased versioonid ei toeta enam Mac OS X 10.6, 10.7 ega 10.8.</translation>
 <translation id="1414495520565016063">Olete Chromiumi sisse logitud.</translation>
-<translation id="1440917365206527807">Chromium peatas saidil teie ümbersuunamise:</translation>
 <translation id="1444754455097148408">Chromiumi avatud lähtekoodi litsentsid</translation>
 <translation id="1502360822835740515">Chromiumi vaikebrauseriks määramine</translation>
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
-<translation id="1559451348202814456">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam operatsioonisüsteemides Mac OS X 10.6, 10.7 ega 10.8.</translation>
 <translation id="1585657529869845941">Kui see kuvatakse, klõpsake valikul <ph name="BEGIN_BOLD" />Vaheta ikkagi<ph name="END_BOLD" /></translation>
 <translation id="1653828314016431939">OK – taaskäivita kohe</translation>
 <translation id="1668054258064581266">Pärast konto eemaldamist Chromiumist tuleb avatud vahekaardid võib-olla uuesti laadida, et need toimiksid.</translation>
@@ -48,7 +45,6 @@
 <translation id="2587578672395088481">Chromium OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
 <translation id="2647554856022461007">Chromium võib sirvimiskogemuse parandamiseks kasutada veebiteenuseid. Võite need teenused valikuliselt keelata. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">Installimisel ilmnes operatsioonisüsteemi viga. Laadige Chromium uuesti alla.</translation>
-<translation id="2685838254101182273">Chromiumi värskendamine peatati ja teie operatsioonisüsteemi seda versiooni ei toetata enam.</translation>
 <translation id="2705403826523567092">Kõikides seadmetes sünkroonitud isikupärastatud sirvimiskogemuse saamiseks logige sisse</translation>
 <translation id="2711502716910134313">Chromiumi vaheleht</translation>
 <translation id="2718390899429598676">Turvalisuse suurendamiseks krüptib Chromium teie andmed.</translation>
@@ -106,7 +102,6 @@
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
 <translation id="4469812139324097969">Chromium on aegunud, kuna seda ei ole tükk aega taaskäivitatud. Saadaval on värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="4488554488975128561">Saate aidata muuta Chromiumi turvalisemaks ja hõlpsamini kasutatavaks, kui lubate saata Google'ile automaatselt teatud süsteemiteavet ning lehesisu, mis aitab tuvastada ohtlikke rakendusi ja saite.</translation>
-<translation id="4549794359424059447">Chromiumi tulevased versioonid ei toeta enam Windows XP-d ega Windows Vistat.</translation>
 <translation id="4567424176335768812">Olete sisse logitud aadressiga <ph name="USER_EMAIL_ADDRESS" />. Nüüd on teil juurdepääs oma järjehoidjatele, ajaloole ja muudele seadetele kõigis seadmetes, kuhu olete sisse logitud.</translation>
 <translation id="459535195905078186">Chromiumi rakendused</translation>
 <translation id="4611246891205775468">Chromium vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda.</translation>
@@ -131,7 +126,6 @@
 <translation id="5466153949126434691">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>
 <translation id="5479196819031988440">Chromium OS ei saa seda lehte avada.</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
-<translation id="5524843473235508879">Ümbersuunamine blokeeriti.</translation>
 <translation id="5634636535844844681">Chromium vajab operatsioonisüsteemi Windows 7 või uuemat versiooni.</translation>
 <translation id="5680901439334282664">logige Chromiumi sisse</translation>
 <translation id="5698481217667032250">Kuva Chromium selles keeles</translation>
@@ -146,7 +140,6 @@
 <translation id="5902536751647951209">Autentimissertifikaat ebaõnnestus. Logige Chromiumisse uuesti sisse või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on Chromiumi lisatud.</translation>
-<translation id="59625444380784159">Kontaktide üksikasjad aitavad Chromiumis kiiremini vorme täita.</translation>
 <translation id="5987687638152509985">Sünkroonimise alustamiseks värskendage Chromiumi</translation>
 <translation id="6055895534982063517">Saadaval on Chromiumi uus versioon ja see on kiirem kui kunagi varem.</translation>
 <translation id="6063093106622310249">&amp;Ava Chromiumis</translation>
@@ -173,12 +166,10 @@
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
 <translation id="6734080038664603509">Värskenda &amp;Chromiumi</translation>
 <translation id="6734291798041940871">Chromium on arvutisse kõigi kasutajate jaoks juba installitud.</translation>
-<translation id="6777817260680419853">Ümbersuunamine blokeeriti</translation>
 <translation id="6810143991807788455">Aidake muuta Chromiumi paremaks, teavitades meid praegustest seadetest</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6893813176749746474">Chromiumi on värskendatud, kuid te ei ole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="6944967875980567883">Chromiumi laaditud moodulid</translation>
-<translation id="694592694773692225">Ümbersuunamine on sellel lehel blokeeritud.</translation>
 <translation id="6964305034639999644">Ava link Chromiumi inko&amp;gnito aknas</translation>
 <translation id="6970811910055250180">Teie seadme täiendamine ...</translation>
 <translation id="705851970750939768">Värskenda Chromiumi</translation>

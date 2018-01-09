@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Godkända kredit- och betalkort</translation>
 <translation id="1519264250979466059">Programversionsdatum</translation>
 <translation id="1527263332363067270">Väntar på anslutning …</translation>
-<translation id="1532118530259321453">På den här sidan står det</translation>
 <translation id="153384715582417236">Det var allt för den här gången</translation>
 <translation id="154408704832528245">Välj leveransadress</translation>
 <translation id="1549470594296187301">JavaScript måste aktiveras för att du ska kunna använda den här funktionen.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Lokal dataåtkomst</translation>
 <translation id="1594030484168838125">Välj</translation>
 <translation id="1620510694547887537">Kamera</translation>
+<translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="1629803312968146339">Vill du att Chrome sparar det här kortet?</translation>
 <translation id="1639239467298939599">Läser in</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
-<translation id="2298151730144880294">På en inbäddad sida på den här sidan står det</translation>
 <translation id="230155334948463882">Har du ett nytt kort?</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kräver användarnamn och lösenord.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Rensa formuläret</translation>
 <translation id="2851634818064021665">Du behöver tillstånd att besöka den här webbplatsen</translation>
 <translation id="2856444702002559011">En angripare kan försöka stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (t.ex. lösenord, meddelanden eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Läs inte in sidan igen</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
 <translation id="2916038427272391327">Stäng andra program</translation>
 <translation id="2922350208395188000">Servercertifikatet kan inte kontrolleras.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Inga sökresultat hittades</translation>
 <translation id="3305707030755673451">Din data krypterades med din lösenfras för synkronisering den <ph name="TIME" />. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="3320021301628644560">Lägg till faktureringsadress</translation>
-<translation id="333371639341676808">Förhindra att den här sidan öppnar ytterligare dialogrutor.</translation>
 <translation id="3338095232262050444">Säker</translation>
 <translation id="3340978935015468852">inställningar</translation>
 <translation id="3345135638360864351">Det gick inte att skicka begäran om åtkomst till den här webbplatsen till <ph name="NAME" />. Försök igen.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">En ansvarig kan ta bort blockeringen</translation>
 <translation id="3566021033012934673">Anslutningen är inte privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">På en inbäddad sida på <ph name="SITE" /> står det</translation>
 <translation id="358285529439630156">Kreditkort och förbetalda kort kan användas.</translation>
 <translation id="3582930987043644930">Lägg till namn</translation>
 <translation id="3583757800736429874">&amp;Gör om Flytta</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Sidan har översatts från ett okänt språk till <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Betalning</translation>
 <translation id="4926049483395192435">Värdet måste anges.</translation>
-<translation id="4926159001844873046">Från <ph name="SITE" />:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4958444002117714549">Expandera lista</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Inte på <ph name="ORIGINAL_LANGUAGE" />? Rapportera felet</translation>
 <translation id="5190835502935405962">Bokmärkesfältet</translation>
 <translation id="5199729219167945352">Experiment</translation>
-<translation id="5201306358585911203">På en inbäddad sida på den här sidan står det</translation>
 <translation id="5205222826937269299">Namn måste anges</translation>
 <translation id="5222812217790122047">E-postadress måste anges</translation>
 <translation id="522700295135997067">Webbplatsen kan ha stulit ditt lösenord</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Ansluta</translation>
 <translation id="5308689395849655368">Krashrapportering har  inaktiverats.</translation>
 <translation id="5317780077021120954">Spara</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> av <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Välj kontaktuppgifter</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5332219387342487447">Fraktmetod</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Den ansvarige har inte godkänt den ännu</translation>
 <translation id="6569060085658103619">Du visar en tilläggssida</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
-<translation id="662080504995468778">Stanna kvar</translation>
 <translation id="6624427990725312378">Kontaktuppgifter</translation>
 <translation id="6626291197371920147">Lägg till ett giltigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Sök</translation>
@@ -1001,6 +995,7 @@
 <translation id="859285277496340001">Certifikatet har inte någon specificerad mekanism för att kontrollera om det har återkallats.</translation>
 <translation id="8620436878122366504">Dina föräldrar har inte godkänt den ännu</translation>
 <translation id="8625384913736129811">Spara kortet på enheten</translation>
+<translation id="8639963783467694461">Inställningar för Autofyll</translation>
 <translation id="8647750283161643317">Återställ alla till standardvärden</translation>
 <translation id="8660471606262461360">Från Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
@@ -1034,7 +1029,6 @@
 <translation id="8938939909778640821">Godkända kreditkort och förbetalda kort</translation>
 <translation id="8952525071319348207">Uppdatera kortinformationen genom att ange utgångsdatumet och CVC-koden för <ph name="CREDIT_CARD" />. När du bekräftar delas kortuppgifter från Google betalningskonto med webbplatsen.</translation>
 <translation id="8957210676456822347">Auktorisering av infångstportal</translation>
-<translation id="8958260976055043711">På den här sidan står det</translation>
 <translation id="8971063699422889582">Servercertifikatet har gått ut.</translation>
 <translation id="8978053250194585037"><ph name="BEGIN_LINK" />Nätfiske<ph name="END_LINK" /> upptäcktes nyligen av Google Säker webbsökning på <ph name="SITE" />. Webbplatser som används för nätfiske imiterar andra webbplatser i syfte att lura dig.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1072,10 +1066,8 @@
 <translation id="9170848237812810038">&amp;Ångra</translation>
 <translation id="917450738466192189">Servercertifikatet är ogiltigt.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> använder ett protokoll som inte stöds.</translation>
-<translation id="9198587359415855350">Från <ph name="SITE" />:</translation>
 <translation id="9205078245616868884">Din data har krypterats med din lösenfras för synkronisering. Ange den om du vill starta synkroniseringen.</translation>
 <translation id="9207861905230894330">Det gick inte att lägga till artikeln.</translation>
-<translation id="9209577707918422353">På en inbäddad sida på <ph name="SITE" /> står det</translation>
 <translation id="9215416866750762878">Ett program förhindrar att Chrome ansluter till den här webbplatsen på ett säkert sätt</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="933612690413056017">Det finns ingen internetanslutning</translation>

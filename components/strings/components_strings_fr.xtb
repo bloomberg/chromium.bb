@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Cartes de crédit et de débit acceptées</translation>
 <translation id="1519264250979466059">Date de création</translation>
 <translation id="1527263332363067270">En attente de connexion…</translation>
-<translation id="1532118530259321453">Cette page indique</translation>
 <translation id="153384715582417236">C'est tout !</translation>
 <translation id="154408704832528245">Sélectionner l'adresse d'expédition</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1594030484168838125">Sélectionner</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
+<translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="1629803312968146339">Voulez-vous que cette carte soit enregistrée dans Chrome ?</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2270484714375784793">N° de téléphone</translation>
 <translation id="2292556288342944218">Votre accès à Internet est bloqué</translation>
-<translation id="2298151730144880294">Une page intégrée à cette page Web indique</translation>
 <translation id="230155334948463882">Nouvelle carte ?</translation>
 <translation id="2316887270356262533">Libère moins de 1 Mo. Le chargement de certains sites risque d'être plus lent lors de votre prochaine visite.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Effacer le formulaire</translation>
 <translation id="2851634818064021665">Tu n'es pas autorisé à consulter ce site</translation>
 <translation id="2856444702002559011">Des individus malveillants tentent peut-être de subtiliser vos informations personnelles sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (mots de passe, messages ou numéros de carte de crédit, par exemple). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Ne pas actualiser</translation>
 <translation id="2909946352844186028">Un changement de réseau a été détecté.</translation>
 <translation id="2916038427272391327">Fermez les autres programmes</translation>
 <translation id="2922350208395188000">Impossible de vérifier le certificat du serveur.</translation>
@@ -330,7 +328,6 @@
 <translation id="3303855915957856445">Aucun résultat de recherche n'a été trouvé.</translation>
 <translation id="3305707030755673451">Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME" />. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="3320021301628644560">Ajouter une adresse de facturation</translation>
-<translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="3338095232262050444">Sécurisé</translation>
 <translation id="3340978935015468852">paramètres</translation>
 <translation id="3345135638360864351">Impossible d'envoyer votre demande d'accès au site à <ph name="NAME" />. Veuillez réessayer.</translation>
@@ -371,7 +368,6 @@
 <translation id="3556433843310711081">Votre responsable peut vous le débloquer</translation>
 <translation id="3566021033012934673">Votre connexion n'est pas privée</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Une page intégrée à l'adresse <ph name="SITE" /> indique</translation>
 <translation id="358285529439630156">Les cartes de crédit et les cartes prépayées sont acceptées.</translation>
 <translation id="3582930987043644930">Ajouter un nom</translation>
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
@@ -536,7 +532,6 @@
 <translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE" />.</translation>
 <translation id="4923459931733593730">Paiement</translation>
 <translation id="4926049483395192435">Doit être spécifié.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> indique</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
@@ -572,7 +567,6 @@
 <translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE" /> ? Signaler l'erreur</translation>
 <translation id="5190835502935405962">Barre de favoris</translation>
 <translation id="5199729219167945352">Prototypes</translation>
-<translation id="5201306358585911203">Une page intégrée à cette page Web indique</translation>
 <translation id="5205222826937269299">Veuillez saisir un nom</translation>
 <translation id="5222812217790122047">Veuillez saisir une adresse e-mail</translation>
 <translation id="522700295135997067">Ce site vient peut-être de dérober votre mot de passe</translation>
@@ -595,6 +589,7 @@
 <translation id="5308380583665731573">Connexion</translation>
 <translation id="5308689395849655368">L'envoi de rapports d'erreur est désactivé.</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> sur <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Sélectionner les coordonnées</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5332219387342487447">Mode de livraison</translation>
@@ -754,7 +749,6 @@
 <translation id="6563469144985748109">Votre responsable ne l'a pas encore autorisé</translation>
 <translation id="6569060085658103619">Vous consultez actuellement une page d'extension</translation>
 <translation id="6596325263575161958">Options de chiffrement</translation>
-<translation id="662080504995468778">Rester</translation>
 <translation id="6624427990725312378">Coordonnées</translation>
 <translation id="6626291197371920147">Ajouter un numéro de carte valide</translation>
 <translation id="6628463337424475685">Recherche <ph name="ENGINE" /></translation>
@@ -1000,6 +994,7 @@
 <translation id="859285277496340001">Le certificat n'indique aucun mécanisme permettant de vérifier s'il a été révoqué.</translation>
 <translation id="8620436878122366504">Tes parents ne l'ont pas encore autorisé</translation>
 <translation id="8625384913736129811">Enregistrer cette carte sur cet appareil</translation>
+<translation id="8639963783467694461">Paramètres de saisie automatique</translation>
 <translation id="8647750283161643317">Rétablir tous les tests par défaut</translation>
 <translation id="8660471606262461360">Informations issues de Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, réponse, <ph name="ANSWER" /></translation>
@@ -1033,7 +1028,6 @@
 <translation id="8938939909778640821">Cartes de crédit et cartes prépayées acceptées</translation>
 <translation id="8952525071319348207">Saisissez la date d'expiration et le code CVC de la carte <ph name="CREDIT_CARD" /> pour mettre à jour les informations relatives à celle-ci. Une fois la validation effectuée, les informations relatives à la carte de votre compte Google Payments seront partagées avec ce site.</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
-<translation id="8958260976055043711">Cette page indique</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
 <translation id="8978053250194585037">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter une tentative d'hameçonnage<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site d'hameçonnage se présente comme un site légitime dans le but de vous tromper.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1071,10 +1065,8 @@
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="917450738466192189">Le certificat du serveur n'est pas valide.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> utilise un protocole incompatible.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> indique</translation>
 <translation id="9205078245616868884">Vos données sont chiffrées avec votre phrase secrète de synchronisation. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
-<translation id="9209577707918422353">Une page intégrée à l'adresse <ph name="SITE" /> indique</translation>
 <translation id="9215416866750762878">Une application empêche Chrome de se connecter à ce site de manière sécurisée</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="933612690413056017">Aucune connexion Internet</translation>

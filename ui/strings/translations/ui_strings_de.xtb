@@ -150,6 +150,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-Datei (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> weitere</translation>
+<translation id="8730621377337864115">Fertig</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>
 <translation id="8806053966018712535">Ordner <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Bild mit Anmerkung versehen</translation>

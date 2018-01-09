@@ -218,6 +218,7 @@ Tietosi salataan synkronoinnin tunnuslauseesi avulla. Aloita synkronointi antama
 <translation id="5300589172476337783">Näytä</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="533632423981297619">Salasanasi näkyvät kaikille, jotka näkevät viedyn tiedoston. Älä jaa tiedostoa kenenkään kanssa.</translation>
 <translation id="5388358297987318779">Avaa kuva</translation>
 <translation id="5409365236829784218">Et ole asentanut sovellusta, jolla tämän tiedoston voi avata.</translation>
 <translation id="5433691172869980887">Käyttäjänimi kopioitu</translation>
@@ -325,7 +326,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="722055596168483966">Muokkaa Google-palveluita</translation>
 <translation id="7272437679830969316">Henkilöllisyytesi vahvistaminen ei onnistunut. Salasanaa ei kopioitu.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosenttia ladattu</translation>
-<translation id="7346909386216857016">OK!</translation>
+<translation id="7346909386216857016">Selvä</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="7425346204213733349">Kirjanmerkkeihin, historiaan, salasanoihin ja muihin asetuksiin tehtäviä muutoksia ei enää synkronoida Google-tilillesi. Olemassa olevia tietojasi säilytetään kuitenkin Google-tililläsi.</translation>
 <translation id="744343212394640790">Ei <ph name="EMAIL" /></translation>
@@ -350,6 +351,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="780301667611848630">Ei kiitos</translation>
 <translation id="7859704718976024901">Selaushistoria</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Vie salasanat…</translation>
 <translation id="7947953824732555851">Hyväksy ja kirjaudu sisään</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7971521879845308059">Estä ponn.ikk.</translation>

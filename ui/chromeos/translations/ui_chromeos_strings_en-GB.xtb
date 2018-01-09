@@ -115,6 +115,7 @@
 <translation id="4694604912444486114">Monkey</translation>
 <translation id="4711094779914110278">Turkish</translation>
 <translation id="4725511304875193254">Corgi</translation>
+<translation id="4737050008115666127">Landing</translation>
 <translation id="4747271164117300400">Macedonian</translation>
 <translation id="4749157430980974800">Georgian keyboard</translation>
 <translation id="4755240240651974342">Finnish keyboard</translation>
@@ -148,6 +149,7 @@
 <translation id="5465122519792752163">Nepali keyboard (InScript)</translation>
 <translation id="5469868506864199649">Italian</translation>
 <translation id="5500122897333236901">Icelandic</translation>
+<translation id="5508696409934741614">Dots</translation>
 <translation id="5533555070048896610">Transliteration (namaste → नमस्ते)</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5640179856859982418">Swiss keyboard</translation>
@@ -208,6 +210,7 @@
 <translation id="7474889694310679759">Canadian English keyboard</translation>
 <translation id="751507702149411736">Belarusian</translation>
 <translation id="7547811415869834682">Dutch</translation>
+<translation id="7603724359189955920">Grids</translation>
 <translation id="770015031906360009">Greek</translation>
 <translation id="7706319470528945664">Portuguese keyboard</translation>
 <translation id="7774365994322694683">Bird</translation>
@@ -238,6 +241,7 @@
 <translation id="8432745813735585631">US Colemak keyboard</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8467473010914675605">Korean input method</translation>
+<translation id="8477649328507734757">Spin</translation>
 <translation id="8521441079177373948">UK</translation>
 <translation id="8551494947769799688">Latvian</translation>
 <translation id="8561206103590473338">Elephant</translation>
@@ -256,4 +260,5 @@
 <translation id="913758436357682283">Myanmar Myansan keyboard</translation>
 <translation id="9153744823707037316">Array input method</translation>
 <translation id="9206487995878691001">Cangjie input method</translation>
+<translation id="9219908252191632183">Lunar</translation>
 </translationbundle>

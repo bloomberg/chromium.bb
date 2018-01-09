@@ -218,6 +218,7 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
+<translation id="533632423981297619">Las personas que tengan acceso al archivo exportado podrán ver tus contraseñas. No compartas el archivo con nadie.</translation>
 <translation id="5388358297987318779">Abrir imagen</translation>
 <translation id="5409365236829784218">No se instalaron aplicaciones que puedan abrir este archivo.</translation>
 <translation id="5433691172869980887">Se copió el nombre de usuario</translation>
@@ -350,6 +351,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7938254975914653459">FaceTime</translation>
+<translation id="7939128259257418052">Exportar contraseñas…</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear ventanas emergentes</translation>
@@ -395,7 +397,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8881801611828450202">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Informar de un problema</translation>
-<translation id="8971089644512329999">Entendido</translation>
+<translation id="8971089644512329999">Aceptar</translation>
 <translation id="8981454092730389528">Controles de actividad de Google</translation>
 <translation id="8985320356172329008">Accediste a Google como</translation>
 <translation id="902659348151742535">Es posible que Google use tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>

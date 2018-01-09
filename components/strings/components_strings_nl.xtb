@@ -74,7 +74,6 @@
 <translation id="1517500485252541695">Geaccepteerde creditcards en betaalpassen</translation>
 <translation id="1519264250979466059">Datum van build</translation>
 <translation id="1527263332363067270">Wachten op verbinding...</translation>
-<translation id="1532118530259321453">Deze pagina meldt het volgende</translation>
 <translation id="153384715582417236">Dat is voorlopig alles</translation>
 <translation id="154408704832528245">Afleveradres kiezen</translation>
 <translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
@@ -87,6 +86,7 @@
 <translation id="1592005682883173041">Lokale gegevenstoegang</translation>
 <translation id="1594030484168838125">Kiezen</translation>
 <translation id="1620510694547887537">Camera</translation>
+<translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
 <translation id="1629803312968146339">Wil je dat Chrome deze kaart opslaat?</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
@@ -180,7 +180,6 @@
 <translation id="2262243747453050782">HTTP-fout</translation>
 <translation id="2270484714375784793">Telefoonnummer</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
-<translation id="2298151730144880294">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="230155334948463882">Nieuwe kaart?</translation>
 <translation id="2316887270356262533">Hiermee wordt minder dan 1 MB vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="2317259163369394535">Voor <ph name="DOMAIN" /> zijn een gebruikersnaam en een wachtwoord vereist.</translation>
@@ -260,7 +259,6 @@
 <translation id="2835170189407361413">Formulier leegmaken</translation>
 <translation id="2851634818064021665">Je hebt toestemming nodig om deze site te bezoeken</translation>
 <translation id="2856444702002559011">Cybercriminelen proberen mogelijk je gegevens van <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> te stelen (bijvoorbeeld wachtwoorden, berichten of creditcardgegevens). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2889159643044928134">Niet opnieuw laden</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2916038427272391327">Andere programma's sluiten</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
@@ -327,7 +325,6 @@
 <translation id="3303855915957856445">Geen zoekresultaten gevonden</translation>
 <translation id="3305707030755673451">Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
-<translation id="333371639341676808">Voorkom dat deze pagina extra dialoogvensters weergeeft.</translation>
 <translation id="3338095232262050444">Veilig</translation>
 <translation id="3340978935015468852">instellingen</translation>
 <translation id="3345135638360864351">Je verzoek om toegang tot deze site kan niet worden verzonden naar <ph name="NAME" />. Probeer het opnieuw.</translation>
@@ -368,7 +365,6 @@
 <translation id="3556433843310711081">Je beheerder kan de blokkering van de site opheffen</translation>
 <translation id="3566021033012934673">Je verbinding is niet privé</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
-<translation id="3576616784287504635">Een ingesloten pagina op <ph name="SITE" /> meldt het volgende</translation>
 <translation id="358285529439630156">Creditcards en prepaidkaarten worden geaccepteerd.</translation>
 <translation id="3582930987043644930">Voeg naam toe</translation>
 <translation id="3583757800736429874">&amp;Opnieuw verplaatsen</translation>
@@ -532,7 +528,6 @@
 <translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Betaling</translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
-<translation id="4926159001844873046"><ph name="SITE" /> meldt het volgende</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4958444002117714549">Lijst uitvouwen</translation>
@@ -568,7 +563,6 @@
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5199729219167945352">Experimenten</translation>
-<translation id="5201306358585911203">Een ingesloten pagina op deze pagina meldt het volgende</translation>
 <translation id="5205222826937269299">Naam vereist</translation>
 <translation id="5222812217790122047">E-mailadres vereist</translation>
 <translation id="522700295135997067">Deze site heeft mogelijk zojuist je wachtwoord gestolen</translation>
@@ -591,6 +585,7 @@
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
+<translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> van <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Contactgegevens kiezen</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5332219387342487447">Verzendmethode</translation>
@@ -749,7 +744,6 @@
 <translation id="6563469144985748109">Je beheerder heeft dit nog niet goedgekeurd</translation>
 <translation id="6569060085658103619">Je bekijkt een extensiepagina</translation>
 <translation id="6596325263575161958">Opties voor encryptie</translation>
-<translation id="662080504995468778">Blijven</translation>
 <translation id="6624427990725312378">Contactgegevens</translation>
 <translation id="6626291197371920147">Een geldig kaartnummer toevoegen</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
@@ -995,6 +989,7 @@
 <translation id="859285277496340001">Er wordt in het certificaat geen methode gespecificeerd waarmee kan worden gecontroleerd of het certificaat is ingetrokken.</translation>
 <translation id="8620436878122366504">Je ouders hebben dit nog niet goedgekeurd</translation>
 <translation id="8625384913736129811">Deze kaart opslaan op dit apparaat</translation>
+<translation id="8639963783467694461">Instellingen voor Automatisch aanvullen</translation>
 <translation id="8647750283161643317">Alle standaardinstellingen herstellen</translation>
 <translation id="8660471606262461360">Van Google Payments</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, antwoord, <ph name="ANSWER" /></translation>
@@ -1028,7 +1023,6 @@
 <translation id="8938939909778640821">Geaccepteerde creditcards en prepaidkaarten</translation>
 <translation id="8952525071319348207">Geef de vervaldatum en CVC-code voor <ph name="CREDIT_CARD" /> op om je creditcardgegevens te updaten. Nadat je hebt bevestigd, worden je creditcardgegevens gedeeld met deze site.</translation>
 <translation id="8957210676456822347">Autorisatie van captive portal</translation>
-<translation id="8958260976055043711">Deze pagina meldt het volgende</translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>
 <translation id="8978053250194585037">Google Safe Browsing heeft onlangs <ph name="BEGIN_LINK" />phishing gedetecteerd<ph name="END_LINK" /> op <ph name="SITE" />. Phishingsites doen zich voor als een andere website om je te misleiden.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
@@ -1066,10 +1060,8 @@
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="917450738466192189">Het servercertificaat is ongeldig.</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> gebruikt een niet-ondersteund protocol.</translation>
-<translation id="9198587359415855350"><ph name="SITE" /> meldt het volgende</translation>
 <translation id="9205078245616868884">Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze op om de synchronisatie te starten.</translation>
 <translation id="9207861905230894330">Kan artikel niet toevoegen.</translation>
-<translation id="9209577707918422353">Een ingesloten pagina op <ph name="SITE" /> meldt het volgende</translation>
 <translation id="9215416866750762878">Een app voorkomt dat Chrome veilig verbinding kan maken met deze site</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>
 <translation id="933612690413056017">Er is geen internetverbinding beschikbaar</translation>

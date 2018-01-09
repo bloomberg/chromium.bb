@@ -22,7 +22,6 @@
 <translation id="1821985195704844674">koka režģis</translation>
 <translation id="1822429046913737220">priekšpusdienā/pēcpusdienā</translation>
 <translation id="1832974991323546415">atskaņot attālinātā ierīcē</translation>
-<translation id="1854180393107901205">Apturēt apraidi</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">statuss</translation>
 <translation id="1938124657309484470">Vērtībai ir jābūt “<ph name="MAXIMUM_DATE_OR_TIME" />” vai agrākam datumam vai laikam.</translation>
@@ -182,6 +181,7 @@
 <translation id="9132465097189459683">Cits...</translation>
 <translation id="9138385573473225930">brīdinājums</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, sākot no: <ph name="WEEK_START_DATE" /></translation>
+<translation id="916607977885256133">Attēls attēlā</translation>
 <translation id="947831847158436616">šūna</translation>
 <translation id="966787709310836684">izvēlne</translation>
 </translationbundle>

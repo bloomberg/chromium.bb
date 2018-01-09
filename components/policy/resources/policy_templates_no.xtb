@@ -293,6 +293,11 @@
 
           Hvis denne regelen ikke angis, brukes alle de fire skjemaene.</translation>
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
+<translation id="2075030897098958514">Kontrollerer om NTLMv2 er aktivert.
+
+          Alle nylige versjoner av Samba og Windows-tjenere støtter NTLMv2. Mv2 må bare slås av for bakoverkompatibilitet, siden sikkerheten for autentisering reduseres.
+
+          Standardverdien når denne regelen ikke er definert, er for øyeblikket «usann» for bakoverkompatibilitet, men skal endres til «sann» senere.</translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
 <translation id="2082205219176343977">Konfigurer minimum tillatt Chrome-versjon for enheten.</translation>
@@ -380,6 +385,7 @@
 <translation id="2303795211377219696">Slå på autofyll for kredittkort</translation>
 <translation id="2309390639296060546">Standardinnstilling for geoposisjonering</translation>
 <translation id="2312134445771258233">Lar deg konfigurere sidene som lastes inn ved oppstart. Innholdet i listen «Nettadresser som skal åpnes ved oppstart» ignoreres, med mindre du velger «Åpne en liste over nettadresser» i «Handling ved oppstart».</translation>
+<translation id="2327252517317514801">Spesifiser hvilke domener som har tilgang til G Suite</translation>
 <translation id="2334591568684482454">Konfigurerer tilgjengelighet og virkemåte for funksjonaliteten for å oppdatere <ph name="TPM_FIRMWARE_UPDATE_TPM" />-fastvaren.
 
       Enkeltinnstillinger kan angis i JSON-egenskaper:
@@ -782,6 +788,7 @@
       Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
+<translation id="377044054160169374">Håndhevelse av inngripen ved krenkende opplevelse</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3780319008680229708">Hvis denne regelen angis som «true» (sann), vises verktøyradikonet for Cast hele tiden i verktøyraden eller overflytsmenyen, og brukere kan ikke fjerne det.
 
@@ -957,6 +964,7 @@
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="4285674129118156176">Tillat at brukere uten tilknytning bruker ARC</translation>
 <translation id="4294280661005713627">Angir en målversjon for automatiske oppdateringer.
 
      Angir prefikset for en målversjon som <ph name="PRODUCT_OS_NAME" /> skal oppdateres til. Hvis enheten kjører en versjon før det angitte prefikset, oppdateres enheten til den siste versjonen med det gitte prefikset. Hvis enheten allerede bruker en nyere versjon, skjer det ikke noe (enheten blir med andre ord ikke nedgradert), og enheten beholder den nåværende versjonen. Prefiksformatet fungerer komponentvis, som demonstrert i det følgende eksemplet:
@@ -1046,6 +1054,14 @@
 <translation id="4531706050939927436">Android-apper kan tvangsinstalleres fra Google Administrasjonskonsoll ved hjelp av Google Play. De bruker ikke denne regelen.</translation>
 <translation id="4534500438517478692">Navnet på Android-begrensningen:</translation>
 <translation id="4541530620466526913">Lokale kontoer på enheten</translation>
+<translation id="4544079461524242527">Konfigurerer innstillingene for administrering av utvidelser for <ph name="PRODUCT_NAME" />.
+
+          Denne regelen kontrollerer flere innstillinger, inkludert innstillinger som kontrolleres av eventuelle eksisterende utvidelsesrelaterte regler. Denne regelen overstyrer eventuelle eldre regler som er til stede.
+
+          Denne regelen knytter en utvidelses-ID eller en nettadresse for oppdatering til den samsvarende konfigurasjonen. Med en utvidelses-ID blir konfigurasjonen kun brukt for den angitte utvidelsen. En standardkonfigurasjon kan angis for den spesielle ID-en <ph name="DEFAULT_SCOPE" />, som brukes for alle utvidelser som ikke har noen tilpasset konfigurasjon angitt i denne regelen. Med en nettadresse for oppdatering blir konfigurasjonen brukt for alle utvidelser med den eksakte nettadressen for oppdatering som er oppgitt i manifestet til denne utvidelsen, som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          For å få en fullstendig beskrivelse over mulige innstilinger samt strukturen i denne regelen, gå til https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
@@ -1063,6 +1079,11 @@
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
 <translation id="4665897631924472251">Innstillinger for administrasjon av utvidelser</translation>
 <translation id="4668325077104657568">Standardinnstilling for bilder</translation>
+<translation id="4671708336564240458">Lar deg angi om nettsteder med krenkende opplevelser skal hindres i å åpne nye vinduer eller faner.
+      Hvis denne regelen er angitt som Sann, hindres nettsteder med krenkende opplevelser i å åpne nye vinduer og faner.
+      Denne virkemåten utløses imidlertid ikke hvis SafeBrowsingEnabled-regelen er satt til Usann.
+      Hvis denne regelen er angitt som Usann, tillates nettsteder med krenkende opplevelser å åpne nye vinduer og faner.
+      Hvis denne regelen ikke er angitt, brukes Sann.</translation>
 <translation id="467236746355332046">Støttede funksjoner:</translation>
 <translation id="4674167212832291997">Tilpass listen over nettadressemønstre som alltid skal gjengis av <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -1129,6 +1150,7 @@
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
+<translation id="487460824085252184">Overfør automatisk. Ikke be om brukersamtykke.</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>
 <translation id="4881315447528084360">Spesifiserer en liste over apper og utvidelser som installeres stille, uten brukerinteraksjon, og som ikke kan avinstalleres eller deaktiveres av brukeren. Alle tillatelser som appene/utvidelsene ber om, blir gitt implisitt, uten brukerinteraksjon, inkludert eventuelle ekstra tillatelser som fremtidige versjoner av appen/utvidelsen ber om. I tillegg gis tillatelser for utvidelses-API-ene enterprise.deviceAttributes og enterprise.platformKeys. (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som ikke tvangsinstalleres.)
 
@@ -1225,6 +1247,7 @@
 <translation id="5272684451155669299">Hvis denne er angitt som «true» (sann), kan brukerne bruke maskinvaren på Chrome-enheter til å attestere enhetenes identitet eksternt til sertifiseringsinstansen for personvern via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> ved bruk av <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
 
           Hvis den er angitt som «false» (usann), eller hvis den ikke er angitt, kan ikke API-et kalles opp – i stedet vises en feilkode.</translation>
+<translation id="5283457834853986457">Deaktiver programtilleggssøk (avviklet)</translation>
 <translation id="5288772341821359899">Hvis regelen er konfigurert, blir UDP-portområdet som brukes av WebRTC, begrenset til det spesifiserte portintervallet (inkludert endepunktene).
 
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
@@ -1248,6 +1271,11 @@
           Hvis denne innstillingen er satt til False (usann), kan ikke brukere caste innhold til enheten. Hvis denne innstillingen er satt til True (sann), har brukere tillatelse til å caste innhold. Hvis denne innstillingen ikke er spesifisert, har ikke brukere tillatelse til å caste innhold til registrerte Chrome OS-enheter, men kan caste til enheter som ikke er registrert.</translation>
 <translation id="5330684698007383292">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de følgende innholdstypene</translation>
 <translation id="5365946944967967336">Vis startsideknappen på verktøylinjen</translation>
+<translation id="5366745336748853475">Gjør det mulig å spesifisere en liste over nettadressemønstre som angir hvilke nettsteder det automatisk skal velges et klientsertifikat for. Dette skjer på påloggingsskjermen i rammen som er vert for SAML-flyten, hvis nettstedet krever et sertifikat. Et eksempel på bruk er å konfigurere et enhetsgjeldende sertifikat som skal presenteres til SAML IdP.
+
+      Verdien må være en matrise med JSON-kataloger i strengformat. Hver katalog må ha formen { "mønster": "$URL_PATTERN", "filter" : $FILTER }, der $URL_PATTERN er et mønster for spesifisering av innhold. $FILTER begrenser klientsertifikatene nettleseren automatisk velger fra. Uavhengig av hvilket filter som brukes, blir det bare valgt sertifikater som samsvarer med tjenerens sertifikatforespørsel. Hvis $FILTER har formen { "ISSUER": { "CN": "$ISSUER_CN" } }, velges det bare klientsertifikater som er utstedt av et sertifikat med CommonName $ISSUER_CN. Hvis $FILTER er den tomme katalogen {}, brukes det ikke ytterligere begrensninger for valg av klientsertifikater.
+
+      Hvis du ikke spesifiserer denne regelen, blir det ikke valgt klientsertifikat automatisk for noen nettsteder.</translation>
 <translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette administrerte brukere. Eksisterende administrerte brukere er fortsatt tilgjengelige.
 
           Hvis angitt til «true» eller ikke konfigurert, kan denne brukeren opprette og administrere administrerte brukere.</translation>
@@ -1316,6 +1344,7 @@
       Hvis angitt, legges et parameter kalt «begrenset» til nettadressen som brukes til å hente startverdien for variasjonene. Verdien av parameteret er verdien angitt i denne innstillingen.
 
       Hvis ikke angitt, endres ikke nettadressen for startverdien.</translation>
+<translation id="5561811616825571914">Velg klientsertifikater for disse nettstedene automatisk på påloggingsskjermen</translation>
 <translation id="556941986578702361">Kontroller automatisk skjuling av <ph name="PRODUCT_OS_NAME" />-hyllen.
 
       Hvis denne innstillingen angis til «AlwaysAutoHideShelf'», skjules alltid hyllen automatisk.
@@ -1382,6 +1411,11 @@
       Hvis dette er deaktivert, kan ikke sider åpnes i inkognitomodus.
 
       Hvis dette er angitt til Tvunget, kan sider åpnes BARE i inkognitomodus.</translation>
+<translation id="583091600226586337">
+      Hvis regelen er slått på, blir brukeren spurt hvor hver enkelt fil skal lagres, før nedlasting.
+      Hvis regelen er slått av, starter nedlastinger umiddelbart, og brukeren blir ikke spurt hvor filen skal lagres.
+      Hvis regelen ikke er spesifisert, kan brukeren endre denne innstillingen.
+      </translation>
 <translation id="5835124959204887277">Spesifiserer nettadresser og domener som det ikke blir vist noen forespørsel for når det blir bedt om attestsertifikater fra sikkerhetsnøkler. I tillegg blir et signal sendt til sikkerhetsnøkkelen. Dette signalet indikerer at enkeltattester kan brukes. Uten dette kommer brukere til å få opp en forespørsel i Chrome v65+ når nettsteder ber om attest for sikkerhetsnøkler.
 
       Nettadresser (for eksempel https://example.com/some/path) samsvarer bare som U2F-app-ID-er. Domener (for eksempel example.com) samsvarer bare som webauthn RP-ID-er. For å dekke både U2F- og webauthn-API-er for et bestemt nettsted må derfor både app-ID-nettadressen og domenet listes opp.</translation>
@@ -1440,6 +1474,7 @@
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="5997543603646547632">Bruk 24-timersklokken som standard</translation>
+<translation id="5997846976342452720">Angi om programtilleggssøket skal deaktiveres (avviklet)</translation>
 <translation id="6005179188836322782">Slår på Safe Browsing-funksjonen for <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
       Hvis du slår på denne innstillingen, er Safe Browsing alltid aktiv.
@@ -1705,6 +1740,25 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="6903814433019432303">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør hvilket sett av nettadresser som blir lastet inn når demo-økten startes. Denne retningslinjen overstyrer enhver annen mekanisme for angivelse av den første nettadressen og kan således brukes bare for en økt som ikke er tilknyttet en viss bruker.</translation>
+<translation id="6908347296939885026">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i G Suite og hindrer brukere i å endre denne innstillingen.
+
+      Hvis du definerer denne innstillingen, har brukere bare tilgang til Google-apper
+      via kontoer fra de spesifiserte domenene (merk at dette ikke
+      fungerer for gmail.com/googlemail.com).
+
+      Denne innstillingen hindrer IKKE brukerne i å logge på administrerte enheter
+      som krever Google-autentisering. Brukere kan fremdeles
+      logge på kontoene sine fra andre domener, men de får opp en feil
+      når de prøver å bruke G Suite med disse kontoene.
+
+      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har brukerne
+      tilgang til G Suite med hvilken som helst konto.
+
+      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
+      alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som beskrevet i
+      https://support.google.com/a/answer/1668854.
+
+      Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="6908640907898649429">Konfigurerer standard søkeleverandør. Du kan angi hvilken søkeleverandør brukeren får som standard, eller velge å deaktivere standardsøk.</translation>
 <translation id="6915442654606973733">Aktiver tilgjengelighetsfunksjon for muntlig tilbakemelding.
 
@@ -1832,6 +1886,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7261252191178797385">Bakgrunnsbilde på enheten</translation>
+<translation id="7266471712301230894">Denne regelen er fjernet fra og med <ph name="PRODUCT_NAME" /> 64.
+
+      Automatisk søk etter og installering av manglende programtillegg støttes ikke lenger.</translation>
 <translation id="7267809745244694722">Medietaster har standardfunksjon som funksjonstaster</translation>
 <translation id="7271085005502526897">Import av hjemmeside fra standard nettleser ved første kjøring</translation>
 <translation id="7273823081800296768">Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukere velge å knytte sammen klienter og verter ved tilkobling, og dermed sørge for at PIN-koden ikke må angis hver gang.
@@ -2120,6 +2177,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen ikke angis, bruker <ph name="PRODUCT_OS_NAME" /> ID-en for e-postkontoen til enhetens lokale konto som skjermnavn på påloggingsskjermen.
 
       Denne innstillingen ignoreres for vanlige brukerkontoer.</translation>
+<translation id="8259375588339409826">Både Chromium og Google Chrome støtter det samme settet med regler. Merk at dette dokumentet kan inneholde upubliserte regler (dvs. at reglenes «Støttes på»-informasjon kan vise til en upublisert versjon av <ph name="PRODUCT_NAME" />) som kan endres eller fjernes uten varsel. Det gis ingen garantier av noe slag, verken i forbindelse med sikkerhet, personvern eller annet, for slike upubliserte regler.
+
+Disse reglene er kun ment å brukes for å konfigurere forekomster av <ph name="PRODUCT_NAME" /> internt i organisasjonen din. Bruk av disse reglene utenfor organisasjonen (for eksempel i et offentlig distribuert program) regnes som skadelig programvare og blir sannsynligvis merket som skadelig programvare av Google og antivirus-leverandører.
+
+Disse innstillingene trenger ikke å konfigureres manuelt. Maler for Windows, Mac og Linux som er enkle å bruke, er tilgjengelige for nedlasting fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+
+Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler via registeret støttes fortsatt for Windows-forekomster som er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
+<translation id="8274603902181597201">Visk ut brukerens ecryptfs-hjemmekatalog, og begynn med en ny ext4-kryptert hjemmekatalog.</translation>
 <translation id="8279832363395120715">Fjerner personvern- og sikkerhetsfølsomme deler av https://-nettadresser før de sendes videre til PAC-skript (Proxy Auto Config) som brukes av <ph name="PRODUCT_NAME" /> til å finne proxy-tjeneradresser.
 
       Når den er satt til True (sann), slås sikkerhetsfunksjonen på, og https://-
@@ -2205,6 +2270,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
+<translation id="8598350264853261122">Hvis regelen er satt til «usann», har ikke brukere uten tilknytning tillatelse til å bruke ARC.
+
+      Hvis regelen ikke er spesifisert eller er satt til «sann», har alle brukere tillatelse til å bruke ARC (med mindre ARC er deaktivert på andre måter).
+
+      Endringer av regelen tas bare i bruk når ARC ikke kjører, f.eks. under oppstart av Chrome OS.</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">For Android-apper blir bare det innebygde kameraet påvirket av denne regelen. Når denne regelen er angitt som «true» (sann), slås kameraet av for alle Android-apper – uten unntak.</translation>
@@ -2339,6 +2409,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du for eksempel vil tillate alle modusene for hurtigopplåsing, bruker du [«all»]. Hvis du bare vil tillate PIN-opplåsing, bruker du [«PIN»]. Hvis du vil slå av alle modusene for hurtigopplåsing, bruker du [].
 
           Som standard er ingen moduser for hurtigopplåsing tilgjengelige for administrerte enheter.</translation>
+<translation id="9136399279941091445">Intervaller utenfor arbeidstiden når de spesifiserte enhetsinnstillingene er tilgjengelige</translation>
 <translation id="9147029539363974059">Sender systemlogger til administrasjonstjeneren for å la administratorer
       overvåke systemloggene.
 
@@ -2357,11 +2428,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="9197740283131855199">Prosentandelen det skaleres etter for å justere forsinkelse i skjermdemping, hvis brukeren har blitt aktiv igjen etter demping</translation>
 <translation id="9200828125069750521">Parametere for bildenettadresser som bruker POST</translation>
-<translation id="9212233969680267790">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 66 (rundt februar 2018).
-
-      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> standarden for maksimumsversjon.
-
-      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, kommer ikke <ph name="PRODUCT_NAME" /> til å bruke høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
 
       Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel
