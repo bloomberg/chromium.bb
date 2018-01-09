@@ -518,21 +518,6 @@ void CommandBufferStub::OnSetGetBuffer(int32_t shm_id) {
     command_buffer_->SetGetBuffer(shm_id);
 }
 
-void CommandBufferStub::OnTakeFrontBuffer(const Mailbox& mailbox) {
-  TRACE_EVENT0("gpu", "CommandBufferStub::OnTakeFrontBuffer");
-  if (!decoder_context_) {
-    LOG(ERROR) << "Can't take front buffer before initialization.";
-    return;
-  }
-
-  decoder_context_->TakeFrontBuffer(mailbox);
-}
-
-void CommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
-                                            bool is_lost) {
-  decoder_context_->ReturnFrontBuffer(mailbox, is_lost);
-}
-
 CommandBufferServiceClient::CommandBatchProcessedResult
 CommandBufferStub::OnCommandBatchProcessed() {
   GpuWatchdogThread* watchdog = channel_->gpu_channel_manager()->watchdog();

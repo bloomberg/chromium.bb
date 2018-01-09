@@ -37,6 +37,7 @@ class Size;
 namespace gpu {
 
 class DecoderClient;
+struct Mailbox;
 
 namespace gles2 {
 
@@ -129,6 +130,9 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public DecoderContext {
   // Releases the surface associated with the GL context.
   // The decoder should not be used until a new surface is set.
   virtual void ReleaseSurface() = 0;
+
+  virtual void TakeFrontBuffer(const Mailbox& mailbox) = 0;
+  virtual void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) = 0;
 
   // Resize an offscreen frame buffer.
   virtual bool ResizeOffscreenFramebuffer(const gfx::Size& size) = 0;
