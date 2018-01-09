@@ -165,16 +165,6 @@ struct BASE_EXPORT LaunchOptions {
   // propagate FDs into the child process.
   FileHandleMappingVector fds_to_remap;
 
-  // Each element is an RLIMIT_* constant that should be raised to its
-  // rlim_max.  This pointer is owned by the caller and must live through
-  // the call to LaunchProcess().
-  const std::vector<int>* maximize_rlimits = nullptr;
-
-  // If true, start the process in a new process group, instead of
-  // inheriting the parent's process group.  The pgid of the child process
-  // will be the same as its pid.
-  bool new_process_group = false;
-
 #if defined(OS_LINUX)
   // If non-zero, start the process using clone(), using flags as provided.
   // Unlike in clone, clone_flags may not contain a custom termination signal
@@ -223,6 +213,16 @@ struct BASE_EXPORT LaunchOptions {
   // code running in this delegate essentially needs to be async-signal safe
   // (see man 7 signal for a list of allowed functions).
   PreExecDelegate* pre_exec_delegate = nullptr;
+
+  // Each element is an RLIMIT_* constant that should be raised to its
+  // rlim_max.  This pointer is owned by the caller and must live through
+  // the call to LaunchProcess().
+  const std::vector<int>* maximize_rlimits = nullptr;
+
+  // If true, start the process in a new process group, instead of
+  // inheriting the parent's process group.  The pgid of the child process
+  // will be the same as its pid.
+  bool new_process_group = false;
 #endif  // defined(OS_POSIX)
 
 #if defined(OS_CHROMEOS)

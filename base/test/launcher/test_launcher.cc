@@ -69,6 +69,7 @@
 // TODO(scottmg): For temporary code in OnOutputTimeout().
 #include <zircon/syscalls.h>
 #include <zircon/syscalls/object.h>
+#include "base/fuchsia/default_job.h"
 #endif
 
 namespace base {
@@ -261,7 +262,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
   const bool kOnBot = getenv("CHROME_HEADLESS") != nullptr;
 #endif  // OS_FUCHSIA
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   // Make sure an option we rely on is present - see LaunchChildGTestProcess.
   DCHECK(options.new_process_group);
 #endif
@@ -295,7 +296,14 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
     new_options.job_handle = job_handle.Get();
   }
-#endif  // defined(OS_WIN)
+#elif defined(OS_FUCHSIA)
+  DCHECK(!new_options.job_handle);
+
+  ScopedZxHandle job_handle;
+  zx_status_t result = zx_job_create(GetDefaultJob(), 0, job_handle.receive());
+  CHECK_EQ(ZX_OK, result) << "zx_job_create: " << zx_status_get_string(result);
+  new_options.job_handle = job_handle.get();
+#endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX)
   // To prevent accidental privilege sharing to an untrusted child, processes
@@ -335,13 +343,14 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     if (!process.IsValid())
       return -1;
 
-    // TODO(rvargas) crbug.com/417532: Don't store process handles.
 #if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
     if (kOnBot) {
       LOG(ERROR) << base::StringPrintf("adding %x to live process list",
                                        process.Handle());
     }
 #endif  // OS_FUCHSIA
+
+    // TODO(rvargas) crbug.com/417532: Don't store process handles.
     GetLiveProcesses()->insert(std::make_pair(process.Handle(), command_line));
   }
 
@@ -372,18 +381,20 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     // to do that twice and trigger all kinds of log messages.
     AutoLock lock(*GetLiveProcessesLock());
 
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+    // TODO(scottmg): https://crbug.com/755282
+    if (kOnBot) {
+      LOG(ERROR) << base::StringPrintf("going to zx_task_kill(job) for %x",
+                                       process.Handle());
+    }
+
+    CHECK_EQ(zx_task_kill(job_handle.get()), ZX_OK);
+#elif defined(OS_POSIX)
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
       // or due to it timing out, we need to clean up any child processes that
       // it might have created. On Windows, child processes are automatically
       // cleaned up using JobObjects.
-#if defined(OS_FUCHSIA)  // TODO(scottmg): https://crbug.com/755282
-      if (kOnBot) {
-        LOG(ERROR) << base::StringPrintf("going to KillProcessGroup() for %x",
-                                         process.Handle());
-      }
-#endif  // OS_FUCHSIA
       KillProcessGroup(process.Handle());
     }
 #endif
@@ -439,7 +450,6 @@ void DoLaunchChildTestProcess(
     }
   }
 #elif defined(OS_POSIX)
-  options.new_process_group = true;
   options.fds_to_remap = test_launch_options.fds_to_remap;
   if (redirect_stdio) {
     int output_file_fd = fileno(output_file.get());
@@ -450,6 +460,9 @@ void DoLaunchChildTestProcess(
         std::make_pair(output_file_fd, STDERR_FILENO));
   }
 
+#if !defined(OS_FUCHSIA)
+  options.new_process_group = true;
+#endif
 #if defined(OS_LINUX)
   options.kill_on_parent_death = true;
 #endif
