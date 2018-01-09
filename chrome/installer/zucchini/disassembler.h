@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/image_utils.h"
 
@@ -123,6 +124,8 @@ class Disassembler {
   // Raw image data. After Parse(), a Disassembler should shrink this to contain
   // only the portion containing the executable file it recognizes.
   ConstBufferView image_;
+
+  DISALLOW_COPY_AND_ASSIGN(Disassembler);
 };
 
 }  // namespace zucchini
