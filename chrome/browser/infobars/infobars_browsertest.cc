@@ -18,6 +18,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
+#include "chrome/browser/plugins/plugin_infobar_delegates.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/plugins/reload_plugin_infobar_delegate.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
@@ -220,6 +222,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"extension_dev_tools", IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE},
       {"nacl", IBD::NACL_INFOBAR_DELEGATE},
       {"pepper_broker", IBD::PEPPER_BROKER_INFOBAR_DELEGATE},
+      {"outdated_plugin", IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE},
       {"reload_plugin", IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE},
       {"plugin_observer", IBD::PLUGIN_OBSERVER_INFOBAR_DELEGATE},
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
@@ -272,6 +275,13 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           GetInfoBarService(), GURL("http://example.com/"),
           base::ASCIIToUTF16("Test Plugin"), nullptr, nullptr,
           base::Callback<void(bool)>());
+      break;
+    case IBD::OUTDATED_PLUGIN_INFOBAR_DELEGATE:
+      OutdatedPluginInfoBarDelegate::Create(
+          GetInfoBarService(), nullptr,
+          std::make_unique<PluginMetadata>(
+              "test-plugin", base::ASCIIToUTF16("Test Plugin"), true, GURL(),
+              GURL(), base::ASCIIToUTF16("Test"), std::string()));
       break;
     case IBD::RELOAD_PLUGIN_INFOBAR_DELEGATE:
       ReloadPluginInfoBarDelegate::Create(
@@ -412,6 +422,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_nacl) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_pepper_broker) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_outdated_plugin) {
   ShowAndVerifyUi();
 }
 
