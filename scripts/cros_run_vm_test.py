@@ -98,8 +98,7 @@ class VMTest(object):
         'python',
         '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests',
         '--browser=%s' % browser,
-        self.catapult_tests,
-    ])
+    ] + self.catapult_tests)
 
   def _RunAutotest(self):
     """Run an autotest using test_that.
@@ -116,8 +115,7 @@ class VMTest(object):
         '--no-quickmerge',
         '--ssh_options', '-F /dev/null -i /dev/null',
         'localhost:%d' % self._vm.ssh_port,
-        self.autotest,
-    ]
+    ] + self.autotest
     return cros_build_lib.RunCommand(cmd, log_output=True)
 
   def RunTests(self):
@@ -208,9 +206,9 @@ def ParseCommandLine(argv):
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
-  parser.add_argument('--catapult-tests',
+  parser.add_argument('--catapult-tests', nargs='+',
                       help='Catapult test pattern to run, passed to run_tests.')
-  parser.add_argument('--autotest',
+  parser.add_argument('--autotest', nargs='+',
                       help='Autotest test pattern to run, passed to test_that.')
   parser.add_argument('--board', help='Board to use.')
   parser.add_argument('--results-dir', help='Autotest results directory.')
