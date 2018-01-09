@@ -392,7 +392,8 @@ bool PaintLayer::ScrollsWithRespectTo(const PaintLayer* other) const {
 
 void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
   ClearClipRects();
-  UpdateLayerPositionRecursive();
+  if (!IsRootLayer())
+    UpdateLayerPositionRecursive();
 }
 
 void PaintLayer::UpdateTransformationMatrix() {
@@ -828,7 +829,8 @@ void PaintLayer::UpdateLayerPosition() {
   }
 
   if (PaintLayer* containing_layer = ContainingLayer()) {
-    if (containing_layer->GetLayoutObject().HasOverflowClip()) {
+    if (containing_layer->GetLayoutObject().HasOverflowClip() &&
+        !containing_layer->IsRootLayer()) {
       // Subtract our container's scroll offset.
       IntSize offset =
           containing_layer->GetLayoutBox()->ScrolledContentOffset();
@@ -3029,6 +3031,19 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
 
   SetNeedsCompositingInputsUpdate();
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
+}
+
+LayoutPoint PaintLayer::Location() const {
+#if DCHECK_IS_ON()
+  DCHECK(!needs_position_update_);
+#endif
+  LayoutPoint result(location_);
+  PaintLayer* containing_layer = ContainingLayer();
+  if (containing_layer && containing_layer->IsRootLayer() &&
+      containing_layer->GetLayoutObject().HasOverflowClip()) {
+    result -= containing_layer->GetLayoutBox()->ScrolledContentOffset();
+  }
+  return result;
 }
 
 PaintLayerClipper PaintLayer::Clipper(

@@ -270,12 +270,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return curr;
   }
 
-  const LayoutPoint& Location() const {
-#if DCHECK_IS_ON()
-    DCHECK(!needs_position_update_);
-#endif
-    return location_;
-  }
+  LayoutPoint Location() const;
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
@@ -291,7 +286,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // For LayoutTreeAsText
   LayoutRect RectIgnoringNeedsPositionUpdate() const {
-    return LayoutRect(location_, size_);
+    return LayoutRect(Location(), size_);
   }
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
