@@ -57,33 +57,28 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
 }
 
 void EmbeddedWorkerInstanceClientImpl::StartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-    mojom::ControllerServiceWorkerRequest controller_request,
-    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
+    mojom::EmbeddedWorkerStartParamsPtr params) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   service_manager::mojom::InterfaceProviderPtr interface_provider(
-      std::move(provider_info->interface_provider));
+      std::move(params->provider_info->interface_provider));
+  const bool use_script_streaming =
+      ServiceWorkerUtils::IsScriptStreamingEnabled() &&
+      params->installed_scripts_info;
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params->embedded_worker_id, params->service_worker_version_id,
-      params->scope, params->script_url,
-      ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
-      std::move(dispatcher_request), std::move(controller_request),
-      std::move(service_worker_host), std::move(instance_host),
-      std::move(provider_info), std::move(temporal_self_),
+      params->scope, params->script_url, use_script_streaming,
+      std::move(params->dispatcher_request),
+      std::move(params->controller_request),
+      std::move(params->service_worker_host), std::move(params->instance_host),
+      std::move(params->provider_info), std::move(temporal_self_),
       ChildThreadImpl::current()->thread_safe_sender(), io_thread_runner_);
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
-  wrapper_ = StartWorkerContext(
-      std::move(params), std::move(installed_scripts_info), std::move(client),
-      std::move(content_settings_proxy), std::move(interface_provider));
+  wrapper_ = StartWorkerContext(std::move(params), std::move(client),
+                                std::move(interface_provider));
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {
@@ -131,24 +126,22 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
 std::unique_ptr<EmbeddedWorkerInstanceClientImpl::WorkerWrapper>
 EmbeddedWorkerInstanceClientImpl::StartWorkerContext(
     mojom::EmbeddedWorkerStartParamsPtr params,
-    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
     std::unique_ptr<ServiceWorkerContextClient> context_client,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
   std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManager> manager;
   // |installed_scripts_info| is null if scripts should be served by net layer,
   // when the worker is not installed, or the worker is launched for checking
   // the update.
   if (ServiceWorkerUtils::IsScriptStreamingEnabled() &&
-      installed_scripts_info) {
+      params->installed_scripts_info) {
     manager = WebServiceWorkerInstalledScriptsManagerImpl::Create(
-        std::move(installed_scripts_info), io_thread_runner_);
+        std::move(params->installed_scripts_info), io_thread_runner_);
   }
 
   auto wrapper = std::make_unique<WorkerWrapper>(
       blink::WebEmbeddedWorker::Create(
           std::move(context_client), std::move(manager),
-          content_settings_proxy.PassInterface().PassHandle(),
+          params->content_settings_proxy.PassHandle(),
           interface_provider.PassInterface().PassHandle()),
       params->worker_devtools_agent_route_id);
 

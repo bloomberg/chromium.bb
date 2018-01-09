@@ -96,14 +96,7 @@ EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
     ~MockEmbeddedWorkerInstanceClient() {}
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-    mojom::EmbeddedWorkerStartParamsPtr params,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-    mojom::ControllerServiceWorkerRequest controller_request,
-    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-    blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
+    mojom::EmbeddedWorkerStartParamsPtr params) {
   if (!helper_)
     return;
 
@@ -114,11 +107,7 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
   ASSERT_TRUE(worker);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
 
-  helper_->OnStartWorkerStub(std::move(params), std::move(dispatcher_request),
-                             std::move(controller_request),
-                             std::move(service_worker_host),
-                             std::move(instance_host), std::move(provider_info),
-                             std::move(installed_scripts_info));
+  helper_->OnStartWorkerStub(std::move(params));
 }
 
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StopWorker() {
@@ -830,13 +819,7 @@ void EmbeddedWorkerTestHelper::SimulateSend(IPC::Message* message) {
 }
 
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
-    mojom::EmbeddedWorkerStartParamsPtr params,
-    mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
-    mojom::ControllerServiceWorkerRequest controller_request,
-    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
-    mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-    mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
-    blink::mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info) {
+    mojom::EmbeddedWorkerStartParamsPtr params) {
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params->embedded_worker_id);
   ASSERT_TRUE(worker);
@@ -847,9 +830,11 @@ void EmbeddedWorkerTestHelper::OnStartWorkerStub(
           &EmbeddedWorkerTestHelper::OnStartWorker, AsWeakPtr(),
           params->embedded_worker_id, params->service_worker_version_id,
           params->scope, params->script_url, params->pause_after_download,
-          std::move(dispatcher_request), std::move(controller_request),
-          std::move(service_worker_host), std::move(instance_host),
-          std::move(provider_info), std::move(installed_scripts_info)));
+          std::move(params->dispatcher_request),
+          std::move(params->controller_request),
+          std::move(params->service_worker_host),
+          std::move(params->instance_host), std::move(params->provider_info),
+          std::move(params->installed_scripts_info)));
 }
 
 void EmbeddedWorkerTestHelper::OnResumeAfterDownloadStub(
