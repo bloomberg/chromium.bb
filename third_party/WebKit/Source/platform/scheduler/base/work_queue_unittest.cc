@@ -38,9 +38,18 @@ class WorkQueueTest : public ::testing::Test {
  protected:
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::Bind(&NopTask), FROM_HERE),
+        TaskQueue::PostedTask(base::BindOnce(&NopTask), FROM_HERE),
         base::TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
+    return fake_task;
+  }
+
+  TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
+    TaskQueueImpl::Task fake_task(
+        TaskQueue::PostedTask(base::BindOnce(&NopTask), FROM_HERE),
+        base::TimeTicks(), 0);
+    fake_task.set_enqueue_order(enqueue_order);
+    fake_task.nestable = base::Nestable::kNonNestable;
     return fake_task;
   }
 
@@ -120,6 +129,42 @@ TEST_F(WorkQueueTest, PushAfterFenceHit) {
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+}
+
+TEST_F(WorkQueueTest, PushNonNestableTaskToFront) {
+  WorkQueue* work_queue;
+  EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+
+  work_queue_->PushNonNestableTaskToFront(
+      FakeNonNestableTaskWithEnqueueOrder(3));
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+  EXPECT_EQ(work_queue_.get(), work_queue);
+
+  work_queue_->PushNonNestableTaskToFront(
+      FakeNonNestableTaskWithEnqueueOrder(2));
+
+  EXPECT_EQ(2ull, work_queue_->GetFrontTask()->enqueue_order());
+  EXPECT_EQ(3ull, work_queue_->GetBackTask()->enqueue_order());
+}
+
+TEST_F(WorkQueueTest, PushNonNestableTaskToFrontAfterFenceHit) {
+  work_queue_->InsertFence(1);
+  WorkQueue* work_queue;
+  EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+
+  work_queue_->PushNonNestableTaskToFront(
+      FakeNonNestableTaskWithEnqueueOrder(2));
+  EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+}
+
+TEST_F(WorkQueueTest, PushNonNestableTaskToFrontBeforeFenceHit) {
+  work_queue_->InsertFence(3);
+  WorkQueue* work_queue;
+  EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
+
+  work_queue_->PushNonNestableTaskToFront(
+      FakeNonNestableTaskWithEnqueueOrder(2));
+  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
 }
 
 TEST_F(WorkQueueTest, ReloadEmptyImmediateQueue) {

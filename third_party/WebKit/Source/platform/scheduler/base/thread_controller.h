@@ -60,11 +60,6 @@ class PLATFORM_EXPORT ThreadController {
   // These methods exist due to current integration of TaskQueueManager
   // with MessageLoop.
 
-  // TaskQueueManager should schedule non-nestable work itself when
-  // appropriate.
-  virtual void PostNonNestableTask(const base::Location& from_here,
-                                   base::OnceClosure task) = 0;
-
   virtual bool RunsTasksInCurrentSequence() = 0;
 
   virtual base::TickClock* GetClock() = 0;

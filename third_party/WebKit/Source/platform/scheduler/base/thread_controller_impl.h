@@ -39,8 +39,6 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController {
   void ScheduleDelayedWork(base::TimeDelta delay) override;
   void CancelDelayedWork() override;
   void SetSequence(Sequence* sequence) override;
-  void PostNonNestableTask(const base::Location& from_here,
-                           base::OnceClosure task) override;
   bool RunsTasksInCurrentSequence() override;
   base::TickClock* GetClock() override;
   void SetDefaultTaskRunner(

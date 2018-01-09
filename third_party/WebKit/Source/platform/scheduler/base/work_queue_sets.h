@@ -43,6 +43,9 @@ class PLATFORM_EXPORT WorkQueueSets {
   void ChangeSetIndex(WorkQueue* queue, size_t set_index);
 
   // O(log num queues)
+  void OnFrontTaskChanged(WorkQueue* queue);
+
+  // O(log num queues)
   void OnTaskPushedToEmptyQueue(WorkQueue* work_queue);
 
   // If empty it's O(1) amortized, otherwise it's O(log num queues)
