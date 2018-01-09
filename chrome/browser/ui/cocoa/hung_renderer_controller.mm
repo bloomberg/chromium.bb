@@ -240,7 +240,8 @@ class HungRendererWebContentsObserverBridge
   base::scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetMainFrame()->GetProcess() ==
-        hungContents_->GetMainFrame()->GetProcess()) {
+            hungContents_->GetMainFrame()->GetProcess() &&
+        !it->IsCrashed()) {
       base::string16 title = it->GetTitle();
       if (title.empty())
         title = CoreTabHelper::GetDefaultTitle();

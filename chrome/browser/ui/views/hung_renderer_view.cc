@@ -93,7 +93,8 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
     for (TabContentsIterator it; !it.done(); it.Next()) {
       if (*it != hung_contents &&
           it->GetMainFrame()->GetProcess() ==
-              hung_contents->GetMainFrame()->GetProcess())
+              hung_contents->GetMainFrame()->GetProcess() &&
+          !it->IsCrashed())
         tab_observers_.push_back(
             base::MakeUnique<WebContentsObserverImpl>(this, *it));
     }
