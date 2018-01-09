@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -38,7 +37,7 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
                    blink::mojom::LockRequestPtr request) override;
 
   // Called by a LockHandle's implementation when destructed.
-  void ReleaseLock(const url::Origin& origin, int64_t id);
+  void ReleaseLock(const url::Origin& origin, int64_t lock_id);
 
   // Called to request a snapshot of the current lock state for an origin.
   void QueryState(QueryStateCallback callback) override;
@@ -52,26 +51,11 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   struct Lock;
 
   // State for a particular origin.
-  struct OriginState {
-    OriginState();
-    ~OriginState();
-
-    bool IsGrantable(const std::string& name,
-                     blink::mojom::LockMode mode) const;
-    void MergeLockState(const std::string& name, blink::mojom::LockMode mode);
-
-    std::map<int64_t, std::unique_ptr<Lock>> requested;
-    std::map<int64_t, std::unique_ptr<Lock>> held;
-
-    // These sets represent what is held or requested, so that "IsGrantable"
-    // tests are simple.
-    std::unordered_set<std::string> shared;
-    std::unordered_set<std::string> exclusive;
-  };
+  class OriginState;
 
   bool IsGrantable(const url::Origin& origin,
                    const std::string& name,
-                   blink::mojom::LockMode mode);
+                   blink::mojom::LockMode mode) const;
 
   // Called when a lock is requested and optionally when a lock is released,
   // to process outstanding requests within the origin.
