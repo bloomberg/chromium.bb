@@ -6,6 +6,7 @@
 #define UI_KEYBOARD_KEYBOARD_EVENT_FILTER_H_
 
 #include "base/macros.h"
+#include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/keyboard/keyboard_export.h"
 
@@ -24,7 +25,7 @@ class KEYBOARD_EXPORT KeyboardEventFilter : public ui::EventHandler {
   void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
-  void ProcessPointerEvent(bool isDrag, int x, int y);
+  void ProcessPointerEvent(const ui::LocatedEvent& event);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardEventFilter);
 };

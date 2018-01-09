@@ -7,6 +7,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/keyboard/container_behavior.h"
 #include "ui/keyboard/container_type.h"
@@ -42,8 +43,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   bool IsDragHandle(const gfx::Vector2d& offset,
                     const gfx::Size& keyboard_size) const override;
   void SavePosition(const gfx::Point& position) override;
-  void HandlePointerEvent(bool isMouseButtonPressed,
-                          const gfx::Vector2d& kb_offset) override;
+  void HandlePointerEvent(const ui::LocatedEvent& event) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
   ContainerType GetType() const override;
@@ -79,6 +79,10 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   // Current state of a cursor drag to move the keyboard, if one exists.
   // Otherwise nullptr.
   std::unique_ptr<DragDescriptor> drag_descriptor_ = nullptr;
+
+  // Distinguish whether the current drag is from a touch event or mouse event,
+  // so drag/move events can be filtered accordingly
+  bool drag_started_by_touch_ = false;
 
   gfx::Rect draggable_area_ = gfx::Rect();
 };

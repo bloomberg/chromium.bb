@@ -23,18 +23,17 @@ void KeyboardEventFilter::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void KeyboardEventFilter::OnMouseEvent(ui::MouseEvent* event) {
-  ProcessPointerEvent(event->IsOnlyLeftMouseButton(), event->x(), event->y());
+  ProcessPointerEvent(*event);
 }
 
 void KeyboardEventFilter::OnTouchEvent(ui::TouchEvent* event) {
-  ProcessPointerEvent(event->type() != ui::ET_TOUCH_RELEASED, event->x(),
-                      event->y());
+  ProcessPointerEvent(*event);
 }
 
-void KeyboardEventFilter::ProcessPointerEvent(bool isDrag, int x, int y) {
+void KeyboardEventFilter::ProcessPointerEvent(const ui::LocatedEvent& event) {
   KeyboardController* controller = KeyboardController::GetInstance();
   if (controller)
-    controller->HandlePointerEvent(isDrag, gfx::Vector2d(x, y));
+    controller->HandlePointerEvent(event);
 }
 
 }  // nemespace keyboard
