@@ -131,26 +131,10 @@ class LogMessageVoidify {
 // Logging Helpers
 //////////////////////////////////////////////////////////////////////
 
-class LogMultilineState {
- public:
-  size_t unprintable_count_[2];
-  LogMultilineState() { unprintable_count_[0] = unprintable_count_[1] = 0; }
-};
-
 class LogMessage {
  public:
   static void LogToDebug(int min_sev);
 };
-
-// When possible, pass optional state variable to track various data across
-// multiple calls to LogMultiline.  Otherwise, pass NULL.
-void LogMultiline(LoggingSeverity level,
-                  const char* label,
-                  bool input,
-                  const void* data,
-                  size_t len,
-                  bool hex_mode,
-                  LogMultilineState* state);
 
 // TODO(grunell): Change name to InitDiagnosticLoggingDelegate or
 // InitDiagnosticLogging. Change also in init_webrtc.h/cc.
