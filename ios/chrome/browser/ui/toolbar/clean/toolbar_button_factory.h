@@ -12,6 +12,7 @@
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @class ToolbarButton;
+@class ToolbarButtonVisibilityConfiguration;
 @class ToolbarToolsMenuButton;
 @class ToolbarConfiguration;
 
@@ -30,6 +31,9 @@
     ToolbarConfiguration* toolbarConfiguration;
 // Dispatcher used to initialize targets for the buttons.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
+// Configuration object for the visibility of the buttons.
+@property(nonatomic, strong)
+    ToolbarButtonVisibilityConfiguration* visibilityConfiguration;
 
 // Back ToolbarButton.
 - (ToolbarButton*)backButton;

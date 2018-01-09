@@ -311,8 +311,6 @@
 
 - (void)setUpToolbarButtons {
   // Back button.
-  self.view.backButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
-                                        ToolbarComponentVisibilityRegularWidth;
   UILongPressGestureRecognizer* backHistoryLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
@@ -321,9 +319,6 @@
   [self addStandardActionsForButton:self.view.backButton];
 
   // Forward button.
-  self.view.forwardButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled |
-      ToolbarComponentVisibilityRegularWidth;
   UILongPressGestureRecognizer* forwardHistoryLongPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
@@ -332,52 +327,33 @@
   [self addStandardActionsForButton:self.view.forwardButton];
 
   // TabSwitcher button.
-  self.view.tabSwitchStripButton.visibilityMask =
-      ToolbarComponentVisibilityIPhoneOnly;
   [self addStandardActionsForButton:self.view.tabSwitchStripButton];
 
   // Tools menu button.
-  self.view.toolsMenuButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
   [self addStandardActionsForButton:self.view.toolsMenuButton];
 
   // Share button.
-  self.view.shareButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   [self addStandardActionsForButton:self.view.shareButton];
 
   // Reload button.
-  self.view.reloadButton.visibilityMask =
-      ToolbarComponentVisibilityRegularWidth;
   [self addStandardActionsForButton:self.view.reloadButton];
 
   // Stop button.
-  self.view.stopButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
   self.view.stopButton.hiddenInCurrentState = YES;
   [self addStandardActionsForButton:self.view.stopButton];
 
   // Voice Search button.
-  self.view.voiceSearchButton.visibilityMask =
-      ToolbarComponentVisibilityRegularWidth;
   self.view.voiceSearchButton.enabled = NO;
   [self addStandardActionsForButton:self.view.voiceSearchButton];
 
   // Bookmark button.
-  self.view.bookmarkButton.visibilityMask =
-      ToolbarComponentVisibilityRegularWidth;
   [self addStandardActionsForButton:self.view.bookmarkButton];
 
   // Contract button.
-  self.view.contractButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
   self.view.contractButton.alpha = 0;
   self.view.contractButton.hidden = YES;
 
   // LocationBar LeadingButton
-  self.view.locationBarLeadingButton.visibilityMask =
-      ToolbarComponentVisibilityCompactWidth |
-      ToolbarComponentVisibilityRegularWidth;
   self.view.locationBarLeadingButton.alpha = 0;
   self.view.locationBarLeadingButton.hidden = YES;
 

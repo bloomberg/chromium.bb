@@ -93,6 +93,8 @@ source_set("toolbar_components_ui") {
     "toolbar_button_factory.mm",
     "toolbar_button_tints.h",
     "toolbar_button_tints.mm",
+    "toolbar_button_visibility_configuration.h",
+    "toolbar_button_visibility_configuration.mm",
     "toolbar_component_options.h",
     "toolbar_configuration.h",
     "toolbar_configuration.mm",
@@ -101,6 +103,7 @@ source_set("toolbar_components_ui") {
     "toolbar_style.h",
     "toolbar_tools_menu_button.h",
     "toolbar_tools_menu_button.mm",
+    "toolbar_type.h",
   ]
   deps = [
     "//base",
