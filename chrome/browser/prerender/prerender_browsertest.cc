@@ -1388,7 +1388,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
 }
 
 // crbug.com/708158
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// crbug.com/800373
+#if (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || \
+    (defined(OS_LINUX) && !defined(NDEBUG))
 #define MAYBE_PrerenderNoCommitNoSwap DISABLED_PrerenderNoCommitNoSwap
 #else
 #define MAYBE_PrerenderNoCommitNoSwap PrerenderNoCommitNoSwap
