@@ -24,6 +24,7 @@ set(AOM_UNIT_TEST_WRAPPER_SOURCES
 
 set(AOM_UNIT_TEST_COMMON_SOURCES
     "${AOM_ROOT}/test/acm_random.h"
+    "${AOM_ROOT}/test/aom_integer_test.cc"
     "${AOM_ROOT}/test/clear_system_state.h"
     "${AOM_ROOT}/test/codec_factory.h"
     "${AOM_ROOT}/test/decode_test_driver.cc"

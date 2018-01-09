@@ -39,4 +39,5 @@ API_SRCS-yes += aom_codec.h
 API_SRCS-yes += aom_codec.mk
 API_SRCS-yes += aom_frame_buffer.h
 API_SRCS-yes += aom_image.h
+API_SRCS-yes += src/aom_integer.c
 API_SRCS-yes += aom_integer.h

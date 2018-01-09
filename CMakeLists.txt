@@ -146,7 +146,8 @@ set(AOM_SOURCES
     "${AOM_ROOT}/aom/src/aom_codec.c"
     "${AOM_ROOT}/aom/src/aom_decoder.c"
     "${AOM_ROOT}/aom/src/aom_encoder.c"
-    "${AOM_ROOT}/aom/src/aom_image.c")
+    "${AOM_ROOT}/aom/src/aom_image.c"
+    "${AOM_ROOT}/aom/src/aom_integer.c")
 
 set(AOM_COMMON_APP_UTIL_SOURCES
     "${AOM_ROOT}/args.c"

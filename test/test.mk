@@ -10,6 +10,7 @@
 ##
 
 LIBAOM_TEST_SRCS-yes += acm_random.h
+LIBAOM_TEST_SRCS-yes += aom_integer_test.cc
 LIBAOM_TEST_SRCS-yes += clear_system_state.h
 LIBAOM_TEST_SRCS-yes += codec_factory.h
 LIBAOM_TEST_SRCS-yes += md5_helper.h
