@@ -857,6 +857,10 @@ const char kVideoImageTextureTarget[] = "video-image-texture-target";
 // Set when Chromium should use a mobile user agent.
 const char kUseMobileUserAgent[] = "use-mobile-user-agent";
 
+// Use the MockCertVerifier. This only works in test code.
+const char kUseMockCertVerifierForTesting[] =
+    "use-mock-cert-verifier-for-testing";
+
 // The contents of this flag are prepended to the utility process command line.
 // Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kUtilityCmdPrefix[]              = "utility-cmd-prefix";

@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/chrome_test_launcher.h"
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -118,6 +119,7 @@ class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
 };
 
 int main(int argc, char** argv) {
+  base::CommandLine::Init(argc, argv);
   // TODO(sky): this causes a crash in an autofill test on macosx, figure out
   // why: http://crbug.com/641969.
 #if !defined(OS_MACOSX)

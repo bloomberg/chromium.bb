@@ -11,6 +11,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "ipc/param_traits_macros.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
@@ -39,6 +40,16 @@ struct HttpRawRequestResponseInfo;
 namespace IPC {
 
 template <>
+struct ParamTraits<net::CertVerifyResult> {
+  typedef net::CertVerifyResult param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct ParamTraits<net::HashValue> {
   typedef net::HashValue param_type;
   static void Write(base::Pickle* m, const param_type& p);
@@ -61,6 +72,16 @@ struct ParamTraits<net::HostPortPair> {
 template <>
 struct ParamTraits<net::HttpRequestHeaders> {
   typedef net::HttpRequestHeaders param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<net::OCSPVerifyResult> {
+  typedef net::OCSPVerifyResult param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -101,6 +122,16 @@ struct ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>> {
 template <>
 struct ParamTraits<scoped_refptr<net::HttpResponseHeaders>> {
   typedef scoped_refptr<net::HttpResponseHeaders> param_type;
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<net::X509Certificate>> {
+  typedef scoped_refptr<net::X509Certificate> param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

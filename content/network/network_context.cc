@@ -53,6 +53,35 @@
 
 namespace content {
 
+namespace {
+
+net::CertVerifier* g_cert_verifier_for_testing = nullptr;
+
+// A CertVerifier that forwards all requests to |g_cert_verifier_for_testing|.
+// This is used to allow NetworkContexts to have their own
+// std::unique_ptr<net::CertVerifier> while forwarding calls to the shared
+// verifier.
+class WrappedTestingCertVerifier : public net::CertVerifier {
+ public:
+  ~WrappedTestingCertVerifier() override = default;
+
+  // CertVerifier implementation
+  int Verify(const RequestParams& params,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             std::unique_ptr<Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    if (!g_cert_verifier_for_testing)
+      return net::ERR_FAILED;
+    return g_cert_verifier_for_testing->Verify(params, crl_set, verify_result,
+                                               callback, out_req, net_log);
+  }
+};
+
+}  // namespace
+
 NetworkContext::NetworkContext(NetworkServiceImpl* network_service,
                                mojom::NetworkContextRequest request,
                                mojom::NetworkContextParamsPtr params)
@@ -117,6 +146,11 @@ NetworkContext::~NetworkContext() {
 std::unique_ptr<NetworkContext> NetworkContext::CreateForTesting() {
   return base::WrapUnique(
       new NetworkContext(mojom::NetworkContextParams::New()));
+}
+
+void NetworkContext::SetCertVerifierForTesting(
+    net::CertVerifier* cert_verifier) {
+  g_cert_verifier_for_testing = cert_verifier;
 }
 
 void NetworkContext::RegisterURLLoader(URLLoader* url_loader) {
@@ -247,11 +281,15 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     DCHECK(!network_context_params->persist_session_cookies);
   }
 
-  std::unique_ptr<net::CertVerifier> cert_verifier =
-      net::CertVerifier::CreateDefault();
-  builder.SetCertVerifier(
-      content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-          *command_line, nullptr, std::move(cert_verifier)));
+  if (g_cert_verifier_for_testing) {
+    builder.SetCertVerifier(std::make_unique<WrappedTestingCertVerifier>());
+  } else {
+    std::unique_ptr<net::CertVerifier> cert_verifier =
+        net::CertVerifier::CreateDefault();
+    builder.SetCertVerifier(
+        content::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+            *command_line, nullptr, std::move(cert_verifier)));
+  }
 
   // |network_service_| may be nullptr in tests.
   return ApplyContextParamsToBuilder(
@@ -388,6 +426,16 @@ void NetworkContext::SetNetworkConditions(
   }
   ThrottlingController::SetConditions(profile_id,
                                       std::move(network_conditions));
+}
+
+void NetworkContext::AddHSTSForTesting(const std::string& host,
+                                       base::Time expiry,
+                                       bool include_subdomains,
+                                       AddHSTSForTestingCallback callback) {
+  net::TransportSecurityState* state =
+      url_request_context_->transport_security_state();
+  state->AddHSTS(host, expiry, include_subdomains);
+  std::move(callback).Run();
 }
 
 }  // namespace content

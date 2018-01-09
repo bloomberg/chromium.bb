@@ -304,6 +304,7 @@ static_library("test_support") {
     "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/gpu",
+    "//content/network",
     "//content/public/browser",
     "//content/public/child",
     "//content/public/common",

@@ -10,28 +10,41 @@
 
 namespace IPC {
 
-namespace {
-
-void WriteCert(base::Pickle* m, net::X509Certificate* cert) {
-  WriteParam(m, !!cert);
-  if (cert)
-    cert->Persist(m);
+void ParamTraits<net::CertVerifyResult>::Write(base::Pickle* m,
+                                               const param_type& p) {
+  WriteParam(m, p.verified_cert);
+  WriteParam(m, p.cert_status);
+  WriteParam(m, p.has_md2);
+  WriteParam(m, p.has_md4);
+  WriteParam(m, p.has_md5);
+  WriteParam(m, p.has_sha1);
+  WriteParam(m, p.has_sha1_leaf);
+  WriteParam(m, p.public_key_hashes);
+  WriteParam(m, p.is_issued_by_known_root);
+  WriteParam(m, p.is_issued_by_additional_trust_anchor);
+  WriteParam(m, p.common_name_fallback_used);
+  WriteParam(m, p.ocsp_result);
 }
 
-bool ReadCert(const base::Pickle* m,
-              base::PickleIterator* iter,
-              scoped_refptr<net::X509Certificate>* cert) {
-  DCHECK(!*cert);
-  bool has_object;
-  if (!ReadParam(m, iter, &has_object))
-    return false;
-  if (!has_object)
-    return true;
-  *cert = net::X509Certificate::CreateFromPickle(iter);
-  return !!cert->get();
+bool ParamTraits<net::CertVerifyResult>::Read(const base::Pickle* m,
+                                              base::PickleIterator* iter,
+                                              param_type* r) {
+  return ReadParam(m, iter, &r->verified_cert) &&
+         ReadParam(m, iter, &r->cert_status) &&
+         ReadParam(m, iter, &r->has_md2) && ReadParam(m, iter, &r->has_md4) &&
+         ReadParam(m, iter, &r->has_md5) && ReadParam(m, iter, &r->has_sha1) &&
+         ReadParam(m, iter, &r->has_sha1_leaf) &&
+         ReadParam(m, iter, &r->public_key_hashes) &&
+         ReadParam(m, iter, &r->is_issued_by_known_root) &&
+         ReadParam(m, iter, &r->is_issued_by_additional_trust_anchor) &&
+         ReadParam(m, iter, &r->common_name_fallback_used) &&
+         ReadParam(m, iter, &r->ocsp_result);
 }
 
-}  // namespace
+void ParamTraits<net::CertVerifyResult>::Log(const param_type& p,
+                                             std::string* l) {
+  l->append("<CertVerifyResult>");
+}
 
 void ParamTraits<net::HashValue>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.ToString());
@@ -129,12 +142,30 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Log(
   l->append("<HttpResponseHeaders>");
 }
 
+void ParamTraits<net::OCSPVerifyResult>::Write(base::Pickle* m,
+                                               const param_type& p) {
+  WriteParam(m, p.response_status);
+  WriteParam(m, p.revocation_status);
+}
+
+bool ParamTraits<net::OCSPVerifyResult>::Read(const base::Pickle* m,
+                                              base::PickleIterator* iter,
+                                              param_type* r) {
+  return ReadParam(m, iter, &r->response_status) &&
+         ReadParam(m, iter, &r->revocation_status);
+}
+
+void ParamTraits<net::OCSPVerifyResult>::Log(const param_type& p,
+                                             std::string* l) {
+  l->append("<OCSPVerifyResult>");
+}
+
 void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.is_valid());
   if (!p.is_valid())
     return;
-  WriteCert(m, p.cert.get());
-  WriteCert(m, p.unverified_cert.get());
+  WriteParam(m, p.cert);
+  WriteParam(m, p.unverified_cert);
   WriteParam(m, p.cert_status);
   WriteParam(m, p.security_bits);
   WriteParam(m, p.key_exchange_group);
@@ -150,8 +181,7 @@ void ParamTraits<net::SSLInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.pinning_failure_log);
   WriteParam(m, p.signed_certificate_timestamps);
   WriteParam(m, p.ct_policy_compliance);
-  WriteParam(m, p.ocsp_result.response_status);
-  WriteParam(m, p.ocsp_result.revocation_status);
+  WriteParam(m, p.ocsp_result);
   WriteParam(m, p.is_fatal_cert_error);
 }
 
@@ -163,8 +193,8 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
     return false;
   if (!is_valid)
     return true;
-  return ReadCert(m, iter, &r->cert) &&
-         ReadCert(m, iter, &r->unverified_cert) &&
+  return ReadParam(m, iter, &r->cert) &&
+         ReadParam(m, iter, &r->unverified_cert) &&
          ReadParam(m, iter, &r->cert_status) &&
          ReadParam(m, iter, &r->security_bits) &&
          ReadParam(m, iter, &r->key_exchange_group) &&
@@ -180,8 +210,7 @@ bool ParamTraits<net::SSLInfo>::Read(const base::Pickle* m,
          ReadParam(m, iter, &r->pinning_failure_log) &&
          ReadParam(m, iter, &r->signed_certificate_timestamps) &&
          ReadParam(m, iter, &r->ct_policy_compliance) &&
-         ReadParam(m, iter, &r->ocsp_result.response_status) &&
-         ReadParam(m, iter, &r->ocsp_result.revocation_status) &&
+         ReadParam(m, iter, &r->ocsp_result) &&
          ReadParam(m, iter, &r->is_fatal_cert_error);
 }
 
@@ -258,6 +287,33 @@ void ParamTraits<scoped_refptr<network::HttpRawRequestResponseInfo>>::Log(
     LogParam(p->response_headers, l);
   }
   l->append(")");
+}
+
+void ParamTraits<scoped_refptr<net::X509Certificate>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, !!p);
+  if (p)
+    p->Persist(m);
+}
+
+bool ParamTraits<scoped_refptr<net::X509Certificate>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  DCHECK(!*r);
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object)
+    return true;
+  *r = net::X509Certificate::CreateFromPickle(iter);
+  return !!r->get();
+}
+
+void ParamTraits<scoped_refptr<net::X509Certificate>>::Log(const param_type& p,
+                                                           std::string* l) {
+  l->append("<X509Certificate>");
 }
 
 }  // namespace IPC

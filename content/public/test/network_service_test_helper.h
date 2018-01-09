@@ -29,8 +29,7 @@ class NetworkServiceTestHelper {
  private:
   class NetworkServiceTestImpl;
 
-  void BindNetworkServiceTestRequest(
-      content::mojom::NetworkServiceTestRequest request);
+  void BindNetworkServiceTestRequest(mojom::NetworkServiceTestRequest request);
 
   std::unique_ptr<NetworkServiceTestImpl> network_service_test_impl_;
 
