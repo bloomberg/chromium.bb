@@ -300,21 +300,5 @@ class RemoteTryJob(object):
     Returns:
       List of URLs to view submitted tryjobs.
     """
-    results = []
-    # GE build details page(s)
-    results.extend([BUILD_DETAILS_PATTERN % {'buildbucket_id': b}
-                    for b in self.buildbucket_ids])
-
-    if not self.swarming:
-      # TODO: Remove waterfall links after some soak time.
-
-      # Note that this will only show the jobs submitted by the user in the last
-      # 24 hours.
-      builders = set(self._GetBuilder(bot) for bot in self.build_configs)
-      results.append(
-          '%s/waterfall?committer=%s&%s' % (
-              constants.TRYBOT_DASHBOARD, self.user_email,
-              '&'.join('builder=%s' % b for b in sorted(builders)))
-      )
-
-    return results
+    return [BUILD_DETAILS_PATTERN % {'buildbucket_id': b}
+            for b in self.buildbucket_ids]

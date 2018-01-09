@@ -311,8 +311,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
          'buildDetails?buildbucketId=%s' % buildbucket_ids[0]),
         ('http://cros-goldeneye/chromeos/healthmonitoring/'
          'buildDetails?buildbucketId=%s' % buildbucket_ids[1]),
-        ('https://uberchromegw.corp.google.com/i/chromiumos.tryserver/'
-         'waterfall?committer=default_email&builder=paladin'),
     ])
 
   @cros_test_lib.NetworkTest()
