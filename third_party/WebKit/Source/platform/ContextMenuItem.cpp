@@ -65,7 +65,7 @@ ContextMenuItem::ContextMenuItem(ContextMenuAction action,
       checked_(checked),
       sub_menu_items_(sub_menu_items) {}
 
-ContextMenuItem::~ContextMenuItem() {}
+ContextMenuItem::~ContextMenuItem() = default;
 
 void ContextMenuItem::SetSubMenu(ContextMenu* sub_menu) {
   if (sub_menu) {

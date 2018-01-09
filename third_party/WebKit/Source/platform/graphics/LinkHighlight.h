@@ -18,7 +18,7 @@ class PLATFORM_EXPORT LinkHighlight {
   virtual WebLayer* Layer() = 0;
 
  protected:
-  virtual ~LinkHighlight() {}
+  virtual ~LinkHighlight() = default;
 };
 
 }  // namespace blink

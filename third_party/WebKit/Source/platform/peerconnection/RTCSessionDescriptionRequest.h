@@ -40,7 +40,7 @@ class WebRTCSessionDescription;
 class RTCSessionDescriptionRequest
     : public GarbageCollectedFinalized<RTCSessionDescriptionRequest> {
  public:
-  virtual ~RTCSessionDescriptionRequest() {}
+  virtual ~RTCSessionDescriptionRequest() = default;
 
   virtual void RequestSucceeded(const WebRTCSessionDescription&) = 0;
   virtual void RequestFailed(const String& error) = 0;
@@ -48,7 +48,7 @@ class RTCSessionDescriptionRequest
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  RTCSessionDescriptionRequest() {}
+  RTCSessionDescriptionRequest() = default;
 };
 
 }  // namespace blink

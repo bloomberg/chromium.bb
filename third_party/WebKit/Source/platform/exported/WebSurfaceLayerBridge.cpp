@@ -15,6 +15,6 @@ std::unique_ptr<WebSurfaceLayerBridge> WebSurfaceLayerBridge::Create(
   return std::make_unique<SurfaceLayerBridge>(layer_tree_view, observer);
 }
 
-WebSurfaceLayerBridge::~WebSurfaceLayerBridge() {}
+WebSurfaceLayerBridge::~WebSurfaceLayerBridge() = default;
 
 }  // namespace blink

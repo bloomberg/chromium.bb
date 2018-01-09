@@ -26,6 +26,6 @@
 
 namespace blink {
 
-WebContentDecryptionModule::~WebContentDecryptionModule() {}
+WebContentDecryptionModule::~WebContentDecryptionModule() = default;
 
 }  // namespace blink

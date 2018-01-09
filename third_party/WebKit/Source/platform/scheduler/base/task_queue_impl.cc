@@ -91,7 +91,7 @@ TaskQueueImpl::AnyThread::AnyThread(TaskQueueManager* task_queue_manager,
                                     TimeDomain* time_domain)
     : task_queue_manager(task_queue_manager), time_domain(time_domain) {}
 
-TaskQueueImpl::AnyThread::~AnyThread() {}
+TaskQueueImpl::AnyThread::~AnyThread() = default;
 
 TaskQueueImpl::MainThreadOnly::MainThreadOnly(
     TaskQueueManager* task_queue_manager,
@@ -111,7 +111,7 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
       current_fence(0),
       is_enabled_for_test(true) {}
 
-TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
+TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 void TaskQueueImpl::UnregisterTaskQueue() {
   TaskDeque immediate_incoming_queue;

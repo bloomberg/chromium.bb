@@ -91,9 +91,9 @@ void AutoAdvancingVirtualTimeDomain::DidProcessTask(
   }
 }
 
-AutoAdvancingVirtualTimeDomain::Observer::Observer() {}
+AutoAdvancingVirtualTimeDomain::Observer::Observer() = default;
 
-AutoAdvancingVirtualTimeDomain::Observer::~Observer() {}
+AutoAdvancingVirtualTimeDomain::Observer::~Observer() = default;
 
 }  // namespace scheduler
 }  // namespace blink

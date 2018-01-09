@@ -27,7 +27,7 @@ struct ScriptExpectedRun {
 
 class MockScriptData : public ScriptData {
  public:
-  ~MockScriptData() override {}
+  ~MockScriptData() override = default;
 
   static const MockScriptData* Instance() {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(const MockScriptData, mock_script_data, ());

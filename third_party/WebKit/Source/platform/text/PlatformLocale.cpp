@@ -195,7 +195,7 @@ void Locale::ResetDefaultLocale() {
   g_default_locale = nullptr;
 }
 
-Locale::~Locale() {}
+Locale::~Locale() = default;
 
 String Locale::QueryString(WebLocalizedString::Name name) {
   // FIXME: Returns a string locazlied for this locale.

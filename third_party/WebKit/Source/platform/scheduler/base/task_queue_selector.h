@@ -60,7 +60,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
 
   class PLATFORM_EXPORT Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called when |queue| transitions from disabled to enabled.
     virtual void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) = 0;

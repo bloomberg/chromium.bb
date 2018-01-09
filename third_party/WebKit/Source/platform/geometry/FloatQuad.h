@@ -47,7 +47,7 @@ class PLATFORM_EXPORT FloatQuad {
   USING_FAST_MALLOC(FloatQuad);
 
  public:
-  FloatQuad() {}
+  FloatQuad() = default;
 
   FloatQuad(const FloatPoint& p1,
             const FloatPoint& p2,

@@ -37,7 +37,7 @@ CompositorAnimation::CompositorAnimation(
                                  group_id, target_property);
 }
 
-CompositorAnimation::~CompositorAnimation() {}
+CompositorAnimation::~CompositorAnimation() = default;
 
 int CompositorAnimation::Id() const {
   return animation_->id();

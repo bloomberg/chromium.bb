@@ -14,8 +14,8 @@ namespace blink {
 
 class CryptoTestingPlatformSupport : public FetchTestingPlatformSupport {
  public:
-  CryptoTestingPlatformSupport() {}
-  ~CryptoTestingPlatformSupport() override {}
+  CryptoTestingPlatformSupport() = default;
+  ~CryptoTestingPlatformSupport() override = default;
 
   // Platform:
   WebCrypto* Crypto() override { return mock_web_crypto_.get(); }

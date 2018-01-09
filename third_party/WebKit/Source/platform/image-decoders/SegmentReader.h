@@ -41,8 +41,8 @@ class PLATFORM_EXPORT SegmentReader
   static scoped_refptr<SegmentReader> CreateFromSkData(sk_sp<SkData>);
   static scoped_refptr<SegmentReader> CreateFromSkROBuffer(sk_sp<SkROBuffer>);
 
-  SegmentReader() {}
-  virtual ~SegmentReader() {}
+  SegmentReader() = default;
+  virtual ~SegmentReader() = default;
   virtual size_t size() const = 0;
   virtual size_t GetSomeData(const char*& data, size_t position) const = 0;
   virtual sk_sp<SkData> GetAsSkData() const = 0;

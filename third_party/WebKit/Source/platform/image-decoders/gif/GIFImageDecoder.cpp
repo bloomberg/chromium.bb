@@ -38,7 +38,7 @@ GIFImageDecoder::GIFImageDecoder(AlphaOption alpha_option,
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
       repetition_count_(kAnimationLoopOnce) {}
 
-GIFImageDecoder::~GIFImageDecoder() {}
+GIFImageDecoder::~GIFImageDecoder() = default;
 
 void GIFImageDecoder::OnSetData(SegmentReader* data) {
   if (reader_)

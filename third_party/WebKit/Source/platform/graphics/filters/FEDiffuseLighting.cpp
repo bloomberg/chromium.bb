@@ -51,7 +51,7 @@ FEDiffuseLighting* FEDiffuseLighting::Create(
                                diffuse_constant, std::move(light_source));
 }
 
-FEDiffuseLighting::~FEDiffuseLighting() {}
+FEDiffuseLighting::~FEDiffuseLighting() = default;
 
 Color FEDiffuseLighting::LightingColor() const {
   return lighting_color_;

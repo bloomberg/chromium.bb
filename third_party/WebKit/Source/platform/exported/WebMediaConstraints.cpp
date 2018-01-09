@@ -155,7 +155,7 @@ const String WebMediaConstraintsPrivate::ToString() const {
 
 BaseConstraint::BaseConstraint(const char* name) : name_(name) {}
 
-BaseConstraint::~BaseConstraint() {}
+BaseConstraint::~BaseConstraint() = default;
 
 LongConstraint::LongConstraint(const char* name)
     : BaseConstraint(name),

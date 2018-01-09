@@ -61,7 +61,7 @@ class PLATFORM_EXPORT CachedMetadata : public RefCounted<CachedMetadata> {
     return base::AdoptRef(new CachedMetadata(data, size));
   }
 
-  ~CachedMetadata() {}
+  ~CachedMetadata() = default;
 
   const Vector<char>& SerializedData() const { return serialized_data_; }
 

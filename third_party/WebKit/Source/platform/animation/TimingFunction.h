@@ -40,7 +40,7 @@ class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
  public:
   using Type = cc::TimingFunction::Type;
 
-  virtual ~TimingFunction() {}
+  virtual ~TimingFunction() = default;
 
   Type GetType() const { return type_; }
 
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT LinearTimingFunction final : public TimingFunction {
     return linear;
   }
 
-  ~LinearTimingFunction() override {}
+  ~LinearTimingFunction() override = default;
 
   // TimingFunction implementation.
   String ToString() const override;
@@ -97,7 +97,7 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
 
   static CubicBezierTimingFunction* Preset(EaseType);
 
-  ~CubicBezierTimingFunction() override {}
+  ~CubicBezierTimingFunction() override = default;
 
   // TimingFunction implementation.
   String ToString() const override;
@@ -177,7 +177,7 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
     }
   }
 
-  ~StepsTimingFunction() override {}
+  ~StepsTimingFunction() override = default;
 
   // TimingFunction implementation.
   String ToString() const override;
@@ -202,7 +202,7 @@ class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
     return base::AdoptRef(new FramesTimingFunction(frames));
   }
 
-  ~FramesTimingFunction() override {}
+  ~FramesTimingFunction() override = default;
 
   // TimingFunction implementation.
   String ToString() const override;

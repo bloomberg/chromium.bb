@@ -13,7 +13,7 @@ namespace internal {
 WorkQueueSets::WorkQueueSets(size_t num_sets, const char* name)
     : work_queue_heaps_(num_sets), name_(name) {}
 
-WorkQueueSets::~WorkQueueSets() {}
+WorkQueueSets::~WorkQueueSets() = default;
 
 void WorkQueueSets::AddQueue(WorkQueue* work_queue, size_t set_index) {
   DCHECK(!work_queue->work_queue_sets());

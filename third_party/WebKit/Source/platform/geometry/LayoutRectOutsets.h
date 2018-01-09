@@ -49,7 +49,7 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   DISALLOW_NEW();
 
  public:
-  LayoutRectOutsets() {}
+  LayoutRectOutsets() = default;
   LayoutRectOutsets(LayoutUnit top,
                     LayoutUnit right,
                     LayoutUnit bottom,

@@ -39,7 +39,7 @@ WTFThreadData::WTFThreadData()
       cached_converter_icu_(new ICUConverterWrapper),
       thread_id_(internal::CurrentThreadSyscall()) {}
 
-WTFThreadData::~WTFThreadData() {}
+WTFThreadData::~WTFThreadData() = default;
 
 void WTFThreadData::Initialize() {
   DCHECK(!WTFThreadData::static_data_);

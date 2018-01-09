@@ -70,7 +70,7 @@ class WTF_EXPORT CString {
 
  public:
   // Construct a null string, distinguishable from an empty string.
-  CString() {}
+  CString() = default;
 
   // Construct a string from arbitrary bytes.
   CString(const char* chars) : CString(chars, chars ? strlen(chars) : 0) {}

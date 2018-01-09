@@ -76,7 +76,7 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
   IntWrapper(int x) : x_(x) {}
 
  private:
-  IntWrapper();
+  IntWrapper() = delete;
   int x_;
 };
 static_assert(WTF::IsTraceable<IntWrapper>::value,
@@ -364,7 +364,7 @@ class SimpleObject : public GarbageCollected<SimpleObject> {
   virtual void VirtualMethod() {}
 
  protected:
-  SimpleObject() {}
+  SimpleObject() = default;
   char payload[64];
 };
 
@@ -379,7 +379,7 @@ class HeapTestSuperClass
   void Trace(blink::Visitor* visitor) {}
 
  protected:
-  HeapTestSuperClass() {}
+  HeapTestSuperClass() = default;
 };
 
 int HeapTestSuperClass::destructor_calls_ = 0;
@@ -450,7 +450,7 @@ class OffHeapInt : public RefCounted<OffHeapInt> {
   OffHeapInt(int x) : x_(x) {}
 
  private:
-  OffHeapInt();
+  OffHeapInt() = delete;
   int x_;
 };
 
@@ -483,7 +483,7 @@ class ThreadedTesterBase {
 
   ThreadedTesterBase() : gc_count_(0), threads_to_finish_(kNumberOfThreads) {}
 
-  virtual ~ThreadedTesterBase() {}
+  virtual ~ThreadedTesterBase() = default;
 
   inline bool Done() const {
     return gc_count_ >= kNumberOfThreads * kGcPerThread;
@@ -631,7 +631,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
  protected:
   class Local final : public GarbageCollected<Local> {
    public:
-    Local() {}
+    Local() = default;
 
     void Trace(blink::Visitor* visitor) {}
   };
@@ -748,7 +748,7 @@ class SimpleFinalizedObject
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  SimpleFinalizedObject() {}
+  SimpleFinalizedObject() = default;
 };
 
 int SimpleFinalizedObject::destructor_calls_ = 0;
@@ -1449,7 +1449,7 @@ class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  DynamicallySizedObject() {}
+  DynamicallySizedObject() = default;
 };
 
 class FinalizationAllocator
@@ -1960,13 +1960,13 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
 class SimpleFinalizedEagerObjectBase
     : public GarbageCollectedFinalized<SimpleFinalizedEagerObjectBase> {
  public:
-  virtual ~SimpleFinalizedEagerObjectBase() {}
+  virtual ~SimpleFinalizedEagerObjectBase() = default;
   void Trace(blink::Visitor* visitor) {}
 
   EAGERLY_FINALIZE();
 
  protected:
-  SimpleFinalizedEagerObjectBase() {}
+  SimpleFinalizedEagerObjectBase() = default;
 };
 
 class SimpleFinalizedEagerObject : public SimpleFinalizedEagerObjectBase {
@@ -1980,7 +1980,7 @@ class SimpleFinalizedEagerObject : public SimpleFinalizedEagerObjectBase {
   static int destructor_calls_;
 
  private:
-  SimpleFinalizedEagerObject() {}
+  SimpleFinalizedEagerObject() = default;
 };
 
 template <typename T>
@@ -2003,7 +2003,7 @@ class SimpleFinalizedObjectInstanceOfTemplate final
   static int destructor_calls_;
 
  private:
-  SimpleFinalizedObjectInstanceOfTemplate() {}
+  SimpleFinalizedObjectInstanceOfTemplate() = default;
 };
 
 int SimpleFinalizedEagerObject::destructor_calls_ = 0;
@@ -3075,7 +3075,7 @@ class NonTrivialObject final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  NonTrivialObject() {}
+  NonTrivialObject() = default;
   explicit NonTrivialObject(int num) {
     deque_.push_back(IntWrapper::Create(num));
     vector_.push_back(IntWrapper::Create(num));
@@ -4290,7 +4290,7 @@ class InlinedVectorObject {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  InlinedVectorObject() {}
+  InlinedVectorObject() = default;
   ~InlinedVectorObject() { destructor_calls_++; }
   void Trace(blink::Visitor* visitor) {}
 
@@ -4303,7 +4303,7 @@ class InlinedVectorObjectWithVtable {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  InlinedVectorObjectWithVtable() {}
+  InlinedVectorObjectWithVtable() = default;
   virtual ~InlinedVectorObjectWithVtable() { destructor_calls_++; }
   virtual void VirtualMethod() {}
   void Trace(blink::Visitor* visitor) {}
@@ -4611,7 +4611,7 @@ TEST(HeapTest, AllocationDuringPrefinalizer) {
 
 class SimpleClassWithDestructor {
  public:
-  SimpleClassWithDestructor() {}
+  SimpleClassWithDestructor() = default;
   ~SimpleClassWithDestructor() { was_destructed_ = true; }
   static bool was_destructed_;
 };
@@ -4620,7 +4620,7 @@ bool SimpleClassWithDestructor::was_destructed_;
 
 class RefCountedWithDestructor : public RefCounted<RefCountedWithDestructor> {
  public:
-  RefCountedWithDestructor() {}
+  RefCountedWithDestructor() = default;
   ~RefCountedWithDestructor() { was_destructed_ = true; }
   static bool was_destructed_;
 };
@@ -4790,7 +4790,7 @@ class MixinInstanceWithoutTrace
   USING_GARBAGE_COLLECTED_MIXIN(MixinInstanceWithoutTrace);
 
  public:
-  MixinInstanceWithoutTrace() {}
+  MixinInstanceWithoutTrace() = default;
 };
 
 TEST(HeapTest, MixinInstanceWithoutTrace) {
@@ -5761,7 +5761,7 @@ class DestructorLockingObject
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  DestructorLockingObject() {}
+  DestructorLockingObject() = default;
 };
 
 int DestructorLockingObject::destructor_calls_ = 0;
@@ -5780,10 +5780,10 @@ class TraceIfNeededTester
     TraceIfNeeded<T>::Trace(visitor, obj_);
   }
   T& Obj() { return obj_; }
-  ~TraceIfNeededTester() {}
+  ~TraceIfNeededTester() = default;
 
  private:
-  TraceIfNeededTester() {}
+  TraceIfNeededTester() = default;
   explicit TraceIfNeededTester(const T& obj) : obj_(obj) {}
   T obj_;
 };
@@ -5921,7 +5921,7 @@ class AllocInSuperConstructorArgumentSuper
     : public GarbageCollectedFinalized<AllocInSuperConstructorArgumentSuper> {
  public:
   AllocInSuperConstructorArgumentSuper(bool value) : value_(value) {}
-  virtual ~AllocInSuperConstructorArgumentSuper() {}
+  virtual ~AllocInSuperConstructorArgumentSuper() = default;
   virtual void Trace(blink::Visitor* visitor) {}
   bool Value() { return value_; }
 
@@ -6658,7 +6658,7 @@ TEST(HeapTest, TestWeakConstObject) {
 class EmptyMixin : public GarbageCollectedMixin {};
 class UseMixinFromLeftmostInherited : public UseMixin, public EmptyMixin {
  public:
-  ~UseMixinFromLeftmostInherited() {}
+  ~UseMixinFromLeftmostInherited() = default;
 };
 
 TEST(HeapTest, IsGarbageCollected) {
@@ -6734,7 +6734,7 @@ class DoublyLinkedListNodeImpl
     : public GarbageCollectedFinalized<DoublyLinkedListNodeImpl>,
       public DoublyLinkedListNode<DoublyLinkedListNodeImpl> {
  public:
-  DoublyLinkedListNodeImpl() {}
+  DoublyLinkedListNodeImpl() = default;
   static DoublyLinkedListNodeImpl* Create() {
     return new DoublyLinkedListNodeImpl();
   }
@@ -6762,7 +6762,7 @@ class HeapDoublyLinkedListContainer
   static HeapDoublyLinkedListContainer<T>* Create() {
     return new HeapDoublyLinkedListContainer<T>();
   }
-  HeapDoublyLinkedListContainer<T>() {}
+  HeapDoublyLinkedListContainer<T>() = default;
   HeapDoublyLinkedList<T> list_;
   void Trace(Visitor* visitor) { visitor->Trace(list_); }
 };

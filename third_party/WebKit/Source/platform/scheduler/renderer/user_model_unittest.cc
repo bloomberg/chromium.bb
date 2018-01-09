@@ -13,8 +13,8 @@ namespace scheduler {
 
 class UserModelTest : public ::testing::Test {
  public:
-  UserModelTest() {}
-  ~UserModelTest() override {}
+  UserModelTest() = default;
+  ~UserModelTest() override = default;
 
   void SetUp() override {
     clock_.reset(new base::SimpleTestTickClock());

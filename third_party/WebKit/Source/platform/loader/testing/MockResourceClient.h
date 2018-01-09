@@ -41,8 +41,8 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
   USING_GARBAGE_COLLECTED_MIXIN(MockResourceClient);
 
  public:
-  MockResourceClient() {}
-  ~MockResourceClient() override {}
+  MockResourceClient() = default;
+  ~MockResourceClient() override = default;
 
   void NotifyFinished(Resource*) override {
     CHECK(!notify_finished_called_);

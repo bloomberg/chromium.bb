@@ -18,7 +18,7 @@ namespace scheduler {
 
 class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
  public:
-  Data() {}
+  Data() = default;
 
   void PostDelayedTask(base::OnceClosure task, base::TimeDelta delay) {
     task_queue_.emplace_back(std::move(task), time_ + delay);
@@ -37,7 +37,7 @@ class FakeWebTaskRunner::Data : public WTF::ThreadSafeRefCounted<Data> {
   base::TimeTicks time_;
 
  private:
-  ~Data() {}
+  ~Data() = default;
 
   friend ThreadSafeRefCounted<Data>;
   DISALLOW_COPY_AND_ASSIGN(Data);
@@ -48,8 +48,7 @@ FakeWebTaskRunner::FakeWebTaskRunner() : data_(base::AdoptRef(new Data)) {}
 FakeWebTaskRunner::FakeWebTaskRunner(scoped_refptr<Data> data)
     : data_(std::move(data)) {}
 
-FakeWebTaskRunner::~FakeWebTaskRunner() {
-}
+FakeWebTaskRunner::~FakeWebTaskRunner() = default;
 
 void FakeWebTaskRunner::SetTime(base::TimeTicks new_time) {
   data_->time_ = new_time;

@@ -25,7 +25,7 @@ class TestFontSelector : public FontSelector {
         FontCustomPlatformData::Create(font_buffer.get(), ots_parse_message));
   }
 
-  ~TestFontSelector() override {}
+  ~TestFontSelector() override = default;
 
   scoped_refptr<FontData> GetFontData(
       const FontDescription& font_description,

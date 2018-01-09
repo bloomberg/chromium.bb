@@ -262,7 +262,7 @@ KURL::KURL(const KURL& other)
     inner_url_ = WTF::WrapUnique(new KURL(other.inner_url_->Copy()));
 }
 
-KURL::~KURL() {}
+KURL::~KURL() = default;
 
 KURL& KURL::operator=(const KURL& other) {
   is_valid_ = other.is_valid_;

@@ -46,7 +46,7 @@ class PrerenderExtraDataContainer : public Prerender::ExtraData {
     return base::AdoptRef(new PrerenderExtraDataContainer(extra_data));
   }
 
-  ~PrerenderExtraDataContainer() override {}
+  ~PrerenderExtraDataContainer() override = default;
 
   WebPrerender::ExtraData* GetExtraData() const { return extra_data_.get(); }
 

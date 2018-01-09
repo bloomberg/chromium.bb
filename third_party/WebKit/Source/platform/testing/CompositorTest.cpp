@@ -9,6 +9,6 @@ namespace blink {
 CompositorTest::CompositorTest()
     : runner_(new base::TestMockTimeTaskRunner), runner_handle_(runner_) {}
 
-CompositorTest::~CompositorTest() {}
+CompositorTest::~CompositorTest() = default;
 
 }  // namespace blink

@@ -47,7 +47,7 @@ class PLATFORM_EXPORT CachingWordShaper final {
 
  public:
   explicit CachingWordShaper(const Font& font) : font_(font) {}
-  ~CachingWordShaper() {}
+  ~CachingWordShaper() = default;
 
   float Width(const TextRun&,
               HashSet<const SimpleFontData*>* fallback_fonts,

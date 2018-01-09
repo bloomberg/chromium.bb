@@ -29,7 +29,7 @@ SourceGraphic::SourceGraphic(Filter* filter) : FilterEffect(filter) {
   SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
-SourceGraphic::~SourceGraphic() {}
+SourceGraphic::~SourceGraphic() = default;
 
 SourceGraphic* SourceGraphic::Create(Filter* filter) {
   return new SourceGraphic(filter);

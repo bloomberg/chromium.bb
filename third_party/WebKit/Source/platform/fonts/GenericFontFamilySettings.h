@@ -46,7 +46,7 @@ class PLATFORM_EXPORT GenericFontFamilySettings {
   DISALLOW_NEW();
 
  public:
-  GenericFontFamilySettings() {}
+  GenericFontFamilySettings() = default;
 
   explicit GenericFontFamilySettings(const GenericFontFamilySettings&);
 

@@ -31,7 +31,7 @@ WebURLLoaderMockFactoryImpl::WebURLLoaderMockFactoryImpl(
     TestingPlatformSupport* platform)
     : platform_(platform) {}
 
-WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() {}
+WebURLLoaderMockFactoryImpl::~WebURLLoaderMockFactoryImpl() = default;
 
 std::unique_ptr<WebURLLoader> WebURLLoaderMockFactoryImpl::CreateURLLoader(
     std::unique_ptr<WebURLLoader> default_loader) {

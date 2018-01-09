@@ -27,6 +27,6 @@
 
 namespace blink {
 
-FontData::~FontData() {}
+FontData::~FontData() = default;
 
 }  // namespace blink

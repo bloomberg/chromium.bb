@@ -14,7 +14,7 @@ typedef ScriptData::PairedBracketType PairedBracketType;
 
 const int ScriptData::kMaxScriptCount = 20;
 
-ScriptData::~ScriptData() {}
+ScriptData::~ScriptData() = default;
 
 void ICUScriptData::GetScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
   ICUError status;

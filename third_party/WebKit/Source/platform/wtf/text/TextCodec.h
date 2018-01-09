@@ -76,7 +76,7 @@ class WTF_EXPORT TextCodec {
   USING_FAST_MALLOC(TextCodec);
 
  public:
-  TextCodec() {}
+  TextCodec() = default;
   virtual ~TextCodec();
 
   String Decode(const char* str,

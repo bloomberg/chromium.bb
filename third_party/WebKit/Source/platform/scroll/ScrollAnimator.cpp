@@ -66,7 +66,7 @@ ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
       time_function_(time_function),
       last_granularity_(kScrollByPixel) {}
 
-ScrollAnimator::~ScrollAnimator() {}
+ScrollAnimator::~ScrollAnimator() = default;
 
 ScrollOffset ScrollAnimator::DesiredTargetOffset() const {
   if (run_state_ == RunState::kWaitingToCancelOnCompositor)

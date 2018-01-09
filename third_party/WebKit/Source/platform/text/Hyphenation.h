@@ -18,7 +18,7 @@ class Font;
 
 class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
  public:
-  virtual ~Hyphenation() {}
+  virtual ~Hyphenation() = default;
 
   // Find the last hyphenation location before |before_index|.
   // Returns 0 if no hyphenation locations were found.

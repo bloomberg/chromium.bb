@@ -50,7 +50,7 @@ class ScopedPersistent {
   WTF_MAKE_NONCOPYABLE(ScopedPersistent);
 
  public:
-  ScopedPersistent() {}
+  ScopedPersistent() = default;
 
   ScopedPersistent(v8::Isolate* isolate, v8::Local<T> handle)
       : handle_(isolate, handle) {}

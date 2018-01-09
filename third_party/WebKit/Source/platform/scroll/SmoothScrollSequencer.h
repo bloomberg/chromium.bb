@@ -40,7 +40,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
 class PLATFORM_EXPORT SmoothScrollSequencer final
     : public GarbageCollected<SmoothScrollSequencer> {
  public:
-  SmoothScrollSequencer() {}
+  SmoothScrollSequencer() = default;
   // Add a scroll offset animation to the back of a queue.
   void QueueAnimation(ScrollableArea*, ScrollOffset, ScrollBehavior);
 

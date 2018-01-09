@@ -152,7 +152,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
    public:
     virtual void ReportHibernationEvent(HibernationEvent);
     virtual void DidStartHibernating() {}
-    virtual ~Logger() {}
+    virtual ~Logger() = default;
   };
 
   void SetLoggerForTesting(std::unique_ptr<Logger>);

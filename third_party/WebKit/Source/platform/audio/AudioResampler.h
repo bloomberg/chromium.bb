@@ -47,7 +47,7 @@ class PLATFORM_EXPORT AudioResampler {
  public:
   AudioResampler();
   AudioResampler(unsigned number_of_channels);
-  ~AudioResampler() {}
+  ~AudioResampler() = default;
 
   // Given an AudioSourceProvider, process() resamples the source stream into
   // destinationBus.

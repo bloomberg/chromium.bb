@@ -67,8 +67,8 @@ class PLATFORM_EXPORT TransformOperation
     kRotateAroundOrigin,
   };
 
-  TransformOperation() {}
-  virtual ~TransformOperation() {}
+  TransformOperation() = default;
+  virtual ~TransformOperation() = default;
 
   virtual bool operator==(const TransformOperation&) const = 0;
   bool operator!=(const TransformOperation& o) const { return !(*this == o); }

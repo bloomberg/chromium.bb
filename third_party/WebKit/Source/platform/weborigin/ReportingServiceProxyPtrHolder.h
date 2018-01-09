@@ -18,7 +18,7 @@ class ReportingServiceProxyPtrHolder {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         mojo::MakeRequest(&reporting_service_proxy));
   }
-  ~ReportingServiceProxyPtrHolder() {}
+  ~ReportingServiceProxyPtrHolder() = default;
 
   void QueueInterventionReport(const KURL& url,
                                const String& message,

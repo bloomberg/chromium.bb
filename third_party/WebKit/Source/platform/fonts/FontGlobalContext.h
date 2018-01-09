@@ -96,7 +96,7 @@ class PLATFORM_EXPORT FontGlobalContext {
   friend class WTF::ThreadSpecific<FontGlobalContext>;
 
   FontGlobalContext();
-  ~FontGlobalContext() {}
+  ~FontGlobalContext() = default;
 
   FontCache font_cache_;
 

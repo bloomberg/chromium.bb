@@ -21,7 +21,7 @@ WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
   }
 }
 
-WorkerTaskQueue::~WorkerTaskQueue() {}
+WorkerTaskQueue::~WorkerTaskQueue() = default;
 
 void WorkerTaskQueue::OnTaskCompleted(const TaskQueue::Task& task,
                                       base::TimeTicks start,

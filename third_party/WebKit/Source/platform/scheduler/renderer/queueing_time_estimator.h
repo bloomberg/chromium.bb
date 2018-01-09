@@ -28,8 +28,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     virtual void OnReportFineGrainedExpectedQueueingTime(
         const char* split_description,
         base::TimeDelta queueing_time) = 0;
-    Client() {}
-    virtual ~Client() {}
+    Client() = default;
+    virtual ~Client() = default;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Client);

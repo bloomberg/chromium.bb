@@ -76,7 +76,7 @@ class TextPosition final {
  public:
   TextPosition(OrdinalNumber line, OrdinalNumber column)
       : line_(line), column_(column) {}
-  TextPosition() {}
+  TextPosition() = default;
   bool operator==(const TextPosition& other) const {
     return line_ == other.line_ && column_ == other.column_;
   }

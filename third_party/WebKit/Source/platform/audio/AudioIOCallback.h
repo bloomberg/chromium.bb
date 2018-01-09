@@ -54,7 +54,7 @@ class AudioIOCallback {
                       size_t frames_to_process,
                       const AudioIOPosition& output_position) = 0;
 
-  virtual ~AudioIOCallback() {}
+  virtual ~AudioIOCallback() = default;
 };
 
 }  // namespace blink

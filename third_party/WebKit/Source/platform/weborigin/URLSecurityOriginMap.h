@@ -44,8 +44,8 @@ class URLSecurityOriginMap {
   WTF_MAKE_NONCOPYABLE(URLSecurityOriginMap);
 
  public:
-  URLSecurityOriginMap() {}
-  virtual ~URLSecurityOriginMap() {}
+  URLSecurityOriginMap() = default;
+  virtual ~URLSecurityOriginMap() = default;
   virtual SecurityOrigin* GetOrigin(const KURL&) = 0;
 };
 

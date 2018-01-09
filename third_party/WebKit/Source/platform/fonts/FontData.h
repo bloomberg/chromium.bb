@@ -42,7 +42,7 @@ class PLATFORM_EXPORT FontData : public RefCounted<FontData> {
   WTF_MAKE_NONCOPYABLE(FontData);
 
  public:
-  FontData() {}
+  FontData() = default;
 
   virtual ~FontData();
 

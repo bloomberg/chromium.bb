@@ -47,7 +47,7 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
     bool spare_lock_ = true;
     gpu::Mailbox mailbox_;
 
-    FrameResource() {}
+    FrameResource() = default;
     ~FrameResource();
   };
 

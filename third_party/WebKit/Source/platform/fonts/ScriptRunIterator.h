@@ -101,7 +101,7 @@ class PLATFORM_EXPORT ScriptData {
 
 class PLATFORM_EXPORT ICUScriptData : public ScriptData {
  public:
-  ~ICUScriptData() override {}
+  ~ICUScriptData() override = default;
 
   static const ICUScriptData* Instance();
 

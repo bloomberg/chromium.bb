@@ -38,7 +38,7 @@ class WebFont::Impl final {
 WebFont::WebFont(const WebFontDescription& description)
     : private_(new Impl(description)) {}
 
-WebFont::~WebFont() {}
+WebFont::~WebFont() = default;
 
 WebFontDescription WebFont::GetFontDescription() const {
   return WebFontDescription(private_->GetFont().GetFontDescription());

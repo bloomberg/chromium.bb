@@ -21,7 +21,7 @@ CompositorFloatKeyframe::CompositorFloatKeyframe(
     std::unique_ptr<cc::FloatKeyframe> float_keyframe)
     : float_keyframe_(std::move(float_keyframe)) {}
 
-CompositorFloatKeyframe::~CompositorFloatKeyframe() {}
+CompositorFloatKeyframe::~CompositorFloatKeyframe() = default;
 
 double CompositorFloatKeyframe::Time() const {
   return float_keyframe_->Time().InSecondsF();

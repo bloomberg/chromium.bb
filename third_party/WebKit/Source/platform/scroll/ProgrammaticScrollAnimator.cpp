@@ -21,7 +21,7 @@ ProgrammaticScrollAnimator::ProgrammaticScrollAnimator(
     ScrollableArea* scrollable_area)
     : scrollable_area_(scrollable_area), start_time_(0.0) {}
 
-ProgrammaticScrollAnimator::~ProgrammaticScrollAnimator() {}
+ProgrammaticScrollAnimator::~ProgrammaticScrollAnimator() = default;
 
 void ProgrammaticScrollAnimator::ResetAnimationState() {
   ScrollAnimatorCompositorCoordinator::ResetAnimationState();

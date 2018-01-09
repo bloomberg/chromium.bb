@@ -180,7 +180,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     scoped_refptr<SimpleFontData> emphasis_mark;
 
    private:
-    DerivedFontData() {}
+    DerivedFontData() = default;
   };
 
   mutable std::unique_ptr<DerivedFontData> derived_font_data_;

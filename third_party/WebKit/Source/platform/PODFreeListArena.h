@@ -86,7 +86,7 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
   explicit PODFreeListArena(scoped_refptr<PODArena::Allocator> allocator)
       : arena_(PODArena::Create(std::move(allocator))), free_list_(nullptr) {}
 
-  ~PODFreeListArena() {}
+  ~PODFreeListArena() = default;
 
   void* AllocateFromFreeList() {
     if (free_list_) {

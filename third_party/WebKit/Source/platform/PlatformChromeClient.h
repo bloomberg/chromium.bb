@@ -41,8 +41,8 @@ class PLATFORM_EXPORT PlatformChromeClient
   WTF_MAKE_NONCOPYABLE(PlatformChromeClient);
 
  public:
-  PlatformChromeClient() {}
-  virtual ~PlatformChromeClient() {}
+  PlatformChromeClient() = default;
+  virtual ~PlatformChromeClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
 
   // Requests the host invalidate the contents.

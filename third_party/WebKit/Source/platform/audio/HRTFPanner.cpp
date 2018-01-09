@@ -63,7 +63,7 @@ HRTFPanner::HRTFPanner(float sample_rate, HRTFDatabaseLoader* database_loader)
   DCHECK(database_loader);
 }
 
-HRTFPanner::~HRTFPanner() {}
+HRTFPanner::~HRTFPanner() = default;
 
 size_t HRTFPanner::FftSizeForSampleRate(float sample_rate) {
   // The HRTF impulse responses (loaded as audio resources) are 512

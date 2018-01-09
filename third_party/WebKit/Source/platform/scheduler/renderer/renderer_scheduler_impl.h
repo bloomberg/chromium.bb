@@ -369,7 +369,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     Policy()
         : rail_mode_(v8::PERFORMANCE_ANIMATION),
           should_disable_throttling_(false) {}
-    ~Policy() {}
+    ~Policy() = default;
 
     TaskQueuePolicy& compositor_queue_policy() {
       return policies_[static_cast<size_t>(

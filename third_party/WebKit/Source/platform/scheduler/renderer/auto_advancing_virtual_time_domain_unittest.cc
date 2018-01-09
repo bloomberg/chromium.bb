@@ -22,8 +22,8 @@ namespace auto_advancing_virtual_time_domain_unittest {
 
 class AutoAdvancingVirtualTimeDomainTest : public ::testing::Test {
  public:
-  AutoAdvancingVirtualTimeDomainTest() {}
-  ~AutoAdvancingVirtualTimeDomainTest() override {}
+  AutoAdvancingVirtualTimeDomainTest() = default;
+  ~AutoAdvancingVirtualTimeDomainTest() override = default;
 
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));

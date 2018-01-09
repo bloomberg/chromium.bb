@@ -211,7 +211,7 @@ class PLATFORM_EXPORT V8PrivateProperty {
   }
 
  private:
-  V8PrivateProperty() {}
+  V8PrivateProperty() = default;
 
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);

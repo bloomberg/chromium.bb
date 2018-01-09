@@ -68,7 +68,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   const UChar* GetText() const { return text_; }
   unsigned TextLength() const { return text_length_; }
 
-  ~HarfBuzzShaper() {}
+  ~HarfBuzzShaper() = default;
 
  private:
 

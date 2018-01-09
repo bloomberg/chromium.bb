@@ -61,7 +61,7 @@ class SchedulerHelperTest : public ::testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
-  ~SchedulerHelperTest() override {}
+  ~SchedulerHelperTest() override = default;
 
   void TearDown() override {
     // Check that all tests stop posting tasks.

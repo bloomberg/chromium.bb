@@ -13,7 +13,7 @@ WebThreadImplForUtilityThread::WebThreadImplForUtilityThread()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       thread_id_(base::PlatformThread::CurrentId()) {}
 
-WebThreadImplForUtilityThread::~WebThreadImplForUtilityThread() {}
+WebThreadImplForUtilityThread::~WebThreadImplForUtilityThread() = default;
 
 blink::WebScheduler* WebThreadImplForUtilityThread::Scheduler() const {
   NOTIMPLEMENTED();

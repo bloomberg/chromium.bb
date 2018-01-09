@@ -113,7 +113,7 @@ V8PerIsolateData::V8PerIsolateData()
   g_main_thread_per_isolate_data = this;
 }
 
-V8PerIsolateData::~V8PerIsolateData() {}
+V8PerIsolateData::~V8PerIsolateData() = default;
 
 v8::Isolate* V8PerIsolateData::MainThreadIsolate() {
   DCHECK(g_main_thread_per_isolate_data);

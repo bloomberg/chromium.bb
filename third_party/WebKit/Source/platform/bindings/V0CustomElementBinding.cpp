@@ -47,6 +47,6 @@ V0CustomElementBinding::V0CustomElementBinding(v8::Isolate* isolate,
   DCHECK(!prototype_.IsEmpty());
 }
 
-V0CustomElementBinding::~V0CustomElementBinding() {}
+V0CustomElementBinding::~V0CustomElementBinding() = default;
 
 }  // namespace blink

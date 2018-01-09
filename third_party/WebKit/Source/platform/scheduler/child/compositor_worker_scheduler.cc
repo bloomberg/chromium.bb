@@ -27,7 +27,7 @@ CompositorWorkerScheduler::CompositorWorkerScheduler(
       compositor_thread_task_duration_reporter_(
           "RendererScheduler.TaskDurationPerThreadType") {}
 
-CompositorWorkerScheduler::~CompositorWorkerScheduler() {}
+CompositorWorkerScheduler::~CompositorWorkerScheduler() = default;
 
 scoped_refptr<WorkerTaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
   return helper_->DefaultWorkerTaskQueue();

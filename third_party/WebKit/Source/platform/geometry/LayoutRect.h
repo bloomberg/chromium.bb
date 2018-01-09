@@ -48,7 +48,7 @@ class PLATFORM_EXPORT LayoutRect {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  LayoutRect() {}
+  LayoutRect() = default;
   LayoutRect(const LayoutPoint& location, const LayoutSize& size)
       : location_(location), size_(size) {}
   LayoutRect(LayoutUnit x, LayoutUnit y, LayoutUnit width, LayoutUnit height)

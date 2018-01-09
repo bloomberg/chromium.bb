@@ -105,7 +105,7 @@ class PODRedBlackTree {
     virtual void Visit(const T& data) = 0;
 
    protected:
-    virtual ~Visitor() {}
+    virtual ~Visitor() = default;
   };
 
   // Constructs a new red-black tree without allocating an arena.
@@ -148,7 +148,7 @@ class PODRedBlackTree {
   {
   }
 
-  virtual ~PODRedBlackTree() {}
+  virtual ~PODRedBlackTree() = default;
 
   // Clearing will delete the contents of the tree. After this call
   // isInitialized will return false.
@@ -251,7 +251,7 @@ class PODRedBlackTree {
           color_(kRed),
           data_(data) {}
 
-    virtual ~Node() {}
+    virtual ~Node() = default;
 
     NodeColor GetColor() const { return color_; }
     void SetColor(NodeColor color) { color_ = color; }

@@ -110,7 +110,7 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
 
 const long long BlobDataItem::kToEndOfFile = -1;
 
-RawData::RawData() {}
+RawData::RawData() = default;
 
 void BlobDataItem::DetachFromCurrentThread() {
   path = path.IsolatedCopy();

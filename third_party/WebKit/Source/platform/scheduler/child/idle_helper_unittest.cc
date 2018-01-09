@@ -174,7 +174,7 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
                    required_quiescence_duration_before_long_idle_period,
                    idle_task_runner) {}
 
-  ~IdleHelperForTest() override {}
+  ~IdleHelperForTest() override = default;
 
   // IdleHelper::Delegate implementation:
   MOCK_METHOD2(CanEnterLongIdlePeriod,
@@ -211,7 +211,7 @@ class BaseIdleHelperTest : public ::testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
-  ~BaseIdleHelperTest() override {}
+  ~BaseIdleHelperTest() override = default;
 
   void SetUp() override {
     EXPECT_CALL(*idle_helper_, OnIdlePeriodStarted()).Times(AnyNumber());
@@ -314,7 +314,7 @@ class IdleHelperTest : public BaseIdleHelperTest {
  public:
   IdleHelperTest() : BaseIdleHelperTest(nullptr, base::TimeDelta()) {}
 
-  ~IdleHelperTest() override {}
+  ~IdleHelperTest() override = default;
 
   TaskQueueManager* task_queue_manager() const {
     return scheduler_helper_->GetTaskQueueManagerForTesting();
@@ -421,7 +421,7 @@ class IdleHelperTestWithIdlePeriodObserver : public BaseIdleHelperTest {
   IdleHelperTestWithIdlePeriodObserver()
       : BaseIdleHelperTest(nullptr, base::TimeDelta()) {}
 
-  ~IdleHelperTestWithIdlePeriodObserver() override {}
+  ~IdleHelperTestWithIdlePeriodObserver() override = default;
 
   void SetUp() override {
     // Don't set expectations on IdleHelper::Delegate.
@@ -475,7 +475,7 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
  public:
   IdleHelperWithMessageLoopTest()
       : BaseIdleHelperTest(new base::MessageLoop(), base::TimeDelta()) {}
-  ~IdleHelperWithMessageLoopTest() override {}
+  ~IdleHelperWithMessageLoopTest() override = default;
 
   void PostFromNestedRunloop(
       std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
@@ -871,7 +871,7 @@ class IdleHelperWithQuiescencePeriodTest : public BaseIdleHelperTest {
             nullptr,
             base::TimeDelta::FromMilliseconds(kQuiescenceDelayMs)) {}
 
-  ~IdleHelperWithQuiescencePeriodTest() override {}
+  ~IdleHelperWithQuiescencePeriodTest() override = default;
 
   void SetUp() override {
     EXPECT_CALL(*idle_helper_, OnIdlePeriodStarted()).Times(AnyNumber());
@@ -898,7 +898,8 @@ class IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver
   IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver()
       : IdleHelperWithQuiescencePeriodTest() {}
 
-  ~IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver() override {}
+  ~IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver() override =
+      default;
 
   void SetUp() override {
     // Don't set expectations on IdleHelper::Delegate.

@@ -61,7 +61,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
     Clear();
 }
 
-UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() {}
+UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() = default;
 
 PaintCanvas* UnacceleratedImageBufferSurface::Canvas() {
   return canvas_.get();

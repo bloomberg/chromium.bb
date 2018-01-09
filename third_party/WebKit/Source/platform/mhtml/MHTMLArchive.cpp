@@ -75,7 +75,7 @@ static String ConvertToPrintableCharacters(const String& text) {
   return "=?utf-8?Q?" + String(encoded_text.data(), encoded_text.size()) + "?=";
 }
 
-MHTMLArchive::MHTMLArchive() {}
+MHTMLArchive::MHTMLArchive() = default;
 
 MHTMLArchive* MHTMLArchive::Create(const KURL& url,
                                    scoped_refptr<const SharedBuffer> data) {

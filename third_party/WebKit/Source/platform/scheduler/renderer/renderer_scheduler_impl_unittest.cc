@@ -272,7 +272,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
   }
 
-  ~RendererSchedulerImplTest() override {}
+  ~RendererSchedulerImplTest() override = default;
 
   void SetUp() override {
     if (!message_loop_) {
@@ -2084,7 +2084,7 @@ class RendererSchedulerImplWithMessageLoopTest
  public:
   RendererSchedulerImplWithMessageLoopTest()
       : RendererSchedulerImplTest(new base::MessageLoop()) {}
-  ~RendererSchedulerImplWithMessageLoopTest() override {}
+  ~RendererSchedulerImplWithMessageLoopTest() override = default;
 
   void PostFromNestedRunloop(
       std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>*
@@ -3133,7 +3133,7 @@ class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
  public:
   WebViewSchedulerImplForTest(RendererSchedulerImpl* scheduler)
       : WebViewSchedulerImpl(nullptr, nullptr, scheduler, false) {}
-  ~WebViewSchedulerImplForTest() override {}
+  ~WebViewSchedulerImplForTest() override = default;
 
   void ReportIntervention(const std::string& message) override {
     interventions_.push_back(message);

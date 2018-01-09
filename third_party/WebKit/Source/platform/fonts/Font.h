@@ -222,7 +222,7 @@ class PLATFORM_EXPORT Font {
   friend class CachingWordShaper;
 };
 
-inline Font::~Font() {}
+inline Font::~Font() = default;
 
 inline const SimpleFontData* Font::PrimaryFont() const {
   DCHECK(font_fallback_list_);

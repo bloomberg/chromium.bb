@@ -201,7 +201,7 @@ class PLATFORM_EXPORT DisplayItem {
     SECURITY_DCHECK(derived_size >= sizeof(*this));
   }
 
-  virtual ~DisplayItem() {}
+  virtual ~DisplayItem() = default;
 
   // Ids are for matching new DisplayItems with existing DisplayItems.
   struct Id {

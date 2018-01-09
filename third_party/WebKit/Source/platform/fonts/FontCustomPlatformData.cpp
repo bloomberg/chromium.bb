@@ -58,7 +58,7 @@ FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t data_size)
     : base_typeface_(std::move(typeface)), data_size_(data_size) {}
 
-FontCustomPlatformData::~FontCustomPlatformData() {}
+FontCustomPlatformData::~FontCustomPlatformData() = default;
 
 FontPlatformData FontCustomPlatformData::GetFontPlatformData(
     float size,

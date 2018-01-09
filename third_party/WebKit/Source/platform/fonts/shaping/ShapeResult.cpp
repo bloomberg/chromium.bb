@@ -227,7 +227,7 @@ ShapeResult::ShapeResult(const ShapeResult& other)
     runs_.push_back(std::make_unique<RunInfo>(*run));
 }
 
-ShapeResult::~ShapeResult() {}
+ShapeResult::~ShapeResult() = default;
 
 size_t ShapeResult::ByteSize() const {
   size_t self_byte_size = sizeof(this);

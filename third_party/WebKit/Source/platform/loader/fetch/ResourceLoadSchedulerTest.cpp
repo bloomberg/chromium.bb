@@ -17,7 +17,7 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
  public:
-  ~MockClient() {}
+  ~MockClient() = default;
 
   void Run() override {
     EXPECT_FALSE(was_run_);

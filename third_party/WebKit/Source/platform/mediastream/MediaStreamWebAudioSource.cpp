@@ -39,7 +39,7 @@ MediaStreamWebAudioSource::MediaStreamWebAudioSource(
     std::unique_ptr<WebAudioSourceProvider> provider)
     : web_audio_source_provider_(std::move(provider)) {}
 
-MediaStreamWebAudioSource::~MediaStreamWebAudioSource() {}
+MediaStreamWebAudioSource::~MediaStreamWebAudioSource() = default;
 
 void MediaStreamWebAudioSource::ProvideInput(AudioBus* bus,
                                              size_t frames_to_process) {

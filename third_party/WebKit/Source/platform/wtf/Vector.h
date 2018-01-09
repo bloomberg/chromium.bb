@@ -487,7 +487,7 @@ class VectorBuffer<T, 0, Allocator>
  public:
   using OffsetRange = typename Base::OffsetRange;
 
-  VectorBuffer() {}
+  VectorBuffer() = default;
 
   explicit VectorBuffer(size_t capacity) {
     // Calling malloc(0) might take a lock and may actually do an allocation

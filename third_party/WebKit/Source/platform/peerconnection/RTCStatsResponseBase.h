@@ -33,7 +33,7 @@ namespace blink {
 
 class RTCStatsResponseBase : public ScriptWrappable {
  public:
-  virtual ~RTCStatsResponseBase() {}
+  virtual ~RTCStatsResponseBase() = default;
 
   virtual void AddStats(const WebRTCLegacyStats&) = 0;
 };

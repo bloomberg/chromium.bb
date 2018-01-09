@@ -206,7 +206,7 @@ void TestingPlatformSupport::RunUntilIdle() {
 class ScopedUnittestsEnvironmentSetup::DummyPlatform final
     : public blink::Platform {
  public:
-  DummyPlatform() {}
+  DummyPlatform() = default;
 
   blink::WebThread* CurrentThread() override {
     static DummyThread dummy_thread;
@@ -261,6 +261,6 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   WebRuntimeFeatures::EnableTestOnlyFeatures(true);
 }
 
-ScopedUnittestsEnvironmentSetup::~ScopedUnittestsEnvironmentSetup() {}
+ScopedUnittestsEnvironmentSetup::~ScopedUnittestsEnvironmentSetup() = default;
 
 }  // namespace blink

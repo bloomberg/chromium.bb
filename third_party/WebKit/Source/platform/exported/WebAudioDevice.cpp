@@ -33,6 +33,6 @@ void WebAudioDevice::RenderCallback::Render(
     double delay_timestamp,
     size_t prior_frames_skipped) {}
 
-WebAudioDevice::RenderCallback::~RenderCallback() {}
+WebAudioDevice::RenderCallback::~RenderCallback() = default;
 
 }  // namespace blink

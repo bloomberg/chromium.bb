@@ -74,7 +74,7 @@ class DateTimeFormatTest : public ::testing::Test {
 
   class Tokens {
    public:
-    Tokens() {}
+    Tokens() = default;
 
     explicit Tokens(const Vector<Token> tokens) : tokens_(tokens) {}
 
@@ -167,7 +167,7 @@ class DateTimeFormatTest : public ::testing::Test {
  private:
   class TokenHandler : public DateTimeFormat::TokenHandler {
    public:
-    ~TokenHandler() override {}
+    ~TokenHandler() override = default;
 
     FieldType GetFieldType(int index) const {
       return index >= 0 && index < static_cast<int>(tokens_.size())

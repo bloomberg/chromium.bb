@@ -34,7 +34,7 @@ class PLATFORM_EXPORT LengthBox {
   DISALLOW_NEW();
 
  public:
-  LengthBox() {}
+  LengthBox() = default;
 
   LengthBox(LengthType t) : left_(t), right_(t), top_(t), bottom_(t) {}
 

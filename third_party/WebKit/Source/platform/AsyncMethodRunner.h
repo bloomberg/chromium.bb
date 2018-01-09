@@ -51,7 +51,7 @@ class AsyncMethodRunner final
     return new AsyncMethodRunner(object, method, std::move(task_runner));
   }
 
-  ~AsyncMethodRunner() {}
+  ~AsyncMethodRunner() = default;
 
   // Schedules to run the method asynchronously. Do nothing if it's already
   // scheduled. If it's suspended, remember to schedule to run the method when

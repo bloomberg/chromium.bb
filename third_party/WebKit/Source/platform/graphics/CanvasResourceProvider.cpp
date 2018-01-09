@@ -40,7 +40,7 @@ class CanvasResourceProvider_Texture : public CanvasResourceProvider {
                                std::move(context_provider_wrapper)),
         msaa_sample_count_(msaa_sample_count) {}
 
-  virtual ~CanvasResourceProvider_Texture() {}
+  virtual ~CanvasResourceProvider_Texture() = default;
 
   bool IsValid() const final { return GetSkSurface() && !IsGpuContextLost(); }
   bool IsAccelerated() const final { return true; }
@@ -117,7 +117,7 @@ class CanvasResourceProvider_Texture_GpuMemoryBuffer final
                                        color_params,
                                        std::move(context_provider_wrapper)) {}
 
-  virtual ~CanvasResourceProvider_Texture_GpuMemoryBuffer() {}
+  virtual ~CanvasResourceProvider_Texture_GpuMemoryBuffer() = default;
 
  protected:
   scoped_refptr<CanvasResource> CreateResource() final {
@@ -169,7 +169,7 @@ class CanvasResourceProvider_Bitmap final : public CanvasResourceProvider {
                                color_params,
                                nullptr /*context_provider_wrapper*/) {}
 
-  ~CanvasResourceProvider_Bitmap() {}
+  ~CanvasResourceProvider_Bitmap() = default;
 
   bool IsValid() const final { return GetSkSurface(); }
   bool IsAccelerated() const final { return false; }
@@ -293,7 +293,7 @@ CanvasResourceProvider::CanvasResourceProvider(
       size_(size),
       color_params_(color_params) {}
 
-CanvasResourceProvider::~CanvasResourceProvider() {}
+CanvasResourceProvider::~CanvasResourceProvider() = default;
 
 SkSurface* CanvasResourceProvider::GetSkSurface() const {
   if (!surface_) {

@@ -53,7 +53,7 @@ struct HashTableConstIteratorAdapter<HashTableType,
   typedef HashTableConstValuesIterator<HashTableType, KeyType, MappedType>
       ValuesIterator;
 
-  HashTableConstIteratorAdapter() {}
+  HashTableConstIteratorAdapter() = default;
   HashTableConstIteratorAdapter(
       const typename HashTableType::const_iterator& impl)
       : impl_(impl) {}
@@ -88,7 +88,7 @@ struct HashTableIteratorAdapter<HashTableType,
   typedef HashTableValuesIterator<HashTableType, KeyType, MappedType>
       ValuesIterator;
 
-  HashTableIteratorAdapter() {}
+  HashTableIteratorAdapter() = default;
   HashTableIteratorAdapter(const typename HashTableType::iterator& impl)
       : impl_(impl) {}
 

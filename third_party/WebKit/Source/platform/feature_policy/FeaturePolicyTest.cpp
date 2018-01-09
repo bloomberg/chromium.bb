@@ -57,10 +57,9 @@ const char* const kInvalidPolicies[] = {
 
 class FeaturePolicyTest : public ::testing::Test {
  protected:
-  FeaturePolicyTest() {}
+  FeaturePolicyTest() = default;
 
-  ~FeaturePolicyTest() {
-  }
+  ~FeaturePolicyTest() = default;
 
   scoped_refptr<const SecurityOrigin> origin_a_ =
       SecurityOrigin::CreateFromString(ORIGIN_A);

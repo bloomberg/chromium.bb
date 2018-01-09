@@ -12,9 +12,9 @@
 namespace blink {
 namespace scheduler {
 
-FakeRendererScheduler::FakeRendererScheduler() {}
+FakeRendererScheduler::FakeRendererScheduler() = default;
 
-FakeRendererScheduler::~FakeRendererScheduler() {}
+FakeRendererScheduler::~FakeRendererScheduler() = default;
 
 std::unique_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
   return nullptr;

@@ -30,7 +30,7 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
       owner_node_id_(0),
       main_thread_scrolling_reasons_(0) {}
 
-GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() {}
+GraphicsLayerDebugInfo::~GraphicsLayerDebugInfo() = default;
 
 std::unique_ptr<base::trace_event::TracedValue>
 GraphicsLayerDebugInfo::AsTracedValue() const {

@@ -363,8 +363,8 @@ class RecordQueueingTimeClient : public QueueingTimeEstimator::Client {
 
   base::TimeDelta queueing_time() { return queueing_time_; }
 
-  RecordQueueingTimeClient() {}
-  ~RecordQueueingTimeClient() override {}
+  RecordQueueingTimeClient() = default;
+  ~RecordQueueingTimeClient() override = default;
 
  private:
   base::TimeDelta queueing_time_;

@@ -32,7 +32,7 @@ WebProcessMemoryDump::WebProcessMemoryDump(
     : process_memory_dump_(process_memory_dump),
       level_of_detail_(level_of_detail) {}
 
-WebProcessMemoryDump::~WebProcessMemoryDump() {}
+WebProcessMemoryDump::~WebProcessMemoryDump() = default;
 
 blink::WebMemoryAllocatorDump* WebProcessMemoryDump::CreateMemoryAllocatorDump(
     const String& absolute_name) {

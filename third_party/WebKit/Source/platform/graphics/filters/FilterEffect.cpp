@@ -37,7 +37,7 @@ FilterEffect::FilterEffect(Filter* filter)
   DCHECK(filter_);
 }
 
-FilterEffect::~FilterEffect() {}
+FilterEffect::~FilterEffect() = default;
 
 void FilterEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_effects_);

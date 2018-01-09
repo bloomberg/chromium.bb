@@ -6,6 +6,6 @@
 
 namespace blink {
 
-WebRTCRtpSender::~WebRTCRtpSender() {}
+WebRTCRtpSender::~WebRTCRtpSender() = default;
 
 }  // namespace blink

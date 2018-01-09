@@ -48,7 +48,7 @@ class PLATFORM_EXPORT RuntimeCallCounter {
   void Dump(TracedValue&) const;
 
  private:
-  RuntimeCallCounter() {}
+  RuntimeCallCounter() = default;
 
   uint64_t count_;
   TimeDelta time_;

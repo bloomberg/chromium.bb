@@ -42,7 +42,7 @@ class RefVector : public RefCounted<RefVector<T>> {
 
  private:
   Vector<T> vector_;
-  RefVector() {}
+  RefVector() = default;
   RefVector(const Vector<T>& vector) : vector_(vector) {}
   RefVector(Vector<T>&& vector) : vector_(vector) {}
 };

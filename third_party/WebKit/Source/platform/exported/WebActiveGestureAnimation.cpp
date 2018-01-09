@@ -41,7 +41,7 @@ WebActiveGestureAnimation::CreateWithTimeOffset(
       new WebActiveGestureAnimation(std::move(curve), target, start_time));
 }
 
-WebActiveGestureAnimation::~WebActiveGestureAnimation() {}
+WebActiveGestureAnimation::~WebActiveGestureAnimation() = default;
 
 WebActiveGestureAnimation::WebActiveGestureAnimation(
     std::unique_ptr<WebGestureCurve> curve,

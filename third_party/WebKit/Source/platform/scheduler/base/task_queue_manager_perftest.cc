@@ -33,7 +33,7 @@ namespace scheduler {
 class PerfTestTimeDomain : public VirtualTimeDomain {
  public:
   PerfTestTimeDomain() : VirtualTimeDomain(base::TimeTicks::Now()) {}
-  ~PerfTestTimeDomain() override {}
+  ~PerfTestTimeDomain() override = default;
 
   base::Optional<base::TimeDelta> DelayTillNextTask(
       LazyNow* lazy_now) override {

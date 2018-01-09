@@ -22,7 +22,7 @@ namespace blink {
 // https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
 class CORE_EXPORT ReferrerScriptInfo {
  public:
-  ReferrerScriptInfo() = default;
+  ReferrerScriptInfo() {}
   ReferrerScriptInfo(const KURL& base_url,
                      network::mojom::FetchCredentialsMode credentials_mode,
                      const String& nonce,

@@ -370,7 +370,7 @@ bool RawResource::CanReuse(const FetchParameters& new_fetch_parameters) const {
 RawResourceClientStateChecker::RawResourceClientStateChecker()
     : state_(kNotAddedAsClient) {}
 
-RawResourceClientStateChecker::~RawResourceClientStateChecker() {}
+RawResourceClientStateChecker::~RawResourceClientStateChecker() = default;
 
 NEVER_INLINE void RawResourceClientStateChecker::WillAddClient() {
   SECURITY_CHECK(state_ == kNotAddedAsClient);

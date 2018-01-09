@@ -31,7 +31,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
         raster_invalidator_([this](const IntRect& rect) {
           cc_picture_layer_->SetNeedsDisplayRect(rect);
         }) {}
-  ~ContentLayerClientImpl() override {}
+  ~ContentLayerClientImpl() override = default;
 
   // cc::ContentLayerClient
   gfx::Rect PaintableRegion() override {

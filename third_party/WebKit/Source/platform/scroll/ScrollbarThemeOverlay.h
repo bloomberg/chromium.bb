@@ -44,7 +44,7 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
                         int scrollbar_margin,
                         HitTestBehavior,
                         Color);
-  ~ScrollbarThemeOverlay() override {}
+  ~ScrollbarThemeOverlay() override = default;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override;
 

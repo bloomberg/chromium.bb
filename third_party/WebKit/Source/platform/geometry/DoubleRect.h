@@ -20,7 +20,7 @@ class PLATFORM_EXPORT DoubleRect {
   STACK_ALLOCATED();
 
  public:
-  DoubleRect() {}
+  DoubleRect() = default;
   DoubleRect(const DoublePoint& location, const DoubleSize& size)
       : location_(location), size_(size) {}
   DoubleRect(double x, double y, double width, double height)

@@ -52,7 +52,7 @@ class PLATFORM_EXPORT MediaStreamSource final
  public:
   class PLATFORM_EXPORT Observer : public GarbageCollectedMixin {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
     virtual void SourceChangedState() = 0;
   };
 
@@ -60,7 +60,7 @@ class PLATFORM_EXPORT MediaStreamSource final
     USING_FAST_MALLOC(ExtraData);
 
    public:
-    virtual ~ExtraData() {}
+    virtual ~ExtraData() = default;
   };
 
   enum StreamType { kTypeAudio, kTypeVideo };

@@ -28,7 +28,7 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
   DCHECK(layer_);
 }
 
-ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {}
+ForeignLayerDisplayItem::~ForeignLayerDisplayItem() = default;
 
 void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
   NOTREACHED();

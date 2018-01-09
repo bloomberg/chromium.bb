@@ -7,7 +7,7 @@
 PollableThreadSafeFlag::PollableThreadSafeFlag(base::Lock* write_lock_)
     : flag_(false), write_lock_(write_lock_) {}
 
-PollableThreadSafeFlag::~PollableThreadSafeFlag() {}
+PollableThreadSafeFlag::~PollableThreadSafeFlag() = default;
 
 void PollableThreadSafeFlag::SetWhileLocked(bool value) {
   write_lock_->AssertAcquired();

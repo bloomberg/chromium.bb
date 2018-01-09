@@ -95,7 +95,7 @@ class ContiguousContainer : public ContiguousContainerBase {
     DISALLOW_NEW();
 
    public:
-    IteratorWrapper() {}
+    IteratorWrapper() = default;
     bool operator==(const IteratorWrapper& other) const {
       return it_ == other.it_;
     }

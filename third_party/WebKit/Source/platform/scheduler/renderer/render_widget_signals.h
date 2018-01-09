@@ -20,7 +20,7 @@ class PLATFORM_EXPORT RenderWidgetSignals {
  public:
   class PLATFORM_EXPORT Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // If |hidden| is true then all render widgets managed by this renderer
     // process have been hidden.

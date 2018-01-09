@@ -67,7 +67,7 @@ Biquad::Biquad() : has_sample_accurate_values_(false) {
   Reset();  // clear filter memory
 }
 
-Biquad::~Biquad() {}
+Biquad::~Biquad() = default;
 
 void Biquad::Process(const float* source_p,
                      float* dest_p,

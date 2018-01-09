@@ -56,7 +56,7 @@ class WTF_EXPORT AtomicString {
   // The function is defined in StringStatics.cpp.
   static void Init();
 
-  AtomicString() {}
+  AtomicString() = default;
   AtomicString(const LChar* chars)
       : AtomicString(chars,
                      chars ? strlen(reinterpret_cast<const char*>(chars)) : 0) {

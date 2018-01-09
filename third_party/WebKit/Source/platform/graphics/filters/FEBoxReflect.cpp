@@ -13,7 +13,7 @@ namespace blink {
 FEBoxReflect::FEBoxReflect(Filter* filter, const BoxReflection& reflection)
     : FilterEffect(filter), reflection_(reflection) {}
 
-FEBoxReflect::~FEBoxReflect() {}
+FEBoxReflect::~FEBoxReflect() = default;
 
 FloatRect FEBoxReflect::MapEffect(const FloatRect& rect) const {
   return reflection_.MapRect(rect);
