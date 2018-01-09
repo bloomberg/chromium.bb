@@ -1783,11 +1783,23 @@ const char kContextualSearchMlTapSuppressionName[] =
     "Contextual Search ML tap suppression";
 const char kContextualSearchMlTapSuppressionDescription[] =
     "Enables tap gestures to be suppressed to improve CTR by applying machine "
-    "learning.";
+    "learning.  The \"Contextual Search Ranker prediction\" flag must also be "
+    "enabled!";
 
 const char kContextualSearchName[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
+
+const char kContextualSearchRankerQueryName[] =
+    "Contextual Search Ranker prediction";
+const char kContextualSearchRankerQueryDescription[] =
+    "Enables prediction of tap gestures using Assist-Ranker machine learning.";
+
+const char kContextualSearchSecondTapName[] =
+    "Contextual Search second tap triggering";
+const char kContextualSearchSecondTapDescription[] =
+    "Enables triggering on a second tap gesture even when Ranker would "
+    "normally suppress that tap.";
 
 const char kDontPrefetchLibrariesName[] = "Don't Prefetch Libraries";
 const char kDontPrefetchLibrariesDescription[] =
