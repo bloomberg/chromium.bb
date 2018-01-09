@@ -163,14 +163,6 @@ void ChromeSessionManager::Initialize(
     const base::CommandLine& parsed_command_line,
     Profile* profile,
     bool is_running_test) {
-  // Keep Chrome alive for mash.
-  // TODO(xiyuan): Remove this when session manager is moved out of Chrome.
-  if (ash_util::IsRunningInMash() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableZeroBrowsersOpenForTests)) {
-    g_browser_process->platform_part()->RegisterKeepAlive();
-  }
-
   // Tests should be able to tune login manager before showing it. Thus only
   // show login UI (login and out-of-box) in normal (non-testing) mode with
   // --login-manager switch and if test passed --force-login-manager-in-tests.

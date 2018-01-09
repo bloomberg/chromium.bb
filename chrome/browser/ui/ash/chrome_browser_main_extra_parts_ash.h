@@ -20,7 +20,7 @@ class UserActivityDetector;
 }
 
 class AccessibilityControllerClient;
-class AshInit;
+class AshShellInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
 class ChromeShellContentState;
@@ -66,7 +66,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<VpnListForwarder> vpn_list_forwarder_;
-  std::unique_ptr<AshInit> ash_init_;
+  std::unique_ptr<AshShellInit> ash_shell_init_;
   std::unique_ptr<LoginScreenClient> login_screen_client_;
 
   // Used only for mash.

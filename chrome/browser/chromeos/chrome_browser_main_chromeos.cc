@@ -124,6 +124,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cert_loader.h"
@@ -856,6 +857,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
+  // On Chrome OS, Chrome does not exit when all browser windows are closed.
+  // UnregisterKeepAlive is called from chrome::HandleAppExitingForPlatform.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kDisableZeroBrowsersOpenForTests)) {
+    g_browser_process->platform_part()->RegisterKeepAlive();
+  }
+
   // NOTE: Calls ChromeBrowserMainParts::PreProfileInit() which calls
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes
   // ash::Shell.
@@ -864,6 +872,12 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
   keyboard::InitializeKeyboard();
+
+  // AccelerometerReader is used by ash and content (via DeviceSensor).
+  chromeos::AccelerometerReader::GetInstance()->Initialize(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   PushProcessCreationTimeToAsh();
 

@@ -227,8 +227,6 @@ Shell* Shell::instance_ = nullptr;
 aura::WindowTreeClient* Shell::window_tree_client_ = nullptr;
 // static
 aura::WindowManagerClient* Shell::window_manager_client_ = nullptr;
-// static
-bool Shell::initially_hide_cursor_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Shell, public:
@@ -1103,8 +1101,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
     virtual_keyboard_controller_.reset(new VirtualKeyboardController);
 
   if (cursor_manager_) {
-    if (initially_hide_cursor_)
-      cursor_manager_->HideCursor();
+    cursor_manager_->HideCursor();  // Hide the mouse cursor on startup.
     cursor_manager_->SetCursor(ui::CursorType::kPointer);
   }
 

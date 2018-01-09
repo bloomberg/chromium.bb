@@ -502,10 +502,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Returns the system tray on primary display.
   SystemTray* GetPrimarySystemTray();
 
-  static void set_initially_hide_cursor(bool hide) {
-    initially_hide_cursor_ = hide;
-  }
-
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
@@ -635,10 +631,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Only valid in mash, for classic ash this is null.
   static aura::WindowTreeClient* window_tree_client_;
   static aura::WindowManagerClient* window_manager_client_;
-
-  // If set before the Shell is initialized, the mouse cursor will be hidden
-  // when the screen is initially created.
-  static bool initially_hide_cursor_;
 
   std::unique_ptr<ShellPort> shell_port_;
 

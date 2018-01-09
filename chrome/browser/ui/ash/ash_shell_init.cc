@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/ash_init.h"
+#include "chrome/browser/ui/ash/ash_shell_init.h"
 
 #include <utility>
 
@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/context_factory.h"
@@ -82,11 +81,7 @@ std::unique_ptr<ash::WindowManager> CreateMusShell() {
 
 }  // namespace
 
-AshInit::AshInit() {
-  // Hide the mouse cursor completely at boot.
-  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
-    ash::Shell::set_initially_hide_cursor(true);
-
+AshShellInit::AshShellInit() {
   // Balanced by a call to DestroyInstance() in CloseAsh() below.
   ash::ShellContentState::SetInstance(new ChromeShellContentState);
 
@@ -95,11 +90,6 @@ AshInit::AshInit() {
   else
     CreateClassicShell();
 
-  // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
-  chromeos::AccelerometerReader::GetInstance()->Initialize(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
   ash::Shell* shell = ash::Shell::Get();
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
@@ -108,14 +98,10 @@ AshInit::AshInit() {
   shell->magnification_controller()->SetEnabled(
       chromeos::MagnificationManager::Get()->IsMagnifierEnabled());
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableZeroBrowsersOpenForTests)) {
-    g_browser_process->platform_part()->RegisterKeepAlive();
-  }
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
 }
 
-AshInit::~AshInit() {
+AshShellInit::~AshShellInit() {
   // |window_manager_| deletes the Shell.
   if (!window_manager_ && ash::Shell::HasInstance()) {
     ash::Shell::DeleteInstance();

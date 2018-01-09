@@ -491,6 +491,9 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
 // Tests that touch-dragging a window does not lock the mouse cursor
 // and therefore shows the cursor on a mousemove.
 TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
+  // Shell hides the cursor by default; show it for this tests.
+  Shell::Get()->cursor_manager()->ShowCursor();
+
   window_->SetBounds(gfx::Rect(0, 300, 400, 300));
   window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
 
