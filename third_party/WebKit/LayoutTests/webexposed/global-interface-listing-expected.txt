@@ -5294,6 +5294,7 @@ interface RTCRtpSender
     attribute @@toStringTag
     getter track
     method constructor
+    method replaceTrack
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp

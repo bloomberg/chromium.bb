@@ -245,7 +245,7 @@ FAIL RTCRtpSender interface: attribute rtcpTransport assert_true: The prototype 
 FAIL RTCRtpSender interface: operation getCapabilities(DOMString) assert_own_property: interface object missing static operation expected property "getCapabilities" missing
 FAIL RTCRtpSender interface: operation setParameters(RTCRtpParameters) assert_own_property: interface prototype object missing non-static operation expected property "setParameters" missing
 FAIL RTCRtpSender interface: operation getParameters() assert_own_property: interface prototype object missing non-static operation expected property "getParameters" missing
-FAIL RTCRtpSender interface: operation replaceTrack(MediaStreamTrack) assert_own_property: interface prototype object missing non-static operation expected property "replaceTrack" missing
+PASS RTCRtpSender interface: operation replaceTrack(MediaStreamTrack)
 FAIL RTCRtpSender interface: operation getStats() assert_own_property: interface prototype object missing non-static operation expected property "getStats" missing
 FAIL RTCRtpSender interface: attribute dtmf assert_true: The prototype object must have a property "dtmf" expected true got false
 FAIL RTCRtpSender must be primary interface of new RTCPeerConnection().addTransceiver('audio').sender assert_equals: Unexpected exception when evaluating object expected null but got object "TypeError: (intermediate value).addTransceiver is not a function"
