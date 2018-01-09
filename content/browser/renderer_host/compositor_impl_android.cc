@@ -100,9 +100,9 @@ struct CompositorDependencies {
     // TODO(crbug.com/676384): Remove flag along with surface sequences.
     auto surface_lifetime_type =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableSurfaceReferences)
-            ? viz::SurfaceManager::LifetimeType::REFERENCES
-            : viz::SurfaceManager::LifetimeType::SEQUENCES;
+            switches::kDisableSurfaceReferences)
+            ? viz::SurfaceManager::LifetimeType::SEQUENCES
+            : viz::SurfaceManager::LifetimeType::REFERENCES;
 
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
