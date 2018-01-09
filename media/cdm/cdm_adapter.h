@@ -149,7 +149,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
 
   // cdm::Host_10 specific implementation.
   void OnInitialized(bool success) override;
-  cdm::CdmProxy* CreateCdmProxy() override;
+  cdm::CdmProxy* CreateCdmProxy(cdm::CdmProxyClient* client) override;
 
   // cdm::Host_8 specific implementation.
   void OnRejectPromise(uint32_t promise_id,
@@ -264,6 +264,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   // Tracks CDM file IO related states.
   int last_read_file_size_kb_ = 0;
   bool file_size_uma_reported_ = false;
+
+  bool cdm_proxy_created_ = false;
 
   // Used to keep track of promises while the CDM is processing the request.
   CdmPromiseAdapter cdm_promise_adapter_;

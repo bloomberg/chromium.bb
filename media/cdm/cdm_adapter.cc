@@ -1201,11 +1201,21 @@ void CdmAdapter::OnInitialized(bool success) {
   init_promise_id_ = CdmPromiseAdapter::kInvalidPromiseId;
 }
 
-cdm::CdmProxy* CdmAdapter::CreateCdmProxy() {
+cdm::CdmProxy* CdmAdapter::CreateCdmProxy(cdm::CdmProxyClient* client) {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  return helper_->CreateCdmProxy();
+  // CdmProxy should only be created once, at CDM initialization time.
+  if (cdm_proxy_created_ ||
+      init_promise_id_ == CdmPromiseAdapter::kInvalidPromiseId) {
+    DVLOG(1) << __func__
+             << ": CdmProxy can only be created once, and must be created "
+                "during CDM initialization.";
+    return nullptr;
+  }
+
+  cdm_proxy_created_ = true;
+  return helper_->CreateCdmProxy(client);
 }
 
 void CdmAdapter::OnStorageIdObtained(uint32_t version,
