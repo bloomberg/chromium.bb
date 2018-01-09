@@ -35,7 +35,8 @@ class TestExtensionService : public ExtensionServiceInterface {
       const std::string& id) const override;
   const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const override;
-  void FinishDelayedInstallation(const std::string& extension_id) override;
+  bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                        bool install_immediately) override;
   bool IsExtensionEnabled(const std::string& extension_id) const override;
 
   void CheckManagementPolicy() override;

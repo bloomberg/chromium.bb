@@ -170,7 +170,7 @@ void StartupAppLauncher::MaybeLaunchApp() {
 
 void StartupAppLauncher::MaybeCheckExtensionUpdate() {
   SYSLOG(INFO) << "MaybeCheckExtensionUpdate";
-  if (!delegate_->IsNetworkReady() || PrimaryAppHasPendingUpdate()) {
+  if (!delegate_->IsNetworkReady()) {
     MaybeLaunchApp();
     return;
   }
