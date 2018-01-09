@@ -77,6 +77,19 @@ std::vector<base::FilePath> GetRecordingFileNames(
   return ret;
 }
 
+// Deletes the the file specified by |path|. If that fails, waits for 100 ms and
+// tries again. Returns true if the delete was successful.
+// This is to handle when not being able to delete the file due to race when the
+// file is being closed. See comment for CallWithAudioDebugRecordings test case
+// below.
+bool DeleteFileWithRetryAfterPause(const base::FilePath& path, bool recursive) {
+  if (base::DeleteFile(path, recursive))
+    return true;
+
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  return base::DeleteFile(path, recursive);
+}
+
 }  // namespace
 
 namespace content {
@@ -110,9 +123,8 @@ class WebRtcAudioDebugRecordingsBrowserTest
 // Note: Both stopping the streams (at hangup()) and disabling the recordings
 // are asynchronous without response when finished. This means that closing the
 // files is asynchronous and being able to delete the files in the test is
-// therefore timing dependent and flaky prone. If it becomes flaky, it's
-// probably good enough to change the test to retry deleting after a short
-// sleep.
+// therefore timing dependent and flaky prone. For this reason we use
+// DeleteFileWithRetryAfterPause() as a simple mitigation.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        MAYBE_CallWithAudioDebugRecordings) {
   if (!HasAudioOutputDevices()) {
@@ -156,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   int64_t file_size = 0;
   EXPECT_TRUE(base::GetFileSize(input_files[0], &file_size));
   EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-  EXPECT_TRUE(base::DeleteFile(input_files[0], false));
+  EXPECT_TRUE(DeleteFileWithRetryAfterPause(input_files[0], false));
 
   // Verify that the expected output audio files exist and contain some data.
   // Two files are expected, one for each peer in the call.
@@ -167,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-    EXPECT_TRUE(base::DeleteFile(file_path, false));
+    EXPECT_TRUE(DeleteFileWithRetryAfterPause(file_path, false));
   }
 
   // Verify that the expected AEC dump file exists and contains some data.
@@ -179,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   file_size = 0;
   EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
   EXPECT_GT(file_size, 0);
-  EXPECT_TRUE(base::DeleteFile(file_path, false));
+  EXPECT_TRUE(DeleteFileWithRetryAfterPause(file_path, false));
 
   // Verify that no other files exist and remove temp dir.
   EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_path));
@@ -311,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-    EXPECT_TRUE(base::DeleteFile(file_path, false));
+    EXPECT_TRUE(DeleteFileWithRetryAfterPause(file_path, false));
   }
 
   // Verify that the expected output audio files exist and contain some data.
@@ -324,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-    EXPECT_TRUE(base::DeleteFile(file_path, false));
+    EXPECT_TRUE(DeleteFileWithRetryAfterPause(file_path, false));
   }
 
   // Verify that the expected AEC dump files exist and contain some data.
@@ -341,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, 0);
-    EXPECT_TRUE(base::DeleteFile(file_path, false));
+    EXPECT_TRUE(DeleteFileWithRetryAfterPause(file_path, false));
   }
 
   // Verify that no other files exist and remove temp dir.
