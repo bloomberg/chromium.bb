@@ -51,7 +51,7 @@ class WebSerializedScriptValue {
  public:
   ~WebSerializedScriptValue() { Reset(); }
 
-  WebSerializedScriptValue() {}
+  WebSerializedScriptValue() = default;
   WebSerializedScriptValue(const WebSerializedScriptValue& d) { Assign(d); }
   WebSerializedScriptValue& operator=(const WebSerializedScriptValue& d) {
     Assign(d);

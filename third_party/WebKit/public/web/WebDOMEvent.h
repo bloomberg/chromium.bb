@@ -42,7 +42,7 @@ class WebDOMEvent {
  public:
   ~WebDOMEvent() { Reset(); }
 
-  WebDOMEvent() {}
+  WebDOMEvent() = default;
   WebDOMEvent(const WebDOMEvent& other) { Assign(other); }
   WebDOMEvent& operator=(const WebDOMEvent& e) {
     Assign(e);

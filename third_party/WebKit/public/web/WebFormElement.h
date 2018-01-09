@@ -46,7 +46,7 @@ class BLINK_EXPORT WebFormElement final : public WebElement {
   ~WebFormElement() override { Reset(); }
 
   WebFormElement() : WebElement() {}
-  WebFormElement(const WebFormElement& element) : WebElement(element) {}
+  WebFormElement(const WebFormElement& element) = default;
 
   WebFormElement& operator=(const WebFormElement& element) {
     WebElement::Assign(element);

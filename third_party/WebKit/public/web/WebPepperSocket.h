@@ -67,7 +67,7 @@ class WebPepperSocket {
   BLINK_EXPORT static std::unique_ptr<WebPepperSocket> Create(
       const WebDocument&,
       WebPepperSocketClient*);
-  virtual ~WebPepperSocket() {}
+  virtual ~WebPepperSocket() = default;
 
   virtual void Connect(const WebURL&, const WebString& protocol) = 0;
   virtual WebString Subprotocol() = 0;

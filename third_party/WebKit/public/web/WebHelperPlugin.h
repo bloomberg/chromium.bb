@@ -58,7 +58,7 @@ class WebHelperPlugin {
   virtual void Destroy() = 0;
 
  protected:
-  virtual ~WebHelperPlugin() {}
+  virtual ~WebHelperPlugin() = default;
 };
 
 #if INSIDE_BLINK

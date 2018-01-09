@@ -40,7 +40,7 @@ struct WebPoint;
 
 class WebDevToolsAgent {
  public:
-  virtual ~WebDevToolsAgent() {}
+  virtual ~WebDevToolsAgent() = default;
 
   virtual void Attach(int session_id) = 0;
   virtual void Reattach(int session_id, const WebString& saved_state) = 0;
@@ -55,7 +55,7 @@ class WebDevToolsAgent {
 
   class MessageDescriptor {
    public:
-    virtual ~MessageDescriptor() {}
+    virtual ~MessageDescriptor() = default;
     virtual WebDevToolsAgent* Agent() = 0;
     virtual WebString Message() = 0;
     virtual WebString Method() = 0;

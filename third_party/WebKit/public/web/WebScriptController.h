@@ -47,7 +47,7 @@ class WebScriptController {
   BLINK_EXPORT static void RegisterExtension(v8::Extension*);
 
  private:
-  WebScriptController();
+  WebScriptController() = delete;
 };
 
 }  // namespace blink

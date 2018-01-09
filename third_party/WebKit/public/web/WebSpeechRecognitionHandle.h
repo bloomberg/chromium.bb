@@ -39,7 +39,7 @@ class SpeechRecognition;
 class WebSpeechRecognitionHandle {
  public:
   ~WebSpeechRecognitionHandle() { Reset(); }
-  WebSpeechRecognitionHandle() {}
+  WebSpeechRecognitionHandle() = default;
 
   WebSpeechRecognitionHandle(const WebSpeechRecognitionHandle& other) {
     Assign(other);

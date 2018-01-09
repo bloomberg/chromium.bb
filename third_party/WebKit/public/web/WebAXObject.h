@@ -57,8 +57,8 @@ struct WebSize;
 
 class BLINK_EXPORT WebAXSparseAttributeClient {
  public:
-  WebAXSparseAttributeClient() {}
-  virtual ~WebAXSparseAttributeClient() {}
+  WebAXSparseAttributeClient() = default;
+  virtual ~WebAXSparseAttributeClient() = default;
 
   virtual void AddBoolAttribute(WebAXBoolAttribute, bool) = 0;
   virtual void AddStringAttribute(WebAXStringAttribute, const WebString&) = 0;
@@ -86,7 +86,7 @@ class WebAXObject {
  public:
   ~WebAXObject() { Reset(); }
 
-  WebAXObject() {}
+  WebAXObject() = default;
   WebAXObject(const WebAXObject& o) { Assign(o); }
   WebAXObject& operator=(const WebAXObject& o) {
     Assign(o);

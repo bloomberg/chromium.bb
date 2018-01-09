@@ -59,7 +59,7 @@ class WebDevToolsAgentClient {
   virtual void ResumeStartup() {}
 
  protected:
-  ~WebDevToolsAgentClient() {}
+  ~WebDevToolsAgentClient() = default;
 };
 
 }  // namespace blink

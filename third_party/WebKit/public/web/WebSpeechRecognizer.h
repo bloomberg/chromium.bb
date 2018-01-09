@@ -56,7 +56,7 @@ class WebSpeechRecognizer {
                      WebSpeechRecognizerClient*) = 0;
 
  protected:
-  virtual ~WebSpeechRecognizer() {}
+  virtual ~WebSpeechRecognizer() = default;
 };
 
 }  // namespace blink

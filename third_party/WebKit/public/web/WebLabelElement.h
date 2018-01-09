@@ -41,7 +41,7 @@ class HTMLLabelElement;
 class WebLabelElement final : public WebElement {
  public:
   WebLabelElement() : WebElement() {}
-  WebLabelElement(const WebLabelElement& element) : WebElement(element) {}
+  WebLabelElement(const WebLabelElement& element) = default;
 
   WebLabelElement& operator=(const WebLabelElement& element) {
     WebElement::Assign(element);

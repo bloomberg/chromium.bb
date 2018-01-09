@@ -62,7 +62,7 @@ class WebDOMFileSystem {
 
   ~WebDOMFileSystem() { Reset(); }
 
-  WebDOMFileSystem() {}
+  WebDOMFileSystem() = default;
   WebDOMFileSystem(const WebDOMFileSystem& d) { Assign(d); }
   WebDOMFileSystem& operator=(const WebDOMFileSystem& d) {
     Assign(d);

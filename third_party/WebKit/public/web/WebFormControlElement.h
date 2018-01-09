@@ -44,7 +44,7 @@ class HTMLFormControlElement;
 class BLINK_EXPORT WebFormControlElement : public WebElement {
  public:
   WebFormControlElement() : WebElement() {}
-  WebFormControlElement(const WebFormControlElement& e) : WebElement(e) {}
+  WebFormControlElement(const WebFormControlElement& e) = default;
 
   WebFormControlElement& operator=(const WebFormControlElement& e) {
     WebElement::Assign(e);
