@@ -24,10 +24,29 @@ int kSteps = 20;
 constexpr char const* kVertexShader = SHADER(
   precision mediump float;
   uniform mat4 u_ModelViewProjMatrix;
+  uniform sampler2D u_NormalGradientTexture;
+  uniform sampler2D u_IncognitoGradientTexture;
+  uniform sampler2D u_FullscreenGradientTexture;
+  uniform float u_NormalFactor;
+  uniform float u_IncognitoFactor;
+  uniform float u_FullscreenFactor;
   attribute vec2 a_TexCoordinate;
   varying vec2 v_TexCoordinate;
+  varying vec4 v_GradientColor;
 
   void main() {
+    vec4 normal_gradient_color =
+        texture2D(u_NormalGradientTexture, a_TexCoordinate);
+    vec4 incognito_gradient_color =
+        texture2D(u_IncognitoGradientTexture, a_TexCoordinate);
+    vec4 fullscreen_gradient_color =
+        texture2D(u_FullscreenGradientTexture, a_TexCoordinate);
+
+    v_GradientColor =
+        normal_gradient_color * u_NormalFactor +
+        incognito_gradient_color * u_IncognitoFactor +
+        fullscreen_gradient_color * u_FullscreenFactor;
+
     vec4 sphereVertex;
     // The x coordinate maps linearly to yaw, so we just need to scale the input
     // range 0..1 to 0..2*pi.
@@ -60,46 +79,28 @@ constexpr char const* kVertexShader = SHADER(
 constexpr char const* kFragmentShader = SHADER(
   precision mediump float;
   uniform sampler2D u_Texture;
-  uniform sampler2D u_NormalGradientTexture;
-  uniform sampler2D u_IncognitoGradientTexture;
-  uniform sampler2D u_FullscreenGradientTexture;
-  uniform float u_NormalFactor;
-  uniform float u_IncognitoFactor;
-  uniform float u_FullscreenFactor;
   varying vec2 v_TexCoordinate;
+  varying vec4 v_GradientColor;
 
-  void OverlayChannel(in float a, in float b, out float c) {
+  float OverlayChannel(float a, float b) {
     if (a < 0.5) {
-      c = 2.0 * a * b;
-    } else {
-      c = 1.0 - 2.0 * (1.0 - a) * (1.0 - b);
+      return 2.0 * a * b;
     }
+    return 1.0 - 2.0 * (1.0 - a) * (1.0 - b);
   }
 
   void main() {
     vec4 background_color = texture2D(u_Texture, v_TexCoordinate);
 
-    vec4 normal_gradient_color =
-        texture2D(u_NormalGradientTexture, vec2(0, v_TexCoordinate.y));
-    vec4 incognito_gradient_color =
-        texture2D(u_IncognitoGradientTexture, vec2(0, v_TexCoordinate.y));
-    vec4 fullscreen_gradient_color =
-        texture2D(u_FullscreenGradientTexture, vec2(0, v_TexCoordinate.y));
-
-    vec4 gradient_color =
-        normal_gradient_color * u_NormalFactor +
-        incognito_gradient_color * u_IncognitoFactor +
-        fullscreen_gradient_color * u_FullscreenFactor;
-
     vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 
-    OverlayChannel(gradient_color.r, background_color.r, color.r);
-    OverlayChannel(gradient_color.g, background_color.g, color.g);
-    OverlayChannel(gradient_color.b, background_color.b, color.b);
+    color.r = OverlayChannel(v_GradientColor.r, background_color.r);
+    color.g = OverlayChannel(v_GradientColor.g, background_color.g);
+    color.b = OverlayChannel(v_GradientColor.b, background_color.b);
 
     // Add some noise to prevent banding artifacts in the gradient.
-    float n =
-        (fract(dot(v_TexCoordinate.xy, vec2(12345.67, 456.7))) - 0.5) / 255.0;
+    float n = fract(dot(v_TexCoordinate, vec2(12345.67, 4567.89)) * 100.0);
+    n = (n - 0.5) / 255.0;
 
     gl_FragColor = vec4(color.rgb + n, 1);
   }
@@ -130,13 +131,20 @@ GLuint UploadImage(std::unique_ptr<SkBitmap> bitmap,
   return provider->FlushSurface(surface->get(), 0);
 }
 
+// Remaps 0..1 to 0..1 such that there is a concentration of values around 0.5.
+float RemapLatitude(float t) {
+  t = 2.0f * t - 1.0f;
+  t = t * t * t;
+  return 0.5f * (t + 1.0f);
+}
+
 }  // namespace
 
 Background::Background() {
   set_hit_testable(false);
   SetTransitionedProperties(
       {NORMAL_COLOR_FACTOR, INCOGNITO_COLOR_FACTOR, FULLSCREEN_COLOR_FACTOR});
-  SetTransitionDuration(base::TimeDelta::FromMilliseconds(500));
+  SetTransitionDuration(base::TimeDelta::FromMilliseconds(2500));
 }
 
 Background::~Background() = default;
@@ -258,7 +266,7 @@ Background::Renderer::Renderer()
   for (int x = 0; x <= 2 * kSteps; x++) {
     for (int y = 0; y <= kSteps; y++) {
       vertices.push_back(static_cast<float>(x) / (kSteps * 2));
-      vertices.push_back(static_cast<float>(y) / kSteps);
+      vertices.push_back(RemapLatitude(static_cast<float>(y) / kSteps));
     }
   }
   std::vector<GLushort> indices;
