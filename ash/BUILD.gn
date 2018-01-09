@@ -283,7 +283,6 @@ component("ash") {
     "login/ui/login_bubble.h",
     "login/ui/login_button.cc",
     "login/ui/login_button.h",
-    "login/ui/login_constants.h",
     "login/ui/login_data_dispatcher.cc",
     "login/ui/login_data_dispatcher.h",
     "login/ui/login_password_view.cc",

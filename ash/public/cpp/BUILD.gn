@@ -36,6 +36,7 @@ component("cpp") {
     "immersive/immersive_handler_factory.h",
     "immersive/immersive_revealed_lock.cc",
     "immersive/immersive_revealed_lock.h",
+    "login_constants.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",
     "remote_shelf_item_delegate.cc",

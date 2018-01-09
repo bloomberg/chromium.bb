@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LOGIN_UI_LOGIN_CONSTANTS_H
-#define ASH_LOGIN_UI_LOGIN_CONSTANTS_H
+#ifndef ASH_PUBLIC_CPP_LOGIN_CONSTANTS_H_
+#define ASH_PUBLIC_CPP_LOGIN_CONSTANTS_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+
+// This file exists in //ash/public because the values are shared between webui
+// login code in chrome and views-based login code in ash. If the webui login
+// code is ever removed this file can move to //ash/login.
 
 namespace ash {
 namespace login_constants {
@@ -44,4 +48,4 @@ constexpr SkAlpha kButtonDisabledAlpha = 0x57;
 }  // namespace login_constants
 }  // namespace ash
 
-#endif  // ASH_LOGIN_UI_LOGIN_CONSTANTS_H
+#endif  // ASH_PUBLIC_CPP_LOGIN_CONSTANTS_H_

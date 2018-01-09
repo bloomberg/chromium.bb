@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/login/ui/login_constants.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"

@@ -4,7 +4,7 @@
 
 #include "ash/wallpaper/wallpaper_view.h"
 
-#include "ash/login/ui/login_constants.h"
+#include "ash/public/cpp/login_constants.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
