@@ -396,13 +396,24 @@ AuditorResult AnnotationInstance::CreateCompleteAnnotation(
   combination->type = AnnotationInstance::Type::ANNOTATION_COMPLETE;
   combination->second_id.clear();
   combination->second_id_hash_code = 0;
-  combination->comments = base::StringPrintf(
+
+  // Update comment.
+  std::string new_comments = combination->proto.comments();
+  if (!other->proto.comments().empty()) {
+    if (!new_comments.empty())
+      new_comments += "\n";
+    new_comments += other->proto.comments();
+  }
+  if (!new_comments.empty())
+    new_comments += "\n";
+  new_comments += base::StringPrintf(
       "This annotation is a merge of the following two annotations:\n"
       "'%s' in '%s:%i' and '%s' in '%s:%i'.",
       proto.unique_id().c_str(), proto.source().file().c_str(),
       proto.source().line(), completing_annotation.proto.unique_id().c_str(),
       completing_annotation.proto.source().file().c_str(),
       completing_annotation.proto.source().line());
+  combination->proto.set_comments(new_comments);
 
   // Copy TrafficSemantics.
   const traffic_annotation::NetworkTrafficAnnotation_TrafficSemantics
