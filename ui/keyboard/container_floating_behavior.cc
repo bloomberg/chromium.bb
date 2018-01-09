@@ -14,9 +14,6 @@
 
 namespace keyboard {
 
-// Width of the floatin keyboard
-constexpr int kKeyboardWidth = 600;
-
 // Length of the animation to show and hide the keyboard.
 constexpr int kAnimationDurationMs = 200;
 
@@ -71,9 +68,6 @@ const gfx::Rect ContainerFloatingBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds) {
   gfx::Rect keyboard_bounds = requested_bounds;
-
-  // floating keyboard has a fixed width.
-  keyboard_bounds.set_width(kKeyboardWidth);
 
   if (UseDefaultPosition()) {
     // If the keyboard hasn't been shown yet, ignore the request and use
@@ -213,12 +207,11 @@ void ContainerFloatingBehavior::HandlePointerEvent(
 void ContainerFloatingBehavior::SetCanonicalBounds(
     aura::Window* container,
     const gfx::Rect& display_bounds) {
-  gfx::Size keyboard_size =
-      gfx::Size(kKeyboardWidth, container->bounds().height());
   gfx::Point keyboard_location =
-      GetPositionForShowingKeyboard(keyboard_size, display_bounds);
+      GetPositionForShowingKeyboard(container->bounds().size(), display_bounds);
   SavePosition(keyboard_location);
-  container->SetBounds(gfx::Rect(keyboard_location, keyboard_size));
+  container->SetBounds(
+      gfx::Rect(keyboard_location, container->bounds().size()));
 }
 
 bool ContainerFloatingBehavior::TextBlurHidesKeyboard() const {
