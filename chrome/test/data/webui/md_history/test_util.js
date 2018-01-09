@@ -8,10 +8,10 @@
  * @param {Element} element
  */
 function replaceBody(element) {
-  var body = document.body;
-  var app = body.querySelector('history-app');
+  const body = document.body;
+  const app = body.querySelector('history-app');
 
-  var currentBody = app || body.querySelector('.test-body');
+  const currentBody = app || body.querySelector('.test-body');
   body.removeChild(currentBody);
 
   // Clear any query in the URL.
@@ -26,7 +26,7 @@ function replaceBody(element) {
  * @return {HistoryAppElement} The app which was created.
  */
 function replaceApp() {
-  var app = document.createElement('history-app');
+  const app = document.createElement('history-app');
   app.id = 'history-app';
   // Disable querying for tests by default.
   app.queryState_.queryingDisabled = true;
@@ -46,9 +46,9 @@ function createHistoryEntry(timestamp, urlStr) {
   if (typeof timestamp === 'string')
     timestamp += ' UTC';
 
-  var d = new Date(timestamp);
-  var url = new URL(urlStr);
-  var domain = url.host;
+  const d = new Date(timestamp);
+  const url = new URL(urlStr);
+  const domain = url.host;
   return {
     allTimestamps: [timestamp],
     // Formatting the relative day is too hard, will instead display
@@ -72,7 +72,7 @@ function createHistoryEntry(timestamp, urlStr) {
  * @return {!HistoryEntry} An object representing a history entry.
  */
 function createSearchEntry(timestamp, urlStr) {
-  var entry = createHistoryEntry(timestamp, urlStr);
+  const entry = createHistoryEntry(timestamp, urlStr);
   entry.dateShort = entry.dateRelativeDay;
   entry.dateTimeOfDay = '';
   entry.dateRelativeDay = '';
@@ -115,7 +115,7 @@ function waitForEvent(element, eventName, predicate) {
     predicate = function() { return true; };
 
   return new Promise(function(resolve) {
-    var listener = function(e) {
+    const listener = function(e) {
       if (!predicate(e))
         return;
 
@@ -132,8 +132,8 @@ function waitForEvent(element, eventName, predicate) {
  * @param {HTMLElement} element
  */
 function shiftClick(element) {
-  var xy = MockInteractions.middleOfNode(element);
-  var props = {
+  const xy = MockInteractions.middleOfNode(element);
+  const props = {
     bubbles: true,
     cancelable: true,
     clientX: xy.x,
@@ -152,11 +152,11 @@ function disableLinkClicks() {
     if (e.defaultPrevented)
       return;
 
-    var eventPath = e.path;
-    var anchor = null;
+    const eventPath = e.path;
+    let anchor = null;
     if (eventPath) {
-      for (var i = 0; i < eventPath.length; i++) {
-        var element = eventPath[i];
+      for (let i = 0; i < eventPath.length; i++) {
+        const element = eventPath[i];
         if (element.tagName === 'A' && element.href) {
           anchor = element;
           break;
@@ -184,7 +184,7 @@ function createSession(name, windows) {
 }
 
 function createWindow(tabUrls) {
-  var tabs = tabUrls.map(function(tabUrl) {
+  const tabs = tabUrls.map(function(tabUrl) {
     return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
   });
 

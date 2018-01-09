@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 suite('Bookmarks policies', function() {
-  var store;
-  var app;
+  let store;
+  let app;
 
   setup(function() {
-    var nodes = testTree(createFolder('1', [
+    const nodes = testTree(createFolder('1', [
       createItem('11'),
     ]));
     store = new bookmarks.TestStore({
@@ -25,7 +25,7 @@ suite('Bookmarks policies', function() {
   });
 
   test('incognito availability updates when changed', function() {
-    var commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = bookmarks.CommandManager.getInstance();
     // Incognito is disabled during testGenPreamble(). Wait for the front-end to
     // load the config.
     return store.waitForAction('set-incognito-availability').then(action => {
@@ -45,7 +45,7 @@ suite('Bookmarks policies', function() {
   });
 
   test('canEdit updates when changed', function() {
-    var commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = bookmarks.CommandManager.getInstance();
     return store.waitForAction('set-can-edit').then(action => {
       assertFalse(store.data.prefs.canEdit);
       assertFalse(commandManager.canExecute(Command.DELETE, new Set(['11'])));

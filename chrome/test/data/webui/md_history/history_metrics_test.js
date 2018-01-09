@@ -6,16 +6,16 @@
  * @constructor
  * @extends {md_history.BrowserService}
  */
-var TestMetricsBrowserService = function() {
+const TestMetricsBrowserService = function() {
   this.histogramMap = {};
   this.actionMap = {};
 };
 
 suite('Metrics', function() {
-  var service;
-  var app;
-  var histogramMap;
-  var actionMap;
+  let service;
+  let app;
+  let histogramMap;
+  let actionMap;
 
   suiteSetup(function() {
     disableLinkClicks();
@@ -66,7 +66,7 @@ suite('Metrics', function() {
   test('History.HistoryPageView', function() {
     app.grouped_ = true;
 
-    var histogram = histogramMap['History.HistoryPageView'];
+    const histogram = histogramMap['History.HistoryPageView'];
     assertEquals(1, histogram[HistoryPageViewHistogram.HISTORY]);
 
     app.selectedPage_ = 'syncedTabs';
@@ -80,7 +80,7 @@ suite('Metrics', function() {
   });
 
   test('history-list', function() {
-    var historyEntry =
+    const historyEntry =
         createHistoryEntry('2015-01-01', 'http://www.google.com');
     historyEntry.starred = true;
     app.historyResult(createHistoryInfo(), [
@@ -89,7 +89,7 @@ suite('Metrics', function() {
     ]);
 
     return PolymerTest.flushTasks().then(() => {
-      var items = polymerSelectAll(app.$.history, 'history-item');
+      const items = polymerSelectAll(app.$.history, 'history-item');
       MockInteractions.tap(items[1].$$('#bookmark-star'));
       assertEquals(1, actionMap['BookmarkStarClicked']);
       MockInteractions.tap(items[1].$.title);
@@ -143,13 +143,13 @@ suite('Metrics', function() {
 
   test('synced-device-manager', function() {
     app.selectedPage_ = 'syncedTabs';
-    var histogram;
-    var menuButton;
+    let histogram;
+    let menuButton;
     return PolymerTest.flushTasks().then(() => {
       histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
       assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
 
-      var sessionList = [
+      const sessionList = [
         createSession(
             'Nexus 5',
             [createWindow(['http://www.google.com', 'http://example.com'])]

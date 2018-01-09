@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 suite('#overflow-menu', function() {
-  var listContainer;
-  var sharedMenu;
+  let listContainer;
+  let sharedMenu;
 
-  var target1;
-  var target2;
+  let target1;
+  let target2;
 
   suiteSetup(function() {
-    var app = $('history-app');
+    const app = $('history-app');
     listContainer = app.$['history'];
-    var element1 = document.createElement('div');
-    var element2 = document.createElement('div');
+    const element1 = document.createElement('div');
+    const element2 = document.createElement('div');
     document.body.appendChild(element1);
     document.body.appendChild(element2);
 
@@ -23,7 +23,7 @@ suite('#overflow-menu', function() {
   });
 
   test('opening and closing menu', function() {
-    var detail1 = {target: target1};
+    const detail1 = {target: target1};
     listContainer.fire('open-menu', detail1);
     assertTrue(sharedMenu.open);
     assertEquals(detail1, listContainer.actionMenuModel_);
@@ -31,7 +31,7 @@ suite('#overflow-menu', function() {
     sharedMenu.close();
     assertFalse(sharedMenu.open);
 
-    var detail2 = {target: target2};
+    const detail2 = {target: target2};
     listContainer.fire('open-menu', detail2);
     assertEquals(detail2, listContainer.actionMenuModel_);
     assertTrue(sharedMenu.open);

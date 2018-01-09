@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 suite('<bookmarks-item>', function() {
-  var item;
-  var store;
-  var TEST_ITEM = createItem('0');
+  let item;
+  let store;
+  const TEST_ITEM = createItem('0');
 
   setup(function() {
-    var nodes = testTree(createFolder('1', [
+    const nodes = testTree(createFolder('1', [
       createItem('2', {url: 'http://example.com/'}),
       createItem('3'),
     ]));
@@ -24,7 +24,7 @@ suite('<bookmarks-item>', function() {
   });
 
   test('changing the url changes the favicon', function() {
-    var favicon = item.$.icon.style.backgroundImage;
+    const favicon = item.$.icon.style.backgroundImage;
     store.data.nodes['2'] = createItem('0', {url: 'https://mail.google.com'});
     store.notifyObservers();
     assertNotEquals(favicon, item.$.icon.style.backgroundImage);

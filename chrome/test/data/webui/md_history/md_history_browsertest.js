@@ -6,7 +6,7 @@
  * @fileoverview Test suite for the Material Design history page.
  */
 
-var ROOT_PATH = '../../../../../';
+const ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);

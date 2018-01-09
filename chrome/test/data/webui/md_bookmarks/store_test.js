@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 suite('bookmarks.Store', function() {
-  var store;
+  let store;
 
   setup(function() {
-    var nodes = testTree(createFolder('1', [
+    const nodes = testTree(createFolder('1', [
       createItem('11'),
       createItem('12'),
       createItem('13'),
@@ -20,8 +20,8 @@ suite('bookmarks.Store', function() {
   });
 
   test('batch mode disables updates', function() {
-    var lastStateChange = null;
-    var observer = {
+    let lastStateChange = null;
+    const observer = {
       onStateChanged: function(state) {
         lastStateChange = state;
       },
@@ -43,8 +43,8 @@ suite('bookmarks.Store', function() {
 });
 
 suite('bookmarks.StoreClient', function() {
-  var store;
-  var client;
+  let store;
+  let client;
 
   function update(newState) {
     store.notifyObservers_(newState);
@@ -115,8 +115,8 @@ suite('bookmarks.StoreClient', function() {
   });
 
   test('renders changes to watched state', function() {
-    var newItems = ['apple', 'banana', 'courgette', 'durian'];
-    var newState = Object.assign({}, store.data, {
+    const newItems = ['apple', 'banana', 'courgette', 'durian'];
+    const newState = Object.assign({}, store.data, {
       items: newItems,
     });
     update(newState);
@@ -126,7 +126,7 @@ suite('bookmarks.StoreClient', function() {
   });
 
   test('ignores changes to other subtrees', function() {
-    var newState = Object.assign({}, store.data, {count: 2});
+    const newState = Object.assign({}, store.data, {count: 2});
     update(newState);
 
     assertFalse(client.hasChanged);
