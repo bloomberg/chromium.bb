@@ -20,6 +20,7 @@ UnacceleratedStaticBitmapImage::Create(sk_sp<SkImage> image) {
 
 UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(
     sk_sp<SkImage> image) {
+  CHECK(image);
   DCHECK(!image->isLazyGenerated());
 
   paint_image_ =
@@ -33,7 +34,7 @@ UnacceleratedStaticBitmapImage::Create(PaintImage image) {
 
 UnacceleratedStaticBitmapImage::UnacceleratedStaticBitmapImage(PaintImage image)
     : paint_image_(std::move(image)) {
-  DCHECK(paint_image_);
+  CHECK(paint_image_.GetSkImage());
 }
 
 UnacceleratedStaticBitmapImage::~UnacceleratedStaticBitmapImage() = default;
