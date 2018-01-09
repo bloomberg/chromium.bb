@@ -106,6 +106,9 @@ struct WebRequestInfo {
 
   net::HttpRequestHeaders extra_request_headers;
 
+  // Indicates if this request is for a PAC script.
+  bool is_pac_request = false;
+
   // HTTP response code for this request if applicable. -1 if not.
   int response_code = -1;
 

@@ -185,7 +185,7 @@ int ProxyScriptFetcherImpl::Fetch(
   // requests, PAC requests are aren't blocked on them.
   cur_request_ = url_request_context_->CreateRequest(url, MAXIMUM_PRIORITY,
                                                      this, traffic_annotation);
-  cur_request_->set_method("GET");
+  cur_request_->set_is_pac_request(true);
 
   // Make sure that the PAC script is downloaded using a direct connection,
   // to avoid circular dependencies (fetching is a part of proxy resolution).

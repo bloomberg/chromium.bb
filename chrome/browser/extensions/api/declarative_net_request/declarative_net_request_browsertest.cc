@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+
 #include <algorithm>
+#include <memory>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -12,13 +14,20 @@
 #include "base/path_service.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
+#include "components/proxy_config/proxy_config_dictionary.h"
+#include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
@@ -1008,6 +1017,36 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SetRulesetManagerObserverOnIOThread, nullptr, info_map));
   content::RunAllTasksUntilIdle();
+}
+
+// Tests that proxy requests aren't intercepted. See https://crbug.com/794674.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       PacRequestsBypassRules) {
+  // Load the extension.
+  std::vector<TestRule> rules;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*pac");
+  rule.id = 1;
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  // Configure a PAC script. Need to do this after the extension is loaded, so
+  // that the PAC isn't already loaded by the time the extension starts
+  // affecting requests.
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  pref_service->Set(proxy_config::prefs::kProxy,
+                    *ProxyConfigDictionary::CreatePacScript(
+                        embedded_test_server()->GetURL("/self.pac").spec(),
+                        true /* pac_mandatory */));
+  // Flush the proxy configuration change over the Mojo pipe to avoid any races.
+  ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
+      ->FlushProxyConfigMonitorForTesting();
+
+  // Verify that the extension can't intercept the network request.
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                              "/pages_with_script/page.html"));
+  EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 }
 
 // Fixture to test the "resourceTypes" and "excludedResourceTypes" fields of a

@@ -662,6 +662,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // encryption, 0 for cached responses.
   int raw_header_size() const { return raw_header_size_; }
 
+  // True if this request was issued by the proxy service subsystem in order to
+  // probe/fetch a Proxy Auto Config script.
+  // TODO(mmenke): See if there's a way to not need this.
+  bool is_pac_request() const { return is_pac_request_; }
+  // Sets whether this is a request for a PAC script. Defaults to false.
+  void set_is_pac_request(bool is_pac_request) {
+    is_pac_request_ = is_pac_request;
+  }
+
   // Returns the error status of the request.
   // Do not use! Going to be protected!
   const URLRequestStatus& status() const { return status_; }
@@ -889,6 +898,9 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   // The raw header size of the response.
   int raw_header_size_;
+
+  // True if this is a request for a PAC script.
+  bool is_pac_request_;
 
   const NetworkTrafficAnnotationTag traffic_annotation_;
 

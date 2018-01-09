@@ -576,6 +576,7 @@ URLRequest::URLRequest(const GURL& url,
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
       raw_header_size_(0),
+      is_pac_request_(false),
       traffic_annotation_(traffic_annotation) {
   // Sanity check out environment.
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
