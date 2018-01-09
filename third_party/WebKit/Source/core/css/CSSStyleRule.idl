@@ -20,7 +20,9 @@
 
 // https://drafts.csswg.org/cssom/#the-cssstylerule-interface
 
-interface CSSStyleRule : CSSRule {
+[
+    Exposed=Window
+] interface CSSStyleRule : CSSRule {
     [SetterCallWith=ExecutionContext] attribute DOMString selectorText;
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
     [SameObject, RuntimeEnabled=CSSTypedOM] readonly attribute StylePropertyMap attributeStyleMap;

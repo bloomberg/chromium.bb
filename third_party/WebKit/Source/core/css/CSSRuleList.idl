@@ -26,7 +26,9 @@
 // https://drafts.csswg.org/cssom/#the-cssrulelist-interface
 
 // TODO(foolip): CSSRuleList should be an [ArrayClass].
-interface CSSRuleList {
+[
+    Exposed=Window
+] interface CSSRuleList {
     [Measure] getter CSSRule? item(unsigned long index);
     readonly attribute unsigned long length;
 };

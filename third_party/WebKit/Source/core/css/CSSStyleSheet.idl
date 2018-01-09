@@ -20,7 +20,9 @@
 
 // https://drafts.csswg.org/cssom/#the-cssstylesheet-interface
 
-interface CSSStyleSheet : StyleSheet {
+[
+    Exposed=Window
+] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
     [SameObject, RaisesException] readonly attribute CSSRuleList cssRules;
     [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);

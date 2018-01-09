@@ -20,7 +20,9 @@
 
 // https://drafts.csswg.org/cssom/#the-cssimportrule-interface
 
-interface CSSImportRule : CSSRule {
+[
+    Exposed=Window
+] interface CSSImportRule : CSSRule {
     readonly attribute DOMString href;
     // TODO(foolip): media should have [PutForwards=mediaText].
     [SameObject] readonly attribute MediaList media;
