@@ -1896,10 +1896,6 @@ crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass 
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux Mac ] virtual/mojo-blobs/external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
-crbug.com/626703 external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
-crbug.com/626703 [ Linux Mac ] virtual/mojo-blobs/external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
-crbug.com/626703 external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-inline-table-002.html [ Failure ]
 crbug.com/626703 external/wpt/quirks/active-and-hover-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-tables/fixup-dynamic-anonymous-table-001.html [ Failure ]
