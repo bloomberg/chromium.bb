@@ -42,9 +42,11 @@ const Extension* TestExtensionService::GetPendingExtensionUpdate(
   return NULL;
 }
 
-void TestExtensionService::FinishDelayedInstallation(
-    const std::string& extension_id) {
+bool TestExtensionService::FinishDelayedInstallationIfReady(
+    const std::string& extension_id,
+    bool install_immediately) {
   ADD_FAILURE();
+  return false;
 }
 
 bool TestExtensionService::IsExtensionEnabled(

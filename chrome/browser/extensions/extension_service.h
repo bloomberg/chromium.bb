@@ -126,10 +126,13 @@ class ExtensionServiceInterface
   virtual const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const = 0;
 
-  // Finishes installation of an update for an extension with the specified id,
-  // when installation of that extension was previously delayed because the
-  // extension was in use.
-  virtual void FinishDelayedInstallation(const std::string& extension_id) = 0;
+  // Attempts finishing installation of an update for an extension with the
+  // specified id, when installation of that extension was previously delayed.
+  // |install_immediately| - Whether the extension should be installed if it's
+  //     currently in use.
+  // Returns whether the extension installation was finished.
+  virtual bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                                bool install_immediately) = 0;
 
   // Returns true if the extension with the given |extension_id| is enabled.
   // This will only return a valid answer for installed extensions (regardless
@@ -216,7 +219,8 @@ class ExtensionService
   void AddComponentExtension(const extensions::Extension* extension) override;
   const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const override;
-  void FinishDelayedInstallation(const std::string& extension_id) override;
+  bool FinishDelayedInstallationIfReady(const std::string& extension_id,
+                                        bool install_immediately) override;
   void CheckManagementPolicy() override;
   void CheckForUpdatesSoon() override;
   bool is_ready() override;
@@ -474,10 +478,6 @@ class ExtensionService
   bool CanEnableExtension(const extensions::Extension* extension) override;
   bool CanDisableExtension(const extensions::Extension* extension) override;
   bool ShouldBlockExtension(const extensions::Extension* extension) override;
-
-  // Similar to FinishInstallation, but first checks if there still is an update
-  // pending for the extension, and makes sure the extension is still idle.
-  void MaybeFinishDelayedInstallation(const std::string& extension_id);
 
   // For the extension in |version_path| with |id|, check to see if it's an
   // externally managed extension.  If so, uninstall it.
