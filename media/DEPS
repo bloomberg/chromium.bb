@@ -7,6 +7,7 @@ include_rules = [
   "+device/usb",
   "+gpu",
   "+jni",
+  "+mojo/public/cpp/bindings/callback_helpers.h",
   "+ppapi/features",
   "+skia/ext",
   "+third_party/ffmpeg",
@@ -28,5 +29,5 @@ include_rules = [
 specific_include_rules = {
   "audio_manager_unittest.cc": [
     "+chromeos/dbus"
-  ],
+  ]
 }

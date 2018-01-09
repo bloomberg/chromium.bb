@@ -21,7 +21,7 @@
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
-#include "extensions/utility/scoped_callback_runner.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
@@ -168,7 +168,8 @@ void HidDeviceManager::Connect(const std::string& device_guid,
   DCHECK(initialized_);
 
   hid_manager_->Connect(device_guid,
-                        ScopedCallbackRunner(std::move(callback), nullptr));
+                        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+                            std::move(callback), nullptr));
 }
 
 bool HidDeviceManager::HasPermission(
@@ -292,7 +293,7 @@ void HidDeviceManager::LazyInitialize() {
   std::vector<device::mojom::HidDeviceInfoPtr> empty_devices;
   hid_manager_->GetDevicesAndSetClient(
       std::move(client),
-      ScopedCallbackRunner(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&HidDeviceManager::OnEnumerationComplete,
                          weak_factory_.GetWeakPtr()),
           std::move(empty_devices)));
