@@ -108,9 +108,9 @@ void WebStateListObserverBridge::WebStateActivatedAt(
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int active_index,
-    bool user_action) {
+    int reason) {
   const SEL selector = @selector
-      (webStateList:didChangeActiveWebState:oldWebState:atIndex:userAction:);
+      (webStateList:didChangeActiveWebState:oldWebState:atIndex:reason:);
   if (![observer_ respondsToSelector:selector])
     return;
 
@@ -118,5 +118,5 @@ void WebStateListObserverBridge::WebStateActivatedAt(
       didChangeActiveWebState:new_web_state
                   oldWebState:old_web_state
                       atIndex:active_index
-                   userAction:(user_action ? YES : NO)];
+                       reason:reason];
 }

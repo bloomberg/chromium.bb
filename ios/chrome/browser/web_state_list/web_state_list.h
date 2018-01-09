@@ -156,9 +156,9 @@ class WebStateList {
   // specified index to null.
   void ClearOpenersReferencing(int index);
 
-  // Notify the observers if the active WebState change.
-  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state,
-                                     bool user_action);
+  // Notify the observers if the active WebState change. |reason| is the value
+  // passed to the WebStateListObservers.
+  void NotifyIfActiveWebStateChanged(web::WebState* old_web_state, int reason);
 
   // Returns the index of the |n|-th WebState (with n > 0) in the sequence of
   // WebStates opened from the specified WebState after |start_index|, or
