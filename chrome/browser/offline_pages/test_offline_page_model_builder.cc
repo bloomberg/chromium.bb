@@ -29,8 +29,9 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
   std::unique_ptr<OfflinePageMetadataStoreSQL> metadata_store(
       new OfflinePageMetadataStoreSQL(task_runner, store_path));
 
-  base::FilePath persistent_archives_dir =
+  base::FilePath private_archives_dir =
       context->GetPath().Append(chrome::kOfflinePageArchivesDirname);
+  base::FilePath public_archives_dir("/sdcard/Download");
   // If PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
@@ -38,8 +39,9 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
     temporary_archives_dir =
         temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
   }
-  std::unique_ptr<ArchiveManager> archive_manager(new ArchiveManager(
-      temporary_archives_dir, persistent_archives_dir, task_runner));
+  std::unique_ptr<ArchiveManager> archive_manager(
+      new ArchiveManager(temporary_archives_dir, private_archives_dir,
+                         public_archives_dir, task_runner));
   std::unique_ptr<base::Clock> clock(new base::DefaultClock);
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(

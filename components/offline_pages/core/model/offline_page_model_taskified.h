@@ -121,7 +121,7 @@ class OfflinePageModelTaskified : public OfflinePageModel,
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
 
-  const base::FilePath& GetArchiveDirectory(
+  const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
 

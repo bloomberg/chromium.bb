@@ -87,8 +87,8 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
       OfflinePageModelFactory::GetForBrowserContext(context_);
   DCHECK(offline_page_model);
 
-  base::FilePath archives_dir =
-      offline_page_model->GetArchiveDirectory(archive.client_id.name_space);
+  base::FilePath archives_dir = offline_page_model->GetInternalArchiveDirectory(
+      archive.client_id.name_space);
   base::FilePath dest_path =
       archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension);
 

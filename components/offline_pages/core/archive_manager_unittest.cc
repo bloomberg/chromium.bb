@@ -42,7 +42,8 @@ class ArchiveManagerTest : public testing::Test {
   void ResetResults();
 
   void ResetManager(const base::FilePath& temporary_dir,
-                    const base::FilePath& persistent_dir);
+                    const base::FilePath& private_archive_dir,
+                    const base::FilePath& public_archive_dir);
   void Callback(bool result);
   void GetAllArchivesCallback(const std::set<base::FilePath>& archive_paths);
   void GetStorageStatsCallback(
@@ -52,8 +53,11 @@ class ArchiveManagerTest : public testing::Test {
   const base::FilePath& temporary_path() const {
     return manager_->GetTemporaryArchivesDir();
   }
-  const base::FilePath& persistent_path() const {
-    return manager_->GetPersistentArchivesDir();
+  const base::FilePath& private_archive_path() const {
+    return manager_->GetPrivateArchivesDir();
+  }
+  const base::FilePath& public_archive_path() const {
+    return manager_->GetPublicArchivesDir();
   }
   CallbackStatus callback_status() const { return callback_status_; }
   const std::set<base::FilePath>& last_archive_paths() const {
@@ -68,7 +72,8 @@ class ArchiveManagerTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temporary_dir_;
-  base::ScopedTempDir persistent_dir_;
+  base::ScopedTempDir private_archive_dir_;
+  base::ScopedTempDir public_archive_dir_;
 
   std::unique_ptr<ArchiveManager> manager_;
   CallbackStatus callback_status_;
@@ -85,8 +90,10 @@ ArchiveManagerTest::ArchiveManagerTest()
 
 void ArchiveManagerTest::SetUp() {
   ASSERT_TRUE(temporary_dir_.CreateUniqueTempDir());
-  ASSERT_TRUE(persistent_dir_.CreateUniqueTempDir());
-  ResetManager(temporary_dir_.GetPath(), persistent_dir_.GetPath());
+  ASSERT_TRUE(private_archive_dir_.CreateUniqueTempDir());
+  ASSERT_TRUE(public_archive_dir_.CreateUniqueTempDir());
+  ResetManager(temporary_dir_.GetPath(), private_archive_dir_.GetPath(),
+               public_archive_dir_.GetPath());
   histogram_tester_.reset(new base::HistogramTester());
 }
 
@@ -99,9 +106,12 @@ void ArchiveManagerTest::ResetResults() {
   last_archive_paths_.clear();
 }
 
-void ArchiveManagerTest::ResetManager(const base::FilePath& temporary_dir,
-                                      const base::FilePath& persistent_dir) {
-  manager_.reset(new ArchiveManager(temporary_dir, persistent_dir,
+void ArchiveManagerTest::ResetManager(
+    const base::FilePath& temporary_dir,
+    const base::FilePath& private_archive_dir,
+    const base::FilePath& public_archive_dir) {
+  manager_.reset(new ArchiveManager(temporary_dir, private_archive_dir,
+                                    public_archive_dir,
                                     base::ThreadTaskRunnerHandle::Get()));
 }
 
@@ -123,11 +133,12 @@ void ArchiveManagerTest::GetStorageStatsCallback(
 TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
   base::FilePath temporary_archive_dir =
       temporary_path().Append(FILE_PATH_LITERAL("test_path"));
-  base::FilePath persistent_archive_dir =
-      persistent_path().Append(FILE_PATH_LITERAL("test_path"));
-  ResetManager(temporary_archive_dir, persistent_archive_dir);
+  base::FilePath private_archive_dir =
+      private_archive_path().Append(FILE_PATH_LITERAL("test_path"));
+  base::FilePath public_archive_dir(FILE_PATH_LITERAL("/sdcard/Download"));
+  ResetManager(temporary_archive_dir, private_archive_dir, public_archive_dir);
   EXPECT_FALSE(base::PathExists(temporary_archive_dir));
-  EXPECT_FALSE(base::PathExists(persistent_archive_dir));
+  EXPECT_FALSE(base::PathExists(private_archive_dir));
 
   // Ensure archives dir exists, when it doesn't.
   manager()->EnsureArchivesDirCreated(
@@ -135,7 +146,8 @@ TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
   PumpLoop();
   EXPECT_EQ(CallbackStatus::CALLED_TRUE, callback_status());
   EXPECT_TRUE(base::PathExists(temporary_archive_dir));
-  EXPECT_TRUE(base::PathExists(persistent_archive_dir));
+  EXPECT_TRUE(base::PathExists(private_archive_dir));
+  // The public dir does not get created by us, so we don't test its creation.
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.ArchiveManager.ArchiveDirsCreationResult2.Persistent",
       -base::File::Error::FILE_OK, 1);
@@ -150,7 +162,7 @@ TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
   PumpLoop();
   EXPECT_EQ(CallbackStatus::CALLED_TRUE, callback_status());
   EXPECT_TRUE(base::PathExists(temporary_archive_dir));
-  EXPECT_TRUE(base::PathExists(persistent_archive_dir));
+  EXPECT_TRUE(base::PathExists(private_archive_dir));
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ArchiveManager.ArchiveDirsCreationResult2.Persistent", 1);
   histogram_tester()->ExpectTotalCount(
@@ -187,7 +199,7 @@ TEST_F(ArchiveManagerTest, DeleteMultipleArchives) {
       base::CreateTemporaryFileInDir(temporary_path(), &archive_path_3));
   base::FilePath archive_path_4;
   EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(persistent_path(), &archive_path_4));
+      base::CreateTemporaryFileInDir(private_archive_path(), &archive_path_4));
 
   std::vector<base::FilePath> archive_paths = {archive_path_1, archive_path_2,
                                                archive_path_4};
@@ -213,7 +225,7 @@ TEST_F(ArchiveManagerTest, DeleteMultipleArchivesSomeDoNotExist) {
       base::CreateTemporaryFileInDir(temporary_path(), &archive_path_3));
   base::FilePath archive_path_4;
   EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(persistent_path(), &archive_path_4));
+      base::CreateTemporaryFileInDir(private_archive_path(), &archive_path_4));
 
   std::vector<base::FilePath> archive_paths = {archive_path_1, archive_path_2,
                                                archive_path_4};
@@ -240,7 +252,7 @@ TEST_F(ArchiveManagerTest, DeleteMultipleArchivesNoneExist) {
       base::CreateTemporaryFileInDir(temporary_path(), &archive_path_3));
   base::FilePath archive_path_4;
   EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(persistent_path(), &archive_path_4));
+      base::CreateTemporaryFileInDir(private_archive_path(), &archive_path_4));
 
   std::vector<base::FilePath> archive_paths = {archive_path_1, archive_path_2,
                                                archive_path_4};
@@ -295,7 +307,7 @@ TEST_F(ArchiveManagerTest, GetAllArchives) {
       base::CreateTemporaryFileInDir(temporary_path(), &archive_path_3));
   base::FilePath archive_path_4;
   EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(persistent_path(), &archive_path_4));
+      base::CreateTemporaryFileInDir(private_archive_path(), &archive_path_4));
   std::vector<base::FilePath> expected_paths{archive_path_1, archive_path_2,
                                              archive_path_3, archive_path_4};
   std::sort(expected_paths.begin(), expected_paths.end());
@@ -321,28 +333,28 @@ TEST_F(ArchiveManagerTest, GetStorageStats) {
       base::CreateTemporaryFileInDir(temporary_path(), &archive_path_1));
   base::FilePath archive_path_2;
   EXPECT_TRUE(
-      base::CreateTemporaryFileInDir(persistent_path(), &archive_path_2));
+      base::CreateTemporaryFileInDir(private_archive_path(), &archive_path_2));
 
   manager()->GetStorageStats(base::Bind(
       &ArchiveManagerTest::GetStorageStatsCallback, base::Unretained(this)));
   PumpLoop();
   EXPECT_GT(last_storage_sizes().free_disk_space, 0);
-  EXPECT_EQ(last_storage_sizes().persistent_archives_size,
-            base::ComputeDirectorySize(persistent_path()));
+  EXPECT_EQ(last_storage_sizes().private_archives_size,
+            base::ComputeDirectorySize(private_archive_path()));
   EXPECT_EQ(last_storage_sizes().temporary_archives_size,
             base::ComputeDirectorySize(temporary_path()));
 }
 
 TEST_F(ArchiveManagerTest, TryWithInvalidTemporaryPath) {
   base::FilePath invalid_path;
-  ResetManager(invalid_path, persistent_path());
+  ResetManager(invalid_path, private_archive_path(), public_archive_path());
 
   manager()->GetStorageStats(base::Bind(
       &ArchiveManagerTest::GetStorageStatsCallback, base::Unretained(this)));
   PumpLoop();
   EXPECT_EQ(base::SysInfo::AmountOfFreeDiskSpace(temporary_path()),
             last_storage_sizes().free_disk_space);
-  EXPECT_EQ(base::ComputeDirectorySize(persistent_path()),
+  EXPECT_EQ(base::ComputeDirectorySize(private_archive_path()),
             last_storage_sizes().total_archives_size());
   EXPECT_EQ(0, last_storage_sizes().temporary_archives_size);
 }

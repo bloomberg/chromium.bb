@@ -55,7 +55,7 @@ void StubOfflinePageModel::GetPagesByNamespace(
     const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesSupportedByDownloads(
     const MultipleOfflinePageItemCallback& callback) {}
-const base::FilePath& StubOfflinePageModel::GetArchiveDirectory(
+const base::FilePath& StubOfflinePageModel::GetInternalArchiveDirectory(
     const std::string& name_space) const {
   return archive_directory_;
 }

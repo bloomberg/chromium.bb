@@ -104,7 +104,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) override;
-  const base::FilePath& GetArchiveDirectory(
+  const base::FilePath& GetInternalArchiveDirectory(
       const std::string& name_space) const override;
   bool IsArchiveInInternalDir(const base::FilePath& file_path) const override;
 

@@ -92,7 +92,7 @@ void GetStorageStatsImpl(const base::FilePath& temporary_archives_dir,
   storage_stats.free_disk_space =
       base::SysInfo::AmountOfFreeDiskSpace(temporary_archives_dir);
   if (!persistent_archives_dir.empty()) {
-    storage_stats.persistent_archives_size =
+    storage_stats.private_archives_size =
         base::ComputeDirectorySize(persistent_archives_dir);
   }
   if (!temporary_archives_dir.empty()) {
@@ -109,10 +109,12 @@ ArchiveManager::ArchiveManager() {}
 
 ArchiveManager::ArchiveManager(
     const base::FilePath& temporary_archives_dir,
-    const base::FilePath& persistent_archives_dir,
+    const base::FilePath& private_archives_dir,
+    const base::FilePath& public_archives_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : temporary_archives_dir_(temporary_archives_dir),
-      persistent_archives_dir_(persistent_archives_dir),
+      private_archives_dir_(private_archives_dir),
+      public_archives_dir_(public_archives_dir),
       task_runner_(task_runner) {}
 
 ArchiveManager::~ArchiveManager() {}
@@ -126,7 +128,7 @@ void ArchiveManager::EnsureArchivesDirCreated(const base::Closure& callback) {
   }
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(EnsureArchivesDirCreatedImpl, persistent_archives_dir_,
+      base::Bind(EnsureArchivesDirCreatedImpl, private_archives_dir_,
                  false /* is_temp */),
       callback);
 }
@@ -155,7 +157,7 @@ void ArchiveManager::DeleteMultipleArchives(
 void ArchiveManager::GetAllArchives(
     const base::Callback<void(const std::set<base::FilePath>&)>& callback)
     const {
-  std::vector<base::FilePath> archives_dirs = {persistent_archives_dir_};
+  std::vector<base::FilePath> archives_dirs = {private_archives_dir_};
   if (!temporary_archives_dir_.empty())
     archives_dirs.push_back(temporary_archives_dir_);
   task_runner_->PostTask(
@@ -167,7 +169,7 @@ void ArchiveManager::GetStorageStats(
     const StorageStatsCallback& callback) const {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(GetStorageStatsImpl, temporary_archives_dir_,
-                            persistent_archives_dir_,
+                            private_archives_dir_,
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
@@ -175,8 +177,12 @@ const base::FilePath& ArchiveManager::GetTemporaryArchivesDir() const {
   return temporary_archives_dir_;
 }
 
-const base::FilePath& ArchiveManager::GetPersistentArchivesDir() const {
-  return persistent_archives_dir_;
+const base::FilePath& ArchiveManager::GetPrivateArchivesDir() const {
+  return private_archives_dir_;
+}
+
+const base::FilePath& ArchiveManager::GetPublicArchivesDir() const {
+  return public_archives_dir_;
 }
 
 }  // namespace offline_pages
