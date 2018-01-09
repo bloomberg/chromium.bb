@@ -133,20 +133,18 @@ TEST_F(RenderWidgetTest, HitTestAPI) {
       "<iframe style='width: 200px; height: 100px;'"
       "srcdoc='<body style=\"margin: 0px; height: 100px; width: 200px;\">"
       "</body>'></iframe><div></body>");
-  blink::WebFrame* main_web_frame =
-      static_cast<RenderViewImpl*>(view_)->GetMainRenderFrame()->GetWebFrame();
   viz::FrameSinkId main_frame_sink_id =
       widget()->GetFrameSinkIdAtPoint(gfx::Point(10, 10));
-  EXPECT_EQ(static_cast<uint32_t>(
-                RenderFrame::GetRoutingIdForWebFrame(main_web_frame)),
+  EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             main_frame_sink_id.sink_id());
   EXPECT_EQ(static_cast<uint32_t>(RenderThreadImpl::Get()->GetClientId()),
             main_frame_sink_id.client_id());
 
+  // Targeting a child frame should also return the FrameSinkId for the main
+  // widget.
   viz::FrameSinkId frame_sink_id =
       widget()->GetFrameSinkIdAtPoint(gfx::Point(150, 150));
-  EXPECT_EQ(static_cast<uint32_t>(RenderFrame::GetRoutingIdForWebFrame(
-                main_web_frame->FirstChild())),
+  EXPECT_EQ(static_cast<uint32_t>(widget()->routing_id()),
             frame_sink_id.sink_id());
   EXPECT_EQ(main_frame_sink_id.client_id(), frame_sink_id.client_id());
 }

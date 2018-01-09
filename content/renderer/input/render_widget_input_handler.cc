@@ -179,27 +179,20 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
   // call the hit-testing API. Either way it might be better to have
   // a DCHECK for the node rather than a null check here.
   if (result_node.IsNull()) {
-    auto* web_widget = widget_->GetWebWidget();
-    DCHECK(web_widget->IsWebFrameWidget());
-    auto* frame_widget = static_cast<blink::WebFrameWidget*>(web_widget);
-    blink::WebFrame* web_frame = frame_widget->LocalRoot();
     return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                            RenderFrame::GetRoutingIdForWebFrame(web_frame));
+                            widget_->routing_id());
   }
 
   blink::WebFrame* result_frame =
       blink::WebFrame::FromFrameOwnerElement(result_node);
-  if (!result_frame) {
-    // This means that the node is not an iframe itself. So we just return the
-    // frame containing the node.
-    result_frame = result_node.GetDocument().GetFrame();
-  }
-  if (result_frame->IsWebRemoteFrame()) {
+  if (result_frame && result_frame->IsWebRemoteFrame()) {
     return RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
         ->frame_sink_id();
   }
+  // Return the FrameSinkId for the current widget if the point did not hit
+  // test to a remote frame.
   return viz::FrameSinkId(RenderThread::Get()->GetClientId(),
-                          RenderFrame::GetRoutingIdForWebFrame(result_frame));
+                          widget_->routing_id());
 }
 
 void RenderWidgetInputHandler::HandleInputEvent(
