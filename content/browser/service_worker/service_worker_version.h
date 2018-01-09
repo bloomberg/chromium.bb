@@ -62,7 +62,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerInstalledScriptsSender;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
-struct ServiceWorkerClientInfo;
 struct ServiceWorkerVersionInfo;
 
 namespace service_worker_controllee_request_handler_unittest {
@@ -571,7 +570,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     std::set<InflightRequestTimeoutInfo>::iterator timeout_iter;
   };
 
-  using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
+  using ServiceWorkerClients =
+      std::vector<blink::mojom::ServiceWorkerClientInfo>;
 
   // The timeout timer interval.
   static constexpr base::TimeDelta kTimeoutTimerDelay =
@@ -643,9 +643,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnOpenWindow(int request_id,
                     GURL url,
                     WindowOpenDisposition disposition);
-  void OnOpenWindowFinished(int request_id,
-                            ServiceWorkerStatusCode status,
-                            const ServiceWorkerClientInfo& client_info);
+  void OnOpenWindowFinished(
+      int request_id,
+      ServiceWorkerStatusCode status,
+      const blink::mojom::ServiceWorkerClientInfo& client_info);
 
   void OnPostMessageToClient(
       const std::string& client_uuid,
@@ -655,14 +656,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnNavigateClient(int request_id,
                         const std::string& client_uuid,
                         const GURL& url);
-  void OnNavigateClientFinished(int request_id,
-                                ServiceWorkerStatusCode status,
-                                const ServiceWorkerClientInfo& client_info);
+  void OnNavigateClientFinished(
+      int request_id,
+      ServiceWorkerStatusCode status,
+      const blink::mojom::ServiceWorkerClientInfo& client_info);
   void OnSkipWaiting(int request_id);
   void OnPongFromWorker();
 
-  void OnFocusClientFinished(int request_id,
-                             const ServiceWorkerClientInfo& client_info);
+  void OnFocusClientFinished(
+      int request_id,
+      const blink::mojom::ServiceWorkerClientInfo& client_info);
 
   void DidEnsureLiveRegistrationForStartWorker(
       ServiceWorkerMetrics::EventType purpose,
@@ -682,8 +685,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              blink::mojom::ServiceWorkerEventStatus status,
                              base::Time dispatch_event_time);
 
-  void OnGetClientFinished(int request_id,
-                           const ServiceWorkerClientInfo& client_info);
+  void OnGetClientFinished(
+      int request_id,
+      const blink::mojom::ServiceWorkerClientInfo& client_info);
 
   void OnGetClientsFinished(int request_id,
                             std::unique_ptr<ServiceWorkerClients> clients);

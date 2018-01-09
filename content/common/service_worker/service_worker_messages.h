@@ -12,7 +12,6 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/common/service_worker/service_worker_client_info.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/platform_notification_data.h"
@@ -100,7 +99,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(version_id)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
+IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerClientInfo)
   IPC_STRUCT_TRAITS_MEMBER(client_uuid)
   IPC_STRUCT_TRAITS_MEMBER(page_visibility_state)
   IPC_STRUCT_TRAITS_MEMBER(is_focused)
@@ -207,17 +206,17 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
 // Sent via EmbeddedWorker as a response of GetClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClient,
                      int /* request_id */,
-                     content::ServiceWorkerClientInfo)
+                     blink::mojom::ServiceWorkerClientInfo)
 
 // Sent via EmbeddedWorker as a response of GetClients.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClients,
                      int /* request_id */,
-                     std::vector<content::ServiceWorkerClientInfo>)
+                     std::vector<blink::mojom::ServiceWorkerClientInfo>)
 
 // Sent via EmbeddedWorker as a response of OpenWindow.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,
                      int /* request_id */,
-                     content::ServiceWorkerClientInfo /* client */)
+                     blink::mojom::ServiceWorkerClientInfo /* client */)
 
 // Sent via EmbeddedWorker as an error response of OpenWindow.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
@@ -227,12 +226,12 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
 // Sent via EmbeddedWorker as a response of FocusClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
                      int /* request_id */,
-                     content::ServiceWorkerClientInfo /* client */)
+                     blink::mojom::ServiceWorkerClientInfo /* client */)
 
 // Sent via EmbeddedWorker as a response of NavigateClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientResponse,
                      int /* request_id */,
-                     content::ServiceWorkerClientInfo /* client */)
+                     blink::mojom::ServiceWorkerClientInfo /* client */)
 
 // Sent via EmbeddedWorker as an error response of NavigateClient.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_NavigateClientError,

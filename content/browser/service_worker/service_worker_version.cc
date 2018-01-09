@@ -1104,7 +1104,7 @@ void ServiceWorkerVersion::OnGetClient(int request_id,
   if (!provider_host ||
       provider_host->document_url().GetOrigin() != script_url_.GetOrigin()) {
     // The promise will be resolved to 'undefined'.
-    OnGetClientFinished(request_id, ServiceWorkerClientInfo());
+    OnGetClientFinished(request_id, blink::mojom::ServiceWorkerClientInfo());
     return;
   }
   service_worker_client_utils::GetClient(
@@ -1114,7 +1114,7 @@ void ServiceWorkerVersion::OnGetClient(int request_id,
 
 void ServiceWorkerVersion::OnGetClientFinished(
     int request_id,
-    const ServiceWorkerClientInfo& client_info) {
+    const blink::mojom::ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END1(
       "ServiceWorker", "ServiceWorkerVersion::OnGetClient", request_id,
@@ -1252,7 +1252,7 @@ void ServiceWorkerVersion::OnOpenWindow(int request_id,
 void ServiceWorkerVersion::OnOpenWindowFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const ServiceWorkerClientInfo& client_info) {
+    const blink::mojom::ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -1324,7 +1324,7 @@ void ServiceWorkerVersion::OnFocusClient(int request_id,
 
 void ServiceWorkerVersion::OnFocusClientFinished(
     int request_id,
-    const ServiceWorkerClientInfo& client_info) {
+    const blink::mojom::ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
@@ -1379,7 +1379,7 @@ void ServiceWorkerVersion::OnNavigateClient(int request_id,
 void ServiceWorkerVersion::OnNavigateClientFinished(
     int request_id,
     ServiceWorkerStatusCode status,
-    const ServiceWorkerClientInfo& client_info) {
+    const blink::mojom::ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (running_status() != EmbeddedWorkerStatus::RUNNING)
