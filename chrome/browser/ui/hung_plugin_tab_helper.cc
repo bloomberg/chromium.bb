@@ -11,12 +11,10 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +24,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
@@ -64,93 +61,6 @@ void KillPluginOnIOThread(int child_id) {
 }
 
 }  // namespace
-
-
-// HungPluginInfoBarDelegate --------------------------------------------------
-
-class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // Creates a hung plugin infobar and delegate and adds the infobar to
-  // |infobar_service|.  Returns the infobar if it was successfully added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service,
-                                   HungPluginTabHelper* helper,
-                                   int plugin_child_id,
-                                   const base::string16& plugin_name);
-
- private:
-  HungPluginInfoBarDelegate(HungPluginTabHelper* helper,
-                            int plugin_child_id,
-                            const base::string16& plugin_name);
-  ~HungPluginInfoBarDelegate() override;
-
-  // ConfirmInfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  const gfx::VectorIcon& GetVectorIcon() const override;
-  base::string16 GetMessageText() const override;
-  int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-
-  HungPluginTabHelper* helper_;
-  int plugin_child_id_;
-
-  base::string16 message_;
-  base::string16 button_text_;
-};
-
-// static
-infobars::InfoBar* HungPluginInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
-    HungPluginTabHelper* helper,
-    int plugin_child_id,
-    const base::string16& plugin_name) {
-  return infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-      std::unique_ptr<ConfirmInfoBarDelegate>(new HungPluginInfoBarDelegate(
-          helper, plugin_child_id, plugin_name))));
-}
-
-HungPluginInfoBarDelegate::HungPluginInfoBarDelegate(
-    HungPluginTabHelper* helper,
-    int plugin_child_id,
-    const base::string16& plugin_name)
-    : ConfirmInfoBarDelegate(),
-      helper_(helper),
-      plugin_child_id_(plugin_child_id),
-      message_(l10n_util::GetStringFUTF16(
-          IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR, plugin_name)),
-      button_text_(l10n_util::GetStringUTF16(
-          IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON)) {
-}
-
-HungPluginInfoBarDelegate::~HungPluginInfoBarDelegate() {
-}
-
-infobars::InfoBarDelegate::InfoBarIdentifier
-HungPluginInfoBarDelegate::GetIdentifier() const {
-  return HUNG_PLUGIN_INFOBAR_DELEGATE;
-}
-
-const gfx::VectorIcon& HungPluginInfoBarDelegate::GetVectorIcon() const {
-  return kExtensionCrashedIcon;
-}
-
-base::string16 HungPluginInfoBarDelegate::GetMessageText() const {
-  return message_;
-}
-
-int HungPluginInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
-base::string16 HungPluginInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  return button_text_;
-}
-
-bool HungPluginInfoBarDelegate::Accept() {
-  helper_->KillPlugin(plugin_child_id_);
-  return true;
-}
 
 
 // HungPluginTabHelper::PluginState -------------------------------------------
