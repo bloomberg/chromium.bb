@@ -14,16 +14,21 @@
 namespace vr {
 
 namespace {
-constexpr size_t kNumStars = 200lu;
+constexpr size_t kNumStars = 2000lu;
 
 // Position & opacity.
-constexpr size_t kFloatsPerStarVertex = 4lu;
+constexpr size_t kFloatsPerStarVertex = 5lu;
 constexpr size_t kDataStride = kFloatsPerStarVertex * sizeof(float);
 constexpr size_t kOpacityDataOffset = 3 * sizeof(float);
+constexpr size_t kPhaseDataOffset = 4 * sizeof(float);
 constexpr size_t kVerticesPerStar = 6lu;
 constexpr size_t kTrianglesPerStar = kVerticesPerStar - 1lu;
 
-constexpr float kOpacityScale = 80.0f;
+constexpr float kMinStarWidth = 0.002f;
+constexpr float kMaxStarWidth = 0.007f;
+
+constexpr float kMaxStarDegrees = 70.0f;
+constexpr float kOpacityNoiseScale = 5.0f;
 
 float g_vertices[kNumStars * kFloatsPerStarVertex * kVerticesPerStar];
 GLushort g_indices[kNumStars * kTrianglesPerStar * 3lu];
@@ -32,12 +37,19 @@ GLushort g_indices[kNumStars * kTrianglesPerStar * 3lu];
 static constexpr char const* kVertexShader = SHADER(
   precision mediump float;
   uniform mat4 u_ModelViewProjMatrix;
+  uniform float u_Time;
   attribute vec4 a_Position;
   attribute float a_Opacity;
+  attribute float a_Phase;
   varying mediump float v_Opacity;
 
+  float Twinkle(float t) {
+    return sin(t + 5.0f * cos(t + 3.0f)) * 0.25 + 0.75;
+  }
+
   void main() {
-    v_Opacity = a_Opacity;
+    float twinkle = 1.0f;
+    v_Opacity = a_Opacity * Twinkle(u_Time + a_Phase);
     gl_Position = u_ModelViewProjMatrix * a_Position;
   }
 );
@@ -74,7 +86,9 @@ void Stars::Initialize(SkiaSurfaceProvider* provider) {
 Stars::Renderer::Renderer() : BaseRenderer(kVertexShader, kFragmentShader) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  time_handle_ = glGetUniformLocation(program_handle_, "u_Time");
   opacity_handle_ = glGetAttribLocation(program_handle_, "a_Opacity");
+  phase_handle_ = glGetAttribLocation(program_handle_, "a_Phase");
 }
 
 Stars::Renderer::~Renderer() {}
@@ -86,6 +100,8 @@ void Stars::Renderer::Draw(float t, const gfx::Transform& view_proj_matrix) {
   // Pass in model view project matrix.
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(view_proj_matrix).data());
+
+  glUniform1f(time_handle_, t * 0.5);
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
@@ -99,6 +115,11 @@ void Stars::Renderer::Draw(float t, const gfx::Transform& view_proj_matrix) {
                         VOID_OFFSET(kOpacityDataOffset));
   glEnableVertexAttribArray(opacity_handle_);
 
+  // Set up phase attribute
+  glVertexAttribPointer(phase_handle_, 1, GL_FLOAT, false, kDataStride,
+                        VOID_OFFSET(kPhaseDataOffset));
+  glEnableVertexAttribArray(phase_handle_);
+
   glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -109,6 +130,7 @@ void Stars::Renderer::Draw(float t, const gfx::Transform& view_proj_matrix) {
 
   glDisableVertexAttribArray(position_handle_);
   glDisableVertexAttribArray(opacity_handle_);
+  glDisableVertexAttribArray(phase_handle_);
 }
 
 GLuint Stars::Renderer::vertex_buffer_ = 0;
@@ -125,13 +147,21 @@ void Stars::Renderer::CreateBuffers() {
   size_t cur_vertex = 0;
   size_t cur_index = 0;
   for (size_t i = 0; i < kNumStars; ++i) {
-    float x_rot =
-        gfx::Tween::FloatValueBetween(base::RandDouble(), -60.0f, 60.0f);
-    float y_rot =
-        gfx::Tween::FloatValueBetween(base::RandDouble(), -60.0f, 60.0f);
-    float size =
-        gfx::Tween::FloatValueBetween(base::RandDouble(), 0.007f, 0.002f);
-    float opacity = 1.0 - gfx::Vector2dF(x_rot, y_rot).Length() / kOpacityScale;
+    float x_rot = gfx::Tween::FloatValueBetween(
+        base::RandDouble(), -kMaxStarDegrees, kMaxStarDegrees);
+    float y_rot = gfx::Tween::FloatValueBetween(
+        base::RandDouble(), -kMaxStarDegrees, kMaxStarDegrees);
+    float size = gfx::Tween::FloatValueBetween(base::RandDouble(),
+                                               kMinStarWidth, kMaxStarWidth);
+    float phase = gfx::Tween::FloatValueBetween(base::RandDouble(), 0.0f,
+                                                2.0f * base::kPiFloat);
+    float opacity =
+        1.0 - gfx::Vector2dF(x_rot, y_rot).Length() / kMaxStarDegrees;
+
+    float opacity_noise = (base::RandDouble() - 0.5);
+    opacity_noise *= opacity_noise * opacity_noise * kOpacityNoiseScale;
+    opacity += opacity_noise;
+    opacity = std::min(1.0f, std::max(0.0f, opacity));
 
     gfx::Transform local;
     local.RotateAboutYAxis(x_rot);
@@ -151,6 +181,7 @@ void Stars::Renderer::CreateBuffers() {
       g_vertices[cur_vertex * kFloatsPerStarVertex + 1] = p.y();
       g_vertices[cur_vertex * kFloatsPerStarVertex + 2] = p.z();
       g_vertices[cur_vertex * kFloatsPerStarVertex + 3] = j ? 0 : opacity;
+      g_vertices[cur_vertex * kFloatsPerStarVertex + 4] = phase;
     }
   }
 

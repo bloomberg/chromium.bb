@@ -35,9 +35,11 @@ class Stars : public UiElement {
 
     // Uniforms
     GLuint model_view_proj_matrix_handle_ = 0;
+    GLuint time_handle_ = 0;
 
     // Attributes
     GLuint opacity_handle_;
+    GLuint phase_handle_;
 
     DISALLOW_COPY_AND_ASSIGN(Renderer);
   };
