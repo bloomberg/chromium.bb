@@ -10,13 +10,8 @@
 
 namespace features {
 
-#if defined(USE_AURA)
-const base::Feature kEnableSurfaceSynchronization{
-    "SurfaceSynchronization", base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kEnableSurfaceSynchronization{
     "SurfaceSynchronization", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 bool IsSurfaceSynchronizationEnabled() {
   auto* command_line = base::CommandLine::ForCurrentProcess();

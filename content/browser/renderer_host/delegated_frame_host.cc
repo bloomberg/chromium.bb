@@ -293,10 +293,8 @@ void DelegatedFrameHost::WasResized() {
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
         surface_id, current_frame_size_in_dip_, GetGutterColor(),
         GetSurfaceReferenceFactory());
-    if (compositor_ && !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kDisableResizeLock)) {
+    if (compositor_)
       compositor_->OnChildResizing();
-    }
     // Input throttling and guttering are handled differently when surface
     // synchronization is enabled so exit early here.
     return;
@@ -580,7 +578,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
     UpdateGutters();
   }
 
-  frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
+  if (HasFallbackSurface())
+    frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
   // Note: the frame may have been evicted immediately.
 }
 
