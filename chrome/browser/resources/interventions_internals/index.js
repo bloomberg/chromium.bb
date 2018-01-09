@@ -119,11 +119,12 @@ function logExpansionHelper(expanding) {
   let rows = $('message-logs-table').rows;
   for (let i = 1; i < rows.length; i++) {
     if (rows[i].className.includes('expansion-row')) {
-      rows[i].className = expand ? rows[i].className.replace('hide', 'show') :
-                                   rows[i].className.replace('show', 'hide');
+      rows[i].className = expanding ?
+          rows[i].className.replace('hide', 'show') :
+          rows[i].className.replace('show', 'hide');
       let arrowButton = rows[i - 1].querySelector('.arrow');
       if (arrowButton) {
-        arrowButton.className = expand ? 'arrow up' : 'arrow down';
+        arrowButton.className = expanding ? 'arrow up' : 'arrow down';
       }
     }
   }
@@ -278,6 +279,23 @@ function changeTab() {
 }
 
 /**
+ * Helper function to check if all keywords, case insensitive, are in the given
+ * text.
+ *
+ * @param {string[]} keywords The collection of keywords.
+ * @param {string} text The given text to search.
+ * @return True iff all keywords present in the given text.
+ */
+function checkTextContainsKeywords(keywords, text) {
+  for (let i = 0; i < keywords.length; i++) {
+    if (!text.toUpperCase().includes(keywords[i].toUpperCase())) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Initialize the navigation bar, and setup OnChange listeners for the tabs.
  */
 function setupTabControl() {
@@ -303,19 +321,21 @@ function setupTabControl() {
  */
 function setupLogSearch() {
   $('log-search-bar').addEventListener('keyup', () => {
-    let keyword = $('log-search-bar').value.toUpperCase();
+    let keys = $('log-search-bar').value.split(' ');
     let rows = $('message-logs-table').rows;
     logExpansionHelper(true /* expanding */);
 
     for (let i = 1; i < rows.length; i++) {
+      // Check the main row.
       rows[i].style.display =
-          rows[i].textContent.toUpperCase().includes(keyword) ? '' : 'none';
+          checkTextContainsKeywords(keys, rows[i].textContent) ? '' : 'none';
 
+      // Check expandable rows.
       let subtable = rows[i].querySelector('.expansion-logs-table');
       if (subtable) {
         for (let i = 0; i < subtable.rows.length; i++) {
           subtable.rows[i].style.display =
-              subtable.rows[i].textContent.toUpperCase().includes(keyword) ?
+              checkTextContainsKeywords(keys, subtable.rows[i].textContent) ?
               '' :
               'none';
         }
