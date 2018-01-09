@@ -991,6 +991,16 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       update_palette_cdf(xd, mi);
   }
 
+#if CONFIG_INTRABC
+  if (frame_is_intra_only(cm) && av1_allow_intrabc(cm)) {
+    if (tile_data->allow_update_cdf)
+      update_cdf(fc->intrabc_cdf, is_intrabc_block(mbmi), 2);
+#if CONFIG_ENTROPY_STATS
+    ++td->counts->intrabc[is_intrabc_block(mbmi)];
+#endif  // CONFIG_ENTROPY_STATS
+  }
+#endif  // CONFIG_INTRABC
+
   if (!frame_is_intra_only(cm)) {
     RD_COUNTS *rdc = &td->rd_counts;
 
