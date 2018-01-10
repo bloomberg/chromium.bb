@@ -459,14 +459,16 @@
   [NSLayoutConstraint activateConstraints:@[
     [self.locationBarContainerStackView.bottomAnchor
         constraintEqualToAnchor:self.bottomAnchor
-                       constant:-(klocationBarStackViewBottomMargin +
-                                  kLocationBarVerticalMargin)],
+                       constant:-kLocationBarVerticalMargin],
     [self.locationBarContainerStackView.trailingAnchor
         constraintEqualToAnchor:locationBarContainerSafeAreaGuide
                                     .trailingAnchor],
     [self.locationBarContainerStackView.leadingAnchor
         constraintEqualToAnchor:locationBarContainerSafeAreaGuide
                                     .leadingAnchor],
+    [self.locationBarContainerStackView.heightAnchor
+        constraintEqualToConstant:kToolbarHeight -
+                                  2 * kLocationBarVerticalMargin],
   ]];
 }
 
