@@ -2832,16 +2832,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithExtensions, StreamsTest) {
 
 // Checks that non-http/https/chrome-extension subresource cancels the
 // prerender.
-// Disabled on ChromeOS due to flakyness. See https://crbug.com/800311.
-#if defined(OS_CHROMEOS)
-#define MAYBE_PrerenderCancelSubresourceUnsupportedScheme \
-  DISABLED_PrerenderCancelSubresourceUnsupportedScheme
-#else
-#define MAYBE_PrerenderCancelSubresourceUnsupportedScheme \
-  PrerenderCancelSubresourceUnsupportedScheme
-#endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       MAYBE_PrerenderCancelSubresourceUnsupportedScheme) {
+                       PrerenderCancelSubresourceUnsupportedScheme) {
   GURL image_url = GURL("invalidscheme://www.google.com/test.jpg");
   base::StringPairs replacement_text;
   replacement_text.push_back(
@@ -2850,6 +2842,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   net::test_server::GetFilePathWithReplacements(
       "/prerender/prerender_with_image.html", replacement_text,
       &replacement_path);
+  // Disable load event checks because they race with cancellation.
+  DisableLoadEventCheck();
   PrerenderTestURL(replacement_path, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
 }
 
