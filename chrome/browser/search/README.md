@@ -92,13 +92,11 @@ a `postMessage()` call to `window.parent`. The event data supports these
 parameters:
 
 *   `cmd` (required string): must be `"resizeDoodle"`.
-*   `width` (optional string): a CSS width (with units) or `null`.
-    Because the Doodle cannot know the size of the outer page, only
-    `null` (default width) or values based on `"100%"` (`"100%"`,
-    `"calc(100% - 50px)"`) are recommended.
-*   `height` (optional string): a CSS height (with units) or `null` for
-    the default (`"200px"`). Must not be a percentage, but otherwise any
-    units are OK.
+*   `width` (required string): a CSS width (with units). Because the
+    Doodle cannot know the size of the outer page, values based on
+    `"100%"` (e.g. `"100%"` or `"calc(100% - 50px)"`) are recommended.
+*   `height` (required string): a CSS height (with units). Must not be a
+    percentage, but otherwise any units are OK.
 *   `duration` (optional string): a CSS duration, such as `"130ms"` or
     `"1s"`. If `null` or absent, `"0s"` (no transition) is assumed.
 
