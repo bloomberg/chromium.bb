@@ -5,31 +5,29 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGES_DOWNLOAD_MANAGER_BRIDGE_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_OFFLINE_PAGES_DOWNLOAD_MANAGER_BRIDGE_H_
 
+#include <stdint.h>
+
 #include <vector>
+
+#include "components/offline_pages/core/system_download_manager.h"
 
 namespace offline_pages {
 namespace android {
 
 // Bridge between C++ and Java for communicating with the AndroidDownloadManager
 // on Android.
-class OfflinePagesDownloadManagerBridge {
+class OfflinePagesDownloadManagerBridge : public SystemDownloadManager {
  public:
-  // Returns true if ADM is available on this phone.
-  static bool IsAndroidDownloadManagerInstalled();
+  bool IsDownloadManagerInstalled() override;
 
-  // Adds the download to the list managed by the AndroidDownloadManager.
-  // Returns the ADM ID of the download, which we will place in the offline
-  // pages database as part of the offline page item.
-  static long addCompletedDownload(const std::string& title,
-                                   const std::string& description,
-                                   const std::string& path,
-                                   int64_t length,
-                                   const std::string& uri,
-                                   const std::string& referer);
+  int64_t AddCompletedDownload(const std::string& title,
+                               const std::string& description,
+                               const std::string& path,
+                               int64_t length,
+                               const std::string& uri,
+                               const std::string& referer) override;
 
-  // Removes the pages with the given download IDs, and returns the number of
-  // pages removed.
-  static int remove(const std::vector<int64_t>& android_download_manager_ids);
+  int Remove(const std::vector<int64_t>& android_download_manager_ids) override;
 };
 
 }  // namespace android
