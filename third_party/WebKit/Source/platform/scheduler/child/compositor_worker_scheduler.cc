@@ -23,9 +23,7 @@ CompositorWorkerScheduler::CompositorWorkerScheduler(
     : WorkerScheduler(
           std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
                                                   this)),
-      thread_(thread),
-      compositor_thread_task_duration_reporter_(
-          "RendererScheduler.TaskDurationPerThreadType") {}
+      thread_(thread) {}
 
 CompositorWorkerScheduler::~CompositorWorkerScheduler() = default;
 
@@ -40,8 +38,8 @@ void CompositorWorkerScheduler::OnTaskCompleted(
     const TaskQueue::Task& task,
     base::TimeTicks start,
     base::TimeTicks end) {
-  compositor_thread_task_duration_reporter_.RecordTask(
-      ThreadType::kCompositorThread, end - start);
+  compositor_metrics_helper_.RecordTaskMetrics(worker_task_queue, task, start,
+                                               end);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
