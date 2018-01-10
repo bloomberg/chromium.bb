@@ -304,6 +304,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
         return mBottomSheet != null && mBottomSheet.isSheetOpen()
                 && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
                 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT
+                && ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_CLEAR_URL_ON_OPEN);
     }
 }

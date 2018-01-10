@@ -152,7 +152,9 @@ public class BottomSheetContentController
         public void onSheetClosed(@StateChangeReason int reason) {
             removeIcons();
 
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)) {
+            if (ChromeFeatureList.isInitialized()
+                    && ChromeFeatureList.isEnabled(
+                               ChromeFeatureList.CHROME_HOME_DESTROY_SUGGESTIONS)) {
                 // TODO(bauerb): Implement support for destroying the home sheet after a delay.
                 mSelectedItemId = NO_CONTENT_ID;
                 mBottomSheet.showContent(null);
@@ -248,6 +250,7 @@ public class BottomSheetContentController
                     @Override
                     public void onSuccess(boolean alreadyStarted) {
                         initBottomNavMenu();
+                        setIconsEnabled(true);
                     }
 
                     @Override
@@ -267,6 +270,7 @@ public class BottomSheetContentController
         mBottomSheet.addObserver(mBottomSheetObserver);
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
+        setIconsEnabled(mActivity.didFinishNativeInitialization());
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -584,6 +588,12 @@ public class BottomSheetContentController
         getMenu().findItem(R.id.action_downloads).setIcon(null);
         getMenu().findItem(R.id.action_bookmarks).setIcon(null);
         getMenu().findItem(R.id.action_history).setIcon(null);
+    }
+
+    private void setIconsEnabled(boolean enabled) {
+        getMenu().findItem(R.id.action_downloads).setEnabled(enabled);
+        getMenu().findItem(R.id.action_bookmarks).setEnabled(enabled);
+        getMenu().findItem(R.id.action_history).setEnabled(enabled);
     }
 
     /**

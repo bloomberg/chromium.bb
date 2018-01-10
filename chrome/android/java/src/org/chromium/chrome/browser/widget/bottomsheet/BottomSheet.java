@@ -29,7 +29,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -56,7 +55,6 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
-import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
@@ -432,8 +430,9 @@ public class BottomSheet
             startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
             endX = startX + allowedSwipeWidth;
         } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_VELOCITY.equals(logicType)
-                || ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CHROME_HOME_SWIPE_VELOCITY_FEATURE)) {
+                || (ChromeFeatureList.isInitialized()
+                           && ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.CHROME_HOME_SWIPE_VELOCITY_FEATURE))) {
             if (mVelocityLogicBlockSwipe) return false;
 
             double dpPerMs = scrollDistanceDp / (double) timeDeltaMs;
@@ -486,17 +485,7 @@ public class BottomSheet
         addObserver(mMetrics);
 
         mGestureDetector = new BottomSheetSwipeDetector(context, this);
-
-        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
-                    @Override
-                    public void onSuccess(boolean alreadyStarted) {
-                        mIsTouchEnabled = true;
-                    }
-
-                    @Override
-                    public void onFailure() {}
-                });
+        mIsTouchEnabled = true;
 
         // An observer for recording metrics.
         this.addObserver(new EmptyBottomSheetObserver() {
