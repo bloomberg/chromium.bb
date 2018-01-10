@@ -489,13 +489,9 @@ void BlobRegistryImpl::Register(
   for (const auto& element : elements) {
     if (element->is_file()) {
       if (!delegate->CanReadFile(element->get_file()->path)) {
-        // TODO(mek) Using ERR_FILE_WRITE_FAILED matches the IPC based
-        // implementation, but this is really a very different error than what
-        // FILE_WRITE_FAILED is used for elsewhere, so this should probably be a
-        // dfferent error status. http://crbug.com/740730
-        std::unique_ptr<BlobDataHandle> handle =
-            context_->AddBrokenBlob(uuid, content_type, content_disposition,
-                                    BlobStatus::ERR_FILE_WRITE_FAILED);
+        std::unique_ptr<BlobDataHandle> handle = context_->AddBrokenBlob(
+            uuid, content_type, content_disposition,
+            BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
         BlobImpl::Create(std::move(handle), std::move(blob));
         std::move(callback).Run();
         return;
@@ -506,13 +502,9 @@ void BlobRegistryImpl::Register(
       if (!filesystem_url.is_valid() ||
           !file_system_context_->GetFileSystemBackend(filesystem_url.type()) ||
           !delegate->CanReadFileSystemFile(filesystem_url)) {
-        // TODO(mek) Using ERR_FILE_WRITE_FAILED matches the IPC based
-        // implementation, but this is really a very different error than what
-        // FILE_WRITE_FAILED is used for elsewhere, so this should probably be a
-        // dfferent error status. http://crbug.com/740730
-        std::unique_ptr<BlobDataHandle> handle =
-            context_->AddBrokenBlob(uuid, content_type, content_disposition,
-                                    BlobStatus::ERR_FILE_WRITE_FAILED);
+        std::unique_ptr<BlobDataHandle> handle = context_->AddBrokenBlob(
+            uuid, content_type, content_disposition,
+            BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
         BlobImpl::Create(std::move(handle), std::move(blob));
         std::move(callback).Run();
         return;

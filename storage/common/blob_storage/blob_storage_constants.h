@@ -109,7 +109,10 @@ enum class BlobStatus {
   // builder tries to build a blob with a blob reference that isn't finished
   // constructing.
   ERR_REFERENCED_BLOB_BROKEN = 5,
-  LAST_ERROR = ERR_REFERENCED_BLOB_BROKEN,
+  // A file that we referenced during construction is not accessible to the
+  // renderer trying to create the blob.
+  ERR_REFERENCED_FILE_UNAVAILABLE = 6,
+  LAST_ERROR = ERR_REFERENCED_FILE_UNAVAILABLE,
 
   // Blob state section:
   // The blob has finished.

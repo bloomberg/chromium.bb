@@ -137,12 +137,13 @@ void BlobDispatcherHost::OnRegisterBlob(
           DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
                    << "): Invalid or prohibited FileSystem URL: "
                    << filesystem_url.DebugString();
-          HostedBlobState hosted_state(
-              context->AddBrokenBlob(uuid, content_type, content_disposition,
-                                     BlobStatus::ERR_FILE_WRITE_FAILED));
+          HostedBlobState hosted_state(context->AddBrokenBlob(
+              uuid, content_type, content_disposition,
+              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE));
           blobs_inuse_map_.insert(
               std::make_pair(uuid, std::move(hosted_state)));
-          SendFinalBlobStatus(uuid, BlobStatus::ERR_FILE_WRITE_FAILED);
+          SendFinalBlobStatus(uuid,
+                              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
           return;
         }
         break;
@@ -152,12 +153,13 @@ void BlobDispatcherHost::OnRegisterBlob(
           DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
                    << "): Invalid or prohibited FilePath: "
                    << item.path().value();
-          HostedBlobState hosted_state(
-              context->AddBrokenBlob(uuid, content_type, content_disposition,
-                                     BlobStatus::ERR_FILE_WRITE_FAILED));
+          HostedBlobState hosted_state(context->AddBrokenBlob(
+              uuid, content_type, content_disposition,
+              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE));
           blobs_inuse_map_.insert(
               std::make_pair(uuid, std::move(hosted_state)));
-          SendFinalBlobStatus(uuid, BlobStatus::ERR_FILE_WRITE_FAILED);
+          SendFinalBlobStatus(uuid,
+                              BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE);
           return;
         }
         break;

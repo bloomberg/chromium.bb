@@ -74,7 +74,7 @@ std::string StatusToString(BlobStatus status) {
       return "BlobStatus::ERR_OUT_OF_MEMORY: Not enough memory or disk space "
              "available for blob.";
     case BlobStatus::ERR_FILE_WRITE_FAILED:
-      return "BlobStatus::ERR_FILE_WRITE_FAILED: File operation filed";
+      return "BlobStatus::ERR_FILE_WRITE_FAILED: File operation failed";
     case BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT:
       return "BlobStatus::ERR_SOURCE_DIED_IN_TRANSIT: Blob source died before "
              "transporting data to browser.";
@@ -84,6 +84,9 @@ std::string StatusToString(BlobStatus status) {
     case BlobStatus::ERR_REFERENCED_BLOB_BROKEN:
       return "BlobStatus::ERR_REFERENCED_BLOB_BROKEN: Blob contains dependency "
              "blob that is broken.";
+    case BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE:
+      return "BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE: Blob contains "
+             "dependency on file that is unavailable.";
     case BlobStatus::DONE:
       return "BlobStatus::DONE: Blob built with no errors.";
     case BlobStatus::PENDING_QUOTA:
