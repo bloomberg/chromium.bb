@@ -46,6 +46,7 @@ public class LanguageListPreference extends Preference {
                 @Override
                 public Item[] getItems() {
                     ArrayList<Item> menuItems = new ArrayList<>();
+
                     // Show "Offer to translate" option if "Chrome Translate" is enabled.
                     if (PrefServiceBridge.getInstance().isTranslateEnabled()) {
                         // Set this row checked if the language is unblocked.
@@ -59,10 +60,9 @@ public class LanguageListPreference extends Preference {
                                 info.isSupported()));
                     }
 
-                    // Show "Remove" option if there are more than 1 accept language.
-                    if (getItemCount() > 1) {
-                        menuItems.add(new Item(mContext, R.string.remove, true));
-                    }
+                    // Enable "Remove" option if there are multiple accept languages.
+                    menuItems.add(new Item(mContext, R.string.remove, getItemCount() > 1));
+
                     return menuItems.toArray(new Item[menuItems.size()]);
                 }
 

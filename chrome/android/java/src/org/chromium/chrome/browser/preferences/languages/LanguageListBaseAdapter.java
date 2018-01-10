@@ -9,11 +9,13 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -141,7 +143,7 @@ public class LanguageListBaseAdapter
     @Override
     public void onBindViewHolder(LanguageRowViewHolder holder, int position) {
         holder.updateLanguageInfo(mLanguageList.get(position));
-        if (mDragEnabled) {
+        if (mDragEnabled && getItemCount() > 1) {
             assert mItemTouchHelper != null;
             holder.mStartIcon.setOnTouchListener((v, event) -> {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
@@ -175,6 +177,12 @@ public class LanguageListBaseAdapter
         mDragEnabled = true;
 
         ItemTouchHelper.Callback touchHelperCallBack = new ItemTouchHelper.Callback() {
+
+            // The dragged language info during a single drag operation.
+            // The first is its start postion when it's dragged, the second is its language code.
+            @Nullable
+            private Pair<Integer, String> mDraggedLanguage;
+
             @Override
             public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
                 return makeMovementFlags(
@@ -188,10 +196,7 @@ public class LanguageListBaseAdapter
                 int to = target.getAdapterPosition();
                 if (from == to) return false;
 
-                String languageCode = getItemByPosition(from).getCode();
                 Collections.swap(mLanguageList, from, to);
-                PrefServiceBridge.getInstance().moveAcceptLanguage(languageCode, to - from);
-                LanguagesManager.recordAction(LanguagesManager.ACTION_LANGUAGE_LIST_REORDERED);
                 notifyItemMoved(from, to);
                 return true;
             }
@@ -200,6 +205,11 @@ public class LanguageListBaseAdapter
             public void onSelectedChanged(ViewHolder viewHolder, int actionState) {
                 super.onSelectedChanged(viewHolder, actionState);
                 if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
+                    // mDraggedLanguage should be cleaned up before.
+                    assert mDraggedLanguage == null;
+                    int start = viewHolder.getAdapterPosition();
+                    mDraggedLanguage = Pair.create(start, getItemByPosition(start).getCode());
+
                     updateVisualState(true, viewHolder.itemView);
                 }
             }
@@ -207,6 +217,19 @@ public class LanguageListBaseAdapter
             @Override
             public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
                 super.clearView(recyclerView, viewHolder);
+
+                // Commit the postion change for the dragged language when it's dropped.
+                if (mDraggedLanguage != null) {
+                    int offset = viewHolder.getAdapterPosition() - mDraggedLanguage.first;
+                    if (offset != 0) {
+                        PrefServiceBridge.getInstance().moveAcceptLanguage(
+                                mDraggedLanguage.second, offset);
+                        LanguagesManager.recordAction(
+                                LanguagesManager.ACTION_LANGUAGE_LIST_REORDERED);
+                    }
+                    mDraggedLanguage = null;
+                }
+
                 updateVisualState(false, viewHolder.itemView);
             }
 
