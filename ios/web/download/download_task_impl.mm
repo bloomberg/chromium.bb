@@ -304,8 +304,13 @@ NSURLSession* DownloadTaskImpl::CreateSession(NSString* identifier) {
 
         error_code_ = GetNetErrorCodeFromNSError(error);
         percent_complete_ = GetTaskPercentComplete(task);
-        total_bytes_ = task.countOfBytesExpectedToReceive;
         received_bytes_ = task.countOfBytesReceived;
+        if (total_bytes_ == -1 || task.countOfBytesExpectedToReceive) {
+          // countOfBytesExpectedToReceive can be 0 if the device is offline.
+          // In that case total_bytes_ should remain unchanged if the total
+          // bytes count is already known.
+          total_bytes_ = task.countOfBytesExpectedToReceive;
+        }
         if (task.response.MIMEType) {
           mime_type_ = base::SysNSStringToUTF8(task.response.MIMEType);
         }
