@@ -74,6 +74,8 @@ constexpr char kCrxCacheDir[] = "kiosk/crx";
 // its signature.
 constexpr char kCrxUnpackDir[] = "kiosk_unpack";
 
+KioskAppManager::Overrides* g_test_overrides = nullptr;
+
 std::string GenerateKioskAppAccountId(const std::string& app_id) {
   return app_id + '@' + kKioskAppAccountDomain;
 }
@@ -161,12 +163,21 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
 
 std::unique_ptr<ExternalCache> CreateExternalCache(
     ExternalCacheDelegate* delegate) {
+  if (g_test_overrides)
+    return g_test_overrides->CreateExternalCache(delegate, true);
+
   auto cache = std::make_unique<ExternalCacheImpl>(
       GetCrxCacheDir(), g_browser_process->system_request_context(),
       GetBackgroundTaskRunner(), delegate, true /* always_check_updates */,
       false /* wait_for_cache_initialization */);
   cache->set_flush_on_put(true);
   return cache;
+}
+
+std::unique_ptr<AppSession> CreateAppSession() {
+  if (g_test_overrides)
+    return g_test_overrides->CreateAppSession();
+  return std::make_unique<AppSession>();
 }
 
 base::Version GetPlatformVersion() {
@@ -202,11 +213,19 @@ KioskAppManager* KioskAppManager::Get() {
 }
 
 // static
+void KioskAppManager::InitializeForTesting(Overrides* overrides) {
+  DCHECK(!instance.IsCreated());
+  g_test_overrides = overrides;
+}
+
+// static
 void KioskAppManager::Shutdown() {
   if (!instance.IsCreated())
     return;
 
   instance.Pointer()->CleanUp();
+
+  g_test_overrides = nullptr;
 }
 
 // static
@@ -295,8 +314,9 @@ void KioskAppManager::InitSession(Profile* profile,
         flags);
   }
 
-  app_session_.reset(new AppSession);
-  app_session_->Init(profile, app_id);
+  app_session_ = CreateAppSession();
+  if (app_session_)
+    app_session_->Init(profile, app_id);
 }
 
 bool KioskAppManager::GetSwitchesForSessionRestore(

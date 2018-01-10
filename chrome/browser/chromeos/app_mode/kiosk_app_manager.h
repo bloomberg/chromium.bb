@@ -39,6 +39,7 @@ class Extension;
 namespace chromeos {
 
 class AppSession;
+class ExternalCache;
 class KioskAppData;
 class KioskAppManagerObserver;
 class KioskExternalUpdater;
@@ -81,6 +82,26 @@ class KioskAppManager : public KioskAppDataDelegate,
   };
   typedef std::vector<App> Apps;
 
+  // Interface that can be used to override default KioskAppManager behavior.
+  // For example, it can be used in tests to inject test components
+  // implementations.
+  class Overrides {
+   public:
+    virtual ~Overrides() = default;
+
+    // Creates the external cache that should be used by the
+    // KioskAppManager. It should always return a valid object.
+    virtual std::unique_ptr<ExternalCache> CreateExternalCache(
+        ExternalCacheDelegate* delegate,
+        bool always_check_updates) = 0;
+
+    // Creates an AppSession object that will mantain a started kiosk app
+    // session.
+    // Called when the KioskAppManager initializes the session.
+    // It can return nullptr.
+    virtual std::unique_ptr<AppSession> CreateAppSession() = 0;
+  };
+
   // Name of a dictionary that holds kiosk app info in Local State.
   // Sample layout:
   //   "kiosk": {
@@ -92,8 +113,14 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Sub directory under DIR_USER_DATA to store cached icon files.
   static const char kIconCacheDir[];
 
-  // Gets the KioskAppManager instance, which is lazily created on first call..
+  // Gets the KioskAppManager instance, which is lazily created on first call.
   static KioskAppManager* Get();
+
+  // Initializes KioskAppManager for testing, injecting the provided overrides.
+  // |overrides| can be null, in which case KioskAppManager will use default
+  // behavior.
+  // Must be called before Get().
+  static void InitializeForTesting(Overrides* overrides);
 
   // Prepares for shutdown and calls CleanUp() if needed.
   static void Shutdown();
