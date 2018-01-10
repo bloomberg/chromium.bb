@@ -108049,6 +108049,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="registerProtocolHandler permission"/>
   <suffix name="Quota" label="Quota permission"/>
   <suffix name="MultipleDownload" label="Multiple downloads permission"/>
+  <suffix name="SecurityKeyAttestation" label="Security Key attestation"/>
   <affected-histogram name="Permissions.Engagement.Accepted"/>
   <affected-histogram name="Permissions.Engagement.Denied"/>
   <affected-histogram name="Permissions.Engagement.Dismissed"/>
