@@ -330,6 +330,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   void AddAnnotatedRegions(Vector<AnnotatedRegionValue>&) final;
 
   void UpdateFromStyle() final;
+  bool AnonymousHasStylePropagationOverride() final { return true; }
 
   LayoutInline* Clone() const;
 
