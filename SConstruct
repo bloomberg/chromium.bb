@@ -2478,7 +2478,7 @@ def SetUpLinuxEnvArm(env):
 def SetUpAndroidEnv(env):
   env.FilterOut(CPPDEFINES=[['_LARGEFILE64_SOURCE', '1']])
   android_ndk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
-                                  'android_tools', 'ndk')
+                                  'android_ndk')
   android_ndk_experimental_root = os.path.join('${SOURCE_ROOT}',
                                                'third_party', 'android_tools',
                                                'ndk_experimental')
