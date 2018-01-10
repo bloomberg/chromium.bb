@@ -13,6 +13,7 @@ cr.define('settings_sections_tests', function() {
     Dpi: 'dpi',
     Scaling: 'scaling',
     Other: 'other',
+    SetPages: 'set pages',
     SetCopies: 'set copies',
     SetLayout: 'set layout',
     SetColor: 'set color',
@@ -54,6 +55,7 @@ cr.define('settings_sections_tests', function() {
       info.init(!isPdf, 'title', hasSelection);
       if (isPdf)
         info.fitToPageScaling_ = '98';
+      info.updatePageCount(3);
       page.set('documentInfo_', info);
     }
 
@@ -305,6 +307,65 @@ cr.define('settings_sections_tests', function() {
       Polymer.dom.flush();
       expectEquals(false, optionsElement.hidden);
       expectEquals(false, duplex.hidden);
+    });
+
+    test(assert(TestNames.SetPages), function() {
+      const pagesElement = page.$$('print-preview-pages-settings');
+      // This section is always visible.
+      expectEquals(false, pagesElement.hidden);
+
+      // Default value is all pages. Print ticket expects this to be empty.
+      const allRadio = pagesElement.$$('#all-radio-button');
+      const customRadio = pagesElement.$$('#custom-radio-button');
+      const pagesInput = pagesElement.$$('#page-settings-custom-input');
+      const hint = pagesElement.$$('.hint');
+
+      /**
+       * @param {boolean} allChecked Whether the all pages radio button is
+       *     selected.
+       * @param {string} inputString The expected string in the pages input.
+       * @param {boolean} valid Whether the input string is valid.
+       */
+      const validateInputState = function(allChecked, inputString, valid) {
+        expectEquals(allChecked, allRadio.checked);
+        expectEquals(!allChecked, customRadio.checked);
+        expectEquals(inputString, pagesInput.value);
+        expectEquals(valid, hint.hidden);
+      };
+      validateInputState(true, '', true);
+      expectEquals(0, page.settings.pages.value.length);
+      expectEquals(true, page.settings.pages.valid);
+
+      // Set selection of pages 1 and 2.
+      customRadio.checked = true;
+      allRadio.dispatchEvent(new CustomEvent('change'));
+      pagesInput.value = '1-2';
+      pagesInput.dispatchEvent(new CustomEvent('input'));
+      validateInputState(false, '1-2', true);
+      assertEquals(1, page.settings.pages.value.length);
+      expectEquals(1, page.settings.pages.value[0].from);
+      expectEquals(2, page.settings.pages.value[0].to);
+      expectEquals(true, page.settings.pages.valid);
+
+      // Select pages 1 and 3
+      pagesInput.value = '1, 3';
+      pagesInput.dispatchEvent(new CustomEvent('input'));
+      validateInputState(false, '1, 3', true);
+      assertEquals(2, page.settings.pages.value.length);
+      expectEquals(1, page.settings.pages.value[0].from);
+      expectEquals(1, page.settings.pages.value[0].to);
+      expectEquals(3, page.settings.pages.value[1].from);
+      expectEquals(3, page.settings.pages.value[1].to);
+      expectEquals(true, page.settings.pages.valid);
+
+      // Enter an out of bounds value.
+      pagesInput.value = '5';
+      pagesInput.dispatchEvent(new CustomEvent('input'));
+
+      // Now the pages settings value should be invalid, and the error
+      // message should be displayed.
+      validateInputState(false, '5', false);
+      expectEquals(false, page.settings.pages.valid);
     });
 
     test(assert(TestNames.SetCopies), function() {

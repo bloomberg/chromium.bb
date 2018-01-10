@@ -93,6 +93,10 @@ TEST_F('PrintPreviewSettingsSectionsTest', 'Other', function() {
   this.runMochaTest(settings_sections_tests.TestNames.Other);
 });
 
+TEST_F('PrintPreviewSettingsSectionsTest', 'SetPages', function() {
+  this.runMochaTest(settings_sections_tests.TestNames.SetPages);
+});
+
 TEST_F('PrintPreviewSettingsSectionsTest', 'SetCopies', function() {
   this.runMochaTest(settings_sections_tests.TestNames.SetCopies);
 });
