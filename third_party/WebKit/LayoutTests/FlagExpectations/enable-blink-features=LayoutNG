@@ -6295,6 +6295,7 @@ crbug.com/591099 fast/text/international/inline-plaintext-is-isolated.html [ Fai
 crbug.com/714962 fast/text/international/iso-8859-8.html [ Failure ]
 crbug.com/714962 fast/text/international/listbox-width-rtl.html [ Failure ]
 crbug.com/714962 fast/text/international/rtl-selection-rect-with-fallback.html [ Failure ]
+crbug.com/796943 fast/text/international/shape-across-elements-simple.html [ Pass ]
 crbug.com/591099 fast/text/international/shape-across-elements.html [ Failure ]
 crbug.com/591099 fast/text/international/text-combine-image-test.html [ Failure ]
 crbug.com/714962 fast/text/international/thai-baht-space.html [ Failure ]
