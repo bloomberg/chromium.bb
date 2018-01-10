@@ -452,7 +452,7 @@ viz::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
       gfx::ConvertPointToPixel(device_scale_factor, point);
   viz::SurfaceId surface_id = GetCurrentSurfaceId();
   if (!surface_id.is_valid()) {
-    return viz::FrameSinkId();
+    return GetFrameSinkId();
   }
   viz::SurfaceHittest hittest(delegate,
                               GetFrameSinkManager()->surface_manager());
