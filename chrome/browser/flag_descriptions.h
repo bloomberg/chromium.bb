@@ -344,9 +344,6 @@ extern const char kEnableTokenBindingDescription[];
 extern const char kEnableTouchpadAndWheelScrollLatchingName[];
 extern const char kEnableTouchpadAndWheelScrollLatchingDescription[];
 
-extern const char kEnableUsernameCorrectionName[];
-extern const char kEnableUsernameCorrectionDescription[];
-
 extern const char kEnableUseZoomForDsfName[];
 extern const char kEnableUseZoomForDsfDescription[];
 extern const char kEnableUseZoomForDsfChoiceDefault[];
@@ -684,9 +681,6 @@ extern const char kPasswordExportDescription[];
 
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
-
-extern const char kPasswordSelectionName[];
-extern const char kPasswordSelectionDescription[];
 
 extern const char kPermissionActionReportingName[];
 extern const char kPermissionActionReportingDescription[];
