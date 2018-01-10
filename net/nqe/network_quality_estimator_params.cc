@@ -415,7 +415,7 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           GetDoubleValueForVariationParamWithDefaultValue(
               params_,
               "lower_bound_http_rtt_transport_rtt_multiplier",
-              -1)),
+              1.0)),
       upper_bound_http_rtt_transport_rtt_multiplier_(
           GetDoubleValueForVariationParamWithDefaultValue(
               params_,
