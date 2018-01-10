@@ -2383,13 +2383,13 @@
     Clipboard
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_ASK" desc="The ask label for clipboard access in site settings.">
-    Ask when a site wants to see text and images you copy to the clipboard
+    Ask when a site wants to see text and images copied to the clipboard
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_ASK_RECOMMENDED" desc="The ask label for clipboard access in site settings (with the 'recommended' suffix).">
-    Ask when a site wants to see text and images you copy to the clipboard (recommended)
+    Ask when a site wants to see text and images copied to the clipboard (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_BLOCK" desc="The block label for clipboard access in site settings.">
-    Do not allow sites to see text and images you copy to the clipboard
+    Do not allow sites to see text and images copied to the clipboard
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies site settings.">
     Cookies
