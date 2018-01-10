@@ -345,7 +345,7 @@ std::unique_ptr<RenderText> RenderText::CreateHarfBuzzInstance() {
 // static
 std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
 #if defined(OS_MACOSX)
-  if (typesetter == Typesetter::TOOLTIPS)
+  if (typesetter == Typesetter::NATIVE)
     return std::make_unique<RenderTextMac>();
 
   if (typesetter == Typesetter::HARFBUZZ)
@@ -362,7 +362,7 @@ std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
 
 // static
 std::unique_ptr<RenderText> RenderText::CreateInstanceDeprecated() {
-  return CreateFor(Typesetter::PLATFORM);
+  return CreateFor(Typesetter::BROWSER);
 }
 
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(

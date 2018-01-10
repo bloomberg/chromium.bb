@@ -118,16 +118,22 @@ enum ElideBehavior {
 // influence things like string width in subtle ways and is necessary to help
 // transition Mac to the Harfbuzz typesetter (http://crbug.com/454835).
 enum class Typesetter {
-  PLATFORM,  // The platform typesetter is the one used by UI parts of the
-             // browser window on this platform.
-  HARFBUZZ,  // The Harfbuzz typesetter is typically used for secondary UI.
-  TOOLTIPS,  // The typesetter used for tooltips. Typically always native.
+  // The typesetter that is used by UI parts of the browser window on this
+  // platform.
+  BROWSER,
+
+  // The Harfbuzz typesetter, which is typically used for secondary UI.
+  HARFBUZZ,
+
+  // The typesetter used for native UI such as tooltips, native menus and system
+  // notifications.
+  NATIVE,
 
   // The typesetter used for function default arguments. The default can be used
   // from locations that are unaffected by the Mac Harfbuzz transition. Once all
-  // callers rendering to Cocoa UI have been updated to PLATFORM, this will
+  // callers rendering to Cocoa UI have been updated to BROWSER, this will
   // switch to HARFBUZZ.
-  DEFAULT = PLATFORM
+  DEFAULT = BROWSER
 };
 
 }  // namespace gfx
