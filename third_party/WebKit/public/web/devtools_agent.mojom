@@ -14,10 +14,6 @@ struct DevToolsMessageChunk {
   // Whether this is a last chunk in a message.
   bool is_last;
 
-  // The total size of the message being sent in chunks, only comes in
-  // a first chunk.
-  uint32 message_size;
-
   // Chunk data.
   string data;
 
