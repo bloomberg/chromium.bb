@@ -161,7 +161,8 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           notification_presenter,
           host_connection_metrics_logger_.get(),
           asychronous_container->disconnect_tethering_request_sender(),
-          asychronous_container->wifi_hotspot_disconnector())),
+          asychronous_container->wifi_hotspot_disconnector(),
+          clock_.get())),
       tether_disconnector_(std::make_unique<TetherDisconnectorImpl>(
           active_host_.get(),
           asychronous_container->wifi_hotspot_disconnector(),
