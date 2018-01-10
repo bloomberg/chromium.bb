@@ -33,3 +33,13 @@ include_rules = [
   "-ui/ozone/public",
   "+ui/ozone/public/ozone_switches.h",
 ]
+
+specific_include_rules = {
+  "chrome_browser_main_chromeos\.cc": [
+    "-ash",
+    # TODO(mash): Support EventRewriterController, http://crbug.com/647781.
+    "+ash/root_window_controller.h",
+    "+ash/shell.h",
+    "+ash/sticky_keys/sticky_keys_controller.h",
+  ],
+}
