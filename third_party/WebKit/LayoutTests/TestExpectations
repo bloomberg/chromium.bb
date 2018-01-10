@@ -2303,6 +2303,7 @@ crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-016.html [ Pass F
 crbug.com/796733 [ Win ] external/wpt/css/css-ui/text-overflow-020.html [ Pass Failure ]
 
 crbug.com/796668 external/wpt/longtask-timing/longtask-in-sibling-iframe.html [ Skip ]
+crbug.com/796668 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Skip ]
 
 # This test times out on debug builds, see https://crbug.com/755810
 crbug.com/626703 [ Debug ] external/wpt/html/semantics/tabular-data/processing-model-1/span-limits.html [ Skip ]
