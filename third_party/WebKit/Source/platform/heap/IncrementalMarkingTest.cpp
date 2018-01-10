@@ -175,6 +175,17 @@ TEST(IncrementalMarkingTest, StackFrameDepthDisabled) {
 // Member<T> support. ==========================================================
 // =============================================================================
 
+TEST(IncrementalMarkingTest, MemberReferenceAssignMember) {
+  Object* obj = Object::Create();
+  Member<Object> m1;
+  Member<Object>& m2 = m1;
+  Member<Object> m3(obj);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj});
+    m2 = m3;
+  }
+}
+
 TEST(IncrementalMarkingTest, WriteBarrierOnUnmarkedObject) {
   Object* parent = Object::Create();
   Object* child = Object::Create();
@@ -354,13 +365,6 @@ class NonGarbageCollectedContainerRoot {
 };
 
 }  // namespace
-
-TEST(IncrementalMarkingTest, HeapVectorAssumptions) {
-  static_assert(std::is_trivially_move_assignable<Member<Object>>::value,
-                "Member<T> should not be trivially move assignable");
-  static_assert(std::is_trivially_copy_assignable<Member<Object>>::value,
-                "Member<T> should not be trivially copy assignable");
-}
 
 TEST(IncrementalMarkingTest, HeapVectorPushBackMember) {
   Object* obj = Object::Create();
@@ -943,8 +947,6 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
 // HeapTerminatedArray support. ================================================
 // =============================================================================
 
-namespace {
-
 class TerminatedArrayNode {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -962,7 +964,14 @@ class TerminatedArrayNode {
   bool is_last_in_array_;
 };
 
-}  // namespace
+}  // namespace incremental_marking_test
+}  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
+    blink::incremental_marking_test::TerminatedArrayNode);
+
+namespace blink {
+namespace incremental_marking_test {
 
 TEST(IncrementalMarkingTest, HeapTerminatedArrayBuilder) {
   Object* obj = Object::Create();
