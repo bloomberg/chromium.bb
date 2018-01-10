@@ -158,7 +158,7 @@ bool CanvasResource_Bitmap::HasGpuMailbox() const {
   return image_ && image_->HasMailbox();
 }
 
-const gpu::SyncToken& CanvasResource_Bitmap::GetSyncToken() const {
+const gpu::SyncToken& CanvasResource_Bitmap::GetSyncToken() {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
   return image_->GetSyncToken();
 }
@@ -272,10 +272,7 @@ const gpu::Mailbox& CanvasResource_GpuMemoryBuffer::GetOrCreateGpuMailbox() {
   if (gpu_mailbox_.IsZero() && gl) {
     gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
-  }
-  if (mailbox_needs_new_sync_token_) {
-    mailbox_needs_new_sync_token_ = false;
-    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
+    mailbox_needs_new_sync_token_ = true;
   }
   return gpu_mailbox_;
 }
@@ -284,7 +281,13 @@ bool CanvasResource_GpuMemoryBuffer::HasGpuMailbox() const {
   return !gpu_mailbox_.IsZero();
 }
 
-const gpu::SyncToken& CanvasResource_GpuMemoryBuffer::GetSyncToken() const {
+const gpu::SyncToken& CanvasResource_GpuMemoryBuffer::GetSyncToken() {
+  if (mailbox_needs_new_sync_token_) {
+    auto gl = ContextGL();
+    DCHECK(gl);  // caller should already have early exited if !gl.
+    mailbox_needs_new_sync_token_ = false;
+    gl->GenUnverifiedSyncTokenCHROMIUM(sync_token_.GetData());
+  }
   return sync_token_;
 }
 

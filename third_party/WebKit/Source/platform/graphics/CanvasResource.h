@@ -42,6 +42,7 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   virtual bool IsValid() const = 0;
   virtual IntSize Size() const = 0;
   virtual const gpu::Mailbox& GetOrCreateGpuMailbox() = 0;
+  virtual const gpu::SyncToken& GetSyncToken() = 0;
   bool PrepareTransferableResource(
       viz::TransferableResource* out_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* out_callback);
@@ -57,7 +58,6 @@ class PLATFORM_EXPORT CanvasResource : public WTF::RefCounted<CanvasResource> {
   CanvasResource(base::WeakPtr<CanvasResourceProvider>, SkFilterQuality);
   virtual GLenum TextureTarget() const = 0;
   virtual bool IsOverlayCandidate() const { return false; }
-  virtual const gpu::SyncToken& GetSyncToken() const = 0;
   virtual bool HasGpuMailbox() const = 0;
   gpu::gles2::GLES2Interface* ContextGL() const;
   GLenum GLFilter() const;
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT CanvasResource_Bitmap final : public CanvasResource {
       const override;
   const gpu::Mailbox& GetOrCreateGpuMailbox() override;
   bool HasGpuMailbox() const override;
-  const gpu::SyncToken& GetSyncToken() const;
+  const gpu::SyncToken& GetSyncToken() override;
 
   CanvasResource_Bitmap(scoped_refptr<StaticBitmapImage>,
                         base::WeakPtr<CanvasResourceProvider>,
@@ -129,7 +129,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
   bool IsOverlayCandidate() const final { return true; }
   const gpu::Mailbox& GetOrCreateGpuMailbox() override;
   bool HasGpuMailbox() const override;
-  const gpu::SyncToken& GetSyncToken() const;
+  const gpu::SyncToken& GetSyncToken() override;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
       const override;
   void CopyFromTexture(GLuint source_texture,
@@ -145,7 +145,7 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
 
   gpu::Mailbox gpu_mailbox_;
   gpu::SyncToken sync_token_;
-  bool mailbox_needs_new_sync_token_ = true;
+  bool mailbox_needs_new_sync_token_ = false;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   GLuint image_id_ = 0;
