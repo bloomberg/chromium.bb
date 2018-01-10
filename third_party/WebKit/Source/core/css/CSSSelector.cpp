@@ -1001,8 +1001,8 @@ bool CSSSelector::MatchesPseudoElement() const {
 }
 
 template <typename Functor>
-static bool ForEachTagHistory(const Functor& functor,
-                              const CSSSelector& selector) {
+static bool ForAnyInTagHistory(const Functor& functor,
+                               const CSSSelector& selector) {
   for (const CSSSelector* current = &selector; current;
        current = current->TagHistory()) {
     if (functor(*current))
@@ -1010,7 +1010,7 @@ static bool ForEachTagHistory(const Functor& functor,
     if (const CSSSelectorList* selector_list = current->SelectorList()) {
       for (const CSSSelector* sub_selector = selector_list->First();
            sub_selector; sub_selector = CSSSelectorList::Next(*sub_selector)) {
-        if (ForEachTagHistory(functor, *sub_selector))
+        if (ForAnyInTagHistory(functor, *sub_selector))
           return true;
       }
     }
@@ -1020,7 +1020,7 @@ static bool ForEachTagHistory(const Functor& functor,
 }
 
 bool CSSSelector::HasContentPseudo() const {
-  return ForEachTagHistory(
+  return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.RelationIsAffectedByPseudoContent();
       },
@@ -1028,7 +1028,7 @@ bool CSSSelector::HasContentPseudo() const {
 }
 
 bool CSSSelector::HasSlottedPseudo() const {
-  return ForEachTagHistory(
+  return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.GetPseudoType() == CSSSelector::kPseudoSlotted;
       },
@@ -1036,7 +1036,7 @@ bool CSSSelector::HasSlottedPseudo() const {
 }
 
 bool CSSSelector::HasDeepCombinatorOrShadowPseudo() const {
-  return ForEachTagHistory(
+  return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.Relation() == CSSSelector::kShadowDeep ||
                selector.Relation() == CSSSelector::kShadowPiercingDescendant ||
@@ -1046,7 +1046,7 @@ bool CSSSelector::HasDeepCombinatorOrShadowPseudo() const {
 }
 
 bool CSSSelector::NeedsUpdatedDistribution() const {
-  return ForEachTagHistory(
+  return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.RelationIsAffectedByPseudoContent() ||
                selector.GetPseudoType() == CSSSelector::kPseudoSlotted ||
