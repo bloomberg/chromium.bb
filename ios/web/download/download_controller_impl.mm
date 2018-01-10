@@ -50,14 +50,15 @@ void DownloadControllerImpl::CreateDownloadTask(
     const GURL& original_url,
     const std::string& content_disposition,
     int64_t total_bytes,
-    const std::string& mime_type) {
+    const std::string& mime_type,
+    ui::PageTransition page_transition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   if (!delegate_)
     return;
 
   auto task = std::make_unique<DownloadTaskImpl>(
       web_state, original_url, content_disposition, total_bytes, mime_type,
-      identifier, this);
+      page_transition, identifier, this);
   alive_tasks_.insert(task.get());
   delegate_->OnDownloadCreated(this, web_state, std::move(task));
 }

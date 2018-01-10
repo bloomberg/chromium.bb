@@ -35,6 +35,7 @@ class FakeDownloadTask : public DownloadTask {
   int GetPercentComplete() const override;
   std::string GetContentDisposition() const override;
   std::string GetMimeType() const override;
+  ui::PageTransition GetTransitionType() const override;
   base::string16 GetSuggestedFilename() const override;
   void AddObserver(DownloadTaskObserver* observer) override;
   void RemoveObserver(DownloadTaskObserver* observer) override;
@@ -66,6 +67,7 @@ class FakeDownloadTask : public DownloadTask {
   int64_t received_bytes_ = 0;
   int percent_complete_ = -1;
   std::string mime_type_;
+  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
   base::string16 suggested_file_name_;
   __strong NSString* identifier_ = nil;
 
