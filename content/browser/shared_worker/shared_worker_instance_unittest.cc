@@ -44,6 +44,7 @@ class SharedWorkerInstanceTest : public testing::Test {
 
 TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   const std::string kDataURL("data:text/javascript;base64,Ly8gSGVsbG8h");
+  const std::string kFileURL("file:///w.js");
 
   // SharedWorker that doesn't have a name option.
   GURL script_url1("http://example.com/w.js");
@@ -62,6 +63,8 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   EXPECT_FALSE(Matches(instance1, "http://example.net/w2.js", "name"));
   EXPECT_FALSE(Matches(instance1, kDataURL, ""));
   EXPECT_FALSE(Matches(instance1, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance1, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance1, kFileURL, "name"));
 
   // SharedWorker that has a name option.
   GURL script_url2("http://example.com/w.js");
@@ -84,10 +87,13 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
   EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", "name2"));
   EXPECT_FALSE(Matches(instance2, kDataURL, ""));
   EXPECT_FALSE(Matches(instance2, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance2, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance2, kFileURL, "name"));
 }
 
 TEST_F(SharedWorkerInstanceTest, MatchesTest_DataURLWorker) {
   const std::string kDataURL("data:text/javascript;base64,Ly8gSGVsbG8h");
+  const std::string kFileURL("file:///w.js");
 
   // SharedWorker created from a data: URL without a name option.
   GURL script_url1(kDataURL);
@@ -113,6 +119,8 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest_DataURLWorker) {
   // constructor origin.
   EXPECT_TRUE(Matches(instance1, kDataURL, ""));
   EXPECT_FALSE(Matches(instance1, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance1, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance1, kFileURL, "name"));
 
   // SharedWorker created from a data: URL with a name option.
   GURL script_url2(kDataURL);
@@ -138,6 +146,8 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest_DataURLWorker) {
   // This should match because the instance has the same data: URL, name, and
   // constructor origin.
   EXPECT_TRUE(Matches(instance2, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance2, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance2, kFileURL, "name"));
 
   // SharedWorker created from a data: URL on a remote origin (i.e., example.net
   // opposed to example.com) without a name option.
@@ -164,6 +174,8 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest_DataURLWorker) {
   // origin.
   EXPECT_FALSE(Matches(instance3, kDataURL, ""));
   EXPECT_FALSE(Matches(instance3, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance3, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance3, kFileURL, "name"));
 
   // SharedWorker created from a data: URL on a remote origin (i.e., example.net
   // opposed to example.com) with a name option.
@@ -190,6 +202,63 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest_DataURLWorker) {
   // This should not match because the instance has a different constructor
   // origin.
   EXPECT_FALSE(Matches(instance4, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance4, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance4, kFileURL, "name"));
+}
+
+TEST_F(SharedWorkerInstanceTest, MatchesTest_FileURLWorker) {
+  const std::string kDataURL("data:text/javascript;base64,Ly8gSGVsbG8h");
+  const std::string kFileURL("file:///w.js");
+
+  // SharedWorker created from a file:// URL without a name option.
+  GURL script_url1(kFileURL);
+  std::string name1("");
+  url::Origin constructor_origin1 = url::Origin::Create(GURL(kFileURL));
+  SharedWorkerInstance instance1 =
+      CreateInstance(script_url1, name1, constructor_origin1);
+
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w.js", ""));
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w2.js", ""));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w.js", ""));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w2.js", ""));
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w.js", "name"));
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w2.js", "name"));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w.js", "name"));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w2.js", "name"));
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w.js", "name2"));
+  EXPECT_FALSE(Matches(instance1, "http://example.com/w2.js", "name2"));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w.js", "name2"));
+  EXPECT_FALSE(Matches(instance1, "http://example.net/w2.js", "name2"));
+  EXPECT_FALSE(Matches(instance1, kDataURL, ""));
+  EXPECT_FALSE(Matches(instance1, kDataURL, "name"));
+  // This should not match because file:// URL is treated as an opaque origin.
+  EXPECT_FALSE(Matches(instance1, kFileURL, ""));
+  EXPECT_FALSE(Matches(instance1, kFileURL, "name"));
+
+  // SharedWorker created from a file:// URL with a name option.
+  GURL script_url2(kFileURL);
+  std::string name2("name");
+  url::Origin constructor_origin2 = url::Origin::Create(GURL(kFileURL));
+  SharedWorkerInstance instance2 =
+      CreateInstance(script_url2, name2, constructor_origin2);
+
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", ""));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", ""));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", ""));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", ""));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", "name"));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", "name"));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", "name"));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", "name"));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", "name2"));
+  EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", "name2"));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", "name2"));
+  EXPECT_FALSE(Matches(instance2, "http://example.net/w2.js", "name2"));
+  EXPECT_FALSE(Matches(instance2, kDataURL, ""));
+  EXPECT_FALSE(Matches(instance2, kDataURL, "name"));
+  EXPECT_FALSE(Matches(instance2, kFileURL, ""));
+  // This should not match because file:// URL is treated as an opaque origin.
+  EXPECT_FALSE(Matches(instance2, kFileURL, "name"));
 }
 
 TEST_F(SharedWorkerInstanceTest, AddressSpace) {
