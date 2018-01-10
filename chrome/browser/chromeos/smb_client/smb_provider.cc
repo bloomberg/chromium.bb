@@ -16,7 +16,7 @@ SmbProvider::SmbProvider()
     : provider_id_(ProviderId::CreateFromNativeId("smb")),
       capabilities_(false /* configurable */,
                     false /* watchable */,
-                    false /* multiple_mounts */,
+                    true /* multiple_mounts */,
                     extensions::SOURCE_NETWORK),
       // TODO(baileyberro): Localize this string, so it shows correctly in all
       // languages. See l10n_util::GetStringUTF8.
