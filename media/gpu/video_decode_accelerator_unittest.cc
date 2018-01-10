@@ -36,7 +36,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
@@ -1202,7 +1201,7 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
     LOG_ASSERT(fields.size() >= 1U) << entries[index];
     LOG_ASSERT(fields.size() <= 8U) << entries[index];
     std::unique_ptr<TestVideoFile> video_file =
-        base::MakeUnique<TestVideoFile>(fields[0]);
+        std::make_unique<TestVideoFile>(fields[0]);
     if (!fields[1].empty())
       LOG_ASSERT(base::StringToInt(fields[1], &video_file->width));
     if (!fields[2].empty())
@@ -1383,7 +1382,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     TestVideoFile* video_file =
         test_video_files_[index % test_video_files_.size()].get();
     std::unique_ptr<ClientStateNotification<ClientState>> note =
-        base::MakeUnique<ClientStateNotification<ClientState>>();
+        std::make_unique<ClientStateNotification<ClientState>>();
     notes_[index] = std::move(note);
 
     int delay_after_frame_num = std::numeric_limits<int>::max();
@@ -1393,7 +1392,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     }
 
     std::unique_ptr<GLRenderingVDAClient> client =
-        base::MakeUnique<GLRenderingVDAClient>(
+        std::make_unique<GLRenderingVDAClient>(
             index, &rendering_helper_, notes_[index].get(),
             video_file->data_str, num_in_flight_decodes, num_play_throughs,
             video_file->reset_after_frame_num, delete_decoder_state,
@@ -1737,8 +1736,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // Measure the median of the decode time when VDA::Decode is called 30 times per
 // second.
 TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
-  notes_.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
-  clients_.push_back(base::MakeUnique<GLRenderingVDAClient>(
+  notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+  clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
       1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
       test_video_files_[0]->width, test_video_files_[0]->height,
@@ -1765,8 +1764,8 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 // is not considered as a failure because the input may be unsupported or
 // corrupted videos.
 TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
-  notes_.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
-  clients_.push_back(base::MakeUnique<GLRenderingVDAClient>(
+  notes_.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+  clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
       1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
       test_video_files_[0]->width, test_video_files_[0]->height,

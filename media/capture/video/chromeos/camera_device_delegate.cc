@@ -4,11 +4,11 @@
 
 #include "media/capture/video/chromeos/camera_device_delegate.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
@@ -257,10 +257,10 @@ void CameraDeviceDelegate::Initialize() {
   arc::mojom::Camera3CallbackOpsPtr callback_ops_ptr;
   arc::mojom::Camera3CallbackOpsRequest callback_ops_request =
       mojo::MakeRequest(&callback_ops_ptr);
-  stream_buffer_manager_ = base::MakeUnique<StreamBufferManager>(
+  stream_buffer_manager_ = std::make_unique<StreamBufferManager>(
       std::move(callback_ops_request),
-      base::MakeUnique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
-      device_context_, base::MakeUnique<CameraBufferFactory>(),
+      std::make_unique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
+      device_context_, std::make_unique<CameraBufferFactory>(),
       ipc_task_runner_);
   device_ops_->Initialize(
       std::move(callback_ops_ptr),

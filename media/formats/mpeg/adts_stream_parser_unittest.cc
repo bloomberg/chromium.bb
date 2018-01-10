@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "media/formats/common/stream_parser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +14,7 @@ namespace media {
 class ADTSStreamParserTest : public StreamParserTestBase, public testing::Test {
  public:
   ADTSStreamParserTest()
-      : StreamParserTestBase(base::MakeUnique<ADTSStreamParser>()) {}
+      : StreamParserTestBase(std::make_unique<ADTSStreamParser>()) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

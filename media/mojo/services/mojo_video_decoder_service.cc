@@ -126,7 +126,7 @@ void MojoVideoDecoderService::Construct(
 
   mojom::MediaLogAssociatedPtr media_log_ptr;
   media_log_ptr.Bind(std::move(media_log));
-  media_log_ = base::MakeUnique<MojoMediaLog>(std::move(media_log_ptr));
+  media_log_ = std::make_unique<MojoMediaLog>(std::move(media_log_ptr));
 
   video_frame_handle_releaser_ =
       mojo::MakeStrongBinding(std::make_unique<VideoFrameHandleReleaserImpl>(),

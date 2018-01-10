@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -122,7 +122,7 @@ void UserInputMonitorWinCore::StartMonitor() {
     return;
 
   std::unique_ptr<base::win::MessageWindow> window =
-      base::MakeUnique<base::win::MessageWindow>();
+      std::make_unique<base::win::MessageWindow>();
   if (!window->Create(base::Bind(&UserInputMonitorWinCore::HandleMessage,
                                  base::Unretained(this)))) {
     PLOG(ERROR) << "Failed to create the raw input window";
@@ -252,7 +252,7 @@ void UserInputMonitorWin::StopKeyboardMonitoring() {
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return base::MakeUnique<UserInputMonitorWin>(ui_task_runner);
+  return std::make_unique<UserInputMonitorWin>(ui_task_runner);
 }
 
 }  // namespace media

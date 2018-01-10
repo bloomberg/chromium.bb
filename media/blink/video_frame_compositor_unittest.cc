@@ -57,12 +57,12 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
     submitter_ = client_.get();
 
     if (!IsSurfaceLayerForVideoEnabled()) {
-      compositor_ = base::MakeUnique<VideoFrameCompositor>(
+      compositor_ = std::make_unique<VideoFrameCompositor>(
           message_loop.task_runner(), nullptr);
       compositor_->SetVideoFrameProviderClient(client_.get());
     } else {
       EXPECT_CALL(*submitter_, Initialize(_));
-      compositor_ = base::MakeUnique<VideoFrameCompositor>(
+      compositor_ = std::make_unique<VideoFrameCompositor>(
           message_loop.task_runner(), std::move(client_));
       base::RunLoop().RunUntilIdle();
       EXPECT_CALL(*submitter_, StartSubmitting(_));

@@ -5,12 +5,12 @@
 #include "media/capture/video/video_capture_device_client.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -91,8 +91,8 @@ VideoCaptureDevice::Client::Buffer VideoCaptureDeviceClient::MakeBufferStruct(
     int frame_feedback_id) {
   return Buffer(
       buffer_id, frame_feedback_id,
-      base::MakeUnique<BufferPoolBufferHandleProvider>(buffer_pool, buffer_id),
-      base::MakeUnique<ScopedBufferPoolReservation<ProducerReleaseTraits>>(
+      std::make_unique<BufferPoolBufferHandleProvider>(buffer_pool, buffer_id),
+      std::make_unique<ScopedBufferPoolReservation<ProducerReleaseTraits>>(
           buffer_pool, buffer_id));
 }
 
@@ -313,7 +313,7 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
 
   if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
     receiver_->OnNewBufferHandle(
-        buffer_id, base::MakeUnique<BufferPoolBufferHandleProvider>(
+        buffer_id, std::make_unique<BufferPoolBufferHandleProvider>(
                        buffer_pool_, buffer_id));
     buffer_ids_known_by_receiver_.push_back(buffer_id);
   }
@@ -357,7 +357,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   buffer_pool_->HoldForConsumers(buffer.id, 1);
   receiver_->OnFrameReadyInBuffer(
       buffer.id, buffer.frame_feedback_id,
-      base::MakeUnique<ScopedBufferPoolReservation<ConsumerReleaseTraits>>(
+      std::make_unique<ScopedBufferPoolReservation<ConsumerReleaseTraits>>(
           buffer_pool_, buffer.id),
       std::move(info));
 }

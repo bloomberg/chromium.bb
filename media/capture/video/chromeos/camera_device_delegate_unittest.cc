@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/bind_to_current_loop.h"
@@ -144,7 +143,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     ASSERT_FALSE(device_delegate_thread_.IsRunning());
     ASSERT_FALSE(camera_device_delegate_);
     device_delegate_thread_.Start();
-    camera_device_delegate_ = base::MakeUnique<CameraDeviceDelegate>(
+    camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
         descriptor, camera_hal_delegate_,
         device_delegate_thread_.task_runner());
   }
@@ -354,10 +353,10 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
   unittest_internal::MockVideoCaptureClient* ResetDeviceContext() {
     auto mock_client =
-        base::MakeUnique<unittest_internal::MockVideoCaptureClient>();
+        std::make_unique<unittest_internal::MockVideoCaptureClient>();
     auto* client_ptr = mock_client.get();
     device_context_ =
-        base::MakeUnique<CameraDeviceContext>(std::move(mock_client));
+        std::make_unique<CameraDeviceContext>(std::move(mock_client));
     return client_ptr;
   }
 

@@ -4,11 +4,11 @@
 
 #include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -68,8 +68,8 @@ void VideoCaptureDeviceArcChromeOS::AllocateAndStart(
     return;
   }
   capture_params_ = params;
-  device_context_ = base::MakeUnique<CameraDeviceContext>(std::move(client));
-  camera_device_delegate_ = base::MakeUnique<CameraDeviceDelegate>(
+  device_context_ = std::make_unique<CameraDeviceContext>(std::move(client));
+  camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
       device_descriptor_, camera_hal_delegate_,
       camera_device_ipc_thread_.task_runner());
   OpenDevice();

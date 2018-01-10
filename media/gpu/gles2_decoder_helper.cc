@@ -4,8 +4,9 @@
 
 #include "media/gpu/gles2_decoder_helper.h"
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -118,7 +119,7 @@ std::unique_ptr<GLES2DecoderHelper> GLES2DecoderHelper::Create(
     gpu::DecoderContext* decoder) {
   if (!decoder)
     return nullptr;
-  return base::MakeUnique<GLES2DecoderHelperImpl>(decoder);
+  return std::make_unique<GLES2DecoderHelperImpl>(decoder);
 }
 
 }  // namespace media

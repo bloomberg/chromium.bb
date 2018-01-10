@@ -45,14 +45,14 @@ std::unique_ptr<JpegDecodeAccelerator> CreateV4L2JDA(
 #if BUILDFLAG(USE_VAAPI)
 std::unique_ptr<JpegDecodeAccelerator> CreateVaapiJDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return base::MakeUnique<VaapiJpegDecodeAccelerator>(
+  return std::make_unique<VaapiJpegDecodeAccelerator>(
       std::move(io_task_runner));
 }
 #endif
 
 std::unique_ptr<JpegDecodeAccelerator> CreateFakeJDA(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return base::MakeUnique<FakeJpegDecodeAccelerator>(std::move(io_task_runner));
+  return std::make_unique<FakeJpegDecodeAccelerator>(std::move(io_task_runner));
 }
 
 }  // namespace

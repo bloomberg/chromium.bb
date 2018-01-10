@@ -4,11 +4,11 @@
 
 #include "media/test/pipeline_integration_test_base.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -67,7 +67,7 @@ static std::vector<std::unique_ptr<VideoDecoder>> CreateVideoDecodersForTest(
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   if (base::FeatureList::IsEnabled(kAv1Decoder))
-    video_decoders.push_back(base::MakeUnique<AomVideoDecoder>(media_log));
+    video_decoders.push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
 
 // Android does not have an ffmpeg video decoder.

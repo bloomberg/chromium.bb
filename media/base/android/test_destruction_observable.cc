@@ -15,7 +15,7 @@ DestructionObservable::~DestructionObservable() = default;
 
 std::unique_ptr<DestructionObserver>
 DestructionObservable::CreateDestructionObserver() {
-  return base::MakeUnique<DestructionObserver>(this);
+  return std::make_unique<DestructionObserver>(this);
 }
 
 DestructionObserver::DestructionObserver(DestructionObservable* observable)

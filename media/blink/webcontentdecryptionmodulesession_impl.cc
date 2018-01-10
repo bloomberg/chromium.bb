@@ -4,10 +4,11 @@
 
 #include "webcontentdecryptionmodulesession_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
@@ -256,7 +257,7 @@ WebContentDecryptionModuleSessionImpl::
     // session will be gone.
     if (!is_closed_ && !has_close_been_called_) {
       adapter_->CloseSession(session_id_,
-                             base::MakeUnique<IgnoreResponsePromise>());
+                             std::make_unique<IgnoreResponsePromise>());
     }
   }
 }

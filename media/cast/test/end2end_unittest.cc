@@ -17,6 +17,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -915,13 +916,13 @@ class TransportClient : public CastTransport::Client {
 void End2EndTest::Create() {
   transport_sender_.reset(new CastTransportImpl(
       &testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      base::MakeUnique<TransportClient>(cast_environment_sender_->logger(),
+      std::make_unique<TransportClient>(cast_environment_sender_->logger(),
                                         nullptr),
       base::WrapUnique(sender_to_receiver_), task_runner_sender_));
 
   transport_receiver_.reset(new CastTransportImpl(
       &testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
-      base::MakeUnique<TransportClient>(cast_environment_receiver_->logger(),
+      std::make_unique<TransportClient>(cast_environment_receiver_->logger(),
                                         this),
       base::WrapUnique(receiver_to_sender_), task_runner_sender_));
 

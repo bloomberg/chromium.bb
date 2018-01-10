@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -68,7 +67,7 @@ template <typename T>
 struct TestAudioManagerFactory {
   static std::unique_ptr<AudioManager> Create(
       AudioLogFactory* audio_log_factory) {
-    return base::MakeUnique<T>(base::MakeUnique<TestAudioThread>(),
+    return std::make_unique<T>(std::make_unique<TestAudioThread>(),
                                audio_log_factory);
   }
 };
@@ -82,8 +81,8 @@ struct TestAudioManagerFactory<AudioManagerPulse> {
     pa_context* pa_context = nullptr;
     if (!pulse::InitPulse(&pa_mainloop, &pa_context))
       return nullptr;
-    return base::MakeUnique<AudioManagerPulse>(
-        base::MakeUnique<TestAudioThread>(), audio_log_factory, pa_mainloop,
+    return std::make_unique<AudioManagerPulse>(
+        std::make_unique<TestAudioThread>(), audio_log_factory, pa_mainloop,
         pa_context);
   }
 };
@@ -93,7 +92,7 @@ template <>
 struct TestAudioManagerFactory<std::nullptr_t> {
   static std::unique_ptr<AudioManager> Create(
       AudioLogFactory* audio_log_factory) {
-    return AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
+    return AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
   }
 };
 
@@ -389,7 +388,7 @@ class AudioManagerTest : public ::testing::Test {
     // TODO(alokp): We should perhaps do this in AudioManager::Create().
     base::RunLoop().RunUntilIdle();
     device_info_accessor_ =
-        base::MakeUnique<AudioDeviceInfoAccessorForTests>(audio_manager_.get());
+        std::make_unique<AudioDeviceInfoAccessorForTests>(audio_manager_.get());
   }
 
   base::TestMessageLoop message_loop_;
@@ -674,7 +673,7 @@ class TestAudioManager : public FakeAudioManager {
 
   std::unique_ptr<AudioDebugRecordingManager> CreateAudioDebugRecordingManager(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    return base::MakeUnique<MockAudioDebugRecordingManager>(
+    return std::make_unique<MockAudioDebugRecordingManager>(
         std::move(task_runner));
   }
 };

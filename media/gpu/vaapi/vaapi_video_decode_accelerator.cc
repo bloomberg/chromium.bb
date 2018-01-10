@@ -494,7 +494,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
   if (bitstream_buffer.size() == 0) {
     DCHECK(!base::SharedMemory::IsHandleValid(bitstream_buffer.handle()));
     // Dummy buffer for flush.
-    auto flush_buffer = base::MakeUnique<InputBuffer>();
+    auto flush_buffer = std::make_unique<InputBuffer>();
     DCHECK(flush_buffer->IsFlushRequest());
     input_buffers_.push(std::move(flush_buffer));
   } else {
@@ -503,7 +503,7 @@ void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     RETURN_AND_NOTIFY_ON_FAILURE(shm->Map(), "Failed to map input buffer",
                                  UNREADABLE_INPUT, );
 
-    auto input_buffer = base::MakeUnique<InputBuffer>(
+    auto input_buffer = std::make_unique<InputBuffer>(
         bitstream_buffer.id(), std::move(shm),
         BindToCurrentLoop(
             base::Bind(&Client::NotifyEndOfBitstreamBuffer, client_)));

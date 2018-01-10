@@ -1392,7 +1392,7 @@ void AudioManagerMac::ReleaseInputStream(AudioInputStream* stream) {
 std::unique_ptr<AudioManager> CreateAudioManager(
     std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
-  return base::MakeUnique<AudioManagerMac>(std::move(audio_thread),
+  return std::make_unique<AudioManagerMac>(std::move(audio_thread),
                                            audio_log_factory);
 }
 

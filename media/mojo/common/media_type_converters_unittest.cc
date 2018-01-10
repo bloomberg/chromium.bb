@@ -7,9 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -141,7 +141,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   buffer->set_decrypt_config(
-      base::MakeUnique<DecryptConfig>(kKeyId, kIv, subsamples));
+      std::make_unique<DecryptConfig>(kKeyId, kIv, subsamples));
 
   // Convert from and back.
   mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
@@ -154,7 +154,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
 
   // Test empty IV. This is used for clear buffer in an encrypted stream.
-  buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+  buffer->set_decrypt_config(std::make_unique<DecryptConfig>(
       kKeyId, "", std::vector<SubsampleEntry>()));
   result =
       mojom::DecoderBuffer::From(buffer).To<scoped_refptr<DecoderBuffer>>();

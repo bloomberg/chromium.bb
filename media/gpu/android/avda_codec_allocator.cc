@@ -291,7 +291,7 @@ void AVDACodecAllocator::ForwardOrDropCodec(
       FROM_HERE,
       base::BindOnce(&AVDACodecAllocator::ForwardOrDropCodecOnClientThread,
                      base::Unretained(this), client,
-                     base::MakeUnique<MediaCodecAndSurface>(
+                     std::make_unique<MediaCodecAndSurface>(
                          std::move(media_codec), std::move(surface_bundle))));
 }
 

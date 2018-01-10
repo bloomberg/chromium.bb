@@ -77,7 +77,7 @@ class CodecImageGroupTest : public testing::Test {
   // Create an image group for a surface bundle with an overlay.
   Record CreateImageGroup() {
     std::unique_ptr<MockAndroidOverlay> overlay =
-        base::MakeUnique<MockAndroidOverlay>();
+        std::make_unique<MockAndroidOverlay>();
     EXPECT_CALL(*overlay.get(), MockAddSurfaceDestroyedCallback());
     Record rec;
     rec.surface_bundle =

@@ -4,6 +4,8 @@
 
 #include "media/remoting/end2end_test_renderer.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -134,7 +136,7 @@ scoped_refptr<SharedSession> CreateSharedSession(
   mojom::RemotingSourcePtr remoting_source;
   auto remoting_source_request = mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
-  std::unique_ptr<TestRemoter> test_remoter = base::MakeUnique<TestRemoter>(
+  std::unique_ptr<TestRemoter> test_remoter = std::make_unique<TestRemoter>(
       std::move(remoting_source), send_message_to_sink_cb,
       send_frame_to_sink_cb);
   mojo::MakeStrongBinding(std::move(test_remoter), mojo::MakeRequest(&remoter));

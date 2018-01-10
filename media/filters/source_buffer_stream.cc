@@ -6,12 +6,12 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/media_switches.h"
@@ -2435,7 +2435,7 @@ std::unique_ptr<SourceBufferRangeByDts>
 SourceBufferStream<SourceBufferRangeByDts>::RangeNew(
     const BufferQueue& new_buffers,
     DecodeTimestamp range_start_time) {
-  return base::MakeUnique<SourceBufferRangeByDts>(
+  return std::make_unique<SourceBufferRangeByDts>(
       TypeToGapPolicy<SourceBufferRangeByDts>(GetType()), new_buffers,
       range_start_time,
       base::BindRepeating(
@@ -2449,7 +2449,7 @@ std::unique_ptr<SourceBufferRangeByPts>
 SourceBufferStream<SourceBufferRangeByPts>::RangeNew(
     const BufferQueue& new_buffers,
     DecodeTimestamp range_start_time) {
-  return base::MakeUnique<SourceBufferRangeByPts>(
+  return std::make_unique<SourceBufferRangeByPts>(
       TypeToGapPolicy<SourceBufferRangeByPts>(GetType()), new_buffers,
       range_start_time.ToPresentationTime(),
       base::BindRepeating(

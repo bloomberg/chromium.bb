@@ -73,7 +73,7 @@ static bool CorrectAcceptEncodingAndProxy(const blink::WebURLRequest& request) {
 class ResourceMultiBufferDataProviderTest : public testing::Test {
  public:
   ResourceMultiBufferDataProviderTest()
-      : url_index_(base::MakeUnique<UrlIndex>(&fetch_context_, 0)) {
+      : url_index_(std::make_unique<UrlIndex>(&fetch_context_, 0)) {
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
     }
@@ -208,7 +208,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
  protected:
   std::unique_ptr<blink::WebAssociatedURLLoader> CreateUrlLoader(
       const blink::WebAssociatedURLLoaderOptions& options) {
-    auto url_loader = base::MakeUnique<NiceMock<MockWebAssociatedURLLoader>>();
+    auto url_loader = std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
     EXPECT_CALL(
         *url_loader.get(),
         LoadAsynchronously(Truly(CorrectAcceptEncodingAndProxy), loader_));

@@ -239,7 +239,7 @@ class WASAPIAudioOutputStreamTest : public ::testing::Test {
  public:
   WASAPIAudioOutputStreamTest() {
     audio_manager_ =
-        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
+        AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
     base::RunLoop().RunUntilIdle();
   }
   ~WASAPIAudioOutputStreamTest() override { audio_manager_->Shutdown(); }

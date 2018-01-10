@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/media_log_event.h"
 
 namespace media {
@@ -27,7 +26,7 @@ void MojoMediaLogService::AddEvent(const media::MediaLogEvent& event) {
 
   // Make a copy so that we can transfer ownership to |media_log_|.
   std::unique_ptr<media::MediaLogEvent> modified_event =
-      base::MakeUnique<media::MediaLogEvent>(event);
+      std::make_unique<media::MediaLogEvent>(event);
 
   // |id| is player-unique per-process, but the remote side does not know the
   // correct value (nor would we necessarily trust it). Overwrite with the

@@ -5,8 +5,8 @@
 #include "media/filters/source_buffer_range_by_dts.h"
 
 #include <algorithm>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -186,7 +186,7 @@ std::unique_ptr<SourceBufferRangeByDts> SourceBufferRangeByDts::SplitRange(
 
   // Create a new range with |removed_buffers|.
   std::unique_ptr<SourceBufferRangeByDts> split_range =
-      base::MakeUnique<SourceBufferRangeByDts>(gap_policy_, removed_buffers,
+      std::make_unique<SourceBufferRangeByDts>(gap_policy_, removed_buffers,
                                                new_range_start_decode_timestamp,
                                                interbuffer_distance_cb_);
 

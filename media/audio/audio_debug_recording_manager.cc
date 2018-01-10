@@ -4,6 +4,8 @@
 
 #include "media/audio/audio_debug_recording_manager.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -102,7 +104,7 @@ AudioDebugRecordingManager::CreateAudioDebugRecordingHelper(
     const AudioParameters& params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::OnceClosure on_destruction_closure) {
-  return base::MakeUnique<AudioDebugRecordingHelper>(
+  return std::make_unique<AudioDebugRecordingHelper>(
       params, task_runner, std::move(on_destruction_closure));
 }
 

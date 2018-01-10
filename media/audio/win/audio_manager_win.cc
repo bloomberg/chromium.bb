@@ -359,7 +359,7 @@ AudioParameters AudioManagerWin::GetPreferredOutputStreamParameters(
 std::unique_ptr<AudioManager> CreateAudioManager(
     std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
-  return base::MakeUnique<AudioManagerWin>(std::move(audio_thread),
+  return std::make_unique<AudioManagerWin>(std::move(audio_thread),
                                            audio_log_factory);
 }
 

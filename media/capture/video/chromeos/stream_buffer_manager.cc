@@ -5,8 +5,8 @@
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 
 #include <sync/sync.h>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
@@ -68,7 +68,7 @@ void StreamBufferManager::SetUpStreamAndBuffers(
   }
 
   partial_result_count_ = partial_result_count;
-  stream_context_ = base::MakeUnique<StreamContext>();
+  stream_context_ = std::make_unique<StreamContext>();
   stream_context_->capture_format = capture_format;
   stream_context_->stream = std::move(stream);
 

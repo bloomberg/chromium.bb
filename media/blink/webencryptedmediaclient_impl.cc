@@ -4,10 +4,10 @@
 
 #include "media/blink/webencryptedmediaclient_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -169,7 +169,7 @@ WebEncryptedMediaClientImpl::Reporter* WebEncryptedMediaClientImpl::GetReporter(
   std::string uma_name = GetKeySystemNameForUMA(key_system_ascii);
   std::unique_ptr<Reporter>& reporter = reporters_[uma_name];
   if (!reporter)
-    reporter = base::MakeUnique<Reporter>(uma_name);
+    reporter = std::make_unique<Reporter>(uma_name);
   return reporter.get();
 }
 

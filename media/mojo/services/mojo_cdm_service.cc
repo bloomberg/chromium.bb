@@ -5,11 +5,11 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
@@ -81,7 +81,7 @@ void MojoCdmService::SetServerCertificate(
   DVLOG(2) << __func__;
   cdm_->SetServerCertificate(
       certificate_data,
-      base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
+      std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::GetStatusForPolicy(HdcpVersion min_hdcp_version,
@@ -89,7 +89,7 @@ void MojoCdmService::GetStatusForPolicy(HdcpVersion min_hdcp_version,
   DVLOG(2) << __func__;
   cdm_->GetStatusForPolicy(
       min_hdcp_version,
-      base::MakeUnique<KeyStatusMojoCdmPromise>(std::move(callback)));
+      std::make_unique<KeyStatusMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::CreateSessionAndGenerateRequest(
@@ -100,7 +100,7 @@ void MojoCdmService::CreateSessionAndGenerateRequest(
   DVLOG(2) << __func__;
   cdm_->CreateSessionAndGenerateRequest(
       session_type, init_data_type, init_data,
-      base::MakeUnique<NewSessionMojoCdmPromise>(std::move(callback)));
+      std::make_unique<NewSessionMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::LoadSession(CdmSessionType session_type,
@@ -109,7 +109,7 @@ void MojoCdmService::LoadSession(CdmSessionType session_type,
   DVLOG(2) << __func__;
   cdm_->LoadSession(
       session_type, session_id,
-      base::MakeUnique<NewSessionMojoCdmPromise>(std::move(callback)));
+      std::make_unique<NewSessionMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::UpdateSession(const std::string& session_id,
@@ -125,14 +125,14 @@ void MojoCdmService::CloseSession(const std::string& session_id,
                                   CloseSessionCallback callback) {
   DVLOG(2) << __func__;
   cdm_->CloseSession(
-      session_id, base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
+      session_id, std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 void MojoCdmService::RemoveSession(const std::string& session_id,
                                    RemoveSessionCallback callback) {
   DVLOG(2) << __func__;
   cdm_->RemoveSession(
-      session_id, base::MakeUnique<SimpleMojoCdmPromise>(std::move(callback)));
+      session_id, std::make_unique<SimpleMojoCdmPromise>(std::move(callback)));
 }
 
 scoped_refptr<ContentDecryptionModule> MojoCdmService::GetCdm() {

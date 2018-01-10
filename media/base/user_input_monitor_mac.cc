@@ -6,9 +6,9 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include <stddef.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 
 namespace media {
 namespace {
@@ -47,7 +47,7 @@ void UserInputMonitorMac::StopKeyboardMonitoring() {}
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& input_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return base::MakeUnique<UserInputMonitorMac>();
+  return std::make_unique<UserInputMonitorMac>();
 }
 
 }  // namespace media

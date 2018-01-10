@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -51,7 +50,7 @@ class TaskServiceClient {
  public:
   TaskServiceClient(TaskService* task_service)
       : task_service_(task_service),
-        wait_task_event_(base::MakeUnique<base::WaitableEvent>(
+        wait_task_event_(std::make_unique<base::WaitableEvent>(
             base::WaitableEvent::ResetPolicy::MANUAL,
             base::WaitableEvent::InitialState::NOT_SIGNALED)),
         count_(0u) {
@@ -135,7 +134,7 @@ class MidiTaskServiceTest : public ::testing::Test {
     ResetEvent();
     task_runner_ = new base::TestSimpleTaskRunner();
     thread_task_runner_handle_ =
-        base::MakeUnique<base::ThreadTaskRunnerHandle>(task_runner_);
+        std::make_unique<base::ThreadTaskRunnerHandle>(task_runner_);
   }
 
   void TearDown() override {
@@ -153,7 +152,7 @@ class MidiTaskServiceTest : public ::testing::Test {
 // Tests if posted tasks without calling BindInstance() are ignored.
 TEST_F(MidiTaskServiceTest, RunUnauthorizedBoundTask) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   client->PostBoundTask(kFirstRunner);
 
@@ -167,7 +166,7 @@ TEST_F(MidiTaskServiceTest, RunUnauthorizedBoundTask) {
 // make the service insanity.
 TEST_F(MidiTaskServiceTest, BindTwice) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
 
@@ -183,7 +182,7 @@ TEST_F(MidiTaskServiceTest, BindTwice) {
 // Tests if posted static tasks can be processed correctly.
 TEST_F(MidiTaskServiceTest, RunStaticTask) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
   // Should be able to post a static task while an instance is bound.
@@ -203,7 +202,7 @@ TEST_F(MidiTaskServiceTest, RunStaticTask) {
 // Tests functionalities to run bound tasks.
 TEST_F(MidiTaskServiceTest, RunBoundTasks) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
 
@@ -219,7 +218,7 @@ TEST_F(MidiTaskServiceTest, RunBoundTasks) {
   // depends on timing.
   client->PostBoundTask(kFirstRunner);
   EXPECT_TRUE(client->Unbind());
-  client = base::MakeUnique<TaskServiceClient>(task_service());
+  client = std::make_unique<TaskServiceClient>(task_service());
 
   // Tests if an immediate call of another BindInstance() works correctly.
   EXPECT_TRUE(client->Bind());
@@ -239,7 +238,7 @@ TEST_F(MidiTaskServiceTest, RunBoundTasks) {
 // Tests if a blocking task does not block other task runners.
 TEST_F(MidiTaskServiceTest, RunBlockingTask) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
 
@@ -267,7 +266,7 @@ TEST_F(MidiTaskServiceTest, RunBlockingTask) {
 // Tests if a bound delayed task runs correctly.
 TEST_F(MidiTaskServiceTest, RunBoundDelayedTask) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
 
@@ -285,7 +284,7 @@ TEST_F(MidiTaskServiceTest, RunBoundDelayedTask) {
 // Tests if a bound task runs on the thread that bound the instance.
 TEST_F(MidiTaskServiceTest, RunBoundTaskOnDefaultRunner) {
   std::unique_ptr<TaskServiceClient> client =
-      base::MakeUnique<TaskServiceClient>(task_service());
+      std::make_unique<TaskServiceClient>(task_service());
 
   EXPECT_TRUE(client->Bind());
 

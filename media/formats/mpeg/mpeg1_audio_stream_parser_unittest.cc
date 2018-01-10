@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "media/base/test_data_util.h"
 #include "media/formats/common/stream_parser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +18,7 @@ class MPEG1AudioStreamParserTest
     : public StreamParserTestBase, public testing::Test {
  public:
   MPEG1AudioStreamParserTest()
-      : StreamParserTestBase(base::MakeUnique<MPEG1AudioStreamParser>()) {}
+      : StreamParserTestBase(std::make_unique<MPEG1AudioStreamParser>()) {}
 };
 
 // Test parsing with small prime sized chunks to smoke out "power of

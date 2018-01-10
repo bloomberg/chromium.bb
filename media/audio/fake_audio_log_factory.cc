@@ -4,9 +4,8 @@
 
 #include "media/audio/fake_audio_log_factory.h"
 
+#include <memory>
 #include <string>
-
-#include "base/memory/ptr_util.h"
 
 namespace media {
 
@@ -32,7 +31,7 @@ FakeAudioLogFactory::~FakeAudioLogFactory() = default;
 
 std::unique_ptr<AudioLog> FakeAudioLogFactory::CreateAudioLog(
     AudioComponent component) {
-  return base::MakeUnique<FakeAudioLogImpl>();
+  return std::make_unique<FakeAudioLogImpl>();
 }
 
 }  // namespace media

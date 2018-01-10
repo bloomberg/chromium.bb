@@ -6,12 +6,12 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -95,7 +95,7 @@ class FrameProcessorTest
     use_sequence_mode_ = params.use_sequence_mode;
     range_api_ = params.range_api;
 
-    frame_processor_ = base::MakeUnique<FrameProcessor>(
+    frame_processor_ = std::make_unique<FrameProcessor>(
         base::Bind(
             &FrameProcessorTestCallbackHelper::OnPossibleDurationIncrease,
             base::Unretained(&callbacks_)),

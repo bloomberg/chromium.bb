@@ -6,13 +6,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1285,7 +1285,7 @@ ChunkDemuxerStream* ChunkDemuxer::CreateDemuxerStream(
   }
 
   std::unique_ptr<ChunkDemuxerStream> stream =
-      base::MakeUnique<ChunkDemuxerStream>(
+      std::make_unique<ChunkDemuxerStream>(
           type, media_track_id,
           (buffering_by_pts_ ? ChunkDemuxerStream::RangeApi::kNewByPts
                              : ChunkDemuxerStream::RangeApi::kLegacyByDts));

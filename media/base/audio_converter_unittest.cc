@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -69,7 +68,7 @@ class AudioConverterTest
 
     for (int i = 0; i < count; ++i) {
       fake_callbacks_.push_back(
-          base::MakeUnique<FakeAudioRenderCallback>(step, kSampleRate));
+          std::make_unique<FakeAudioRenderCallback>(step, kSampleRate));
       converter_->AddInput(fake_callbacks_[i].get());
     }
   }

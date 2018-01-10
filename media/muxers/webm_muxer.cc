@@ -5,9 +5,9 @@
 #include "media/muxers/webm_muxer.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
@@ -166,7 +166,7 @@ bool WebmMuxer::OnEncodedVideo(const VideoParameters& params,
     if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
       encoded_frames_queue_.clear();
 
-    encoded_frames_queue_.push_back(base::MakeUnique<EncodedVideoFrame>(
+    encoded_frames_queue_.push_back(std::make_unique<EncodedVideoFrame>(
         std::move(encoded_data), std::move(encoded_alpha), timestamp,
         is_key_frame));
     return true;
@@ -202,9 +202,9 @@ bool WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
   // Dump all saved encoded video frames if any.
   while (!encoded_frames_queue_.empty()) {
     const bool res = AddFrame(
-        base::MakeUnique<std::string>(*encoded_frames_queue_.front()->data),
+        std::make_unique<std::string>(*encoded_frames_queue_.front()->data),
         encoded_frames_queue_.front()->alpha_data
-            ? base::MakeUnique<std::string>(
+            ? std::make_unique<std::string>(
                   *encoded_frames_queue_.front()->alpha_data)
             : nullptr,
         video_track_index_,

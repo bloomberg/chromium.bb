@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "media/gpu/android/codec_image.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -38,9 +39,9 @@ class CodecImageTest : public testing::Test {
   CodecImageTest() = default;
 
   void SetUp() override {
-    auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
+    auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
     codec_ = codec.get();
-    wrapper_ = base::MakeUnique<CodecWrapper>(
+    wrapper_ = std::make_unique<CodecWrapper>(
         CodecSurfacePair(std::move(codec), new AVDASurfaceBundle()),
         base::Bind(&base::DoNothing));
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))

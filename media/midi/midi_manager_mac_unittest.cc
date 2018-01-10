@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -114,8 +113,8 @@ class FakeMidiManagerClient : public MidiManagerClient {
 class MidiManagerMacTest : public ::testing::Test {
  public:
   MidiManagerMacTest()
-      : service_(base::MakeUnique<MidiService>()),
-        message_loop_(base::MakeUnique<base::MessageLoop>()) {}
+      : service_(std::make_unique<MidiService>()),
+        message_loop_(std::make_unique<base::MessageLoop>()) {}
   ~MidiManagerMacTest() override {
     service_->Shutdown();
     base::RunLoop run_loop;

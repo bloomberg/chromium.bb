@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
@@ -1036,7 +1035,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_LE(1u, picture.service_texture_ids().size());
     picture_info_map_.insert(std::make_pair(
         picture.id(),
-        base::MakeUnique<PictureInfo>(picture.client_texture_ids()[0],
+        std::make_unique<PictureInfo>(picture.client_texture_ids()[0],
                                       picture.service_texture_ids()[0])));
   }
 

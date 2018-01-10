@@ -108,7 +108,7 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.feedback_ssrc = 2;
     rtp_config.rtp_payload_type = RtpPayloadType::VIDEO_VP8;
     transport_sender_->InitializeStream(rtp_config,
-                                        base::MakeUnique<StubRtcpObserver>());
+                                        std::make_unique<StubRtcpObserver>());
   }
 
   void InitializeAudio() {
@@ -117,7 +117,7 @@ class CastTransportImplTest : public ::testing::Test {
     rtp_config.feedback_ssrc = 3;
     rtp_config.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
     transport_sender_->InitializeStream(rtp_config,
-                                        base::MakeUnique<StubRtcpObserver>());
+                                        std::make_unique<StubRtcpObserver>());
   }
 
   base::SimpleTestTickClock testing_clock_;
@@ -156,7 +156,7 @@ void CastTransportImplTest::InitWithoutLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            base::MakeUnique<TransportClient>(nullptr),
+                            std::make_unique<TransportClient>(nullptr),
                             base::WrapUnique(transport_), task_runner_));
   task_runner_->RunTasks();
 }
@@ -170,7 +170,7 @@ void CastTransportImplTest::InitWithOptions() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(
       new CastTransportImpl(&testing_clock_, base::TimeDelta(),
-                            base::MakeUnique<TransportClient>(nullptr),
+                            std::make_unique<TransportClient>(nullptr),
                             base::WrapUnique(transport_), task_runner_));
   transport_sender_->SetOptions(*options);
   task_runner_->RunTasks();
@@ -180,7 +180,7 @@ void CastTransportImplTest::InitWithLogging() {
   transport_ = new FakePacketSender();
   transport_sender_.reset(new CastTransportImpl(
       &testing_clock_, base::TimeDelta::FromMilliseconds(10),
-      base::MakeUnique<TransportClient>(this), base::WrapUnique(transport_),
+      std::make_unique<TransportClient>(this), base::WrapUnique(transport_),
       task_runner_));
   task_runner_->RunTasks();
 }

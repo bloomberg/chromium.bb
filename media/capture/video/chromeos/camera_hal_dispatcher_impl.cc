@@ -184,7 +184,7 @@ void CameraHalDispatcherImpl::RegisterClient(
     arc::mojom::CameraHalClientPtr client) {
   DCHECK(proxy_task_runner_->BelongsToCurrentThread());
   auto client_observer =
-      base::MakeUnique<MojoCameraClientObserver>(std::move(client));
+      std::make_unique<MojoCameraClientObserver>(std::move(client));
   client_observer->client().set_connection_error_handler(base::Bind(
       &CameraHalDispatcherImpl::OnCameraHalClientConnectionError,
       base::Unretained(this), base::Unretained(client_observer.get())));
