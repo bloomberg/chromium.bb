@@ -7,6 +7,14 @@
 
 #include <time.h>
 
+#if !defined(CPUCLOCK_CLOCK_MASK)
+#define CPUCLOCK_CLOCK_MASK 3
+#endif
+
+#if !defined(CLOCKFD)
+#define CLOCKFD 3
+#endif
+
 #if !defined(CLOCK_REALTIME_COARSE)
 #define CLOCK_REALTIME_COARSE 5
 #endif

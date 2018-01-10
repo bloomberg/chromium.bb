@@ -86,6 +86,11 @@ BPF_TEST_C(ParameterRestrictions,
   CheckClock(CLOCK_REALTIME);
   CheckClock(CLOCK_REALTIME_COARSE);
   CheckClock(CLOCK_THREAD_CPUTIME_ID);
+#if defined(OS_ANDROID)
+  clockid_t clock_id;
+  pthread_getcpuclockid(pthread_self(), &clock_id);
+  CheckClock(clock_id);
+#endif
 }
 
 BPF_DEATH_TEST_C(ParameterRestrictions,
