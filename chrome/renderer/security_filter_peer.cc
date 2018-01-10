@@ -68,7 +68,7 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
 }
 
 void SecurityFilterPeer::OnUploadProgress(uint64_t position, uint64_t size) {
-  original_peer_->OnUploadProgress(position, size);
+  NOTREACHED();
 }
 
 bool SecurityFilterPeer::OnReceivedRedirect(
@@ -80,15 +80,19 @@ bool SecurityFilterPeer::OnReceivedRedirect(
 
 void SecurityFilterPeer::OnReceivedResponse(
     const content::ResourceResponseInfo& info) {
-  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
+  NOTREACHED();
+}
+
+void SecurityFilterPeer::OnDownloadedData(int len, int encoded_data_length) {
+  NOTREACHED();
 }
 
 void SecurityFilterPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
+  NOTREACHED();
 }
 
 void SecurityFilterPeer::OnTransferSizeUpdated(int transfer_size_diff) {
-  original_peer_->OnTransferSizeUpdated(transfer_size_diff);
+  NOTREACHED();
 }
 
 void SecurityFilterPeer::OnCompletedRequest(
