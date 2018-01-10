@@ -454,9 +454,9 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     // For each node in the update, set the location in our map from
     // ids to locations.
-    for (size_t i = 0; i < event_msg.update.nodes.size(); ++i) {
-      ui::AXNodeData& src = event_msg.update.nodes[i];
-      ui::AXRelativeBounds& dst = locations_[event_msg.update.nodes[i].id];
+    for (size_t j = 0; j < event_msg.update.nodes.size(); ++j) {
+      ui::AXNodeData& src = event_msg.update.nodes[j];
+      ui::AXRelativeBounds& dst = locations_[event_msg.update.nodes[j].id];
       dst.offset_container_id = src.offset_container_id;
       dst.bounds = src.location;
       dst.transform.reset(nullptr);
@@ -739,8 +739,8 @@ void RenderAccessibilityImpl::AddPluginTreeToUpdate(
       size_t old_count = update->nodes.size();
       size_t new_count = plugin_update.nodes.size();
       update->nodes.resize(old_count + new_count);
-      for (size_t i = 0; i < new_count; ++i)
-        update->nodes[old_count + i] = plugin_update.nodes[i];
+      for (size_t j = 0; j < new_count; ++j)
+        update->nodes[old_count + j] = plugin_update.nodes[j];
       break;
     }
   }

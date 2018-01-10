@@ -683,19 +683,19 @@ class AXPosition {
         return text_position;
       }
 
-      const std::vector<int32_t> word_starts =
+      const std::vector<int32_t> updated_word_starts =
           text_position->GetWordStartOffsets();
-      DCHECK(!word_starts.empty());
-      text_position->text_offset_ = static_cast<int>(word_starts[0]);
+      DCHECK(!updated_word_starts.empty());
+      text_position->text_offset_ = static_cast<int>(updated_word_starts[0]);
     } else {
       text_position->text_offset_ = static_cast<int>(*iterator);
       text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
     }
 
-    // If the word boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // If the word boundary is in the same subtree, return a position rooted
+    // at the current position. This is necessary because we don't want to
+    // return any position that might be in the shadow DOM if the original
+    // position was not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -748,19 +748,20 @@ class AXPosition {
         return text_position;
       }
 
-      const std::vector<int32_t> word_starts =
+      const std::vector<int32_t> updated_word_starts =
           text_position->GetWordStartOffsets();
-      DCHECK(!word_starts.empty());
-      text_position->text_offset_ = static_cast<int>(*(word_starts.end() - 1));
+      DCHECK(!updated_word_starts.empty());
+      text_position->text_offset_ =
+          static_cast<int>(*(updated_word_starts.end() - 1));
     } else {
       text_position->text_offset_ = static_cast<int>(*(--iterator));
       text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
     }
 
-    // If the word boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // If the word boundary is in the same subtree, return a position rooted
+    // at the current position. This is necessary because we don't want to
+    // return any position that might be in the shadow DOM if the original
+    // position was not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -811,18 +812,19 @@ class AXPosition {
         return text_position;
       }
 
-      const std::vector<int32_t> word_ends = text_position->GetWordEndOffsets();
-      DCHECK(!word_ends.empty());
-      text_position->text_offset_ = static_cast<int>(word_ends[0]);
+      const std::vector<int32_t> updated_word_ends =
+          text_position->GetWordEndOffsets();
+      DCHECK(!updated_word_ends.empty());
+      text_position->text_offset_ = static_cast<int>(updated_word_ends[0]);
     } else {
       text_position->text_offset_ = static_cast<int>(*iterator);
       text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
     }
 
-    // If the word boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // If the word boundary is in the same subtree, return a position rooted
+    // at the current position. This is necessary because we don't want to
+    // return any position that might be in the shadow DOM if the original
+    // position was not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
@@ -875,18 +877,20 @@ class AXPosition {
         return text_position;
       }
 
-      const std::vector<int32_t> word_ends = text_position->GetWordEndOffsets();
-      DCHECK(!word_ends.empty());
-      text_position->text_offset_ = static_cast<int>(*(word_ends.end() - 1));
+      const std::vector<int32_t> updated_word_ends =
+          text_position->GetWordEndOffsets();
+      DCHECK(!updated_word_ends.empty());
+      text_position->text_offset_ =
+          static_cast<int>(*(updated_word_ends.end() - 1));
     } else {
       text_position->text_offset_ = static_cast<int>(*(--iterator));
       text_position->affinity_ = AX_TEXT_AFFINITY_DOWNSTREAM;
     }
 
-    // If the word boundary is in the same subtree, return a position rooted at
-    // the current position.
-    // This is necessary because we don't want to return any position that might
-    // be in the shadow DOM if the original position was not.
+    // If the word boundary is in the same subtree, return a position rooted
+    // at the current position. This is necessary because we don't want to
+    // return any position that might be in the shadow DOM if the original
+    // position was not.
     AXPositionInstance common_ancestor =
         text_position->LowestCommonAncestor(*this);
     if (GetAnchor() == common_ancestor->GetAnchor()) {
