@@ -124,6 +124,48 @@ class CIDBIntegrationTest(cros_test_lib.LocalSqlServerTestCase):
 
     return db
 
+class SchemaDumpTest(CIDBIntegrationTest):
+  """Ensure that schema.dump remains current."""
+
+  def mysqlDump(self):
+    """Helper to dump the schema.
+
+    Returns:
+      CIDB database schema as a single string.
+    """
+    cmd = [
+        'mysqldump',
+        '-S', os.path.join(self._mysqld_dir, 'mysqld.socket'),
+        '-u', 'root',
+        '--no-data',
+        '--single-transaction',
+        # '--skip-comments',  # Required to avoid dumping a timestamp.
+        'cidb',
+    ]
+    result = cros_build_lib.RunCommand(cmd, capture_output=True, quiet=True)
+
+    # Strip out comment lines, to avoid dumping a problematic timestamp.
+    lines = [l for l in result.output.splitlines() if not l.startswith('--')]
+    return "\n".join(lines)
+
+  def testDump(self):
+    """Ensure generated file is up to date."""
+    DUMP_FILE = os.path.join(constants.CHROMITE_DIR, 'cidb', 'schema.dump')
+
+    self._PrepareFreshDatabase()
+
+    # schema.dump
+    new_dump = self.mysqlDump()
+    old_dump = osutils.ReadFile(DUMP_FILE)
+
+    if new_dump != old_dump:
+      if cros_test_lib.GlobalTestConfig.UPDATE_GENERATED_FILES:
+        osutils.WriteFile(DUMP_FILE, new_dump)
+      else:
+        self.fail('schema.dump does not match the '
+                  'migrations generated schema. Run '
+                  'lib/cidb_integration_test --update')
+
 
 class CIDBMigrationsTest(CIDBIntegrationTest):
   """Test that all migrations apply correctly."""
