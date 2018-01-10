@@ -53,6 +53,12 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       bool is_block_direction_triggers_scrollbar);
 
   NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
+
+  NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool val) {
+    separate_leading_fragmentainer_margins_ = val;
+    return *this;
+  }
+
   NGConstraintSpaceBuilder& SetIsNewFormattingContext(bool is_new_fc);
   NGConstraintSpaceBuilder& SetIsAnonymous(bool is_anonymous);
   NGConstraintSpaceBuilder& SetUseFirstLineStyle(bool use_first_line_sytle);
@@ -102,6 +108,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned is_inline_direction_triggers_scrollbar_ : 1;
   unsigned is_block_direction_triggers_scrollbar_ : 1;
   unsigned fragmentation_type_ : 2;
+  unsigned separate_leading_fragmentainer_margins_ : 1;
   unsigned is_new_fc_ : 1;
   unsigned is_anonymous_ : 1;
   unsigned use_first_line_sytle_ : 1;

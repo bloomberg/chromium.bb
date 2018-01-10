@@ -108,6 +108,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
                                                const NGConstraintSpace& space,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
+      is_resuming_(break_token && !break_token->IsBreakBefore()),
       exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
 
 Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize() const {
@@ -334,8 +335,9 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // then the BFC offset is still {} as the margin strut from the constraint
   // space must also be empty.
   // If we are resuming layout from a break token the same rule applies. Margin
-  // struts cannot pass through break tokens.
-  if (ConstraintSpace().IsNewFormattingContext() || BreakToken()) {
+  // struts cannot pass through break tokens (unless it's a break token before
+  // the first fragment (the one we're about to create)).
+  if (ConstraintSpace().IsNewFormattingContext() || is_resuming_) {
     MaybeUpdateFragmentBfcOffset(input_bfc_block_offset);
     DCHECK(input_margin_strut.IsEmpty());
 #if DCHECK_IS_ON()
@@ -564,7 +566,8 @@ void NGBlockLayoutAlgorithm::HandleFloat(
 
   // If there is a break token for a float we must be resuming layout, we must
   // always know our position in the BFC.
-  DCHECK(!child_break_token || container_builder_.BfcOffset());
+  DCHECK(!child_break_token || child_break_token->IsBreakBefore() ||
+         container_builder_.BfcOffset());
 
   // No need to postpone the positioning if we know the correct offset.
   if (container_builder_.BfcOffset() || ConstraintSpace().FloatsBfcOffset()) {
@@ -1467,9 +1470,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
 
   NGBoxStrut margins =
       ComputeMarginsFor(*space, child_style, ConstraintSpace());
-
-  // The block-start margin should only be used in the first fragment.
-  if (child_break_token)
+  if (ShouldIgnoreBlockStartMargin(ConstraintSpace(), child, child_break_token))
     margins.block_start = LayoutUnit();
 
   // TODO(ikilpatrick): Move the auto margins calculation for different writing
@@ -1555,6 +1556,12 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     if (is_new_fc) {
       space_available -= child_data.bfc_offset_estimate.block_offset;
     }
+    // The policy regarding collapsing block-start margin with the fragmentainer
+    // block-start is the same throughout the entire fragmentainer (although it
+    // really only matters at the beginning of each fragmentainer, we don't need
+    // to bother to check whether we're actually at the start).
+    space_builder.SetSeparateLeadingFragmentainerMargins(
+        ConstraintSpace().HasSeparateLeadingFragmentainerMargins());
   }
   space_builder.SetFragmentainerBlockSize(
       ConstraintSpace().FragmentainerBlockSize());

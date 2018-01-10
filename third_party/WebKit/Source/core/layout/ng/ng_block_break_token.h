@@ -42,12 +42,28 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
         new NGBlockBreakToken(node, used_block_size, has_last_resort_break));
   }
 
+  // Creates a break token for a node that needs to produce its first fragment
+  // in the next fragmentainer. In this case we create a break token for a node
+  // that hasn't yet produced any fragments.
+  static scoped_refptr<NGBlockBreakToken> CreateBreakBefore(
+      NGLayoutInputNode node) {
+    auto* token = new NGBlockBreakToken(node);
+    token->is_break_before_ = true;
+    return base::AdoptRef(token);
+  }
+
   // Represents the amount of block size used in previous fragments.
   //
   // E.g. if the layout block specifies a block size of 200px, and the previous
   // fragments of this block used 150px (used block size), the next fragment
   // should have a size of 50px (assuming no additional fragmentation).
   LayoutUnit UsedBlockSize() const { return used_block_size_; }
+
+  // Return true if this is a break token that was produced without any
+  // "preceding" fragment. This happens when we determine that the first
+  // fragment for a node needs to be created in a later fragmentainer than the
+  // one it was it was first encountered, due to block space shortage.
+  bool IsBreakBefore() const { return is_break_before_; }
 
   bool HasLastResortBreak() const { return has_last_resort_break_; }
 
@@ -77,8 +93,12 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
                     LayoutUnit used_block_size,
                     bool has_last_resort_break);
 
+  explicit NGBlockBreakToken(NGLayoutInputNode node);
+
   Vector<scoped_refptr<NGBreakToken>> child_break_tokens_;
   LayoutUnit used_block_size_;
+
+  bool is_break_before_ = false;
 
   // We're attempting to break at an undesirable place. Sometimes that's
   // unavoidable, but we should only break here if we cannot find a better break

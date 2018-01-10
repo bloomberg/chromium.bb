@@ -111,12 +111,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
     }
     return *this;
   }
-  // TODO(mstensho): Come up with a more intuitive way of creating an unfinished
-  // break token. We currently need to pass a Vector here, just to end up in the
-  // right NGBlockBreakToken constructor - the one that sets the token as
-  // unfinished.
-  Vector<scoped_refptr<NGBreakToken>> dummy;
-  auto token = NGBlockBreakToken::Create(child, LayoutUnit(), dummy);
+  auto token = NGBlockBreakToken::CreateBreakBefore(child);
   child_break_tokens_.push_back(token);
   return *this;
 }

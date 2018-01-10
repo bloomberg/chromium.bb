@@ -26,6 +26,9 @@ NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node,
       used_block_size_(used_block_size),
       has_last_resort_break_(has_last_resort_break) {}
 
+NGBlockBreakToken::NGBlockBreakToken(NGLayoutInputNode node)
+    : NGBreakToken(kBlockBreakToken, kUnfinished, node) {}
+
 #ifndef NDEBUG
 
 String NGBlockBreakToken::ToString() const {
