@@ -22,10 +22,10 @@ bool LifecycleUnit::SortKey::operator>(const SortKey& other) const {
 LifecycleUnit::LifecycleUnit() = default;
 LifecycleUnit::~LifecycleUnit() = default;
 
-uint32_t LifecycleUnit::GetID() const {
+int32_t LifecycleUnit::GetID() const {
   return id_;
 }
 
-uint32_t LifecycleUnit::next_id_ = 0;
+int32_t LifecycleUnit::next_id_ = 0;
 
 }  // namespace resource_coordinator
