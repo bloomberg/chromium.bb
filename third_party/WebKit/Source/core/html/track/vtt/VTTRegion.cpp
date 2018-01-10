@@ -46,32 +46,33 @@
 
 namespace blink {
 
+namespace {
 // The following values default values are defined within the WebVTT Regions
 // Spec.
 // https://dvcs.w3.org/hg/text-tracks/raw-file/default/608toVTT/region.html
 
 // The region occupies by default 100% of the width of the video viewport.
-static const double kDefaultWidth = 100;
+constexpr double kDefaultRegionWidth = 100;
 
 // The region has, by default, 3 lines of text.
-static const int kDefaultHeightInLines = 3;
+constexpr int kDefaultHeightInLines = 3;
 
 // The region and viewport are anchored in the bottom left corner.
-static const double kDefaultAnchorPointX = 0;
-static const double kDefaultAnchorPointY = 100;
+constexpr double kDefaultAnchorPointX = 0;
+constexpr double kDefaultAnchorPointY = 100;
 
 // The region doesn't have scrolling text, by default.
-static const bool kDefaultScroll = false;
+constexpr bool kDefaultScroll = false;
 
 // Default region line-height (vh units)
-static const float kLineHeight = 5.33;
+constexpr float kLineHeight = 5.33;
 
 // Default scrolling animation time period (s).
-static const float kScrollTime = 0.433;
+constexpr float kScrollTime = 0.433;
 
-static bool IsNonPercentage(double value,
-                            const char* method,
-                            ExceptionState& exception_state) {
+bool IsNonPercentage(double value,
+                     const char* method,
+                     ExceptionState& exception_state) {
   if (value < 0 || value > 100) {
     exception_state.ThrowDOMException(
         kIndexSizeError,
@@ -83,9 +84,11 @@ static bool IsNonPercentage(double value,
   return false;
 }
 
+}  // namespace
+
 VTTRegion::VTTRegion()
     : id_(g_empty_string),
-      width_(kDefaultWidth),
+      width_(kDefaultRegionWidth),
       lines_(kDefaultHeightInLines),
       region_anchor_(DoublePoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
       viewport_anchor_(DoublePoint(kDefaultAnchorPointX, kDefaultAnchorPointY)),
