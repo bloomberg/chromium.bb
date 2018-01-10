@@ -66,6 +66,13 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
     return frame_sink_id_map_[current_hittest_result_];
   }
 
+  bool TransformPointToCoordSpaceForView(
+      const gfx::PointF& point,
+      RenderWidgetHostViewBase* target_view,
+      gfx::PointF* transformed_point) override {
+    return true;
+  }
+
   void SetHittestResult(MockRenderWidgetHostView* view) {
     current_hittest_result_ = view;
   }

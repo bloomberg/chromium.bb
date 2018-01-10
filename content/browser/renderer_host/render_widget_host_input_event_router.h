@@ -175,11 +175,21 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
       RenderWidgetHostViewBase* root_view,
       const blink::WebMouseWheelEvent& event,
       gfx::PointF* transformed_point) const;
+  // Returns target for first TouchStart in a sequence, or a null target
+  // otherwise.
+  RenderWidgetTargetResult FindTouchEventTarget(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebTouchEvent& event);
 
   // |mouse_event| is in the coord-space of |target|.
   void DispatchMouseEvent(RenderWidgetHostViewBase* root_view,
                           RenderWidgetHostViewBase* target,
                           const blink::WebMouseEvent& mouse_event,
+                          const ui::LatencyInfo& latency);
+  // Assumes |touch_event| has coordinates in the root view's coordinate space.
+  void DispatchTouchEvent(RenderWidgetHostViewBase* root_view,
+                          RenderWidgetHostViewBase* target,
+                          const blink::WebTouchEvent& touch_event,
                           const ui::LatencyInfo& latency);
 
   // RenderWidgetTargeter::Delegate:

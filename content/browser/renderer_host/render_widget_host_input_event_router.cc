@@ -24,12 +24,26 @@
 
 namespace {
 
-void TransformEventTouchPositions(blink::WebTouchEvent* event,
-                                  const gfx::Vector2dF& delta) {
+// Transforms WebTouchEvent touch positions from the root view coordinate
+// space to the target view coordinate space.
+void TransformEventTouchPositions(
+    blink::WebTouchEvent* event,
+    content::RenderWidgetHostViewBase* root_view,
+    content::RenderWidgetHostViewBase* target_view) {
+  if (!target_view || target_view == root_view)
+    return;
+
   for (unsigned i = 0; i < event->touches_length; ++i) {
-    event->touches[i].SetPositionInWidget(
-        event->touches[i].PositionInWidget().x + delta.x(),
-        event->touches[i].PositionInWidget().y + delta.y());
+    gfx::PointF transformed_point(event->touches[i].PositionInWidget());
+    // TODO(wjmaclean): For multiple touch points this might be inefficient;
+    // we should investigate whether it's better to transform arrays of
+    // points all at once.
+    if (root_view->TransformPointToCoordSpaceForView(
+            event->touches[i].PositionInWidget(), target_view,
+            &transformed_point)) {
+      event->touches[i].SetPositionInWidget(transformed_point.x(),
+                                            transformed_point.y());
+    }
   }
 }
 
@@ -478,99 +492,87 @@ void RenderWidgetHostInputEventRouter::OnHandledTouchStartOrFirstTouchMove(
   touchscreen_gesture_target_map_.erase(unique_touch_event_id);
 }
 
+RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindTouchEventTarget(
+    RenderWidgetHostViewBase* root_view,
+    const blink::WebTouchEvent& event) {
+  // Tests may call this without an initial TouchStart, so check event type
+  // explicitly here.
+  if (active_touches_ || event.GetType() != blink::WebInputEvent::kTouchStart)
+    return {nullptr, false, base::nullopt};
+
+  active_touches_ += CountChangedTouchPoints(event);
+  gfx::PointF original_point = gfx::PointF(event.touches[0].PositionInWidget());
+  gfx::PointF original_point_in_screen(event.touches[0].PositionInScreen());
+  gfx::PointF transformed_point;
+
+  return FindViewAtLocation(root_view, original_point, original_point_in_screen,
+                            viz::EventSource::TOUCH, &transformed_point);
+}
+
+void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
+    RenderWidgetHostViewBase* root_view,
+    RenderWidgetHostViewBase* target,
+    const blink::WebTouchEvent& touch_event,
+    const ui::LatencyInfo& latency) {
+  DCHECK(blink::WebInputEvent::IsTouchEventType(touch_event.GetType()) &&
+         touch_event.GetType() != blink::WebInputEvent::kTouchScrollStarted);
+
+  bool is_sequence_start = !touch_target_.target && target;
+  if (is_sequence_start) {
+    touch_target_.target = target;
+
+    DCHECK(touchscreen_gesture_target_map_.find(
+               touch_event.unique_touch_event_id) ==
+           touchscreen_gesture_target_map_.end());
+    touchscreen_gesture_target_map_[touch_event.unique_touch_event_id] =
+        touch_target_;
+  } else if (touch_event.GetType() == blink::WebInputEvent::kTouchStart) {
+    active_touches_ += CountChangedTouchPoints(touch_event);
+  }
+
+  // Test active_touches_ before decrementing, since its value can be
+  // reset to 0 in OnRenderWidgetHostViewBaseDestroyed, and this can
+  // happen between the TouchStart and a subsequent TouchMove/End/Cancel.
+  if ((touch_event.GetType() == blink::WebInputEvent::kTouchEnd ||
+       touch_event.GetType() == blink::WebInputEvent::kTouchCancel) &&
+      active_touches_) {
+    active_touches_ -= CountChangedTouchPoints(touch_event);
+  }
+  DCHECK_GE(active_touches_, 0);
+
+  if (!touch_target_.target) {
+    TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
+    root_view->ProcessAckedTouchEvent(touch_with_latency,
+                                      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    return;
+  }
+
+  if (is_sequence_start) {
+    if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
+      SendGestureScrollEnd(
+          bubbling_gesture_scroll_target_.target,
+          DummyGestureScrollUpdate(touch_event.TimeStampSeconds()));
+      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
+    }
+  }
+
+  blink::WebTouchEvent event(touch_event);
+  TransformEventTouchPositions(&event, root_view, touch_target_.target);
+  touch_target_.target->ProcessTouchEvent(event, latency);
+
+  if (!active_touches_)
+    touch_target_.target = nullptr;
+}
+
 void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,
     const ui::LatencyInfo& latency) {
-  switch (event->GetType()) {
-    case blink::WebInputEvent::kTouchStart: {
-      int current_active_touches = active_touches_;
-      active_touches_ += CountChangedTouchPoints(*event);
-      DCHECK(active_touches_);
-      if (!current_active_touches) {
-        // Since this is the first touch, it defines the target for the rest
-        // of this sequence.
-        DCHECK(!touch_target_.target);
-        gfx::PointF transformed_point;
-        gfx::PointF original_point(event->touches[0].PositionInWidget().x,
-                                   event->touches[0].PositionInWidget().y);
-        gfx::PointF original_point_in_screen(
-            event->touches[0].PositionInScreen().x,
-            event->touches[0].PositionInScreen().y);
-        auto result = FindViewAtLocation(
-            root_view, original_point, original_point_in_screen,
-            viz::EventSource::TOUCH, &transformed_point);
-        // TODO(crbug.com/796656): Do not ignore |result.should_query_view|.
-        touch_target_.target = result.view;
-
-        // TODO(wjmaclean): Instead of just computing a delta, we should extract
-        // the complete transform. We assume it doesn't change for the duration
-        // of the touch sequence, though this could be wrong; a better approach
-        // might be to always transform each point to the |touch_target_.target|
-        // for the duration of the sequence.
-        touch_target_.delta = transformed_point - original_point;
-        DCHECK(touchscreen_gesture_target_map_.find(
-                   event->unique_touch_event_id) ==
-               touchscreen_gesture_target_map_.end());
-        touchscreen_gesture_target_map_[event->unique_touch_event_id] =
-            touch_target_;
-
-        if (!touch_target_.target) {
-          TouchEventWithLatencyInfo touch_with_latency(*event, latency);
-          root_view->ProcessAckedTouchEvent(
-              touch_with_latency, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-          return;
-        }
-
-        if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
-          SendGestureScrollEnd(
-              bubbling_gesture_scroll_target_.target,
-              DummyGestureScrollUpdate(event->TimeStampSeconds()));
-          CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
-        }
-      }
-
-      if (touch_target_.target) {
-        TransformEventTouchPositions(event, touch_target_.delta);
-        touch_target_.target->ProcessTouchEvent(*event, latency);
-      }
-      break;
-    }
-    case blink::WebInputEvent::kTouchMove:
-      if (!touch_target_.target) {
-        TouchEventWithLatencyInfo touch_with_latency(*event, latency);
-        root_view->ProcessAckedTouchEvent(
-            touch_with_latency, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-        return;
-      }
-
-      TransformEventTouchPositions(event, touch_target_.delta);
-      touch_target_.target->ProcessTouchEvent(*event, latency);
-      break;
-    case blink::WebInputEvent::kTouchEnd:
-    case blink::WebInputEvent::kTouchCancel:
-      // Test active_touches_ before decrementing, since its value can be
-      // reset to 0 in OnRenderWidgetHostViewBaseDestroyed, and this can
-      // happen between the TouchStart and a subsequent TouchMove/End/Cancel.
-      if (active_touches_)
-        active_touches_ -= CountChangedTouchPoints(*event);
-      DCHECK_GE(active_touches_, 0);
-
-      if (!touch_target_.target) {
-        TouchEventWithLatencyInfo touch_with_latency(*event, latency);
-        root_view->ProcessAckedTouchEvent(
-            touch_with_latency, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-        return;
-      }
-
-      TransformEventTouchPositions(event, touch_target_.delta);
-      touch_target_.target->ProcessTouchEvent(*event, latency);
-      if (!active_touches_)
-        touch_target_.target = nullptr;
-      break;
-    default:
-      NOTREACHED();
-  }
+  // Note: this code is short term until we enable async routing for touch,
+  // and will ultimately use |event_targeter_| like RouteMouseEvent() does.
+  RenderWidgetTargetResult event_target =
+      FindTouchEventTarget(root_view, *event);
+  DispatchTouchEvent(root_view, event_target.view, *event, latency);
 }
 
 void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
