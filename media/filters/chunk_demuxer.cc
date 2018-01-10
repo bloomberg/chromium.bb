@@ -1184,9 +1184,13 @@ void ChunkDemuxer::OnSourceInitDone(
   DVLOG(1) << "OnSourceInitDone source_id=" << source_id
            << " duration=" << params.duration.InSecondsF();
   lock_.AssertAcquired();
-  DCHECK_EQ(state_, INITIALIZING);
-  DCHECK(pending_source_init_ids_.find(source_id) !=
-         pending_source_init_ids_.end());
+
+  // TODO(wolenetz): Change these to DCHECKs once less verification in release
+  // build is needed. See https://crbug.com/786975.
+  CHECK_EQ(state_, INITIALIZING);
+  CHECK(!init_cb_.is_null());
+  CHECK(pending_source_init_ids_.find(source_id) !=
+        pending_source_init_ids_.end());
   if (audio_streams_.empty() && video_streams_.empty()) {
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
@@ -1245,7 +1249,11 @@ void ChunkDemuxer::OnSourceInitDone(
     duration_ = kInfiniteDuration;
 
   // The demuxer is now initialized after the |start_timestamp_| was set.
+  // TODO(wolenetz): Change these to DCHECKs once less verification in release
+  // build is needed. See https://crbug.com/786975.
+  CHECK_EQ(state_, INITIALIZING);
   ChangeState_Locked(INITIALIZED);
+  CHECK(!init_cb_.is_null());
   base::ResetAndReturn(&init_cb_).Run(PIPELINE_OK);
 }
 
