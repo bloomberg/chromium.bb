@@ -2227,6 +2227,13 @@ void WindowTreeClient::SwapDisplayRoots(WindowTreeHostMus* window_tree_host1,
   DCHECK_NE(display_id1, display_id2);
   window_tree_host1->set_display_id(display_id2);
   window_tree_host2->set_display_id(display_id1);
+
+  // Swap the accelerated widgets so each host paints to the correct display.
+  gfx::AcceleratedWidget widget1 = window_tree_host1->GetAcceleratedWidget();
+  gfx::AcceleratedWidget widget2 = window_tree_host2->GetAcceleratedWidget();
+  window_tree_host1->OverrideAcceleratedWidget(widget2);
+  window_tree_host2->OverrideAcceleratedWidget(widget1);
+
   if (window_manager_client_) {
     window_manager_client_->SwapDisplayRoots(
         display_id1, display_id2, base::Bind(&OnAckMustSucceed, FROM_HERE));
