@@ -11,6 +11,7 @@ cr.exportPath('print_preview');
  */
 print_preview.PreviewAreaMessageId_ = {
   CUSTOM: 'custom',
+  UNSUPPORTED: 'unsupported-cloud-printer',
   LOADING: 'loading',
   PREVIEW_FAILED: 'preview-failed'
 };
@@ -223,6 +224,9 @@ cr.define('print_preview', function() {
   PreviewArea.MessageIdClassMap_ = {};
   PreviewArea.MessageIdClassMap_[print_preview.PreviewAreaMessageId_.CUSTOM] =
       'preview-area-custom-message';
+  PreviewArea
+      .MessageIdClassMap_[print_preview.PreviewAreaMessageId_.UNSUPPORTED] =
+      'preview-area-unsupported-cloud-printer';
   PreviewArea.MessageIdClassMap_[print_preview.PreviewAreaMessageId_.LOADING] =
       'preview-area-loading-message';
   PreviewArea
@@ -299,6 +303,14 @@ cr.define('print_preview', function() {
      */
     setPluginKeyEventCallback: function(callback) {
       this.keyEventCallback_ = callback;
+    },
+
+    /**
+     * Shows the unsupported cloud printer message on the preview area's
+     * overlay.
+     */
+    showUnsupportedCloudPrinterMessage: function() {
+      this.showMessage_(print_preview.PreviewAreaMessageId_.UNSUPPORTED);
     },
 
     /**

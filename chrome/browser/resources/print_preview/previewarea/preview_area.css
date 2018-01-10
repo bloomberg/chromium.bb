@@ -75,6 +75,11 @@
   margin-top: 12px;
 }
 
+#preview-area .learn-more-link {
+  -webkit-margin-start: 0.5em;
+  color: rgb(51, 103, 214);
+}
+
 #preview-area .preview-area-open-system-dialog-button-throbber {
   vertical-align: middle;
 }

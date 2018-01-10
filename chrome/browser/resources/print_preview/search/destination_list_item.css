@@ -56,12 +56,17 @@
   font-size: 75%;
 }
 
-.destination-list-item .offline-status {
+.destination-list-item .connection-status,
+.destination-list-item .learn-more-link {
   -webkit-margin-start: 1em;
   flex: 0 0 auto;
   font-size: 75%;
   line-height: 24px;
   vertical-align: middle;
+}
+
+.destination-list-item .learn-more-link {
+  color: rgb(51, 103, 214);
 }
 
 .register-promo {

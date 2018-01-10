@@ -33,6 +33,12 @@ cr.define('cloudprint', function() {
   const OWNED_TAG = '^own';
 
   /**
+   * Tag that denotes whether the printer passes the 2018 certificate.
+   * @const {string}
+   */
+  const CERT_TAG = '__cp_printer_passes_2018_cert__=';
+
+  /**
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
    */
@@ -58,6 +64,26 @@ cr.define('cloudprint', function() {
       return print_preview.DestinationType.GOOGLE_PROMOTED;
     }
     return print_preview.DestinationType.GOOGLE;
+  }
+
+  /**
+   * @param {!Array<string>} tags The array of tag strings sent by GCP server.
+   * @return {!print_preview.DestinationCertificateStatus} The certificate
+   *     status indicated by the tag. Returns NONE if certificate tag is not
+   *     found.
+   */
+  function extractCertificateStatus(tags) {
+    const certTag = tags.find(tag => tag.startsWith(CERT_TAG));
+    if (!certTag)
+      return print_preview.DestinationCertificateStatus.NONE;
+    const value = /** @type {print_preview.DestinationCertificateStatus} */ (
+        certTag.substring(CERT_TAG.length));
+    // Only 2 valid values sent by GCP server.
+    assert(
+        value == print_preview.DestinationCertificateStatus.UNKNOWN ||
+        value == print_preview.DestinationCertificateStatus.YES ||
+        value == print_preview.DestinationCertificateStatus.NO);
+    return value;
   }
 
   /**
@@ -88,7 +114,8 @@ cr.define('cloudprint', function() {
       lastAccessTime:
           parseInt(json[CloudDestinationField.LAST_ACCESS], 10) || Date.now(),
       cloudID: id,
-      description: json[CloudDestinationField.DESCRIPTION]
+      description: json[CloudDestinationField.DESCRIPTION],
+      certificateStatus: extractCertificateStatus(tags),
     };
     const cloudDest = new print_preview.Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,

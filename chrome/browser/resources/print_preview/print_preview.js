@@ -395,6 +395,11 @@ cr.define('print_preview', function() {
           this.onSelectedDestinationInvalid_.bind(this));
       this.tracker.add(
           this.destinationStore_,
+          print_preview.DestinationStore.EventType
+              .SELECTED_DESTINATION_UNSUPPORTED,
+          this.onSelectedDestinationUnsupported_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
           this.onDestinationSelect_.bind(this));
 
@@ -989,6 +994,16 @@ cr.define('print_preview', function() {
 
       // Pass certain directional keyboard events to the PDF viewer.
       this.previewArea_.handleDirectionalKeyEvent(e);
+    },
+
+    /**
+     * Called when the destination store has selected an unsupported cloud
+     * printer.
+     * @private
+     */
+    onSelectedDestinationUnsupported_: function() {
+      this.previewArea_.showUnsupportedCloudPrinterMessage();
+      this.onSettingsInvalid_();
     },
 
     /**

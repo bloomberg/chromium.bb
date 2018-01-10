@@ -727,9 +727,7 @@ cr.define('print_preview', function() {
               destination.id, destination.origin, destination.account);
         }
       } else {
-        cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+        this.sendSelectedDestinationUpdateEvent_();
       }
     }
 
@@ -984,6 +982,20 @@ cr.define('print_preview', function() {
     }
 
     /**
+     * Sends SELECTED_DESTINATION_CAPABILITIES_READY event if the destination
+     * is supported, or SELECTED_DESTINATION_UNSUPPORTED otherwise.
+     * @private
+     */
+    sendSelectedDestinationUpdateEvent_() {
+      cr.dispatchSimpleEvent(
+          this,
+          this.selectedDestination_.shouldShowInvalidCertificateError ?
+              DestinationStore.EventType.SELECTED_DESTINATION_UNSUPPORTED :
+              DestinationStore.EventType
+                  .SELECTED_DESTINATION_CAPABILITIES_READY);
+    }
+
+    /**
      * Updates an existing print destination with capabilities and display name
      * information. If the destination doesn't already exist, it will be added.
      * @param {!print_preview.Destination} destination Destination to update.
@@ -1008,9 +1020,7 @@ cr.define('print_preview', function() {
       if (this.selectedDestination_ &&
           (existingDestination == this.selectedDestination_ ||
            destination == this.selectedDestination_)) {
-        cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+        this.sendSelectedDestinationUpdateEvent_();
       }
     }
 
@@ -1334,6 +1344,8 @@ cr.define('print_preview', function() {
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
     SELECTED_DESTINATION_INVALID:
         'print_preview.DestinationStore.SELECTED_DESTINATION_INVALID',
+    SELECTED_DESTINATION_UNSUPPORTED:
+        'print_preview.DestinationStore.SELECTED_DESTINATION_UNSUPPORTED',
   };
 
   /**
