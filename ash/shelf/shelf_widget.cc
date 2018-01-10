@@ -264,7 +264,7 @@ void ShelfWidget::PostCreateShelf() {
 
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
-  Show();
+  ShowIfHidden();
 }
 
 bool ShelfWidget::IsShowingAppList() const {
@@ -365,9 +365,10 @@ void ShelfWidget::WillDeleteShelfLayoutManager() {
 }
 
 void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
-  if (!IsUsingViewsShelf()) {
-    login_shelf_view_->SetVisible(false);
-    shelf_view_->SetVisible(false);
+  // Do not show widget in UNKNOWN state - it might be called before shelf was
+  // initialized.
+  if (!IsUsingViewsShelf() || state == session_manager::SessionState::UNKNOWN) {
+    HideIfShown();
   } else {
     switch (state) {
       case session_manager::SessionState::ACTIVE:
@@ -388,13 +389,23 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
         login_shelf_view_->SetVisible(true);
         shelf_view_->SetVisible(false);
         break;
-      case session_manager::SessionState::UNKNOWN:
-        login_shelf_view_->SetVisible(false);
-        shelf_view_->SetVisible(false);
-        break;
+      default:
+        // session_manager::SessionState::UNKNOWN handled in if statement above.
+        NOTREACHED();
     }
+    ShowIfHidden();
   }
   login_shelf_view_->UpdateAfterSessionStateChange(state);
+}
+
+void ShelfWidget::HideIfShown() {
+  if (IsVisible())
+    Hide();
+}
+
+void ShelfWidget::ShowIfHidden() {
+  if (!IsVisible())
+    Show();
 }
 
 }  // namespace ash

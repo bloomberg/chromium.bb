@@ -427,8 +427,11 @@ class ShelfWidgetViewsVisibilityTest : public AshTestBase {
   void ExpectVisible(session_manager::SessionState state,
                      ShelfVisibility shelf_visibility) {
     GetSessionControllerClient()->SetSessionState(state);
-    EXPECT_EQ(shelf_visibility == kLoginShelf, login_shelf_view_->visible());
-    EXPECT_EQ(shelf_visibility == kShelf, shelf_view_->visible());
+    EXPECT_EQ(shelf_visibility == kNone, !GetShelfWidget()->IsVisible());
+    if (shelf_visibility != kNone) {
+      EXPECT_EQ(shelf_visibility == kLoginShelf, login_shelf_view_->visible());
+      EXPECT_EQ(shelf_visibility == kShelf, shelf_view_->visible());
+    }
   }
 
  private:
