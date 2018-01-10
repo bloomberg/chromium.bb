@@ -362,6 +362,29 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
   }
 
+  async function getRegistrationData(
+      appId, enrollChallenge, registrationData, opt_clientData) {
+    var isDirect = true;
+
+    if (conveyancePreference(enrollChallenge) == ConveyancePreference.NONE) {
+      isDirect = false;
+    } else if (chrome.cryptotokenPrivate != null) {
+      isDirect = await(new Promise((resolve, reject) => {
+        chrome.cryptotokenPrivate.canAppIdGetAttestation(
+            {'appId': appId, 'tabId': messageSender.tab.id}, resolve);
+      }));
+    }
+
+    if (isDirect) {
+      return registrationData;
+    }
+
+    const reg = new Registration(registrationData, appId, opt_clientData);
+    const keypair = await makeCertAndKey(reg.certificate);
+    const signature = await reg.sign(keypair.privateKey);
+    return reg.withReplacement(keypair.certDER, signature);
+  }
+
   /**
    * @param {string} u2fVersion
    * @param {string} registrationData Registration data, base64
@@ -381,31 +404,21 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
       appId = enrollChallenge['appId'];
     }
 
-    var promise = Promise.resolve(registrationData);
-    switch (conveyancePreference(enrollChallenge)) {
-      case ConveyancePreference.NONE: {
-        console.log('randomizing attestation certificate');
-        promise = new Promise(async function(resolve, reject) {
-          const reg = new Registration(registrationData, appId, opt_clientData);
-          const keypair = await makeCertAndKey(reg.certificate);
-          const signature = await reg.sign(keypair.privateKey);
-          resolve(reg.withReplacement(keypair.certDER, signature));
-        });
-        break;
-      }
-    }
-
-    promise.then(
-        (registrationData) => {
-          var responseData = makeEnrollResponseData(
-              enrollChallenge, u2fVersion, registrationData, opt_clientData);
-          var response = makeU2fSuccessResponse(request, responseData);
-          sendResponseOnce(sentResponse, closeable, response, sendResponse);
-        },
-        (err) => {
-          console.warn('attestation certificate replacement failed: ' + err);
-          sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
-        });
+    getRegistrationData(
+        appId, enrollChallenge, registrationData, opt_clientData)
+        .then(
+            (registrationData) => {
+              var responseData = makeEnrollResponseData(
+                  enrollChallenge, u2fVersion, registrationData,
+                  opt_clientData);
+              var response = makeU2fSuccessResponse(request, responseData);
+              sendResponseOnce(sentResponse, closeable, response, sendResponse);
+            },
+            (err) => {
+              console.warn(
+                  'attestation certificate replacement failed: ' + err);
+              sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
+            });
   }
 
   function timeout() {

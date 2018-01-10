@@ -10988,6 +10988,18 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       Chrome is being controlled by automated test software.
     </message>
 
+    <!-- Security Key permission -->
+    <message name="IDS_SECURITY_KEY_ATTESTATION_PERMISSION_FRAGMENT" desc="Permission request shown when a site requests attestation information from a Security Key. This follows a prompt: 'This site would like to:'">
+      See the serial number of your security key
+    </message>
+    <if expr="is_android">
+      <message name="IDS_SECURITY_KEY_ATTESTATION_INFOBAR_QUESTION" desc="Wording of an info bar prompt when a site requests attestation information from a Security Key.">
+        <ph name="URL">
+          $1<ex>maps.google.com</ex>
+        </ph> wants to see the serial number of your security key
+      </message>
+    </if>
+
     <!-- Media capture notification strings -->
     <if expr="is_android or enable_vr">
       <message name="IDS_VIDEO_CALL_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when a WebRTC video call is in progress." formatter_data="android_java">

@@ -94,6 +94,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "VideoCapture";
     case PermissionRequestType::PERMISSION_CLIPBOARD_READ:
       return "ClipboardRead";
+    case PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION:
+      return "SecurityKeyAttestation";
     default:
       NOTREACHED();
       return "";
