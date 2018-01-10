@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/login_state_notification_blocker.h"
+#include "ash/system/web_notification/session_state_notification_blocker.h"
 
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -15,18 +15,22 @@ namespace ash {
 
 namespace {
 
-// Returns true when screen is not locked.
 bool CalculateShouldShowNotification() {
-  return !Shell::Get()->session_controller()->IsScreenLocked();
+  SessionController* const session_controller =
+      Shell::Get()->session_controller();
+
+  return !session_controller->IsRunningInAppMode() &&
+         !session_controller->IsScreenLocked();
 }
 
-// Returns true if session state is active, there is an active user and the
-// PrefService of the active user is initialized.
 bool CalculateShouldShowPopup() {
   SessionController* const session_controller =
       Shell::Get()->session_controller();
-  if (session_controller->GetSessionState() != SessionState::ACTIVE)
+
+  if (session_controller->IsRunningInAppMode() ||
+      session_controller->GetSessionState() != SessionState::ACTIVE) {
     return false;
+  }
 
   const mojom::UserSession* active_user_session =
       session_controller->GetUserSession(0);
@@ -36,7 +40,7 @@ bool CalculateShouldShowPopup() {
 
 }  // namespace
 
-LoginStateNotificationBlocker::LoginStateNotificationBlocker(
+SessionStateNotificationBlocker::SessionStateNotificationBlocker(
     message_center::MessageCenter* message_center)
     : NotificationBlocker(message_center),
       should_show_notification_(CalculateShouldShowNotification()),
@@ -44,33 +48,41 @@ LoginStateNotificationBlocker::LoginStateNotificationBlocker(
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
-LoginStateNotificationBlocker::~LoginStateNotificationBlocker() {
+SessionStateNotificationBlocker::~SessionStateNotificationBlocker() {
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
-bool LoginStateNotificationBlocker::ShouldShowNotification(
+bool SessionStateNotificationBlocker::ShouldShowNotification(
     const message_center::Notification& notification) const {
   return should_show_notification_;
 }
 
-bool LoginStateNotificationBlocker::ShouldShowNotificationAsPopup(
+bool SessionStateNotificationBlocker::ShouldShowNotificationAsPopup(
     const message_center::Notification& notification) const {
+  SessionController* const session_controller =
+      Shell::Get()->session_controller();
+
+  // Kiosk/app state overrides ShouldAlwaysShowPopup().
+  if (session_controller->IsRunningInAppMode())
+    return false;
+
   if (ash::system_notifier::ShouldAlwaysShowPopups(notification.notifier_id()))
     return true;
 
   return should_show_popup_;
 }
 
-void LoginStateNotificationBlocker::OnSessionStateChanged(SessionState state) {
+void SessionStateNotificationBlocker::OnSessionStateChanged(
+    SessionState state) {
   CheckStateAndNotifyIfChanged();
 }
 
-void LoginStateNotificationBlocker::OnActiveUserPrefServiceChanged(
+void SessionStateNotificationBlocker::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   CheckStateAndNotifyIfChanged();
 }
 
-void LoginStateNotificationBlocker::CheckStateAndNotifyIfChanged() {
+void SessionStateNotificationBlocker::CheckStateAndNotifyIfChanged() {
   const bool new_should_show_notification = CalculateShouldShowNotification();
   const bool new_should_show_popup = CalculateShouldShowPopup();
   if (new_should_show_notification == should_show_notification_ &&

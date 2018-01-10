@@ -16,39 +16,12 @@
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/notification_blocker.h"
 
 namespace chromeos {
 
 // Timeout maintenance session after 30 minutes.
 constexpr base::TimeDelta kArcKioskMaintenanceSessionTimeout =
     base::TimeDelta::FromMinutes(30);
-
-// Blocks all notifications for ARC Kiosk
-class ArcKioskNotificationBlocker : public message_center::NotificationBlocker {
- public:
-  ArcKioskNotificationBlocker()
-      : message_center::NotificationBlocker(
-            message_center::MessageCenter::Get()) {
-    NotifyBlockingStateChanged();
-  }
-
-  ~ArcKioskNotificationBlocker() override {}
-
- private:
-  bool ShouldShowNotification(
-      const message_center::Notification& notification) const override {
-    return false;
-  }
-
-  bool ShouldShowNotificationAsPopup(
-      const message_center::Notification& notification) const override {
-    return false;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ArcKioskNotificationBlocker);
-};
 
 // static
 ArcKioskAppService* ArcKioskAppService::Create(Profile* profile) {
@@ -160,7 +133,6 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
       arc::prefs::kArcPolicyComplianceReported,
       base::Bind(&ArcKioskAppService::PreconditionsChanged,
                  base::Unretained(this)));
-  notification_blocker_.reset(new ArcKioskNotificationBlocker());
   PreconditionsChanged();
 }
 

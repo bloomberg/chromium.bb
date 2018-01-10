@@ -407,6 +407,18 @@ void AshTestBase::SimulateGuestLogin() {
   session->SetSessionState(SessionState::ACTIVE);
 }
 
+void AshTestBase::SimulateKioskMode(user_manager::UserType user_type) {
+  DCHECK(user_type == user_manager::USER_TYPE_ARC_KIOSK_APP ||
+         user_type == user_manager::USER_TYPE_KIOSK_APP);
+
+  const std::string user_email = "fake_kiosk@kioks-apps.device-local.localhost";
+  TestSessionControllerClient* session = GetSessionControllerClient();
+  session->SetIsRunningInAppMode(true);
+  session->AddUserSession(user_email, user_type);
+  session->SwitchActiveUser(AccountId::FromUserEmail(user_email));
+  session->SetSessionState(SessionState::ACTIVE);
+}
+
 void AshTestBase::ClearLogin() {
   GetSessionControllerClient()->Reset();
 }

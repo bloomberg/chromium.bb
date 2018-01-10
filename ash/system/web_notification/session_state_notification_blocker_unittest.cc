@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/web_notification/login_state_notification_blocker.h"
+#include "ash/system/web_notification/session_state_notification_blocker.h"
 
 #include <memory>
 
@@ -22,17 +22,17 @@ namespace ash {
 
 namespace {
 
-class LoginStateNotificationBlockerTest
+class SessionStateNotificationBlockerTest
     : public NoSessionAshTestBase,
       public message_center::NotificationBlocker::Observer {
  public:
-  LoginStateNotificationBlockerTest() = default;
-  ~LoginStateNotificationBlockerTest() override = default;
+  SessionStateNotificationBlockerTest() = default;
+  ~SessionStateNotificationBlockerTest() override = default;
 
   // tests::AshTestBase overrides:
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
-    blocker_.reset(new LoginStateNotificationBlocker(
+    blocker_.reset(new SessionStateNotificationBlocker(
         message_center::MessageCenter::Get()));
     blocker_->AddObserver(this);
   }
@@ -74,10 +74,10 @@ class LoginStateNotificationBlockerTest
   int state_changed_count_ = 0;
   std::unique_ptr<message_center::NotificationBlocker> blocker_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlockerTest);
+  DISALLOW_COPY_AND_ASSIGN(SessionStateNotificationBlockerTest);
 };
 
-TEST_F(LoginStateNotificationBlockerTest, BaseTest) {
+TEST_F(SessionStateNotificationBlockerTest, BaseTest) {
   // Default status: OOBE.
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
@@ -104,7 +104,7 @@ TEST_F(LoginStateNotificationBlockerTest, BaseTest) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
-TEST_F(LoginStateNotificationBlockerTest, AlwaysAllowedNotifier) {
+TEST_F(SessionStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   // NOTIFIER_DISPLAY is allowed to shown in the login screen.
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT,
@@ -134,7 +134,7 @@ TEST_F(LoginStateNotificationBlockerTest, AlwaysAllowedNotifier) {
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
-TEST_F(LoginStateNotificationBlockerTest, BlockOnPrefService) {
+TEST_F(SessionStateNotificationBlockerTest, BlockOnPrefService) {
   // Default status: OOBE.
   message_center::NotifierId notifier_id(
       message_center::NotifierId::APPLICATION, "test-notifier");
@@ -171,6 +171,16 @@ TEST_F(LoginStateNotificationBlockerTest, BlockOnPrefService) {
   session_controller_client->ProvidePrefServiceForUser(kUserAccountId);
   EXPECT_EQ(1, GetStateChangedCountAndReset());
   EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
+}
+
+TEST_F(SessionStateNotificationBlockerTest, BlockInKioskMode) {
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      system_notifier::kNotifierDisplay);
+  EXPECT_TRUE(ShouldShowNotificationAsPopup(notifier_id));
+
+  SimulateKioskMode(user_manager::USER_TYPE_KIOSK_APP);
+  EXPECT_FALSE(ShouldShowNotificationAsPopup(notifier_id));
 }
 
 }  // namespace
