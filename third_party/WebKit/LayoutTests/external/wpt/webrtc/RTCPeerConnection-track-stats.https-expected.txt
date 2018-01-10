@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL addTrack() without setLocalDescription() yields track stats assert_true: Has stats for track expected true got false
+FAIL addTrack() without setLocalDescription() yields stream stats assert_true: Has stats for stream expected true got false
+PASS addTrack() with setLocalDescription() yields track stats
+FAIL addTrack() with setLocalDescription() yields stream stats assert_true: Has stats for stream expected true got false
+FAIL addTrack(): Stream stats references track stats assert_true: Has stats for track and stream expected true got false
+PASS Legacy addStream(): Stream stats references track stats
+Harness: the test ran to completion.
+
