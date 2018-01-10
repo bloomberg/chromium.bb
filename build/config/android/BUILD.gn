@@ -69,7 +69,7 @@ config("compiler") {
     compile_api_level = 16
   } else if (current_cpu == "mips64el") {
     # Place holder for mips64 support, not tested.
-    abi_target = "mips64el-linux-androideabi"
+    abi_target = "mips64el-linux-android"
     compile_api_level = 21
   } else {
     assert(false, "Architecture not supported")
