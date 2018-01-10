@@ -1534,13 +1534,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   // field trial may overwrite another. See Source/core/frame/Settings.in in
   // Blink for the list of valid keys.
   static const char* const kBlinkSettingsFieldTrials[] = {
-      // Keys: backgroundHtmlParserOutstandingTokenLimit
-      //       backgroundHtmlParserPendingTokenLimit
-      "BackgroundHtmlParserTokenLimits",
-
-      // Keys: doHtmlPreloadScanning
-      "HtmlPreloadScanning",
-
       // Keys: disallowFetchForDocWrittenScriptsInMainFrame
       //       disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections
       //       disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G
