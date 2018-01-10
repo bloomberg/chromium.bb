@@ -52,8 +52,8 @@ public class ChromeActionModeCallbackTest {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         RecordUserAction.setDisabledForTests(true);
 
-        mActionModeCallback = Mockito.spy(new ChromeActionModeCallback(
-                RuntimeEnvironment.application, mTab, mActionModeCallbackHelper));
+        mActionModeCallback =
+                Mockito.spy(new ChromeActionModeCallback(mTab, mActionModeCallbackHelper));
     }
 
     @After

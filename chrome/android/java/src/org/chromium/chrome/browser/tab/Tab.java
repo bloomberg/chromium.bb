@@ -1797,8 +1797,8 @@ public class Tab
                 R.string.accessibility_content_view));
         cvc.initialize(new TabViewAndroidDelegate(this, cv), cv, webContents, getWindowAndroid());
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
-        ChromeActionModeCallback actionModeCallback = new ChromeActionModeCallback(
-                mThemedApplicationContext, this, controller.getActionModeCallbackHelper());
+        ChromeActionModeCallback actionModeCallback =
+                new ChromeActionModeCallback(this, controller.getActionModeCallbackHelper());
         controller.setActionModeCallback(actionModeCallback);
         return cvc;
     }
