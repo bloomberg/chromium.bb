@@ -3266,21 +3266,33 @@ static void write_frame_size_with_refs(AV1_COMP *cpi,
 
 static void write_profile(BITSTREAM_PROFILE profile,
                           struct aom_write_bit_buffer *wb) {
-  switch (profile) {
-    case PROFILE_0: aom_wb_write_literal(wb, 0, 2); break;
-    case PROFILE_1: aom_wb_write_literal(wb, 2, 2); break;
-    case PROFILE_2: aom_wb_write_literal(wb, 1, 2); break;
-    case PROFILE_3: aom_wb_write_literal(wb, 6, 3); break;
-    default: assert(0);
+  assert(profile >= PROFILE_0 && profile < MAX_PROFILES);
+  aom_wb_write_literal(wb, profile, 2);
+}
+
+static void write_bitdepth(AV1_COMMON *const cm,
+                           struct aom_write_bit_buffer *wb) {
+  // Profile 0/1: [0] for 8 bit, [1]  10-bit
+  // Profile   2: [0] for 8 bit, [10] 10-bit, [11] - 12-bit
+  aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_8 ? 0 : 1);
+  if (cm->profile == PROFILE_2 && cm->bit_depth != AOM_BITS_8) {
+    aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
   }
 }
 
 static void write_bitdepth_colorspace_sampling(
     AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
-  if (cm->profile >= PROFILE_2) {
-    assert(cm->bit_depth > AOM_BITS_8);
-    aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
-  }
+  write_bitdepth(cm, wb);
+#if CONFIG_MONO_VIDEO
+  const int is_monochrome = cm->color_space == AOM_CS_MONOCHROME;
+  // monochrome bit
+  if (cm->profile != PROFILE_1)
+    aom_wb_write_bit(wb, is_monochrome);
+  else
+    assert(!is_monochrome);
+#elif !CONFIG_CICP
+  const int is_monochrome = 0;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_UNSPECIFIED &&
       cm->transfer_characteristics == AOM_CICP_TC_UNSPECIFIED &&
@@ -3294,12 +3306,12 @@ static void write_bitdepth_colorspace_sampling(
   }
 #else
 #if CONFIG_COLORSPACE_HEADERS
-  aom_wb_write_literal(wb, cm->color_space, 5);
+  if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 5);
   aom_wb_write_literal(wb, cm->transfer_function, 5);
 #else
-  aom_wb_write_literal(wb, cm->color_space, 3 + CONFIG_MONO_VIDEO);
-#endif
-#endif
+  if (!is_monochrome) aom_wb_write_literal(wb, cm->color_space, 4);
+#endif  // CONFIG_COLORSPACE_HEADERS
+#endif  // CONFIG_CICP
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -3308,23 +3320,32 @@ static void write_bitdepth_colorspace_sampling(
                                    // dependency too
 #else
   if (cm->color_space == AOM_CS_SRGB) {
-#endif
-    assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
-    aom_wb_write_bit(wb, 0);  // unused
-#if CONFIG_MONO_VIDEO && !CONFIG_CICP
-  } else if (cm->color_space == AOM_CS_MONOCHROME) {
+#endif  // CONFIG_CICP
+    assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
+    assert(cm->profile == PROFILE_1 ||
+           (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12));
+#if CONFIG_MONO_VIDEO
+  } else if (is_monochrome) {
     return;
 #endif  // CONFIG_MONO_VIDEO
   } else {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
     aom_wb_write_bit(wb, cm->color_range);
-    if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
-      assert(cm->subsampling_x != 1 || cm->subsampling_y != 1);
-      aom_wb_write_bit(wb, cm->subsampling_x);
-      aom_wb_write_bit(wb, cm->subsampling_y);
-      aom_wb_write_bit(wb, 0);  // unused
-    } else {
+    if (cm->profile == PROFILE_0) {
+      // 420 only
       assert(cm->subsampling_x == 1 && cm->subsampling_y == 1);
+    } else if (cm->profile == PROFILE_1) {
+      // 444 only
+      assert(cm->subsampling_x == 0 && cm->subsampling_y == 0);
+    } else if (cm->profile == PROFILE_2) {
+      if (cm->bit_depth == AOM_BITS_12) {
+        // 420, 444 or 422
+        aom_wb_write_bit(wb, cm->subsampling_x);
+        aom_wb_write_bit(wb, cm->subsampling_y);
+      } else {
+        // 422 only
+        assert(cm->subsampling_x == 1 && cm->subsampling_y == 0);
+      }
     }
 #if CONFIG_COLORSPACE_HEADERS
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {

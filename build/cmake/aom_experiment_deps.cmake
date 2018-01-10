@@ -26,12 +26,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_CICP)
-    if (CONFIG_MONO_VIDEO)
-      change_config_and_warn(CONFIG_MONO_VIDEO 0 CONFIG_CICP)
-    endif ()
-  endif ()
-
   if (CONFIG_EOB_FIRST)
     if (NOT CONFIG_LV_MAP)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_EOB_FIRST)

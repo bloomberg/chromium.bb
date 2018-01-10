@@ -241,7 +241,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(cfg, g_h, 1, 65535);  // 16 bits available
   RANGE_CHECK(cfg, g_timebase.den, 1, 1000000000);
   RANGE_CHECK(cfg, g_timebase.num, 1, cfg->g_timebase.den);
-  RANGE_CHECK_HI(cfg, g_profile, 3);
+  RANGE_CHECK_HI(cfg, g_profile, MAX_PROFILES - 1);
 
   RANGE_CHECK_HI(cfg, rc_max_quantizer, 63);
   RANGE_CHECK_HI(cfg, rc_min_quantizer, cfg->rc_max_quantizer);
@@ -391,15 +391,12 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 
   if (cfg->g_profile <= (unsigned int)PROFILE_1 &&
-      cfg->g_bit_depth > AOM_BITS_8) {
-    ERROR("Codec high bit-depth not supported in profile < 2");
+      cfg->g_bit_depth > AOM_BITS_10) {
+    ERROR("Codec bit-depth 12 not supported in profile < 2");
   }
-  if (cfg->g_profile <= (unsigned int)PROFILE_1 && cfg->g_input_bit_depth > 8) {
-    ERROR("Source high bit-depth not supported in profile < 2");
-  }
-  if (cfg->g_profile > (unsigned int)PROFILE_1 &&
-      cfg->g_bit_depth == AOM_BITS_8) {
-    ERROR("Codec bit-depth 8 not supported in profile > 1");
+  if (cfg->g_profile <= (unsigned int)PROFILE_1 &&
+      cfg->g_input_bit_depth > 10) {
+    ERROR("Source bit-depth 12 not supported in profile < 2");
   }
 
 #if CONFIG_CICP
@@ -454,25 +451,20 @@ static aom_codec_err_t validate_img(aom_codec_alg_priv_t *ctx,
     case AOM_IMG_FMT_YV12:
     case AOM_IMG_FMT_I420:
     case AOM_IMG_FMT_I42016: break;
-    case AOM_IMG_FMT_I422:
     case AOM_IMG_FMT_I444:
-    case AOM_IMG_FMT_I440:
-      if (ctx->cfg.g_profile != (unsigned int)PROFILE_1) {
-        ERROR(
-            "Invalid image format. I422, I444, I440 images are "
-            "not supported in profile.");
-      }
-      break;
-    case AOM_IMG_FMT_I42216:
     case AOM_IMG_FMT_I44416:
-    case AOM_IMG_FMT_I44016:
-      if (ctx->cfg.g_profile != (unsigned int)PROFILE_1 &&
-          ctx->cfg.g_profile != (unsigned int)PROFILE_3) {
-        ERROR(
-            "Invalid image format. 16-bit I422, I444, I440 images are "
-            "not supported in profile.");
+      if (ctx->cfg.g_profile == (unsigned int)PROFILE_0) {
+        ERROR("Invalid image format. I444 images not supported in profile.");
       }
       break;
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I42216:
+      if (ctx->cfg.g_profile != (unsigned int)PROFILE_2) {
+        ERROR("Invalid image format. I422 images not supported in profile.");
+      }
+      break;
+    case AOM_IMG_FMT_I440:
+    case AOM_IMG_FMT_I44016:
     default:
       ERROR(
           "Invalid image format. Only YV12, I420, I422, I444 images are "

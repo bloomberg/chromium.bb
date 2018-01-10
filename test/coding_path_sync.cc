@@ -62,7 +62,12 @@ class CompressedSource {
     cfg.g_w = width_;
     cfg.g_h = height_;
     cfg.g_lag_in_frames = 0;
-    cfg.g_profile = format_ == AOM_IMG_FMT_I420 ? 0 : 1;
+    if (format_ == AOM_IMG_FMT_I420)
+      cfg.g_profile = 0;
+    else if (format_ == AOM_IMG_FMT_I444)
+      cfg.g_profile = 1;
+    else if (format_ == AOM_IMG_FMT_I422)
+      cfg.g_profile = 2;
 
     aom_codec_enc_init(&enc_, algo, &cfg, 0);
   }

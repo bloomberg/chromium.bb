@@ -156,21 +156,37 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
 }
 
 #if !CONFIG_OBU
+static aom_bit_depth_t parse_bitdepth(BITSTREAM_PROFILE profile,
+                                      struct aom_read_bit_buffer *rb) {
+  aom_bit_depth_t bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_10 : AOM_BITS_8;
+  if (profile < PROFILE_2 || bit_depth == AOM_BITS_8) {
+    return bit_depth;
+  }
+  bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
+  return bit_depth;
+}
+
 static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
                                               struct aom_read_bit_buffer *rb) {
 #if CONFIG_CICP
   aom_color_primaries_t color_primaries;
   aom_transfer_characteristics_t transfer_characteristics;
   aom_matrix_coefficients_t matrix_coefficients;
-#else
-  aom_color_space_t color_space;
-#endif
-#if CONFIG_COLORSPACE_HEADERS
+#endif  // CONFIG_CICP
   int subsampling_x = 0;
   int subsampling_y = 0;
-#endif
+  aom_color_space_t color_space;
 
-  if (profile >= PROFILE_2) rb->bit_offset += 1;  // Bit-depth 10 or 12.
+  aom_bit_depth_t bit_depth = parse_bitdepth(profile, rb);
+  color_space = AOM_CS_UNKNOWN;
+#if CONFIG_MONO_VIDEO
+  // Monochrome bit
+  const int is_monochrome = profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
+  color_space = is_monochrome ? AOM_CS_MONOCHROME : AOM_CS_UNKNOWN;
+#else
+  const int is_monochrome = 0;
+#endif  // CONFIG_MONO_VIDEO
+
 #if CONFIG_CICP
   int color_description_present_flag = aom_rb_read_bit(rb);
   if (color_description_present_flag) {
@@ -185,13 +201,16 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   }
 #else
 #if CONFIG_COLORSPACE_HEADERS
-  color_space = (aom_color_space_t)aom_rb_read_literal(rb, 5);
+  if (!is_monochrome) {
+    color_space = (aom_color_space_t)aom_rb_read_literal(rb, 5);
+  }
   rb->bit_offset += 5;  // Transfer function
 #else
-  color_space =
-      (aom_color_space_t)aom_rb_read_literal(rb, 3 + CONFIG_MONO_VIDEO);
-#endif
-#endif
+  if (!is_monochrome) {
+    color_space = (aom_color_space_t)aom_rb_read_literal(rb, 4);
+  }
+#endif  // CONFIG_COLORSPACE_HEADERS
+#endif  // CONFIG_CICP
 #if CONFIG_CICP
   if (color_primaries == AOM_CICP_CP_BT_709 &&
       transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -200,40 +219,42 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
                                                       // too
 #else
   if (color_space == AOM_CS_SRGB) {
-#endif
-    if (profile == PROFILE_1 || profile == PROFILE_3) {
-      rb->bit_offset += 1;  // unused
-    } else {
-      // RGB is only available in version 1.
+#endif  // CONFIG_CICP
+    if (!(profile == PROFILE_1 ||
+          (profile == PROFILE_2 && bit_depth == AOM_BITS_12))) {
       return 0;
     }
-#if CONFIG_MONO_VIDEO && !CONFIG_CICP
-  } else if (color_space == AOM_CS_MONOCHROME) {
+#if CONFIG_MONO_VIDEO
+  } else if (is_monochrome) {
     return 1;
 #endif  // CONFIG_MONO_VIDEO
   } else {
     rb->bit_offset += 1;  // [16,235] (including xvycc) vs [0,255] range.
 
-    if (profile == PROFILE_1 || profile == PROFILE_3) {
-#if CONFIG_COLORSPACE_HEADERS
-      subsampling_x = aom_rb_read_bit(rb);
-      subsampling_y = aom_rb_read_bit(rb);
-#else
-      rb->bit_offset += 2;  // subsampling x/y.
-#endif
-      rb->bit_offset += 1;  // unused.
-#if CONFIG_COLORSPACE_HEADERS
-    } else {
+    if (profile == PROFILE_0) {
       subsampling_x = 1;
       subsampling_y = 1;
+    } else if (profile == PROFILE_1) {
+      subsampling_x = 0;
+      subsampling_y = 0;
+    } else if (profile == PROFILE_2) {
+      if (bit_depth == AOM_BITS_12) {
+        subsampling_x = aom_rb_read_bit(rb);
+        subsampling_y = aom_rb_read_bit(rb);
+      } else {
+        subsampling_x = 1;
+        subsampling_y = 0;
+      }
     }
+#if CONFIG_COLORSPACE_HEADERS
     if (subsampling_x == 1 && subsampling_y == 1) {
-      rb->bit_offset += 2;
+      rb->bit_offset += 2;  // chroma_sample_position
     }
-#else
-    }
-#endif
+#endif  // CONFIG_COLORSPACE_HEADERS
   }
+#if CONFIG_EXT_QM
+  rb->bit_offset += 1;  // separate_uv_delta_q
+#endif                  // CONFIG_EXT_QM
   return 1;
 }
 #endif

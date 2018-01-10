@@ -3090,10 +3090,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #endif
   cm->color_range = oxcf->color_range;
 
-  if (cm->profile <= PROFILE_1)
-    assert(cm->bit_depth == AOM_BITS_8);
-  else
-    assert(cm->bit_depth > AOM_BITS_8);
+  assert(IMPLIES(cm->profile <= PROFILE_1, cm->bit_depth <= AOM_BITS_10));
 
   cpi->oxcf = *oxcf;
   x->e_mbd.bd = (int)cm->bit_depth;
@@ -6435,16 +6432,22 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
   aom_usec_timer_mark(&timer);
   cpi->time_receive_data += aom_usec_timer_elapsed(&timer);
 
-  if ((cm->profile == PROFILE_0 || cm->profile == PROFILE_2) &&
+  if ((cm->profile == PROFILE_0) &&
       (subsampling_x != 1 || subsampling_y != 1)) {
     aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
-                       "Non-4:2:0 color format requires profile 1 or 3");
+                       "Non-4:2:0 color format requires profile 1 or 2");
     res = -1;
   }
-  if ((cm->profile == PROFILE_1 || cm->profile == PROFILE_3) &&
-      (subsampling_x == 1 && subsampling_y == 1)) {
+  if ((cm->profile == PROFILE_1) &&
+      !(subsampling_x == 0 && subsampling_y == 0)) {
     aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
-                       "4:2:0 color format requires profile 0 or 2");
+                       "Profile 1 requires 4:4:4 color format");
+    res = -1;
+  }
+  if ((cm->profile == PROFILE_2) && (cm->bit_depth <= AOM_BITS_10) &&
+      !(subsampling_x == 1 && subsampling_y == 0)) {
+    aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
+                       "Profile 2 bit-depth < 10 requires 4:2:2 color format");
     res = -1;
   }
 

@@ -2140,16 +2140,28 @@ static void error_handler(void *data) {
   aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME, "Truncated packet");
 }
 
+void av1_read_bitdepth(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
+  cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_10 : AOM_BITS_8;
+  if (cm->profile < PROFILE_2 || cm->bit_depth == AOM_BITS_8) {
+    return;
+  }
+  cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
+  return;
+}
+
 void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            struct aom_read_bit_buffer *rb,
                                            int allow_lowbitdepth) {
-  if (cm->profile >= PROFILE_2) {
-    cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
-  } else {
-    cm->bit_depth = AOM_BITS_8;
-  }
+  av1_read_bitdepth(cm, rb);
 
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
+#if CONFIG_MONO_VIDEO
+  // monochrome bit (not needed for PROFILE_1)
+  const int is_monochrome = cm->profile != PROFILE_1 ? aom_rb_read_bit(rb) : 0;
+  cm->color_space = is_monochrome ? AOM_CS_MONOCHROME : AOM_CS_UNKNOWN;
+#elif !CONFIG_CICP
+  const int is_monochrome = 0;
+#endif  // CONFIG_MONO_VIDEO
 #if CONFIG_CICP
   int color_description_present_flag = aom_rb_read_bit(rb);
   if (color_description_present_flag) {
@@ -2163,12 +2175,12 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   }
 #else
 #if CONFIG_COLORSPACE_HEADERS
-  cm->color_space = aom_rb_read_literal(rb, 5);
+  if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 5);
   cm->transfer_function = aom_rb_read_literal(rb, 5);
 #else
-  cm->color_space = aom_rb_read_literal(rb, 3 + CONFIG_MONO_VIDEO);
-#endif
-#endif
+  if (!is_monochrome) cm->color_space = aom_rb_read_literal(rb, 4);
+#endif  // CONFIG_COLORSPACE_HEADERS
+#endif  // CONFIG_CICP
 #if CONFIG_CICP
   if (cm->color_primaries == AOM_CICP_CP_BT_709 &&
       cm->transfer_characteristics == AOM_CICP_TC_SRGB &&
@@ -2177,54 +2189,53 @@ void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                                           // dependency too
 #else
   if (cm->color_space == AOM_CS_SRGB) {
-#endif
-    if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
-      // Note if colorspace is SRGB then 4:4:4 chroma sampling is assumed.
-      // 4:2:2 or 4:4:0 chroma sampling is not allowed.
-      cm->subsampling_y = cm->subsampling_x = 0;
-      if (aom_rb_read_bit(rb))
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Reserved bit set");
-    } else {
+#endif  // CONFIG_CICP
+    cm->subsampling_y = cm->subsampling_x = 0;
+    if (!(cm->profile == PROFILE_1 ||
+          (cm->profile == PROFILE_2 && cm->bit_depth == AOM_BITS_12))) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "4:4:4 color not supported in profile 0 or 2");
+                         "SRGB colorspace not copatible with profile");
     }
-#if CONFIG_MONO_VIDEO && !CONFIG_CICP
-  } else if (cm->color_space == AOM_CS_MONOCHROME) {
+#if CONFIG_MONO_VIDEO
+  } else if (is_monochrome) {
     cm->color_range = AOM_CR_FULL_RANGE;
     cm->subsampling_y = cm->subsampling_x = 1;
 #if CONFIG_COLORSPACE_HEADERS
     cm->chroma_sample_position = AOM_CSP_UNKNOWN;
-#endif
+#endif  // CONFIG_COLORSPACE_HEADERS
 #if CONFIG_EXT_QM
     cm->separate_uv_delta_q = 0;
-#endif
+#endif  // CONFIG_EXT_QM
     return;
 #endif  // CONFIG_MONO_VIDEO
   } else {
     // [16,235] (including xvycc) vs [0,255] range
     cm->color_range = aom_rb_read_bit(rb);
-    if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
-      cm->subsampling_x = aom_rb_read_bit(rb);
-      cm->subsampling_y = aom_rb_read_bit(rb);
-      if (cm->subsampling_x == 1 && cm->subsampling_y == 1)
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "4:2:0 color not supported in profile 1 or 3");
-      if (aom_rb_read_bit(rb))
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Reserved bit set");
-    } else {
-      cm->subsampling_y = cm->subsampling_x = 1;
+    if (cm->profile == PROFILE_0) {
+      // 420 only
+      cm->subsampling_x = cm->subsampling_y = 1;
+    } else if (cm->profile == PROFILE_1) {
+      // 444 only
+      cm->subsampling_x = cm->subsampling_y = 0;
+    } else if (cm->profile == PROFILE_2) {
+      if (cm->bit_depth == AOM_BITS_12) {
+        cm->subsampling_x = aom_rb_read_bit(rb);
+        cm->subsampling_y = aom_rb_read_bit(rb);
+      } else {
+        // 422
+        cm->subsampling_x = 1;
+        cm->subsampling_y = 0;
+      }
     }
 #if CONFIG_COLORSPACE_HEADERS
     if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
       cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
     }
-#endif
+#endif  // CONFIG_COLORSPACE_HEADERS
   }
 #if CONFIG_EXT_QM
   cm->separate_uv_delta_q = aom_rb_read_bit(rb);
-#endif
+#endif  // CONFIG_EXT_QM
 }
 
 #if CONFIG_REFERENCE_BUFFER || CONFIG_OBU
@@ -3206,9 +3217,7 @@ void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
 }
 
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
-  int profile = aom_rb_read_bit(rb);
-  profile |= aom_rb_read_bit(rb) << 1;
-  if (profile > 2) profile += aom_rb_read_bit(rb);
+  int profile = aom_rb_read_literal(rb, 2);
   return (BITSTREAM_PROFILE)profile;
 }
 
