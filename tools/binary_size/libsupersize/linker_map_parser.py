@@ -229,9 +229,22 @@ class MapFileParserGold(object):
                     symbol_gap_count += 1
                     syms.append(sym)
 
+              #  .text.res_findResource_60
+              #                 0x00178de8       0x12a obj/...
+              #                 0x00178de9                res_findResource_60
+              #  .text._ZN3url6ParsedC2Ev
+              #                 0x0021ad62       0x2e obj/url/url/url_parse.o
+              #                 0x0021ad63                url::Parsed::Parsed()
+              #  .text.unlikely._ZN4base3CPUC2Ev
+              #                 0x003f9d3c       0x48 obj/base/base/cpu.o
+              #                 0x003f9d3d                base::CPU::CPU()
+              full_name = name
+              if mangled_name and (not name or mangled_name.startswith('_Z') or
+                                   '._Z' in mangled_name):
+                full_name = mangled_name
+
               sym = models.Symbol(section_name, size, address=address,
-                                  full_name=name or mangled_name,
-                                  object_path=path)
+                                  full_name=full_name, object_path=path)
               syms.append(sym)
           section_end_address = section_address + section_size
           if section_name != models.SECTION_BSS and (

@@ -58,7 +58,7 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 .text@28f1c8(size_without_padding=20,padding=8,full_name=_GLOBAL__sub_I_SkDeviceProfile.cpp,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=,flags={startup},num_aliases=1)
 .text@28f1e0(size_without_padding=69120,padding=4,full_name=foo_bar,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=,flags={unlikely},num_aliases=1)
 .text@2a0000(size_without_padding=16,padding=32,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/WebKit.a/PaintChunker.o,source_path=,flags={},num_aliases=1)
-.text@2a0010(size_without_padding=12,padding=0,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/WebKit.a/PaintChunker.o,source_path=,flags={clone},num_aliases=1)
+.text@2a0010(size_without_padding=12,padding=0,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/WebKit.a/PaintChunker.o,source_path=,flags={clone,hot},num_aliases=1)
 .text@2a0020(size_without_padding=24,padding=4,full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&),object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=,flags={},num_aliases=1)
 .text@2a1000(size_without_padding=0,padding=4040,full_name=** symbol gap 1,object_path=,source_path=,flags={},num_aliases=1)
 .text@2a1000(size_without_padding=94,padding=0,full_name=blink::PaintChunker::releasePaintChunks(),object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=,flags={anon,clone},num_aliases=1)
