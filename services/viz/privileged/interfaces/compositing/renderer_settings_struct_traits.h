@@ -47,6 +47,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.release_overlay_resources_after_gpu_query;
   }
 
+  static bool tint_gl_composited_content(const viz::RendererSettings& input) {
+    return input.tint_gl_composited_content;
+  }
+
   static bool show_overdraw_feedback(const viz::RendererSettings& input) {
     return input.show_overdraw_feedback;
   }

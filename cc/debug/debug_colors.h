@@ -5,6 +5,7 @@
 #ifndef CC_DEBUG_DEBUG_COLORS_H_
 #define CC_DEBUG_DEBUG_COLORS_H_
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "cc/debug/debug_export.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -109,6 +110,8 @@ class CC_DEBUG_EXPORT DebugColors {
 
   static SkColor GLCompositedTextureQuadBorderColor(int index);
   static int GLCompositedTextureQuadBoderWidth();
+
+  static base::span<const float> TintCompositedContentColorTransformMatrix();
 
   static SkColor HUDBackgroundColor();
   static SkColor HUDSeparatorLineColor();

@@ -24826,6 +24826,7 @@ from previous Chrome versions.
   <int value="-1963402827" label="enable-topchrome-md"/>
   <int value="-1962588488" label="SpeculativePreconnect:disabled"/>
   <int value="-1961648833" label="show_summary"/>
+  <int value="-1961497025" label="tint-gl-composited-content"/>
   <int value="-1961062505" label="VrBrowsingInCustomTab:disabled"/>
   <int value="-1960567385" label="KeepPrefetchedContentSuggestions:enabled"/>
   <int value="-1957328398" label="MacSystemShareMenu:disabled"/>
