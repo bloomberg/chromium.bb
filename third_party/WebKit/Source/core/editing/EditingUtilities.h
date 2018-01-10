@@ -384,10 +384,6 @@ CORE_EXPORT bool ElementCannotHaveEndTag(const Node&);
 // Functions returning VisibleSelection
 VisibleSelection SelectionForParagraphIteration(const VisibleSelection&);
 
-// TODO(editing-dev): We should move "adjustedSelectionStartForStyleComputation"
-// to "EditingStyleUtilitie.cpp" as local function since it used only there.
-Position AdjustedSelectionStartForStyleComputation(const Position&);
-
 // Miscellaneous functions on Text
 inline bool IsWhitespace(UChar c) {
   return c == kNoBreakSpaceCharacter || c == ' ' || c == '\n' || c == '\t';
