@@ -984,6 +984,10 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                   static bool first = true;
                   if (first) {
                     first = false;
+                    // Need to leak the client pipe, or else the renderer will
+                    // get a disconnect error and load the error page.
+                    auto* leak_client = new content::mojom::URLLoaderClientPtr;
+                    *leak_client = std::move(params->client);
                     closure.Run();
                     return true;
                   }
@@ -1388,9 +1392,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
 }
 
 // crbug.com/708158
-// crbug.com/800373
-#if (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_LINUX) && !defined(NDEBUG))
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
 #define MAYBE_PrerenderNoCommitNoSwap DISABLED_PrerenderNoCommitNoSwap
 #else
 #define MAYBE_PrerenderNoCommitNoSwap PrerenderNoCommitNoSwap
