@@ -2807,4 +2807,99 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   buffer.Playback(&canvas, &image_provider);
 }
 
+TEST(PaintOpBufferTest, FilterSerialization) {
+  SkScalar scalars[9] = {1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f};
+  std::vector<sk_sp<PaintFilter>> filters = {
+      sk_sp<PaintFilter>{new ColorFilterPaintFilter(
+          SkColorFilter::MakeLinearToSRGBGamma(), nullptr)},
+      sk_sp<PaintFilter>{new BlurPaintFilter(
+          0.5f, 0.3f, SkBlurImageFilter::kRepeat_TileMode, nullptr)},
+      sk_sp<PaintFilter>{new DropShadowPaintFilter(
+          5.f, 10.f, 0.1f, 0.3f, SK_ColorBLUE,
+          SkDropShadowImageFilter::kDrawShadowOnly_ShadowMode, nullptr)},
+      sk_sp<PaintFilter>{new MagnifierPaintFilter(SkRect::MakeXYWH(5, 6, 7, 8),
+                                                  10.5f, nullptr)},
+      sk_sp<PaintFilter>{new AlphaThresholdPaintFilter(
+          SkRegion(SkIRect::MakeXYWH(0, 0, 100, 200)), 10.f, 20.f, nullptr)},
+      sk_sp<PaintFilter>{new MatrixConvolutionPaintFilter(
+          SkISize::Make(3, 3), scalars, 30.f, 123.f, SkIPoint::Make(0, 0),
+          SkMatrixConvolutionImageFilter::kClampToBlack_TileMode, true,
+          nullptr)},
+      sk_sp<PaintFilter>{
+          new RecordPaintFilter(sk_sp<PaintRecord>{new PaintRecord},
+                                SkRect::MakeXYWH(10, 15, 20, 25))},
+      sk_sp<PaintFilter>{new MorphologyPaintFilter(
+          MorphologyPaintFilter::MorphType::kErode, 15, 30, nullptr)},
+      sk_sp<PaintFilter>{new OffsetPaintFilter(-1.f, -2.f, nullptr)},
+      sk_sp<PaintFilter>{new TilePaintFilter(
+          SkRect::MakeXYWH(1, 2, 3, 4), SkRect::MakeXYWH(4, 3, 2, 1), nullptr)},
+      sk_sp<PaintFilter>{new TurbulencePaintFilter(
+          TurbulencePaintFilter::TurbulenceType::kFractalNoise, 3.3f, 4.4f, 2,
+          123, nullptr)},
+      sk_sp<PaintFilter>{
+          new MatrixPaintFilter(SkMatrix::I(), kHigh_SkFilterQuality, nullptr)},
+      sk_sp<PaintFilter>{new LightingDistantPaintFilter(
+          PaintFilter::LightingType::kSpecular, SkPoint3::Make(1, 2, 3),
+          SK_ColorCYAN, 1.1f, 2.2f, 3.3f, nullptr)},
+      sk_sp<PaintFilter>{new LightingPointPaintFilter(
+          PaintFilter::LightingType::kDiffuse, SkPoint3::Make(2, 3, 4),
+          SK_ColorRED, 1.2f, 3.4f, 5.6f, nullptr)},
+      sk_sp<PaintFilter>{new LightingSpotPaintFilter(
+          PaintFilter::LightingType::kSpecular, SkPoint3::Make(100, 200, 300),
+          SkPoint3::Make(400, 500, 600), 1, 2, SK_ColorMAGENTA, 3, 4, 5,
+          nullptr)}};
+
+  filters.emplace_back(new ComposePaintFilter(filters[0], filters[1]));
+  filters.emplace_back(
+      new XfermodePaintFilter(SkBlendMode::kDst, filters[2], filters[3]));
+  filters.emplace_back(new ArithmeticPaintFilter(
+      1.1f, 2.2f, 3.3f, 4.4f, false, filters[4], filters[5], nullptr));
+  filters.emplace_back(new DisplacementMapEffectPaintFilter(
+      SkDisplacementMapEffect::kR_ChannelSelectorType,
+      SkDisplacementMapEffect::kG_ChannelSelectorType, 10, filters[6],
+      filters[7]));
+  filters.emplace_back(new MergePaintFilter(filters.data(), filters.size()));
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  TestOptionsProvider options_proivder;
+  PaintOpBufferSerializer::Preamble preamble;
+  for (size_t i = 0; i < filters.size(); ++i) {
+    SCOPED_TRACE(i);
+    auto& filter = filters[i];
+
+    PaintFlags flags;
+    flags.setImageFilter(filter);
+    PaintOpBuffer buffer;
+    buffer.push<DrawRectOp>(SkRect::MakeXYWH(1, 2, 3, 4), flags);
+
+    SimpleBufferSerializer serializer(memory.get(),
+                                      PaintOpBuffer::kInitialBufferSize,
+                                      options_proivder.image_provider(),
+                                      options_proivder.transfer_cache_helper());
+    serializer.Serialize(&buffer, nullptr, preamble);
+    ASSERT_TRUE(serializer.valid());
+    ASSERT_GT(serializer.written(), 0u);
+
+    auto deserialized_buffer =
+        PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                      options_proivder.deserialize_options());
+    PaintOpBuffer::Iterator it(deserialized_buffer.get());
+    bool rect_op_found = false;
+    for (auto* op : it) {
+      // There may be various ops serialized as a part of the preamble, but
+      // we're only really looking for the draw rect op.
+      if (op->GetType() != PaintOpType::DrawRect)
+        continue;
+      EXPECT_FALSE(rect_op_found);
+      rect_op_found = true;
+      auto* rect_op = static_cast<DrawRectOp*>(op);
+      EXPECT_FLOAT_RECT_EQ(rect_op->rect, SkRect::MakeXYWH(1, 2, 3, 4));
+      EXPECT_TRUE(*filter == *rect_op->flags.getImageFilter());
+    }
+    EXPECT_TRUE(rect_op_found);
+  }
+}
+
 }  // namespace cc
