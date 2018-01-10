@@ -24,7 +24,7 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Owner(emails=['kouhei@chormium.org', 'ksakamoto@chromium.org'])
+@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class LoadingDesktop(_LoadingBase):
   """ A benchmark measuring loading performance of desktop sites. """
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
