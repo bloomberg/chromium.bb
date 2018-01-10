@@ -2686,7 +2686,6 @@ crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/009.html?wss 
 crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/011.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/012.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/002.html?wss [ Failure ]
-crbug.com/709227 external/wpt/websockets/opening-handshake/003.html?wss [ Failure ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/005.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/unload-a-document/002.html [ Failure ]
 crbug.com/709227 external/wpt/websockets/unload-a-document/002.html?wss [ Failure ]
@@ -2709,6 +2708,7 @@ crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/006.html?wss 
 crbug.com/709227 external/wpt/websockets/interfaces/WebSocket/send/010.html?wss [ Timeout ]
 crbug.com/709227 external/wpt/websockets/keeping-connection-open/001.html?wss [ Failure Timeout ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/003-sets-origin.worker.html [ Timeout ]
+crbug.com/709227 external/wpt/websockets/opening-handshake/003.html?wss [ Failure Timeout ]
 crbug.com/709227 external/wpt/websockets/opening-handshake/005.html?wss [ Failure Timeout ]
 crbug.com/709227 external/wpt/workers/nested_worker.worker.html [ Timeout ]
 
