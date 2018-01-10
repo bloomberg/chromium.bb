@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL StylePropertyMap.getProperties returns property names in correct order assert_array_equals: lengths differ, expected 297 got 294
-Harness: the test ran to completion.
-
