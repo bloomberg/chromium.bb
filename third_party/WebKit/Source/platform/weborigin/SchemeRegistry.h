@@ -83,6 +83,7 @@ class PLATFORM_EXPORT SchemeRegistry {
   // bookmarklets from running on sensitive pages).
   static void RegisterURLSchemeAsNotAllowingJavascriptURLs(
       const String& scheme);
+  static void RemoveURLSchemeAsNotAllowingJavascriptURLs(const String& scheme);
   static bool ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
       const String& scheme);
 
