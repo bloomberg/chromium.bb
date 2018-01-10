@@ -557,6 +557,9 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     case SessionErrorOAuthTokenInvalid:
       message = l10n_util::GetNSString(IDS_ERROR_OAUTH_TOKEN_INVALID);
       break;
+    case SessionErrorThirdPartyAuthNotSupported:
+      message = l10n_util::GetNSString(IDS_THIRD_PARTY_AUTH_NOT_SUPPORTED);
+      break;
   }
   if (message) {
     _reconnectView.errorText = message;
@@ -613,9 +616,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
           showMessage:[MDCSnackbarMessage
                           messageWithText:l10n_util::GetNSString(
                                               IDS_MESSAGE_SESSION_FINISHED)]];
-      break;
-    case SessionCancelled:
-      state = ClientViewClosed;
       break;
     default:
       LOG(ERROR) << "Unknown State for Session, " << sessionDetails.state;
