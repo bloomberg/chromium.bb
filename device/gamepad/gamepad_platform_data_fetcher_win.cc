@@ -87,8 +87,7 @@ const UChar* XInputDllFileName() {
 GamepadPlatformDataFetcherWin::GamepadPlatformDataFetcherWin()
     : xinput_available_(false) {}
 
-GamepadPlatformDataFetcherWin::~GamepadPlatformDataFetcherWin() {
-}
+GamepadPlatformDataFetcherWin::~GamepadPlatformDataFetcherWin() = default;
 
 GamepadSource GamepadPlatformDataFetcherWin::source() {
   return Factory::static_source();
@@ -108,9 +107,11 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
       // Check to see if the xinput device is connected
       XINPUT_CAPABILITIES caps;
       DWORD res = xinput_get_capabilities_(i, XINPUT_FLAG_GAMEPAD, &caps);
-      xinuput_connected_[i] = (res == ERROR_SUCCESS);
-      if (!xinuput_connected_[i])
+      xinput_connected_[i] = (res == ERROR_SUCCESS);
+      if (!xinput_connected_[i]) {
+        haptics_[i] = nullptr;
         continue;
+      }
 
       PadState* state = GetPadState(i);
       if (!state)
@@ -119,9 +120,16 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices() {
       Gamepad& pad = state->data;
 
       if (state->active_state == GAMEPAD_NEWLY_ACTIVE) {
+        haptics_[i] =
+            std::make_unique<XInputHapticGamepadWin>(i, xinput_set_state_);
+
         // This is the first time we've seen this device, so do some one-time
         // initialization
         pad.connected = true;
+
+        pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
+        pad.vibration_actuator.not_null = true;
+
         swprintf(pad.id, Gamepad::kIdLengthCap,
                  L"Xbox 360 Controller (XInput STANDARD %ls)",
                  GamepadSubTypeName(caps.SubType));
@@ -148,7 +156,7 @@ void GamepadPlatformDataFetcherWin::GetGamepadData(bool devices_changed_hint) {
     EnumerateDevices();
 
   for (size_t i = 0; i < XUSER_MAX_COUNT; ++i) {
-    if (xinuput_connected_[i])
+    if (xinput_connected_[i])
       GetXInputPadData(i);
   }
 }
@@ -227,10 +235,51 @@ void GamepadPlatformDataFetcherWin::GetXInputPadData(int i) {
   }
 }
 
+void GamepadPlatformDataFetcherWin::PlayEffect(
+    int pad_id,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  if (pad_id < 0 || pad_id >= XUSER_MAX_COUNT) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  if (!xinput_available_ || !xinput_connected_[pad_id] ||
+      haptics_[pad_id] == nullptr) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  haptics_[pad_id]->PlayEffect(type, std::move(params), std::move(callback));
+}
+
+void GamepadPlatformDataFetcherWin::ResetVibration(
+    int pad_id,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  if (pad_id < 0 || pad_id >= XUSER_MAX_COUNT) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  if (!xinput_available_ || !xinput_connected_[pad_id] ||
+      haptics_[pad_id] == nullptr) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  haptics_[pad_id]->ResetVibration(std::move(callback));
+}
+
 bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
   xinput_get_capabilities_ = nullptr;
   xinput_get_state_ = nullptr;
   xinput_get_state_ex_ = nullptr;
+  xinput_set_state_ = nullptr;
   XInputEnableFunc xinput_enable = reinterpret_cast<XInputEnableFunc>(
       xinput_dll_.GetFunctionPointer("XInputEnable"));
   xinput_get_capabilities_ = reinterpret_cast<XInputGetCapabilitiesFunc>(
@@ -248,6 +297,11 @@ bool GamepadPlatformDataFetcherWin::GetXInputDllFunctions() {
   }
 
   if (!xinput_get_state_ && !xinput_get_state_ex_)
+    return false;
+  xinput_set_state_ =
+      reinterpret_cast<XInputHapticGamepadWin::XInputSetStateFunc>(
+          xinput_dll_.GetFunctionPointer("XInputSetState"));
+  if (!xinput_set_state_)
     return false;
   if (xinput_enable) {
     // XInputEnable is unavailable before Win8 and deprecated in Win10.
