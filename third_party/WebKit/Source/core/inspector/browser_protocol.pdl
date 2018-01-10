@@ -2277,6 +2277,9 @@ domain Emulation
       # If set this specifies the maximum number of tasks that can be run before virtual is forced
       # forwards to prevent deadlock.
       optional integer maxVirtualTimeTaskStarvationCount
+      # If set the virtual time policy change should be deferred until any frame starts navigating.
+      # Note any previous deferred policy change is superseded.
+      optional boolean waitForNavigation
     returns
       # Absolute timestamp at which virtual time was first enabled (milliseconds since epoch).
       Runtime.Timestamp virtualTimeBase
