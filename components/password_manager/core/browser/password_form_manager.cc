@@ -416,7 +416,7 @@ void PasswordFormManager::Save() {
     SanitizePossibleUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     SendVotesOnSave();
-    form_saver_->Save(pending_credentials_, best_matches_, nullptr);
+    form_saver_->Save(pending_credentials_, best_matches_);
   } else {
     ProcessUpdate();
     std::vector<PasswordForm> credentials_to_update;
