@@ -54,7 +54,8 @@ class UkmSource {
   GURL url_;
 
   // The initial URL for this source.
-  // Only set if more than one value of URL was recorded.
+  // Only set for navigation-id based sources where more than one value of URL
+  // was recorded.
   GURL initial_url_;
 
   // A flag indicating if metric was collected in a custom tab. This is set
