@@ -43,7 +43,6 @@
 #include "platform/transforms/AffineTransform.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/ListHashSet.h"
 
 #include <limits>
 
