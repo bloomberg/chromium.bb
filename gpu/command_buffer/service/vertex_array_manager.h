@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -21,7 +21,7 @@ class VertexAttribManager;
 
 // This class keeps track of the vertex arrays and their sizes so we can do
 // bounds checking.
-class GPU_EXPORT VertexArrayManager {
+class GPU_GLES2_EXPORT VertexArrayManager {
  public:
   VertexArrayManager();
   ~VertexArrayManager();

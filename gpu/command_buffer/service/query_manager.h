@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/feature_info.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gl {
 class GPUTimer;
@@ -34,9 +34,9 @@ class FeatureInfo;
 
 // This class keeps track of the queries and their state
 // As Queries are not shared there is one QueryManager per context.
-class GPU_EXPORT QueryManager {
+class GPU_GLES2_EXPORT QueryManager {
  public:
-  class GPU_EXPORT Query : public base::RefCounted<Query> {
+  class GPU_GLES2_EXPORT Query : public base::RefCounted<Query> {
    public:
     Query(QueryManager* manager,
           GLenum target,

@@ -8,7 +8,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -17,7 +17,7 @@ namespace gles2 {
 //
 // NOTE: To support shared resources an instance of this class will
 // need to be shared by multiple GLES2Decoders.
-class GPU_EXPORT IdManager {
+class GPU_GLES2_EXPORT IdManager {
  public:
   IdManager();
   ~IdManager();

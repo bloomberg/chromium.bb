@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -33,7 +33,7 @@ class IndexedBufferBindingHost;
 class TestHelper;
 
 // Info about Buffers currently in the system.
-class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
+class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
  public:
   struct MappedRange {
     GLintptr offset;
@@ -215,7 +215,8 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
+class GPU_GLES2_EXPORT BufferManager
+    : public base::trace_event::MemoryDumpProvider {
  public:
   BufferManager(MemoryTracker* memory_tracker, FeatureInfo* feature_info);
   ~BufferManager() override;

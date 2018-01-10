@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 
@@ -56,7 +56,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
 
 // A Context Group helps manage multiple DecoderContexts that share
 // resources.
-class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
+class GPU_GLES2_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
  public:
   ContextGroup(const GpuPreferences& gpu_preferences,
                bool supports_passthrough_command_decoders,

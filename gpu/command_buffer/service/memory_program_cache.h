@@ -25,7 +25,7 @@ class GpuProcessActivityFlags;
 namespace gles2 {
 
 // Program cache that stores binaries completely in-memory
-class GPU_EXPORT MemoryProgramCache : public ProgramCache {
+class GPU_GLES2_EXPORT MemoryProgramCache : public ProgramCache {
  public:
   MemoryProgramCache(size_t max_cache_size_bytes,
                      bool disable_gpu_shader_disk_cache,

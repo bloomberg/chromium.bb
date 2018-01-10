@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -19,8 +19,8 @@ class Buffer;
 // This is a base class for indexed buffer bindings tracking.
 // TransformFeedback and Program should inherit from this base class,
 // for tracking indexed TRANSFORM_FEEDBACK_BUFFER / UNIFORM_BUFFER bindings.
-class GPU_EXPORT IndexedBufferBindingHost :
-    public base::RefCounted<IndexedBufferBindingHost> {
+class GPU_GLES2_EXPORT IndexedBufferBindingHost
+    : public base::RefCounted<IndexedBufferBindingHost> {
  public:
   // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
   // However, we set it to true everywhere, not to trust drivers to handle

@@ -6,7 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_APPLY_FRAMEBUFFER_ATTACHMENT_CMAA_INTEL_H_
 
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -22,7 +22,7 @@ class TextureManager;
 // all color attachments of the currently bound draw framebuffer.
 //
 // Reference GL_INTEL_framebuffer_CMAA for details.
-class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
+class GPU_GLES2_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
  public:
   ApplyFramebufferAttachmentCMAAINTELResourceManager();
   ~ApplyFramebufferAttachmentCMAAINTELResourceManager();

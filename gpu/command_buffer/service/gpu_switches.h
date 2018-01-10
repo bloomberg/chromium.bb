@@ -13,8 +13,8 @@
 namespace gpu {
 
 // The command decoder names that can be passed to --use-cmd-decoder.
-extern const char kCmdDecoderValidatingName[];
-extern const char kCmdDecoderPassthroughName[];
+GPU_EXPORT extern const char kCmdDecoderValidatingName[];
+GPU_EXPORT extern const char kCmdDecoderPassthroughName[];
 }  // namespace gpu
 
 namespace switches {

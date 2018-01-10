@@ -20,7 +20,7 @@ group("service") {
 group("gles2") {
   if (is_component_build) {
     public_deps = [
-      "//gpu",
+      "//gpu:gles2",
     ]
   } else {
     public_deps = [
@@ -41,10 +41,13 @@ target(link_target_type, "service_sources") {
 
   sources = [
     "async_api_interface.h",
+    "command_buffer_direct.cc",
+    "command_buffer_direct.h",
     "command_buffer_service.cc",
     "command_buffer_service.h",
     "common_decoder.cc",
     "common_decoder.h",
+    "decoder_client.h",
     "gpu_preferences.cc",
     "gpu_preferences.h",
     "gpu_switches.cc",
@@ -106,15 +109,12 @@ target(link_target_type, "gles2_sources") {
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
-    "command_buffer_direct.cc",
-    "command_buffer_direct.h",
     "context_group.cc",
     "context_group.h",
     "context_state.cc",
     "context_state.h",
     "context_state_autogen.h",
     "context_state_impl_autogen.h",
-    "decoder_client.h",
     "decoder_context.h",
     "error_state.cc",
     "error_state.h",
@@ -215,7 +215,7 @@ target(link_target_type, "gles2_sources") {
 
   configs += [
     "//build/config:precompiled_headers",
-    "//gpu:gpu_implementation",
+    "//gpu:gpu_gles2_implementation",
     "//third_party/khronos:khronos_headers",
   ]
 
@@ -223,18 +223,18 @@ target(link_target_type, "gles2_sources") {
   include_dirs = [ "//third_party/mesa/src/include" ]
 
   public_deps = [
-    "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
   ]
   deps = [
     ":disk_cache_proto",
-    ":service_sources",
+    ":service",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
-    "//gpu/command_buffer/client:client_sources",
+    "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",
-    "//gpu/config:config_sources",
+    "//gpu/config",
     "//gpu/ipc/common:surface_handle_type",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",

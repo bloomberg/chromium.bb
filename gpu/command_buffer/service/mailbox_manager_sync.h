@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_definition.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -24,7 +24,7 @@ namespace gles2 {
 // Manages resources scoped beyond the context or context group level
 // and across threads and driver level share groups by synchronizing
 // texture state.
-class GPU_EXPORT MailboxManagerSync : public MailboxManager {
+class GPU_GLES2_EXPORT MailboxManagerSync : public MailboxManager {
  public:
   MailboxManagerSync();
   ~MailboxManagerSync() override;

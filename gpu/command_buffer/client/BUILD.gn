@@ -20,7 +20,7 @@ group("client") {
 group("gles2_cmd_helper") {
   if (is_component_build) {
     public_deps = [
-      "//gpu",
+      "//gpu:gles2",
     ]
   } else {
     public_deps = [
@@ -81,12 +81,12 @@ source_set("gles2_cmd_helper_sources") {
     "gles2_cmd_helper_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_implementation" ]
+  configs += [ "//gpu:gpu_gles2_implementation" ]
 
   deps = [
-    ":client_sources",
+    ":client",
     "//base",
-    "//gpu/command_buffer/common:common_sources",
+    "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
   ]
 }

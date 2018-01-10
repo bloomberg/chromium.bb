@@ -162,6 +162,7 @@ component("gpu") {
     "//ui/gfx/geometry",
   ]
   deps = [
+    "//gpu/command_buffer/service:gles2",
     "//gpu/ipc/service",
     "//ui/base",
     "//ui/display/types",

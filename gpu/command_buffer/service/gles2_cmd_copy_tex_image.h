@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -21,7 +21,7 @@ class GLES2Decoder;
 // This class encapsulates the resources required to implement the
 // glCopyTexImage and glCopyTexSubImage commands.  These commands somtimes
 // require a blit.
-class GPU_EXPORT CopyTexImageResourceManager {
+class GPU_GLES2_EXPORT CopyTexImageResourceManager {
  public:
   explicit CopyTexImageResourceManager(const gles2::FeatureInfo* feature_info);
   ~CopyTexImageResourceManager();

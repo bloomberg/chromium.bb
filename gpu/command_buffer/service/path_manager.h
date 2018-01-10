@@ -9,14 +9,14 @@
 
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // This class keeps track of paths and their client and service ids
 // so we can correctly clear them.
-class GPU_EXPORT PathManager {
+class GPU_GLES2_EXPORT PathManager {
  public:
   PathManager();
   ~PathManager();

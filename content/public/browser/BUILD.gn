@@ -331,6 +331,7 @@ jumbo_source_set("browser_sources") {
     "//device/geolocation",
     "//device/usb/public/interfaces",
     "//gpu",
+    "//gpu/command_buffer/service:gles2",
     "//media",
     "//net",
     "//ppapi/c",

@@ -13,13 +13,13 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // Manages resources scoped beyond the context or context group level.
-class GPU_EXPORT MailboxManagerImpl : public MailboxManager {
+class GPU_GLES2_EXPORT MailboxManagerImpl : public MailboxManager {
  public:
   MailboxManagerImpl();
   ~MailboxManagerImpl() override;

@@ -23,7 +23,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
 #include "gpu/command_buffer/service/texture_base.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_image.h"
 
@@ -74,7 +74,7 @@ class TexturePassthrough final : public TextureBase,
 // Info about Textures currently in the system.
 // This class wraps a real GL texture, keeping track of its meta-data. It is
 // jointly owned by possibly multiple TextureRef.
-class GPU_EXPORT Texture final : public TextureBase {
+class GPU_GLES2_EXPORT Texture final : public TextureBase {
  public:
   enum ImageState {
     // If an image is associated with the texture and image state is UNBOUND,
@@ -627,7 +627,7 @@ class GPU_EXPORT Texture final : public TextureBase {
 // with a client id, though it can outlive the client id if it's still bound to
 // a FBO or another context when destroyed.
 // Multiple TextureRef can point to the same texture with cross-context sharing.
-class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
+class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
  public:
   TextureRef(TextureManager* manager, GLuint client_id, Texture* texture);
   static scoped_refptr<TextureRef> Create(TextureManager* manager,
@@ -693,9 +693,10 @@ struct DecoderTextureState {
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
+class GPU_GLES2_EXPORT TextureManager
+    : public base::trace_event::MemoryDumpProvider {
  public:
-  class GPU_EXPORT DestructionObserver {
+  class GPU_GLES2_EXPORT DestructionObserver {
    public:
     DestructionObserver();
     virtual ~DestructionObserver();

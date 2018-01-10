@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 #include "ui/gl/extension_set.h"
 
 namespace base {
@@ -29,7 +29,7 @@ namespace gpu {
 namespace gles2 {
 
 // FeatureInfo records the features that are available for a ContextGroup.
-class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
+class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  public:
   struct FeatureFlags {
     FeatureFlags();

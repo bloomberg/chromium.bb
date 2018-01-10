@@ -32,6 +32,7 @@ source_set("ipc_client_sources") {
       "gpu_memory_buffer_impl_io_surface.cc",
       "gpu_memory_buffer_impl_io_surface.h",
     ]
+    libs = [ "IOSurface.framework" ]
   }
   if (is_win) {
     sources += [

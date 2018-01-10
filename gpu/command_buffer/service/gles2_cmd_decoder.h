@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/command_buffer/service/decoder_context.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gl {
 class GLSurface;
@@ -77,7 +77,8 @@ struct DisallowedFeatures {
 
 // This class implements the DecoderContext interface, decoding GLES2
 // commands and calling GL.
-class GPU_EXPORT GLES2Decoder : public CommonDecoder, public DecoderContext {
+class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
+                                      public DecoderContext {
  public:
   typedef error::Error Error;
 
