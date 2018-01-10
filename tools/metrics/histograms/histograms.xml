@@ -247,6 +247,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Accessibility.CrosSelectToSpeak.StartSpeechMethod"
+    enum="CrosSelectToSpeakStartSpeechMethod">
+  <owner>katie@chromium.org</owner>
+  <summary>
+    A user may activate Select-to-Speak by holding down 'search' and clicking or
+    dragging a region with the mouse, or by highlighting an area and using
+    search + s to read just the highlighted area. Track the methods here.
+  </summary>
+</histogram>
+
 <histogram name="Accessibility.CrosSelectToSpeak.WordHighlighting"
     enum="BooleanEnabled">
   <owner>katie@chromium.org</owner>
