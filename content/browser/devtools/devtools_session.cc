@@ -196,37 +196,19 @@ void DevToolsSession::flushProtocolNotifications() {
 
 void DevToolsSession::DispatchProtocolMessage(
     blink::mojom::DevToolsMessageChunkPtr chunk) {
-  if (chunk->is_first) {
-    if (response_message_buffer_size_ != 0) {
-      ReceivedBadMessage();
-      return;
-    }
-    if (chunk->is_last) {
-      response_message_buffer_size_ = chunk->data.size();
-    } else {
-      response_message_buffer_size_ = chunk->message_size;
-      response_message_buffer_.reserve(chunk->message_size);
-    }
-  }
-
-  if (response_message_buffer_.size() + chunk->data.size() >
-      response_message_buffer_size_) {
+  if (chunk->is_first && !response_message_buffer_.empty()) {
     ReceivedBadMessage();
     return;
   }
-  response_message_buffer_.append(std::move(chunk->data));
+
+  response_message_buffer_ += std::move(chunk->data);
 
   if (!chunk->is_last)
     return;
-  if (response_message_buffer_.size() != response_message_buffer_size_) {
-    ReceivedBadMessage();
-    return;
-  }
 
   if (!chunk->post_state.empty())
     state_cookie_ = std::move(chunk->post_state);
   waiting_for_response_messages_.erase(chunk->call_id);
-  response_message_buffer_size_ = 0;
   std::string message;
   message.swap(response_message_buffer_);
   client_->DispatchProtocolMessage(agent_host_, message);

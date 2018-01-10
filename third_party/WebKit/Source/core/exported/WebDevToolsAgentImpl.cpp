@@ -679,7 +679,6 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
     mojom::blink::DevToolsMessageChunkPtr chunk =
         mojom::blink::DevToolsMessageChunk::New();
     chunk->is_first = pos == 0;
-    chunk->message_size = chunk->is_first ? response.length() * 2 : 0;
     chunk->is_last = pos + kMaxDevToolsMessageChunkSize >= response.length();
     chunk->call_id = chunk->is_last ? call_id : 0;
     chunk->post_state =
