@@ -56,7 +56,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
   last_focused_time_ = focused ? base::TimeTicks::Max() : NowTicks();
 
   if (focused && GetState() == State::DISCARDED) {
-    state_ = State::LOADED;
+    SetState(State::LOADED);
     // See comment in Discard() for an explanation of why "needs reload" is
     // false when a tab is discarded.
     // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once session
@@ -96,11 +96,6 @@ std::string TabLifecycleUnitSource::TabLifecycleUnit::GetIconURL() const {
 LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
     const {
   return SortKey(last_focused_time_);
-}
-
-LifecycleUnit::State TabLifecycleUnitSource::TabLifecycleUnit::GetState()
-    const {
-  return state_;
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::
@@ -240,7 +235,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // RenderFrameProxyHosts.
   delete old_contents;
 
-  state_ = State::DISCARDED;
+  SetState(State::DISCARDED);
   ++discard_count_;
   OnDiscardedStateChange();
 
@@ -310,8 +305,8 @@ TabLifecycleUnitSource::TabLifecycleUnit::GetRenderProcessHost() const {
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
-  if (state_ == State::DISCARDED) {
-    state_ = State::LOADED;
+  if (GetState() == State::DISCARDED) {
+    SetState(State::LOADED);
     OnDiscardedStateChange();
   }
 }

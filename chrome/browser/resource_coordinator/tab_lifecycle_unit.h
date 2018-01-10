@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -35,7 +35,7 @@ static constexpr base::TimeDelta kTabFocusedProtectionTime =
 
 // Represents a tab.
 class TabLifecycleUnitSource::TabLifecycleUnit
-    : public LifecycleUnit,
+    : public LifecycleUnitBase,
       public TabLifecycleUnitExternal,
       public content::WebContentsObserver {
  public:
@@ -74,7 +74,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   base::string16 GetTitle() const override;
   std::string GetIconURL() const override;
   SortKey GetSortKey() const override;
-  State GetState() const override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanDiscard(DiscardReason reason) const override;
   bool Discard(DiscardReason discard_reason) override;
@@ -104,9 +103,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // TabStripModel to which this tab belongs.
   TabStripModel* tab_strip_model_;
-
-  // Current state of this tab.
-  State state_ = State::LOADED;
 
   // The number of times that this tab has been discarded.
   int discard_count_ = 0;

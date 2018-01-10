@@ -9,13 +9,13 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 
 namespace resource_coordinator {
 
+class LifecycleUnitObserver;
 class TabLifecycleUnitExternal;
 
 // A LifecycleUnit represents a unit that can switch between the "loaded" and
@@ -45,7 +45,6 @@ class LifecycleUnit {
     base::TimeTicks last_focused_time;
   };
 
-  LifecycleUnit();
   virtual ~LifecycleUnit();
 
   // Returns the TabLifecycleUnitExternal associated with this LifecycleUnit, if
@@ -53,7 +52,7 @@ class LifecycleUnit {
   virtual TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() = 0;
 
   // Returns a unique id representing this LifecycleUnit.
-  int32_t GetID() const;
+  virtual int32_t GetID() const = 0;
 
   // Returns a title describing this LifecycleUnit, or an empty string if no
   // title is available.
@@ -97,13 +96,9 @@ class LifecycleUnit {
   // https://crbug.com/775644
   virtual bool Discard(DiscardReason discard_reason) = 0;
 
- private:
-  static int32_t next_id_;
-
-  // A unique id representing this LifecycleUnit.
-  const int32_t id_ = ++next_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(LifecycleUnit);
+  // Adds/removes an observer to this LifecycleUnit.
+  virtual void AddObserver(LifecycleUnitObserver* observer) = 0;
+  virtual void RemoveObserver(LifecycleUnitObserver* observer) = 0;
 };
 
 using LifecycleUnitSet = base::flat_set<LifecycleUnit*>;
