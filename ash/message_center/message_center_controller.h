@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/system/web_notification/fullscreen_notification_blocker.h"
 #include "ash/system/web_notification/inactive_user_notification_blocker.h"
-#include "ash/system/web_notification/login_state_notification_blocker.h"
+#include "ash/system/web_notification/session_state_notification_blocker.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -77,7 +77,7 @@ class ASH_EXPORT MessageCenterController
 
   FullscreenNotificationBlocker fullscreen_notification_blocker_;
   InactiveUserNotificationBlocker inactive_user_notification_blocker_;
-  LoginStateNotificationBlocker login_notification_blocker_;
+  SessionStateNotificationBlocker session_state_notification_blocker_;
 
   NotifierSettingsListener* notifier_id_ = nullptr;
 

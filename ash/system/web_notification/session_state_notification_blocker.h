@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_WEB_NOTIFICATION_LOGIN_STATE_NOTIFICATION_BLOCKER_H_
-#define ASH_SYSTEM_WEB_NOTIFICATION_LOGIN_STATE_NOTIFICATION_BLOCKER_H_
+#ifndef ASH_SYSTEM_WEB_NOTIFICATION_SESSION_STATE_NOTIFICATION_BLOCKER_H_
+#define ASH_SYSTEM_WEB_NOTIFICATION_SESSION_STATE_NOTIFICATION_BLOCKER_H_
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
@@ -15,14 +15,15 @@ namespace ash {
 // A notification blocker which suppresses notifications popups based on the
 // session state and active user PrefService readiness reported by the
 // SessionController. Only active (logged in, unlocked) sessions with
-// initialized PrefService will show notifications.
-class ASH_EXPORT LoginStateNotificationBlocker
+// initialized PrefService will show user notifications. Kiosk mode sessions
+// will never show even system notifications.
+class ASH_EXPORT SessionStateNotificationBlocker
     : public message_center::NotificationBlocker,
       public SessionObserver {
  public:
-  explicit LoginStateNotificationBlocker(
+  explicit SessionStateNotificationBlocker(
       message_center::MessageCenter* message_center);
-  ~LoginStateNotificationBlocker() override;
+  ~SessionStateNotificationBlocker() override;
 
  private:
   // message_center::NotificationBlocker overrides:
@@ -40,9 +41,9 @@ class ASH_EXPORT LoginStateNotificationBlocker
   bool should_show_notification_ = false;
   bool should_show_popup_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginStateNotificationBlocker);
+  DISALLOW_COPY_AND_ASSIGN(SessionStateNotificationBlocker);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_WEB_NOTIFICATION_LOGIN_STATE_NOTIFICATION_BLOCKER_H_
+#endif  // ASH_SYSTEM_WEB_NOTIFICATION_SESSION_STATE_NOTIFICATION_BLOCKER_H_

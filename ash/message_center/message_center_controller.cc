@@ -50,7 +50,7 @@ class AshClientNotificationDelegate
 MessageCenterController::MessageCenterController()
     : fullscreen_notification_blocker_(MessageCenter::Get()),
       inactive_user_notification_blocker_(MessageCenter::Get()),
-      login_notification_blocker_(MessageCenter::Get()),
+      session_state_notification_blocker_(MessageCenter::Get()),
       binding_(this) {}
 
 MessageCenterController::~MessageCenterController() = default;
