@@ -107,8 +107,8 @@ static const char kConfigNetworkDiscoveryConfig[] = "networkDiscoveryConfig";
 const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 
 typedef std::vector<DevToolsUIBindings*> DevToolsUIBindingsList;
-base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<DevToolsUIBindingsList>::Leaky
+    g_devtools_ui_bindings_instances = LAZY_INSTANCE_INITIALIZER;
 
 std::unique_ptr<base::DictionaryValue> CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
@@ -480,9 +480,10 @@ void DevToolsUIBindings::FrontendWebContentsObserver::DidFinishNavigation(
 
 DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
      content::WebContents* web_contents) {
-  if (!g_instances.IsCreated())
+  if (!g_devtools_ui_bindings_instances.IsCreated())
     return NULL;
-  DevToolsUIBindingsList* instances = g_instances.Pointer();
+  DevToolsUIBindingsList* instances =
+      g_devtools_ui_bindings_instances.Pointer();
   for (DevToolsUIBindingsList::iterator it(instances->begin());
        it != instances->end(); ++it) {
     if ((*it)->web_contents() == web_contents)
@@ -500,7 +501,7 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       frontend_loaded_(false),
       reloading_(false),
       weak_factory_(this) {
-  g_instances.Get().push_back(this);
+  g_devtools_ui_bindings_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
 
@@ -529,7 +530,8 @@ DevToolsUIBindings::~DevToolsUIBindings() {
   SetDevicesUpdatesEnabled(false);
 
   // Remove self from global list.
-  DevToolsUIBindingsList* instances = g_instances.Pointer();
+  DevToolsUIBindingsList* instances =
+      g_devtools_ui_bindings_instances.Pointer();
   DevToolsUIBindingsList::iterator it(
       std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());

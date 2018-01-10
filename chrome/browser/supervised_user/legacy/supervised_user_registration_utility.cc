@@ -43,7 +43,8 @@ using base::DictionaryValue;
 
 namespace {
 
-SupervisedUserRegistrationUtility* g_instance_for_tests = NULL;
+SupervisedUserRegistrationUtility*
+    g_supervised_user_registration_utility_instance_for_tests = NULL;
 
 // Actual implementation of SupervisedUserRegistrationUtility.
 class SupervisedUserRegistrationUtilityImpl
@@ -155,9 +156,10 @@ std::unique_ptr<SupervisedUserRegistrationUtility>
 SupervisedUserRegistrationUtility::Create(Profile* profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kSupervisedUserCreation));
 
-  if (g_instance_for_tests) {
-    SupervisedUserRegistrationUtility* result = g_instance_for_tests;
-    g_instance_for_tests = NULL;
+  if (g_supervised_user_registration_utility_instance_for_tests) {
+    SupervisedUserRegistrationUtility* result =
+        g_supervised_user_registration_utility_instance_for_tests;
+    g_supervised_user_registration_utility_instance_for_tests = NULL;
     return base::WrapUnique(result);
   }
 
@@ -192,9 +194,9 @@ std::string SupervisedUserRegistrationUtility::GenerateNewSupervisedUserId() {
 // static
 void SupervisedUserRegistrationUtility::SetUtilityForTests(
     SupervisedUserRegistrationUtility* utility) {
-  if (g_instance_for_tests)
-    delete g_instance_for_tests;
-  g_instance_for_tests = utility;
+  if (g_supervised_user_registration_utility_instance_for_tests)
+    delete g_supervised_user_registration_utility_instance_for_tests;
+  g_supervised_user_registration_utility_instance_for_tests = utility;
 }
 
 // static

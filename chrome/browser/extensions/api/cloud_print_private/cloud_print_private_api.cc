@@ -21,20 +21,20 @@ namespace {
 
 const char kErrorIncognito[] = "Cannot access in incognito mode";
 
-CloudPrintTestsDelegate* g_instance = nullptr;
+CloudPrintTestsDelegate* g_cloud_print_private_api_instance = nullptr;
 
 }  // namespace
 
 CloudPrintTestsDelegate* CloudPrintTestsDelegate::Get() {
-  return g_instance;
+  return g_cloud_print_private_api_instance;
 }
 
 CloudPrintTestsDelegate::CloudPrintTestsDelegate() {
-  g_instance = this;
+  g_cloud_print_private_api_instance = this;
 }
 
 CloudPrintTestsDelegate::~CloudPrintTestsDelegate() {
-  g_instance = nullptr;
+  g_cloud_print_private_api_instance = nullptr;
 }
 
 CloudPrintPrivateSetupConnectorFunction::

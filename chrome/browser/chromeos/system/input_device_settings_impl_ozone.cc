@@ -16,7 +16,7 @@ namespace chromeos {
 namespace system {
 namespace {
 
-InputDeviceSettings* g_instance = nullptr;
+InputDeviceSettings* g_input_device_settings_impl_ozone_instance = nullptr;
 
 // Callback from SetInternalTouchpadEnabled().
 void OnSetInternalTouchpadEnabled(bool result) {}
@@ -158,13 +158,15 @@ void InputDeviceSettingsImplOzone::SetTouchscreensEnabled(bool enabled) {
 
 // static
 InputDeviceSettings* InputDeviceSettings::Get() {
-  if (!g_instance) {
+  if (!g_input_device_settings_impl_ozone_instance) {
     if (IsRunningAsSystemCompositor())
-      g_instance = new InputDeviceSettingsImplOzone;
+      g_input_device_settings_impl_ozone_instance =
+          new InputDeviceSettingsImplOzone;
     else
-      g_instance = new FakeInputDeviceSettings();
+      g_input_device_settings_impl_ozone_instance =
+          new FakeInputDeviceSettings();
   }
-  return g_instance;
+  return g_input_device_settings_impl_ozone_instance;
 }
 
 }  // namespace system

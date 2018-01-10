@@ -60,15 +60,16 @@ class LeakDetectorControllerTest : public ::testing::Test {
 // DCHECK when called outside the scope of a TestBrowserThreadBundle.
 //
 // See src/components/metrics/leak_detector/leak_detector.h for more info.
-base::LazyInstance<TestLeakDetectorController>::Leaky g_instance =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<TestLeakDetectorController>::Leaky
+    g_leak_detector_controller_unittest_instance = LAZY_INSTANCE_INITIALIZER;
 
 TEST_F(LeakDetectorControllerTest, SingleReport) {
   MemoryLeakReportProto report;
   report.set_size_bytes(8);
   InitializeRepeatedField({1, 2, 3, 4}, report.mutable_call_stack());
 
-  TestLeakDetectorController* controller = &g_instance.Get();
+  TestLeakDetectorController* controller =
+      &g_leak_detector_controller_unittest_instance.Get();
   controller->OnLeaksFound({report});
 
   std::vector<MemoryLeakReportProto> stored_reports;
@@ -113,7 +114,8 @@ TEST_F(LeakDetectorControllerTest, SingleReportHistory) {
                           entry->mutable_counts_by_size());
   entry->set_count_for_call_stack(45);
 
-  TestLeakDetectorController* controller = &g_instance.Get();
+  TestLeakDetectorController* controller =
+      &g_leak_detector_controller_unittest_instance.Get();
   controller->OnLeaksFound({report});
 
   std::vector<MemoryLeakReportProto> stored_reports;
@@ -150,7 +152,8 @@ TEST_F(LeakDetectorControllerTest, SingleReportHistory) {
 }
 
 TEST_F(LeakDetectorControllerTest, MultipleReportsSeparately) {
-  TestLeakDetectorController* controller = &g_instance.Get();
+  TestLeakDetectorController* controller =
+      &g_leak_detector_controller_unittest_instance.Get();
   std::vector<MemoryLeakReportProto> stored_reports;
 
   // Pass in first report.
@@ -228,7 +231,8 @@ TEST_F(LeakDetectorControllerTest, MultipleReportsTogether) {
   InitializeRepeatedField({9, 10, 11, 12, 13, 14, 15, 16},
                           reports[2].mutable_call_stack());
 
-  TestLeakDetectorController* controller = &g_instance.Get();
+  TestLeakDetectorController* controller =
+      &g_leak_detector_controller_unittest_instance.Get();
   controller->OnLeaksFound(reports);
 
   std::vector<MemoryLeakReportProto> stored_reports;

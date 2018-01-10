@@ -23,16 +23,16 @@
 namespace chrome {
 namespace {
 
-UMABrowsingActivityObserver* g_instance = NULL;
+UMABrowsingActivityObserver* g_uma_browsing_activity_observer_instance = NULL;
 
 }  // namespace
 
 // static
 void UMABrowsingActivityObserver::Init() {
-  DCHECK(!g_instance);
+  DCHECK(!g_uma_browsing_activity_observer_instance);
   // Must be created before any Browsers are.
   DCHECK_EQ(0U, chrome::GetTotalBrowserCount());
-  g_instance = new UMABrowsingActivityObserver;
+  g_uma_browsing_activity_observer_instance = new UMABrowsingActivityObserver;
 }
 
 UMABrowsingActivityObserver::UMABrowsingActivityObserver() {
@@ -76,8 +76,8 @@ void UMABrowsingActivityObserver::Observe(
     LogRenderProcessHostCount();
     LogBrowserTabCount();
   } else if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-    delete g_instance;
-    g_instance = NULL;
+    delete g_uma_browsing_activity_observer_instance;
+    g_uma_browsing_activity_observer_instance = NULL;
   }
 }
 

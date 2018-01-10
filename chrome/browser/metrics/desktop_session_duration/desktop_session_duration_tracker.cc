@@ -13,7 +13,8 @@ namespace metrics {
 
 namespace {
 
-DesktopSessionDurationTracker* g_instance = nullptr;
+DesktopSessionDurationTracker* g_desktop_session_duration_tracker_instance =
+    nullptr;
 
 const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
 
@@ -21,19 +22,20 @@ const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
 
 // static
 void DesktopSessionDurationTracker::Initialize() {
-  DCHECK(!g_instance);
-  g_instance = new DesktopSessionDurationTracker;
+  DCHECK(!g_desktop_session_duration_tracker_instance);
+  g_desktop_session_duration_tracker_instance =
+      new DesktopSessionDurationTracker;
 }
 
 // static
 bool DesktopSessionDurationTracker::IsInitialized() {
-  return g_instance != nullptr;
+  return g_desktop_session_duration_tracker_instance != nullptr;
 }
 
 // static
 DesktopSessionDurationTracker* DesktopSessionDurationTracker::Get() {
-  DCHECK(g_instance);
-  return g_instance;
+  DCHECK(g_desktop_session_duration_tracker_instance);
+  return g_desktop_session_duration_tracker_instance;
 }
 
 void DesktopSessionDurationTracker::StartTimer(base::TimeDelta duration) {
@@ -78,9 +80,9 @@ void DesktopSessionDurationTracker::OnUserEvent() {
 
 // static
 void DesktopSessionDurationTracker::CleanupForTesting() {
-  DCHECK(g_instance);
-  delete g_instance;
-  g_instance = nullptr;
+  DCHECK(g_desktop_session_duration_tracker_instance);
+  delete g_desktop_session_duration_tracker_instance;
+  g_desktop_session_duration_tracker_instance = nullptr;
 }
 
 void DesktopSessionDurationTracker::OnAudioStart() {

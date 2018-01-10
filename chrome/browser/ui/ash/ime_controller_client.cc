@@ -24,7 +24,7 @@ using ui::ime::InputMethodMenuManager;
 
 namespace {
 
-ImeControllerClient* g_instance = nullptr;
+ImeControllerClient* g_ime_controller_client_instance = nullptr;
 
 }  // namespace
 
@@ -40,13 +40,13 @@ ImeControllerClient::ImeControllerClient(InputMethodManager* manager)
   // This does not need to send the initial state to ash because that happens
   // via observers when the InputMethodManager initializes its list of IMEs.
 
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_ime_controller_client_instance);
+  g_ime_controller_client_instance = this;
 }
 
 ImeControllerClient::~ImeControllerClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  DCHECK_EQ(this, g_ime_controller_client_instance);
+  g_ime_controller_client_instance = nullptr;
 
   InputMethodMenuManager::GetInstance()->RemoveObserver(this);
   input_method_manager_->RemoveImeMenuObserver(this);
@@ -71,7 +71,7 @@ void ImeControllerClient::InitForTesting(
 
 // static
 ImeControllerClient* ImeControllerClient::Get() {
-  return g_instance;
+  return g_ime_controller_client_instance;
 }
 
 void ImeControllerClient::SetImesManagedByPolicy(bool managed) {

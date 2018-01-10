@@ -32,7 +32,7 @@ constexpr base::TimeDelta kDailyEventIntervalTimeDelta =
     base::TimeDelta::FromMilliseconds(60 * 30);
 
 // The global TabStatsTracker instance.
-TabStatsTracker* g_instance = nullptr;
+TabStatsTracker* g_tab_stats_tracker_instance = nullptr;
 
 }  // namespace
 
@@ -102,12 +102,12 @@ TabStatsTracker::~TabStatsTracker() {
 
 // static
 void TabStatsTracker::SetInstance(std::unique_ptr<TabStatsTracker> instance) {
-  DCHECK_EQ(nullptr, g_instance);
-  g_instance = instance.release();
+  DCHECK_EQ(nullptr, g_tab_stats_tracker_instance);
+  g_tab_stats_tracker_instance = instance.release();
 }
 
 TabStatsTracker* TabStatsTracker::GetInstance() {
-  return g_instance;
+  return g_tab_stats_tracker_instance;
 }
 
 void TabStatsTracker::RegisterPrefs(PrefRegistrySimple* registry) {

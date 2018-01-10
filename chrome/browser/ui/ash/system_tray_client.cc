@@ -69,7 +69,7 @@ using views::Widget;
 
 namespace {
 
-SystemTrayClient* g_instance = nullptr;
+SystemTrayClient* g_system_tray_client_instance = nullptr;
 
 void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
   chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
@@ -138,14 +138,14 @@ SystemTrayClient::SystemTrayClient() : binding_(this) {
     policy_manager->core()->store()->AddObserver(this);
   UpdateEnterpriseDisplayDomain();
 
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_system_tray_client_instance);
+  g_system_tray_client_instance = this;
   UpgradeDetector::GetInstance()->AddObserver(this);
 }
 
 SystemTrayClient::~SystemTrayClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  DCHECK_EQ(this, g_system_tray_client_instance);
+  g_system_tray_client_instance = nullptr;
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -160,7 +160,7 @@ SystemTrayClient::~SystemTrayClient() {
 
 // static
 SystemTrayClient* SystemTrayClient::Get() {
-  return g_instance;
+  return g_system_tray_client_instance;
 }
 
 // static
