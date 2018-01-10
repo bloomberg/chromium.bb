@@ -484,6 +484,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false),
+      lock_manager_(base::ThreadTaskRunnerHandle::Get(), this),
       weak_factory_(this) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
 #if DCHECK_IS_ON()
@@ -631,6 +632,7 @@ void CompositorImpl::SetVisible(bool visible) {
     display_.reset();
   } else {
     host_->SetVisible(true);
+    has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
       HandlePendingLayerTreeFrameSinkRequest();
   }
@@ -646,10 +648,6 @@ void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
   if (display_)
     display_->Resize(size);
   root_window_->GetLayer()->SetBounds(size);
-}
-
-void CompositorImpl::SetDeferCommits(bool defer_commits) {
-  host_->SetDeferCommits(defer_commits);
 }
 
 void CompositorImpl::SetRequiresAlphaChannel(bool flag) {
@@ -879,6 +877,7 @@ bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
 void CompositorImpl::DidSubmitCompositorFrame() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidSubmitCompositorFrame");
   pending_frames_++;
+  has_submitted_frame_since_became_visible_ = true;
 }
 
 void CompositorImpl::DidReceiveCompositorFrameAck() {
@@ -959,6 +958,21 @@ void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
 
 bool CompositorImpl::HavePendingReadbacks() {
   return !readback_layer_tree_->children().empty();
+}
+
+std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
+    ui::CompositorLockClient* client,
+    base::TimeDelta timeout) {
+  return lock_manager_.GetCompositorLock(client, timeout);
+}
+
+bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
+  return !has_submitted_frame_since_became_visible_;
+}
+
+void CompositorImpl::OnCompositorLockStateChanged(bool locked) {
+  if (host_)
+    host_->SetDeferCommits(locked);
 }
 
 }  // namespace content
