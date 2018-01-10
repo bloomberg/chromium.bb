@@ -579,7 +579,7 @@ const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
 
 // Enables or disables the bulk printer policies on Chrome OS.
 const base::Feature kBulkPrinters{"BulkPrinters",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables flash component updates on Chrome OS.
 const base::Feature kCrosCompUpdates{"CrosCompUpdates",
