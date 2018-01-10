@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Revoke blob URL after creating Request, will fetch promise_test: Unhandled rejection with value: object "TypeError: Failed to fetch"
-PASS Revoke blob URL after fetch, will fetch
-PASS Revoke blob URL before creating Request, network error (after fetch)
-Harness: the test ran to completion.
-
