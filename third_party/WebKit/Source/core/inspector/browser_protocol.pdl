@@ -4688,6 +4688,9 @@ domain Page
   # Force the page stop all navigations and pending resource fetches.
   command stopLoading
 
+  # Crashes renderer on the IO thread, generates minidumps.
+  experimental command crash
+
   # Stops sending each frame in the `screencastFrame`.
   experimental command stopScreencast
 
