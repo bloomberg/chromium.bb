@@ -586,6 +586,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     }
   } else {
     p->eobs[block] = 0;
+#if CONFIG_LV_MAP
+    p->txb_entropy_ctx[block] = 0;
+#endif
   }
 
   av1_optimize_b(args->cpi, x, plane, blk_row, blk_col, block, plane_bsize,
@@ -865,6 +868,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
   if (x->blk_skip[plane][blk_row * bw + blk_col] && plane == 0) {
     *eob = 0;
+    p->txb_entropy_ctx[block] = 0;
     *(args->skip) = 0;
     assert(xd->mi[0]->mbmi.txk_type[(blk_row << MAX_MIB_SIZE_LOG2) + blk_col] ==
            DCT_DCT);
