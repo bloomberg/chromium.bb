@@ -9,35 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-
-namespace {
-
-// The maximum number of threads for this pool.
-const int kMaxThreads = 5;
-
-class FileWorkerPool : public base::SequencedWorkerPool {
- public:
-  FileWorkerPool()
-      : base::SequencedWorkerPool(kMaxThreads,
-                                  "CachePool",
-                                  base::TaskPriority::USER_BLOCKING) {}
-
- protected:
-  ~FileWorkerPool() override = default;
-};
-
-base::LazyInstance<FileWorkerPool>::Leaky s_worker_pool =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 namespace disk_cache {
 
@@ -95,11 +73,11 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
     return false;
   }
 
-  base::PostTaskAndReplyWithResult(
-      s_worker_pool.Pointer(), FROM_HERE,
-      base::Bind(&File::DoRead, base::Unretained(this), buffer, buffer_len,
-                 offset),
-      base::Bind(&File::OnOperationComplete, this, callback));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+      base::BindOnce(&File::DoRead, base::Unretained(this), buffer, buffer_len,
+                     offset),
+      base::BindOnce(&File::OnOperationComplete, this, callback));
 
   *completed = false;
   return true;
@@ -119,11 +97,15 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
     return false;
   }
 
-  base::PostTaskAndReplyWithResult(
-      s_worker_pool.Pointer(), FROM_HERE,
-      base::Bind(&File::DoWrite, base::Unretained(this), buffer, buffer_len,
-                 offset),
-      base::Bind(&File::OnOperationComplete, this, callback));
+  // The priority is USER_BLOCKING because the cache waits for the write to
+  // finish before it reads from the network again.
+  // TODO(fdoray): Consider removing this from the critical path of network
+  // requests and changing the priority to BACKGROUND.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+      base::BindOnce(&File::DoWrite, base::Unretained(this), buffer, buffer_len,
+                     offset),
+      base::BindOnce(&File::OnOperationComplete, this, callback));
 
   *completed = false;
   return true;
@@ -151,10 +133,11 @@ size_t File::GetLength() {
 
 // Static.
 void File::WaitForPendingIO(int* num_pending_io) {
-  // We are running unit tests so we should wait for all callbacks. Sadly, the
-  // worker pool only waits for tasks on the worker pool, not the "Reply" tasks
-  // so we have to let the current message loop to run.
-  s_worker_pool.Get().FlushForTesting();
+  // We are running unit tests so we should wait for all callbacks.
+
+  // This waits for callbacks running on worker threads.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
+  // This waits for the "Reply" tasks running on the current MessageLoop.
   base::RunLoop().RunUntilIdle();
 }
 
