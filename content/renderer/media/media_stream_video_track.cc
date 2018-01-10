@@ -352,6 +352,8 @@ void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
   if (source_) {
     source_->RemoveTrack(this, std::move(callback));
     source_ = nullptr;
+  } else if (callback) {
+    std::move(callback).Run();
   }
   OnReadyStateChanged(blink::WebMediaStreamSource::kReadyStateEnded);
 }
