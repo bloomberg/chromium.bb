@@ -7,26 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGPath polygon id='t3'",
-          "rect": [304, 150, 165, 164],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [31, 150, 165, 164],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [441, 150, 164, 164],
-          "reason": "style change"
-        },
-        {
-          "object": "LayoutSVGPath polygon",
-          "rect": [168, 150, 164, 164],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGViewportContainer svg id='poly'",
           "rect": [168, 150, 164, 163],
           "reason": "style change"
@@ -34,6 +14,26 @@
         {
           "object": "LayoutSVGViewportContainer svg id='poly'",
           "rect": [32, 150, 163, 163],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon id='t3'",
+          "rect": [317, 163, 139, 138],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [44, 163, 139, 138],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [454, 163, 138, 138],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGPath polygon",
+          "rect": [181, 163, 138, 138],
           "reason": "style change"
         },
         {

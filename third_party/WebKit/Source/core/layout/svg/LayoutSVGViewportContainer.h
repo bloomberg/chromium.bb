@@ -42,6 +42,10 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
 
   const char* GetName() const override { return "LayoutSVGViewportContainer"; }
 
+  AffineTransform LocalToSVGParentTransform() const override {
+    return local_to_parent_transform_;
+  }
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGViewportContainer ||
@@ -49,10 +53,6 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
   }
 
   void UpdateLayout() override;
-
-  AffineTransform LocalToSVGParentTransform() const override {
-    return local_to_parent_transform_;
-  }
 
   SVGTransformChange CalculateLocalTransform() override;
 
