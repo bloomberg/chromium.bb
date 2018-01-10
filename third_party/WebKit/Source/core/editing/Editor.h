@@ -391,10 +391,6 @@ inline void Editor::SetTypingStyle(EditingStyle* style) {
   typing_style_ = style;
 }
 
-// TODO(yosin): We should move |Transpose()| into |ExecuteTranspose()| in
-// "EditorCommand.cpp"
-void Transpose(LocalFrame&);
-
 }  // namespace blink
 
 #endif  // Editor_h

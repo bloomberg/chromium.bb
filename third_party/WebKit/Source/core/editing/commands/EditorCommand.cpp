@@ -55,6 +55,7 @@
 #include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UnlinkCommand.h"
+#include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/ContentSettingsClient.h"
@@ -216,6 +217,25 @@ StaticRangeVector* RangesFromCurrentSelectionOrExtendCaret(
   ranges->push_back(StaticRange::Create(
       FirstEphemeralRangeOf(selection_modifier.Selection())));
   return ranges;
+}
+
+EphemeralRange ComputeRangeForTranspose(LocalFrame& frame) {
+  const VisibleSelection& selection =
+      frame.Selection().ComputeVisibleSelectionInDOMTree();
+  if (!selection.IsCaret())
+    return EphemeralRange();
+
+  // Make a selection that goes back one character and forward two characters.
+  const VisiblePosition& caret = selection.VisibleStart();
+  const VisiblePosition& next =
+      IsEndOfParagraph(caret) ? caret : NextPositionOf(caret);
+  const VisiblePosition& previous = PreviousPositionOf(next);
+  if (next.DeepEquivalent() == previous.DeepEquivalent())
+    return EphemeralRange();
+  const VisiblePosition& previous_of_previous = PreviousPositionOf(previous);
+  if (!InSameParagraph(next, previous_of_previous))
+    return EphemeralRange();
+  return MakeRange(previous_of_previous, next);
 }
 
 }  // anonymous namespace
@@ -1973,7 +1993,63 @@ static bool ExecuteTranspose(LocalFrame& frame,
                              Event*,
                              EditorCommandSource,
                              const String&) {
-  Transpose(frame);
+  Editor& editor = frame.GetEditor();
+  if (!editor.CanEdit())
+    return false;
+
+  Document* const document = frame.GetDocument();
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  const EphemeralRange& range = ComputeRangeForTranspose(frame);
+  if (range.IsNull())
+    return false;
+
+  // Transpose the two characters.
+  const String& text = PlainText(range);
+  if (text.length() != 2)
+    return false;
+  const String& transposed = text.Right(1) + text.Left(1);
+
+  if (DispatchBeforeInputInsertText(
+          EventTargetNodeForDocument(document), transposed,
+          InputEvent::InputType::kInsertTranspose,
+          new StaticRangeVector(1, StaticRange::Create(range))) !=
+      DispatchEventResult::kNotCanceled)
+    return false;
+
+  // 'beforeinput' event handler may destroy document->
+  if (frame.GetDocument() != document)
+    return false;
+
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // 'beforeinput' event handler may change selection, we need to re-calculate
+  // range.
+  const EphemeralRange& new_range = ComputeRangeForTranspose(frame);
+  if (new_range.IsNull())
+    return false;
+
+  const String& new_text = PlainText(new_range);
+  if (new_text.length() != 2)
+    return false;
+  const String& new_transposed = new_text.Right(1) + new_text.Left(1);
+
+  const SelectionInDOMTree& new_selection =
+      SelectionInDOMTree::Builder().SetBaseAndExtent(new_range).Build();
+
+  // Select the two characters.
+  if (CreateVisibleSelection(new_selection) !=
+      frame.Selection().ComputeVisibleSelectionInDOMTree())
+    frame.Selection().SetSelection(new_selection);
+
+  // Insert the transposed characters.
+  editor.ReplaceSelectionWithText(new_transposed, false, false,
+                                  InputEvent::InputType::kInsertTranspose);
   return true;
 }
 

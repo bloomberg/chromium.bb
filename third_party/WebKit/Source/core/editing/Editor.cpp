@@ -148,25 +148,6 @@ bool IsInPasswordFieldWithUnrevealedPassword(const Position& position) {
   return false;
 }
 
-EphemeralRange ComputeRangeForTranspose(LocalFrame& frame) {
-  const VisibleSelection& selection =
-      frame.Selection().ComputeVisibleSelectionInDOMTree();
-  if (!selection.IsCaret())
-    return EphemeralRange();
-
-  // Make a selection that goes back one character and forward two characters.
-  const VisiblePosition& caret = selection.VisibleStart();
-  const VisiblePosition& next =
-      IsEndOfParagraph(caret) ? caret : NextPositionOf(caret);
-  const VisiblePosition& previous = PreviousPositionOf(next);
-  if (next.DeepEquivalent() == previous.DeepEquivalent())
-    return EphemeralRange();
-  const VisiblePosition& previous_of_previous = PreviousPositionOf(previous);
-  if (!InSameParagraph(next, previous_of_previous))
-    return EphemeralRange();
-  return MakeRange(previous_of_previous, next);
-}
-
 }  // anonymous namespace
 
 Editor::RevealSelectionScope::RevealSelectionScope(Editor* editor)
@@ -1427,68 +1408,6 @@ void Editor::RevealSelectionAfterEditingOperation(
   if (!GetFrameSelection().IsAvailable())
     return;
   GetFrameSelection().RevealSelection(alignment, kDoNotRevealExtent);
-}
-
-// TODO(yosin): We should move |Transpose()| into |ExecuteTranspose()| in
-// "EditorCommand.cpp"
-void Transpose(LocalFrame& frame) {
-  Editor& editor = frame.GetEditor();
-  if (!editor.CanEdit())
-    return;
-
-  Document* const document = frame.GetDocument();
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  const EphemeralRange& range = ComputeRangeForTranspose(frame);
-  if (range.IsNull())
-    return;
-
-  // Transpose the two characters.
-  const String& text = PlainText(range);
-  if (text.length() != 2)
-    return;
-  const String& transposed = text.Right(1) + text.Left(1);
-
-  if (DispatchBeforeInputInsertText(
-          EventTargetNodeForDocument(document), transposed,
-          InputEvent::InputType::kInsertTranspose,
-          new StaticRangeVector(1, StaticRange::Create(range))) !=
-      DispatchEventResult::kNotCanceled)
-    return;
-
-  // 'beforeinput' event handler may destroy document->
-  if (frame.GetDocument() != document)
-    return;
-
-  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  // 'beforeinput' event handler may change selection, we need to re-calculate
-  // range.
-  const EphemeralRange& new_range = ComputeRangeForTranspose(frame);
-  if (new_range.IsNull())
-    return;
-
-  const String& new_text = PlainText(new_range);
-  if (new_text.length() != 2)
-    return;
-  const String& new_transposed = new_text.Right(1) + new_text.Left(1);
-
-  const SelectionInDOMTree& new_selection =
-      SelectionInDOMTree::Builder().SetBaseAndExtent(new_range).Build();
-
-  // Select the two characters.
-  if (CreateVisibleSelection(new_selection) !=
-      frame.Selection().ComputeVisibleSelectionInDOMTree())
-    frame.Selection().SetSelection(new_selection);
-
-  // Insert the transposed characters.
-  editor.ReplaceSelectionWithText(new_transposed, false, false,
-                                  InputEvent::InputType::kInsertTranspose);
 }
 
 void Editor::AddToKillRing(const EphemeralRange& range) {
