@@ -180,6 +180,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   RenderWidgetTargetResult FindTouchEventTarget(
       RenderWidgetHostViewBase* root_view,
       const blink::WebTouchEvent& event);
+  RenderWidgetTargetResult FindTouchscreenGestureEventTarget(
+      RenderWidgetHostViewBase* root_view,
+      const blink::WebGestureEvent& gesture_event);
 
   // |mouse_event| is in the coord-space of |target|.
   void DispatchMouseEvent(RenderWidgetHostViewBase* root_view,
@@ -191,6 +194,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                           RenderWidgetHostViewBase* target,
                           const blink::WebTouchEvent& touch_event,
                           const ui::LatencyInfo& latency);
+  // Assumes |gesture_event| has coordinates in root view's coordinate space.
+  void DispatchTouchscreenGestureEvent(
+      RenderWidgetHostViewBase* root_view,
+      RenderWidgetHostViewBase* target,
+      const blink::WebGestureEvent& gesture_event,
+      const ui::LatencyInfo& latency);
 
   // RenderWidgetTargeter::Delegate:
   RenderWidgetTargetResult FindTargetSynchronously(
