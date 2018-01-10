@@ -307,16 +307,19 @@ CrOnc.getSimpleActiveProperties = function(properties) {
 CrOnc.getIPConfigForType = function(properties, type) {
   'use strict';
   /** @type {!CrOnc.IPConfigProperties|undefined} */ var ipConfig = undefined;
+  /** @type {!CrOnc.IPType|undefined} */ var ipType = undefined;
   var ipConfigs = properties.IPConfigs;
   if (ipConfigs) {
     for (var i = 0; i < ipConfigs.length; ++i) {
       ipConfig = ipConfigs[i];
-      if (ipConfig.Type == type)
+      ipType = ipConfig.Type ? /** @type {CrOnc.IPType} */ (ipConfig.Type) :
+                               undefined;
+      if (ipType == type)
         break;
     }
   }
   if (type != CrOnc.IPType.IPV4)
-    return ipConfig;
+    return type == ipType ? ipConfig : undefined;
 
   var staticIpConfig =
       /** @type {!CrOnc.IPConfigProperties|undefined} */ (
