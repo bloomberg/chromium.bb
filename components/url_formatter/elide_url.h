@@ -11,6 +11,7 @@
 
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "ui/gfx/text_constants.h"
 
 class GURL;
 
@@ -50,7 +51,8 @@ base::string16 ElideUrl(const GURL& url,
 // depending on the width.
 base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
-                         float available_pixel_width);
+                         float available_pixel_width,
+                         gfx::Typesetter typesetter = gfx::Typesetter::DEFAULT);
 #endif  // !defined(OS_ANDROID)
 
 // Similar to ElideUrl, this function shortens a URL to fit a specified width,

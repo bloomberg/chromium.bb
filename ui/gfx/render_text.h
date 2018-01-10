@@ -199,7 +199,7 @@ class GFX_EXPORT RenderText {
   // which is the only supported native typesetter.
   static std::unique_ptr<RenderText> CreateFor(Typesetter typesetter);
 
-  // Returns CreateFor(Typesetter::PLATFORM), but indicates a caller that does
+  // Returns CreateFor(Typesetter::BROWSER), but indicates a caller that does
   // not know whether the text will eventually be drawn by the native typesetter
   // or by a RenderText instance.
   // TODO(tapted): Delete this.

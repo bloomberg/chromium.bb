@@ -392,13 +392,14 @@ base::string16 DownloadItemModel::GetTooltipText(const gfx::FontList& font_list,
                                                  int max_width) const {
   base::string16 tooltip =
       gfx::ElideFilename(download_->GetFileNameToReportUser(), font_list,
-                         max_width, gfx::Typesetter::TOOLTIPS);
+                         max_width, gfx::Typesetter::NATIVE);
   content::DownloadInterruptReason reason = download_->GetLastReason();
   if (download_->GetState() == DownloadItem::INTERRUPTED &&
       reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
     tooltip += base::ASCIIToUTF16("\n");
-    tooltip += gfx::ElideText(InterruptReasonStatusMessage(reason),
-                             font_list, max_width, gfx::ELIDE_TAIL);
+    tooltip +=
+        gfx::ElideText(InterruptReasonStatusMessage(reason), font_list,
+                       max_width, gfx::ELIDE_TAIL, gfx::Typesetter::NATIVE);
   }
   return tooltip;
 }
@@ -409,7 +410,7 @@ base::string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
   DCHECK(IsDangerous());
   base::string16 elided_filename =
       gfx::ElideFilename(download_->GetFileNameToReportUser(), font_list,
-                         base_width, gfx::Typesetter::PLATFORM);
+                         base_width, gfx::Typesetter::BROWSER);
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
