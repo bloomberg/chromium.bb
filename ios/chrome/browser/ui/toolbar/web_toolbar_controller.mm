@@ -1924,9 +1924,9 @@ initWithDelegate:(id<WebToolbarDelegate>)delegate
 
 - (void)viewSafeAreaInsetsDidChange {
   [super viewSafeAreaInsetsDidChange];
-  [self adjustToolbarHeight];
-  if (!IsIPadIdiom()) {
-    if (IsSafeAreaCompatibleToolbarEnabled()) {
+  if (IsSafeAreaCompatibleToolbarEnabled()) {
+    [self adjustToolbarHeight];
+    if (!IsIPadIdiom()) {
       // The clipping view's height is supposed to match the toolbar's height.
       // The clipping view can't match the toolbar's height with autoresizing
       // masks because the clipping view is not a direct child of the toolbar.
