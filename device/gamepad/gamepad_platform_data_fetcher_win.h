@@ -26,6 +26,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/xinput_haptic_gamepad_win.h"
 
 namespace device {
 
@@ -57,7 +58,18 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
 
   GamepadSource source() override;
 
+  // GamepadDataFetcher implementation.
   void GetGamepadData(bool devices_changed_hint) override;
+
+  void PlayEffect(
+      int pad_index,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+
+  void ResetVibration(
+      int pad_index,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
 
  private:
   void OnAddedToProvider() override;
@@ -85,12 +97,14 @@ class GamepadPlatformDataFetcherWin : public GamepadDataFetcher {
   bool xinput_available_;
 
   // Function pointers to XInput functionality, retrieved in
-  // |GetXinputDllFunctions|.
+  // |GetXInputDllFunctions|.
   XInputGetCapabilitiesFunc xinput_get_capabilities_;
   XInputGetStateFunc xinput_get_state_;
   XInputGetStateExFunc xinput_get_state_ex_;
+  XInputHapticGamepadWin::XInputSetStateFunc xinput_set_state_;
 
-  bool xinuput_connected_[XUSER_MAX_COUNT];
+  bool xinput_connected_[XUSER_MAX_COUNT];
+  std::unique_ptr<XInputHapticGamepadWin> haptics_[XUSER_MAX_COUNT];
 
   DISALLOW_COPY_AND_ASSIGN(GamepadPlatformDataFetcherWin);
 };
