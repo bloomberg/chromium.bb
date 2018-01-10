@@ -20,7 +20,7 @@ layer at (11,93) size 400x47
   LayoutBlockFlow {DIV} at (3,3) size 400x47
     LayoutText {#text} at (0,0) size 366x47
       text run at (0,0) width 366: "value jgq not clipped"
-layer at (14,173) size 194x23
+layer at (14,173) size 194x23 backgroundClip at (14,174) size 194x21 clip at (14,174) size 194x21
   LayoutBlockFlow {DIV} at (0,0) size 194x23
     LayoutText {#text} at (0,0) size 118x23
       text run at (0,0) width 118: "Sample Input"

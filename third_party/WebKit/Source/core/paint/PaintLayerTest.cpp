@@ -51,6 +51,9 @@ TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
 }
 
 TEST_P(PaintLayerTest, CompositedBoundsAbsPosGrandchild) {
+  // BoundingBoxForCompositing is not used in SPv2 mode.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
   SetBodyInnerHTML(
       " <div id='parent'><div id='absposparent'><div id='absposchild'>"
       " </div></div></div>"

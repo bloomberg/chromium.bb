@@ -9,7 +9,7 @@ layer at (0,0) size 785x850 backgroundClip at (0,0) size 785x600 clip at (0,0) s
 layer at (8,42) size 769x800 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutBlockFlow {DIV} at (0,34) size 769x800
     LayoutMultiColumnSet (anonymous) at (0,0) size 769x264
-layer at (8,42) size 180x916 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+layer at (8,42) size 180x916 backgroundClip at (0,0) size 196x306 clip at (0,0) size 196x306
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 180.25x916
     LayoutBlockFlow {DIV} at (0,16) size 180.25x106
       LayoutBlockFlow {P} at (0,0) size 180.25x18
@@ -245,64 +245,64 @@ layer at (20,264) size 0x0
 layer at (20,282) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,372) size 0x0
+layer at (216,108) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,390) size 0x0
+layer at (216,126) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,408) size 0x0
+layer at (216,144) size 0x0
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (20,636) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,108) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,654) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,126) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,672) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,144) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,776) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,248) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,794) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,266) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,812) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (413,284) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,900) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (609,108) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,918) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (609,126) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36
         text run at (0,0) width 16: "alt"
         text run at (0,18) width 24: "text"
-layer at (20,936) size 0x0 scrollWidth 24 scrollHeight 36
+layer at (609,144) size 0x0 scrollWidth 24 scrollHeight 36
   LayoutBlockFlow {SPAN} at (0,0) size 0x0
     LayoutInline {SPAN} at (0,0) size 24x36
       LayoutText {#text} at (0,0) size 24x36

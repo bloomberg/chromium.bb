@@ -609,10 +609,9 @@ void CompositedLayerMapping::
   // of the inherited state.
   // FIXME: this should use cached clip rects, but this sometimes give
   // inaccurate results (and trips the ASSERTS in PaintLayerClipper).
-  ClipRectsContext clip_rects_context(clip_inheritance_ancestor_,
-                                      kUncachedClipRects,
-                                      kIgnorePlatformOverlayScrollbarSize);
-  clip_rects_context.SetIgnoreOverflowClip();
+  ClipRectsContext clip_rects_context(
+      clip_inheritance_ancestor_, kUncachedClipRects,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
 
   ClipRect clip_rect;
   owning_layer_.Clipper(PaintLayer::kDoNotUseGeometryMapper)
@@ -1356,9 +1355,9 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
   if (!compositing_container || !ancestor_clipping_layer_)
     return;
 
-  ClipRectsContext clip_rects_context(clip_inheritance_ancestor_,
-                                      kPaintingClipRectsIgnoringOverflowClip,
-                                      kIgnorePlatformOverlayScrollbarSize);
+  ClipRectsContext clip_rects_context(
+      clip_inheritance_ancestor_, kPaintingClipRectsIgnoringOverflowClip,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   // Note: kPaintingClipRectsIgnoringOverflowClip implies SetIgnoreOverflowClip.
 
   ClipRect clip_rect;
