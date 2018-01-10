@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
@@ -59,8 +58,7 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellImpl
-        extends GvrLayout implements VrShell, SurfaceHolder.Callback, FullscreenListener {
+public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Callback {
     private static final String TAG = "VrShellImpl";
     private static final float INCHES_TO_METERS = 0.0254f;
 
@@ -99,7 +97,6 @@ public class VrShellImpl
     private float mLastContentHeight;
     private float mLastContentDpr;
     private Boolean mPaused;
-    private boolean mPendingVSyncPause;
 
     private AndroidUiGestureTarget mAndroidUiGestureTarget;
 
@@ -113,8 +110,6 @@ public class VrShellImpl
         mTabModelSelector = tabModelSelector;
 
         mActivity.getToolbarManager().setProgressBarEnabled(false);
-
-        mActivity.getFullscreenManager().addListener(this);
 
         // This overrides the default intent created by GVR to return to Chrome when the DON flow
         // is triggered by resuming the GvrLayout, which is the usual way Daydream apps enter VR.
@@ -586,7 +581,6 @@ public class VrShellImpl
 
     @Override
     public void shutdown() {
-        mActivity.getFullscreenManager().removeListener(this);
         mActivity.getFullscreenManager().setPersistentFullscreenMode(false);
         reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
@@ -604,10 +598,20 @@ public class VrShellImpl
             View parent = mTab.getContentViewCore().getContainerView();
             mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
         }
-        mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        mTab.updateFullscreenEnabledState();
         mActivity.getToolbarManager().setProgressBarEnabled(true);
 
         mContentVirtualDisplay.destroy();
+
+        // Since VSync was paused, control heights may not have been propagated. If we request to
+        // show the controls before the old values have propagated we'll end up with the old values
+        // (ie. the controls hidden). The values will have propagated with the next frame received
+        // from the compositor, so we can tell the controls to show at that point.
+        mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
+            ChromeFullscreenManager manager = (ChromeFullscreenManager) mTab.getFullscreenManager();
+            manager.getBrowserVisibilityDelegate().showControlsTransient();
+        });
+
         super.shutdown();
     }
 
@@ -628,47 +632,9 @@ public class VrShellImpl
 
     @Override
     public void setWebVrModeEnabled(boolean enabled, boolean showToast) {
-        if (enabled) {
-            // Use showToast as a proxy for whether we were in VR before switching to WebVR mode
-            // (and the controls are already hidden). We can't check whether the controls are hidden
-            // directly due to bug mentioned below. This will all be fixed and cleaned up with the
-            // fallback UI path (https://crbug.com/793430).
-            if (showToast) {
-                mContentVrWindowAndroid.setVSyncPaused(true);
-                mPendingVSyncPause = false;
-            } else {
-                // TODO(mthiesse, https://crbug.com/760970) We shouldn't have to wait for the
-                // controls to be hidden before pausing VSync. Something is going wrong in the
-                // controls code and should be fixed.
-                mPendingVSyncPause = true;
-            }
-        } else {
-            mContentVrWindowAndroid.setVSyncPaused(false);
-            mPendingVSyncPause = false;
-        }
-
+        mContentVrWindowAndroid.setVSyncPaused(enabled);
         nativeSetWebVrMode(mNativeVrShell, enabled, showToast);
     }
-
-    @Override
-    public void onContentOffsetChanged(float offset) {}
-
-    @Override
-    public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
-        if (!mPendingVSyncPause) return;
-        // As soon as the controls are starting to hide we can set vsync to paused.
-        // For some reason it seems onControlsOffsetChanged is sometimes called when the controls
-        // are partially hidden, but never called again when they're fully hidden.
-        if (mActivity.getFullscreenManager().getBrowserControlHiddenRatio() == 0.0) return;
-        mPendingVSyncPause = false;
-        mContentVrWindowAndroid.setVSyncPaused(true);
-    }
-
-    @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
-    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
 
     @Override
     public boolean getWebVrModeEnabled() {
