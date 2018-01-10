@@ -17,12 +17,14 @@
 #include "av1/common/onyxc_int.h"
 
 PREDICTION_MODE av1_left_block_mode(const MODE_INFO *left_mi) {
-  if (!left_mi || is_inter_block(&left_mi->mbmi)) return DC_PRED;
+  if (!left_mi) return DC_PRED;
+  assert(!is_inter_block(&left_mi->mbmi));
   return left_mi->mbmi.mode;
 }
 
 PREDICTION_MODE av1_above_block_mode(const MODE_INFO *above_mi) {
-  if (!above_mi || is_inter_block(&above_mi->mbmi)) return DC_PRED;
+  if (!above_mi) return DC_PRED;
+  assert(!is_inter_block(&above_mi->mbmi));
   return above_mi->mbmi.mode;
 }
 
