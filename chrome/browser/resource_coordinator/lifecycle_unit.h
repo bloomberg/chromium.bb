@@ -16,6 +16,8 @@
 
 namespace resource_coordinator {
 
+class TabLifecycleUnitExternal;
+
 // A LifecycleUnit represents a unit that can switch between the "loaded" and
 // "discarded" states. When it is loaded, the unit uses system resources and
 // provides functionality to the user. When it is discarded, the unit doesn't
@@ -45,6 +47,10 @@ class LifecycleUnit {
 
   LifecycleUnit();
   virtual ~LifecycleUnit();
+
+  // Returns the TabLifecycleUnitExternal associated with this LifecycleUnit, if
+  // any.
+  virtual TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() = 0;
 
   // Returns a unique id representing this LifecycleUnit.
   int32_t GetID() const;

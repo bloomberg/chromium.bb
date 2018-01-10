@@ -89,6 +89,13 @@ class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitTest);
 };
 
+TEST_F(TabLifecycleUnitTest, AsTabLifecycleUnitExternal) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_.get(),
+                                      tab_strip_model_.get());
+  EXPECT_EQ(&tab_lifecycle_unit,
+            tab_lifecycle_unit.AsTabLifecycleUnitExternal());
+}
+
 TEST_F(TabLifecycleUnitTest, CanDiscardByDefault) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_.get(),
                                       tab_strip_model_.get());
