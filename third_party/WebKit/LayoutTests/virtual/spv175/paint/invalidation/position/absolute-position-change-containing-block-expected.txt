@@ -31,14 +31,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV id='container' class='fixed blue'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "style change"
     },
