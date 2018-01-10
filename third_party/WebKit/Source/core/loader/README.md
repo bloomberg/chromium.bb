@@ -1,4 +1,4 @@
-Low-level fetching code.
+High-level fetching code.
 
 Fetching/loading code is divided into:
 - core/fetch: Fetch API
