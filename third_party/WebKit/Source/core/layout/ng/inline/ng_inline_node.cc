@@ -497,6 +497,15 @@ void NGInlineNode::PrepareLayoutIfNeeded() {
   DCHECK_EQ(data, MutableData());
 
   block_flow->ClearNeedsCollectInlines();
+
+#if DCHECK_IS_ON()
+  // ComputeOffsetMappingIfNeeded() runs some integrity checks as part of
+  // creating offset mapping. Run the check, and discard the result.
+  DCHECK(!data->offset_mapping_);
+  ComputeOffsetMappingIfNeeded();
+  DCHECK(data->offset_mapping_);
+  data->offset_mapping_.reset();
+#endif
 }
 
 const NGInlineNodeData& NGInlineNode::EnsureData() {
