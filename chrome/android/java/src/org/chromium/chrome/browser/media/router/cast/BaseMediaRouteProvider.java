@@ -1,7 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-package org.chromium.chrome.browser.media.router;
+package org.chromium.chrome.browser.media.router.cast;
 
 import android.os.Handler;
 import android.support.v7.media.MediaRouteSelector;
@@ -9,11 +9,10 @@ import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.media.router.cast.CastSession;
-import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager;
-import org.chromium.chrome.browser.media.router.cast.DiscoveryCallback;
-import org.chromium.chrome.browser.media.router.cast.MediaSink;
-import org.chromium.chrome.browser.media.router.cast.MediaSource;
+import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
+import org.chromium.chrome.browser.media.router.MediaRoute;
+import org.chromium.chrome.browser.media.router.MediaRouteManager;
+import org.chromium.chrome.browser.media.router.MediaRouteProvider;
 
 import java.util.ArrayList;
 import java.util.Collections;
