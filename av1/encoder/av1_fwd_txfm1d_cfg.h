@@ -213,7 +213,7 @@ static const int8_t fwd_cos_bit_row_dct_64x32[12] = { 13, 13, 12, 11, 10, 10,
                                                       10, 10, 10, 10, 10, 10 };
 
 //  ---------------- 4x16 1D constants -----------------------
-#define fwd_shift_4x16 fwd_shift_16
+static const int8_t fwd_shift_4x16[3] = { 2, -1, 0 };
 static const int8_t fwd_stage_range_row_dct_4x16[4] = { 4, 5, 5, 5 };
 static const int8_t fwd_stage_range_row_adst_4x16[6] = { 4, 4, 4, 5, 5, 5 };
 static const int8_t fwd_stage_range_row_idx_4x16[1] = { 5 };
@@ -221,7 +221,7 @@ static const int8_t fwd_cos_bit_row_dct_4x16[6] = { 12, 12, 12, 12 };
 static const int8_t fwd_cos_bit_row_adst_4x16[6] = { 12, 12, 12, 12, 12, 12 };
 
 //  ---------------- 16x4 1D constants -----------------------
-#define fwd_shift_16x4 fwd_shift_16
+static const int8_t fwd_shift_16x4[3] = { 2, -1, 0 };
 static const int8_t fwd_stage_range_row_dct_16x4[8] = {
   2, 3, 4, 5, 5, 5, 5, 5
 };
@@ -234,7 +234,7 @@ static const int8_t fwd_cos_bit_row_adst_16x4[10] = { 12, 12, 12, 12, 12,
                                                       12, 12, 12, 12, 12 };
 
 //  ---------------- 8x32 1D constants -----------------------
-#define fwd_shift_8x32 fwd_shift_32
+static const int8_t fwd_shift_8x32[3] = { 2, -2, 0 };
 static const int8_t fwd_stage_range_row_dct_8x32[6] = { 5, 6, 7, 7, 7, 7 };
 static const int8_t fwd_stage_range_row_adst_8x32[8] = {
   5, 5, 5, 6, 6, 7, 7, 7
@@ -245,7 +245,7 @@ static const int8_t fwd_cos_bit_row_adst_8x32[8] = { 12, 12, 12, 12,
                                                      11, 11, 11, 11 };
 
 //  ---------------- 32x8 1D constants -----------------------
-#define fwd_shift_32x8 fwd_shift_32
+static const int8_t fwd_shift_32x8[3] = { 2, -2, 0 };
 static const int8_t fwd_stage_range_row_dct_32x8[10] = { 3, 4, 5, 6, 7,
                                                          7, 7, 7, 7, 7 };
 static const int8_t fwd_stage_range_row_adst_32x8[12] = { 3, 3, 3, 4, 4, 5,
@@ -257,7 +257,7 @@ static const int8_t fwd_cos_bit_row_adst_32x8[12] = { 12, 12, 12, 12, 12, 12,
                                                       12, 11, 11, 11, 11, 11 };
 
 //  ---------------- 16x64 1D constants -----------------------
-#define fwd_shift_16x64 fwd_shift_64
+static const int8_t fwd_shift_16x64[3] = { 0, -2, 0 };
 static const int8_t fwd_stage_range_row_dct_16x64[8] = {
   6, 7, 8, 9, 9, 9, 9, 9
 };
@@ -266,7 +266,7 @@ static const int8_t fwd_cos_bit_row_dct_16x64[8] = { 12, 11, 10, 10,
                                                      10, 10, 10, 10 };
 
 //  ---------------- 64x16 1D constants -----------------------
-#define fwd_shift_64x16 fwd_shift_64
+static const int8_t fwd_shift_64x16[3] = { 0, -2, 0 };
 static const int8_t fwd_stage_range_row_dct_64x16[12] = { 4, 5, 6, 7, 8, 9,
                                                           9, 9, 9, 9, 9, 9 };
 static const int8_t fwd_stage_range_row_idx_64x16[1] = { 7 };
