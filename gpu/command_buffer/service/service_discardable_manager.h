@@ -11,7 +11,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -19,7 +19,7 @@ class TextureManager;
 class TextureRef;
 }
 
-class GPU_EXPORT ServiceDiscardableManager {
+class GPU_GLES2_EXPORT ServiceDiscardableManager {
  public:
   ServiceDiscardableManager();
   ~ServiceDiscardableManager();

@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -29,7 +29,7 @@ class VertexArrayManager;
 // Info about a Vertex Attribute. This is used to track what the user currently
 // has bound on each Vertex Attribute so that checking can be done at
 // glDrawXXX time.
-class GPU_EXPORT VertexAttrib {
+class GPU_GLES2_EXPORT VertexAttrib {
  public:
   typedef std::list<VertexAttrib*> VertexAttribList;
 
@@ -180,8 +180,8 @@ class GPU_EXPORT VertexAttrib {
 // Manages vertex attributes.
 // This class also acts as the service-side representation of a
 // vertex array object and it's contained state.
-class GPU_EXPORT VertexAttribManager :
-    public base::RefCounted<VertexAttribManager> {
+class GPU_GLES2_EXPORT VertexAttribManager
+    : public base::RefCounted<VertexAttribManager> {
  public:
   typedef std::list<VertexAttrib*> VertexAttribList;
 

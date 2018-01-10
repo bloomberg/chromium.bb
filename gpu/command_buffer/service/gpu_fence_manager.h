@@ -10,7 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gfx {
 struct GpuFenceHandle;
@@ -26,8 +26,8 @@ namespace gles2 {
 
 // This class keeps track of GpuFence objects and their state. As GpuFence
 // objects are not shared there is one GpuFenceManager per context.
-class GPU_EXPORT GpuFenceManager {
-  class GPU_EXPORT GpuFenceEntry {
+class GPU_GLES2_EXPORT GpuFenceManager {
+  class GPU_GLES2_EXPORT GpuFenceEntry {
    public:
     GpuFenceEntry();
     ~GpuFenceEntry();

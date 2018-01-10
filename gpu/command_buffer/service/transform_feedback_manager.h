@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -20,7 +20,7 @@ class Buffer;
 class TransformFeedbackManager;
 
 // Info about TransformFeedbacks currently in the system.
-class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
+class GPU_GLES2_EXPORT TransformFeedback : public IndexedBufferBindingHost {
  public:
   TransformFeedback(
       TransformFeedbackManager* manager, GLuint client_id, GLuint service_id);
@@ -76,7 +76,7 @@ class GPU_EXPORT TransformFeedback : public IndexedBufferBindingHost {
 };
 
 // This class keeps tracks of the transform feedbacks and their states.
-class GPU_EXPORT TransformFeedbackManager {
+class GPU_GLES2_EXPORT TransformFeedbackManager {
  public:
   // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
   // However, we set it to true everywhere, not to trust drivers to handle

@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 
@@ -23,7 +23,7 @@ namespace gles2 {
 
 class DebugMarkerManager;
 
-class GPU_EXPORT Logger {
+class GPU_GLES2_EXPORT Logger {
  public:
   static const int kMaxLogMessages = 256;
 

@@ -5,14 +5,14 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_PROGRESS_REPORTER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_PROGRESS_REPORTER_H_
 
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
 
 // ProgressReporter is used by ContextGroup to report when it is making forward
 // progress in execution, delaying activation of the watchdog timeout.
-class GPU_EXPORT ProgressReporter {
+class GPU_GLES2_EXPORT ProgressReporter {
  public:
   virtual ~ProgressReporter() = default;
 

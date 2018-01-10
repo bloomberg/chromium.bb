@@ -22,7 +22,7 @@ group("common") {
 group("gles2") {
   if (is_component_build) {
     public_deps = [
-      "//gpu",
+      "//gpu:gles2",
     ]
   } else {
     public_deps = [
@@ -103,14 +103,14 @@ source_set("gles2_sources") {
     "gles2_cmd_ids_autogen.h",
   ]
 
-  configs += [ "//gpu:gpu_implementation" ]
+  configs += [ "//gpu:gpu_gles2_implementation" ]
 
   deps = [
     ":gles2_utils",
     "//base",
   ]
   public_deps = [
-    ":common_sources",
+    ":common",
   ]
 }
 

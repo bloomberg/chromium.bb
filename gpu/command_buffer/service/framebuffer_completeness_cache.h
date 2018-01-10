@@ -9,7 +9,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -17,7 +17,7 @@ namespace gles2 {
 // Refcounted wrapper for a hash_set of framebuffer format signatures
 // representing framebuffer configurations that are reported by the GL
 // driver as complete according to glCheckFramebufferStatusEXT.
-class GPU_EXPORT FramebufferCompletenessCache {
+class GPU_GLES2_EXPORT FramebufferCompletenessCache {
  public:
   FramebufferCompletenessCache();
   ~FramebufferCompletenessCache();

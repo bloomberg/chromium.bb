@@ -15,7 +15,7 @@ namespace gles2 {
 
 // Program cache that does not store binaries, but communicates with the
 // underlying implementation via the cache control extension.
-class GPU_EXPORT PassthroughProgramCache : public ProgramCache {
+class GPU_GLES2_EXPORT PassthroughProgramCache : public ProgramCache {
  public:
   PassthroughProgramCache(size_t max_cache_size_bytes,
                           bool disable_gpu_shader_disk_cache);

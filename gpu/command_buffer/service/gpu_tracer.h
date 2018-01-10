@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gl {
 class GPUTimingClient;
@@ -53,7 +53,7 @@ struct TraceMarker {
 };
 
 // Traces GPU Commands.
-class GPU_EXPORT GPUTracer {
+class GPU_GLES2_EXPORT GPUTracer {
  public:
   explicit GPUTracer(GLES2Decoder* decoder);
   virtual ~GPUTracer();
@@ -103,7 +103,7 @@ class GPU_EXPORT GPUTracer {
   DISALLOW_COPY_AND_ASSIGN(GPUTracer);
 };
 
-class GPU_EXPORT Outputter {
+class GPU_GLES2_EXPORT Outputter {
  public:
   virtual ~Outputter() = default;
 
@@ -122,7 +122,7 @@ class GPU_EXPORT Outputter {
                                const std::string& name) = 0;
 };
 
-class GPU_EXPORT TraceOutputter : public Outputter {
+class GPU_GLES2_EXPORT TraceOutputter : public Outputter {
  public:
   TraceOutputter();
   explicit TraceOutputter(const std::string& name);
@@ -152,8 +152,7 @@ class GPU_EXPORT TraceOutputter : public Outputter {
   DISALLOW_COPY_AND_ASSIGN(TraceOutputter);
 };
 
-class GPU_EXPORT GPUTrace
-    : public base::RefCounted<GPUTrace> {
+class GPU_GLES2_EXPORT GPUTrace : public base::RefCounted<GPUTrace> {
  public:
   GPUTrace(Outputter* outputter,
            gl::GPUTimingClient* gpu_timing_client,

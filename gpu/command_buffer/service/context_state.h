@@ -17,7 +17,7 @@
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -33,7 +33,7 @@ class Renderbuffer;
 class TransformFeedback;
 
 // State associated with each texture unit.
-struct GPU_EXPORT TextureUnit {
+struct GPU_GLES2_EXPORT TextureUnit {
   TextureUnit();
   TextureUnit(const TextureUnit& other);
   ~TextureUnit();
@@ -140,7 +140,7 @@ struct GPU_EXPORT TextureUnit {
   }
 };
 
-class GPU_EXPORT Vec4 {
+class GPU_GLES2_EXPORT Vec4 {
  public:
   Vec4() {
     v_[0].float_value = 0.0f;
@@ -174,20 +174,20 @@ class GPU_EXPORT Vec4 {
 };
 
 template <>
-GPU_EXPORT void Vec4::GetValues<GLfloat>(GLfloat* values) const;
+GPU_GLES2_EXPORT void Vec4::GetValues<GLfloat>(GLfloat* values) const;
 template <>
-GPU_EXPORT void Vec4::GetValues<GLint>(GLint* values) const;
+GPU_GLES2_EXPORT void Vec4::GetValues<GLint>(GLint* values) const;
 template <>
-GPU_EXPORT void Vec4::GetValues<GLuint>(GLuint* values) const;
+GPU_GLES2_EXPORT void Vec4::GetValues<GLuint>(GLuint* values) const;
 
 template <>
-GPU_EXPORT void Vec4::SetValues<GLfloat>(const GLfloat* values);
+GPU_GLES2_EXPORT void Vec4::SetValues<GLfloat>(const GLfloat* values);
 template <>
-GPU_EXPORT void Vec4::SetValues<GLint>(const GLint* values);
+GPU_GLES2_EXPORT void Vec4::SetValues<GLint>(const GLint* values);
 template <>
-GPU_EXPORT void Vec4::SetValues<GLuint>(const GLuint* values);
+GPU_GLES2_EXPORT void Vec4::SetValues<GLuint>(const GLuint* values);
 
-struct GPU_EXPORT ContextState {
+struct GPU_GLES2_EXPORT ContextState {
   enum Dimension {
     k2D,
     k3D

@@ -17,7 +17,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -31,7 +31,7 @@ class TextureRef;
 class TextureManager;
 
 // Info about a particular Framebuffer.
-class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
+class GPU_GLES2_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
  public:
   class Attachment : public base::RefCounted<Attachment> {
    public:
@@ -320,7 +320,7 @@ struct DecoderFramebufferState {
 
 // This class keeps track of the frambebuffers and their attached renderbuffers
 // so we can correctly clear them.
-class GPU_EXPORT FramebufferManager {
+class GPU_GLES2_EXPORT FramebufferManager {
  public:
   FramebufferManager(
       uint32_t max_draw_buffers,

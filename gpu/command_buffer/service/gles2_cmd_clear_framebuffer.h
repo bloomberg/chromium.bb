@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_utils.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gfx {
 class Size;
@@ -17,7 +17,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Decoder;
 
-class GPU_EXPORT ClearFramebufferResourceManager {
+class GPU_GLES2_EXPORT ClearFramebufferResourceManager {
  public:
   ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder);
   ~ClearFramebufferResourceManager();

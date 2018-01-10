@@ -107,7 +107,7 @@ class ScopedTexture2DBindingReset {
   GLint texture_;
 };
 
-class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
+class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
   GLES2DecoderPassthroughImpl(DecoderClient* client,
                               CommandBufferServiceBase* command_buffer_service,

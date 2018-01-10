@@ -12,7 +12,7 @@
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 
@@ -24,7 +24,7 @@ namespace gpu {
 // unlocking and deleting entries when no longer needed, as well as enforcing
 // cache limits. If the cache exceeds its specified limits, unlocked transfer
 // cache entries may be deleted.
-class GPU_EXPORT ServiceTransferCache {
+class GPU_GLES2_EXPORT ServiceTransferCache {
  public:
   ServiceTransferCache();
   ~ServiceTransferCache();

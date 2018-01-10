@@ -24,7 +24,7 @@ namespace gles2 {
 class Shader;
 
 // Program cache base class for caching linked gpu programs
-class GPU_EXPORT ProgramCache {
+class GPU_GLES2_EXPORT ProgramCache {
  public:
   static const size_t kHashLength = base::kSHA1Length;
 

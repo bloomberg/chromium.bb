@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "gpu/gpu_export.h"
+#include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -57,14 +57,14 @@ class Logger;
 #define ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state, function_name) \
     error_state->ClearRealGLErrors(__FILE__, __LINE__, function_name)
 
-class GPU_EXPORT ErrorStateClient {
+class GPU_GLES2_EXPORT ErrorStateClient {
  public:
   virtual void OnContextLostError() = 0;
   // GL_OUT_OF_MEMORY can cause side effects such as losing the context.
   virtual void OnOutOfMemoryError() = 0;
 };
 
-class GPU_EXPORT ErrorState {
+class GPU_GLES2_EXPORT ErrorState {
  public:
   virtual ~ErrorState();
 
