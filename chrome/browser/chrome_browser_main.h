@@ -95,8 +95,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   Profile* profile() { return profile_; }
 
-  const PrefService* local_state() const { return local_state_; }
-
  private:
   // Sets up the field trials and related initialization. Call only after
   // about:flags have been converted to switches.
@@ -114,7 +112,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Reads origin trial policy data from local state and configures command line
   // for child processes.
-  void SetupOriginTrialsCommandLine();
+  void SetupOriginTrialsCommandLine(PrefService* local_state);
 
   // Methods for Main Message Loop -------------------------------------------
 
@@ -182,9 +180,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Initialized in |SetupFieldTrials()|.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
-  // Members initialized in PreMainMessageLoopRun, needed in
-  // PreMainMessageLoopRunThreadsCreated.
-  PrefService* local_state_;
   base::FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
