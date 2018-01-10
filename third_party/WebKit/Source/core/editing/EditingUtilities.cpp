@@ -2199,4 +2199,29 @@ InputEvent::InputType DeletionInputTypeFromTextGranularity(
   }
 }
 
+// |IsEmptyNonEditableNodeInEditable()| is introduced for fixing
+// http://crbug.com/428986.
+static bool IsEmptyNonEditableNodeInEditable(const Node& node) {
+  // Editability is defined the DOM tree rather than the flat tree. For example:
+  // DOM:
+  //   <host>
+  //     <span>unedittable</span>
+  //     <shadowroot><div ce><content /></div></shadowroot>
+  //   </host>
+  //
+  // Flat Tree:
+  //   <host><div ce><span1>unedittable</span></div></host>
+  // e.g. editing/shadow/breaking-editing-boundaries.html
+  return !NodeTraversal::HasChildren(node) && !HasEditableStyle(node) &&
+         node.parentNode() && HasEditableStyle(*node.parentNode());
+}
+
+// TODO(yosin): We should not use |IsEmptyNonEditableNodeInEditable()| in
+// |EditingIgnoresContent()| since |IsEmptyNonEditableNodeInEditable()|
+// requires clean layout tree.
+bool EditingIgnoresContent(const Node& node) {
+  return !node.CanContainRangeEndPoint() ||
+         IsEmptyNonEditableNodeInEditable(node);
+}
+
 }  // namespace blink
