@@ -1,0 +1,13 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x268
+  LayoutNGBlockFlow {HTML} at (0,0) size 800x268.34
+    LayoutNGBlockFlow {BODY} at (11.52,11.52) size 776.97x245.31
+      LayoutText {#text} at (0,0) size 727x245
+      LayoutInline {MAP} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutInline {AREA} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutImage {IMG} at (515,54) size 184.31x184.31
+      LayoutText {#text} at (0,0) size 0x0
