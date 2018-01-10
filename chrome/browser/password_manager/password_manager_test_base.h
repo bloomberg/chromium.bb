@@ -169,6 +169,13 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   void WaitForElementValue(const std::string& iframe_id,
                            const std::string& element_id,
                            const std::string& expected_value);
+
+  // Same as above except the element has index |element_index| in elements() of
+  // the form |form_id|.
+  void WaitForElementValue(const std::string& form_id,
+                           size_t element_index,
+                           const std::string& expected_value);
+
   // Make sure that the password store processed all the previous calls which
   // are executed on another thread.
   void WaitForPasswordStore();
