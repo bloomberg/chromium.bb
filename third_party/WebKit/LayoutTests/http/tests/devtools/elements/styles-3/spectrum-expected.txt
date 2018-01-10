@@ -15,9 +15,21 @@ Testing: rgb(1, 2, 3)
 rgb(1, 2, 3)
 Testing: rgba(1, 2, 3, 0.2)
 rgba(1, 2, 3, 0.2)
+Testing: rgb(1, 2, 3, 0.2)
+rgba(1, 2, 3, 0.2)
+Testing: rgb(1 2 3 / 20%)
+rgba(1, 2, 3, 0.2)
+Testing: rgbA(1 2 3)
+rgb(1, 2, 3)
 Testing: hsl(1, 100%, 50%)
 hsl(1, 100%, 50%)
+Testing: hsl(1 100% 50%)
+hsl(1, 100%, 50%)
 Testing: hsla(1, 100%, 50%, 0.2)
+hsla(1, 100%, 50%, 0.2)
+Testing: hsl(1 100% 50% / 20%)
+hsla(1, 100%, 50%, 0.2)
+Testing: hsL(1deg  100% 50%  /  20%)
 hsla(1, 100%, 50%, 0.2)
 --- Testing alpha changes
 Testing: red
@@ -34,9 +46,21 @@ Testing: rgb(1, 2, 3)
 rgba(1, 2, 3, 0)
 Testing: rgba(1, 2, 3, 0.2)
 rgba(1, 2, 3, 0)
+Testing: rgb(1, 2, 3, 0.2)
+rgba(1, 2, 3, 0)
+Testing: rgb(1 2 3 / 20%)
+rgba(1, 2, 3, 0)
+Testing: rgbA(1 2 3)
+rgba(1, 2, 3, 0)
 Testing: hsl(1, 100%, 50%)
 hsla(1, 100%, 50%, 0)
+Testing: hsl(1 100% 50%)
+hsla(1, 100%, 50%, 0)
 Testing: hsla(1, 100%, 50%, 0.2)
+hsla(1, 100%, 50%, 0)
+Testing: hsl(1 100% 50% / 20%)
+hsla(1, 100%, 50%, 0)
+Testing: hsL(1deg  100% 50%  /  20%)
 hsla(1, 100%, 50%, 0)
 --- Testing _formatViewSwitch()
 Testing: red
@@ -60,10 +84,28 @@ hex
 Testing: rgba(1, 2, 3, 0.2)
 hsl
 hex
+Testing: rgb(1, 2, 3, 0.2)
+hsl
+hex
+Testing: rgb(1 2 3 / 20%)
+hsl
+hex
+Testing: rgbA(1 2 3)
+hsl
+hex
 Testing: hsl(1, 100%, 50%)
 hex
 rgb
+Testing: hsl(1 100% 50%)
+hex
+rgb
 Testing: hsla(1, 100%, 50%, 0.2)
+hex
+rgb
+Testing: hsl(1 100% 50% / 20%)
+hex
+rgb
+Testing: hsL(1deg  100% 50%  /  20%)
 hex
 rgb
 

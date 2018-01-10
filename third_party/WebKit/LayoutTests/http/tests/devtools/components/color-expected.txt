@@ -135,9 +135,39 @@ Dumping 'rgb(94, 126, 91)' in different formats:
  - default: rgb(94, 126, 91)
  - inverse color: rgba(161, 129, 164, 1)
  - setAlpha(0.42): rgba(94, 126, 91, 0.42)
+Dumping 'rgba(94 126 91)' in different formats:
+ - rgba(94 126 91)
+ - rgba(94, 126, 91, 1)
+ - hsl(115, 16%, 43%)
+ - hsla(115, 16%, 43%, 1)
+ - hsv(115, 28%, 49%)
+ - hsva(115, 28%, 49%, 1)
+ - #5e7e5bff
+ - #5e7e5b
+ - null
+ - null
+ - null
+ - default: rgb(94, 126, 91)
+ - inverse color: rgba(161, 129, 164, 1)
+ - setAlpha(0.42): rgba(94, 126, 91, 0.42)
 Dumping 'rgba(94, 126, 91, 0.5)' in different formats:
  - null
  - rgba(94, 126, 91, 0.5)
+ - null
+ - hsla(115, 16%, 43%, 0.5)
+ - hsv(115, 28%, 49%)
+ - hsva(115, 28%, 49%, 0.5)
+ - #5e7e5b80
+ - null
+ - null
+ - null
+ - null
+ - default: rgba(94, 126, 91, 0.5)
+ - inverse color: rgba(161, 129, 164, 0.5)
+ - setAlpha(0.42): rgba(94, 126, 91, 0.42)
+Dumping 'rgb(94 126 91 / 50%)' in different formats:
+ - null
+ - rgb(94 126 91 / 50%)
  - null
  - hsla(115, 16%, 43%, 0.5)
  - hsv(115, 28%, 49%)
@@ -165,11 +195,56 @@ Dumping 'hsl(212, 55%, 32%)' in different formats:
  - default: hsl(212, 55%, 32%)
  - inverse color: rgba(218, 176, 129, 1)
  - setAlpha(0.42): rgba(37, 79, 126, 0.42)
+Dumping 'hsla(212 55% 32%)' in different formats:
+ - rgb(37, 79, 126)
+ - rgba(37, 79, 126, 1)
+ - hsla(212 55% 32%)
+ - hsla(212, 55%, 32%, 1)
+ - hsv(212, 71%, 50%)
+ - hsva(212, 71%, 50%, 1)
+ - #254f7eff
+ - #254f7e
+ - null
+ - null
+ - null
+ - default: hsl(212, 55%, 32%)
+ - inverse color: rgba(218, 176, 129, 1)
+ - setAlpha(0.42): rgba(37, 79, 126, 0.42)
 Dumping 'hsla(212, 55%, 32%, 0.5)' in different formats:
  - null
  - rgba(37, 79, 126, 0.5)
  - null
  - hsla(212, 55%, 32%, 0.5)
+ - hsv(212, 71%, 50%)
+ - hsva(212, 71%, 50%, 0.5)
+ - #254f7e80
+ - null
+ - null
+ - null
+ - null
+ - default: hsla(212, 55%, 32%, 0.5)
+ - inverse color: rgba(218, 176, 129, 0.5)
+ - setAlpha(0.42): rgba(37, 79, 126, 0.42)
+Dumping 'hsla(212  55%  32% /  50%)' in different formats:
+ - null
+ - rgba(37, 79, 126, 0.5)
+ - null
+ - hsla(212  55%  32% /  50%)
+ - hsv(212, 71%, 50%)
+ - hsva(212, 71%, 50%, 0.5)
+ - #254f7e80
+ - null
+ - null
+ - null
+ - null
+ - default: hsla(212, 55%, 32%, 0.5)
+ - inverse color: rgba(218, 176, 129, 0.5)
+ - setAlpha(0.42): rgba(37, 79, 126, 0.42)
+Dumping 'hsla(212deg 55% 32% / 50%)' in different formats:
+ - null
+ - rgba(37, 79, 126, 0.5)
+ - null
+ - hsla(212deg 55% 32% / 50%)
  - hsv(212, 71%, 50%)
  - hsva(212, 71%, 50%, 0.5)
  - #254f7e80

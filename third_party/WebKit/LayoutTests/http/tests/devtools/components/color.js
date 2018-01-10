@@ -45,10 +45,15 @@
   dumpColor('black');
 
   dumpColor('rgb(94, 126, 91)');
+  dumpColor('rgba(94 126 91)');
   dumpColor('rgba(94, 126, 91, 0.5)');
+  dumpColor('rgb(94 126 91 / 50%)');
 
   dumpColor('hsl(212, 55%, 32%)');
+  dumpColor('hsla(212 55% 32%)');
   dumpColor('hsla(212, 55%, 32%, 0.5)');
+  dumpColor('hsla(212  55%  32% /  50%)');
+  dumpColor('hsla(212deg 55% 32% / 50%)');
 
   dumpColor('#12345678');
   dumpColor('#00FFFF');
