@@ -4095,10 +4095,10 @@ split_static_library("browser") {
 
   if (enable_webrtc) {
     sources += [
-      "media/audio_debug_recordings_handler.h",
+      "media/webrtc/audio_debug_recordings_handler.cc",
+      "media/webrtc/audio_debug_recordings_handler.h",
 
       # TODO(brettw) should webrtc_log_list.cc go here?
-      "media/webrtc/audio_debug_recordings_handler.cc",
       "media/webrtc/webrtc_log_uploader.cc",
       "media/webrtc/webrtc_log_uploader.h",
       "media/webrtc/webrtc_log_util.cc",

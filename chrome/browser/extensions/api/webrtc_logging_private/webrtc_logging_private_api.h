@@ -12,7 +12,7 @@
 #include "media/media_features.h"
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/browser/media/audio_debug_recordings_handler.h"
+#include "chrome/browser/media/webrtc/audio_debug_recordings_handler.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
 
