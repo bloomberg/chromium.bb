@@ -102,6 +102,8 @@ source_set("net") {
     "net/rtp/rtp_parser.h",
     "net/rtp/rtp_sender.cc",
     "net/rtp/rtp_sender.h",
+    "net/udp_packet_pipe.cc",
+    "net/udp_packet_pipe.h",
     "net/udp_transport.cc",
     "net/udp_transport.h",
   ]
@@ -109,6 +111,7 @@ source_set("net") {
   deps = [
     ":common",
     "//base",
+    "//media/mojo/common",
     "//net",
   ]
 
@@ -311,6 +314,7 @@ test("cast_unittests") {
     "net/rtp/rtp_packet_builder.h",
     "net/rtp/rtp_packetizer_unittest.cc",
     "net/rtp/rtp_parser_unittest.cc",
+    "net/udp_packet_pipe_unittest.cc",
     "net/udp_transport_unittest.cc",
     "receiver/audio_decoder_unittest.cc",
     "receiver/frame_receiver_unittest.cc",
@@ -336,9 +340,9 @@ test("cast_unittests") {
     ":sender",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//media:test_support",
+    "//media/test:run_all_unittests",
     "//net",
     "//testing/gmock",
     "//testing/gtest",
