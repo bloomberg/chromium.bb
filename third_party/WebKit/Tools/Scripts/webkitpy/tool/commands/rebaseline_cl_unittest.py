@@ -118,6 +118,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'test_name_file': None,
             'verbose': False,
             'builders': [],
+            'patchset': None,
         }
         options.update(kwargs)
         return optparse.Values(dict(**options))

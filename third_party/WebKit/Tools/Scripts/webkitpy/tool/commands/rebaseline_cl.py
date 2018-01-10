@@ -60,6 +60,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 '--builders', default=None, action='append',
                 help=('Comma-separated-list of builders to pull new baselines '
                       'from (can also be provided multiple times).')),
+            optparse.make_option(
+                '--patchset', default=None,
+                help='Patchset number to fetch new baselines from.'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
@@ -90,7 +93,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 try_builders.update(builder_names.split(','))
             self._selected_try_bots = frozenset(try_builders)
 
-        jobs = self.git_cl.latest_try_jobs(self.selected_try_bots)
+        jobs = self.git_cl.latest_try_jobs(
+            self.selected_try_bots, patchset=options.patchset)
         self._log_jobs(jobs)
         builders_with_no_jobs = self.selected_try_bots - {b.builder_name for b in jobs}
 

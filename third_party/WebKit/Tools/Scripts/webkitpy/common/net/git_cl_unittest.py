@@ -95,6 +95,30 @@ class GitCLTest(unittest.TestCase):
             ],
         ])
 
+    def test_fetch_raw_try_job_results(self):
+        # Fetching raw try job results has a side effect of writing to and
+        # reading from a temporary JSON file. This test method verifies the
+        # command line used to fetch try job results.
+        host = MockHost()
+        host.filesystem.write_text_file(
+            '/__im_tmp/tmp_0_/try-results.json', '{}')
+        host.filesystem.write_text_file(
+            '/__im_tmp/tmp_1_/try-results.json', '{}')
+        git_cl = GitCL(host)
+        git_cl.fetch_raw_try_job_results()
+        git_cl.fetch_raw_try_job_results(patchset=7)
+        self.assertEqual(host.executive.calls, [
+            [
+                'git', 'cl', 'try-results',
+                '--json', '/__im_tmp/tmp_0_/try-results.json',
+            ],
+            [
+                'git', 'cl', 'try-results',
+                '--json', '/__im_tmp/tmp_1_/try-results.json',
+                '--patchset', '7'
+            ]
+        ])
+
     def test_get_issue_number(self):
         host = MockHost()
         host.executive = MockExecutive(output='Issue number: 12345 (http://crrev.com/12345)')
@@ -110,7 +134,7 @@ class GitCLTest(unittest.TestCase):
     def test_wait_for_try_jobs_timeout(self):
         host = MockHost()
         git_cl = GitCL(host)
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'some-builder',
                 'status': 'STARTED',
@@ -133,7 +157,7 @@ class GitCLTest(unittest.TestCase):
     def test_wait_for_try_jobs_no_results_not_considered_finished(self):
         host = MockHost()
         git_cl = GitCL(host)
-        git_cl.fetch_raw_try_job_results = lambda: []
+        git_cl.fetch_raw_try_job_results = lambda **_: []
         self.assertIsNone(git_cl.wait_for_try_jobs())
         self.assertEqual(
             host.stdout.getvalue(),
@@ -150,7 +174,7 @@ class GitCLTest(unittest.TestCase):
         host = MockHost()
         host.executive = MockExecutive(output='closed')
         git_cl = GitCL(host)
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'some-builder',
                 'status': 'STARTED',
@@ -175,7 +199,7 @@ class GitCLTest(unittest.TestCase):
         host = MockHost()
         host.executive = MockExecutive(output='lgtm')
         git_cl = GitCL(host)
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'some-builder',
                 'status': 'COMPLETED',
@@ -254,7 +278,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs_cq_only(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'cq-a',
                 'experimental': False,
@@ -288,7 +312,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-b',
                 'status': 'COMPLETED',
@@ -323,7 +347,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs_started_build_luci_url(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'STARTED',
@@ -337,7 +361,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs_started_build_buildbot_url(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'STARTED',
@@ -351,7 +375,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs_failures(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'COMPLETED',
@@ -376,7 +400,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_latest_try_jobs_ignores_swarming_task(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-b',
                 'status': 'COMPLETED',
@@ -415,7 +439,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_try_job_results_with_task_id_in_url(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'COMPLETED',
@@ -441,7 +465,7 @@ class GitCLTest(unittest.TestCase):
 
     def test_try_job_results_with_unexpected_url_format(self):
         git_cl = GitCL(MockHost())
-        git_cl.fetch_raw_try_job_results = lambda: [
+        git_cl.fetch_raw_try_job_results = lambda **_: [
             {
                 'builder_name': 'builder-a',
                 'status': 'COMPLETED',
