@@ -11,17 +11,13 @@
 -BrowserNavigatorTest.CloseSingletonTab
 -BrowserNavigatorTest.Disposition_CurrentTab
 -BrowserNavigatorTest.NavigateFromPageToOptionsInNewTab
-# note: this passes locally but fails on bot.
--BrowserTest.CancelBeforeUnloadResetsURL
 -BrowserTest.InterstitialCancelsGuestViewDialogs
 -BrowsingDataRemoverBrowserTest.Cache
 -BrowsingDataRemoverBrowserTest.CookieDeletion
--BrowsingDataRemoverTransportSecurityStateBrowserTest.ClearTransportSecurityState
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -ChromeSitePerProcessTest.LaunchExternalProtocolFromSubframe
 -ContentFaviconDriverTest.ReloadBypassingCache
 -CredentialManagerBrowserTest.CreatePublicKeyCredentialAlgorithmNotSupported
--CredentialManagerBrowserTest.CreatePublicKeyCredentialNotImplemented
 -CredentialManagerBrowserTest.MojoConnectionRecreatedAfterNavigation
 -CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_OnDemandMojoPipe
 -CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_PreestablishedPipe
@@ -29,14 +25,6 @@
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_PreestablishedPipe
 -CredentialManagerBrowserTest.StoreSavesPSLMatchedCredential
 -CredentialManagerBrowserTest.UpdatingPSLMatchedCredentialCreatesSecondEntry
--CrExtensionsManagerTest.ItemOrder
--CrExtensionsManagerTest.UpdateItemData
--CrExtensionsServiceTest.ProfileSettings
--CrExtensionsServiceTest.ToggleEnable
--CrExtensionsServiceTest.ToggleIncognito
--CrExtensionsServiceTest.Uninstall
--CrExtensionsShortcutTest.Basic
--DataProxyScriptBrowserTest.Verify
 # DeclarativeContentApiTest.EnabledForSplitIncognito is flaky.
 -DeclarativeContentApiTest.EnabledForSplitIncognito
 -DeclarativeContentApiTest.UninstallWhileActivePageAction
@@ -48,8 +36,6 @@
 -DiceBrowserTest.SignoutSecondaryAccount
 -DiceFixAuthErrorsBrowserTest.ReauthFixAuthError
 -DiceFixAuthErrorsBrowserTest.SigninAccountMismatch
--DiceMigrationBrowserTest.Signin
--DiceMigrationBrowserTest.Signout
 -DicePrepareMigrationBrowserTest.Signin
 -DicePrepareMigrationBrowserTest.Signout
 -DicePrepareMigrationChromeSynEndpointBrowserTest.EnableSyncAfterToken
@@ -90,8 +76,6 @@
 -FeedbackTest.ExtraDiagnostics
 -FeedbackTest.ShowFeedback
 -FeedbackTest.ShowLoginFeedback
--FileProxyScriptBrowserTest.Verify
--FtpProxyScriptBrowserTest.Verify
 -InProcessBrowserTest.ExternalConnectionFail
 -InstantThemeTest.ThemeBackgroundAccess
 -IsolatedAppTest.CookieIsolation
@@ -103,7 +87,6 @@
 -LaunchWebAuthFlowFunctionTest.UserCloseWindow
 -LazyBackgroundPageApiTest.NaClInBackgroundPage
 -LazyBackgroundPageApiTest.NaClInView
--LocalNTPJavascriptTest.LoadsIframe
 -LocalNTPJavascriptTest.SimpleJavascriptTests
 -LocalNTPVoiceJavascriptTest.MicrophoneTests
 -LocalNTPVoiceJavascriptTest.SpeechTests
@@ -119,9 +102,7 @@
 -NewlibPackagedAppTest.NoSocketPermissions
 -NewlibPackagedAppTest.SocketPermissions
 -NewlibPackagedAppTest.SuccessfulLoad
--OutOfProcessProxyResolverBrowserTest.Verify
 -PageInfoBubbleViewBrowserTest.SiteSettingsLinkWithNonDefaultPort
--PageInfoBubbleViewBrowserTest.SiteSettingsLinkWithSiteDetailsEnabledAndNonDefaultPort
 -PageLoadMetricsBrowserTest.ChromeErrorPage
 -PageLoadMetricsBrowserTest.LoadingMetrics
 -PageLoadMetricsBrowserTest.LoadingMetricsFailed
@@ -202,8 +183,6 @@
 -WebViewTests/WebViewTest.DownloadCookieIsolation/1
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/0
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
--WebViewTests/WebViewTest.DownloadPermission/0
--WebViewTests/WebViewTest.DownloadPermission/1
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/0
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/1
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
@@ -259,15 +238,12 @@
 -PolicyTest.ForceGoogleSafeSearch
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
--SSLUITest.MarkBlobAsNonSecure/0
--SSLUITest.MarkBlobAsNonSecure/1
 
 # Need to add SetRequireCTDelegateForTesting to NetworkContext.
 -SymantecMessageSSLUITest.ManySubresources
 -SymantecMessageSSLUITest.PostJune2016
 
 # crbug.com/778793
--PreviewsBrowserTest.NoScriptPreviewsEnabled
 # Started failing in r514649.
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
 # Added in r519342.
@@ -288,7 +264,6 @@
 -SavePageBrowserTest.SaveUnauthorizedResource
 
 # crbug.com/779217 The NetworkContext is not created when the network service is enabled.
--HotwordInstallerBrowserTest.AbortInstallOnShutdown
 -SpellingMenuObserverTest.SuggestionsForceTopSeparator
 
 # http://crbug.com/783990
@@ -337,9 +312,6 @@
 -PrerenderBrowserTest.PrerenderSSLClientCertSubresource
 -PrerenderBrowserTest.PrerenderSSLClientCertTopLevel
 -SSLUITestWithClientCert.TestWSSClientCert
-
-# Started failing after r515789
--SSLUITestCommittedInterstitials.ProceedLinkOverridable
 
 # http://crbug.com/721414
 # TODO(rockot): add support for webRequest API.
