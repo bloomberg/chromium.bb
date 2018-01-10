@@ -248,12 +248,16 @@ RequestCoordinator::RequestCoordinator(
 RequestCoordinator::~RequestCoordinator() {}
 
 int64_t RequestCoordinator::SavePageLater(
-    const SavePageLaterParams& save_page_later_params) {
+    const SavePageLaterParams& save_page_later_params,
+    const SavePageLaterCallback& save_page_later_callback) {
   DVLOG(2) << "URL is " << save_page_later_params.url << " " << __func__;
 
   if (!OfflinePageModel::CanSaveURL(save_page_later_params.url)) {
     DVLOG(1) << "Not able to save page for requested url: "
              << save_page_later_params.url;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(save_page_later_callback, AddRequestResult::URL_ERROR));
     return 0L;
   }
 
@@ -274,10 +278,11 @@ int64_t RequestCoordinator::SavePageLater(
   }
 
   // Put the request on the request queue.
-  queue_->AddRequest(request,
-                     base::Bind(&RequestCoordinator::AddRequestResultCallback,
-                                weak_ptr_factory_.GetWeakPtr(),
-                                save_page_later_params.availability));
+  queue_->AddRequest(
+      request,
+      base::Bind(&RequestCoordinator::AddRequestResultCallback,
+                 weak_ptr_factory_.GetWeakPtr(), save_page_later_callback,
+                 save_page_later_params.availability));
 
   // Record the network quality when this request is made.
   if (network_quality_estimator_) {
@@ -487,6 +492,7 @@ void RequestCoordinator::ResumeRequests(
 }
 
 void RequestCoordinator::AddRequestResultCallback(
+    const SavePageLaterCallback& save_page_later_callback,
     RequestAvailability availability,
     AddRequestResult result,
     const SavePageRequest& request) {
@@ -505,6 +511,8 @@ void RequestCoordinator::AddRequestResultCallback(
   } else if (request.user_requested()) {
     StartImmediatelyIfConnected();
   }
+
+  save_page_later_callback.Run(result);
 }
 
 void RequestCoordinator::UpdateMultipleRequestsCallback(

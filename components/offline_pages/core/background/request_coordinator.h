@@ -107,6 +107,9 @@ class RequestCoordinator : public KeyedService,
   // Callback for stopping the background offlining.
   typedef base::Callback<void(int64_t request_id)> CancelCallback;
 
+  // Callback for SavePageLater calls.
+  typedef base::Callback<void(AddRequestResult)> SavePageLaterCallback;
+
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<Offliner> offliner,
                      std::unique_ptr<RequestQueue> queue,
@@ -119,7 +122,8 @@ class RequestCoordinator : public KeyedService,
 
   // Queues |request| to later load and save when system conditions allow.
   // Returns an id if the page could be queued successfully, 0L otherwise.
-  int64_t SavePageLater(const SavePageLaterParams& save_page_later_params);
+  int64_t SavePageLater(const SavePageLaterParams& save_page_later_params,
+                        const SavePageLaterCallback& save_page_later_callback);
 
   // Remove a list of requests by |request_id|.  This removes requests from the
   // request queue, and cancels an in-progress offliner.
@@ -274,9 +278,11 @@ class RequestCoordinator : public KeyedService,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Receives the result of add requests to the request queue.
-  void AddRequestResultCallback(RequestAvailability availability,
-                                AddRequestResult result,
-                                const SavePageRequest& request);
+  void AddRequestResultCallback(
+      const SavePageLaterCallback& save_page_later_callback,
+      RequestAvailability availability,
+      AddRequestResult result,
+      const SavePageRequest& request);
 
   void UpdateMultipleRequestsCallback(
       std::unique_ptr<UpdateRequestsResult> result);
