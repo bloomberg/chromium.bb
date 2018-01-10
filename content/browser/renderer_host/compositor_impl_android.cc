@@ -480,7 +480,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       window_(NULL),
       surface_handle_(gpu::kNullSurfaceHandle),
       client_(client),
-      root_window_(root_window),
       needs_animate_(false),
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false),
@@ -492,15 +491,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
                                                     "CompositorImpl");
 #endif
   DCHECK(client);
-  DCHECK(root_window);
-  DCHECK(root_window->GetLayer() == nullptr);
-  root_window->SetLayer(cc::Layer::Create());
-  readback_layer_tree_ = cc::Layer::Create();
-  readback_layer_tree_->SetHideLayerAndSubtree(true);
-  root_window->GetLayer()->AddChild(readback_layer_tree_);
-  root_window->AttachCompositor(this);
-  CreateLayerTreeHost();
-  resource_manager_.Init(host_->GetUIResourceManager());
+
+  SetRootWindow(root_window);
 
   // Listen to display density change events and update painted device scale
   // factor accordingly.
@@ -509,11 +501,15 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
 
 CompositorImpl::~CompositorImpl() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  root_window_->DetachCompositor();
-  root_window_->SetLayer(nullptr);
+  DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(NULL);
   GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
+}
+
+void CompositorImpl::DetachRootWindow() {
+  root_window_->DetachCompositor();
+  root_window_->SetLayer(nullptr);
 }
 
 bool CompositorImpl::IsForSubframe() {
@@ -528,14 +524,50 @@ ui::ResourceManager& CompositorImpl::GetResourceManager() {
   return resource_manager_;
 }
 
+void CompositorImpl::SetRootWindow(gfx::NativeWindow root_window) {
+  DCHECK(root_window);
+  DCHECK(!root_window->GetLayer());
+
+  // TODO(mthiesse): Right now we only support swapping the root window without
+  // a surface. If we want to support swapping with a surface we need to
+  // handle visibility, swapping begin frame sources, etc.
+  // These checks ensure we have no begin frame source, and that we don't need
+  // to register one on the new window.
+  DCHECK(!display_);
+  DCHECK(!window_);
+
+  scoped_refptr<cc::Layer> root_layer;
+  if (root_window_) {
+    root_layer = root_window_->GetLayer();
+    DetachRootWindow();
+  }
+
+  root_window_ = root_window;
+  root_window_->SetLayer(root_layer ? root_layer : cc::Layer::Create());
+  root_window_->GetLayer()->SetBounds(size_);
+  if (!readback_layer_tree_) {
+    readback_layer_tree_ = cc::Layer::Create();
+    readback_layer_tree_->SetHideLayerAndSubtree(true);
+  }
+  root_window->GetLayer()->AddChild(readback_layer_tree_);
+  root_window->AttachCompositor(this);
+  if (!host_) {
+    CreateLayerTreeHost();
+    resource_manager_.Init(host_->GetUIResourceManager());
+  }
+  host_->SetRootLayer(root_window_->GetLayer());
+  host_->SetPaintedDeviceScaleFactor(root_window_->GetDipScale());
+}
+
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
   if (subroot_layer_.get()) {
     subroot_layer_->RemoveFromParent();
-    subroot_layer_ = NULL;
+    subroot_layer_ = nullptr;
   }
   if (root_window_->GetLayer()) {
     subroot_layer_ = root_window_->GetLayer();
-    root_window_->GetLayer()->AddChild(root_layer);
+    subroot_layer_->RemoveAllChildren();
+    subroot_layer_->AddChild(root_layer);
   }
 }
 
@@ -600,11 +632,9 @@ void CompositorImpl::CreateLayerTreeHost() {
   params.mutator_host = animation_host_.get();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
-  host_->SetRootLayer(root_window_->GetLayer());
   host_->SetFrameSinkId(frame_sink_id_);
   host_->SetViewportSize(size_);
   host_->SetDeviceScaleFactor(1);
-  host_->SetPaintedDeviceScaleFactor(root_window_->GetDipScale());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();

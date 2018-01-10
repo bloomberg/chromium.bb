@@ -59,6 +59,8 @@ class CONTENT_EXPORT Compositor {
   static Compositor* Create(CompositorClient* client,
                             gfx::NativeWindow root_window);
 
+  virtual void SetRootWindow(gfx::NativeWindow root_window) = 0;
+
   // Attaches the layer tree.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) = 0;
 

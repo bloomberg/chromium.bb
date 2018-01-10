@@ -80,6 +80,7 @@ class CONTENT_EXPORT CompositorImpl
 
  private:
   // Compositor implementation.
+  void SetRootWindow(gfx::NativeWindow root_window) override;
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
   void SetSurface(jobject surface) override;
   void SetBackgroundColor(int color) override;
@@ -159,6 +160,8 @@ class CONTENT_EXPORT CompositorImpl
 
   bool HavePendingReadbacks();
 
+  void DetachRootWindow();
+
   viz::FrameSinkId frame_sink_id_;
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
@@ -184,7 +187,7 @@ class CONTENT_EXPORT CompositorImpl
 
   CompositorClient* client_;
 
-  gfx::NativeWindow root_window_;
+  gfx::NativeWindow root_window_ = nullptr;
 
   // Whether we need to update animations on the next composite.
   bool needs_animate_;

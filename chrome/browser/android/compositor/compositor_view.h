@@ -81,6 +81,9 @@ class CompositorView : public content::CompositorClient,
   void SetSceneLayer(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& object,
                      const base::android::JavaParamRef<jobject>& jscene_layer);
+  void SetCompositorWindow(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& object,
+                           jlong window_android);
 
   // CompositorClient implementation:
   void UpdateLayerTreeHost() override;

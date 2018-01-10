@@ -1162,7 +1162,7 @@ public class CustomTabActivity extends ChromeActivity {
 
                 // Blink has rendered the page by this point, but we need to wait for the compositor
                 // frame swap to avoid flash of white content.
-                getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(null, () -> {
+                getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
                     if (!tab.isInitialized() || isActivityDestroyed()) return;
                     tab.getView().setBackgroundResource(0);
                 });
