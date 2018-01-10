@@ -316,17 +316,18 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
     VLOG(1) << "Selected old user image";
   } else if (image_type == "default") {
     int image_index = user_manager::User::USER_IMAGE_INVALID;
-    if (!default_user_image::IsDefaultImageUrl(image_url, &image_index))
-      LOG(FATAL) << "Invalid image_url for default image type: " << image_url;
+    if (default_user_image::IsDefaultImageUrl(image_url, &image_index)) {
+      // One of the default user images.
+      user_image_manager->SaveUserDefaultImageIndex(image_index);
 
-    // One of the default user images.
-    user_image_manager->SaveUserDefaultImageIndex(image_index);
-
-    UMA_HISTOGRAM_EXACT_LINEAR(
-        "UserImage.ChangeChoice",
-        default_user_image::GetDefaultImageHistogramValue(image_index),
-        default_user_image::kHistogramImagesCount);
-    VLOG(1) << "Selected default user image: " << image_index;
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "UserImage.ChangeChoice",
+          default_user_image::GetDefaultImageHistogramValue(image_index),
+          default_user_image::kHistogramImagesCount);
+      VLOG(1) << "Selected default user image: " << image_index;
+    } else {
+      LOG(WARNING) << "Invalid image_url for default image type: " << image_url;
+    }
   } else if (image_type == "camera") {
     // Camera image is selected.
     if (user_photo_.isNull()) {
