@@ -46,6 +46,12 @@ bool SharedWorkerInstance::Matches(
   if (!constructor_origin_.IsSameOriginWith(constructor_origin) ||
       url_ != url || name_ != name)
     return false;
+
+  // TODO(https://crbug.com/794098): file:// URLs should be treated as opaque
+  // origins, but not in url::Origin. Therefore, we manually check it here.
+  if (url.SchemeIsFile() || constructor_origin.scheme() == url::kFileScheme)
+    return false;
+
   return true;
 }
 
