@@ -960,7 +960,6 @@ crbug.com/778784 virtual/threaded/http/tests/devtools/tracing/decode-resize.js [
 
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
-crbug.com/498539 [ Mac ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Crash Pass Timeout Failure ]
 
 crbug.com/498539 crbug.com/794869 crbug.com/798548 [ Win7 Mac Linux ] http/tests/devtools/elements/styles-4/styles-update-from-js.js [ Crash Pass Failure ]
 
@@ -2715,6 +2714,8 @@ crbug.com/709227 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern
 
 # ====== Tests from enabling .any.js/.worker.js tests end here ========
 
+crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Failure Pass Timeout Crash ]
+
 # ====== Begin of display: contents tests ======
 
 crbug.com/795217 external/wpt/css/css-display/display-contents-details.html [ Failure ]
@@ -3493,7 +3494,6 @@ crbug.com/786641 [ Win Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageS
 
 # Sheriff failures 2017-11-28
 crbug.com/789111 http/tests/devtools/service-workers/service-worker-v8-cache.js [ Pass Failure Timeout ]
-crbug.com/789139 [ Linux ] http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ Pass Failure ]
 crbug.com/785179 [ Mac10.11 ] http/tests/devtools/console/console-viewport-stick-to-bottom.js [ Pass Failure ]
 
 # Sheriff failures 2017-11-29
