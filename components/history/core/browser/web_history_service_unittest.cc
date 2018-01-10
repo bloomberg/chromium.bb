@@ -30,10 +30,12 @@ namespace {
 class TestingWebHistoryService : public WebHistoryService {
  public:
   explicit TestingWebHistoryService(
-      OAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
       const scoped_refptr<net::URLRequestContextGetter>& request_context)
-      : WebHistoryService(token_service, signin_manager, request_context),
+      // NOTE: Simply pass null object for IdentityManager. WebHistoryService's
+      // only usage of this object is to fetch access tokens via RequestImpl,
+      // and TestWebHistoryService deliberately replaces this flow with
+      // TestRequest.
+      : WebHistoryService(nullptr, request_context),
         expected_url_(GURL()),
         expected_audio_history_value_(false),
         current_expected_post_data_("") {}
@@ -215,12 +217,7 @@ class WebHistoryServiceTest : public testing::Test {
   WebHistoryServiceTest()
       : url_request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        // NOTE: Simply pass null ojects for
-        // SigninManager/OAuth2TokenService. WebHistoryService's only
-        // usage of those objects is to fetch access tokens via RequestImpl,
-        // and TestWebHistoryService deliberately replaces this flow with
-        // TestRequest.
-        web_history_service_(nullptr, nullptr, url_request_context_) {}
+        web_history_service_(url_request_context_) {}
 
   ~WebHistoryServiceTest() override {}
 

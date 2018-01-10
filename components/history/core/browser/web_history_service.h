@@ -25,6 +25,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -32,9 +36,6 @@ class URLRequestContextGetter;
 namespace version_info {
 enum class Channel;
 }
-
-class OAuth2TokenService;
-class SigninManagerBase;
 
 namespace history {
 
@@ -96,8 +97,7 @@ class WebHistoryService : public KeyedService {
   typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
   WebHistoryService(
-      OAuth2TokenService* token_service,
-      SigninManagerBase* signin_manager,
+      identity::IdentityManager* identity_manager,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   ~WebHistoryService() override;
 
@@ -218,10 +218,9 @@ class WebHistoryService : public KeyedService {
  private:
   friend class WebHistoryServiceTest;
 
-  // Stores pointer to OAuth2TokenService and SigninManagerBase instance. They
-  // must outlive the WebHistoryService and can be null during tests.
-  OAuth2TokenService* token_service_;
-  SigninManagerBase* signin_manager_;
+  // Stores pointer to IdentityManager instance. It must outlive the
+  // WebHistoryService and can be null during tests.
+  identity::IdentityManager* identity_manager_;
 
   // Request context getter to use.
   scoped_refptr<net::URLRequestContextGetter> request_context_;

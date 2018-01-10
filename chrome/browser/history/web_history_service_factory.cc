@@ -4,8 +4,7 @@
 
 #include "chrome/browser/history/web_history_service_factory.h"
 
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -51,8 +50,7 @@ KeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new history::WebHistoryService(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile),
+      IdentityManagerFactory::GetForProfile(profile),
       profile->GetRequestContext());
 }
 
@@ -60,8 +58,7 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "WebHistoryServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
+  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 WebHistoryServiceFactory::~WebHistoryServiceFactory() {
