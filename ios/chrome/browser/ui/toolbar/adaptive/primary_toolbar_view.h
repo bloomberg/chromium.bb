@@ -22,8 +22,8 @@
 // The location bar view, containing the omnibox.
 @property(nonatomic, strong) UIView* locationBarView;
 
-// Buttons.
-@property(nonatomic, strong, readonly) ToolbarButton* tabGridButton;
+// Property to get all the buttons in this view.
+@property(nonatomic, readonly) NSArray<ToolbarButton*>* allButtons;
 
 @end
 

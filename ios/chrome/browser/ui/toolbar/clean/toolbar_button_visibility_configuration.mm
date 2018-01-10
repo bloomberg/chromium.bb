@@ -48,7 +48,7 @@
   switch (self.type) {
     case PRIMARY:
       return ToolbarComponentVisibilityAlways &
-             !ToolbarComponentVisibilityRegularWidthRegularHeight;
+             ~ToolbarComponentVisibilityRegularWidthRegularHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityAlways;
     case LEGACY:
@@ -71,7 +71,7 @@
   switch (self.type) {
     case PRIMARY:
       return ToolbarComponentVisibilityAlways &
-             !ToolbarComponentVisibilityCompactWidthRegularHeight;
+             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityAlways;
     case LEGACY:
@@ -108,7 +108,7 @@
   switch (self.type) {
     case PRIMARY:
       return ToolbarComponentVisibilityAlways &
-             !ToolbarComponentVisibilityCompactWidthRegularHeight;
+             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityAlways;
     case LEGACY:
