@@ -52,9 +52,16 @@ MediaSinkInternal CreateSinkForDisplay(const Display& display,
   return sink_internal;
 }
 
-// Returns true if |display1| is above |display2|, or if they are at the same
-// height and |display1| is to the left of |display2|.
-bool CompareDisplayBounds(const Display& display1, const Display& display2) {
+// Returns true if |display1| should come before |display2| when displays are
+// sorted. Primary displays and displays to the top-left take priority, in
+// that order.
+bool CompareDisplays(int64_t primary_id,
+                     const Display& display1,
+                     const Display& display2) {
+  if (display1.id() == primary_id)
+    return true;
+  if (display2.id() == primary_id)
+    return false;
   return display1.bounds().y() < display2.bounds().y() ||
          (display1.bounds().y() == display2.bounds().y() &&
           display1.bounds().x() < display2.bounds().x());
@@ -326,14 +333,22 @@ std::vector<MediaSinkInternal> WiredDisplayMediaRouteProvider::GetSinks()
 std::vector<Display> WiredDisplayMediaRouteProvider::GetAvailableDisplays()
     const {
   std::vector<Display> displays = GetAllDisplays();
-  const gfx::Rect primary_display_bounds = GetPrimaryDisplay().bounds();
+  const Display primary_display = GetPrimaryDisplay();
+  std::sort(
+      displays.begin(), displays.end(),
+      [&primary_display](const Display& display1, const Display& display2) {
+        return CompareDisplays(primary_display.id(), display1, display2);
+      });
 
-  // Remove the primary display and displays that mirror it.
-  base::EraseIf(displays, [&primary_display_bounds](const Display& display) {
-    return display.bounds() == primary_display_bounds;
+  // Remove displays that mirror the primary display. On some platforms such as
+  // Windows, mirrored displays are reported as one display. On others, mirrored
+  // displays are reported separately but with the same bounds.
+  base::EraseIf(displays, [&primary_display](const Display& display) {
+    return display.id() != primary_display.id() &&
+           display.bounds() == primary_display.bounds();
   });
-  std::sort(displays.begin(), displays.end(), CompareDisplayBounds);
-  return displays;
+  // If there is only one display, the user should not be able to present to it.
+  return displays.size() == 1 ? std::vector<Display>() : displays;
 }
 
 void WiredDisplayMediaRouteProvider::ReportSinkAvailability(

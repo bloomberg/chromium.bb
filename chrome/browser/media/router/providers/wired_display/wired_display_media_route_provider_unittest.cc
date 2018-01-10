@@ -149,12 +149,12 @@ class TestWiredDisplayMediaRouteProvider
 class WiredDisplayMediaRouteProviderTest : public testing::Test {
  public:
   WiredDisplayMediaRouteProviderTest()
-      : sink_display1_bounds_(0, 0, 1920, 1080),  // x, y, width, height.
-        sink_display2_bounds_(1920, 0, 1920, 1080),
-        primary_display_bounds_(0, 1080, 1920, 1080),
-        sink_display1_(10000001, sink_display1_bounds_),
-        sink_display2_(10000002, sink_display2_bounds_),
+      : primary_display_bounds_(0, 1080, 1920, 1080),
+        secondary_display1_bounds_(0, 0, 1920, 1080),  // x, y, width, height.
+        secondary_display2_bounds_(1920, 0, 1920, 1080),
         primary_display_(10000003, primary_display_bounds_),
+        secondary_display1_(10000001, secondary_display1_bounds_),
+        secondary_display2_(10000002, secondary_display2_bounds_),
         mirror_display_(10000004, primary_display_bounds_) {}
   ~WiredDisplayMediaRouteProviderTest() override {}
 
@@ -185,14 +185,13 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   MockMojoMediaRouter router_;
   std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
 
-  gfx::Rect sink_display1_bounds_;
-  gfx::Rect sink_display2_bounds_;
   gfx::Rect primary_display_bounds_;
+  gfx::Rect secondary_display1_bounds_;
+  gfx::Rect secondary_display2_bounds_;
 
-  Display sink_display1_;
-  Display sink_display2_;
-  // The displays below do not meet the criteria for being used as sinks.
   Display primary_display_;
+  Display secondary_display1_;
+  Display secondary_display2_;
   Display mirror_display_;  // Has the same bounds as |primary_display_|.
 
   MockReceiverCreator receiver_creator_;
@@ -204,46 +203,48 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
 };
 
 TEST_F(WiredDisplayMediaRouteProviderTest, GetDisplaysAsSinks) {
-  // The primary display and the display mirroring it should not be provided
-  // as sinks.
   provider_->set_all_displays(
-      {sink_display1_, primary_display_, mirror_display_, sink_display2_});
+      {secondary_display1_, primary_display_, secondary_display2_});
 
-  const std::string sink_id1 = GetSinkId(sink_display1_);
-  const std::string sink_id2 = GetSinkId(sink_display2_);
+  const std::string primary_id = GetSinkId(primary_display_);
+  const std::string secondary_id1 = GetSinkId(secondary_display1_);
+  const std::string secondary_id2 = GetSinkId(secondary_display2_);
   EXPECT_CALL(router_,
               OnSinksReceived(kProviderId, kPresentationSource, _, IsEmpty()))
-      .WillOnce(WithArg<2>(Invoke(
-          [&sink_id1, &sink_id2](const std::vector<MediaSinkInternal>& sinks) {
-            EXPECT_EQ(sinks.size(), 2u);
-            EXPECT_TRUE(sinks[0].sink().id() == sink_id1 ||
-                        sinks[1].sink().id() == sink_id1);
-            EXPECT_TRUE(sinks[0].sink().id() == sink_id2 ||
-                        sinks[1].sink().id() == sink_id2);
+      .WillOnce(
+          WithArg<2>(Invoke([&primary_id, &secondary_id1, &secondary_id2](
+                                const std::vector<MediaSinkInternal>& sinks) {
+            EXPECT_EQ(sinks.size(), 3u);
+            EXPECT_EQ(sinks[0].sink().id(), primary_id);
+            EXPECT_EQ(sinks[1].sink().id(), secondary_id1);
+            EXPECT_EQ(sinks[2].sink().id(), secondary_id2);
           })));
   provider_pointer_->StartObservingMediaSinks(kPresentationSource);
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(WiredDisplayMediaRouteProviderTest, NotifyOnDisplayChange) {
-  const std::string sink_id1 = GetSinkId(sink_display1_);
+  const std::string primary_id = GetSinkId(primary_display_);
+  const std::string secondary_id1 = GetSinkId(secondary_display1_);
   provider_pointer_->StartObservingMediaSinks(kPresentationSource);
   base::RunLoop().RunUntilIdle();
 
   // Add an external display. MediaRouter should be notified of the sink and the
   // sink availability change.
-  provider_->set_all_displays({primary_display_, sink_display1_});
+  provider_->set_all_displays({primary_display_, secondary_display1_});
   EXPECT_CALL(router_, OnSinkAvailabilityUpdated(
                            MediaRouteProviderId::WIRED_DISPLAY,
                            mojom::MediaRouter::SinkAvailability::PER_SOURCE));
   EXPECT_CALL(router_,
               OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, _, _, _))
-      .WillOnce(WithArg<2>(
-          Invoke([&sink_id1](const std::vector<MediaSinkInternal>& sinks) {
-            EXPECT_EQ(sinks.size(), 1u);
-            EXPECT_EQ(sinks[0].sink().id(), sink_id1);
+      .WillOnce(
+          WithArg<2>(Invoke([&primary_id, &secondary_id1](
+                                const std::vector<MediaSinkInternal>& sinks) {
+            EXPECT_EQ(sinks.size(), 2u);
+            EXPECT_EQ(sinks[0].sink().id(), primary_id);
+            EXPECT_EQ(sinks[1].sink().id(), secondary_id1);
           })));
-  provider_->OnDisplayAdded(sink_display1_);
+  provider_->OnDisplayAdded(secondary_display1_);
   base::RunLoop().RunUntilIdle();
 
   // Remove the external display. MediaRouter should be notified of the lack of
@@ -254,7 +255,18 @@ TEST_F(WiredDisplayMediaRouteProviderTest, NotifyOnDisplayChange) {
                            mojom::MediaRouter::SinkAvailability::UNAVAILABLE));
   EXPECT_CALL(router_, OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, _,
                                        IsEmpty(), _));
-  provider_->OnDisplayRemoved(sink_display1_);
+  provider_->OnDisplayRemoved(secondary_display1_);
+  base::RunLoop().RunUntilIdle();
+
+  // Add a display that mirrors the primary display. The sink list should still
+  // be empty.
+  provider_->set_all_displays({primary_display_, mirror_display_});
+  EXPECT_CALL(router_, OnSinkAvailabilityUpdated(
+                           MediaRouteProviderId::WIRED_DISPLAY,
+                           mojom::MediaRouter::SinkAvailability::UNAVAILABLE));
+  EXPECT_CALL(router_, OnSinksReceived(MediaRouteProviderId::WIRED_DISPLAY, _,
+                                       IsEmpty(), _));
+  provider_->OnDisplayAdded(mirror_display_);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -272,7 +284,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   const std::string presentation_id = "presentationId";
   MockCallback callback;
 
-  provider_->set_all_displays({sink_display1_, primary_display_});
+  provider_->set_all_displays({secondary_display1_, primary_display_});
   provider_pointer_->StartObservingMediaRoutes(kPresentationSource);
   base::RunLoop().RunUntilIdle();
 
@@ -294,7 +306,7 @@ TEST_F(WiredDisplayMediaRouteProviderTest, CreateAndTerminateRoute) {
   EXPECT_CALL(*receiver_creator_.receiver(),
               Start(presentation_id, GURL(kPresentationSource)));
   provider_pointer_->CreateRoute(
-      kPresentationSource, GetSinkId(sink_display1_), presentation_id,
+      kPresentationSource, GetSinkId(secondary_display1_), presentation_id,
       url::Origin::Create(GURL(kPresentationSource)), 0,
       base::TimeDelta::FromSeconds(100), false,
       base::BindOnce(&MockCallback::CreateRoute, base::Unretained(&callback)));
