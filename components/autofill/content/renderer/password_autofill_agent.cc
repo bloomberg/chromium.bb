@@ -399,6 +399,13 @@ void FindMatchesByUsername(const PasswordFormFillData& fill_data,
   } else {
     // Scan additional logins for a match.
     for (const auto& it : fill_data.additional_logins) {
+      if (!it.second.realm.empty()) {
+        // Non-empty realm means PSL match. Do not autofill PSL matched
+        // credentials. The reason for this is that PSL matched sites are
+        // different sites, so a password for a PSL matched site should be never
+        // filled without explicit user selection.
+        continue;
+      }
       if (DoUsernamesMatch(it.first, current_username, exact_username_match)) {
         *username = it.first;
         *password = it.second.password;
