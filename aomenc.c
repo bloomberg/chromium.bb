@@ -1652,8 +1652,10 @@ static void encode_frame(struct stream_state *stream,
       stream->encoder.err = 1;
       ctx_exit_on_error(&stream->encoder,
                         "Stream %d: Failed to encode frame.\n"
-                        "Scaling disabled in this configuration. \n"
-                        "To enable, configure with --enable-libyuv\n",
+                        "libyuv is required for scaling but is currently "
+                        "disabled.\n"
+                        "Be sure to specify -DCONFIG_LIBYUV=1 when running "
+                        "cmake.\n",
                         stream->index);
 #endif
     }

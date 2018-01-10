@@ -544,8 +544,7 @@ if (XCODE)
 endif ()
 
 if (ENABLE_EXAMPLES AND "${CMAKE_GENERATOR}" MATCHES "Makefiles$")
-  # Users of the configure build expect the example targets to be built in the
-  # examples sub directory of the configured build directory after running make.
+  # For historical purposes place the example binaries in the example directory.
   file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/examples")
 
   foreach (target ${AOM_EXAMPLE_TARGETS})

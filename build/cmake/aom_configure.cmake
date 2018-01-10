@@ -255,8 +255,7 @@ else ()
   if (ENABLE_WERROR)
     add_compiler_flag_if_supported("-Werror")
   endif ()
-  # Flag(s) added here negate CMake defaults and produce build output similar
-  # to the existing configure/make build system.
+  # Flag(s) added here negate CMake defaults.
   add_compiler_flag_if_supported("-Wno-unused-function")
 
   if ("${CMAKE_BUILD_TYPE}" MATCHES "Rel")

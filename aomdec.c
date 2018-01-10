@@ -871,9 +871,9 @@ static int main_loop(int argc, const char **argv_) {
           img = scaled_img;
 #else
           fprintf(stderr,
-                  "Failed  to scale output frame: %s.\n"
-                  "Scaling is disabled in this configuration. "
-                  "To enable scaling, configure with --enable-libyuv\n",
+                  "Failed to scale output frame: %s.\n"
+                  "libyuv is required for scaling but is currently disabled.\n"
+                  "Be sure to specify -DCONFIG_LIBYUV=1 when running cmake.\n",
                   aom_codec_error(&decoder));
           goto fail;
 #endif

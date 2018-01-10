@@ -701,8 +701,8 @@ bool Analyzer::OnCmdLineParsed(wxCmdLineParser &parser) {  // NOLINT
   bool bit_accounting = parser.Found(_("a"));
   if (bit_accounting && !CONFIG_ACCOUNTING) {
     fprintf(stderr,
-            "Bit accounting support not found.  "
-            "Recompile with:\n./configure --enable-accounting\n");
+            "Bit accounting support not found. "
+            "Recompile with:\n./cmake -DCONFIG_ACCOUNTING=1\n");
     return false;
   }
   frame = new AnalyzerFrame(parser.Found(_("a")));
