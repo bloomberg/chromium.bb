@@ -7563,6 +7563,11 @@ Called by update_net_error_codes.py.-->
   <int value="200" label="2.0: Fastest"/>
 </enum>
 
+<enum name="CrosSelectToSpeakStartSpeechMethod">
+  <int value="0" label="Hold Search and click or drag"/>
+  <int value="1" label="Ctrl + S to read selection"/>
+</enum>
+
 <enum name="CrosShelfClickTarget">
   <obsolete>
     Deprecated as of 12/2013. Default pinned apps trial is finished.
