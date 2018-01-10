@@ -198,8 +198,8 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
       case autofill::PHONE_HOME_WHOLE_NUMBER: {
         const std::string default_region_code =
             autofill::AutofillCountry::CountryCodeForLocale(locale_);
-        if (!autofill::IsValidPhoneNumber(textfield->text(),
-                                          default_region_code)) {
+        if (!autofill::IsPossiblePhoneNumber(textfield->text(),
+                                             default_region_code)) {
           is_valid = false;
           if (error_message) {
             *error_message = l10n_util::GetStringUTF16(

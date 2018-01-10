@@ -234,17 +234,26 @@ TEST(PhoneNumberI18NTest, PhoneNumbersMatch) {
 // Tests that the phone numbers are correctly formatted for the Payment
 // Response.
 TEST(PhoneNumberUtilTest, FormatPhoneForResponse) {
-  EXPECT_EQ("+15151231234",
-            i18n::FormatPhoneForResponse("(515) 123-1234", "US"));
-  EXPECT_EQ("+15151231234",
-            i18n::FormatPhoneForResponse("(1) 515-123-1234", "US"));
+  EXPECT_EQ("+15152231234",
+            i18n::FormatPhoneForResponse("(515) 223-1234", "US"));
+  EXPECT_EQ("+15152231234",
+            i18n::FormatPhoneForResponse("(1) 515-223-1234", "US"));
   EXPECT_EQ("+33142685300",
             i18n::FormatPhoneForResponse("1 42 68 53 00", "FR"));
+
+  // Invalid numbers are not formatted.
+  EXPECT_EQ("(515) 123-1234",
+            i18n::FormatPhoneForResponse("(515) 123-1234", "US"));
+  EXPECT_EQ("(1) 515-123-1234",
+            i18n::FormatPhoneForResponse("(1) 515-123-1234", "US"));
 }
 
 // Tests that the phone numbers are correctly formatted to display to the user.
 TEST(PhoneNumberUtilTest, FormatPhoneForDisplay) {
-  EXPECT_EQ("+1 515-123-1234", i18n::FormatPhoneForDisplay("5151231234", "US"));
+  // Invalid number is not formatted.
+  EXPECT_EQ("5151231234", i18n::FormatPhoneForDisplay("5151231234", "US"));
+  // Valid number is formatted.
+  EXPECT_EQ("+1 515-223-1234", i18n::FormatPhoneForDisplay("5152231234", "US"));
   EXPECT_EQ("+33 1 42 68 53 00",
             i18n::FormatPhoneForDisplay("142685300", "FR"));
 }
@@ -317,8 +326,11 @@ INSTANTIATE_TEST_CASE_P(
         PhoneNumberFormatCase("+1 415-555-5555", "AU", "+1 415-555-5555"),
         PhoneNumberFormatCase("1 415-555-5555", "AU", "+1 415-555-5555"),
         // Without a country code, the phone is formatted for the profile's
-        // country, even if it's invalid.
-        PhoneNumberFormatCase("415-555-5555", "AU", "+61 4155555555"),
+        // country, if it's valid.
+        PhoneNumberFormatCase("2 9374 4000", "AU", "+61 2 9374 4000"),
+        // Without a country code, formatting returns the number as entered by
+        // user, if it's invalid.
+        PhoneNumberFormatCase("415-555-5555", "AU", "4155555555"),
 
         //////////////////////////
         // US phone in MX.
@@ -355,12 +367,13 @@ INSTANTIATE_TEST_CASE_P(
         PhoneNumberFormatCase("61 2 9374 4000", "US", "+61 2 9374 4000"),
         // Without a country code, the phone is formatted for the profile's
         // country.
-        // This local AU number fits the length of a US number, so it's
-        // formatted for US.
-        PhoneNumberFormatCase("02 9374 4000", "US", "+1 029-374-4000"),
-        // This local AU number is formatted as an US number, even if it's
-        // invlaid.
-        PhoneNumberFormatCase("2 9374 4000", "US", "+1 293744000"),
+        // This local AU number is associated with US profile, the number is
+        // not a valid US number, therefore formatting will just return what
+        // user entered.
+        PhoneNumberFormatCase("02 9374 4000", "US", "0293744000"),
+        // This local GR(Greece) number is formatted as an US number, if it's
+        // valid US number.
+        PhoneNumberFormatCase("22 6800 0090", "US", "+1 226-800-0090"),
 
         //////////////////////////
         // MX phone in MX.
@@ -381,8 +394,8 @@ INSTANTIATE_TEST_CASE_P(
         // number.
         PhoneNumberFormatCase("+52 55 5342 8400", "US", "+52 55 5342 8400"),
         PhoneNumberFormatCase("52 55 5342 8400", "US", "+52 55 5342 8400"),
-        // This number will be recognized as a BR(55) number.
-        PhoneNumberFormatCase("55 5342 8400", "US", "+55 53428400")));
+        // This number is not a valid US number, we won't try to format.
+        PhoneNumberFormatCase("55 5342 8400", "US", "5553428400")));
 
 INSTANTIATE_TEST_CASE_P(
     GetFormattedPhoneNumberForDisplay_EdgeCases,
@@ -397,9 +410,17 @@ INSTANTIATE_TEST_CASE_P(
                               "+52 55 5342 8400",
                               "es_MX"),
         PhoneNumberFormatCase("55 5342 8400", "", "+52 55 5342 8400", "es_MX"),
-        PhoneNumberFormatCase("55 5342 8400", "", "+55 53428400", "en_US"),
         PhoneNumberFormatCase("61 2 9374 4000", "", "+61 2 9374 4000", "en_AU"),
         PhoneNumberFormatCase("02 9374 4000", "", "+61 2 9374 4000", "en_AU"),
+
+        // Numbers in local format yet are invalid with user locale, user might
+        // be trying to enter a foreign number, calling formatting will just
+        // return what the user entered.
+        PhoneNumberFormatCase("55 5342 8400", "", "5553428400", "en_US"),
+        PhoneNumberFormatCase("55 5342 8400", "", "5553428400"),
+        PhoneNumberFormatCase("226 123 1234", "", "2261231234", "en_US"),
+        PhoneNumberFormatCase("293744000", "", "293744000"),
+        PhoneNumberFormatCase("02 9374 4000", "", "0293744000"),
 
         //////////////////////////
         // No country or locale.
@@ -408,10 +429,7 @@ INSTANTIATE_TEST_CASE_P(
         PhoneNumberFormatCase("61 2 9374 4000", "", "+61 2 9374 4000"),
         PhoneNumberFormatCase("52 55 5342 8400", "", "+52 55 5342 8400"),
         PhoneNumberFormatCase("1 415 555 5555", "", "+1 415-555-5555"),
-        PhoneNumberFormatCase("55 5342 8400", "", "+55 53428400"),
         // If no country code is found, formats for US.
-        PhoneNumberFormatCase("02 9374 4000", "", "+1 029-374-4000"),
-        PhoneNumberFormatCase("2 9374 4000", "", "+1 293744000"),
         PhoneNumberFormatCase("415-555-5555", "", "+1 415-555-5555")));
 
 }  // namespace autofill

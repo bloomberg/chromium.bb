@@ -682,17 +682,36 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   ClickOnDialogViewAndWait(DialogViewID::SAVE_ADDRESS_BUTTON);
 }
 
-// Tests that the editor doesn't accept a local phone from another country.
+// Tests that the editor accepts a phone number looks like a possible number
+// but is actually invalid.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       AddLocalPhoneNumberFromOtherCountry) {
+                       AddPossiblePhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   OpenShippingAddressEditorScreen();
 
   SetCommonFields();
 
-  // Set an Australian phone number in international format.
+  // Set an Australian phone number in local format. This is an invalid
+  // US number as there is no area code 029, but it can be considered and parsed
+  // as a US number.
   SetEditorTextfieldValue(base::UTF8ToUTF16("02 9374 4000"),
+                          autofill::PHONE_HOME_WHOLE_NUMBER);
+
+  EXPECT_FALSE(IsEditorTextfieldInvalid(autofill::PHONE_HOME_WHOLE_NUMBER));
+}
+
+// Tests that the editor does not accept a impossible phone number.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       AddImpossiblePhoneNumber) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
+  InvokePaymentRequestUI();
+  OpenShippingAddressEditorScreen();
+
+  SetCommonFields();
+
+  // Trying to set an impossible number, note it has 11 digits.
+  SetEditorTextfieldValue(base::UTF8ToUTF16("02 9374 40001"),
                           autofill::PHONE_HOME_WHOLE_NUMBER);
 
   EXPECT_TRUE(IsEditorTextfieldInvalid(autofill::PHONE_HOME_WHOLE_NUMBER));
@@ -786,15 +805,38 @@ IN_PROC_BROWSER_TEST_F(
                          static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
 }
 
-// Tests that there is an error label for an local phone from another country.
+// Tests that there is no error label for an phone number that can be
+// technically parsed as a US number even if it is actually invalid.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
-                       ErrorLabelForLocalPhoneNumberFromOtherCountry) {
+                       NoErrorLabelForPossibleButInvalidPhoneNumber) {
   NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a valid AU phone number in local format.
   autofill::AutofillProfile california = autofill::test::GetFullProfile();
   california.set_use_count(50U);
   california.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
                         base::UTF8ToUTF16("02 9374 4000"));
+  AddAutofillProfile(california);
+
+  InvokePaymentRequestUI();
+  OpenShippingAddressSectionScreen();
+
+  // There should not be an error label for the phone number.
+  views::View* sheet = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
+  ASSERT_EQ(1, sheet->child_count());
+  EXPECT_EQ(nullptr, sheet->child_at(0)->GetViewByID(
+                         static_cast<int>(DialogViewID::PROFILE_LABEL_ERROR)));
+}
+
+// Tests that there is error label for an impossible phone number.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       ErrorLabelForImpossiblePhoneNumber) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
+  // Create a profile in the US and add a impossible number.
+  autofill::AutofillProfile california = autofill::test::GetFullProfile();
+  california.set_use_count(50U);
+  california.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER,
+                        base::UTF8ToUTF16("02 9374 40001"));
   AddAutofillProfile(california);
 
   InvokePaymentRequestUI();

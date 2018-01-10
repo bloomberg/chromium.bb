@@ -15,12 +15,12 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/browser/state_names.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_regex_constants.h"
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/strings/grit/components_strings.h"
-#include "third_party/libphonenumber/phonenumber_api.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
@@ -91,8 +91,7 @@ bool PassesLuhnCheck(base::string16& number) {
   int sum = 0;
   bool odd = false;
   for (base::string16::reverse_iterator iter = number.rbegin();
-       iter != number.rend();
-       ++iter) {
+       iter != number.rend(); ++iter) {
     if (!base::IsAsciiDigit(*iter))
       return false;
 
@@ -217,18 +216,9 @@ bool IsValidState(const base::string16& text) {
          !state_names::GetNameForAbbreviation(text).empty();
 }
 
-bool IsValidPhoneNumber(const base::string16& text,
-                        const std::string& country_code) {
-  ::i18n::phonenumbers::PhoneNumber parsed_number;
-  ::i18n::phonenumbers::PhoneNumberUtil* phone_number_util =
-      ::i18n::phonenumbers::PhoneNumberUtil::GetInstance();
-  if (phone_number_util->Parse(base::UTF16ToUTF8(text), country_code,
-                               &parsed_number) !=
-      ::i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
-    return false;
-  }
-
-  return phone_number_util->IsValidNumber(parsed_number);
+bool IsPossiblePhoneNumber(const base::string16& text,
+                           const std::string& country_code) {
+  return i18n::IsPossiblePhoneNumber(base::UTF16ToUTF8(text), country_code);
 }
 
 bool IsValidZip(const base::string16& text) {
@@ -268,30 +258,28 @@ bool IsSSN(const base::string16& text) {
     return false;
 
   int area;
-  if (!base::StringToInt(base::StringPiece16(number_string.begin(),
-                                             number_string.begin() + 3),
-                         &area)) {
+  if (!base::StringToInt(
+          base::StringPiece16(number_string.begin(), number_string.begin() + 3),
+          &area)) {
     return false;
   }
-  if (area < 1 ||
-      area == 666 ||
-      area >= 900) {
+  if (area < 1 || area == 666 || area >= 900) {
     return false;
   }
 
   int group;
   if (!base::StringToInt(base::StringPiece16(number_string.begin() + 3,
                                              number_string.begin() + 5),
-                         &group)
-      || group == 0) {
+                         &group) ||
+      group == 0) {
     return false;
   }
 
   int serial;
   if (!base::StringToInt(base::StringPiece16(number_string.begin() + 5,
                                              number_string.begin() + 9),
-                         &serial)
-      || serial == 0) {
+                         &serial) ||
+      serial == 0) {
     return false;
   }
 

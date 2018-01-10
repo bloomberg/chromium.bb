@@ -225,8 +225,8 @@ PaymentsProfileComparator::ComputeMissingFields(
   base::string16 phone = profile.GetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), app_locale());
   base::string16 intl_phone = base::UTF8ToUTF16("+" + base::UTF16ToUTF8(phone));
-  if (!(autofill::IsValidPhoneNumber(phone, country) ||
-        autofill::IsValidPhoneNumber(intl_phone, country)))
+  if (!(autofill::IsPossiblePhoneNumber(phone, country) ||
+        autofill::IsPossiblePhoneNumber(intl_phone, country)))
     missing |= kPhone;
 
   base::string16 email = profile.GetInfo(
