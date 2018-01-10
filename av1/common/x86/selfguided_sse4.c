@@ -231,22 +231,34 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
 // Calculate 4 values of the "cross sum" starting at buf. This is a 3x3 filter
 // where the outer four corners have weight 3 and all other pixels have weight
 // 4.
+//
+// Pixels are indexed like this:
+// xtl  xt   xtr
+// xl    x   xr
+// xbl  xb   xbr
+//
+// buf points to x
+//
+// fours = xl + xt + xr + xb + x
+// threes = xtl + xtr + xbr + xbl
+// cross_sum = 4 * fours + 3 * threes
+//           = 4 * (fours + threes) - threes
+//           = (fours + threes) << 2 - threes
 static __m128i cross_sum(const int32_t *buf, int stride) {
-  const __m128i a0 = xx_loadu_128(buf - 1 - stride);
-  const __m128i a1 = xx_loadu_128(buf + 3 - stride);
-  const __m128i b0 = xx_loadu_128(buf - 1);
-  const __m128i b1 = xx_loadu_128(buf + 3);
-  const __m128i c0 = xx_loadu_128(buf - 1 + stride);
-  const __m128i c1 = xx_loadu_128(buf + 3 + stride);
+  const __m128i xtl = xx_loadu_128(buf - 1 - stride);
+  const __m128i xt = xx_loadu_128(buf - stride);
+  const __m128i xtr = xx_loadu_128(buf + 1 - stride);
+  const __m128i xl = xx_loadu_128(buf - 1);
+  const __m128i x = xx_loadu_128(buf);
+  const __m128i xr = xx_loadu_128(buf + 1);
+  const __m128i xbl = xx_loadu_128(buf - 1 + stride);
+  const __m128i xb = xx_loadu_128(buf + stride);
+  const __m128i xbr = xx_loadu_128(buf + 1 + stride);
 
-  const __m128i fours =
-      _mm_add_epi32(_mm_add_epi32(_mm_add_epi32(_mm_alignr_epi8(b1, b0, 4), b0),
-                                  _mm_add_epi32(_mm_alignr_epi8(b1, b0, 8),
-                                                _mm_alignr_epi8(c1, c0, 4))),
-                    _mm_alignr_epi8(a1, a0, 4));
-  const __m128i threes = _mm_add_epi32(
-      _mm_add_epi32(a0, c0),
-      _mm_add_epi32(_mm_alignr_epi8(a1, a0, 8), _mm_alignr_epi8(c1, c0, 8)));
+  const __m128i fours = _mm_add_epi32(
+      xl, _mm_add_epi32(xt, _mm_add_epi32(xr, _mm_add_epi32(xb, x))));
+  const __m128i threes =
+      _mm_add_epi32(xtl, _mm_add_epi32(xtr, _mm_add_epi32(xbr, xbl)));
 
   return _mm_sub_epi32(_mm_slli_epi32(_mm_add_epi32(fours, threes), 2), threes);
 }
