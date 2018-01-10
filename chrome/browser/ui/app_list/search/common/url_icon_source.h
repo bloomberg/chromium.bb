@@ -6,19 +6,19 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_URL_ICON_SOURCE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/image_decoder.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace content {
+class BrowserContext;
+class SimpleURLLoader;
 }
 
 namespace app_list {
@@ -26,7 +26,6 @@ namespace app_list {
 // An ImageSkiaSource for icons fetched from a URL. Till the URL icon is
 // fetched, the default icon (specified by it's resource id) is shown.
 class UrlIconSource : public gfx::ImageSkiaSource,
-                      public net::URLFetcherDelegate,
                       public ImageDecoder::ImageRequest {
  public:
   typedef base::Closure IconLoadedCallback;
@@ -34,7 +33,7 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   // Create a URL Icon source with the given URL. The post_process parameter
   // specifies a function to post-process the result icon before displaying it.
   UrlIconSource(const IconLoadedCallback& icon_loaded_callback,
-                net::URLRequestContextGetter* context_getter,
+                content::BrowserContext* browser_context,
                 const GURL& icon_url,
                 int icon_size,
                 int default_icon_resource_id);
@@ -45,24 +44,24 @@ class UrlIconSource : public gfx::ImageSkiaSource,
   // ImageSkia gets painted on screen.
   void StartIconFetch();
 
+  // Invoked from SimpleURLLoader after download is complete.
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+
   // gfx::ImageSkiaSource overrides:
   gfx::ImageSkiaRep GetImageForScale(float scale) override;
-
-  // net::URLFetcherDelegate overrides:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   // ImageDecoder::ImageRequest overrides:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
 
   IconLoadedCallback icon_loaded_callback_;
-  net::URLRequestContextGetter* context_getter_;
+  content::BrowserContext* browser_context_;
   const GURL icon_url_;
   const int icon_size_;
   const int default_icon_resource_id_;
 
   bool icon_fetch_attempted_;
-  std::unique_ptr<net::URLFetcher> icon_fetcher_;
+  std::unique_ptr<content::SimpleURLLoader> simple_loader_;
 
   gfx::ImageSkia icon_;
 
