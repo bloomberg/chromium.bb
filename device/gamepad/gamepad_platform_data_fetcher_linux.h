@@ -15,6 +15,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_device_linux.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/gamepad/udev_gamepad_linux.h"
 
 extern "C" {
 struct udev_device;
@@ -25,18 +26,6 @@ class UdevLinux;
 }
 
 namespace device {
-
-enum class UdevGamepadType {
-  JOYDEV,
-  EVDEV,
-};
-
-struct UdevGamepad {
-  UdevGamepadType type;
-  int index;
-  std::string path;
-  std::string parent_syspath;
-};
 
 class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
     : public GamepadDataFetcher {
@@ -66,13 +55,15 @@ class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
   void OnAddedToProvider() override;
 
   void RefreshDevice(udev_device* dev);
-  void RefreshJoydevDevice(udev_device* dev, const UdevGamepad& pad_info);
-  void RefreshEvdevDevice(udev_device* dev, const UdevGamepad& pad_info);
-  void EnumerateDevices();
+  void RefreshJoydevDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
+  void RefreshEvdevDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
+  void RefreshHidrawDevice(udev_device* dev, const UdevGamepadLinux& pad_info);
+  void EnumerateSubsystemDevices(const std::string& subsystem);
   void ReadDeviceData(size_t index);
 
   GamepadDeviceLinux* GetDeviceWithJoydevIndex(int joydev_index);
-  GamepadDeviceLinux* GetOrCreateMatchingDevice(const UdevGamepad& pad_info);
+  GamepadDeviceLinux* GetOrCreateMatchingDevice(
+      const UdevGamepadLinux& pad_info);
   void RemoveDevice(GamepadDeviceLinux* device);
 
   std::unordered_set<std::unique_ptr<GamepadDeviceLinux>> devices_;

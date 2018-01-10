@@ -17,6 +17,8 @@ component("gamepad") {
     "abstract_haptic_gamepad.h",
     "dualshock4_controller_base.cc",
     "dualshock4_controller_base.h",
+    "dualshock4_controller_linux.cc",
+    "dualshock4_controller_linux.h",
     "game_controller_data_fetcher_mac.h",
     "game_controller_data_fetcher_mac.mm",
     "gamepad_consumer.cc",
@@ -58,6 +60,8 @@ component("gamepad") {
     "gamepad_user_gesture.h",
     "raw_input_data_fetcher_win.cc",
     "raw_input_data_fetcher_win.h",
+    "udev_gamepad_linux.cc",
+    "udev_gamepad_linux.h",
     "xbox_controller_mac.h",
     "xbox_controller_mac.mm",
     "xbox_data_fetcher_mac.cc",
@@ -87,6 +91,7 @@ component("gamepad") {
       sources -= [
         "gamepad_device_linux.cc",
         "gamepad_platform_data_fetcher_linux.cc",
+        "udev_gamepad_linux.cc",
       ]
     }
   }
