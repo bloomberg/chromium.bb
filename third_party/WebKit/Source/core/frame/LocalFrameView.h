@@ -58,7 +58,6 @@
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/ShapeProperties.h"
 #include "public/platform/WebDisplayMode.h"
