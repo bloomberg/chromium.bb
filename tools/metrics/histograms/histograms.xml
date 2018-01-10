@@ -95284,6 +95284,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.Engagement.EngagementType"
+    enum="SiteEngagementServiceEngagementType">
+  <owner>calamity@chromium.org</owner>
+  <owner>mgiuca@chromium.org</owner>
+  <summary>
+    The type of engagement (navigation, user input, etc.) which led to an
+    accumulation in site engagement within a PWA app window. Should be collected
+    for a subset of SiteEngagementService.EngagementType, which is triggered for
+    all browsing contexts. Recorded at the time of engagement accumulation
+    (e.g., when mouse is clicked).
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Install.DisplayMode" enum="WebAppDisplayMode">
   <owner>piotrs@chromium.org</owner>
   <summary>
