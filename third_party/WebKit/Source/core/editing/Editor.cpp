@@ -223,8 +223,21 @@ static bool IsCaretAtStartOfWrappedLine(const FrameSelection& selection) {
     return false;
   const Position& position =
       selection.ComputeVisibleSelectionInDOMTree().Start();
-  return !InSameLine(PositionWithAffinity(position, TextAffinity::kUpstream),
-                     PositionWithAffinity(position, TextAffinity::kDownstream));
+  if (InSameLine(PositionWithAffinity(position, TextAffinity::kUpstream),
+                 PositionWithAffinity(position, TextAffinity::kDownstream)))
+    return false;
+
+  // Only when the previous character is a space to avoid undesired side
+  // effects. There are cases where a new line is desired even if the previous
+  // character is not a space, but typing another space will do.
+  Position prev =
+      PreviousPositionOf(position, PositionMoveType::kGraphemeCluster);
+  const Node* prev_node = prev.ComputeContainerNode();
+  if (!prev_node || !prev_node->IsTextNode())
+    return false;
+  int prev_offset = prev.ComputeOffsetInContainerNode();
+  UChar prev_char = ToText(prev_node)->data()[prev_offset];
+  return prev_char == kSpaceCharacter;
 }
 
 bool Editor::HandleTextEvent(TextEvent* event) {
