@@ -17,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
@@ -274,16 +273,13 @@ class WebNotificationLabel : public WebNotificationItem {
 };
 
 WebNotificationTray::WebNotificationTray(Shelf* shelf,
-                                         aura::Window* status_area_window,
-                                         SystemTray* system_tray)
+                                         aura::Window* status_area_window)
     : TrayBackgroundView(shelf),
       status_area_window_(status_area_window),
-      system_tray_(system_tray),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false) {
   DCHECK(shelf);
   DCHECK(status_area_window_);
-  DCHECK(system_tray_);
 
   SetInkDropMode(InkDropMode::ON);
   gfx::ImageSkia bell_image =
@@ -363,7 +359,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings,
     // horizontal (i.e. bottom) shelves, anchor to the system tray.
     TrayBackgroundView* anchor_tray = this;
     if (shelf()->IsHorizontalAlignment())
-      anchor_tray = system_tray_;
+      anchor_tray = shelf()->GetSystemTrayAnchor();
 
     message_center_bubble_.reset(new WebNotificationBubbleWrapper(
         this, anchor_tray, message_center_bubble, show_by_click));
@@ -447,7 +443,7 @@ void WebNotificationTray::UpdateAfterShelfAlignmentChange() {
 void WebNotificationTray::AnchorUpdated() {
   if (message_center_bubble()) {
     UpdateClippingWindowBounds();
-    system_tray_->UpdateClippingWindowBounds();
+    shelf()->GetSystemTrayAnchor()->UpdateClippingWindowBounds();
     message_center_bubble()->bubble_view()->UpdateBubble();
     // Should check |message_center_bubble_| again here. Since UpdateBubble
     // above set the bounds of the bubble which will stop the current
@@ -613,7 +609,7 @@ void WebNotificationTray::UpdateTrayContent() {
   Layout();
   SchedulePaint();
   if (ShouldShowMessageCenter())
-    system_tray_->SetNextFocusableView(this);
+    shelf()->GetSystemTrayAnchor()->SetNextFocusableView(this);
 }
 
 void WebNotificationTray::ClickedOutsideBubble() {
