@@ -373,6 +373,22 @@ IN_PROC_BROWSER_TEST_F(AutofillCounterTest, TimeRanges) {
     EXPECT_EQ(test_case.expected_num_credit_cards, GetNumCreditCards());
     EXPECT_EQ(test_case.expected_num_addresses, GetNumAddresses());
   }
+
+  // Test the results for different ending points and base::Time as start.
+  counter.SetPeriodStartForTesting(base::Time());
+  counter.SetPeriodEndForTesting(kTime2);
+  counter.Restart();
+  WaitForCounting();
+  EXPECT_EQ(1, GetNumSuggestions());
+  EXPECT_EQ(1, GetNumCreditCards());
+  EXPECT_EQ(1, GetNumAddresses());
+
+  counter.SetPeriodEndForTesting(kTime3);
+  counter.Restart();
+  WaitForCounting();
+  EXPECT_EQ(1, GetNumSuggestions());
+  EXPECT_EQ(2, GetNumCreditCards());
+  EXPECT_EQ(3, GetNumAddresses());
 }
 
 }  // namespace

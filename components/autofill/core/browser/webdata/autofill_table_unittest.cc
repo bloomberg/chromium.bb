@@ -734,6 +734,43 @@ TEST_F(AutofillTableTest,
   EXPECT_EQ(base::Time::FromTimeT(90), date_last_used);
 }
 
+TEST_F(AutofillTableTest,
+       Autofill_RemoveFormElementsAddedBetween_OlderThan30Days) {
+  const base::Time kNow = base::Time::Now();
+  const base::Time k29DaysOld = kNow - base::TimeDelta::FromDays(29);
+  const base::Time k30DaysOld = kNow - base::TimeDelta::FromDays(30);
+  const base::Time k31DaysOld = kNow - base::TimeDelta::FromDays(31);
+
+  // Add some form field entries.
+  AutofillChangeList changes;
+  FormFieldData field;
+  field.name = ASCIIToUTF16("Name");
+  field.value = ASCIIToUTF16("Superman");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, kNow));
+  field.value = ASCIIToUTF16("Clark Kent");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k29DaysOld));
+  field.value = ASCIIToUTF16("Clark Sutter");
+  EXPECT_TRUE(table_->AddFormFieldValueTime(field, &changes, k31DaysOld));
+  EXPECT_EQ(3U, changes.size());
+
+  // Removing all elements added before 30days from the database.
+  changes.clear();
+  EXPECT_TRUE(table_->RemoveFormElementsAddedBetween(base::Time(), k30DaysOld,
+                                                     &changes));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ(AutofillChange(AutofillChange::REMOVE,
+                           AutofillKey(ASCIIToUTF16("Name"),
+                                       ASCIIToUTF16("Clark Sutter"))),
+            changes[0]);
+  EXPECT_EQ(0, GetAutofillEntryCount(ASCIIToUTF16("Name"),
+                                     ASCIIToUTF16("Clark Sutter"), db_.get()));
+  EXPECT_EQ(1, GetAutofillEntryCount(ASCIIToUTF16("Name"),
+                                     ASCIIToUTF16("Superman"), db_.get()));
+  EXPECT_EQ(1, GetAutofillEntryCount(ASCIIToUTF16("Name"),
+                                     ASCIIToUTF16("Clark Kent"), db_.get()));
+  changes.clear();
+}
+
 TEST_F(AutofillTableTest, AutofillProfile) {
   // Add a 'Home' profile with non-default data. The specific values are not
   // important.

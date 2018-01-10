@@ -501,6 +501,9 @@ class AutofillTable : public WebDatabaseTable,
   FRIEND_TEST_ALL_PREFIXES(
       AutofillTableTest,
       Autofill_RemoveFormElementsAddedBetween_UsedDuringAndAfter);
+  FRIEND_TEST_ALL_PREFIXES(
+      AutofillTableTest,
+      Autofill_RemoveFormElementsAddedBetween_OlderThan30Days);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, Autofill_AddFormFieldValues);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, AutofillProfile);
   FRIEND_TEST_ALL_PREFIXES(AutofillTableTest, UpdateAutofillProfile);
