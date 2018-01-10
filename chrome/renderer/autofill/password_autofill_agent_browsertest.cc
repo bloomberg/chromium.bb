@@ -3323,4 +3323,36 @@ TEST_F(PasswordAutofillAgentTest, SuggestLatestCredentials) {
   EXPECT_EQ(1, fake_driver_.show_pw_suggestions_key());
 }
 
+// Tests that PSL matched password is not autofilled even when there is
+// a prefilled username.
+TEST_F(PasswordAutofillAgentTest, PSLMatchedPasswordIsNotAutofill) {
+  const char kFormWithPrefilledUsernameHTML[] =
+      "<FORM id='LoginTestForm' action='http://www.bidule.com'>"
+      "  <INPUT type='text' id='username' value='prefilledusername'/>"
+      "  <INPUT type='password' id='password'/>"
+      "</FORM>";
+  LoadHTML(kFormWithPrefilledUsernameHTML);
+
+  // Retrieve the input elements so the test can access them.
+  UpdateUsernameAndPasswordElements();
+
+  // Set the expected form origin and action URLs.
+  UpdateOriginForHTML(kFormWithPrefilledUsernameHTML);
+
+  // Add PSL matched credentials with username equal to prefilled one.
+  PasswordAndRealm psl_credentials;
+  psl_credentials.password = ASCIIToUTF16("pslpassword");
+  // Non-empty realm means PSL matched credentials.
+  psl_credentials.realm = "example.com";
+  fill_data_.additional_logins[ASCIIToUTF16("prefilledusername")] =
+      psl_credentials;
+
+  // Simulate the browser sending back the login info, it triggers the
+  // autocomplete.
+  SimulateOnFillPasswordForm(fill_data_);
+
+  // Test that PSL matched password is not autofilled.
+  CheckTextFieldsState("prefilledusername", false, "", false);
+}
+
 }  // namespace autofill
