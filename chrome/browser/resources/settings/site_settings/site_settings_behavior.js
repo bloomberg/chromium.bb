@@ -101,6 +101,7 @@ const SiteSettingsBehaviorImpl = {
    * @private
    */
   computeSiteIcon: function(site) {
+    site = this.removePatternWildcard(site);
     const url = this.ensureUrlHasScheme(site);
     return 'background-image: ' + cr.icon.getFavicon(url);
   },
