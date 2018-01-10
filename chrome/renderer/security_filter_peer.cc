@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/renderer/fixed_received_data.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -55,7 +56,9 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
             "<html><meta charset='UTF-8'>"
             "<body style='background-color:#990000;color:white;'>"
             "%s</body></html>",
-            l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
+            net::EscapeForHTML(
+                l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE))
+                .c_str());
         mime_type = "text/html";
       }
       return base::WrapUnique(
