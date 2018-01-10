@@ -21,11 +21,12 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   paint_controller_ = PaintController::Create();
   context_ = WTF::WrapUnique(new GraphicsContext(*paint_controller_));
 
-  // Content painted into a new PaintRecord in SPv2 will have an
-  // independent property tree set.
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // Use initial_context_'s current paint chunk properties so that any new
+    // chunk created during painting the content will be in the correct state.
     paint_controller_->UpdateCurrentPaintChunkProperties(
-        WTF::nullopt, PropertyTreeState::Root());
+        WTF::nullopt,
+        initial_context_.GetPaintController().CurrentPaintChunkProperties());
   }
   return context_.get();
 }
@@ -38,8 +39,10 @@ sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
   context_->BeginRecording(bounds);
   paint_controller_->CommitNewDisplayItems();
 
-  paint_controller_->GetPaintArtifact().Replay(*context_,
-                                               PropertyTreeState::Root());
+  paint_controller_->GetPaintArtifact().Replay(
+      *context_, initial_context_.GetPaintController()
+                     .CurrentPaintChunkProperties()
+                     .property_tree_state);
 
   sk_sp<PaintRecord> content = context_->EndRecording();
   // Content is cached by the source graphic so temporaries can be freed.
