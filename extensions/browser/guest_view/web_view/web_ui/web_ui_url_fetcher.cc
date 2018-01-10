@@ -50,7 +50,8 @@ void WebUIURLFetcher::Start() {
   fetcher_->SetRequestContext(
       content::BrowserContext::GetDefaultStoragePartition(context_)->
           GetURLRequestContext());
-  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                         net::LOAD_DO_NOT_SEND_COOKIES);
 
   content::AssociateURLFetcherWithRenderFrame(
       fetcher_.get(), url::Origin::Create(url_), render_process_id_,
