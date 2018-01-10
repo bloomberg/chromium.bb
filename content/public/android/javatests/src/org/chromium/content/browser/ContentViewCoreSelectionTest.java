@@ -58,7 +58,7 @@ public class ContentViewCoreSelectionTest {
             + "<div id=\"rich_div\" contentEditable=\"true\" >Rich Editor</div>"
             + "</form></body></html>");
     private ContentViewCore mContentViewCore;
-    private SelectionPopupController mSelectionPopupController;
+    private SelectionPopupControllerImpl mSelectionPopupController;
 
     private static class TestSelectionClient implements SelectionClient {
         private SelectionClient.Result mResult;
@@ -107,7 +107,8 @@ public class ContentViewCoreSelectionTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
         mContentViewCore = mActivityTestRule.getContentViewCore();
-        mSelectionPopupController = mContentViewCore.getSelectionPopupControllerForTesting();
+        mSelectionPopupController =
+                SelectionPopupControllerImpl.fromWebContents(mContentViewCore.getWebContents());
         waitForSelectActionBarVisible(false);
         waitForPastePopupStatus(false);
     }
@@ -415,7 +416,7 @@ public class ContentViewCoreSelectionTest {
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
-        Assert.assertTrue(mSelectionPopupController.isSelectionEditable());
+        Assert.assertTrue(mSelectionPopupController.isFocusedNodeEditable());
         Assert.assertFalse(mSelectionPopupController.isSelectionPassword());
     }
 
@@ -427,7 +428,7 @@ public class ContentViewCoreSelectionTest {
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
-        Assert.assertTrue(mSelectionPopupController.isSelectionEditable());
+        Assert.assertTrue(mSelectionPopupController.isFocusedNodeEditable());
         Assert.assertTrue(mSelectionPopupController.isSelectionPassword());
     }
 
@@ -439,7 +440,7 @@ public class ContentViewCoreSelectionTest {
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
-        Assert.assertFalse(mSelectionPopupController.isSelectionEditable());
+        Assert.assertFalse(mSelectionPopupController.isFocusedNodeEditable());
         Assert.assertFalse(mSelectionPopupController.isSelectionPassword());
     }
 
@@ -451,7 +452,7 @@ public class ContentViewCoreSelectionTest {
         waitForSelectActionBarVisible(true);
         Assert.assertTrue(mSelectionPopupController.hasSelection());
         Assert.assertTrue(mSelectionPopupController.isActionModeValid());
-        Assert.assertTrue(mSelectionPopupController.isSelectionEditable());
+        Assert.assertTrue(mSelectionPopupController.isFocusedNodeEditable());
         Assert.assertFalse(mSelectionPopupController.isSelectionPassword());
     }
 
@@ -830,7 +831,7 @@ public class ContentViewCoreSelectionTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mContentViewCore.destroySelectActionMode();
+                mSelectionPopupController.destroySelectActionMode();
             }
         });
     }
@@ -852,7 +853,7 @@ public class ContentViewCoreSelectionTest {
         CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mContentViewCore.isSelectActionBarShowing();
+                return mSelectionPopupController.isSelectActionBarShowing();
             }
         }));
     }

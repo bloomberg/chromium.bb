@@ -12,7 +12,6 @@ import static org.chromium.content.browser.test.util.CriteriaHelper.DEFAULT_POLL
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -83,9 +82,10 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.KeyUtils;
-import org.chromium.content.browser.test.util.TestContentViewCore;
+import org.chromium.content.browser.test.util.TestSelectionPopupController;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiDisableIf;
@@ -581,20 +581,14 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * A ContentViewCore that has some methods stubbed out for testing.
-     * TODO(pedrosimonetti): consider using the real ContentViewCore instead.
+     * A SelectionPopupController that has some methods stubbed out for testing.
      */
-    private static final class StubbedContentViewCore extends TestContentViewCore {
+    private static final class StubbedSelectionPopupController
+            extends TestSelectionPopupController {
         private boolean mIsFocusedNodeEditable;
 
-        public StubbedContentViewCore(Context context) {
-            super(context, "");
-        }
+        public StubbedSelectionPopupController() {}
 
-        /**
-         * Mocks the result of isFocusedNodeEditable() for testing.
-         * @param isFocusedNodeEditable Whether the focused node is editable.
-         */
         public void setIsFocusedNodeEditableForTest(boolean isFocusedNodeEditable) {
             mIsFocusedNodeEditable = isFocusedNodeEditable;
         }
@@ -1185,21 +1179,17 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testIsValidSelection() {
-        StubbedContentViewCore stubbedCvc =
-                new StubbedContentViewCore(mActivityTestRule.getActivity().getBaseContext());
-        Assert.assertTrue(mSelectionController.isValidSelection("valid", stubbedCvc));
-        Assert.assertFalse(mSelectionController.isValidSelection(" ", stubbedCvc));
-        stubbedCvc.setIsFocusedNodeEditableForTest(true);
-        Assert.assertFalse(mSelectionController.isValidSelection("editable", stubbedCvc));
-        stubbedCvc.setIsFocusedNodeEditableForTest(false);
+        StubbedSelectionPopupController c = new StubbedSelectionPopupController();
+        Assert.assertTrue(mSelectionController.isValidSelection("valid", c));
+        Assert.assertFalse(mSelectionController.isValidSelection(" ", c));
+        c.setIsFocusedNodeEditableForTest(true);
+        Assert.assertFalse(mSelectionController.isValidSelection("editable", c));
+        c.setIsFocusedNodeEditableForTest(false);
         String numberString = "0123456789";
         StringBuilder longStringBuilder = new StringBuilder();
-        for (int i = 0; i < 11; i++) {
-            longStringBuilder.append(numberString);
-        }
-        Assert.assertTrue(mSelectionController.isValidSelection(numberString, stubbedCvc));
-        Assert.assertFalse(
-                mSelectionController.isValidSelection(longStringBuilder.toString(), stubbedCvc));
+        for (int i = 0; i < 11; i++) longStringBuilder.append(numberString);
+        Assert.assertTrue(mSelectionController.isValidSelection(numberString, c));
+        Assert.assertFalse(mSelectionController.isValidSelection(longStringBuilder.toString(), c));
     }
 
     /**
@@ -2113,12 +2103,14 @@ public class ContextualSearchManagerTest {
         CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getContentViewCore()
-                        .isSelectActionBarShowing();
+                return getSelectionPopupController().isSelectActionBarShowing();
             }
         }));
+    }
+
+    private SelectionPopupController getSelectionPopupController() {
+        return SelectionPopupController.fromWebContents(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents());
     }
 
     /**
@@ -2136,13 +2128,11 @@ public class ContextualSearchManagerTest {
         Assert.assertEquals(0, observer.getHideCount());
 
         // Dismiss select action mode.
-        final ContentViewCore contentViewCore =
-                mActivityTestRule.getActivity().getActivityTab().getContentViewCore();
         assertWaitForSelectActionBarVisible(true);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                contentViewCore.destroySelectActionMode();
+                getSelectionPopupController().destroySelectActionMode();
             }
         });
         assertWaitForSelectActionBarVisible(false);

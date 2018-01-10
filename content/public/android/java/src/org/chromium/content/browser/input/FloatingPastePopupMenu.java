@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.content.R;
-import org.chromium.content.browser.SelectionPopupController;
+import org.chromium.content.browser.SelectionPopupControllerImpl;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -86,14 +86,14 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
                             ? mContext.getString(R.string.actionbar_textselection_title)
                             : null);
             mode.setSubtitle(null);
-            SelectionPopupController.initializeMenu(mContext, mode, menu);
+            SelectionPopupControllerImpl.initializeMenu(mContext, mode, menu);
             if (!mDelegate.canPaste()) menu.removeItem(R.id.select_action_menu_paste);
             if (!mDelegate.canSelectAll()) menu.removeItem(R.id.select_action_menu_select_all);
             if (!mDelegate.canPasteAsPlainText()) {
                 menu.removeItem(R.id.select_action_menu_paste_as_plain_text);
             }
 
-            SelectionPopupController.setPasteAsPlainTextMenuItemTitle(menu);
+            SelectionPopupControllerImpl.setPasteAsPlainTextMenuItemTitle(menu);
 
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);

@@ -41,7 +41,8 @@ import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
 import java.net.MalformedURLException;
@@ -425,8 +426,8 @@ public class UrlBar extends AutocompleteEditText {
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (event.getAction() == MotionEvent.ACTION_DOWN && currentTab != null) {
             // Make sure to hide the current ContentView ActionBar.
-            ContentViewCore viewCore = currentTab.getContentViewCore();
-            if (viewCore != null) viewCore.destroySelectActionMode();
+            SelectionPopupController controller = getSelectionPopupController(currentTab);
+            if (controller != null) controller.destroySelectActionMode();
         }
 
         if (mSuppressingTouchMoveEventsForThisTouch
@@ -446,6 +447,11 @@ public class UrlBar extends AutocompleteEditText {
             Log.w(TAG, "Ignoring NPE in UrlBar#onTouchEvent.", e);
             return true;
         }
+    }
+
+    private SelectionPopupController getSelectionPopupController(Tab tab) {
+        WebContents webContents = tab.getWebContents();
+        return webContents != null ? SelectionPopupController.fromWebContents(webContents) : null;
     }
 
     @Override

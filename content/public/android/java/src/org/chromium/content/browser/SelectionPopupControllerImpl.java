@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
+import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
@@ -45,8 +46,11 @@ import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu.PastePopupMenuDelegate;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
+import org.chromium.content.browser.webcontents.WebContentsUserData;
+import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.MenuSourceType;
@@ -56,17 +60,12 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 import java.util.List;
 
 /**
- * A class that handles input-related web content selection UI like action mode
- * and paste popup view. It wraps an {@link ActionMode} created by the associated view,
- * providing modified interaction with it.
- *
- * Embedders can use {@link ActionModeCallbackHelper} implemented by this class
- * to create {@link ActionMode.Callback} instance and configure the selection action
- * mode tasks to their requirements.
+ * Implementation of the interface {@link SelectionPopupController}.
  */
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.M)
-public class SelectionPopupController extends ActionModeCallbackHelper {
+public class SelectionPopupControllerImpl
+        extends ActionModeCallbackHelper implements SelectionPopupController {
     private static final String TAG = "SelectionPopupCtlr"; // 20 char limit
 
     /**
@@ -91,9 +90,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // does not require ordering information.
     private static final int MENU_ITEM_ORDER_TEXT_PROCESS_START = 100;
 
-    private final Context mContext;
-    private final WindowAndroid mWindowAndroid;
-    private final WebContentsImpl mWebContents;
+    private static final class UserDataFactoryLazyHolder {
+        private static final UserDataFactory<SelectionPopupControllerImpl> INSTANCE =
+                SelectionPopupControllerImpl::new;
+    }
+
+    private Context mContext;
+    private WindowAndroid mWindowAndroid;
+    private WebContentsImpl mWebContents;
     private ActionMode.Callback mCallback;
 
     private SelectionClient.ResultCallback mResultCallback;
@@ -106,7 +110,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     // Self-repeating task that repeatedly hides the ActionMode. This is
     // required because ActionMode only exposes a temporary hide routine.
-    private final Runnable mRepeatingHideRunnable;
+    private Runnable mRepeatingHideRunnable;
 
     private View mView;
     private ActionMode mActionMode;
@@ -151,6 +155,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // Whether a scroll is in progress.
     private boolean mScrollInProgress;
 
+    private boolean mInitialized;
+
     /**
      * The {@link SelectionInsertionHandleObserver} that processes handle events, or {@code null} if
      * none exists.
@@ -166,30 +172,58 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @param webContents WebContents instance.
      * @param view Container view.
      */
-    public SelectionPopupController(
+    public static SelectionPopupControllerImpl create(
             Context context, WindowAndroid window, WebContents webContents, View view) {
-        this(context, window, webContents, view, /* initializeNative = */ true);
+        SelectionPopupControllerImpl controller = WebContentsUserData.fromWebContents(webContents,
+                SelectionPopupControllerImpl.class, UserDataFactoryLazyHolder.INSTANCE);
+        assert controller != null && !controller.initialized();
+        controller.init(context, window, view, true);
+        return controller;
+    }
+
+    /**
+     * Get {@link SelectionPopupController} object used for the give WebContents.
+     * {@link #create()} should precede any calls to this.
+     * @param webContents {@link WebContents} object.
+     * @return {@link SelectionPopupController} object. {@code null} if not available because
+     *         {@link #create()} is not called yet.
+     */
+    public static SelectionPopupControllerImpl fromWebContents(WebContents webContents) {
+        return WebContentsUserData.fromWebContents(
+                webContents, SelectionPopupControllerImpl.class, null);
     }
 
     /**
      * Create {@link SelectionPopupController} instance. Note that it will create an instance with
-     * no link to native side.
+     * no link to native side for testing only.
      * @param context Context for action mode.
      * @param window WindowAndroid instance.
      * @param webContents WebContents instance.
      * @param view Container view.
      */
-    public static SelectionPopupController createForTesting(
+    public static SelectionPopupControllerImpl createForTesting(
             Context context, WindowAndroid window, WebContents webContents, View view) {
-        return new SelectionPopupController(
-                context, window, webContents, view, /* initializeNative = */ false);
+        SelectionPopupControllerImpl controller = new SelectionPopupControllerImpl(webContents);
+        controller.init(context, window, view, false);
+        return controller;
     }
 
-    private SelectionPopupController(Context context, WindowAndroid window, WebContents webContents,
-            View view, boolean initializeNative) {
+    /**
+     * Create {@link SelectionPopupControllerImpl} instance.
+     * @param webContents WebContents instance.
+     */
+    public SelectionPopupControllerImpl(WebContents webContents) {
+        mWebContents = (WebContentsImpl) webContents;
+    }
+
+    /**
+     * @param context Context for action mode.
+     * @param window WindowAndroid instance.
+     * @param view Container view.
+     */
+    private void init(Context context, WindowAndroid window, View view, boolean initializeNative) {
         mContext = context;
         mWindowAndroid = window;
-        mWebContents = (WebContentsImpl) webContents;
         mView = view;
 
         // The menu items are allowed by default.
@@ -212,7 +246,19 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mHandleObserver = ContentClassFactory.get().createHandleObserver(view);
         mDragStarted = false;
 
-        if (initializeNative) nativeInit(webContents);
+        if (initializeNative) nativeInit(mWebContents);
+
+        mInitialized = true;
+    }
+
+    private boolean initialized() {
+        return mInitialized;
+    }
+
+    public static String sanitizeQuery(String query, int maxLength) {
+        if (TextUtils.isEmpty(query) || query.length() < maxLength) return query;
+        Log.w(TAG, "Truncating oversized query (" + query.length() + ").");
+        return query.substring(0, maxLength) + "…";
     }
 
     /**
@@ -229,18 +275,17 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mView = view;
     }
 
-    /**
-     * Set the action mode callback.
-     * @param callback ActionMode.Callback handling the callbacks from action mode.
-     */
-    void setCallback(ActionMode.Callback callback) {
+    @Override
+    public void setActionModeCallback(ActionMode.Callback callback) {
         mCallback = callback;
     }
 
-    void setNonSelectionCallback(ActionMode.Callback callback) {
+    @Override
+    public void setNonSelectionActionModeCallback(ActionMode.Callback callback) {
         mNonSelectionCallback = callback;
     }
 
+    @Override
     public SelectionClient.ResultCallback getResultCallback() {
         return mResultCallback;
     }
@@ -360,9 +405,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         destroyActionModeAndKeepSelection();
 
         assert mWebContents != null;
-        ActionMode actionMode = supportsFloatingActionMode()
-                ? startFloatingActionMode()
-                : mView.startActionMode(mCallback);
+        ActionMode actionMode = supportsFloatingActionMode() ? startFloatingActionMode()
+                                                             : mView.startActionMode(mCallback);
         if (actionMode != null) {
             // This is to work around an LGE email issue. See crbug.com/651706 for more details.
             LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
@@ -390,34 +434,34 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
             @Override
             public void paste() {
-                SelectionPopupController.this.paste();
+                SelectionPopupControllerImpl.this.paste();
                 mWebContents.dismissTextHandles();
             }
 
             @Override
             public void pasteAsPlainText() {
-                SelectionPopupController.this.pasteAsPlainText();
+                SelectionPopupControllerImpl.this.pasteAsPlainText();
                 mWebContents.dismissTextHandles();
             }
 
             @Override
             public boolean canPaste() {
-                return SelectionPopupController.this.canPaste();
+                return SelectionPopupControllerImpl.this.canPaste();
             }
 
             @Override
             public void selectAll() {
-                SelectionPopupController.this.selectAll();
+                SelectionPopupControllerImpl.this.selectAll();
             }
 
             @Override
             public boolean canSelectAll() {
-                return SelectionPopupController.this.canSelectAll();
+                return SelectionPopupControllerImpl.this.canSelectAll();
             }
 
             @Override
             public boolean canPasteAsPlainText() {
-                return SelectionPopupController.this.canPasteAsPlainText();
+                return SelectionPopupControllerImpl.this.canPasteAsPlainText();
             }
         };
         Context windowContext = mWindowAndroid.getContext().get();
@@ -530,8 +574,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     private boolean isFloatingActionMode() {
-        return supportsFloatingActionMode()
-                && isActionModeValid()
+        return supportsFloatingActionMode() && isActionModeValid()
                 && mActionMode.getType() == ActionMode.TYPE_FLOATING;
     }
 
@@ -605,7 +648,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         updateAssistMenuItem(descriptor);
 
-        if (!isSelectionEditable() || !canPaste()) {
+        if (!isFocusedNodeEditable() || !canPaste()) {
             descriptor.removeItem(R.id.select_action_menu_paste);
             descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
         }
@@ -623,15 +666,15 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             return descriptor;
         }
 
-        if (!isSelectionEditable()) {
+        if (!isFocusedNodeEditable()) {
             descriptor.removeItem(R.id.select_action_menu_cut);
         }
 
-        if (isSelectionEditable() || !isSelectActionModeAllowed(MENU_ITEM_SHARE)) {
+        if (isFocusedNodeEditable() || !isSelectActionModeAllowed(MENU_ITEM_SHARE)) {
             descriptor.removeItem(R.id.select_action_menu_share);
         }
 
-        if (isSelectionEditable() || isIncognito()
+        if (isFocusedNodeEditable() || isIncognito()
                 || !isSelectActionModeAllowed(MENU_ITEM_WEB_SEARCH)) {
             descriptor.removeItem(R.id.select_action_menu_web_search);
         }
@@ -649,8 +692,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     private boolean canPaste() {
-        ClipboardManager clipMgr = (ClipboardManager)
-                mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipboardManager clipMgr =
+                (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
         return clipMgr.hasPrimaryClip();
     }
 
@@ -721,7 +764,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             ResolveInfo resolveInfo = supportedActivities.get(i);
             CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
             menu.add(R.id.select_action_menu_text_processing_menus, Menu.NONE,
-                    MENU_ITEM_ORDER_TEXT_PROCESS_START + i, label)
+                        MENU_ITEM_ORDER_TEXT_PROCESS_START + i, label)
                     .setIntent(createProcessTextIntentForResolveInfo(resolveInfo))
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
         }
@@ -734,7 +777,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @TargetApi(Build.VERSION_CODES.M)
     private Intent createProcessTextIntentForResolveInfo(ResolveInfo info) {
-        boolean isReadOnly = !isSelectionEditable();
+        boolean isReadOnly = !isFocusedNodeEditable();
         return createProcessTextIntent()
                 .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, isReadOnly)
                 .setClassName(info.activityInfo.packageName, info.activityInfo.name);
@@ -885,7 +928,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mClassificationResult = null;
         // Even though the above statement logged a SelectAll user action, we want to
         // track whether the focus was in an editable field, so log that too.
-        if (isSelectionEditable()) {
+        if (isFocusedNodeEditable()) {
             RecordUserAction.record("MobileActionMode.SelectAllWasEditable");
         } else {
             RecordUserAction.record("MobileActionMode.SelectAllWasNonEditable");
@@ -999,10 +1042,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return mIsPasswordType;
     }
 
-    /**
-     * @return true iff the current selection is editable (e.g. text within an input field).
-     */
-    boolean isSelectionEditable() {
+    @Override
+    public boolean isFocusedNodeEditable() {
         return mEditable;
     }
 
@@ -1031,15 +1072,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     /**
-     * @see ActionModeCallbackHelper#sanitizeQuery(String, int)
-     */
-    public static String sanitizeQuery(String query, int maxLength) {
-        if (TextUtils.isEmpty(query) || query.length() < maxLength) return query;
-        Log.w(TAG, "Truncating oversized query (" + query.length() + ").");
-        return query.substring(0, maxLength) + "…";
-    }
-
-    /**
      * @param actionModeItem the flag for the action mode item in question. The valid flags are
      *        {@link #MENU_ITEM_SHARE}, {@link #MENU_ITEM_WEB_SEARCH}, and
      *        {@link #MENU_ITEM_PROCESS_TEXT}.
@@ -1059,7 +1091,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (mWebContents == null || resultCode != Activity.RESULT_OK || data == null) return;
 
         // Do not handle the result if no text is selected or current selection is not editable.
-        if (!hasSelection() || !isSelectionEditable()) return;
+        if (!hasSelection() || !isFocusedNodeEditable()) return;
 
         CharSequence result = data.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
         if (result != null) {
@@ -1194,11 +1226,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         }
     }
 
-    /**
-     * Clears the current text selection. Note that we will try to move cursor to selection
-     * end if applicable.
-     */
-    void clearSelection() {
+    @Override
+    public void clearSelection() {
         if (mWebContents == null || !isActionModeSupported()) return;
         mWebContents.collapseSelection();
         mClassificationResult = null;
@@ -1228,8 +1257,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     /**
      * Sets the client that implements selection augmenting functionality, or null if none exists.
      */
-    @VisibleForTesting
-    void setSelectionClient(@Nullable SelectionClient selectionClient) {
+    @Override
+    public void setSelectionClient(@Nullable SelectionClient selectionClient) {
         mSelectionClient = selectionClient;
         if (mSelectionClient != null) {
             mSelectionMetricsLogger =
@@ -1277,17 +1306,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     void updateSelectionState(boolean editable, boolean isPassword) {
         if (!editable) destroyPastePopup();
-        if (editable != isSelectionEditable() || isPassword != isSelectionPassword()) {
+        if (editable != isFocusedNodeEditable() || isPassword != isSelectionPassword()) {
             mEditable = editable;
             mIsPasswordType = isPassword;
             if (isActionModeValid()) mActionMode.invalidate();
         }
     }
 
-    /**
-     * @return Whether the page has an active, touch-controlled selection region.
-     */
-    @VisibleForTesting
+    @Override
     public boolean hasSelection() {
         return mHasSelection;
     }
@@ -1300,8 +1326,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean isShareAvailable() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        return mContext.getPackageManager().queryIntentActivities(intent,
-                PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
+        return mContext.getPackageManager()
+                       .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                       .size()
+                > 0;
     }
 
     // The callback class that delivers the result from a SmartSelectionClient.
@@ -1349,6 +1377,42 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             showActionModeOrClearOnFailure();
         }
     };
+
+    @Override
+    public void destroySelectActionMode() {
+        finishActionMode();
+    }
+
+    @Override
+    public boolean isSelectActionBarShowing() {
+        return isActionModeValid();
+    }
+
+    @Override
+    public ActionModeCallbackHelper getActionModeCallbackHelper() {
+        return this;
+    }
+
+    @Override
+    public void setTextClassifier(TextClassifier textClassifier) {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        SelectionClient client = getSelectionClient();
+        if (client != null) client.setTextClassifier(textClassifier);
+    }
+
+    @Override
+    public TextClassifier getTextClassifier() {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        SelectionClient client = getSelectionClient();
+        return client == null ? null : client.getTextClassifier();
+    }
+
+    @Override
+    public TextClassifier getCustomTextClassifier() {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        SelectionClient client = getSelectionClient();
+        return client == null ? null : client.getCustomTextClassifier();
+    }
 
     private native void nativeInit(WebContents webContents);
 }
