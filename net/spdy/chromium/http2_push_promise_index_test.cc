@@ -7,7 +7,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
 #include "net/test/gtest_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -36,27 +35,10 @@ class TestDelegate : public Http2PushPromiseIndex::Delegate {
     return key == key_;
   }
 
-  void OnPushedStreamClaimed(const GURL& url, SpdyStreamId stream_id) override {
-  }
-
   base::WeakPtr<SpdySession> GetWeakPtrToSession() override { return nullptr; }
 
  private:
   SpdySessionKey key_;
-};
-
-// Mock implementation.
-class MockDelegate : public Http2PushPromiseIndex::Delegate {
- public:
-  MockDelegate() = default;
-  ~MockDelegate() override {}
-
-  MOCK_CONST_METHOD2(ValidatePushedStream,
-                     bool(const GURL& url, const SpdySessionKey& key));
-  MOCK_METHOD2(OnPushedStreamClaimed,
-               void(const GURL& url, SpdyStreamId stream_id));
-
-  base::WeakPtr<SpdySession> GetWeakPtrToSession() override { return nullptr; }
 };
 
 }  // namespace
@@ -375,45 +357,6 @@ TEST_F(Http2PushPromiseIndexTest, MultipleMatchingStreams) {
   EXPECT_FALSE(index_.UnregisterUnclaimedPushedStream(url1_, 2, &delegate1));
   EXPECT_FALSE(index_.UnregisterUnclaimedPushedStream(url1_, 4, &delegate2));
 }
-
-// Test that Delegate::ValidatePushedStream() is called by ClaimPushedStream(),
-// and if it returns true, then Delegate::OnPushedStreamClaimed() is called with
-// the appropriate arguments.
-TEST_F(Http2PushPromiseIndexTest, MatchCallsOnPushedStreamClaimed) {
-  MockDelegate delegate;
-  EXPECT_CALL(delegate, ValidatePushedStream(url1_, key1_))
-      .WillOnce(Return(true));
-  EXPECT_CALL(delegate, OnPushedStreamClaimed(url1_, 2)).Times(1);
-
-  EXPECT_TRUE(index_.RegisterUnclaimedPushedStream(url1_, 2, &delegate));
-
-  base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id = kNoPushedStreamFound;
-  index_.ClaimPushedStream(key1_, url1_, &session, &stream_id);
-  EXPECT_EQ(2u, stream_id);
-
-  // ClaimPushedStream() unregistered the entry.
-  EXPECT_FALSE(index_.UnregisterUnclaimedPushedStream(url1_, 2, &delegate));
-};
-
-// Test that Delegate::ValidatePushedStream() is called by ClaimPushedStream(),
-// and if it returns false, then Delegate::OnPushedStreamClaimed() is not
-// called.
-TEST_F(Http2PushPromiseIndexTest, MismatchDoesNotCallOnPushedStreamClaimed) {
-  MockDelegate delegate;
-  EXPECT_CALL(delegate, ValidatePushedStream(url1_, key1_))
-      .WillOnce(Return(false));
-  EXPECT_CALL(delegate, OnPushedStreamClaimed(_, _)).Times(0);
-
-  EXPECT_TRUE(index_.RegisterUnclaimedPushedStream(url1_, 2, &delegate));
-
-  base::WeakPtr<SpdySession> session;
-  SpdyStreamId stream_id = 2;
-  index_.ClaimPushedStream(key1_, url1_, &session, &stream_id);
-  EXPECT_EQ(kNoPushedStreamFound, stream_id);
-
-  EXPECT_TRUE(index_.UnregisterUnclaimedPushedStream(url1_, 2, &delegate));
-};
 
 // Test that an entry is equivalent to itself.
 TEST(Http2PushPromiseIndexCompareByUrlTest, Reflexivity) {
