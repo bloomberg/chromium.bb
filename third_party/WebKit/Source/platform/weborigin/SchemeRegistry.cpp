@@ -209,6 +209,12 @@ void SchemeRegistry::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       scheme);
 }
 
+void SchemeRegistry::RemoveURLSchemeAsNotAllowingJavascriptURLs(
+    const String& scheme) {
+  GetMutableURLSchemesRegistry().not_allowing_javascript_urls_schemes.erase(
+      scheme);
+}
+
 bool SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
   DCHECK_EQ(scheme, scheme.LowerASCII());

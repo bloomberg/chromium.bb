@@ -1176,6 +1176,52 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
       "https");
 }
 
+TEST_F(ContentSecurityPolicyTest, CSPBypassDisabledWhenSchemeIsPrivileged) {
+  const KURL base;
+  execution_context = CreateExecutionContext();
+  execution_context->SetSecurityOrigin(secure_origin);
+  execution_context->SetURL(BlankURL());
+  csp->BindToExecutionContext(execution_context.Get());
+  csp->DidReceiveHeader("script-src http://example.com",
+                        kContentSecurityPolicyHeaderTypeEnforce,
+                        kContentSecurityPolicyHeaderSourceHTTP);
+
+  const KURL allowed_url("http://example.com/script.js");
+  const KURL http_url("http://not-example.com/script.js");
+  const KURL blob_url(base, "blob:http://not-example.com/uuid");
+  const KURL filesystem_url(base, "filesystem:http://not-example.com/file.js");
+
+  // The {Requests,Blob,Filesystem}AllowedWhenBypassingCSP tests have already
+  // ensured that RegisterURLSchemeAsBypassingContentSecurityPolicy works as
+  // expected.
+  //
+  // "http" is registered as bypassing CSP, but the context's scheme ("https")
+  // is marked as a privileged scheme, so the bypass rule should be ignored.
+  SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy("http");
+  SchemeRegistry::RegisterURLSchemeAsNotAllowingJavascriptURLs("https");
+
+  EXPECT_TRUE(csp->AllowScriptFromSource(
+      allowed_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      http_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      blob_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      filesystem_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      SecurityViolationReportingPolicy::kSuppressReporting));
+
+  SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
+      "http");
+  SchemeRegistry::RemoveURLSchemeAsNotAllowingJavascriptURLs("https");
+}
+
 TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
   // Empty string is invalid
   EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(""));
