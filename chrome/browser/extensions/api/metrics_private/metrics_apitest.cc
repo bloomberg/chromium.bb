@@ -94,8 +94,8 @@ void ValidateSparseHistogramSamples(
 
 void ValidateHistograms(const RecordedHistogram* recorded,
                         int count) {
-  base::StatisticsRecorder::Histograms histograms;
-  base::StatisticsRecorder::GetHistograms(&histograms);
+  const base::StatisticsRecorder::Histograms histograms =
+      base::StatisticsRecorder::GetHistograms();
 
   // Code other than the tests tun here will record some histogram values, but
   // we will ignore those. This function validates that all the histogram we

@@ -36,12 +36,8 @@ namespace chrome_test_util {
 HistogramTester::HistogramTester() {
   // Record any histogram data that exists when the object is created so it can
   // be subtracted later.
-  base::StatisticsRecorder::Histograms histograms;
-  base::StatisticsRecorder::GetSnapshot(std::string(), &histograms);
-  for (size_t i = 0; i < histograms.size(); ++i) {
-    std::unique_ptr<base::HistogramSamples> samples(
-        histograms[i]->SnapshotSamples());
-    histograms_snapshot_[histograms[i]->histogram_name()] = std::move(samples);
+  for (const auto* const h : base::StatisticsRecorder::GetHistograms()) {
+    histograms_snapshot_[h->histogram_name()] = h->SnapshotSamples();
   }
 }
 
