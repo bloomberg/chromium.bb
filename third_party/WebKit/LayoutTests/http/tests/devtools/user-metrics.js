@@ -32,5 +32,13 @@
   UI.viewManager.showView('js_profiler');
   UI.viewManager.showView('timeline');
 
+  TestRunner.addResult('\nTest that drawer usage is recorded by PanelShown');
+  TestRunner.addResult('Show drawer:');
+  UI.inspectorView._showDrawer(true);
+  TestRunner.addResult('Selecting tab from triple dots menu:');
+  UI.inspectorView._drawerTabbedLocation.showView(UI.inspectorView._drawerTabbedLocation._views.get("animations"), undefined, true);
+  TestRunner.addResult('Selecting tab from tabbed pane header:');
+  UI.inspectorView._drawerTabbedLocation._tabbedPane._tabs[0]._tabElement.dispatchEvent(new MouseEvent("mousedown"));
+
   TestRunner.completeTest();
 })();
