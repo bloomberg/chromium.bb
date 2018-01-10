@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -21,70 +20,8 @@
 #include "device/udev_linux/udev_linux.h"
 
 namespace {
-
 const char kInputSubsystem[] = "input";
-
-int DeviceIndexFromDevicePath(const std::string& path,
-                              const std::string& prefix) {
-  if (!base::StartsWith(path, prefix, base::CompareCase::SENSITIVE))
-    return -1;
-
-  int index = -1;
-  base::StringPiece index_str(&path.c_str()[prefix.length()],
-                              path.length() - prefix.length());
-  if (!base::StringToInt(index_str, &index))
-    return -1;
-
-  return index;
-}
-
-bool IsUdevGamepad(udev_device* dev, device::UdevGamepad* pad_info) {
-  using DeviceRootPair = std::pair<device::UdevGamepadType, const char*>;
-  static const std::vector<DeviceRootPair> device_roots = {
-      {device::UdevGamepadType::EVDEV, "/dev/input/event"},
-      {device::UdevGamepadType::JOYDEV, "/dev/input/js"},
-  };
-
-  if (!dev)
-    return false;
-
-  if (!device::udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK"))
-    return false;
-
-  const char* node_path = device::udev_device_get_devnode(dev);
-  if (!node_path)
-    return false;
-
-  // The device pointed to by parent_dev contains information about the logical
-  // joystick device. We can compare syspaths to determine when a joydev device
-  // and an evdev device refer to the same physical device.
-  udev_device* parent_dev =
-      device::udev_device_get_parent_with_subsystem_devtype(
-          dev, kInputSubsystem, nullptr);
-  const char* parent_syspath =
-      parent_dev ? device::udev_device_get_syspath(parent_dev) : "";
-
-  for (const auto& entry : device_roots) {
-    device::UdevGamepadType node_type = entry.first;
-    const char* prefix = entry.second;
-    int index_value = DeviceIndexFromDevicePath(node_path, prefix);
-
-    if (index_value < 0)
-      continue;
-
-    if (pad_info) {
-      pad_info->type = node_type;
-      pad_info->index = index_value;
-      pad_info->path = node_path;
-      pad_info->parent_syspath = parent_syspath;
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
+const char kHidrawSubsystem[] = "hidraw";
 }  // namespace
 
 namespace device {
@@ -105,11 +42,13 @@ GamepadSource GamepadPlatformDataFetcherLinux::source() {
 void GamepadPlatformDataFetcherLinux::OnAddedToProvider() {
   std::vector<UdevLinux::UdevMonitorFilter> filters;
   filters.push_back(UdevLinux::UdevMonitorFilter(kInputSubsystem, nullptr));
+  filters.push_back(UdevLinux::UdevMonitorFilter(kHidrawSubsystem, nullptr));
   udev_.reset(new UdevLinux(
       filters, base::Bind(&GamepadPlatformDataFetcherLinux::RefreshDevice,
                           base::Unretained(this))));
 
-  EnumerateDevices();
+  EnumerateSubsystemDevices(kInputSubsystem);
+  EnumerateSubsystemDevices(kHidrawSubsystem);
 }
 
 void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
@@ -122,12 +61,16 @@ void GamepadPlatformDataFetcherLinux::GetGamepadData(bool) {
 
 // Used during enumeration, and monitor notifications.
 void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
-  UdevGamepad pad_info;
-  if (IsUdevGamepad(dev, &pad_info)) {
-    if (pad_info.type == UdevGamepadType::JOYDEV)
+  std::unique_ptr<UdevGamepadLinux> udev_gamepad =
+      UdevGamepadLinux::Create(dev);
+  if (udev_gamepad) {
+    const UdevGamepadLinux& pad_info = *udev_gamepad.get();
+    if (pad_info.type == UdevGamepadLinux::Type::JOYDEV)
       RefreshJoydevDevice(dev, pad_info);
-    else if (pad_info.type == UdevGamepadType::EVDEV)
+    else if (pad_info.type == UdevGamepadLinux::Type::EVDEV)
       RefreshEvdevDevice(dev, pad_info);
+    else if (pad_info.type == UdevGamepadLinux::Type::HIDRAW)
+      RefreshHidrawDevice(dev, pad_info);
   }
 }
 
@@ -153,24 +96,21 @@ void GamepadPlatformDataFetcherLinux::RemoveDevice(GamepadDeviceLinux* device) {
 }
 
 GamepadDeviceLinux* GamepadPlatformDataFetcherLinux::GetOrCreateMatchingDevice(
-    const UdevGamepad& pad_info) {
-  if (pad_info.parent_syspath.empty())
-    return nullptr;
-
+    const UdevGamepadLinux& pad_info) {
   for (auto it = devices_.begin(); it != devices_.end(); ++it) {
     GamepadDeviceLinux* device = it->get();
-    if (device->GetParentSyspath() == pad_info.parent_syspath)
+    if (device->IsSameDevice(pad_info))
       return device;
   }
 
   auto emplace_result = devices_.emplace(
-      std::make_unique<GamepadDeviceLinux>(pad_info.parent_syspath));
+      std::make_unique<GamepadDeviceLinux>(pad_info.syspath_prefix));
   return emplace_result.first->get();
 }
 
 void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
     udev_device* dev,
-    const UdevGamepad& pad_info) {
+    const UdevGamepadLinux& pad_info) {
   const int joydev_index = pad_info.index;
   if (joydev_index < 0 || joydev_index >= (int)Gamepads::kItemsLengthCap)
     return;
@@ -201,7 +141,7 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
   }
 
   // If the device cannot be opened, the joystick has been disconnected.
-  if (!device->OpenJoydevNode(pad_info.path, dev, joydev_index)) {
+  if (!device->OpenJoydevNode(pad_info, dev)) {
     if (device->IsEmpty())
       RemoveDevice(device);
     return;
@@ -248,12 +188,12 @@ void GamepadPlatformDataFetcherLinux::RefreshJoydevDevice(
 
 void GamepadPlatformDataFetcherLinux::RefreshEvdevDevice(
     udev_device* dev,
-    const UdevGamepad& pad_info) {
+    const UdevGamepadLinux& pad_info) {
   GamepadDeviceLinux* device = GetOrCreateMatchingDevice(pad_info);
   if (device == nullptr)
     return;
 
-  if (!device->OpenEvdevNode(pad_info.path)) {
+  if (!device->OpenEvdevNode(pad_info)) {
     if (device->IsEmpty())
       RemoveDevice(device);
     return;
@@ -265,20 +205,44 @@ void GamepadPlatformDataFetcherLinux::RefreshEvdevDevice(
     DCHECK(state);
     if (state) {
       Gamepad& pad = state->data;
-      pad.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
       pad.vibration_actuator.not_null = device->SupportsVibration();
     }
   }
 }
 
-void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
+void GamepadPlatformDataFetcherLinux::RefreshHidrawDevice(
+    udev_device* dev,
+    const UdevGamepadLinux& pad_info) {
+  GamepadDeviceLinux* device = GetOrCreateMatchingDevice(pad_info);
+  if (device == nullptr)
+    return;
+
+  if (!device->OpenHidrawNode(pad_info)) {
+    if (device->IsEmpty())
+      RemoveDevice(device);
+    return;
+  }
+
+  int joydev_index = device->GetJoydevIndex();
+  if (joydev_index >= 0) {
+    PadState* state = GetPadState(joydev_index);
+    DCHECK(state);
+    if (state) {
+      Gamepad& pad = state->data;
+      pad.vibration_actuator.not_null = device->SupportsVibration();
+    }
+  }
+}
+
+void GamepadPlatformDataFetcherLinux::EnumerateSubsystemDevices(
+    const std::string& subsystem) {
   if (!udev_->udev_handle())
     return;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_->udev_handle()));
   if (!enumerate)
     return;
   int ret =
-      udev_enumerate_add_match_subsystem(enumerate.get(), kInputSubsystem);
+      udev_enumerate_add_match_subsystem(enumerate.get(), subsystem.c_str());
   if (ret != 0)
     return;
   ret = udev_enumerate_scan_devices(enumerate.get());

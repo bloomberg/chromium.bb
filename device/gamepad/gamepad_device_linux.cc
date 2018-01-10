@@ -11,6 +11,7 @@
 #include <sys/ioctl.h>
 
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/udev_linux/udev_linux.h"
 
@@ -85,19 +86,32 @@ bool StartOrStopEffect(int fd, int effect_id, bool do_start) {
 
 }  // namespace
 
-GamepadDeviceLinux::GamepadDeviceLinux(const std::string& parent_syspath)
-    : parent_syspath_(parent_syspath),
+GamepadDeviceLinux::GamepadDeviceLinux(const std::string& syspath_prefix)
+    : syspath_prefix_(syspath_prefix),
       joydev_fd_(-1),
       joydev_index_(-1),
       evdev_fd_(-1),
       effect_id_(kInvalidEffectId),
-      supports_vibration_(false) {}
+      hidraw_fd_(-1) {}
 
 GamepadDeviceLinux::~GamepadDeviceLinux() = default;
 
 void GamepadDeviceLinux::DoShutdown() {
   CloseJoydevNode();
   CloseEvdevNode();
+  CloseHidrawNode();
+}
+
+bool GamepadDeviceLinux::IsEmpty() const {
+  return joydev_fd_ < 0 && evdev_fd_ < 0 && hidraw_fd_ < 0;
+}
+
+bool GamepadDeviceLinux::SupportsVibration() const {
+  // Dualshock4 vibration is supported through the hidraw node.
+  if (is_dualshock4_)
+    return hidraw_fd_ >= 0 && dualshock4_ != nullptr;
+
+  return supports_force_feedback_ && evdev_fd_ >= 0;
 }
 
 void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
@@ -128,11 +142,17 @@ void GamepadDeviceLinux::ReadPadState(Gamepad* pad) const {
   }
 }
 
-bool GamepadDeviceLinux::OpenJoydevNode(const std::string& path,
-                                        udev_device* device,
-                                        int joydev_index) {
+bool GamepadDeviceLinux::IsSameDevice(const UdevGamepadLinux& pad_info) {
+  return pad_info.syspath_prefix == syspath_prefix_;
+}
+
+bool GamepadDeviceLinux::OpenJoydevNode(const UdevGamepadLinux& pad_info,
+                                        udev_device* device) {
+  DCHECK(pad_info.type == UdevGamepadLinux::Type::JOYDEV);
+  DCHECK(pad_info.syspath_prefix == syspath_prefix_);
+
   CloseJoydevNode();
-  joydev_fd_ = open(path.c_str(), O_RDONLY | O_NONBLOCK);
+  joydev_fd_ = open(pad_info.path.c_str(), O_RDONLY | O_NONBLOCK);
   if (joydev_fd_ < 0)
     return false;
 
@@ -148,6 +168,11 @@ bool GamepadDeviceLinux::OpenJoydevNode(const std::string& path,
       udev_device_get_sysattr_value(parent_device, "id/version");
   const char* name = udev_device_get_sysattr_value(parent_device, "name");
   std::string name_string(name ? name : "");
+
+  int vendor_id_int = 0;
+  int product_id_int = 0;
+  base::HexStringToInt(vendor_id, &vendor_id_int);
+  base::HexStringToInt(product_id, &product_id_int);
 
   // In many cases the information the input subsystem contains isn't
   // as good as the information that the device bus has, walk up further
@@ -175,11 +200,14 @@ bool GamepadDeviceLinux::OpenJoydevNode(const std::string& path,
     }
   }
 
-  joydev_index_ = joydev_index;
+  joydev_index_ = pad_info.index;
   vendor_id_ = vendor_id ? vendor_id : "";
   product_id_ = product_id ? product_id : "";
   version_number_ = version_number ? version_number : "";
   name_ = name_string;
+  is_dualshock4_ =
+      Dualshock4ControllerBase::IsDualshock4(vendor_id_int, product_id_int);
+
   return true;
 }
 
@@ -195,29 +223,64 @@ void GamepadDeviceLinux::CloseJoydevNode() {
   name_.clear();
 }
 
-bool GamepadDeviceLinux::OpenEvdevNode(const std::string& path) {
+bool GamepadDeviceLinux::OpenEvdevNode(const UdevGamepadLinux& pad_info) {
+  DCHECK(pad_info.type == UdevGamepadLinux::Type::EVDEV);
+  DCHECK(pad_info.syspath_prefix == syspath_prefix_);
+
   CloseEvdevNode();
-  evdev_fd_ = open(path.c_str(), O_RDWR | O_NONBLOCK);
+  evdev_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
   if (evdev_fd_ < 0)
     return false;
 
-  supports_vibration_ = HasRumbleCapability(evdev_fd_);
+  supports_force_feedback_ = HasRumbleCapability(evdev_fd_);
 
   return true;
 }
 
 void GamepadDeviceLinux::CloseEvdevNode() {
   if (evdev_fd_ >= 0) {
-    if (effect_id_ != kInvalidEffectId)
+    if (effect_id_ != kInvalidEffectId) {
       DestroyEffect(evdev_fd_, effect_id_);
+      effect_id_ = kInvalidEffectId;
+    }
     close(evdev_fd_);
     evdev_fd_ = -1;
   }
-  supports_vibration_ = false;
+  supports_force_feedback_ = false;
+}
+
+bool GamepadDeviceLinux::OpenHidrawNode(const UdevGamepadLinux& pad_info) {
+  DCHECK(pad_info.type == UdevGamepadLinux::Type::HIDRAW);
+  DCHECK(pad_info.syspath_prefix == syspath_prefix_);
+
+  CloseHidrawNode();
+  hidraw_fd_ = open(pad_info.path.c_str(), O_RDWR | O_NONBLOCK);
+  if (hidraw_fd_ < 0)
+    return false;
+
+  dualshock4_ = std::make_unique<Dualshock4ControllerLinux>(hidraw_fd_);
+
+  return true;
+}
+
+void GamepadDeviceLinux::CloseHidrawNode() {
+  if (dualshock4_)
+    dualshock4_->Shutdown();
+  dualshock4_.reset();
+  if (hidraw_fd_ >= 0) {
+    close(hidraw_fd_);
+    hidraw_fd_ = -1;
+  }
 }
 
 void GamepadDeviceLinux::SetVibration(double strong_magnitude,
                                       double weak_magnitude) {
+  if (is_dualshock4_) {
+    if (dualshock4_)
+      dualshock4_->SetVibration(strong_magnitude, weak_magnitude);
+    return;
+  }
+
   uint16_t strong_magnitude_scaled =
       static_cast<uint16_t>(strong_magnitude * kRumbleMagnitudeMax);
   uint16_t weak_magnitude_scaled =
@@ -240,6 +303,12 @@ void GamepadDeviceLinux::SetVibration(double strong_magnitude,
 }
 
 void GamepadDeviceLinux::SetZeroVibration() {
+  if (is_dualshock4_) {
+    if (dualshock4_)
+      dualshock4_->SetZeroVibration();
+    return;
+  }
+
   if (effect_id_ != kInvalidEffectId)
     StartOrStopEffect(evdev_fd_, effect_id_, false);
 }
