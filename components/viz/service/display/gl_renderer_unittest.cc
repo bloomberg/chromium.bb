@@ -212,6 +212,9 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
     TestShadersWithOutputColorMatrix(ProgramKey::DebugBorder());
     TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(NO_AA, false));
     TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(USE_AA, false));
+
+    TestShader(ProgramKey::SolidColor(NO_AA, true));
+    TestShadersWithOutputColorMatrix(ProgramKey::SolidColor(NO_AA, true));
   }
 
   void TestColorShaders() {
