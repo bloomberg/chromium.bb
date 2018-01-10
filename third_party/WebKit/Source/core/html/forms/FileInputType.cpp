@@ -153,6 +153,7 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
   if (ChromeClient* chrome_client = GetChromeClient()) {
     WebFileChooserParams params;
     HTMLInputElement& input = GetElement();
+    Document& document = input.GetDocument();
     bool is_directory = input.FastHasAttribute(webkitdirectoryAttr);
     params.directory = is_directory;
     params.need_local_path = is_directory;
@@ -161,10 +162,14 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
     params.selected_files = file_list_->PathsForUserVisibleFiles();
     params.use_media_capture = RuntimeEnabledFeatures::MediaCaptureEnabled() &&
                                input.FastHasAttribute(captureAttr);
-    params.requestor = input.GetDocument().Url();
+    params.requestor = document.Url();
 
-    chrome_client->OpenFileChooser(input.GetDocument().GetFrame(),
-                                   NewFileChooser(params));
+    UseCounter::Count(
+        document, document.IsSecureContext()
+                      ? WebFeature::kInputTypeFileSecureOriginOpenChooser
+                      : WebFeature::kInputTypeFileInsecureOriginOpenChooser);
+
+    chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
   }
   event->SetDefaultHandled();
 }
