@@ -147,10 +147,12 @@ class TetherService : public KeyedService,
   // Reflects InstantTethering_TechnologyStateAndReason enum in enums.xml. Do
   // not rearrange.
   enum TetherFeatureState {
-    OTHER_OR_UNKNOWN = 0,
+    // Note: Value 0 was previously OTHER_OR_UNKNOWN, but this was a vague
+    // description.
+    SHUT_DOWN = 0,
     BLE_ADVERTISING_NOT_SUPPORTED = 1,
-    // Note: SCREEN_LOCKED is an obsolete value, and should not be used.
-    SCREEN_LOCKED = 2,
+    // Note: Value 2 was previously SCREEN_LOCKED, but this value is obsolete
+    // and should no longer be used.
     NO_AVAILABLE_HOSTS = 3,
     CELLULAR_DISABLED = 4,
     PROHIBITED = 5,
@@ -159,11 +161,13 @@ class TetherService : public KeyedService,
     ENABLED = 8,
     BLE_NOT_PRESENT = 9,
     WIFI_NOT_PRESENT = 10,
+    SUSPENDED = 11,
     TETHER_FEATURE_STATE_MAX
   };
 
   // For debug logs.
-  static std::string TetherFeatureStateToString(TetherFeatureState state);
+  static std::string TetherFeatureStateToString(
+      const TetherFeatureState& state);
 
   void OnBluetoothAdapterFetched(
       scoped_refptr<device::BluetoothAdapter> adapter);

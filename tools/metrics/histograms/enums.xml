@@ -22746,9 +22746,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="InstantTethering_FeatureState">
-  <int value="0" label="Other or unknown"/>
+  <int value="0" label="Shut down (deprecated)"/>
   <int value="1" label="BLE advertising not supported"/>
-  <int value="2" label="Screen locked"/>
+  <int value="2" label="Screen locked (deprecated)"/>
   <int value="3" label="No available hosts"/>
   <int value="4" label="Cellular disabled"/>
   <int value="5" label="Prohibited"/>
@@ -22757,6 +22757,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Enabled"/>
   <int value="9" label="BLE not present"/>
   <int value="10" label="WiFi not present"/>
+  <int value="11" label="Suspended"/>
 </enum>
 
 <enum name="InstantTethering_HostScanResult">
