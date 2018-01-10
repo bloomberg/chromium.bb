@@ -35,9 +35,6 @@ extern const CGFloat kLocationBarShadowHeight;
 extern const CGFloat kLocationBarShadowInset;
 extern const CGFloat kIcongnitoLocationBackgroundColor;
 
-// Location bar StackView constraints.
-extern const CGFloat klocationBarStackViewBottomMargin;
-
 // Progress Bar Height.
 extern const CGFloat kProgressBarHeight;
 
