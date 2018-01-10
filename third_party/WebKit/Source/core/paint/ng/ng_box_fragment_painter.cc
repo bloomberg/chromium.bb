@@ -20,11 +20,13 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPhase.h"
+#include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/ng/ng_fragment_painter.h"
 #include "core/paint/ng/ng_paint_fragment.h"
 #include "core/paint/ng/ng_text_fragment_painter.h"
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollTypes.h"
 
@@ -496,9 +498,32 @@ bool NGBoxFragmentPainter::
   return false;
 }
 
-void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(const PaintInfo&,
-                                                         const LayoutPoint&) {
-  // TODO(layout-dev): Implement once we have support for scrolling.
+// Clone of BlockPainter::PaintOverflowControlsIfNeeded
+void NGBoxFragmentPainter::PaintOverflowControlsIfNeeded(
+    const PaintInfo& paint_info,
+    const LayoutPoint& paint_offset) {
+  if (box_fragment_.HasOverflowClip() &&
+      box_fragment_.Style().Visibility() == EVisibility::kVisible &&
+      ShouldPaintSelfBlockBackground(paint_info.phase) &&
+      !paint_info.PaintRootBackgroundOnly()) {
+    LayoutObject* layout_object =
+        box_fragment_.PhysicalFragment().GetLayoutObject();
+    if (layout_object->IsLayoutBlock()) {
+      LayoutBlock* layout_block = ToLayoutBlock(layout_object);
+      Optional<ClipRecorder> clip_recorder;
+      if (!layout_block->Layer()->IsSelfPaintingLayer()) {
+        LayoutRect clip_rect = layout_block->BorderBoxRect();
+        clip_rect.MoveBy(paint_offset);
+        clip_recorder.emplace(paint_info.context, *layout_block,
+                              DisplayItem::kClipScrollbarsToBoxBounds,
+                              PixelSnappedIntRect(clip_rect));
+      }
+      ScrollableAreaPainter(*layout_block->Layer()->GetScrollableArea())
+          .PaintOverflowControls(
+              paint_info.context, RoundedIntPoint(paint_offset),
+              paint_info.GetCullRect(), false /* paintingOverlayControls */);
+    }
+  }
 }
 
 bool NGBoxFragmentPainter::IntersectsPaintRect(
