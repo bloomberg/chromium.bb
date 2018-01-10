@@ -40,6 +40,7 @@ static INLINE int allow_warp(const MODE_INFO *const mi,
   *final_warp_params = default_warp_params;
 
   if (mbmi->wm_params[0].invalid) return 0;
+  if (gm_params->invalid) return 0;
 
   if (warp_types->local_warp_allowed) {
     if ((build_for_obmc && WARP_WM_NEIGHBORS_WITH_OBMC) || (!build_for_obmc)) {

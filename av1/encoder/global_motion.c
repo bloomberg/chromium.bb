@@ -76,6 +76,7 @@ static void convert_to_params(const double *params, int32_t *model) {
 void convert_model_to_params(const double *params, WarpedMotionParams *model) {
   convert_to_params(params, model->wmmat);
   model->wmtype = get_gmtype(model);
+  model->invalid = 0;
 }
 
 // Adds some offset to a global motion parameter and handles
