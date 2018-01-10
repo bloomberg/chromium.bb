@@ -58,22 +58,6 @@
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='scrollpanel'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV class='container'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow (relative positioned) DIV id='ul'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "style change"
     }
   ]
 }

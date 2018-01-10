@@ -347,8 +347,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   // gets the same layout after changing position property, although no
   // re-raster (rect-based invalidation) is needed, display items should
   // still update their paint offset.
-  // For SPv2, invalidation for paint offset change is done during PrePaint.
-  if (old_style && !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  // For SPv175, invalidation for paint offset change is done during PrePaint.
+  if (old_style && !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     bool new_style_is_fixed_position =
         Style()->GetPosition() == EPosition::kFixed;
     bool old_style_is_fixed_position =
