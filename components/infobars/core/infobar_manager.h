@@ -132,7 +132,6 @@ class InfoBarManager {
   void RemoveInfoBarInternal(InfoBar* infobar, bool animate);
 
   InfoBars infobars_;
-  bool infobars_enabled_ = true;
   bool animations_enabled_ = true;
 
   base::ObserverList<Observer, true> observer_list_;

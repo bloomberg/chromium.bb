@@ -360,11 +360,6 @@ def _RemoteVideoRecorder(device, local_output_path, megabits_per_second):
 def RemoteSpeedIndexRecorder(device, connection, local_output_path):
   """Records on a device a video compatible for speed-index computation.
 
-  Note:
-    Chrome should be opened with the --disable-infobars command line argument to
-    avoid web page viewport size to be changed, that can change speed-index
-    value.
-
   Args:
     device: (device_utils.DeviceUtils) Android device to connect to.
     connection: devtools connection.
