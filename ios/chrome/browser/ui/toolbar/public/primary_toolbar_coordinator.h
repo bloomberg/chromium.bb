@@ -20,7 +20,7 @@
 @protocol PrimaryToolbarCoordinator<OmniboxFocuser, SideSwipeToolbarInteracting>
 
 // The toolbar ViewController.
-@property(nonatomic, strong) UIViewController* toolbarViewController;
+@property(nonatomic, strong, readonly) UIViewController* viewController;
 
 // Returns the different protocols and superclass now implemented by the
 // internal ViewController.

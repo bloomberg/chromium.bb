@@ -33,7 +33,6 @@
 @end
 
 @implementation LegacyToolbarCoordinator
-@synthesize toolbarViewController = _toolbarViewController;
 @synthesize toolbarController = _toolbarController;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -81,11 +80,8 @@
   self.toolbarController = nil;
 }
 
-- (UIViewController*)toolbarViewController {
-  if (!_toolbarViewController)
-    _toolbarViewController = self.toolbarController.viewController;
-
-  return _toolbarViewController;
+- (UIViewController*)viewController {
+  return self.toolbarController.viewController;
 }
 
 #pragma mark - Delegates
@@ -194,7 +190,7 @@
 #pragma mark - SideSwipeToolbarInteracting
 
 - (UIView*)toolbarView {
-  return self.toolbarViewController.view;
+  return self.viewController.view;
 }
 
 - (BOOL)canBeginToolbarSwipe {
@@ -204,7 +200,7 @@
 - (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
   [self.toolbarController updateToolbarForSideSwipeSnapshot:tab];
   UIImage* toolbarSnapshot = CaptureViewWithOption(
-      [self.toolbarViewController view], [[UIScreen mainScreen] scale],
+      [self.viewController view], [[UIScreen mainScreen] scale],
       kClientSideRendering);
 
   [self.toolbarController resetToolbarAfterSideSwipeSnapshot];
@@ -215,33 +211,32 @@
 
 - (UIView*)snapshotForTabSwitcher {
   UIView* toolbarSnapshotView;
-  if ([self.toolbarViewController.view window]) {
+  if ([self.viewController.view window]) {
     toolbarSnapshotView =
-        [self.toolbarViewController.view snapshotViewAfterScreenUpdates:NO];
+        [self.viewController.view snapshotViewAfterScreenUpdates:NO];
   } else {
     toolbarSnapshotView =
-        [[UIView alloc] initWithFrame:self.toolbarViewController.view.frame];
-    [toolbarSnapshotView layer].contents =
-        static_cast<id>(CaptureViewWithOption(self.toolbarViewController.view,
-                                              0, kClientSideRendering)
-                            .CGImage);
+        [[UIView alloc] initWithFrame:self.viewController.view.frame];
+    [toolbarSnapshotView layer].contents = static_cast<id>(
+        CaptureViewWithOption(self.viewController.view, 0, kClientSideRendering)
+            .CGImage);
   }
   return toolbarSnapshotView;
 }
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
                           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  CGRect oldFrame = self.toolbarViewController.view.superview.frame;
+  CGRect oldFrame = self.viewController.view.superview.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
 
-  self.toolbarViewController.view.superview.frame = newFrame;
+  self.viewController.view.superview.frame = newFrame;
   [self.toolbarController activateFakeSafeAreaInsets:safeAreaInsets];
-  [self.toolbarViewController.view.superview layoutIfNeeded];
+  [self.viewController.view.superview layoutIfNeeded];
 
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
 
-  self.toolbarViewController.view.superview.frame = oldFrame;
+  self.viewController.view.superview.frame = oldFrame;
   [self.toolbarController deactivateFakeSafeAreaInsets];
 
   return toolbarSnapshotView;
@@ -253,7 +248,7 @@
       self.toolbarController.backgroundView.alpha == 0) {
     // If the background view isn't visible, use the base toolbar view's
     // background color.
-    toolbarBackgroundColor = self.toolbarViewController.view.backgroundColor;
+    toolbarBackgroundColor = self.viewController.view.backgroundColor;
   }
   return toolbarBackgroundColor;
 }

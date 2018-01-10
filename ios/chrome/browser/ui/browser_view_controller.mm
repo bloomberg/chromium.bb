@@ -1253,10 +1253,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return results;
 
   if (!IsIPadIdiom()) {
-    if (self.primaryToolbarCoordinator.toolbarViewController.view) {
+    if (self.primaryToolbarCoordinator.viewController.view) {
       [results addObject:[HeaderDefinition
                              definitionWithView:self.primaryToolbarCoordinator
-                                                    .toolbarViewController.view
+                                                    .viewController.view
                                 headerBehaviour:Hideable
                                heightAdjustment:0.0
                                           inset:0.0]];
@@ -1268,10 +1268,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                                              heightAdjustment:0.0
                                                         inset:0.0]];
     }
-    if (self.primaryToolbarCoordinator.toolbarViewController.view) {
+    if (self.primaryToolbarCoordinator.viewController.view) {
       [results addObject:[HeaderDefinition
                              definitionWithView:self.primaryToolbarCoordinator
-                                                    .toolbarViewController.view
+                                                    .viewController.view
                                 headerBehaviour:Hideable
                                heightAdjustment:0.0
                                           inset:0.0]];
@@ -1968,13 +1968,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self.legacyToolbarCoordinator adjustToolbarHeight];
 
   self.primaryToolbarOffsetConstraint =
-      [self.primaryToolbarCoordinator.toolbarViewController.view.topAnchor
+      [self.primaryToolbarCoordinator.viewController.view.topAnchor
           constraintEqualToAnchor:topAnchor];
   [NSLayoutConstraint activateConstraints:@[
     self.primaryToolbarOffsetConstraint,
-    [self.primaryToolbarCoordinator.toolbarViewController.view.leadingAnchor
+    [self.primaryToolbarCoordinator.viewController.view.leadingAnchor
         constraintEqualToAnchor:[self view].leadingAnchor],
-    [self.primaryToolbarCoordinator.toolbarViewController.view.trailingAnchor
+    [self.primaryToolbarCoordinator.viewController.view.trailingAnchor
         constraintEqualToAnchor:[self view].trailingAnchor],
   ]];
   [[self view] layoutIfNeeded];
@@ -2076,16 +2076,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Position the toolbar next, either at the top of the browser view or
   // directly under the tabstrip.
   if (initialLayout)
-    [self addChildViewController:_toolbarCoordinator.toolbarViewController];
+    [self addChildViewController:_toolbarCoordinator.viewController];
   if (!IsSafeAreaCompatibleToolbarEnabled()) {
     CGFloat minY = self.headerOffset;
     if (self.tabStripView) {
       minY += CGRectGetHeight([self.tabStripView frame]);
     }
-    CGRect toolbarFrame = _toolbarCoordinator.toolbarViewController.view.frame;
+    CGRect toolbarFrame = _toolbarCoordinator.viewController.view.frame;
     toolbarFrame.origin = CGPointMake(0, minY);
     toolbarFrame.size.width = widthOfView;
-    [_toolbarCoordinator.toolbarViewController.view setFrame:toolbarFrame];
+    [_toolbarCoordinator.viewController.view setFrame:toolbarFrame];
   }
 
   // Place the infobar container above the content area.
@@ -2096,7 +2096,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
-    [[self view] insertSubview:_toolbarCoordinator.toolbarViewController.view
+    [[self view] insertSubview:_toolbarCoordinator.viewController.view
                   aboveSubview:infoBarContainerView];
     AddNamedGuide(kOmniboxGuide, self.view);
     AddNamedGuide(kBackButtonGuide, self.view);
@@ -2105,8 +2105,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     AddNamedGuide(kTabSwitcherGuide, self.view);
   }
   if (initialLayout)
-    [_toolbarCoordinator.toolbarViewController
-        didMoveToParentViewController:self];
+    [_toolbarCoordinator.viewController didMoveToParentViewController:self];
 
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
@@ -2215,8 +2214,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                     ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                     ![self.primaryToolbarCoordinator showingOmniboxPopup];
     }
-    [self.primaryToolbarCoordinator.toolbarViewController.view
-        setHidden:hideToolbar];
+    [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
   }
 }
 
@@ -2284,8 +2282,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   for (HeaderDefinition* header in headers) {
     CGFloat yOrigin = height - headerOffset - header.inset;
     BOOL isPrimaryToolbar =
-        header.view ==
-        self.primaryToolbarCoordinator.toolbarViewController.view;
+        header.view == self.primaryToolbarCoordinator.viewController.view;
     // Make sure the toolbarView's constraints are also updated.  Leaving the
     // -setFrame call to minimize changes in this CL -- otherwise the way
     // toolbar_view manages it's alpha changes would also need to be updated.
@@ -3631,11 +3628,11 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (UIView*)headerView {
-  return self.primaryToolbarCoordinator.toolbarViewController.view;
+  return self.primaryToolbarCoordinator.viewController.view;
 }
 
 - (UIView*)toolbarSnapshotView {
-  return [self.primaryToolbarCoordinator.toolbarViewController.view
+  return [self.primaryToolbarCoordinator.viewController.view
       snapshotViewAfterScreenUpdates:NO];
 }
 
@@ -4664,12 +4661,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (CGRect)toolbarFrame {
-  return _toolbarCoordinator.toolbarViewController.view.frame;
+  return _toolbarCoordinator.viewController.view.frame;
 }
 
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
   id<ToolbarSnapshotProviding> toolbarSnapshotProvider = nil;
-  if (_toolbarCoordinator.toolbarViewController.view.hidden) {
+  if (_toolbarCoordinator.viewController.view.hidden) {
     Tab* currentTab = [_model currentTab];
     if (currentTab.webState &&
         UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
@@ -5126,7 +5123,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   BOOL seenInfoBarContainer = NO;
   BOOL seenContentArea = NO;
   for (UIView* view in views.subviews) {
-    if (view == _toolbarCoordinator.toolbarViewController.view)
+    if (view == _toolbarCoordinator.viewController.view)
       seenToolbar = YES;
     else if (view == _infoBarContainer->view())
       seenInfoBarContainer = YES;

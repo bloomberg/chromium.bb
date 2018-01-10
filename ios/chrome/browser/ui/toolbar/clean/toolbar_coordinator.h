@@ -42,8 +42,10 @@ class WebState;
 // The web state list this ToolbarCoordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 // Delegate for this coordinator.
+// TODO(crbug.com/799446): Change this.
 @property(nonatomic, weak) id<ToolbarCoordinatorDelegate> delegate;
 // URL loader for the toolbar.
+// TODO(crbug.com/799446): Remove this.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
 // UIViewController managed by this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
