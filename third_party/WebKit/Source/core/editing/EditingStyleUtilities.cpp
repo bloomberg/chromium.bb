@@ -42,6 +42,32 @@ namespace blink {
 
 using namespace cssvalue;
 
+namespace {
+
+Position AdjustedSelectionStartForStyleComputation(const Position& position) {
+  // This function is used by range style computations to avoid bugs like:
+  // <rdar://problem/4017641> REGRESSION (Mail): you can only bold/unbold a
+  // selection starting from end of line once
+  // It is important to skip certain irrelevant content at the start of the
+  // selection, so we do not wind up with a spurious "mixed" style.
+
+  VisiblePosition visible_position = CreateVisiblePosition(position);
+  if (visible_position.IsNull())
+    return Position();
+
+  // if the selection starts just before a paragraph break, skip over it
+  if (IsEndOfParagraph(visible_position)) {
+    return MostForwardCaretPosition(
+        NextPositionOf(visible_position).DeepEquivalent());
+  }
+
+  // otherwise, make sure to be at the start of the first selected node,
+  // instead of possibly at the end of the last node before the selection
+  return MostForwardCaretPosition(visible_position.DeepEquivalent());
+}
+
+}  // anonymous namespace
+
 bool EditingStyleUtilities::HasAncestorVerticalAlignStyle(Node& node,
                                                           CSSValueID value) {
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(node)) {
