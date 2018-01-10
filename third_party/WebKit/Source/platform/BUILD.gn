@@ -1833,7 +1833,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "geometry/LayoutSizeTest.cpp",
     "geometry/RegionTest.cpp",
     "graphics/BitmapImageTest.cpp",
-    "graphics/CanvasResourceTest.cpp",
     "graphics/CompositorElementIdTest.cpp",
     "graphics/ContiguousContainerTest.cpp",
     "graphics/DecodingImageGeneratorTest.cpp",
@@ -2203,6 +2202,7 @@ jumbo_source_set("unit_tests") {
   sources = [
     "graphics/Canvas2DLayerBridgeTest.cpp",
     "graphics/CanvasColorParamsTest.cpp",
+    "graphics/CanvasResourceTest.cpp",
     "graphics/ColorCorrectionTestUtils.cpp",
     "graphics/DeferredImageDecoderTest.cpp",
     "graphics/GraphicsLayerTest.cpp",
