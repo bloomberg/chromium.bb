@@ -7360,9 +7360,8 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
   }
 
   if (WouldTaintOrigin(image, security_origin)) {
-    exception_state.ThrowSecurityError("The cross-origin image at " +
-                                       url.ElidedString() +
-                                       " may not be loaded.");
+    exception_state.ThrowSecurityError(
+        "The image element contains cross-origin data, and may not be loaded.");
     return false;
   }
   return true;
