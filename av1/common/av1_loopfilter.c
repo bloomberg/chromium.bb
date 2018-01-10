@@ -2091,8 +2091,14 @@ static void set_lpf_parameters(
     // prepare outer edge parameters. deblock the edge if it's an edge of a TU
     if (coord) {
 #if CONFIG_LOOPFILTERING_ACROSS_TILES || CONFIG_LOOPFILTERING_ACROSS_TILES_EXT
-      MODE_INFO *const mi_bound = cm->mi + mi_row * cm->mi_stride + mi_col;
-      // here, assuming bounfary_info is set correctly based on the
+      // Note: For sub8x8 blocks, we need to look at the top-left mi unit in
+      // order
+      // to extract the correct boundary information.
+      const int mi_row_bound = ((y << scale_vert) >> MI_SIZE_LOG2);
+      const int mi_col_bound = ((x << scale_horz) >> MI_SIZE_LOG2);
+      MODE_INFO *const mi_bound =
+          cm->mi + mi_row_bound * cm->mi_stride + mi_col_bound;
+      // here, assuming boundary_info is set correctly based on the
       // loop_filter_across_tiles_enabled flag, i.e, tile boundary should
       // only be set to true when this flag is set to 0.
       int left_boundary = (mi_bound->mbmi.boundary_info & TILE_LEFT_BOUNDARY);
