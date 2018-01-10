@@ -54,12 +54,6 @@ PrerenderURLLoaderThrottle::PrerenderURLLoaderThrottle(
       histogram_prefix_(histogram_prefix),
       canceler_getter_(std::move(canceler_getter)),
       canceler_getter_task_runner_(canceler_getter_task_runner) {
-  if (mode_ == PREFETCH_ONLY) {
-    detached_timer_.Start(FROM_HERE,
-                          base::TimeDelta::FromMilliseconds(
-                              content::kDefaultDetachableCancelDelayMs),
-                          this, &PrerenderURLLoaderThrottle::OnTimedOut);
-  }
 }
 
 PrerenderURLLoaderThrottle::~PrerenderURLLoaderThrottle() {
@@ -119,8 +113,6 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // Delay icon fetching until the contents are getting swapped in
     // to conserve network usage in mobile devices.
     *defer = true;
-
-    // No need to call AddIdleResource() on Android.
     return;
   }
 #else
@@ -137,6 +129,13 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     request->priority = net::IDLE;
   }
 #endif  // OS_ANDROID
+
+  if (mode_ == PREFETCH_ONLY) {
+    detached_timer_.Start(FROM_HERE,
+                          base::TimeDelta::FromMilliseconds(
+                              content::kDefaultDetachableCancelDelayMs),
+                          this, &PrerenderURLLoaderThrottle::OnTimedOut);
+  }
 }
 
 void PrerenderURLLoaderThrottle::WillRedirectRequest(
