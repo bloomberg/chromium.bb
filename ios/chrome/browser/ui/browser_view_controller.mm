@@ -192,6 +192,7 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
@@ -589,6 +590,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for the primary toolbar, displayed on top.
   PrimaryToolbarCoordinator* _topToolbarCoordinator;
 
+  // Coordinator for the secondary toolbar, displayed on bottom.
+  SecondaryToolbarCoordinator* _bottomToolbarCoordinator;
+
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
 
@@ -690,6 +694,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Primary toolbar.
 @property(nonatomic, readonly) id<PrimaryToolbarCoordinator>
     primaryToolbarCoordinator;
+// Secondary toolbar.
+@property(nonatomic, readonly)
+    SecondaryToolbarCoordinator* secondaryToolbarCoordinator;
 // TODO(crbug.com/788705): Removes this property and associated calls.
 // Returns the LegacyToolbarCoordinator. This property is here to separate
 // methods which will be removed during cleanup to other methods. Uses this
@@ -1307,6 +1314,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   } else {
     return _toolbarCoordinator;
   }
+}
+
+- (SecondaryToolbarCoordinator*)secondaryToolbarCoordinator {
+  return _bottomToolbarCoordinator;
 }
 
 - (LegacyToolbarCoordinator*)legacyToolbarCoordinator {
@@ -1932,6 +1943,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _topToolbarCoordinator.URLLoader = self;
     _topToolbarCoordinator.webStateList = [_model webStateList];
     [_topToolbarCoordinator start];
+    _bottomToolbarCoordinator = [[SecondaryToolbarCoordinator alloc]
+        initWithBaseViewController:nil
+                      browserState:_browserState];
+    _bottomToolbarCoordinator.dispatcher = self.dispatcher;
+    [_bottomToolbarCoordinator start];
   } else {
     _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
             initWithBaseViewController:self
@@ -2001,6 +2017,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.primaryToolbarCoordinator.viewController.view.trailingAnchor
         constraintEqualToAnchor:[self view].trailingAnchor],
   ]];
+  if (self.secondaryToolbarCoordinator) {
+    [NSLayoutConstraint activateConstraints:@[
+      [self.secondaryToolbarCoordinator.viewController.view.leadingAnchor
+          constraintEqualToAnchor:[self view].leadingAnchor],
+      [self.secondaryToolbarCoordinator.viewController.view.trailingAnchor
+          constraintEqualToAnchor:[self view].trailingAnchor],
+      [self.secondaryToolbarCoordinator.viewController.view.bottomAnchor
+          constraintEqualToAnchor:[self view].bottomAnchor],
+    ]];
+  }
   [[self view] layoutIfNeeded];
 }
 
@@ -2099,8 +2125,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
   // Position the toolbar next, either at the top of the browser view or
   // directly under the tabstrip.
-  if (initialLayout)
+  if (initialLayout) {
     [self addChildViewController:self.primaryToolbarCoordinator.viewController];
+    if (self.secondaryToolbarCoordinator)
+      [self addChildViewController:self.secondaryToolbarCoordinator
+                                       .viewController];
+  }
   if (!IsSafeAreaCompatibleToolbarEnabled()) {
     CGFloat minY = self.headerOffset;
     if (self.tabStripView) {
@@ -2123,15 +2153,25 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [[self view]
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:infoBarContainerView];
+    if (self.secondaryToolbarCoordinator) {
+      [[self view]
+          insertSubview:self.secondaryToolbarCoordinator.viewController.view
+           aboveSubview:infoBarContainerView];
+    }
     AddNamedGuide(kOmniboxGuide, self.view);
     AddNamedGuide(kBackButtonGuide, self.view);
     AddNamedGuide(kForwardButtonGuide, self.view);
     AddNamedGuide(kToolsMenuGuide, self.view);
     AddNamedGuide(kTabSwitcherGuide, self.view);
   }
-  if (initialLayout)
+  if (initialLayout) {
     [self.primaryToolbarCoordinator.viewController
         didMoveToParentViewController:self];
+    if (self.secondaryToolbarCoordinator) {
+      [self.secondaryToolbarCoordinator.viewController
+          didMoveToParentViewController:self];
+    }
+  }
 
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
