@@ -498,15 +498,16 @@ std::unique_ptr<HttpResponse> HandleAuthDigest(const HttpRequest& request) {
   return std::move(http_response);
 }
 
-// /server-redirect?URL
-// Returns a server-redirect (301) to URL.
-std::unique_ptr<HttpResponse> HandleServerRedirect(const HttpRequest& request) {
+// /server-redirect?URL (Also /server-redirect-xxx?URL)
+// Returns a server redirect to URL.
+std::unique_ptr<HttpResponse> HandleServerRedirect(HttpStatusCode redirect_code,
+                                                   const HttpRequest& request) {
   GURL request_url = request.GetURL();
   std::string dest =
       net::UnescapeURLComponent(request_url.query(), kUnescapeAll);
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
-  http_response->set_code(HTTP_MOVED_PERMANENTLY);
+  http_response->set_code(redirect_code);
   http_response->AddCustomHeader("Location", dest);
   http_response->set_content_type("text/html");
   http_response->set_content(base::StringPrintf(
@@ -687,6 +688,8 @@ std::unique_ptr<HttpResponse> HandleSelfPac(const HttpRequest& request) {
 
 #define PREFIXED_HANDLER(prefix, handler) \
   base::Bind(&HandlePrefixedRequest, prefix, base::Bind(handler))
+#define SERVER_REDIRECT_HANDLER(prefix, handler, status_code) \
+  base::Bind(&HandlePrefixedRequest, prefix, base::Bind(handler, status_code))
 
 void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   server->RegisterDefaultHandler(base::Bind(&HandleDefaultConnect));
@@ -718,8 +721,20 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
       PREFIXED_HANDLER("/auth-basic", &HandleAuthBasic));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/auth-digest", &HandleAuthDigest));
-  server->RegisterDefaultHandler(
-      PREFIXED_HANDLER("/server-redirect", &HandleServerRedirect));
+
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect", &HandleServerRedirect, HTTP_MOVED_PERMANENTLY));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-301", &HandleServerRedirect, HTTP_MOVED_PERMANENTLY));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-302", &HandleServerRedirect, HTTP_FOUND));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-303", &HandleServerRedirect, HTTP_SEE_OTHER));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-307", &HandleServerRedirect, HTTP_TEMPORARY_REDIRECT));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-308", &HandleServerRedirect, HTTP_PERMANENT_REDIRECT));
+
   server->RegisterDefaultHandler(base::Bind(&HandleCrossSiteRedirect, server));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/client-redirect", &HandleClientRedirect));
