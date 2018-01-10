@@ -36,7 +36,7 @@ class TabLifecycleUnitExternal {
   virtual void SetAutoDiscardable(bool auto_discardable) = 0;
 
   // Discards the tab.
-  virtual void DiscardTab() = 0;
+  virtual bool DiscardTab() = 0;
 
   // Returns true if the tab is discarded.
   virtual bool IsDiscarded() const = 0;
