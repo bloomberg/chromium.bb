@@ -54,6 +54,7 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
+#include "third_party/WebKit/public/platform/WebLocalizedString.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
@@ -149,6 +150,23 @@ constexpr base::TimeDelta kPrerollAttemptTimeout =
 
 // Maximum number, per-WMPI, of media logs of playback rate changes.
 constexpr int kMaxNumPlaybackRateLogs = 10;
+
+blink::WebLocalizedString::Name GetSwitchToLocalMessage(
+    MediaObserverClient::ReasonToSwitchToLocal reason) {
+  switch (reason) {
+    case MediaObserverClient::ReasonToSwitchToLocal::NORMAL:
+      return blink::WebLocalizedString::kMediaRemotingStopText;
+    case MediaObserverClient::ReasonToSwitchToLocal::POOR_PLAYBACK_QUALITY:
+      return blink::WebLocalizedString::kMediaRemotingStopByPlaybackQualityText;
+    case MediaObserverClient::ReasonToSwitchToLocal::PIPELINE_ERROR:
+      return blink::WebLocalizedString::kMediaRemotingStopByErrorText;
+    case MediaObserverClient::ReasonToSwitchToLocal::ROUTE_TERMINATED:
+      return blink::WebLocalizedString::kMediaRemotingStopNoText;
+  }
+  NOTREACHED();
+  // To suppress compiler warning on Windows.
+  return blink::WebLocalizedString::kMediaRemotingStopNoText;
+}
 
 }  // namespace
 
@@ -329,7 +347,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   // Destruct compositor resources in the proper order.
   client_->SetWebLayer(nullptr);
 
-  client_->MediaRemotingStopped();
+  client_->MediaRemotingStopped(
+      blink::WebLocalizedString::kMediaRemotingStopNoText);
 
   if (!surface_layer_for_video_enabled_ && video_weblayer_) {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
@@ -2850,7 +2869,8 @@ void WebMediaPlayerImpl::SwitchToRemoteRenderer(
   }
 }
 
-void WebMediaPlayerImpl::SwitchToLocalRenderer() {
+void WebMediaPlayerImpl::SwitchToLocalRenderer(
+    MediaObserverClient::ReasonToSwitchToLocal reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   disable_pipeline_auto_suspend_ = false;
 
@@ -2861,7 +2881,7 @@ void WebMediaPlayerImpl::SwitchToLocalRenderer() {
   // the |renderer_factory_selector_|.
   ScheduleRestart();
   if (client_)
-    client_->MediaRemotingStopped();
+    client_->MediaRemotingStopped(GetSwitchToLocalMessage(reason));
 }
 
 void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {

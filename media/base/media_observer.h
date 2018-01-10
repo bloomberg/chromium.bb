@@ -13,6 +13,14 @@ namespace media {
 
 class MEDIA_EXPORT MediaObserverClient {
  public:
+  // Reasons to switch to local renderer from using remote renderer.
+  enum class ReasonToSwitchToLocal {
+    NORMAL,  // Remoting is disabled or media no longer occupies the viewport.
+    POOR_PLAYBACK_QUALITY,  // Playback quality is poor.
+    PIPELINE_ERROR,         // Error occurred.
+    ROUTE_TERMINATED,       // No longer show the media on remote screen.
+  };
+
   virtual ~MediaObserverClient() {}
 
   // Requests to restart the media pipeline and create a new renderer as soon as
@@ -21,7 +29,10 @@ class MEDIA_EXPORT MediaObserverClient {
   // |remote_device_friendly_name| can be empty if the remote device is unknown.
   virtual void SwitchToRemoteRenderer(
       const std::string& remote_device_friendly_name) = 0;
-  virtual void SwitchToLocalRenderer() = 0;
+
+  // Requests to switch to local renderer. According to |reason|, a text message
+  // may be displayed to explain why the switch occurred.
+  virtual void SwitchToLocalRenderer(ReasonToSwitchToLocal reason) = 0;
 
   // Requests to activate monitoring changes on viewport intersection.
   virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;

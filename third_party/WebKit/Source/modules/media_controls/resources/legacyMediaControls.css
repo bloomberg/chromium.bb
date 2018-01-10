@@ -185,7 +185,7 @@ video::-internal-media-remoting-interstitial {
      * full math expression is:
      * 15px + (36 - 15) * ((100vw - 400px) / (1920 - 400)). */
     font-size: calc(9.5px + 1.38vw);
-    background-color: black;
+    background-color: transparent;
     opacity: 0;
     transition: opacity .3s ease-in-out;
 }
@@ -238,6 +238,23 @@ video::-internal-media-remoting-cast-text-message {
     font-size: 90%;
     font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
     padding: 0px;
+    margin: 0px;
+}
+
+video::-internal-media-remoting-toast-message {
+    display: inline;
+    position: absolute;
+    top: 16pt;
+    border: none;
+    border-radius: 2pt;
+    color: rgba(255,255,255, 1);
+    width: auto;
+    text-wrap: none;
+    text-align: center;
+    background-color: rgba(40, 44, 50, 0.7);
+    font-size: 90%;
+    font-family: Roboto-Regular, Sans-serif, Segoe, Serif, Helvetica;
+    padding: 10pt 24pt 10pt 24pt;
     margin: 0px;
 }
 

@@ -818,6 +818,15 @@ below:
       <message name="IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT" desc="Text message shown to the user when casting a video to an unknown remote device.">
        Now casting to your TV
       </message>
+      <message name = "IDS_MEDIA_REMOTING_STOP_TEXT" desc="The transient text shown on top of the video when switching from media remoting to mirroring.">
+        Switched to mirroring
+      </message>
+      <message name = "IDS_MEDIA_REMOTING_STOP_BY_PLAYBACK_QUALITY_TEXT" desc="The transient text shown on top of the video when switching from media remoting to mirroring due to poor playback quality.">
+        Poor playback quality
+      </message>
+      <message name = "IDS_MEDIA_REMOTING_STOP_BY_ERROR_TEXT" desc="The transient text shown on top of the video when switching from media remoting to mirroring due to errors.">
+        Video playback error
+      </message>
       <message name="IDS_MEDIA_TRACKS_NO_LABEL" desc="Menu item label for a text track that has no name specified. The number represents the track number in the list of tracks.">
         Track <ph name="NUMBER">$1<ex>1</ex></ph>
       </message>
