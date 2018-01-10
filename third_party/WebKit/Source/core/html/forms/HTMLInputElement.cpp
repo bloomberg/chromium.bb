@@ -990,10 +990,9 @@ void HTMLInputElement::setChecked(bool now_checked,
   // unchecked to match other browsers. DOM is not a useful standard for this
   // because it says only to fire change events at "lose focus" time, which is
   // definitely wrong in practice for these types of elements.
-  if (event_behavior != kDispatchNoEvent && isConnected() &&
+  if (event_behavior == kDispatchInputAndChangeEvent && isConnected() &&
       input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
-    if (event_behavior == kDispatchInputAndChangeEvent)
-      DispatchInputEvent();
+    DispatchInputEvent();
   }
 
   PseudoStateChanged(CSSSelector::kPseudoChecked);
