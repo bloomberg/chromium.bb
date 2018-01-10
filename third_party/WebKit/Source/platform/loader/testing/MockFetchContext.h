@@ -101,7 +101,7 @@ class MockFetchContext : public FetchContext {
     return ResourceLoadScheduler::ThrottlingPolicy::kTight;
   }
 
-  WebFrameScheduler* GetFrameScheduler() const override {
+  WebFrameScheduler* GetFrameScheduler() override {
     return frame_scheduler_.get();
   }
 
