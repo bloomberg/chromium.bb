@@ -59,7 +59,8 @@
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
     [SetterCallWith=(CurrentWindow,EnteredWindow), CrossOrigin=Setter, RaisesException=Setter] attribute URLString href;
-    [NotEnumerable] DOMString toString();
+    // TODO(yukishiino): Use [Unforgeable] stringifier instead of toString.
+    DOMString toString();
     [MeasureAs=LocationOrigin] readonly attribute USVString origin;
 
     [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute USVString protocol;
