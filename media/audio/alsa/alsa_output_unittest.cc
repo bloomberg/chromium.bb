@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -81,7 +81,7 @@ class MockAlsaWrapper : public AlsaWrapper {
 class MockAudioManagerAlsa : public AudioManagerAlsa {
  public:
   MockAudioManagerAlsa()
-      : AudioManagerAlsa(base::MakeUnique<TestAudioThread>(),
+      : AudioManagerAlsa(std::make_unique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());

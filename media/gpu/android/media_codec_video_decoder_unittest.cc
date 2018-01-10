@@ -105,9 +105,9 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   void SetUp() override {
     uint8_t data = 0;
     fake_decoder_buffer_ = DecoderBuffer::CopyFrom(&data, 1);
-    codec_allocator_ = base::MakeUnique<FakeCodecAllocator>(
+    codec_allocator_ = std::make_unique<FakeCodecAllocator>(
         base::ThreadTaskRunnerHandle::Get());
-    device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
+    device_info_ = std::make_unique<NiceMock<MockDeviceInfo>>();
   }
 
   void TearDown() override {
@@ -118,7 +118,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
 
   void CreateMcvd() {
     auto surface_chooser =
-        base::MakeUnique<NiceMock<MockAndroidVideoSurfaceChooser>>();
+        std::make_unique<NiceMock<MockAndroidVideoSurfaceChooser>>();
     surface_chooser_ = surface_chooser.get();
 
     auto surface_texture =
@@ -127,7 +127,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     surface_texture_ = surface_texture.get();
 
     auto video_frame_factory =
-        base::MakeUnique<NiceMock<MockVideoFrameFactory>>();
+        std::make_unique<NiceMock<MockVideoFrameFactory>>();
     video_frame_factory_ = video_frame_factory.get();
     // Set up VFF to pass |surface_texture_| via its InitCb.
     const bool want_promotion_hint =
@@ -150,7 +150,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   }
 
   void CreateCdm(bool require_secure_video_decoder) {
-    cdm_ = base::MakeUnique<MockMediaDrmBridgeCdmContext>(cdm_id_);
+    cdm_ = std::make_unique<MockMediaDrmBridgeCdmContext>(cdm_id_);
     require_secure_video_decoder_ = require_secure_video_decoder;
 
     // We need to send an object as the media crypto, but MCVD shouldn't
@@ -177,7 +177,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
       // for the media crypto object.
       // TODO(liberato): why does CreateJavaObjectPtr() not link?
       cdm_->media_crypto_ready_cb.Run(
-          base::MakeUnique<base::android::ScopedJavaGlobalRef<jobject>>(
+          std::make_unique<base::android::ScopedJavaGlobalRef<jobject>>(
               media_crypto_),
           require_secure_video_decoder_);
       base::RunLoop().RunUntilIdle();
@@ -195,7 +195,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     OverlayInfo info;
     info.routing_token = base::UnguessableToken::Deserialize(1, 2);
     provide_overlay_info_cb_.Run(info);
-    auto overlay_ptr = base::MakeUnique<MockAndroidOverlay>();
+    auto overlay_ptr = std::make_unique<MockAndroidOverlay>();
     auto* overlay = overlay_ptr.get();
     surface_chooser_->ProvideOverlay(std::move(overlay_ptr));
     return overlay;
@@ -435,7 +435,7 @@ TEST_F(MediaCodecVideoDecoderTest,
 TEST_F(MediaCodecVideoDecoderTest, SurfaceChangedWhileCodecCreationPending) {
   auto* overlay = InitializeWithOverlay_OneDecodePending();
   overlay->OnSurfaceDestroyed();
-  auto codec = base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
+  auto codec = std::make_unique<NiceMock<MockMediaCodecBridge>>();
 
   // SetSurface() is called as soon as the codec is created to switch away from
   // the destroyed surface.
@@ -501,7 +501,7 @@ TEST_F(MediaCodecVideoDecoderTest, SurfaceTransitionsCanBeCanceled) {
   // Set a pending transition to an overlay, and then back to a surface texture.
   // They should cancel each other out and leave the codec as-is.
   EXPECT_CALL(*codec, SetSurface(_)).Times(0);
-  auto overlay = base::MakeUnique<MockAndroidOverlay>();
+  auto overlay = std::make_unique<MockAndroidOverlay>();
   auto observer = overlay->CreateDestructionObserver();
   surface_chooser_->ProvideOverlay(std::move(overlay));
 

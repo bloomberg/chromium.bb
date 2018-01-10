@@ -4,7 +4,7 @@
 
 #include "media/capture/video/chromeos/mock_gpu_memory_buffer_manager.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
 
 using ::testing::Return;
 
@@ -40,7 +40,7 @@ MockGpuMemoryBufferManager::ReturnValidBuffer(
       size.width(), handle.native_pixmap_handle.planes[0].size,
       size.width() * size.height() / 2, 0));
 
-  auto mock_buffer = base::MakeUnique<MockGpuMemoryBuffer>();
+  auto mock_buffer = std::make_unique<MockGpuMemoryBuffer>();
   ON_CALL(*mock_buffer, Map()).WillByDefault(Return(true));
   ON_CALL(*mock_buffer, memory(0))
       .WillByDefault(Return(reinterpret_cast<void*>(0xdeafbeef)));

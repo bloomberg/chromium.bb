@@ -4,8 +4,9 @@
 
 #include "media/remoting/renderer_controller.h"
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -109,7 +110,7 @@ class RendererControllerTest : public ::testing::Test,
       const mojom::RemotingSinkMetadata& sink_metadata) {
     EXPECT_FALSE(is_rendering_remotely_);
     EXPECT_TRUE(sink_name_.empty());
-    controller_ = base::MakeUnique<RendererController>(shared_session);
+    controller_ = std::make_unique<RendererController>(shared_session);
     controller_->clock_ = &clock_;
     clock_.Advance(base::TimeDelta::FromSeconds(1));
     controller_->SetClient(this);
@@ -452,7 +453,7 @@ TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   std::unique_ptr<RemotingCdmController> cdm_controller =
-      base::MakeUnique<RemotingCdmController>(cdm_shared_session);
+      std::make_unique<RemotingCdmController>(cdm_shared_session);
   cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
@@ -466,7 +467,7 @@ TEST_F(RendererControllerTest, EncryptedWithRemotingCdm) {
       SessionKeysChangeCB(), SessionExpirationUpdateCB(), CdmCreatedCB(),
       std::move(cdm_controller));
   std::unique_ptr<RemotingCdmContext> remoting_cdm_context =
-      base::MakeUnique<RemotingCdmContext>(remoting_cdm.get());
+      std::make_unique<RemotingCdmContext>(remoting_cdm.get());
   controller_->OnSetCdm(remoting_cdm_context.get());
   RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);
@@ -504,7 +505,7 @@ TEST_F(RendererControllerTest, EncryptedWithLocalCdm) {
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(true);
   std::unique_ptr<RemotingCdmController> cdm_controller =
-      base::MakeUnique<RemotingCdmController>(cdm_shared_session);
+      std::make_unique<RemotingCdmController>(cdm_shared_session);
   cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
@@ -525,7 +526,7 @@ TEST_F(RendererControllerTest, EncryptedWithFailedRemotingCdm) {
   const scoped_refptr<SharedSession> cdm_shared_session =
       FakeRemoterFactory::CreateSharedSession(false);
   std::unique_ptr<RemotingCdmController> cdm_controller =
-      base::MakeUnique<RemotingCdmController>(cdm_shared_session);
+      std::make_unique<RemotingCdmController>(cdm_shared_session);
   cdm_shared_session->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   cdm_controller->ShouldCreateRemotingCdm(
       base::Bind(&RendererControllerTest::CreateCdm, base::Unretained(this)));
@@ -546,7 +547,7 @@ TEST_F(RendererControllerTest, EncryptedWithFailedRemotingCdm) {
       SessionKeysChangeCB(), SessionExpirationUpdateCB(), CdmCreatedCB(),
       std::move(cdm_controller));
   std::unique_ptr<RemotingCdmContext> remoting_cdm_context =
-      base::MakeUnique<RemotingCdmContext>(remoting_cdm.get());
+      std::make_unique<RemotingCdmContext>(remoting_cdm.get());
   controller_->OnSetCdm(remoting_cdm_context.get());
   RunUntilIdle();
   // Switch to using the remoting renderer, even when the remoting CDM session

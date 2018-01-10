@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -440,7 +439,7 @@ class PipelineIntegrationTest : public service_manager::test::ServiceTest,
     media_interface_factory_->CreateRenderer(std::string(),
                                              mojo::MakeRequest(&mojo_renderer));
 
-    return base::MakeUnique<MojoRenderer>(message_loop_.task_runner(),
+    return std::make_unique<MojoRenderer>(message_loop_.task_runner(),
                                           std::move(mojo_renderer));
   }
 
@@ -1802,7 +1801,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {
 
 std::vector<std::unique_ptr<VideoDecoder>> CreateFailingVideoDecoder() {
   std::vector<std::unique_ptr<VideoDecoder>> failing_video_decoder;
-  failing_video_decoder.push_back(base::MakeUnique<FailingVideoDecoder>());
+  failing_video_decoder.push_back(std::make_unique<FailingVideoDecoder>());
   return failing_video_decoder;
 }
 

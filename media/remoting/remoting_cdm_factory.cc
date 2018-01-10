@@ -4,8 +4,9 @@
 
 #include "media/remoting/remoting_cdm_factory.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/cdm_config.h"
 #include "media/remoting/remoting_cdm.h"
@@ -43,7 +44,7 @@ RemotingCdmFactory::CreateRemotingCdmController() {
   // avoid the possible delay on OnSinkAvailable() call from browser.
   if (sink_observer_->IsRemoteDecryptionAvailable())
     session->OnSinkAvailable(sink_observer_->sink_metadata().Clone());
-  return base::MakeUnique<RemotingCdmController>(std::move(session));
+  return std::make_unique<RemotingCdmController>(std::move(session));
 }
 
 // TODO(xjz): Replace the callbacks with an interface. http://crbug.com/657940.

@@ -75,7 +75,7 @@ void MojoMediaDrmStorage::OnPersistentSessionLoaded(
   DVLOG(1) << __func__ << ": success = " << !!session_data;
 
   std::move(load_persistent_session_cb)
-      .Run(session_data ? base::MakeUnique<SessionData>(
+      .Run(session_data ? std::make_unique<SessionData>(
                               std::move(session_data->key_set_id),
                               std::move(session_data->mime_type))
                         : nullptr);

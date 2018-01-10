@@ -34,7 +34,7 @@ std::unique_ptr<VideoEncodeAccelerator> CreateAndInitializeFakeVEA(
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   // Use FakeVEA as scoped_ptr to guarantee proper destruction via Destroy().
-  auto vea = base::MakeUnique<FakeVideoEncodeAccelerator>(
+  auto vea = std::make_unique<FakeVideoEncodeAccelerator>(
       base::ThreadTaskRunnerHandle::Get());
   vea->SetWillInitializationSucceed(will_initialization_succeed);
   const bool result = vea->Initialize(input_format, input_visible_size,
@@ -82,7 +82,7 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
   // upon initialization (by default) or not.
   void CreateMojoVideoEncodeAccelerator(
       bool will_fake_vea_initialization_succeed = true) {
-    mojo_vea_service_ = base::MakeUnique<MojoVideoEncodeAcceleratorService>(
+    mojo_vea_service_ = std::make_unique<MojoVideoEncodeAcceleratorService>(
         base::Bind(&CreateAndInitializeFakeVEA,
                    will_fake_vea_initialization_succeed),
         gpu::GpuPreferences());
@@ -92,7 +92,7 @@ class MojoVideoEncodeAcceleratorServiceTest : public ::testing::Test {
     // Create an Mojo VEA Client InterfacePtr and point it to bind to our Mock.
     mojom::VideoEncodeAcceleratorClientPtr mojo_vea_client;
     mojo_vea_binding_ = mojo::MakeStrongBinding(
-        base::MakeUnique<MockMojoVideoEncodeAcceleratorClient>(),
+        std::make_unique<MockMojoVideoEncodeAcceleratorClient>(),
         mojo::MakeRequest(&mojo_vea_client));
 
     EXPECT_CALL(*mock_mojo_vea_client(),
@@ -204,7 +204,7 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, InitializeFailure) {
 
   mojom::VideoEncodeAcceleratorClientPtr mojo_vea_client;
   auto mojo_vea_binding = mojo::MakeStrongBinding(
-      base::MakeUnique<MockMojoVideoEncodeAcceleratorClient>(),
+      std::make_unique<MockMojoVideoEncodeAcceleratorClient>(),
       mojo::MakeRequest(&mojo_vea_client));
 
   const uint32_t kInitialBitrate = 100000u;

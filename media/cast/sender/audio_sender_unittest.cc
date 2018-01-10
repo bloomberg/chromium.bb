@@ -108,7 +108,7 @@ class AudioSenderTest : public ::testing::Test {
 
     transport_ = new TestPacketSender();
     transport_sender_.reset(new CastTransportImpl(
-        &testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        &testing_clock_, base::TimeDelta(), std::make_unique<TransportClient>(),
         base::WrapUnique(transport_), task_runner_));
     OperationalStatus operational_status = STATUS_UNINITIALIZED;
     audio_sender_.reset(new AudioSender(

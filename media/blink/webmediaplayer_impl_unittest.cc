@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -280,10 +279,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     ASSERT_FALSE(media_log_) << "Reinitialization of media_log_ is disallowed";
     media_log_ = media_log.get();
 
-    auto factory_selector = base::MakeUnique<RendererFactorySelector>();
+    auto factory_selector = std::make_unique<RendererFactorySelector>();
     factory_selector->AddFactory(
         RendererFactorySelector::FactoryType::DEFAULT,
-        base::MakeUnique<DefaultRendererFactory>(
+        std::make_unique<DefaultRendererFactory>(
             media_log.get(), nullptr,
             DefaultRendererFactory::GetGpuFactoriesCB()));
     factory_selector->SetBaseFactoryType(
@@ -297,7 +296,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     // will start DCHECK failing.
     provider->Initialize(false, false, url::Origin());
 
-    auto params = base::MakeUnique<WebMediaPlayerParams>(
+    auto params = std::make_unique<WebMediaPlayerParams>(
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
         scoped_refptr<SwitchableAudioRendererSink>(),
         media_thread_.task_runner(), message_loop_.task_runner(),
@@ -311,7 +310,7 @@ class WebMediaPlayerImplTest : public testing::Test {
                    base::Unretained(this)),
         cc::TestContextProvider::Create());
 
-    auto compositor = base::MakeUnique<StrictMock<MockVideoFrameCompositor>>(
+    auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
     compositor_ = compositor.get();
 
@@ -322,7 +321,7 @@ class WebMediaPlayerImplTest : public testing::Test {
           .WillOnce(ReturnRef(id_));
     }
 
-    wmpi_ = base::MakeUnique<WebMediaPlayerImpl>(
+    wmpi_ = std::make_unique<WebMediaPlayerImpl>(
         web_local_frame_, &client_, nullptr, &delegate_,
         std::move(factory_selector), url_index_.get(), std::move(compositor),
         std::move(params));
@@ -1016,7 +1015,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   InitializeWebMediaPlayerImpl();
 
   std::unique_ptr<cc_blink::WebLayerImpl> web_layer =
-      base::MakeUnique<cc_blink::WebLayerImpl>();
+      std::make_unique<cc_blink::WebLayerImpl>();
 
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetWebLayer())
       .WillRepeatedly(Return(web_layer.get()));

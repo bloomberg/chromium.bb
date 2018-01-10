@@ -61,7 +61,7 @@ CameraHalDelegate::~CameraHalDelegate() = default;
 
 void CameraHalDelegate::RegisterCameraClient() {
   CameraHalDispatcherImpl::GetInstance()->AddClientObserver(
-      base::MakeUnique<LocalCameraClientObserver>(this));
+      std::make_unique<LocalCameraClientObserver>(this));
 }
 
 void CameraHalDelegate::SetCameraModule(

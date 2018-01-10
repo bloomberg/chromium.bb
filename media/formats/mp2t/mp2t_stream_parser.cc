@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
@@ -396,7 +395,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateH264Parser(int pes_pid) {
   auto on_emit_video_buffer = base::Bind(&Mp2tStreamParser::OnEmitVideoBuffer,
                                          base::Unretained(this), pes_pid);
 
-  return base::MakeUnique<EsParserH264>(on_video_config_changed,
+  return std::make_unique<EsParserH264>(on_video_config_changed,
                                         on_emit_video_buffer);
 }
 
@@ -405,7 +404,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateAacParser(int pes_pid) {
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_audio_buffer = base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
                                          base::Unretained(this), pes_pid);
-  return base::MakeUnique<EsParserAdts>(on_audio_config_changed,
+  return std::make_unique<EsParserAdts>(on_audio_config_changed,
                                         on_emit_audio_buffer, sbr_in_mimetype_);
 }
 
@@ -415,7 +414,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateMpeg1AudioParser(
       &Mp2tStreamParser::OnAudioConfigChanged, base::Unretained(this), pes_pid);
   auto on_emit_audio_buffer = base::Bind(&Mp2tStreamParser::OnEmitAudioBuffer,
                                          base::Unretained(this), pes_pid);
-  return base::MakeUnique<EsParserMpeg1Audio>(on_audio_config_changed,
+  return std::make_unique<EsParserMpeg1Audio>(on_audio_config_changed,
                                               on_emit_audio_buffer, media_log_);
 }
 
@@ -436,7 +435,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedH264Parser(
                                          base::Unretained(this), pes_pid);
   auto get_decrypt_config =
       base::Bind(&Mp2tStreamParser::GetDecryptConfig, base::Unretained(this));
-  return base::MakeUnique<EsParserH264>(
+  return std::make_unique<EsParserH264>(
       on_video_config_changed, on_emit_video_buffer, true, get_decrypt_config);
 }
 
@@ -448,7 +447,7 @@ std::unique_ptr<EsParser> Mp2tStreamParser::CreateEncryptedAacParser(
                                          base::Unretained(this), pes_pid);
   auto get_decrypt_config =
       base::Bind(&Mp2tStreamParser::GetDecryptConfig, base::Unretained(this));
-  return base::MakeUnique<EsParserAdts>(
+  return std::make_unique<EsParserAdts>(
       on_audio_config_changed, on_emit_audio_buffer, get_decrypt_config, true,
       sbr_in_mimetype_);
 }

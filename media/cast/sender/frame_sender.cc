@@ -6,11 +6,11 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
@@ -96,7 +96,7 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
 
   transport_sender->InitializeStream(
       transport_config,
-      base::MakeUnique<FrameSender::RtcpClient>(weak_factory_.GetWeakPtr()));
+      std::make_unique<FrameSender::RtcpClient>(weak_factory_.GetWeakPtr()));
 }
 
 FrameSender::~FrameSender() = default;

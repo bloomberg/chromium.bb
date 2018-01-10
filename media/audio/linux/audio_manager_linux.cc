@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
 
@@ -35,7 +36,7 @@ std::unique_ptr<media::AudioManager> CreateAudioManager(
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
-    return base::MakeUnique<AudioManagerCras>(std::move(audio_thread),
+    return std::make_unique<AudioManagerCras>(std::move(audio_thread),
                                               audio_log_factory);
   }
 #endif
@@ -45,7 +46,7 @@ std::unique_ptr<media::AudioManager> CreateAudioManager(
   pa_context* pa_context = nullptr;
   if (pulse::InitPulse(&pa_mainloop, &pa_context)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kPulse, kAudioIOMax + 1);
-    return base::MakeUnique<AudioManagerPulse>(
+    return std::make_unique<AudioManagerPulse>(
         std::move(audio_thread), audio_log_factory, pa_mainloop, pa_context);
   }
   DVLOG(1) << "PulseAudio is not available on the OS";
@@ -53,10 +54,10 @@ std::unique_ptr<media::AudioManager> CreateAudioManager(
 
 #if defined(USE_ALSA)
   UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kAlsa, kAudioIOMax + 1);
-  return base::MakeUnique<AudioManagerAlsa>(std::move(audio_thread),
+  return std::make_unique<AudioManagerAlsa>(std::move(audio_thread),
                                             audio_log_factory);
 #else
-  return base::MakeUnique<FakeAudioManager>(std::move(audio_thread),
+  return std::make_unique<FakeAudioManager>(std::move(audio_thread),
                                             audio_log_factory);
 #endif
 }

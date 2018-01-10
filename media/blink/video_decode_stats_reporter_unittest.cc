@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "media/blink/video_decode_stats_reporter.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -167,7 +169,7 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
     mojom::VideoDecodeStatsRecorderPtr recorder_ptr;
     SetupRecordInterceptor(&recorder_ptr, &interceptor_);
 
-    reporter_ = base::MakeUnique<VideoDecodeStatsReporter>(
+    reporter_ = std::make_unique<VideoDecodeStatsReporter>(
         std::move(recorder_ptr),
         base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
                    base::Unretained(this)),

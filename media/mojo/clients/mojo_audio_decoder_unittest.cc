@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -118,7 +117,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
         .WillRepeatedly(RunCallback<0>());
 
     mojo::MakeStrongBinding(
-        base::MakeUnique<MojoAudioDecoderService>(
+        std::make_unique<MojoAudioDecoderService>(
             &mojo_cdm_service_context_, std::move(mock_audio_decoder)),
         std::move(request));
   }

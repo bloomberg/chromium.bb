@@ -4,7 +4,8 @@
 
 #include "media/mojo/services/test_mojo_media_client.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -43,7 +44,7 @@ void TestMojoMediaClient::Initialize(
   AudioManager* audio_manager = AudioManager::Get();
   if (!audio_manager) {
     audio_manager_ = media::AudioManager::CreateForTesting(
-        base::MakeUnique<AudioThreadImpl>());
+        std::make_unique<AudioThreadImpl>());
     // Flush the message loop to ensure that the audio manager is initialized.
     base::RunLoop().RunUntilIdle();
   }
@@ -56,21 +57,21 @@ scoped_refptr<AudioRendererSink> TestMojoMediaClient::CreateAudioRendererSink(
 
 std::unique_ptr<VideoRendererSink> TestMojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-  return base::MakeUnique<NullVideoSink>(
+  return std::make_unique<NullVideoSink>(
       false, base::TimeDelta::FromSecondsD(1.0 / 60),
       NullVideoSink::NewFrameCB(), task_runner);
 }
 
 std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
     MediaLog* media_log) {
-  return base::MakeUnique<DefaultRendererFactory>(
+  return std::make_unique<DefaultRendererFactory>(
       media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB());
 }
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
   DVLOG(1) << __func__;
-  return base::MakeUnique<DefaultCdmFactory>();
+  return std::make_unique<DefaultCdmFactory>();
 }
 
 }  // namespace media

@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -374,7 +375,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   current_decoder_config_ = stream->audio_decoder_config();
   DCHECK(current_decoder_config_.IsValidConfig());
 
-  audio_buffer_stream_ = base::MakeUnique<AudioBufferStream>(
+  audio_buffer_stream_ = std::make_unique<AudioBufferStream>(
       task_runner_, create_audio_decoders_cb_, media_log_);
 
   audio_buffer_stream_->set_config_change_observer(base::Bind(

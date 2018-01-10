@@ -5,11 +5,11 @@
 #include "media/filters/source_buffer_range_by_pts.h"
 
 #include <algorithm>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -226,7 +226,7 @@ std::unique_ptr<SourceBufferRangeByPts> SourceBufferRangeByPts::SplitRange(
 
   // Create a new range with |removed_buffers|.
   std::unique_ptr<SourceBufferRangeByPts> split_range =
-      base::MakeUnique<SourceBufferRangeByPts>(gap_policy_, removed_buffers,
+      std::make_unique<SourceBufferRangeByPts>(gap_policy_, removed_buffers,
                                                new_range_start_pts,
                                                interbuffer_distance_cb_);
 

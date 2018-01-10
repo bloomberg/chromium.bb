@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -90,7 +89,7 @@ inline base::RepeatingCallback<void(Args...)> BindToCurrentLoop(
   RunnerType run = &Helper::Run;
   // TODO(tzik): Propagate FROM_HERE from the caller.
   return base::BindRepeating(
-      run, base::MakeUnique<Helper>(
+      run, std::make_unique<Helper>(
                FROM_HERE, base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
 }
 
@@ -103,7 +102,7 @@ inline base::OnceCallback<void(Args...)> BindToCurrentLoop(
   RunnerType run = &Helper::Run;
   // TODO(tzik): Propagate FROM_HERE from the caller.
   return base::BindOnce(
-      run, base::MakeUnique<Helper>(
+      run, std::make_unique<Helper>(
                FROM_HERE, base::ThreadTaskRunnerHandle::Get(), std::move(cb)));
 }
 

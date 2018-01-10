@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/test_data_util.h"
@@ -24,7 +23,7 @@ class H264SPSTest : public ::testing::Test {
  public:
   // An exact clone of an SPS from Big Buck Bunny 480p.
   std::unique_ptr<H264SPS> MakeSPS_BBB480p() {
-    std::unique_ptr<H264SPS> sps = base::MakeUnique<H264SPS>();
+    std::unique_ptr<H264SPS> sps = std::make_unique<H264SPS>();
     sps->profile_idc = 100;
     sps->level_idc = 30;
     sps->chroma_format_idc = 1;

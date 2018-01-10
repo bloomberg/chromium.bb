@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <sys/select.h>
 #include <unistd.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -292,7 +292,7 @@ void UserInputMonitorLinux::StopKeyboardMonitoring() {
 std::unique_ptr<UserInputMonitor> UserInputMonitor::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner) {
-  return base::MakeUnique<UserInputMonitorLinux>(io_task_runner);
+  return std::make_unique<UserInputMonitorLinux>(io_task_runner);
 }
 
 }  // namespace media

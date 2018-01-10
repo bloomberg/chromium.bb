@@ -5,6 +5,7 @@
 #include "media/base/fake_demuxer_stream.h"
 
 #include <stdint.h>
+#include <memory>
 
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bind_to_current_loop.h"
@@ -189,7 +189,7 @@ void FakeDemuxerStream::DoRead() {
 
   // TODO(xhwang): Output out-of-order buffers if needed.
   if (is_encrypted_) {
-    buffer->set_decrypt_config(base::MakeUnique<DecryptConfig>(
+    buffer->set_decrypt_config(std::make_unique<DecryptConfig>(
         std::string(kKeyId, kKeyId + arraysize(kKeyId)),
         std::string(kIv, kIv + arraysize(kIv)), std::vector<SubsampleEntry>()));
   }

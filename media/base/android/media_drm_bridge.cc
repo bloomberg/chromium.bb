@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/android/build_info.h"
@@ -18,7 +19,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -386,7 +386,7 @@ void MediaDrmBridge::Create(
   }
 
   // MediaDrmStorage may be lazy created in MediaDrmStorageBridge.
-  auto storage = base::MakeUnique<MediaDrmStorageBridge>();
+  auto storage = std::make_unique<MediaDrmStorageBridge>();
   MediaDrmStorageBridge* raw_storage = storage.get();
 
   CreateMediaDrmBridgeCB create_media_drm_bridge_cb = base::BindOnce(
@@ -424,7 +424,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
   }
 
   return CreateInternal(
-      scheme_uuid, security_level, base::MakeUnique<MediaDrmStorageBridge>(),
+      scheme_uuid, security_level, std::make_unique<MediaDrmStorageBridge>(),
       create_fetcher_cb, SessionMessageCB(), SessionClosedCB(),
       SessionKeysChangeCB(), SessionExpirationUpdateCB(), origin_id);
 }
@@ -797,7 +797,7 @@ void MediaDrmBridge::OnSessionKeysChange(
              << key_status;
 
     cdm_keys_info.push_back(
-        base::MakeUnique<CdmKeyInformation>(key_id, key_status, 0));
+        std::make_unique<CdmKeyInformation>(key_id, key_status, 0));
   }
 
   task_runner_->PostTask(

@@ -26,9 +26,9 @@ class AudioOutputTest : public ::testing::Test {
  public:
   AudioOutputTest() {
     audio_manager_ =
-        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
+        AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
     audio_manager_device_info_ =
-        base::MakeUnique<AudioDeviceInfoAccessorForTests>(audio_manager_.get());
+        std::make_unique<AudioDeviceInfoAccessorForTests>(audio_manager_.get());
     base::RunLoop().RunUntilIdle();
   }
   ~AudioOutputTest() override {

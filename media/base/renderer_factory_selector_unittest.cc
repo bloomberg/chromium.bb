@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/overlay_info.h"
 #include "media/base/renderer_factory_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +40,7 @@ class RendererFactorySelectorTest : public testing::Test {
   ;
 
   void AddFactory(FactoryType type) {
-    selector_.AddFactory(type, base::MakeUnique<FakeFactory>(type));
+    selector_.AddFactory(type, std::make_unique<FakeFactory>(type));
   };
 
   FactoryType GetCurrentlySelectedFactoryType() {

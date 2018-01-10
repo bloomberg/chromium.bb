@@ -84,7 +84,7 @@ class TestResourceMultiBuffer : public ResourceMultiBuffer {
 
   std::unique_ptr<MultiBuffer::DataProvider> CreateWriter(const BlockId& pos,
                                                           bool) override {
-    auto writer = base::MakeUnique<TestMultiBufferDataProvider>(url_data_, pos);
+    auto writer = std::make_unique<TestMultiBufferDataProvider>(url_data_, pos);
     writer->Start();
     return writer;
   }
@@ -212,10 +212,10 @@ class MultibufferDataSourceTest : public testing::Test {
   MultibufferDataSourceTest() : preload_(MultibufferDataSource::AUTO) {
     ON_CALL(fetch_context_, CreateUrlLoader(_))
         .WillByDefault(Invoke([](const blink::WebAssociatedURLLoaderOptions&) {
-          return base::MakeUnique<NiceMock<MockWebAssociatedURLLoader>>();
+          return std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
         }));
 
-    url_index_ = base::MakeUnique<TestUrlIndex>(&fetch_context_);
+    url_index_ = std::make_unique<TestUrlIndex>(&fetch_context_);
   }
 
   MOCK_METHOD1(OnInitialize, void(bool));

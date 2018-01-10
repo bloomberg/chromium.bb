@@ -57,7 +57,7 @@ std::unique_ptr<MediaCodecBridge> MockMediaCodecBridge::CreateVideoDecoder(
     const VideoColorSpace& color_space,
     const base::Optional<HDRMetadata>& hdr_metadata,
     bool allow_adaptive_playback) {
-  return base::MakeUnique<MockMediaCodecBridge>();
+  return std::make_unique<MockMediaCodecBridge>();
 }
 
 }  // namespace media

@@ -142,7 +142,7 @@ scoped_refptr<base::SingleThreadTaskRunner> TaskService::GetTaskRunner(
 
   size_t thread = runner_id - 1;
   if (!threads_[thread]) {
-    threads_[thread] = base::MakeUnique<base::Thread>(
+    threads_[thread] = std::make_unique<base::Thread>(
         base::StringPrintf("MidiService_TaskService_Thread(%zu)", runner_id));
     base::Thread::Options options;
 #if defined(OS_WIN)

@@ -5,11 +5,11 @@
 #include "media/base/multi_channel_resampler.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/audio_bus.h"
 
 namespace media {
@@ -24,7 +24,7 @@ MultiChannelResampler::MultiChannelResampler(int channels,
   // Allocate each channel's resampler.
   resamplers_.reserve(channels);
   for (int i = 0; i < channels; ++i) {
-    resamplers_.push_back(base::MakeUnique<SincResampler>(
+    resamplers_.push_back(std::make_unique<SincResampler>(
         io_sample_rate_ratio, request_size,
         base::Bind(&MultiChannelResampler::ProvideInput, base::Unretained(this),
                    i)));

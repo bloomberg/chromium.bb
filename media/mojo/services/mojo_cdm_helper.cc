@@ -129,7 +129,7 @@ void MojoCdmHelper::ConnectToCdmStorage() {
 
 CdmAllocator* MojoCdmHelper::GetAllocator() {
   if (!allocator_)
-    allocator_ = base::MakeUnique<MojoCdmAllocator>();
+    allocator_ = std::make_unique<MojoCdmAllocator>();
   return allocator_.get();
 }
 

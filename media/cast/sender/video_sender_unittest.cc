@@ -161,7 +161,7 @@ class VideoSenderTest : public ::testing::Test {
     last_pixel_value_ = kPixelValue;
     transport_ = new TestPacketSender();
     transport_sender_.reset(new CastTransportImpl(
-        &testing_clock_, base::TimeDelta(), base::MakeUnique<TransportClient>(),
+        &testing_clock_, base::TimeDelta(), std::make_unique<TransportClient>(),
         base::WrapUnique(transport_), task_runner_));
   }
 

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "media/base/cdm_config.h"
@@ -88,7 +87,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     connector()->BindInterface(media::mojom::kMediaServiceName, &media_service);
 
     service_manager::mojom::InterfaceProviderPtr interfaces;
-    auto provider = base::MakeUnique<MediaInterfaceProvider>(
+    auto provider = std::make_unique<MediaInterfaceProvider>(
         mojo::MakeRequest(&interfaces));
     media_service->CreateInterfaceFactory(
         mojo::MakeRequest(&interface_factory_), std::move(interfaces));

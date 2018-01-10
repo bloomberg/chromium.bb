@@ -41,7 +41,7 @@ namespace media {
 class MockAudioManagerCras : public AudioManagerCras {
  public:
   MockAudioManagerCras()
-      : AudioManagerCras(base::MakeUnique<TestAudioThread>(),
+      : AudioManagerCras(std::make_unique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
 
   // We need to override this function in order to skip the checking the number

@@ -5,11 +5,11 @@
 #include "media/filters/frame_processor.h"
 
 #include <stdint.h>
+#include <memory>
 
 #include <cstdlib>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 
@@ -416,7 +416,7 @@ bool FrameProcessor::AddTrack(StreamParser::TrackId id,
   }
 
   track_buffers_[id] =
-      base::MakeUnique<MseTrackBuffer>(stream, media_log_, parse_warning_cb_);
+      std::make_unique<MseTrackBuffer>(stream, media_log_, parse_warning_cb_);
   return true;
 }
 

@@ -4,12 +4,12 @@
 
 #include "media/audio/audio_debug_recording_manager.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_message_loop.h"
@@ -97,7 +97,7 @@ class AudioDebugRecordingManagerUnderTest : public AudioDebugRecordingManager {
       const AudioParameters& params,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::OnceClosure on_destruction_closure) override {
-    return base::MakeUnique<MockAudioDebugRecordingHelper>(
+    return std::make_unique<MockAudioDebugRecordingHelper>(
         params, std::move(task_runner), std::move(on_destruction_closure));
   }
 

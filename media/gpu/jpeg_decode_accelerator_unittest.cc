@@ -18,7 +18,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -405,7 +404,7 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& filename : filenames) {
     base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
-    auto image_data = base::MakeUnique<TestImageFile>(filename);
+    auto image_data = std::make_unique<TestImageFile>(filename);
     ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data.get()));
     image_data_user_.push_back(std::move(image_data));
   }
@@ -492,8 +491,8 @@ void JpegDecodeAcceleratorTest::TestDecode(size_t num_concurrent_decoders) {
   std::vector<std::unique_ptr<JpegClient>> clients;
 
   for (size_t i = 0; i < num_concurrent_decoders; i++) {
-    notes.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
-    clients.push_back(base::MakeUnique<JpegClient>(test_image_files_,
+    notes.push_back(std::make_unique<ClientStateNotification<ClientState>>());
+    clients.push_back(std::make_unique<JpegClient>(test_image_files_,
                                                    notes.back().get(), false));
     decoder_thread.task_runner()->PostTask(
         FROM_HERE, base::Bind(&JpegClient::CreateJpegDecoder,
@@ -529,9 +528,9 @@ void JpegDecodeAcceleratorTest::PerfDecodeByJDA(int decode_times) {
   ASSERT_TRUE(decoder_thread.Start());
 
   std::unique_ptr<ClientStateNotification<ClientState>> note =
-      base::MakeUnique<ClientStateNotification<ClientState>>();
+      std::make_unique<ClientStateNotification<ClientState>>();
   std::unique_ptr<JpegClient> client =
-      base::MakeUnique<JpegClient>(test_image_files_, note.get(), true);
+      std::make_unique<JpegClient>(test_image_files_, note.get(), true);
 
   decoder_thread.task_runner()->PostTask(
       FROM_HERE, base::Bind(&JpegClient::CreateJpegDecoder,
@@ -558,9 +557,9 @@ void JpegDecodeAcceleratorTest::PerfDecodeBySW(int decode_times) {
   LOG_ASSERT(test_image_files_.size() == 1);
 
   std::unique_ptr<ClientStateNotification<ClientState>> note =
-      base::MakeUnique<ClientStateNotification<ClientState>>();
+      std::make_unique<ClientStateNotification<ClientState>>();
   std::unique_ptr<JpegClient> client =
-      base::MakeUnique<JpegClient>(test_image_files_, note.get(), true);
+      std::make_unique<JpegClient>(test_image_files_, note.get(), true);
 
   const int32_t bitstream_buffer_id = 0;
   client->PrepareMemory(bitstream_buffer_id);

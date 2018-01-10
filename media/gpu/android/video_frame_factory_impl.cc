@@ -50,7 +50,7 @@ void VideoFrameFactoryImpl::Initialize(bool wants_promotion_hint,
                                        InitCb init_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!gpu_video_frame_factory_);
-  gpu_video_frame_factory_ = base::MakeUnique<GpuVideoFrameFactory>();
+  gpu_video_frame_factory_ = std::make_unique<GpuVideoFrameFactory>();
   base::PostTaskAndReplyWithResult(
       gpu_task_runner_.get(), FROM_HERE,
       base::Bind(&GpuVideoFrameFactory::Initialize,

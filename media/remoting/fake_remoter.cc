@@ -4,10 +4,11 @@
 
 #include "media/remoting/fake_remoter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/buildflag.h"
 #include "media/media_features.h"
@@ -182,7 +183,7 @@ FakeRemoterFactory::~FakeRemoterFactory() = default;
 void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
                                 mojom::RemoterRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<FakeRemoter>(std::move(source), start_will_fail_),
+      std::make_unique<FakeRemoter>(std::move(source), start_will_fail_),
       std::move(request));
 }
 

@@ -41,7 +41,7 @@ class AUHALStreamTest : public testing::Test {
   AUHALStreamTest()
       : message_loop_(base::MessageLoop::TYPE_UI),
         manager_(AudioManager::CreateForTesting(
-            base::MakeUnique<TestAudioThread>())),
+            std::make_unique<TestAudioThread>())),
         manager_device_info_(manager_.get()) {
     // Wait for the AudioManager to finish any initialization on the audio loop.
     base::RunLoop().RunUntilIdle();

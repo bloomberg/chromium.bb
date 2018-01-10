@@ -45,7 +45,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 class MockAudioManagerCrasInput : public AudioManagerCras {
  public:
   MockAudioManagerCrasInput()
-      : AudioManagerCras(base::MakeUnique<TestAudioThread>(),
+      : AudioManagerCras(std::make_unique<TestAudioThread>(),
                          &fake_audio_log_factory_) {}
 
   // We need to override this function in order to skip checking the number

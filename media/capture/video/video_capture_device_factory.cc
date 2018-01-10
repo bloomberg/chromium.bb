@@ -33,7 +33,7 @@ VideoCaptureDeviceFactory::CreateFactory(
           command_line->GetSwitchValueASCII(
               switches::kUseFakeDeviceForMediaStream),
           &config);
-      auto result = base::MakeUnique<FakeVideoCaptureDeviceFactory>();
+      auto result = std::make_unique<FakeVideoCaptureDeviceFactory>();
       result->SetToCustomDevicesConfig(config);
       return std::move(result);
     }

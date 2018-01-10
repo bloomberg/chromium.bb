@@ -28,7 +28,7 @@ class SoundsManagerTest : public testing::Test {
 
   void SetUp() override {
     audio_manager_ =
-        AudioManager::CreateForTesting(base::MakeUnique<TestAudioThread>());
+        AudioManager::CreateForTesting(std::make_unique<TestAudioThread>());
     SoundsManager::Create();
     base::RunLoop().RunUntilIdle();
   }

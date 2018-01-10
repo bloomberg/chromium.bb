@@ -102,7 +102,7 @@ class MockClient : public mojom::AudioOutputStreamClient {
 
     base::PlatformFile fd;
     mojo::UnwrapPlatformFile(std::move(socket_handle), &fd);
-    socket_ = base::MakeUnique<base::CancelableSyncSocket>(fd);
+    socket_ = std::make_unique<base::CancelableSyncSocket>(fd);
     EXPECT_NE(socket_->handle(), base::CancelableSyncSocket::kInvalidHandle);
 
     size_t memory_length;
@@ -113,7 +113,7 @@ class MockClient : public mojom::AudioOutputStreamClient {
                                        &memory_length, &read_only),
         MOJO_RESULT_OK);
     EXPECT_FALSE(read_only);
-    buffer_ = base::MakeUnique<base::SharedMemory>(shmem_handle, read_only);
+    buffer_ = std::make_unique<base::SharedMemory>(shmem_handle, read_only);
 
     GotNotification();
   }
@@ -143,13 +143,13 @@ void NotCalled(mojo::ScopedSharedBufferHandle shared_buffer,
 class MojoAudioOutputStreamTest : public Test {
  public:
   MojoAudioOutputStreamTest()
-      : foreign_socket_(base::MakeUnique<TestCancelableSyncSocket>()),
+      : foreign_socket_(std::make_unique<TestCancelableSyncSocket>()),
         client_binding_(&client_, mojo::MakeRequest(&client_ptr_)) {}
 
   AudioOutputStreamPtr CreateAudioOutput() {
     AudioOutputStreamPtr p;
     ExpectDelegateCreation();
-    impl_ = base::MakeUnique<MojoAudioOutputStream>(
+    impl_ = std::make_unique<MojoAudioOutputStream>(
         mojo::MakeRequest(&p), std::move(client_ptr_),
         base::BindOnce(&MockDelegateFactory::CreateDelegate,
                        base::Unretained(&mock_delegate_factory_)),

@@ -47,7 +47,7 @@ std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
     service_manager::mojom::InterfaceProvider* interface_provider) {
   mojom::ProvisionFetcherPtr provision_fetcher_ptr;
   service_manager::GetInterface(interface_provider, &provision_fetcher_ptr);
-  return base::MakeUnique<MojoProvisionFetcher>(
+  return std::make_unique<MojoProvisionFetcher>(
       std::move(provision_fetcher_ptr));
 }
 
@@ -56,7 +56,7 @@ std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
   DCHECK(host_interfaces);
   mojom::MediaDrmStoragePtr media_drm_storage_ptr;
   service_manager::GetInterface(host_interfaces, &media_drm_storage_ptr);
-  return base::MakeUnique<MojoMediaDrmStorage>(
+  return std::make_unique<MojoMediaDrmStorage>(
       std::move(media_drm_storage_ptr));
 }
 #endif  // defined(OS_ANDROID)
@@ -100,7 +100,7 @@ void GpuMojoMediaClient::Initialize(service_manager::Connector* connector) {}
 std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 #if defined(OS_ANDROID)
-  return base::MakeUnique<MediaCodecAudioDecoder>(task_runner);
+  return std::make_unique<MediaCodecAudioDecoder>(task_runner);
 #else
   return nullptr;
 #endif  // defined(OS_ANDROID)
@@ -115,16 +115,16 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
   auto get_stub_cb =
       base::Bind(&GetCommandBufferStub, media_gpu_channel_manager_,
                  command_buffer_id->channel_token, command_buffer_id->route_id);
-  return base::MakeUnique<MediaCodecVideoDecoder>(
+  return std::make_unique<MediaCodecVideoDecoder>(
       gpu_preferences_, DeviceInfo::GetInstance(),
       AVDACodecAllocator::GetInstance(gpu_task_runner_),
-      base::MakeUnique<AndroidVideoSurfaceChooserImpl>(
+      std::make_unique<AndroidVideoSurfaceChooserImpl>(
           DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
-      base::MakeUnique<VideoFrameFactoryImpl>(gpu_task_runner_,
+      std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)));
 #elif defined(OS_WIN) && BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
-  return base::MakeUnique<D3D11VideoDecoder>(
+  return std::make_unique<D3D11VideoDecoder>(
       gpu_task_runner_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
@@ -137,7 +137,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
 std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* interface_provider) {
 #if defined(OS_ANDROID)
-  return base::MakeUnique<AndroidCdmFactory>(
+  return std::make_unique<AndroidCdmFactory>(
       base::Bind(&CreateProvisionFetcher, interface_provider),
       base::Bind(&CreateMediaDrmStorage, interface_provider));
 #else

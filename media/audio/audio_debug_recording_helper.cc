@@ -4,9 +4,10 @@
 
 #include "media/audio/audio_debug_recording_helper.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_debug_file_writer.h"
 
@@ -92,7 +93,7 @@ void AudioDebugRecordingHelper::DoWrite(std::unique_ptr<media::AudioBus> data) {
 std::unique_ptr<AudioDebugFileWriter>
 AudioDebugRecordingHelper::CreateAudioDebugFileWriter(
     const AudioParameters& params) {
-  return base::MakeUnique<AudioDebugFileWriter>(params);
+  return std::make_unique<AudioDebugFileWriter>(params);
 }
 
 }  // namespace media

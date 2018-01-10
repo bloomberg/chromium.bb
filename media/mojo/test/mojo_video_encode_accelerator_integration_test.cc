@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -34,7 +35,7 @@ extern std::unique_ptr<VideoEncodeAccelerator> CreateAndInitializeFakeVEA(
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences) {
   // Use FakeVEA as scoped_ptr to guarantee proper destruction via Destroy().
-  auto vea = base::MakeUnique<FakeVideoEncodeAccelerator>(
+  auto vea = std::make_unique<FakeVideoEncodeAccelerator>(
       base::ThreadTaskRunnerHandle::Get());
   const bool result = vea->Initialize(input_format, input_visible_size,
                                       output_profile, initial_bitrate, client);
@@ -66,7 +67,7 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
   void SetUp() override {
     mojom::VideoEncodeAcceleratorPtr mojo_vea;
     mojo_vea_binding_ = mojo::MakeStrongBinding(
-        base::MakeUnique<MojoVideoEncodeAcceleratorService>(
+        std::make_unique<MojoVideoEncodeAcceleratorService>(
             base::Bind(&CreateAndInitializeFakeVEA), gpu::GpuPreferences()),
         mojo::MakeRequest(&mojo_vea));
 
@@ -122,7 +123,7 @@ class MojoVideoEncodeAcceleratorIntegrationTest : public ::testing::Test {
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, CreateAndDestroy) {}
 
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, Initialize) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   // Make double sure that |kValidOutputProfile| is supported.
@@ -145,7 +146,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 // visible size, and NotifyError() gets pinged.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        InitializeWithInvalidDimensionsFails) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
 
   const gfx::Size kInvalidInputVisibleSize(limits::kMaxDimension + 1, 48);
 
@@ -159,7 +160,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 // This test is tantamount to forcing the remote Fake VEA to fail upon init.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        InitializeWithUnsupportedProfileFails) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
 
   const VideoCodecProfile kInvalidOutputProfile = VIDEO_CODEC_PROFILE_UNKNOWN;
 
@@ -173,7 +174,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 // the requested in RequireBitstreamBuffers() fails.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        UseOutputBitstreamBufferWithInvalidSizeFails) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   const uint64_t kInvalidShMemSize =
@@ -194,7 +195,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 // buffer id fails.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        UseOutputBitstreamBufferWithInvalidIdFails) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   const int32_t kInvalidBistreamBufferId = -18;
@@ -214,7 +215,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 // This test verifies the sharing of a single bitstream buffer and the Encode()
 // of one frame.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodeOneFrame) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   const int32_t kBistreamBufferId = 17;
@@ -250,7 +251,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodeOneFrame) {
 // different than those configured in Initialize() fails.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        EncodeWithInvalidDimensionsFails) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   {
@@ -288,7 +289,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
 
 // Tests that a RequestEncodingParametersChange() ripples through correctly.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodingParametersChange) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   const uint32_t kNewBitrate = 123123u;
@@ -303,7 +304,7 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodingParametersChange) {
 // this simulates the remote end of the communication going down.
 TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
        CallsAreIgnoredAfterBindingClosed) {
-  auto mock_vea_client = base::MakeUnique<MockVideoEncodeAcceleratorClient>();
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
   Initialize(mock_vea_client.get());
 
   {

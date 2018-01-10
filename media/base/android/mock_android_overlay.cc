@@ -4,8 +4,9 @@
 
 #include "media/base/android/mock_android_overlay.h"
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -19,7 +20,7 @@ MockAndroidOverlay::MockAndroidOverlay() : weak_factory_(this) {}
 MockAndroidOverlay::~MockAndroidOverlay() {}
 
 void MockAndroidOverlay::SetConfig(AndroidOverlayConfig config) {
-  config_ = base::MakeUnique<AndroidOverlayConfig>(std::move(config));
+  config_ = std::make_unique<AndroidOverlayConfig>(std::move(config));
 }
 
 MockAndroidOverlay::Callbacks MockAndroidOverlay::GetCallbacks() {

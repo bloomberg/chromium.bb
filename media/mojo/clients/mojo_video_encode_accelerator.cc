@@ -119,7 +119,7 @@ bool MojoVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
   // Get a mojom::VideoEncodeAcceleratorClient bound to a local implementation
   // (VideoEncodeAcceleratorClient) and send the pointer remotely.
   mojom::VideoEncodeAcceleratorClientPtr vea_client_ptr;
-  vea_client_ = base::MakeUnique<VideoEncodeAcceleratorClient>(
+  vea_client_ = std::make_unique<VideoEncodeAcceleratorClient>(
       client, mojo::MakeRequest(&vea_client_ptr));
 
   bool result = false;

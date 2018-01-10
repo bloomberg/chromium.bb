@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -51,7 +51,7 @@ std::unique_ptr<media::DecryptConfig>
 TypeConverter<std::unique_ptr<media::DecryptConfig>,
               media::mojom::DecryptConfigPtr>::
     Convert(const media::mojom::DecryptConfigPtr& input) {
-  return base::MakeUnique<media::DecryptConfig>(input->key_id, input->iv,
+  return std::make_unique<media::DecryptConfig>(input->key_id, input->iv,
                                                 input->subsamples);
 }
 
@@ -176,7 +176,7 @@ std::unique_ptr<media::CdmKeyInformation>
 TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
               media::mojom::CdmKeyInformationPtr>::
     Convert(const media::mojom::CdmKeyInformationPtr& input) {
-  return base::MakeUnique<media::CdmKeyInformation>(
+  return std::make_unique<media::CdmKeyInformation>(
       input->key_id, input->status, input->system_code);
 }
 

@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -91,7 +90,7 @@ ACTION_P(EnterPendingDecoderInitStateAction, test) {
 class AudioRendererImplTest : public ::testing::Test, public RendererClient {
  public:
   std::vector<std::unique_ptr<AudioDecoder>> CreateAudioDecoderForTest() {
-    auto decoder = base::MakeUnique<MockAudioDecoder>();
+    auto decoder = std::make_unique<MockAudioDecoder>();
     if (!enter_pending_decoder_init_) {
       EXPECT_CALL(*decoder, Initialize(_, _, _, _))
           .WillOnce(DoAll(SaveArg<3>(&output_cb_),

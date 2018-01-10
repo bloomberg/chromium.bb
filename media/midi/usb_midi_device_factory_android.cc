@@ -5,10 +5,10 @@
 #include "media/midi/usb_midi_device_factory_android.h"
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "jni/UsbMidiDeviceFactoryAndroid_jni.h"
@@ -63,7 +63,7 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceRequestDone(
     base::android::ScopedJavaLocalRef<jobject> raw_device(
         env, env->GetObjectArrayElement(devices, i));
     devices_to_pass.push_back(
-        base::MakeUnique<UsbMidiDeviceAndroid>(raw_device, delegate_));
+        std::make_unique<UsbMidiDeviceAndroid>(raw_device, delegate_));
   }
 
   std::move(callback_).Run(true, &devices_to_pass);
@@ -75,7 +75,7 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceAttached(
     const JavaParamRef<jobject>& caller,
     const JavaParamRef<jobject>& device) {
   delegate_->OnDeviceAttached(
-      base::MakeUnique<UsbMidiDeviceAndroid>(device, delegate_));
+      std::make_unique<UsbMidiDeviceAndroid>(device, delegate_));
 }
 
 // Called from the Java world.

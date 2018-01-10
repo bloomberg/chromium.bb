@@ -193,7 +193,7 @@ class WatchTimeReporterTest
     void AcquireWatchTimeRecorder(
         mojom::PlaybackPropertiesPtr properties,
         mojom::WatchTimeRecorderRequest request) override {
-      mojo::MakeStrongBinding(base::MakeUnique<WatchTimeInterceptor>(parent_),
+      mojo::MakeStrongBinding(std::make_unique<WatchTimeInterceptor>(parent_),
                               std::move(request));
     }
     void AcquireVideoDecodeStatsRecorder(

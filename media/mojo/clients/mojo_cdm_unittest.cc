@@ -4,9 +4,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/test_message_loop.h"
@@ -77,7 +78,7 @@ class MojoCdmTest : public ::testing::Test {
 
   MojoCdmTest()
       : mojo_cdm_service_(
-            base::MakeUnique<MojoCdmService>(&mojo_cdm_service_context_,
+            std::make_unique<MojoCdmService>(&mojo_cdm_service_context_,
                                              &cdm_factory_)),
         cdm_binding_(mojo_cdm_service_.get()) {}
 
@@ -159,7 +160,7 @@ class MojoCdmTest : public ::testing::Test {
 
     mojo_cdm_->SetServerCertificate(
         certificate,
-        base::MakeUnique<MockCdmPromise>(expected_result == SUCCESS));
+        std::make_unique<MockCdmPromise>(expected_result == SUCCESS));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -188,7 +189,7 @@ class MojoCdmTest : public ::testing::Test {
     // request is generated.
     mojo_cdm_->CreateSessionAndGenerateRequest(
         session_type, data_type, key_id,
-        base::MakeUnique<MockCdmSessionPromise>(expected_result == SUCCESS,
+        std::make_unique<MockCdmSessionPromise>(expected_result == SUCCESS,
                                                 &created_session_id));
     base::RunLoop().RunUntilIdle();
 
@@ -217,7 +218,7 @@ class MojoCdmTest : public ::testing::Test {
     }
 
     mojo_cdm_->LoadSession(session_type, session_id,
-                           base::MakeUnique<MockCdmSessionPromise>(
+                           std::make_unique<MockCdmSessionPromise>(
                                expected_result == SUCCESS, &loaded_session_id));
     base::RunLoop().RunUntilIdle();
 
@@ -252,7 +253,7 @@ class MojoCdmTest : public ::testing::Test {
 
     mojo_cdm_->UpdateSession(
         session_id, response,
-        base::MakeUnique<MockCdmPromise>(expected_result == SUCCESS));
+        std::make_unique<MockCdmPromise>(expected_result == SUCCESS));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -268,7 +269,7 @@ class MojoCdmTest : public ::testing::Test {
                                               expected_result)));
     }
 
-    mojo_cdm_->CloseSession(session_id, base::MakeUnique<MockCdmPromise>(
+    mojo_cdm_->CloseSession(session_id, std::make_unique<MockCdmPromise>(
                                             expected_result == SUCCESS));
     base::RunLoop().RunUntilIdle();
   }
@@ -285,7 +286,7 @@ class MojoCdmTest : public ::testing::Test {
                                               expected_result)));
     }
 
-    mojo_cdm_->RemoveSession(session_id, base::MakeUnique<MockCdmPromise>(
+    mojo_cdm_->RemoveSession(session_id, std::make_unique<MockCdmPromise>(
                                              expected_result == SUCCESS));
     base::RunLoop().RunUntilIdle();
   }

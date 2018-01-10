@@ -42,7 +42,7 @@ MediaMetricsProvider::~MediaMetricsProvider() {
 // static
 void MediaMetricsProvider::Create(VideoDecodePerfHistory* perf_history,
                                   mojom::MediaMetricsProviderRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<MediaMetricsProvider>(perf_history),
+  mojo::MakeStrongBinding(std::make_unique<MediaMetricsProvider>(perf_history),
                           std::move(request));
 }
 
@@ -73,7 +73,7 @@ void MediaMetricsProvider::AcquireWatchTimeRecorder(
     return;
   }
 
-  mojo::MakeStrongBinding(base::MakeUnique<WatchTimeRecorder>(
+  mojo::MakeStrongBinding(std::make_unique<WatchTimeRecorder>(
                               std::move(properties), untrusted_top_origin_,
                               is_top_frame_, player_id_),
                           std::move(request));
@@ -87,7 +87,7 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
   }
 
   mojo::MakeStrongBinding(
-      base::MakeUnique<VideoDecodeStatsRecorder>(
+      std::make_unique<VideoDecodeStatsRecorder>(
           untrusted_top_origin_, is_top_frame_, player_id_, perf_history_),
       std::move(request));
 }
