@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -21,6 +22,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("offline_pages::android")
 public class OfflinePagesDownloadManagerBridge {
+    private static final String TAG = "OfflinePagesDMBridge";
     /** Offline pages should not be scanned as for media content. */
     public static final boolean IS_MEDIA_SCANNER_SCANNABLE = false;
 
@@ -50,12 +52,18 @@ public class OfflinePagesDownloadManagerBridge {
     @CalledByNative
     private static long addCompletedDownload(String title, String description, String path,
             long length, String uri, String referer) {
-        // Call the proper version of the pass through based on the supported API level.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            return callAddCompletedDownload(title, description, path, length);
-        }
+        try {
+            // Call the proper version of the pass through based on the supported API level.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                return callAddCompletedDownload(title, description, path, length);
+            }
 
-        return callAddCompletedDownload(title, description, path, length, uri, referer);
+            return callAddCompletedDownload(title, description, path, length, uri, referer);
+        } catch (Exception e) {
+            // In case of exception, we return a download id of 0.
+            Log.d(TAG, "ADM threw while trying to add a download. " + e);
+            return 0;
+        }
     }
 
     // Use this pass through before API level 24.
@@ -87,9 +95,14 @@ public class OfflinePagesDownloadManagerBridge {
     @CalledByNative
     private static int remove(long[] ids) {
         DownloadManager downloadManager = getDownloadManager();
-        if (downloadManager == null) return 0;
+        try {
+            if (downloadManager == null) return 0;
 
-        return downloadManager.remove(ids);
+            return downloadManager.remove(ids);
+        } catch (Exception e) {
+            Log.d(TAG, "ADM threw while trying to remove a download. " + e);
+            return 0;
+        }
     }
 
     private static DownloadManager getDownloadManager() {

@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_MODEL_CLEAR_DIGEST_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_CLEAR_DIGEST_TASK_H_
 
-#include "stdint.h"
+#include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
