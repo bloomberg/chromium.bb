@@ -191,6 +191,7 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/legacy_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/legacy_toolbar_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/public/primary_toolbar_coordinator.h"
@@ -584,6 +585,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for the toolbar.
   LegacyToolbarCoordinator* _toolbarCoordinator;
+
+  // Coordinator for the primary toolbar, displayed on top.
+  PrimaryToolbarCoordinator* _topToolbarCoordinator;
 
   // The toolbar UI updater for the toolbar managed by |_toolbarCoordinator|.
   LegacyToolbarUIUpdater* _toolbarUIUpdater;
@@ -1298,7 +1302,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 }
 
 - (id<PrimaryToolbarCoordinator>)primaryToolbarCoordinator {
-  return _toolbarCoordinator;
+  if (base::FeatureList::IsEnabled(kAdaptiveToolbar)) {
+    return _topToolbarCoordinator;
+  } else {
+    return _toolbarCoordinator;
+  }
 }
 
 - (LegacyToolbarCoordinator*)legacyToolbarCoordinator {
@@ -1490,6 +1498,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.tabStripCoordinator = nil;
   [_toolbarCoordinator stop];
   _toolbarCoordinator = nil;
+  [_topToolbarCoordinator stop];
+  _topToolbarCoordinator = nil;
   self.tabStripView = nil;
   _infoBarContainer = nil;
   _readingListMenuNotifier = nil;
@@ -1696,6 +1706,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _readingListCoordinator = nil;
     self.recentTabsCoordinator = nil;
     _toolbarCoordinator = nil;
+    _topToolbarCoordinator = nil;
     [_toolbarUIUpdater stopUpdating];
     _toolbarUIUpdater = nil;
     _toolbarModelDelegate = nil;
@@ -1911,25 +1922,38 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       new ToolbarModelDelegateIOS([_model webStateList]));
   _toolbarModelIOS.reset([_dependencyFactory
       newToolbarModelIOSWithDelegate:_toolbarModelDelegate.get()]);
-  _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
-          initWithBaseViewController:self
-      toolsMenuConfigurationProvider:self
-                          dispatcher:self.dispatcher
-                        browserState:_browserState];
+
+  if (base::FeatureList::IsEnabled(kAdaptiveToolbar)) {
+    _topToolbarCoordinator = [[PrimaryToolbarCoordinator alloc]
+        initWithToolsMenuConfigurationProvider:self
+                                    dispatcher:self.dispatcher
+                                  browserState:_browserState];
+    _topToolbarCoordinator.delegate = self;
+    _topToolbarCoordinator.URLLoader = self;
+    _topToolbarCoordinator.webStateList = [_model webStateList];
+    [_topToolbarCoordinator start];
+  } else {
+    _toolbarCoordinator = [[LegacyToolbarCoordinator alloc]
+            initWithBaseViewController:self
+        toolsMenuConfigurationProvider:self
+                            dispatcher:self.dispatcher
+                          browserState:_browserState];
+    [_toolbarCoordinator
+        setToolbarController:
+            [_dependencyFactory
+                newToolbarControllerWithDelegate:self
+                                       urlLoader:self
+                                      dispatcher:self.dispatcher]];
+
+    [_toolbarCoordinator start];
+  }
 
   self.sideSwipeController.toolbarInteractionHandler =
       self.primaryToolbarCoordinator;
 
-  [_toolbarCoordinator
-      setToolbarController:
-          [_dependencyFactory
-              newToolbarControllerWithDelegate:self
-                                     urlLoader:self
-                                    dispatcher:self.dispatcher]];
   [_dispatcher startDispatchingToTarget:self.primaryToolbarCoordinator
                             forProtocol:@protocol(OmniboxFocuser)];
   [self.legacyToolbarCoordinator setTabCount:[_model count]];
-  [_toolbarCoordinator start];
   [self updateBroadcastState];
   if (_voiceSearchController)
     _voiceSearchController->SetDelegate(
@@ -2076,7 +2100,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Position the toolbar next, either at the top of the browser view or
   // directly under the tabstrip.
   if (initialLayout)
-    [self addChildViewController:_toolbarCoordinator.viewController];
+    [self addChildViewController:self.primaryToolbarCoordinator.viewController];
   if (!IsSafeAreaCompatibleToolbarEnabled()) {
     CGFloat minY = self.headerOffset;
     if (self.tabStripView) {
@@ -2096,8 +2120,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
-    [[self view] insertSubview:_toolbarCoordinator.viewController.view
-                  aboveSubview:infoBarContainerView];
+    [[self view]
+        insertSubview:self.primaryToolbarCoordinator.viewController.view
+         aboveSubview:infoBarContainerView];
     AddNamedGuide(kOmniboxGuide, self.view);
     AddNamedGuide(kBackButtonGuide, self.view);
     AddNamedGuide(kForwardButtonGuide, self.view);
@@ -2105,7 +2130,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     AddNamedGuide(kTabSwitcherGuide, self.view);
   }
   if (initialLayout)
-    [_toolbarCoordinator.viewController didMoveToParentViewController:self];
+    [self.primaryToolbarCoordinator.viewController
+        didMoveToParentViewController:self];
 
   // Adjust the content area to be under the toolbar, for fullscreen or below
   // the toolbar is not fullscreen.
@@ -2494,8 +2520,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)presentNewIncognitoTabTipBubble {
   DCHECK(self.browserState);
-  DCHECK([self.legacyToolbarCoordinator
-      respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
   // If the BVC is not visible, do not present the bubble.
   if (!self.viewVisible)
     return;
@@ -2519,6 +2543,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
     toolsButtonAnchor = [guide.owningView convertPoint:anchorPoint
                                                 toView:guide.owningView.window];
   } else {
+    DCHECK([self.legacyToolbarCoordinator
+        respondsToSelector:@selector(anchorPointForToolsMenuButton:)]);
     toolsButtonAnchor = [self.legacyToolbarCoordinator
         anchorPointForToolsMenuButton:BubbleArrowDirectionUp];
   }
