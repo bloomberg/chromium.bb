@@ -288,6 +288,7 @@ html element area
     property protocol
     property referrerPolicy
     property rel
+    property relList
     property search
     property shape
     property target

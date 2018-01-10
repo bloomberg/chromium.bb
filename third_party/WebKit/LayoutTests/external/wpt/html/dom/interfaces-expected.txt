@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5263 tests; 5146 PASS, 117 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5263 tests; 5148 PASS, 115 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -1755,7 +1755,7 @@ PASS HTMLAreaElement interface: attribute target
 PASS HTMLAreaElement interface: attribute download
 PASS HTMLAreaElement interface: attribute ping
 PASS HTMLAreaElement interface: attribute rel
-FAIL HTMLAreaElement interface: attribute relList assert_true: The prototype object must have a property "relList" expected true got false
+PASS HTMLAreaElement interface: attribute relList
 PASS HTMLAreaElement interface: attribute referrerPolicy
 PASS HTMLAreaElement interface: attribute noHref
 PASS HTMLAreaElement interface: attribute href
@@ -1779,7 +1779,7 @@ PASS HTMLAreaElement interface: document.createElement("area") must inherit prop
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "download" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "ping" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "rel" with the proper type
-FAIL HTMLAreaElement interface: document.createElement("area") must inherit property "relList" with the proper type assert_inherits: property "relList" not found in prototype chain
+PASS HTMLAreaElement interface: document.createElement("area") must inherit property "relList" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "referrerPolicy" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "noHref" with the proper type
 PASS HTMLAreaElement interface: document.createElement("area") must inherit property "href" with the proper type
