@@ -953,7 +953,8 @@ void DesktopWindowTreeHostWin::HandleWindowSizeUnchanged() {
   if (compositor()) {
     compositor()->SetScaleAndSize(
         compositor()->device_scale_factor(),
-        message_handler_->GetClientAreaBounds().size());
+        message_handler_->GetClientAreaBounds().size(),
+        window()->GetLocalSurfaceId());
   }
 }
 
@@ -961,8 +962,8 @@ void DesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(
     float window_scale_factor) {
   if (compositor()) {
     compositor()->SetScaleAndSize(
-        window_scale_factor,
-        message_handler_->GetClientAreaBounds().size());
+        window_scale_factor, message_handler_->GetClientAreaBounds().size(),
+        window()->GetLocalSurfaceId());
   }
 }
 
