@@ -1245,6 +1245,8 @@ void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
         MostForwardCaretPosition(caret_after_delete.DeepEquivalent());
     Node* node = position.AnchorNode();
 
+    // InsertListCommandTest.CleanupNodeSameAsDestinationNode reaches here.
+    ABORT_EDITING_COMMAND_IF(destination_node == node);
     // Bail if we'd remove an ancestor of our destination.
     if (destination_node && destination_node->IsDescendantOf(node))
       return;
