@@ -18,6 +18,7 @@
 #include "av1/common/convolve.h"
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
+#include "av1/common/resize.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 
@@ -32,9 +33,9 @@
 
 void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
                              int dst_stride, int w, int h,
-                             const int16_t *x_filters, int interp_taps,
-                             const int x0_qn, const int x_step_qn) {
-  src -= interp_taps / 2 - 1;
+                             const int16_t *x_filters, const int x0_qn,
+                             const int x_step_qn) {
+  src -= UPSCALE_NORMATIVE_TAPS / 2 - 1;
   for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;
     for (int x = 0; x < w; ++x) {
@@ -42,9 +43,11 @@ void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
       const int x_filter_idx =
           (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
       assert(x_filter_idx <= RS_SUBPEL_MASK);
-      const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+      const int16_t *const x_filter =
+          &x_filters[x_filter_idx * UPSCALE_NORMATIVE_TAPS];
       int sum = 0;
-      for (int k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      for (int k = 0; k < UPSCALE_NORMATIVE_TAPS; ++k)
+        sum += src_x[k] * x_filter[k];
       dst[x] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
       x_qn += x_step_qn;
     }
@@ -55,10 +58,9 @@ void av1_convolve_horiz_rs_c(const uint8_t *src, int src_stride, uint8_t *dst,
 // TODO(yaowu: remove "const" from pass-by-value params in this and other funcs)
 void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
-                                    const int16_t *x_filters, int interp_taps,
-                                    const int x0_qn, const int x_step_qn,
-                                    int bd) {
-  src -= interp_taps / 2 - 1;
+                                    const int16_t *x_filters, const int x0_qn,
+                                    const int x_step_qn, int bd) {
+  src -= UPSCALE_NORMATIVE_TAPS / 2 - 1;
   for (int y = 0; y < h; ++y) {
     int x_qn = x0_qn;
     for (int x = 0; x < w; ++x) {
@@ -66,9 +68,11 @@ void av1_highbd_convolve_horiz_rs_c(const uint16_t *src, int src_stride,
       const int x_filter_idx =
           (x_qn & RS_SCALE_SUBPEL_MASK) >> RS_SCALE_EXTRA_BITS;
       assert(x_filter_idx <= RS_SUBPEL_MASK);
-      const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+      const int16_t *const x_filter =
+          &x_filters[x_filter_idx * UPSCALE_NORMATIVE_TAPS];
       int sum = 0;
-      for (int k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+      for (int k = 0; k < UPSCALE_NORMATIVE_TAPS; ++k)
+        sum += src_x[k] * x_filter[k];
       dst[x] = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
       x_qn += x_step_qn;
     }
