@@ -49,6 +49,8 @@ RendererSettings CreateRendererSettings() {
 #elif defined(OS_MACOSX)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
 #endif
+  renderer_settings.tint_gl_composited_content =
+      command_line->HasSwitch(switches::kTintGlCompositedContent);
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(switches::kShowOverdrawFeedback);
   renderer_settings.enable_draw_occlusion =

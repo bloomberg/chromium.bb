@@ -150,6 +150,22 @@ int DebugColors::GLCompositedTextureQuadBoderWidth() {
   return 6;
 }
 
+// Returns a color transform that shifts color toward red.
+base::span<const float>
+DebugColors::TintCompositedContentColorTransformMatrix() {
+  // The new colors are:
+  // new_R = R + 0.3 G + 0.3 B
+  // new_G =     0.7 G
+  // new_B =             0.7 B
+  // clang-format off
+  static constexpr float kColorTransform[] = {1.0f, 0.0f, 0.0f, 0.0f,
+                                              0.3f, 0.7f, 0.0f, 0.0f,
+                                              0.3f, 0.0f, 0.7f, 0.0f,
+                                              0.0f, 0.0f, 0.0f, 1.0f};
+  // clang-format on
+  return base::span<const float>(kColorTransform, sizeof(kColorTransform));
+}
+
 // Compressed tile borders are blue.
 SkColor DebugColors::CompressedTileBorderColor() {
   return SkColorSetARGB(100, 20, 20, 240);

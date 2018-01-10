@@ -297,6 +297,9 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   bool has_output_color_matrix_ = false;
   int output_color_matrix_location_ = -1;
 
+  bool has_tint_color_matrix_ = false;
+  int tint_color_matrix_location_ = -1;
+
   // YUV uniform locations.
   int y_texture_location_ = -1;
   int u_texture_location_ = -1;

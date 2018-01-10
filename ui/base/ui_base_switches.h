@@ -41,6 +41,7 @@ UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeedFast[];
 UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeedSlow[];
 UI_BASE_EXPORT extern const char kShowOverdrawFeedback[];
 UI_BASE_EXPORT extern const char kSlowDownCompositingScaleFactor[];
+UI_BASE_EXPORT extern const char kTintGlCompositedContent[];
 UI_BASE_EXPORT extern const char kTopChromeMD[];
 UI_BASE_EXPORT extern const char kTopChromeMDMaterial[];
 UI_BASE_EXPORT extern const char kTopChromeMDMaterialAuto[];
