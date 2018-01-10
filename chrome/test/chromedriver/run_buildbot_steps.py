@@ -96,7 +96,8 @@ def _GetTestResultsLog(platform):
     A dictionary where the keys are commit positions and the values are booleans
     indicating whether the tests passed.
   """
-  temp_log = tempfile.mkstemp()[1]
+  (temp_fd, temp_log) = tempfile.mkstemp()
+  os.close(temp_fd)
   log_name = TEST_LOG_FORMAT % platform
   result = slave_utils.GSUtilDownloadFile(
       '%s/%s' % (GS_CHROMEDRIVER_DATA_BUCKET, log_name), temp_log)
