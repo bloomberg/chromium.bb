@@ -139,17 +139,20 @@ cr.define('print_preview', function() {
         locationEl.textContent = hint;
         locationEl.title = hint;
 
-        const offlineStatusText = destination.offlineStatusText;
-        const offlineStatusEl =
-            this.getChildElement('.destination-settings-offline-status');
-        offlineStatusEl.textContent = offlineStatusText;
-        offlineStatusEl.title = offlineStatusText;
+        const connectionStatusText = destination.connectionStatusText;
+        const connectionStatusEl =
+            this.getChildElement('.destination-settings-connection-status');
+        connectionStatusEl.textContent = connectionStatusText;
+        connectionStatusEl.title = connectionStatusText;
 
-        const isOffline = destination.isOffline;
+        const hasConnectionError = destination.isOffline ||
+            (destination.hasInvalidCertificate &&
+             !loadTimeData.getBoolean('isEnterpriseManaged'));
         destinationSettingsBoxEl.classList.toggle(
-            print_preview.DestinationSettingsClasses_.STALE, isOffline);
-        setIsVisible(locationEl, !isOffline);
-        setIsVisible(offlineStatusEl, isOffline);
+            print_preview.DestinationSettingsClasses_.STALE,
+            hasConnectionError);
+        setIsVisible(locationEl, !hasConnectionError);
+        setIsVisible(connectionStatusEl, hasConnectionError);
       }
 
       setIsVisible(
