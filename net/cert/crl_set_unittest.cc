@@ -328,7 +328,7 @@ TEST(CRLSetTest, BlockedSPKIs) {
 TEST(CRLSetTest, BlockedSubjects) {
   std::string crl_set_bytes;
   EXPECT_TRUE(base::ReadFileToString(
-      GetTestCertsDirectory().AppendASCII("crlset_by_subject.raw"),
+      GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
       &crl_set_bytes));
   scoped_refptr<CRLSet> set;
   EXPECT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &set));

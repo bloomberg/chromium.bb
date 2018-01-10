@@ -1879,6 +1879,67 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
 }
 
+// Tests that CertVerifyProc implementations apply CRLSet revocations by
+// subject.
+TEST_P(CertVerifyProcInternalTest, CRLSetRevokedBySubject) {
+  if (!SupportsCRLSet()) {
+    LOG(INFO) << "Skipping test as verifier doesn't support CRLSet";
+    return;
+  }
+
+  scoped_refptr<X509Certificate> root(
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem"));
+  ASSERT_TRUE(root);
+
+  scoped_refptr<X509Certificate> leaf(
+      ImportCertFromFile(GetTestCertsDirectory(), "ok_cert.pem"));
+  ASSERT_TRUE(leaf);
+
+  ScopedTestRoot scoped_root(root.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+
+  // Confirm that verifying the certificate chain with an empty CRLSet succeeds.
+  scoped_refptr<CRLSet> crl_set = CRLSet::EmptyCRLSetForTesting();
+  int error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                     CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+
+  std::string crl_set_bytes;
+
+  // Revoke the leaf by subject. Verification should now fail.
+  ASSERT_TRUE(base::ReadFileToString(
+      GetTestCertsDirectory().AppendASCII("crlset_by_leaf_subject_no_spki.raw"),
+      &crl_set_bytes));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+
+  error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                 CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+
+  // Revoke the root by subject. Verification should now fail.
+  ASSERT_TRUE(base::ReadFileToString(
+      GetTestCertsDirectory().AppendASCII("crlset_by_root_subject_no_spki.raw"),
+      &crl_set_bytes));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+
+  error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                 CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+
+  // Revoke the leaf by subject, but only if the SPKI doesn't match the given
+  // one. Verification should pass when using the certificate's actual SPKI.
+  ASSERT_TRUE(base::ReadFileToString(
+      GetTestCertsDirectory().AppendASCII("crlset_by_root_subject.raw"),
+      &crl_set_bytes));
+  ASSERT_TRUE(CRLSetStorage::Parse(crl_set_bytes, &crl_set));
+
+  error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                 CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+}
+
 // Tests that CRLSets participate in path building functions, and that as
 // long as a valid path exists within the verification graph, verification
 // succeeds.
