@@ -103,3 +103,27 @@ TEST(AomLeb128, SizeTest) {
               aom_uleb_size_in_bytes(kSizeTestInputs[i]));
   }
 }
+
+TEST(AomLeb128, FailTest) {
+  const size_t kWriteBufferSize = 4;
+  const uint32_t kValidTestValue = 1;
+  uint8_t write_buffer[kWriteBufferSize] = { 0 };
+  size_t coded_size = 0;
+  ASSERT_EQ(
+      aom_uleb_encode(kValidTestValue, kWriteBufferSize, NULL, &coded_size),
+      -1);
+  ASSERT_EQ(aom_uleb_encode(kValidTestValue, kWriteBufferSize, &write_buffer[0],
+                            NULL),
+            -1);
+
+  const uint32_t kValueOutOfRange = 0xFFFFFFFF;
+  ASSERT_EQ(aom_uleb_encode(kValueOutOfRange, kWriteBufferSize,
+                            &write_buffer[0], &coded_size),
+            -1);
+
+  const size_t kPadSizeOutOfRange = 5;
+  ASSERT_EQ(aom_uleb_encode_fixed_size(kValidTestValue, kWriteBufferSize,
+                                       kPadSizeOutOfRange, &write_buffer[0],
+                                       &coded_size),
+            -1);
+}

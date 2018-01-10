@@ -57,6 +57,7 @@ int aom_uleb_encode_fixed_size(uint32_t value, size_t available,
                                size_t pad_to_size, uint8_t *coded_value,
                                size_t *coded_size) {
   if (!coded_value || !coded_size || available < pad_to_size ||
+      pad_to_size > kMaximumLeb128Size ||
       aom_uleb_encode(value, available, coded_value, coded_size) != 0) {
     return -1;
   }
