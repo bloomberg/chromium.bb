@@ -12,5 +12,11 @@ namespace switches {
 const char kEnableNTPSearchEngineCountryDetection[] =
     "enable-ntp-search-engine-country-detection";
 
+// Enables showing popular sites on the NTP.
+const char kEnableNTPPopularSites[] = "enable-ntp-popular-sites";
+
+// Disables showing popular sites on the NTP.
+const char kDisableNTPPopularSites[] = "disable-ntp-popular-sites";
+
 }  // namespace switches
 }  // namespace ntp_tiles

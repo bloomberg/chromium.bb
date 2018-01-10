@@ -2005,6 +2005,10 @@ const char kNtpGoogleGInOmniboxName[] = "Google G in New Tab Page omnibox";
 const char kNtpGoogleGInOmniboxDescription[] =
     "Show a Google G in the omnibox on the New Tab Page.";
 
+const char kNtpPopularSitesName[] = "Show popular sites on the New Tab page";
+const char kNtpPopularSitesDescription[] =
+    "Pre-populate the New Tab page with popular sites.";
+
 const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =
     "Enable saving bookmarked pages for offline viewing.";
