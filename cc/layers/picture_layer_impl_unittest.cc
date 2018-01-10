@@ -2618,6 +2618,31 @@ TEST_F(CommitToActiveTreePictureLayerImplTest,
   EXPECT_EQ(8u, NumberOfTilesRequired(active_layer()->HighResTiling()));
 }
 
+TEST_F(CommitToActiveTreePictureLayerImplTest,
+       RequiredTilesWithGpuRasterizationAndFractionalDsf) {
+  host_impl()->SetHasGpuRasterizationTrigger(true);
+  host_impl()->CommitComplete();
+
+  gfx::Size viewport_size(1502, 2560);
+  host_impl()->SetViewportSize(viewport_size);
+
+  float dsf = 3.5f;
+  gfx::Size layer_bounds = gfx::ScaleToCeiledSize(viewport_size, 1.0f / dsf);
+  SetupDefaultTrees(layer_bounds);
+  EXPECT_TRUE(host_impl()->use_gpu_rasterization());
+
+  SetContentsScaleOnBothLayers(
+      dsf /* contents_scale */, dsf /* device_scale_factor */,
+      1.0f /* page_scale_factor */, 1.0f /* maximum_animation_contents_scale */,
+      1.0f /* starting_animation_contents_scale */,
+      false /* animating_transform */);
+
+  active_layer()->HighResTiling()->UpdateAllRequiredStateForTesting();
+
+  // High res tiling should have 4 tiles (1x4 tile grid).
+  EXPECT_EQ(4u, active_layer()->HighResTiling()->AllTilesForTesting().size());
+}
+
 TEST_F(PictureLayerImplTest, NoTilingIfDoesNotDrawContent) {
   // Set up layers with tilings.
   SetupDefaultTrees(gfx::Size(10, 10));

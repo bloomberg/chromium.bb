@@ -88,6 +88,18 @@ gfx::Rect SafeIntersectRects(const gfx::Rect& one, const gfx::Rect& two) {
                    static_cast<int>(rb - ry));
 }
 
+// This function converts the given |device_pixels_size| to the expected size
+// of content which was generated to fill it at 100%.  This takes into account
+// the ceil operations that occur as device pixels are converted to/from DIPs
+// (content size must be a whole number of DIPs).
+gfx::Size ApplyDsfAdjustment(gfx::Size device_pixels_size, float dsf) {
+  gfx::Size content_size_in_dips =
+      gfx::ScaleToCeiledSize(device_pixels_size, 1.0f / dsf);
+  gfx::Size content_size_in_dps =
+      gfx::ScaleToCeiledSize(content_size_in_dips, dsf);
+  return content_size_in_dps;
+}
+
 }  // namespace
 
 namespace cc {
@@ -895,8 +907,13 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
     // For GPU rasterization, we pick an ideal tile size using the viewport
     // so we don't need any settings. The current approach uses 4 tiles
     // to cover the viewport vertically.
-    int viewport_width = gpu_raster_max_texture_size_.width();
-    int viewport_height = gpu_raster_max_texture_size_.height();
+
+    // Calculate the viewport based on |gpu_raster_max_texture_size_|, adjusting
+    // for ceil operations that may occur due to DSF.
+    gfx::Size viewport_size = ApplyDsfAdjustment(
+        gpu_raster_max_texture_size_, layer_tree_impl()->device_scale_factor());
+    int viewport_width = viewport_size.width();
+    int viewport_height = viewport_size.height();
     default_tile_width = viewport_width;
 
     // Also, increase the height proportionally as the width decreases, and
