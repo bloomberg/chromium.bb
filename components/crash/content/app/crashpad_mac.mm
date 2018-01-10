@@ -25,7 +25,6 @@
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
-#include "third_party/crashpad/crashpad/client/simple_string_dictionary.h"
 #include "third_party/crashpad/crashpad/client/simulate_crash.h"
 
 namespace crash_reporter {

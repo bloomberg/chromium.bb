@@ -27,17 +27,6 @@ int CrashForException_ExportThunk(EXCEPTION_POINTERS* info) {
 
 void SetUploadConsent_ExportThunk(bool consent) {}
 
-void SetCrashKeyValue_ExportThunk(const wchar_t* key, const wchar_t* value) {}
-
-void ClearCrashKeyValue_ExportThunk(const wchar_t* key) {}
-
-void SetCrashKeyValueEx_ExportThunk(const char* key,
-                                    size_t key_len,
-                                    const char* value,
-                                    size_t value_len) {}
-
-void ClearCrashKeyValueEx_ExportThunk(const char* key, size_t key_len) {}
-
 HANDLE InjectDumpForHungInput_ExportThunk(HANDLE process) {
   return nullptr;
 }
