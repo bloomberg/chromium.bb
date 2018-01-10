@@ -63,7 +63,7 @@ class SpellingRequest {
   std::vector<SpellCheckResult> remote_results_;
 
   // Barrier closure for completion of both remote and local check.
-  base::Closure completion_barrier_;
+  base::RepeatingClosure completion_barrier_;
   bool remote_success_;
 
   SpellingServiceClient* client_;  // Owned by |destination|.
@@ -104,9 +104,8 @@ void SpellingRequest::RequestCheck(const base::string16& text,
   // Send the remote query out. The barrier owns |this|, ensuring it is deleted
   // after completion.
   completion_barrier_ =
-      BarrierClosure(2,
-                     base::Bind(&SpellingRequest::OnCheckCompleted,
-                     base::Owned(this)));
+      BarrierClosure(2, base::BindRepeating(&SpellingRequest::OnCheckCompleted,
+                                            base::Owned(this)));
   RequestRemoteCheck();
   RequestLocalCheck();
 }
@@ -119,19 +118,16 @@ void SpellingRequest::RequestRemoteCheck() {
     context = host->GetBrowserContext();
 
   client_->RequestTextCheck(
-    context,
-    SpellingServiceClient::SPELLCHECK,
-    text_,
-    base::Bind(&SpellingRequest::OnRemoteCheckCompleted,
-               base::Unretained(this)));
+      context, SpellingServiceClient::SPELLCHECK, text_,
+      base::BindOnce(&SpellingRequest::OnRemoteCheckCompleted,
+                     base::Unretained(this)));
 }
 
 void SpellingRequest::RequestLocalCheck() {
   spellcheck_platform::RequestTextCheck(
-      document_tag_,
-      text_,
-      base::Bind(&SpellingRequest::OnLocalCheckCompleted,
-                 base::Unretained(this)));
+      document_tag_, text_,
+      base::BindOnce(&SpellingRequest::OnLocalCheckCompleted,
+                     base::Unretained(this)));
 }
 
 void SpellingRequest::OnCheckCompleted() {

@@ -22,8 +22,8 @@ namespace {
 class SpellcheckPlatformMacTest: public testing::Test {
  public:
   SpellcheckPlatformMacTest()
-      : callback_(base::Bind(&SpellcheckPlatformMacTest::CompletionCallback,
-                             base::Unretained(this))),
+      : callback_(base::BindOnce(&SpellcheckPlatformMacTest::CompletionCallback,
+                                 base::Unretained(this))),
         callback_finished_(false) {}
 
   void WaitForCallback() {
@@ -44,8 +44,8 @@ class SpellcheckPlatformMacTest: public testing::Test {
     results_ = results;
     callback_finished_ = true;
     message_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&SpellcheckPlatformMacTest::QuitMessageLoop,
-                              base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&SpellcheckPlatformMacTest::QuitMessageLoop,
+                                  base::Unretained(this)));
   }
 
   base::MessageLoopForUI message_loop_;
@@ -388,7 +388,7 @@ TEST_F(SpellcheckPlatformMacTest, SpellCheckSuggestions_EN_US) {
 // RequestTextCheck results.
 TEST_F(SpellcheckPlatformMacTest, SpellCheckIgnoresOrthography)  {
   base::string16 test_string(base::ASCIIToUTF16("Icland is awesome."));
-  spellcheck_platform::RequestTextCheck(0, test_string, callback_);
+  spellcheck_platform::RequestTextCheck(0, test_string, std::move(callback_));
   WaitForCallback();
   EXPECT_TRUE(callback_finished_);
   EXPECT_EQ(1U, results_.size());

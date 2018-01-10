@@ -95,8 +95,8 @@ void SpellCheckProvider::RequestTextChecking(
   if (!spell_check_host_ && !content::RenderThread::Get())
     return;  // NULL in tests that do not provide a spell_check_host_.
   GetSpellCheckHost().CallSpellingService(
-      text, base::Bind(&SpellCheckProvider::OnRespondSpellingService,
-                       base::Unretained(this), last_identifier_, text));
+      text, base::BindOnce(&SpellCheckProvider::OnRespondSpellingService,
+                           base::Unretained(this), last_identifier_, text));
 #endif  // !USE_BROWSER_SPELLCHECKER
 }
 

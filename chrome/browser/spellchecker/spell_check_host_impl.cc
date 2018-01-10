@@ -82,8 +82,8 @@ void SpellCheckHostImpl::CallSpellingService(
           renderer_identity_.user_id());
   client_.RequestTextCheck(
       context, SpellingServiceClient::SPELLCHECK, text,
-      base::Bind(&SpellCheckHostImpl::CallSpellingServiceDone,
-                 base::Unretained(this), base::Passed(&callback)));
+      base::BindOnce(&SpellCheckHostImpl::CallSpellingServiceDone,
+                     base::Unretained(this), base::Passed(&callback)));
 #else
   std::move(callback).Run(false, std::vector<SpellCheckResult>());
 #endif

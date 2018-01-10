@@ -18,9 +18,9 @@ struct SpellCheckResult;
 
 namespace spellcheck_platform {
 
-typedef base::Callback<void(
-        const std::vector<SpellCheckResult>& /* results */)>
-            TextCheckCompleteCallback;
+typedef base::OnceCallback<void(
+    const std::vector<SpellCheckResult>& /* results */)>
+    TextCheckCompleteCallback;
 
 // Get the languages supported by the platform spellchecker and store them in
 // |spellcheck_languages|. Note that they must be converted to

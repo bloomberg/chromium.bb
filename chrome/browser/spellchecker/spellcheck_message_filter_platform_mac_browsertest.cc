@@ -24,19 +24,20 @@
 // allows verification by the test case.
 class TestingSpellCheckMessageFilter : public SpellCheckMessageFilterPlatform {
  public:
-  explicit TestingSpellCheckMessageFilter(const base::Closure& quit_closure)
-      : SpellCheckMessageFilterPlatform(0), quit_closure_(quit_closure) {}
+  explicit TestingSpellCheckMessageFilter(base::OnceClosure&& quit_closure)
+      : SpellCheckMessageFilterPlatform(0),
+        quit_closure_(std::move(quit_closure)) {}
 
   bool Send(IPC::Message* message) override {
     sent_messages_.push_back(base::WrapUnique(message));
-    main_thread_task_runner_->PostTask(FROM_HERE, quit_closure_);
+    main_thread_task_runner_->PostTask(FROM_HERE, std::move(quit_closure_));
     return true;
   }
 
   std::vector<std::unique_ptr<IPC::Message>> sent_messages_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
-  const base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
  private:
   ~TestingSpellCheckMessageFilter() override {}
