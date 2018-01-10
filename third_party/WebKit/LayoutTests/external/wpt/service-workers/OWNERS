@@ -1,3 +1,4 @@
 # TEAM: worker-dev@chromium.org
 # COMPONENT: Blink>ServiceWorker
-worker-dev@chromium.org
+# WPT-NOTIFY: true
+file://content/browser/service_worker/OWNERS
