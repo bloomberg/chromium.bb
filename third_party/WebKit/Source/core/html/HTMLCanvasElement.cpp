@@ -94,15 +94,15 @@ using namespace HTMLNames;
 namespace {
 
 // These values come from the WhatWG spec.
-const int kDefaultWidth = 300;
-const int kDefaultHeight = 150;
+constexpr int kDefaultCanvasWidth = 300;
+constexpr int kDefaultCanvasHeight = 150;
 
 #if defined(OS_ANDROID)
 // We estimate that the max limit for android phones is a quarter of that for
 // desktops based on local experimental results on Android One.
-const int kMaxGlobalAcceleratedImageBufferCount = 25;
+constexpr int kMaxGlobalAcceleratedImageBufferCount = 25;
 #else
-const int kMaxGlobalAcceleratedImageBufferCount = 100;
+constexpr int kMaxGlobalAcceleratedImageBufferCount = 100;
 #endif
 
 // We estimate the max limit of GPU allocated memory for canvases before Chrome
@@ -112,13 +112,13 @@ const int kMaxGlobalAcceleratedImageBufferCount = 100;
 // Each such canvas occupies 4000000 = 1000 * 500 * 2 * 4 bytes, where 2 is the
 // gpuBufferCount in UpdateMemoryUsage() and 4 means four bytes per pixel per
 // buffer.
-const int kMaxGlobalGPUMemoryUsage =
+constexpr int kMaxGlobalGPUMemoryUsage =
     4000000 * kMaxGlobalAcceleratedImageBufferCount;
 
 // A default value of quality argument for toDataURL and toBlob
 // It is in an invalid range (outside 0.0 - 1.0) so that it will not be
 // misinterpreted as a user-input value
-const int kUndefinedQualityValue = -1.0;
+constexpr int kUndefinedQualityValue = -1.0;
 
 }  // namespace
 
@@ -126,7 +126,7 @@ inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(canvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
-      size_(kDefaultWidth, kDefaultHeight),
+      size_(kDefaultCanvasWidth, kDefaultCanvasHeight),
       ignore_reset_(false),
       origin_clean_(true),
       did_fail_to_create_buffer_(false),
@@ -204,7 +204,7 @@ void HTMLCanvasElement::setHeight(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(heightAttr, value, kDefaultHeight);
+  SetUnsignedIntegralAttribute(heightAttr, value, kDefaultCanvasHeight);
 }
 
 void HTMLCanvasElement::setWidth(unsigned value,
@@ -215,7 +215,7 @@ void HTMLCanvasElement::setWidth(unsigned value,
         "Cannot resize canvas after call to transferControlToOffscreen().");
     return;
   }
-  SetUnsignedIntegralAttribute(widthAttr, value, kDefaultWidth);
+  SetUnsignedIntegralAttribute(widthAttr, value, kDefaultCanvasWidth);
 }
 
 void HTMLCanvasElement::SetSize(const IntSize& new_size) {
@@ -548,13 +548,13 @@ void HTMLCanvasElement::Reset() {
   AtomicString value = getAttribute(widthAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, w) ||
       w > 0x7fffffffu)
-    w = kDefaultWidth;
+    w = kDefaultCanvasWidth;
 
   unsigned h = 0;
   value = getAttribute(heightAttr);
   if (value.IsEmpty() || !ParseHTMLNonNegativeInteger(value, h) ||
       h > 0x7fffffffu)
-    h = kDefaultHeight;
+    h = kDefaultCanvasHeight;
 
   if (Is2d()) {
     context_->Reset();
