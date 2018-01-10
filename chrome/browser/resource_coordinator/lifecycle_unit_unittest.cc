@@ -17,6 +17,9 @@ class DummyLifecycleUnit : public LifecycleUnit {
   DummyLifecycleUnit() = default;
 
   // LifecycleUnit:
+  TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override {
+    return nullptr;
+  }
   base::string16 GetTitle() const override { return base::string16(); }
   std::string GetIconURL() const override { return std::string(); }
   SortKey GetSortKey() const override { return SortKey(); }

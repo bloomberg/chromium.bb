@@ -77,6 +77,11 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
   }
 }
 
+TabLifecycleUnitExternal*
+TabLifecycleUnitSource::TabLifecycleUnit::AsTabLifecycleUnitExternal() {
+  return this;
+}
+
 base::string16 TabLifecycleUnitSource::TabLifecycleUnit::GetTitle() const {
   return GetWebContents()->GetTitle();
 }

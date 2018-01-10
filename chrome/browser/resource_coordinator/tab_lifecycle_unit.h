@@ -69,6 +69,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   void SetRecentlyAudible(bool recently_audible);
 
   // LifecycleUnit:
+  TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
   std::string GetIconURL() const override;
   SortKey GetSortKey() const override;
