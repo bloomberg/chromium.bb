@@ -32,13 +32,13 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/LinkedHashSet.h"
 
 namespace blink {
 
 class LayoutMultiColumnSet;
 
-typedef ListHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
+typedef LinkedHashSet<LayoutMultiColumnSet*> LayoutMultiColumnSetList;
 
 // Layout state for multicol. To be stored when laying out a block child, so
 // that we can roll back to the initial state if we need to re-lay out said
