@@ -28,18 +28,11 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/ElementShadow.h"
+#include "core/dom/ng/flat_tree_traversal_ng.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
 
 namespace blink {
-
-static inline ElementShadow* ShadowFor(const Node& node) {
-  return node.IsElementNode() ? ToElement(node).Shadow() : nullptr;
-}
-
-static inline bool CanBeDistributedToV0InsertionPoint(const Node& node) {
-  return node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost();
-}
 
 Node* FlatTreeTraversal::TraverseChild(const Node& node,
                                        TraversalDirection direction) {
