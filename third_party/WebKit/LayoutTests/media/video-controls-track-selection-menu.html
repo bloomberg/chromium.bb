@@ -2,7 +2,6 @@
 <title>Test that we can display a track list menu and select tracks from the list.</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="track/track-helpers.js"></script>
 <script src="media-file.js"></script>
 <script src="media-controls.js"></script>
 <!-- Width should be large enough to display closed captions button. -->
@@ -15,10 +14,13 @@ async_test(function(t) {
     var video = document.querySelector("video");
 
     var trackElements = document.querySelectorAll("track");
-    for (var i = 0; i < video.textTracks.length; i++)
+    var textTracks = video.textTracks;
+    for (var i = 0; i < textTracks.length; i++) {
         trackElements[i].onload = t.step_func(trackLoaded);
-
-    enableAllTextTracks(video.textTracks);
+        var track = textTracks[i];
+        if (track.mode == "disabled")
+            track.mode = "hidden";
+    }
 
     var numberOfTracksLoaded = 0;
     function trackLoaded() {
