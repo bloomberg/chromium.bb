@@ -118,7 +118,8 @@ TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {
 
 // The superframe index is currently mandatory with both ANS and DAALA_EC due
 // to the decoder starting at the end of the buffer.
-#if CONFIG_EXT_TILE
+#if CONFIG_EXT_TILE && !CONFIG_OBU
+// TODO(yaowu): remove this test once OBU is fully merged in AV1
 // Single tile does not work with ANS (see comment above).
 const int tile_col_values[] = { 1, 2 };
 const int tile_row_values[] = { 1, 2, 32 };
