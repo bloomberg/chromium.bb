@@ -21,6 +21,7 @@ AX_EXPORT extern const char kAXDialogClassname[];
 AX_EXPORT extern const char kAXEditTextClassname[];
 AX_EXPORT extern const char kAXGridViewClassname[];
 AX_EXPORT extern const char kAXImageClassname[];
+AX_EXPORT extern const char kAXImageButtonClassname[];
 AX_EXPORT extern const char kAXImageViewClassname[];
 AX_EXPORT extern const char kAXListViewClassname[];
 AX_EXPORT extern const char kAXMenuItemClassname[];

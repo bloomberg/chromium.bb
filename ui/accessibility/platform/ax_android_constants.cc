@@ -15,6 +15,7 @@ const char kAXDialogClassname[] = "android.app.Dialog";
 const char kAXEditTextClassname[] = "android.widget.EditText";
 const char kAXGridViewClassname[] = "android.widget.GridView";
 const char kAXImageClassname[] = "android.widget.Image";
+const char kAXImageButtonClassname[] = "android.widget.ImageButton";
 const char kAXImageViewClassname[] = "android.widget.ImageView";
 const char kAXListViewClassname[] = "android.widget.ListView";
 const char kAXMenuItemClassname[] = "android.view.MenuItem";
