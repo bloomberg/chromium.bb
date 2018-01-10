@@ -137,6 +137,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='avfs', gid=301, users={'cros-disks'}),
     GroupEntry(group='cfm-peripherals', gid=20103,
                users={'cfm-monitor', 'cfm-firmware-updaters'}),
+    GroupEntry(group='ippusb', gid=20100, users={'ippusb', 'lp', 'lpadmin',
+                                                 'cups'}),
 ))
 
 GROUP_BASELINE_FREON = dict((e.group, e) for e in (
