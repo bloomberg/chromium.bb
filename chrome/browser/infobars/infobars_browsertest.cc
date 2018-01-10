@@ -270,7 +270,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::EXTENSION_DEV_TOOLS_INFOBAR_DELEGATE:
-      extensions::ExtensionDevToolsInfoBar::Create("id", "name", nullptr,
+      extensions::ExtensionDevToolsInfoBar::Create("id", "Extension", nullptr,
                                                    base::Closure());
       break;
 
@@ -344,10 +344,15 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       CollectedCookiesInfoBarDelegate::Create(GetInfoBarService());
       break;
 
-    case IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE:
-      InstallationErrorInfoBarDelegate::Create(GetInfoBarService(),
-                                               extensions::CrxInstallError());
+    case IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE: {
+      const base::string16 msg =
+          l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE);
+      InstallationErrorInfoBarDelegate::Create(
+          GetInfoBarService(),
+          extensions::CrxInstallError(
+              extensions::CrxInstallError::ERROR_OFF_STORE, msg));
       break;
+    }
 
     case IBD::ALTERNATE_NAV_INFOBAR_DELEGATE: {
       AutocompleteMatch match;
@@ -410,9 +415,9 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
 
     case IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE:
       PreviewsInfoBarDelegate::Create(
-          GetWebContents(), previews::PreviewsType::LOFI, base::Time(), true,
-          false, PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(),
-          nullptr);
+          GetWebContents(), previews::PreviewsType::LOFI, base::Time::Now(),
+          true, true,
+          PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback(), nullptr);
       break;
 
     case IBD::AUTOMATION_INFOBAR_DELEGATE:
