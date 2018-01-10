@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_METRICS_HELPER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_METRICS_HELPER_H_
+
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "platform/scheduler/base/task_queue.h"
@@ -44,3 +47,5 @@ class PLATFORM_EXPORT MetricsHelper {
 
 }  // namespace scheduler
 }  // namespace blink
+
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_METRICS_HELPER_H_
