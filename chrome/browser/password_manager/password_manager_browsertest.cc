@@ -1354,7 +1354,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   // Wait until the username is filled, to make sure autofill kicked in.
   WaitForElementValue("username", "admin");
-  CheckElementValue("password", "12345");
+  WaitForElementValue("password", "12345");
 }
 
 // https://crbug.com/713645
@@ -1622,7 +1622,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
   WaitForElementValue("username_field", "user");
-  CheckElementValue("password_field", "12345");
+  WaitForElementValue("password_field", "12345");
 }
 
 // Tests that obsolete HTTP credentials are moved when a site migrated to HTTPS
@@ -2651,21 +2651,8 @@ IN_PROC_BROWSER_TEST_F(
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  std::string get_username =
-      "window.domAutomationController.send("
-      "  document.getElementById('ambiguous_form').elements[0].value);";
-  std::string actual_username;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_username, &actual_username));
-  EXPECT_EQ("myusername", actual_username);
-
-  std::string get_password =
-      "window.domAutomationController.send("
-      "  document.getElementById('ambiguous_form').elements[1].value);";
-  std::string actual_password;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_password, &actual_password));
-  EXPECT_EQ("mypassword", actual_password);
+  WaitForElementValue("ambiguous_form", 0 /* elements_index */, "myusername");
+  WaitForElementValue("ambiguous_form", 1 /* elements_index */, "mypassword");
 }
 
 // Test whether the password form having username and password fields without
@@ -2693,21 +2680,8 @@ IN_PROC_BROWSER_TEST_F(
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  std::string get_username =
-      "window.domAutomationController.send("
-      "  document.getElementById('no_name_id_form').elements[0].value);";
-  std::string actual_username;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_username, &actual_username));
-  EXPECT_EQ("myusername", actual_username);
-
-  std::string get_password =
-      "window.domAutomationController.send("
-      "  document.getElementById('no_name_id_form').elements[1].value);";
-  std::string actual_password;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_password, &actual_password));
-  EXPECT_EQ("mypassword", actual_password);
+  WaitForElementValue("no_name_id_form", 0 /* elements_index */, "myusername");
+  WaitForElementValue("no_name_id_form", 1 /* elements_index */, "mypassword");
 }
 
 // Test whether the change password form having username and password fields
@@ -2734,23 +2708,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  std::string get_username =
-      "window.domAutomationController.send("
-      "  document.getElementById("
-      "    'change_pwd_but_no_autocomplete').elements[0].value);";
-  std::string actual_username;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_username, &actual_username));
-  EXPECT_EQ("myusername", actual_username);
-
-  std::string get_password =
-      "window.domAutomationController.send("
-      "  document.getElementById("
-      "    'change_pwd_but_no_autocomplete').elements[1].value);";
-  std::string actual_password;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_password, &actual_password));
-  EXPECT_EQ("mypassword", actual_password);
+  WaitForElementValue("change_pwd_but_no_autocomplete", 0 /* elements_index */,
+                      "myusername");
+  WaitForElementValue("change_pwd_but_no_autocomplete", 1 /* elements_index */,
+                      "mypassword");
 
   std::string get_new_password =
       "window.domAutomationController.send("
@@ -2788,21 +2749,8 @@ IN_PROC_BROWSER_TEST_F(
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  std::string get_username =
-      "window.domAutomationController.send("
-      "  document.getElementById('change_pwd').elements[0].value);";
-  std::string actual_username;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_username, &actual_username));
-  EXPECT_EQ("myusername", actual_username);
-
-  std::string get_password =
-      "window.domAutomationController.send("
-      "  document.getElementById('change_pwd').elements[1].value);";
-  std::string actual_password;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_password, &actual_password));
-  EXPECT_EQ("mypassword", actual_password);
+  WaitForElementValue("change_pwd", 0 /* elements_index */, "myusername");
+  WaitForElementValue("change_pwd", 1 /* elements_index */, "mypassword");
 
   std::string get_new_password =
       "window.domAutomationController.send("
@@ -3011,21 +2959,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
-  std::string get_username =
-      "window.domAutomationController.send("
-      "  document.getElementById('hidden_password_form').elements[0].value);";
-  std::string actual_username;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_username, &actual_username));
-  EXPECT_EQ("myusername", actual_username);
-
-  std::string get_password =
-      "window.domAutomationController.send("
-      "  document.getElementById('hidden_password_form').elements[2].value);";
-  std::string actual_password;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-      RenderFrameHost(), get_password, &actual_password));
-  EXPECT_EQ("mypassword", actual_password);
+  WaitForElementValue("hidden_password_form", 0 /* elements_index */,
+                      "myusername");
+  WaitForElementValue("hidden_password_form", 2 /* elements_index */,
+                      "mypassword");
 }
 
 // Check that the internals page contains logs from the renderer.
