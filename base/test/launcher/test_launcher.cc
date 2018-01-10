@@ -370,6 +370,17 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
       LOG(ERROR) << base::StringPrintf("about to process.Terminate() %x",
                                        process.Handle());
     }
+
+    // TODO(crbug.com/799268): Remove once we have debugged timed-out/hung
+    // test job processes.
+    LOG(ERROR) << "Dumping threads in process " << process.Pid();
+
+    CommandLine threads_cmdline(base::FilePath("/boot/bin/threads"));
+    threads_cmdline.AppendArg(IntToString(process.Pid()));
+
+    LaunchOptions threads_options;
+    threads_options.wait = true;
+    LaunchProcess(threads_cmdline, threads_options);
 #endif  // OS_FUCHSIA
     // Ensure that the process terminates.
     process.Terminate(-1, true);
