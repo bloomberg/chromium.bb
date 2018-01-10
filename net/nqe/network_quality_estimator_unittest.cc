@@ -1784,7 +1784,7 @@ TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
       {
           base::TimeDelta::FromMilliseconds(100),
           base::TimeDelta::FromMilliseconds(200), "", "",
-          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+          base::TimeDelta::FromMilliseconds(200), EFFECTIVE_CONNECTION_TYPE_4G,
       },
       {
           base::TimeDelta::FromMilliseconds(100),
@@ -1834,12 +1834,13 @@ TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
       {
           base::TimeDelta::FromMilliseconds(100),
           base::TimeDelta::FromMilliseconds(200), "foobar", "",
-          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+          base::TimeDelta::FromMilliseconds(200), EFFECTIVE_CONNECTION_TYPE_4G,
       },
       {
           base::TimeDelta::FromMilliseconds(100),
           base::TimeDelta::FromMilliseconds(4000), "", "",
-          base::TimeDelta::FromMilliseconds(100), EFFECTIVE_CONNECTION_TYPE_4G,
+          base::TimeDelta::FromMilliseconds(4000),
+          EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
       },
       {
           base::TimeDelta::FromMilliseconds(100),
