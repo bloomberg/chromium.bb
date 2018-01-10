@@ -294,6 +294,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             // Device is not provisioned, don't trigger SelectionClient logic at all.
             boolean blockSelectionClient = !ApiCompatibilityUtils.isDeviceProvisioned(mContext);
 
+            // Disable SelectionClient logic if it's incognito.
+            blockSelectionClient |= isIncognito();
+
             if (!blockSelectionClient && mSelectionMetricsLogger != null) {
                 switch (sourceType) {
                     case MenuSourceType.MENU_SOURCE_ADJUST_SELECTION:

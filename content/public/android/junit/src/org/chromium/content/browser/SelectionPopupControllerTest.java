@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -412,6 +413,46 @@ public class SelectionPopupControllerTest {
         mController.getResultCallback().onClassified(resultForNoChange());
         order.verify(mLogger).logSelectionModified(
                 eq("1600 Amphitheatre"), eq(0), isA(SelectionClient.Result.class));
+    }
+
+    @Test
+    @Feature({"TextInput", "SmartSelection"})
+    public void testBlockSelectionClientWhenUnprovisioned() {
+        // Device is not provisioned.
+        Settings.System.putInt(mContentResolver, Settings.Global.DEVICE_PROVISIONED, 0);
+
+        TestSelectionClient client = Mockito.mock(TestSelectionClient.class);
+        InOrder order = inOrder(mLogger, client);
+        mController.setSelectionClient(client);
+
+        // Long press triggered showSelectionMenu() call.
+        mController.showSelectionMenu(0, 0, 0, 0, 0, /* isEditable = */ true,
+                /* isPasswordType = */ false, AMPHITHEATRE, /* selectionOffset = */ 5,
+                /* canSelectAll = */ true,
+                /* canRichlyEdit = */ true, /* shouldSuggest = */ true,
+                MenuSourceType.MENU_SOURCE_LONG_PRESS);
+        order.verify(mLogger, never()).logSelectionStarted(anyString(), anyInt(), anyBoolean());
+        order.verify(client, never()).requestSelectionPopupUpdates(anyBoolean());
+    }
+
+    @Test
+    @Feature({"TextInput", "SmartSelection"})
+    public void testBlockSelectionClientWhenIncognito() {
+        // Incognito.
+        when(mWebContents.isIncognito()).thenReturn(true);
+
+        TestSelectionClient client = Mockito.mock(TestSelectionClient.class);
+        InOrder order = inOrder(mLogger, client);
+        mController.setSelectionClient(client);
+
+        // Long press triggered showSelectionMenu() call.
+        mController.showSelectionMenu(0, 0, 0, 0, 0, /* isEditable = */ true,
+                /* isPasswordType = */ false, AMPHITHEATRE, /* selectionOffset = */ 5,
+                /* canSelectAll = */ true,
+                /* canRichlyEdit = */ true, /* shouldSuggest = */ true,
+                MenuSourceType.MENU_SOURCE_LONG_PRESS);
+        order.verify(mLogger, never()).logSelectionStarted(anyString(), anyInt(), anyBoolean());
+        order.verify(client, never()).requestSelectionPopupUpdates(anyBoolean());
     }
 
     @Test
