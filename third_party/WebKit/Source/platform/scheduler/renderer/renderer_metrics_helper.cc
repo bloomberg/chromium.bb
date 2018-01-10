@@ -48,7 +48,8 @@ RendererMetricsHelper::RendererMetricsHelper(
     RendererSchedulerImpl* renderer_scheduler,
     base::TimeTicks now,
     bool renderer_backgrounded)
-    : renderer_scheduler_(renderer_scheduler),
+    : MetricsHelper(ThreadType::kMainThread),
+      renderer_scheduler_(renderer_scheduler),
       main_thread_load_tracker(
           now,
           base::Bind(&RendererMetricsHelper::RecordMainThreadTaskLoad,
@@ -98,8 +99,6 @@ RendererMetricsHelper::RendererMetricsHelper(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic"),
       per_frame_status_duration_reporter(DURATION_PER_FRAME_TYPE_METRIC_NAME),
       per_task_type_duration_reporter(DURATION_PER_TASK_TYPE_METRIC_NAME),
-      main_thread_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerThreadType"),
       main_thread_task_load_state(MainThreadTaskLoadState::kUnknown) {
   main_thread_load_tracker.Resume(now);
   if (renderer_backgrounded) {
@@ -146,6 +145,8 @@ void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
                                               const TaskQueue::Task& task,
                                               base::TimeTicks start_time,
                                               base::TimeTicks end_time) {
+  MetricsHelper::RecordCommonTaskMetrics(queue, task, start_time, end_time);
+
   MainThreadTaskQueue::QueueType queue_type = queue->queue_type();
   base::TimeDelta duration = end_time - start_time;
   if (duration > kLongTaskDiscardingThreshold)
@@ -204,8 +205,6 @@ void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
                               MainThreadTaskQueue::QueueType::kCount);
   }
 
-  main_thread_task_duration_reporter.RecordTask(ThreadType::kMainThread,
-                                                duration);
   per_queue_type_task_duration_reporter.RecordTask(queue_type, duration);
 
   if (renderer_scheduler_->main_thread_only().renderer_backgrounded) {
