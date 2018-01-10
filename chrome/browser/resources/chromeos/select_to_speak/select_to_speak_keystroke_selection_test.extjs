@@ -1,0 +1,163 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
+GEN_INCLUDE(['mock_tts.js']);
+
+/**
+ * Browser tests for select-to-speak's feature to speak text
+ * at the press of a keystroke.
+ * @constructor
+ * @extends {SelectToSpeakE2ETest}
+ */
+function SelectToSpeakKeystrokeSelectionTest() {
+  SelectToSpeakE2ETest.call(this);
+  this.mockTts = new MockTts();
+  chrome.tts = this.mockTts;
+  selectToSpeak.enableReadSelectedTextForTesting();
+}
+
+SelectToSpeakKeystrokeSelectionTest.prototype = {
+  __proto__: SelectToSpeakE2ETest.prototype,
+
+  /**
+   * Function to trigger select-to-speak to read selected text at a
+   * keystroke.
+   */
+  triggerReadSelectedText: function() {
+    assertFalse(this.mockTts.currentlySpeaking());
+    assertEquals(this.mockTts.pendingUtterances().length, 0);
+    selectToSpeak.fireMockKeyDownEvent(
+        {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+    selectToSpeak.fireMockKeyDownEvent(
+        {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
+    assertTrue(selectToSpeak.isSelectionKeyDown_);
+    selectToSpeak.fireMockKeyUpEvent(
+        {keyCode: SelectToSpeak.READ_SELECTION_KEY_CODE});
+    selectToSpeak.fireMockKeyUpEvent(
+        {keyCode: SelectToSpeak.SEARCH_KEY_CODE});
+  },
+
+  /**
+   * Helper function to find a staticText node from a root
+   * @param {AutomationNode} root The root node to search through
+   * @param {string} text The text to search for
+   * @return {AutomationNode} The found text node, or null if none is found.
+   */
+   findTextNode: function(root, text) {
+     return root.find({
+         role: 'staticText', attributes: {name: text}
+     });
+   },
+
+  /**
+   * Function to load a simple webpage, select some of the single text
+   * node, and trigger Select-to-Speak to read that partial node. Tests
+   * that the selected region creates tts output that matches the expected
+   * output.
+   * @param {string} text The text to load on the simple webpage.
+   * @param {number} anchorOffset The offset into the text node where
+   *     focus starts.
+   * @param {number} focusOffset The offset into the text node where
+   *     focus ends.
+   * @param {string} expected The expected string that will be read, ignoring
+   *     extra whitespace, after this selection is triggered.
+   */
+  testSimpleTextAtKeystroke: function(text, anchorOffset, focusOffset, expected) {
+    this.testReadTextAtKeystroke('<p>' + text + '</p>',
+      function(desktop) {
+        // Set the document selection. This will fire the changed event
+        // above, allowing us to do the keystroke and test that speech
+        // occurred properly.
+        let textNode = this.findTextNode(desktop, 'This is some text');
+        chrome.automation.setDocumentSelection({
+            anchorObject: textNode, anchorOffset: anchorOffset,
+            focusObject: textNode, focusOffset: focusOffset
+        });
+      }, expected);
+  },
+
+  /**
+   * Function to load given html using a data url, have the caller set a
+   * selection on that page, and then trigger select-to-speak to read
+   * the selected text. Tests that the tts output matches the expected
+   * output.
+   * @param {string} contents The web contents to load as part of a
+   *     data:text/html link.
+   * @param {function(AutomationNode)} setSelectionCallback Callback
+   *     to take the root node and set the selection appropriately. Once
+   *     selection is set, the test will listen for the focus set event and
+   *     trigger select-to-speak, comparing the resulting tts output to what
+   *     was expected.
+   *     will trigger select-to-speak to speak any selected text
+   * @param {string} expected The expected string that will be read, ignoring
+   *     extra whitespace, after this selection is triggered.
+   */
+  testReadTextAtKeystroke: function(contents, setFocusCallback, expected) {
+    setFocusCallback = this.newCallback(setFocusCallback);
+    this.runWithLoadedTree('data:text/html;charset=utf-8,' + contents,
+      function(desktop) {
+        // Add an event listener that will start the user interaction
+        // of the test once the selection is completed.
+        desktop.addEventListener('documentSelectionChanged',
+          this.newCallback(function(event) {
+            this.triggerReadSelectedText();
+            assertTrue(this.mockTts.currentlySpeaking());
+            assertEquals(this.mockTts.pendingUtterances().length, 1);
+            this.assertEqualsCollapseWhitespace(
+                this.mockTts.pendingUtterances()[0], expected);
+        }), false);
+        setFocusCallback(desktop);
+    });
+  },
+}
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokeFullText',
+    function() {
+  this.testSimpleTextAtKeystroke('This is some text', 0, 17, 'This is some text');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokePartialText',
+    function() {
+  this.testSimpleTextAtKeystroke('This is some text', 0, 12, 'This is some');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokeSingleWord',
+    function() {
+  this.testSimpleTextAtKeystroke('This is some text', 8, 12, 'some');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksTextAtKeystrokePartialWord',
+    function() {
+  this.testSimpleTextAtKeystroke('This is some text', 8, 10, 'so');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest', 'SpeaksAcrossNodesAtKeystroke',
+    function() {
+  this.testReadTextAtKeystroke(
+      '<p>This is some <b>bold</b> text</p><p>Second paragraph</p>',
+      function(desktop) {
+        let firstNode = this.findTextNode(desktop, 'This is some ');
+        let lastNode = this.findTextNode(desktop, ' text');
+        chrome.automation.setDocumentSelection({
+            anchorObject: firstNode, anchorOffset: 0,
+            focusObject: lastNode, focusOffset: 6
+        });
+      }, 'This is some bold text');
+});
+
+TEST_F('SelectToSpeakKeystrokeSelectionTest',
+    'SpeaksAcrossNodesSelectedBackwardsAtKeystroke', function() {
+  this.testReadTextAtKeystroke(
+      '<p>This is some <b>bold</b> text</p><p>Second paragraph</p>',
+      function(desktop) {
+        // Set the document selection backwards in page order.
+        let lastNode = this.findTextNode(desktop, 'This is some ');
+        let firstNode = this.findTextNode(desktop, ' text');
+        chrome.automation.setDocumentSelection({
+            anchorObject: firstNode, anchorOffset: 6,
+            focusObject: lastNode, focusOffset: 0
+        });
+      }, 'This is some bold text');
+});

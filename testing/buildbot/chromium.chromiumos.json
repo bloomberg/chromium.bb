@@ -1246,6 +1246,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "select_to_speak_extension_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "services_unittests"
       },
       {
