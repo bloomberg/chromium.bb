@@ -103,4 +103,27 @@ bool IsForcedBreakValue(const NGConstraintSpace& constraint_space,
   return false;
 }
 
+bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace& constraint_space,
+                                  NGLayoutInputNode child,
+                                  const NGBreakToken* child_break_token) {
+  // Always ignore margins if we're not at the start of the child.
+  if (child_break_token && child_break_token->IsBlockType() &&
+      !ToNGBlockBreakToken(child_break_token)->IsBreakBefore())
+    return true;
+
+  // If we're not fragmented or have been explicitly instructed to honor
+  // margins, don't ignore them.
+  if (!constraint_space.HasBlockFragmentation() ||
+      constraint_space.HasSeparateLeadingFragmentainerMargins())
+    return false;
+
+  // Only ignore margins if we're at the start of the fragmentainer.
+  if (constraint_space.FragmentainerBlockSize() !=
+      constraint_space.FragmentainerSpaceAtBfcStart())
+    return false;
+
+  // Otherwise, only ignore in-flow margins.
+  return !child.IsFloating() && !child.IsOutOfFlowPositioned();
+}
+
 }  // namespace blink

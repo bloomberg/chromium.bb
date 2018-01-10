@@ -95,6 +95,15 @@ class CORE_EXPORT NGConstraintSpace final
   // Formatting Context.
   bool IsNewFormattingContext() const { return is_new_fc_; }
 
+  // Return true if we are to separate (i.e. honor, rather than collapse)
+  // block-start margins at the beginning of fragmentainers. This only makes a
+  // difference if we're block-fragmented (pagination, multicol, etc.). Then
+  // block-start margins at the beginning of a fragmentainers are to be
+  // truncated to 0 if they occur after a soft (unforced) break.
+  bool HasSeparateLeadingFragmentainerMargins() const {
+    return separate_leading_fragmentainer_margins_;
+  }
+
   // Whether the fragment produced from layout should be anonymous, (e.g. it
   // may be a column in a multi-column layout). In such cases it shouldn't have
   // any borders or padding.
@@ -212,6 +221,7 @@ class CORE_EXPORT NGConstraintSpace final
       bool is_inline_direction_triggers_scrollbar,
       bool is_block_direction_triggers_scrollbar,
       NGFragmentationType block_direction_fragmentation_type,
+      bool separate_leading_fragmentainer_margins_,
       bool is_new_fc,
       bool is_anonymous,
       bool use_first_line_style,
@@ -240,6 +250,7 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned is_block_direction_triggers_scrollbar_ : 1;
 
   unsigned block_direction_fragmentation_type_ : 2;
+  unsigned separate_leading_fragmentainer_margins_ : 1;
 
   // Whether the current constraint space is for the newly established
   // formatting Context

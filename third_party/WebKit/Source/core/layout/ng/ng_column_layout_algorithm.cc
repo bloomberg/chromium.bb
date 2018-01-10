@@ -94,8 +94,6 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
       ResolveUsedColumnCount(content_box_size.inline_size, Style());
 
   do {
-    scoped_refptr<NGConstraintSpace> child_space =
-        CreateConstraintSpaceForColumns(column_size);
     scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
     LayoutUnit intrinsic_block_size;
     LayoutUnit column_inline_offset(border_scrollbar_padding.inline_start);
@@ -108,8 +106,15 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     // balancing).
     LayoutUnit minimal_space_shortage(LayoutUnit::Max());
 
+    // Allow any block-start margins at the start of the first column.
+    bool separate_leading_margins = true;
+
     do {
       // Lay out one column. Each column will become a fragment.
+      scoped_refptr<NGConstraintSpace> child_space =
+          CreateConstraintSpaceForColumns(column_size,
+                                          separate_leading_margins);
+
       NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
                                              break_token.get());
       scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
@@ -125,8 +130,12 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
             std::min(minimal_space_shortage, space_shortage);
       }
       actual_column_count++;
-      if (result->HasForcedBreak())
+      if (result->HasForcedBreak()) {
         forced_break_count++;
+        separate_leading_margins = true;
+      } else {
+        separate_leading_margins = false;
+      }
 
       LayoutUnit block_size = NGBoxFragment(writing_mode, *column).BlockSize();
       intrinsic_block_size =
@@ -273,7 +282,8 @@ LayoutUnit NGColumnLayoutAlgorithm::StretchColumnBlockSize(
 
 scoped_refptr<NGConstraintSpace>
 NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
-    const NGLogicalSize& column_size) const {
+    const NGLogicalSize& column_size,
+    bool separate_leading_margins) const {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
   space_builder.SetAvailableSize(column_size);
   space_builder.SetPercentageResolutionSize(column_size);
@@ -292,6 +302,8 @@ NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
   space_builder.SetFragmentainerSpaceAtBfcStart(column_block_size);
   space_builder.SetIsNewFormattingContext(true);
   space_builder.SetIsAnonymous(true);
+  space_builder.SetSeparateLeadingFragmentainerMargins(
+      separate_leading_margins);
 
   return space_builder.ToConstraintSpace(Style().GetWritingMode());
 }

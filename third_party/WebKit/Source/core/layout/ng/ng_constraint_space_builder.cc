@@ -27,6 +27,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
+      separate_leading_fragmentainer_margins_(false),
       is_new_fc_(false),
       is_anonymous_(false),
       use_first_line_sytle_(false),
@@ -231,10 +232,11 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         is_fixed_size_block_, is_shrink_to_fit_,
         is_inline_direction_triggers_scrollbar_,
         is_block_direction_triggers_scrollbar_,
-        static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-        is_anonymous_, use_first_line_sytle_, margin_strut, bfc_offset,
-        floats_bfc_offset, exclusion_space, unpositioned_floats_,
-        clearance_offset, baseline_requests_));
+        static_cast<NGFragmentationType>(fragmentation_type_),
+        separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
+        use_first_line_sytle_, margin_strut, bfc_offset, floats_bfc_offset,
+        exclusion_space, unpositioned_floats_, clearance_offset,
+        baseline_requests_));
   }
   return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, true, static_cast<TextDirection>(text_direction_),
@@ -245,10 +247,11 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       is_fixed_size_inline_, is_shrink_to_fit_,
       is_block_direction_triggers_scrollbar_,
       is_inline_direction_triggers_scrollbar_,
-      static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_,
-      is_anonymous_, use_first_line_sytle_, margin_strut, bfc_offset,
-      floats_bfc_offset, exclusion_space, unpositioned_floats_,
-      clearance_offset, baseline_requests_));
+      static_cast<NGFragmentationType>(fragmentation_type_),
+      separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
+      use_first_line_sytle_, margin_strut, bfc_offset, floats_bfc_offset,
+      exclusion_space, unpositioned_floats_, clearance_offset,
+      baseline_requests_));
 }
 
 }  // namespace blink

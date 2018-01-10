@@ -18,7 +18,7 @@ NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
     return;
   const auto& child_break_tokens = break_token->ChildBreakTokens();
   if (!child_break_tokens.size()) {
-    if (break_token->UsedBlockSize() > LayoutUnit()) {
+    if (!break_token->IsBreakBefore()) {
       // We had a break token, but no child break token, and we're not
       // at the start. This means that we're just processing empty
       // content, such as the trailing childless portion of a block

@@ -5,6 +5,7 @@
 #ifndef NGFragmentationUtils_h
 #define NGFragmentationUtils_h
 
+#include "core/layout/ng/ng_layout_input_node.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/LayoutUnit.h"
 
@@ -41,6 +42,14 @@ EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
 // Return true if the specified break value has a forced break effect in the
 // current fragmentation context.
 bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
+
+// Return true if we are to ignore the block-start margin of the child. At the
+// start of fragmentainers, in-flow block-start margins are ignored, unless
+// we're right after a forced break.
+// https://drafts.csswg.org/css-break/#break-margins
+bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace&,
+                                  NGLayoutInputNode,
+                                  const NGBreakToken*);
 
 }  // namespace blink
 
