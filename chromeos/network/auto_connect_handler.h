@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_resolver.h"
@@ -25,6 +26,19 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
                                            public NetworkStateHandlerObserver,
                                            public ClientCertResolver::Observer {
  public:
+  enum AutoConnectReason {
+    AUTO_CONNECT_REASON_LOGGED_IN = 1,
+    AUTO_CONNECT_REASON_POLICY_APPLIED = 1 << 1,
+    AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED = 1 << 2
+  };
+
+  class Observer {
+   public:
+    // Note: |auto_connect_reasons| is computed by applying the bitwise OR
+    // operation to all AutoConnectReasons which triggered auto-connect.
+    virtual void OnAutoConnectedInitiated(int auto_connect_reasons) = 0;
+  };
+
   ~AutoConnectHandler() override;
 
   // LoginState::Observer
@@ -43,9 +57,16 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   // ClientCertResolver::Observer
   void ResolveRequestCompleted(bool network_properties_changed) override;
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+ protected:
+  void NotifyAutoConnectInitiated(int auto_connect_reasons);
+
  private:
   friend class NetworkHandler;
   friend class AutoConnectHandlerTest;
+  friend class AutoConnectNotifierTest;
 
   AutoConnectHandler();
 
@@ -71,7 +92,7 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
 
   // Requests and if possible connects to the 'best' available network, see
   // CheckBestConnection().
-  void RequestBestConnection();
+  void RequestBestConnection(AutoConnectReason auto_connect_reason);
 
   // If a request to connect to the best network is pending and all requirements
   // are fulfilled (like policy loaded, certificate patterns being resolved),
@@ -79,7 +100,7 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   void CheckBestConnection();
 
   // Calls Shill.Manager.ConnectToBestServices().
-  void CallShillConnectToBestServices() const;
+  void CallShillConnectToBestServices();
 
   // Local references to the associated handler instances.
   ClientCertResolver* client_cert_resolver_;
@@ -111,6 +132,12 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
 
   // When true, trigger ConnectToBestServices after the next scan completion.
   bool connect_to_best_services_after_scan_;
+
+  // The bitwise OR of all AutoConnectReason which have triggered auto-
+  // connection.
+  int auto_connect_reasons_;
+
+  base::ObserverList<Observer> observer_list_;
 
   base::WeakPtrFactory<AutoConnectHandler> weak_ptr_factory_;
 

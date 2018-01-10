@@ -54,8 +54,8 @@ AutoConnectHandler::AutoConnectHandler()
       client_certs_resolved_(false),
       applied_autoconnect_policy_(false),
       connect_to_best_services_after_scan_(false),
-      weak_ptr_factory_(this) {
-}
+      auto_connect_reasons_(0),
+      weak_ptr_factory_(this) {}
 
 AutoConnectHandler::~AutoConnectHandler() {
   if (LoginState::IsInitialized())
@@ -106,7 +106,7 @@ void AutoConnectHandler::LoggedInStateChanged() {
   // that we just connected.
   DisconnectIfPolicyRequires();
   NET_LOG_DEBUG("RequestBestConnection", "User logged in");
-  RequestBestConnection();
+  RequestBestConnection(AutoConnectReason::AUTO_CONNECT_REASON_LOGGED_IN);
 }
 
 void AutoConnectHandler::ConnectToNetworkRequested(
@@ -137,7 +137,8 @@ void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
   DCHECK(managed_networks);
   if (!managed_networks->empty()) {
     NET_LOG_DEBUG("RequestBestConnection", "Policy applied");
-    RequestBestConnection();
+    RequestBestConnection(
+        AutoConnectReason::AUTO_CONNECT_REASON_POLICY_APPLIED);
   } else {
     CheckBestConnection();
   }
@@ -164,14 +165,30 @@ void AutoConnectHandler::ResolveRequestCompleted(
   if (network_properties_changed) {
     NET_LOG_DEBUG("RequestBestConnection",
                   "Client certificate patterns resolved");
-    RequestBestConnection();
+    RequestBestConnection(
+        AutoConnectReason::AUTO_CONNECT_REASON_CERTIFICATE_RESOLVED);
   } else {
     CheckBestConnection();
   }
 }
 
-void AutoConnectHandler::RequestBestConnection() {
+void AutoConnectHandler::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AutoConnectHandler::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void AutoConnectHandler::NotifyAutoConnectInitiated(int auto_connect_reasons) {
+  for (auto& observer : observer_list_)
+    observer.OnAutoConnectedInitiated(auto_connect_reasons);
+}
+
+void AutoConnectHandler::RequestBestConnection(
+    AutoConnectReason auto_connect_reason) {
   request_best_connection_pending_ = true;
+  auto_connect_reasons_ |= auto_connect_reason;
   CheckBestConnection();
 }
 
@@ -273,13 +290,15 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
   }
 }
 
-void AutoConnectHandler::CallShillConnectToBestServices() const {
+void AutoConnectHandler::CallShillConnectToBestServices() {
   NET_LOG_EVENT("ConnectToBestServices", "");
+
   DBusThreadManager::Get()->GetShillManagerClient()->ConnectToBestServices(
-      base::Bind(&base::DoNothing),
+      base::Bind(&AutoConnectHandler::NotifyAutoConnectInitiated,
+                 weak_ptr_factory_.GetWeakPtr(), auto_connect_reasons_),
       base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "ConnectToBestServices Failed",
-                 "", network_handler::ErrorCallback()));
+                 "ConnectToBestServices Failed", "",
+                 network_handler::ErrorCallback()));
 }
 
 }  // namespace chromeos
