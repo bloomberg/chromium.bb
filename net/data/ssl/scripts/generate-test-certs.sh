@@ -511,8 +511,8 @@ python crlsetutil.py -o ../certificates/crlset_by_intermediate_serial.raw \
 CRLSETBYINTERMEDIATESERIAL
 
 ## Block a subject with a single-entry allowlist of SPKI hashes.
-python crlsetutil.py -o ../certificates/crlset_by_subject.raw \
-<<CRLSETBYSUBJECT
+python crlsetutil.py -o ../certificates/crlset_by_root_subject.raw \
+<<CRLSETBYROOTSUBJECT
 {
   "LimitedSubjects": {
     "../certificates/root_ca_cert.pem": [
@@ -520,4 +520,24 @@ python crlsetutil.py -o ../certificates/crlset_by_subject.raw \
     ]
   }
 }
-CRLSETBYSUBJECT
+CRLSETBYROOTSUBJECT
+
+## Block a subject with an empty allowlist of SPKI hashes.
+python crlsetutil.py -o ../certificates/crlset_by_root_subject_no_spki.raw \
+<<CRLSETBYROOTSUBJECTNOSPKI
+{
+  "LimitedSubjects": {
+    "../certificates/root_ca_cert.pem": []
+  }
+}
+CRLSETBYROOTSUBJECTNOSPKI
+
+## Block a subject with an empty allowlist of SPKI hashes.
+python crlsetutil.py -o ../certificates/crlset_by_leaf_subject_no_spki.raw \
+<<CRLSETBYLEAFSUBJECTNOSPKI
+{
+  "LimitedSubjects": {
+    "../certificates/ok_cert.pem": []
+  }
+}
+CRLSETBYLEAFSUBJECTNOSPKI
