@@ -8512,20 +8512,21 @@ TEST_F(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
       CreateMockWrite(stream2_priority, 3, ASYNC),
   };
 
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
+      NULL, 0, 2, 1, "http://www.another-origin.com/foo.dat"));
+
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
 
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
-  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
-      NULL, 0, 2, 1, "http://www.another-origin.com/foo.dat"));
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
       2, kPushedData, strlen(kPushedData), true));
 
   MockRead spdy_reads[] = {
-      CreateMockRead(stream1_reply, 1, ASYNC),
-      CreateMockRead(stream2_syn, 2, ASYNC),
+      CreateMockRead(stream2_syn, 1, ASYNC),
+      CreateMockRead(stream1_reply, 2, ASYNC),
       CreateMockRead(stream1_body, 4, ASYNC),
       CreateMockRead(stream2_body, 5, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a hang

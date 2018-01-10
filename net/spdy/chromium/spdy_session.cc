@@ -824,30 +824,16 @@ int SpdySession::GetPushedStream(const GURL& url,
                                  SpdyStream** stream,
                                  const NetLogWithSource& stream_net_log) {
   CHECK(!in_io_loop_);
-
-  *stream = nullptr;
+  // |pushed_stream_id| must be valid.
+  DCHECK_NE(pushed_stream_id, kNoPushedStreamFound);
+  // |pushed_stream_id| must already have been claimed.
+  DCHECK_NE(pushed_stream_id,
+            pool_->push_promise_index()->FindStream(url, this));
 
   if (availability_state_ == STATE_DRAINING) {
+    *stream = nullptr;
     return ERR_CONNECTION_CLOSED;
   }
-
-  if (pushed_stream_id == kNoPushedStreamFound) {
-    // Even if no pushed stream has been claimed earlier, there could still be
-    // one corresponding the request, if the scheme is http (those pushes are
-    // not considered by Http2PushPromiseIndex::ClaimPushedStream()), or if the
-    // pushed stream was opened in the meanwhile.
-    pushed_stream_id = pool_->push_promise_index()->FindStream(url, this);
-    if (pushed_stream_id == kNoPushedStreamFound)
-      return OK;
-
-    LogPushStreamClaimed(url, pushed_stream_id);
-    const bool success =
-        pool_->push_promise_index()->UnregisterUnclaimedPushedStream(
-            url, pushed_stream_id, this);
-    DCHECK(success);
-  }
-
-  DCHECK_GT(pushed_stream_id, kNoPushedStreamFound);
 
   ActiveStreamMap::iterator active_it = active_streams_.find(pushed_stream_id);
   if (active_it == active_streams_.end()) {

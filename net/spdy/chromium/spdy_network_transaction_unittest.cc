@@ -2980,15 +2980,14 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
   SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       2, ERROR_CODE_PROTOCOL_ERROR,
       "Received pushed stream id 4 on invalid stream id 2 (must be odd)."));
-  MockWrite writes[] = {
-      CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream2_priority, 3),
-      CreateMockWrite(goaway, 8),
-  };
+  MockWrite writes[] = {CreateMockWrite(stream1_syn, 0),
+                        CreateMockWrite(stream2_priority, 3),
+                        CreateMockWrite(goaway, 8)};
 
-  SpdySerializedFrame stream1_reply(
-      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
+  SpdySerializedFrame stream1_reply(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
   SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
@@ -2997,10 +2996,9 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
       nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
 
   MockRead reads[] = {
-      CreateMockRead(stream1_reply, 1),   CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_syn, 1),     CreateMockRead(stream1_reply, 2),
       CreateMockRead(stream1_body, 4),    CreateMockRead(stream2_body, 5),
-      MockRead(ASYNC, ERR_IO_PENDING, 6), CreateMockRead(stream3_syn, 7),
-  };
+      MockRead(ASYNC, ERR_IO_PENDING, 6), CreateMockRead(stream3_syn, 7)};
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
