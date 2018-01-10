@@ -72,27 +72,14 @@ class ClipRectsContext {
       ClipRectsCacheSlot slot,
       OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior =
           kIgnorePlatformOverlayScrollbarSize,
+      ShouldRespectOverflowClipType root_layer_clip_behavior =
+          kRespectOverflowClip,
       const LayoutSize& accumulation = LayoutSize())
       : root_layer(root),
         overlay_scrollbar_clip_behavior(overlay_scrollbar_clip_behavior),
         cache_slot_(slot),
         sub_pixel_accumulation(accumulation),
-        respect_overflow_clip(slot == kPaintingClipRectsIgnoringOverflowClip
-                                  ? kIgnoreOverflowClip
-                                  : kRespectOverflowClip),
-        respect_overflow_clip_for_viewport(
-            (slot == kRootRelativeClipRectsIgnoringViewportClip ||
-             slot == kAbsoluteClipRectsIgnoringViewportClip)
-                ? kIgnoreOverflowClip
-                : kRespectOverflowClip) {}
-
-  void SetIgnoreOverflowClip() {
-    DCHECK(!UsesCache() || cache_slot_ == kPaintingClipRects);
-    DCHECK(respect_overflow_clip == kRespectOverflowClip);
-    if (UsesCache())
-      cache_slot_ = kPaintingClipRectsIgnoringOverflowClip;
-    respect_overflow_clip = kIgnoreOverflowClip;
-  }
+        respect_overflow_clip(root_layer_clip_behavior) {}
 
   bool UsesCache() const { return cache_slot_ != kUncachedClipRects; }
 
@@ -109,7 +96,6 @@ class ClipRectsContext {
   ClipRectsCacheSlot cache_slot_;
   LayoutSize sub_pixel_accumulation;
   ShouldRespectOverflowClipType respect_overflow_clip;
-  ShouldRespectOverflowClipType respect_overflow_clip_for_viewport;
 };
 
 // PaintLayerClipper is responsible for computing and caching clip

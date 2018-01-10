@@ -14,7 +14,7 @@ layer at (78,76) size 402x222
         text run at (0,0) width 86: "Translate first"
 layer at (79,129) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (1,53) size 80x80
-layer at (79,129) size 80x80
+layer at (154,149) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80
 layer at (79,129) size 80x80
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 80x80

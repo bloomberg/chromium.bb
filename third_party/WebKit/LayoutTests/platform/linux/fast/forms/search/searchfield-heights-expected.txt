@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
         LayoutFlexibleBox {DIV} at (3,83.50) size 301x33
           LayoutBlockFlow {DIV} at (0,0) size 278x33
       LayoutText {#text} at (0,0) size 0x0
-layer at (11,133) size 64x6
+layer at (11,133) size 64x6 backgroundClip at (11,135) size 64x2 clip at (11,135) size 64x2
   LayoutBlockFlow {DIV} at (0,0) size 64x6
     LayoutText {#text} at (0,0) size 10x6
       text run at (0,0) width 10: "mini"
@@ -32,7 +32,7 @@ layer at (277,112) size 278x33
   LayoutBlockFlow {DIV} at (0,0) size 278x33
     LayoutText {#text} at (0,0) size 84x32
       text run at (0,0) width 84: "regular"
-layer at (76,133) size 5x5 transparent
+layer at (76,133) size 5x5 backgroundClip at (10,135) size 75x2 clip at (10,135) size 75x2 transparent
   LayoutBlockFlow {DIV} at (65,0.50) size 5x5
 layer at (254,127) size 10x10 transparent
   LayoutBlockFlow {DIV} at (160,3.50) size 10x10

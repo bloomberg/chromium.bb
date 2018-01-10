@@ -21,7 +21,7 @@ layer at (378,54) size 367x24
   LayoutBlockFlow {DIV} at (1,2) size 367x24
     LayoutText {#text} at (0,0) size 74x24
       text run at (0,0) width 74: "\x{3075} ABCgjy"
-layer at (9,80) size 274x28
+layer at (9,80) size 274x28 backgroundClip at (9,81) size 274x26 clip at (9,81) size 274x26
   LayoutBlockFlow {DIV} at (1,0) size 274x28
     LayoutText {#text} at (0,0) size 79x27
       text run at (0,0) width 79: "ABCgjy"

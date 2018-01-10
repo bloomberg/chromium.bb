@@ -6,7 +6,7 @@ layer at (0,0) size 1561x2016 backgroundClip at (0,0) size 800x600 clip at (0,0)
 layer at (8,8) size 1545x2000 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {DIV} at (0,0) size 1545x2000
     LayoutMultiColumnSet (anonymous) at (0,0) size 1545x2000
-layer at (8,8) size 765x3840 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+layer at (8,8) size 765x3840 backgroundClip at (0,0) size 781x600 clip at (0,0) size 781x600
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 764.50x3840
     LayoutTable {TABLE} at (0,0) size 305x3840
       LayoutTableSection {THEAD} at (0,0) size 305x31

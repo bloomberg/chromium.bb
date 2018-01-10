@@ -62,14 +62,7 @@ static bool HasOverflowClip(
 }
 
 bool ClipRectsContext::ShouldRespectRootLayerClip() const {
-  if (respect_overflow_clip == kIgnoreOverflowClip)
-    return false;
-
-  if (root_layer->IsRootLayer() &&
-      respect_overflow_clip_for_viewport == kIgnoreOverflowClip)
-    return false;
-
-  return true;
+  return respect_overflow_clip == kRespectOverflowClip;
 }
 
 static void AdjustClipRectsForChildren(

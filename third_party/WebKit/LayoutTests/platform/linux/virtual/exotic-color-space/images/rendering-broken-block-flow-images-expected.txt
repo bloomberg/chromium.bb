@@ -9,7 +9,7 @@ layer at (0,0) size 785x860 backgroundClip at (0,0) size 785x585 clip at (0,0) s
 layer at (8,52) size 769x800 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
   LayoutBlockFlow {DIV} at (0,36) size 769x800
     LayoutMultiColumnSet (anonymous) at (0,0) size 769x800
-layer at (8,52) size 180x3621 backgroundClip at (0,0) size 785x585 clip at (0,0) size 785x585
+layer at (8,52) size 180x3621 backgroundClip at (0,0) size 196x585 clip at (0,0) size 196x585
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 180.25x3621
     LayoutBlockFlow {DIV} at (0,16) size 180.25x401
       LayoutBlockFlow {P} at (0,0) size 180.25x20
@@ -353,11 +353,11 @@ layer at (8,626) size 50x50 backgroundClip at (0,0) size 0x0 clip at (0,0) size 
   LayoutBlockFlow {SPAN} at (0,0) size 50x50 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (8,928) size 25x25 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (204,128) size 25x25 clip at (205,129) size 23x23
   LayoutBlockFlow {SPAN} at (0,0) size 25x25 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
     LayoutInline {SPAN} at (0,0) size 0x0
-layer at (8,993) size 50x50 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
+layer at (204,193) size 50x50 clip at (205,194) size 48x48
   LayoutBlockFlow {SPAN} at (0,0) size 50x50 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16
     LayoutInline {SPAN} at (0,0) size 0x0

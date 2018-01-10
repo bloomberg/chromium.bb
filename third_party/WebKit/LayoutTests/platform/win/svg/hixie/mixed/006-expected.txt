@@ -11,7 +11,7 @@ layer at (0,0) size 800x421
           LayoutSVGEllipse {circle} at (50,50) size 100x100 [fill={[type=SOLID] [color=#008000]}] [cx=100.00] [cy=100.00] [r=50.00]
           LayoutSVGForeignObject {foreignObject} at (0,0) size 200x200
         LayoutText {#text} at (0,0) size 0x0
-layer at (8,8) size 200x200
+layer at (16,216) size 200x200
   LayoutBlockFlow (positioned) {div} at (8,8) size 200x200 [bgcolor=#FFFFFF]
     LayoutText {#text} at (0,0) size 189x39
       text run at (0,0) width 181: "There should be a green circle"

@@ -41,13 +41,16 @@ TEST_F(PaintLayerClipperTest, BackgroundClipRectSubpixelAccumulation) {
   Element* target = GetDocument().getElementById("target");
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  ClipRectsContext context(
-      GetDocument().GetLayoutView()->Layer(), kUncachedClipRects,
-      kIgnorePlatformOverlayScrollbarSize, LayoutSize(FloatSize(0.25, 0.35)));
-  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
-  // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    context.SetIgnoreOverflowClip();
+  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           // When RLS is enabled, the LayoutView will have a
+                           // composited scrolling layer, so don't apply an
+                           // overflow clip.
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip,
+                           LayoutSize(FloatSize(0.25, 0.35)));
   ClipRect background_rect;
 
   target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
@@ -68,13 +71,15 @@ TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {
   Element* target = GetDocument().getElementById("target");
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  ClipRectsContext context(
-      GetDocument().GetLayoutView()->Layer(), kUncachedClipRects,
-      kIgnorePlatformOverlayScrollbarSize, LayoutSize(FloatSize(0.25, 0.35)));
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    context.SetIgnoreOverflowClip();
+  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip,
+                           LayoutSize(FloatSize(0.25, 0.35)));
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -100,12 +105,14 @@ TEST_F(PaintLayerClipperTest, ControlClip) {
   Element* target = GetDocument().getElementById("target");
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
-  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
-                           kUncachedClipRects);
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    context.SetIgnoreOverflowClip();
+  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip);
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -143,11 +150,14 @@ TEST_F(PaintLayerClipperTest, RoundedClip) {
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
-                           kUncachedClipRects);
-  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
-  // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    context.SetIgnoreOverflowClip();
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           // When RLS is enabled, the LayoutView will have a
+                           // composited scrolling layer, so don't apply an
+                           // overflow clip.
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip);
 
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
@@ -222,11 +232,15 @@ TEST_F(PaintLayerClipperTest, ControlClipSelect) {
   PaintLayer* target_paint_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
-                           kUncachedClipRects);
-  // When RLS is enabled, the LayoutView will have a composited scrolling layer,
-  // so don't apply an overflow clip.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    context.SetIgnoreOverflowClip();
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           // When RLS is enabled, the LayoutView will have a
+                           // composited scrolling layer, so don't apply an
+                           // overflow clip.
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip);
+
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -284,7 +298,9 @@ TEST_F(PaintLayerClipperTest, ContainPaintClip) {
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   PaintLayer* layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(layer, kPaintingClipRectsIgnoringOverflowClip);
+  ClipRectsContext context(layer, kPaintingClipRectsIgnoringOverflowClip,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           kIgnoreOverflowClip);
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -320,8 +336,9 @@ TEST_F(PaintLayerClipperTest, NestedContainPaintClip) {
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   PaintLayer* layer =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(layer->Parent(),
-                           kPaintingClipRectsIgnoringOverflowClip);
+  ClipRectsContext context(
+      layer->Parent(), kPaintingClipRectsIgnoringOverflowClip,
+      kIgnorePlatformOverlayScrollbarSize, kIgnoreOverflowClip);
   LayoutRect layer_bounds;
   ClipRect background_rect, foreground_rect;
 
@@ -563,7 +580,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithCSSClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
+  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           kIgnoreOverflowClip);
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);
@@ -597,7 +616,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithOverflowClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
+  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           kIgnoreOverflowClip);
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);
@@ -632,7 +653,9 @@ TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithBothClip) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("root"))->Layer();
   PaintLayer* target =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip);
+  ClipRectsContext context(root, kPaintingClipRectsIgnoringOverflowClip,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           kIgnoreOverflowClip);
   LayoutRect infinite_rect(LayoutRect::InfiniteIntRect());
   LayoutRect layer_bounds(infinite_rect);
   ClipRect background_rect(infinite_rect);
