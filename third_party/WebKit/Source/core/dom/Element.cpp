@@ -1276,7 +1276,7 @@ AccessibleNode* Element::accessibleNode() {
   return rare_data.EnsureAccessibleNode(this);
 }
 
-ComputedAccessibleNode* Element::ComputedAccessibleNode() {
+ComputedAccessibleNode* Element::GetComputedAccessibleNode() {
   if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled())
     return nullptr;
 

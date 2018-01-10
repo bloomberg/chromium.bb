@@ -1110,7 +1110,7 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
     Element* element) {
   DCHECK(element);
   ComputedAccessibleNode* computed_accessible_node =
-      element->ComputedAccessibleNode();
+      element->GetComputedAccessibleNode();
   return computed_accessible_node->ComputePromiseProperty(script_state);
 }
 
