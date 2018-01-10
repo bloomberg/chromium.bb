@@ -453,17 +453,8 @@ void NTPResourceCache::CreateNewTabHTML() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoCSS() {
-  // TODO(estade): this returns a subtly incorrect theme provider because
-  // |profile_| is actually not the incognito profile. See crbug.com/568388
-  const ui::ThemeProvider& tp =
-      ThemeService::GetThemeProviderForProfile(profile_);
-
-  // Get our theme colors
-  SkColor color_background =
-      tp.HasCustomImage(IDR_THEME_NTP_BACKGROUND)
-          ? GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND)
-          : ThemeProperties::GetDefaultColor(
-                ThemeProperties::COLOR_NTP_BACKGROUND, true /* incognito */);
+  const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
+      profile_->GetOffTheRecordProfile());
 
   // Generate the replacements.
   ui::TemplateReplacements substitutions;
@@ -473,8 +464,8 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
       profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
 
   // Colors.
-  substitutions["colorBackground"] =
-      color_utils::SkColorToRgbaString(color_background);
+  substitutions["colorBackground"] = color_utils::SkColorToRgbaString(
+      GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND));
   substitutions["backgroundBarDetached"] = GetNewTabBackgroundCSS(tp, false);
   substitutions["backgroundBarAttached"] = GetNewTabBackgroundCSS(tp, true);
   substitutions["backgroundTiling"] = GetNewTabBackgroundTilingCSS(tp);
@@ -495,7 +486,7 @@ void NTPResourceCache::CreateNewTabCSS() {
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);
 
-  // Get our theme colors
+  // Get our theme colors.
   SkColor color_background =
       GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
   SkColor color_text = GetThemeColor(tp, ThemeProperties::COLOR_NTP_TEXT);

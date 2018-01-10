@@ -703,6 +703,13 @@ gfx::ImageSkia* ThemeService::GetImageSkiaNamed(int id, bool incognito) const {
 SkColor ThemeService::GetColor(int id, bool incognito) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // The incognito NTP always uses the default background color, unless there is
+  // a custom NTP background image. See also https://crbug.com/21798#c114.
+  if (id == ThemeProperties::COLOR_NTP_BACKGROUND && incognito &&
+      !HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+    return ThemeProperties::GetDefaultColor(id, incognito);
+  }
+
   // For legacy reasons, |theme_supplier_| requires the incognito variants
   // of color IDs.
   int theme_supplier_id = id;
