@@ -47,168 +47,197 @@ var checkSrcAttribute = function(element, expectedValue) {
   embedder.test.assertEq(expectedValue, element.src);
 };
 
-// Tests begin.
-function testLoadAPIFunction(extensionIdOne, extensionIdTwo) {
-  var extensionScheme = 'chrome-extension://';
-  var srcOne = 'data:text/html,<body>One</body>';
-  var srcTwo = 'data:text/html,<body>Two</body>';
-  var invalidExtensionId = 'fakeExtension';
+var extensionScheme = 'chrome-extension://';
+var srcOne = 'data:text/html,<body>One</body>';
+var srcTwo = 'data:text/html,<body>Two</body>';
 
+// Tests begin.
+
+// Call load with a specified extension ID and src.
+function testLoadAPIFunction(extensionId) {
   var extensionview = document.querySelector('extensionview');
 
-  var runStepOne = function() {
-    // Call load with a specified extension ID and src.
-    extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
-    .then(function onLoadResolved() {
-      checkExtensionAttribute(extensionview, extensionIdOne);
-      checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-          '/' + srcOne);
-      runStepTwo();
-    }, function onLoadRejected() {
-      embedder.test.fail();
-    });
-  };
-
-  var runStepTwo = function() {
-    // Call load with the same extension Id and src.
-    extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
-    .then(function onLoadResolved() {
-      checkExtensionAttribute(extensionview, extensionIdOne);
-      checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-          '/' + srcOne);
-      runStepThree();
-    }, function onLoadRejected() {
-      embedder.test.fail();
-    });
-  };
-
-  var runStepThree = function() {
-    // Call load with the same extension Id and different src.
-    extensionview.load(extensionScheme + extensionIdOne + '/' + srcTwo)
-    .then(function onLoadResolved() {
-      checkExtensionAttribute(extensionview, extensionIdOne);
-      checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-          '/' + srcTwo);
-      runStepFour();
-    }, function onLoadRejected() {
-      embedder.test.fail();
-    });
-  };
-
-  var runStepFour = function() {
-    // Call load with a new extension Id and src.
-    extensionview.load(extensionScheme + extensionIdTwo + '/' + srcOne)
-    .then(function onLoadResolved() {
-      checkExtensionAttribute(extensionview, extensionIdTwo);
-      checkSrcAttribute(extensionview, extensionScheme + extensionIdTwo +
-          '/' + srcOne);
-      runStepFive();
-    }, function onLoadRejected() {
-      embedder.test.fail();
-    });
-  };
-
-  var runStepFive = function() {
-    // Call load with an invalid extension.
-    extensionview.load(extensionScheme + invalidExtensionId + '/' + srcOne)
-    .then(function onLoadResolved() {
-      embedder.test.fail();
-    }, function onLoadRejected() {
-      runStepSix();
-    });
-  };
-
-  var runStepSix = function() {
-    // Call load with a valid extension Id and src after an invalid call.
-    extensionview.load(extensionScheme + extensionIdOne + '/' + srcTwo)
-    .then(function onLoadResolved() {
-      runStepSeven();
-    }, function onLoadRejected() {
-      embedder.test.fail();
-    });
-  };
-
-  var runStepSeven = function() {
-    // Call load with a null extension.
-    extensionview.load(null)
-    .then(function onLoadResolved() {
-      embedder.test.fail();
-    }, function onLoadRejected() {
-      embedder.test.succeed();
-    });
-  };
-
-  runStepOne();
+  extensionview.load(extensionScheme + extensionId + '/' + srcOne)
+      .then(function() {
+        checkExtensionAttribute(extensionview, extensionId);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionId + '/' + srcOne);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
 };
 
-function testQueuedLoadAPIFunction(extensionIdOne, extensionIdTwo) {
-  var extensionScheme = 'chrome-extension://';
-  var srcOne = 'data:text/html,<body>One</body>';
-  var srcTwo = 'data:text/html,<body>Two</body>';
-  var loadCallCount = 1;
+// Call load with the same extension Id and src.
+function testLoadAPISameIdAndSrc(extensionId) {
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(extensionScheme + extensionId + '/' + srcOne)
+      .then(function() {
+        return extensionview.load(extensionScheme + extensionId + '/' + srcOne);
+      })
+      .then(function() {
+        checkExtensionAttribute(extensionview, extensionId);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionId + '/' + srcOne);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
+};
 
+// Call load with the same extension Id and different src.
+function testLoadAPISameIdDifferentSrc(extensionId) {
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(extensionScheme + extensionId + '/' + srcOne)
+      .then(function() {
+        return extensionview.load(extensionScheme + extensionId + '/' + srcTwo);
+      })
+      .then(function() {
+        checkExtensionAttribute(extensionview, extensionId);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionId + '/' + srcTwo);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
+};
+
+// Call load with a new extension Id and src.
+function testLoadAPILoadOtherExtension(extensionIdOne, extensionIdTwo) {
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
+      .then(function() {
+        return extensionview.load(
+            extensionScheme + extensionIdTwo + '/' + srcTwo);
+      })
+      .then(function() {
+        checkExtensionAttribute(extensionview, extensionIdTwo);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionIdTwo + '/' + srcTwo);
+        // Try another load of the first extension again to make sure the
+        // previous load managed to complete without stalling the action queue.
+        return extensionview.load(
+            extensionScheme + extensionIdOne + '/' + srcOne);
+      })
+      .then(function() {
+        checkExtensionAttribute(extensionview, extensionIdTwo);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionIdTwo + '/' + srcOne);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
+};
+
+// Call load with an invalid extension.
+function testLoadAPIInvalidExtension() {
+  var invalidExtensionId = 'fakeExtension';
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(extensionScheme + invalidExtensionId + '/' + srcOne)
+      .then(embedder.test.fail, embedder.test.succeed);
+};
+
+// Call load with a valid extension Id and src after an invalid call.
+function testLoadAPIAfterInvalidCall(extensionId) {
+  var invalidExtensionId = 'fakeExtension';
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(extensionScheme + invalidExtensionId + '/' + srcOne)
+      .then(
+          embedder.test.fail,
+          function() {
+            return extensionview.load(
+                extensionScheme + extensionId + '/' + srcTwo);
+          })
+      .then(embedder.test.succeed, embedder.test.fail);
+};
+
+// Call load with a null extension.
+function testLoadAPINullExtension() {
+  var extensionview = document.querySelector('extensionview');
+  extensionview.load(null).then(embedder.test.fail, embedder.test.succeed);
+};
+
+function testQueuedLoadAPIFunction(extensionId) {
   var extensionview = document.querySelector('extensionview');
 
+  var loadCallCount = 0;
+  var load_promises = [];
+
   // Call load a first time with a specified extension ID and src.
-  extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
-  .then(function onLoadResolved() {
-    // First load call has completed.
-    checkExtensionAttribute(extensionview, extensionIdOne);
-    checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-        '/' + srcOne);
-    embedder.test.assertEq(1, loadCallCount);
-    // Checked for expected attributes and call order.
-    loadCallCount++;
-  }, function onLoadRejected() {
-    embedder.test.fail();
-  });
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionId + '/' + srcOne)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(1, loadCallCount);
+          }));
 
   // Call load a second time with the same extension Id and src.
-  extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
-  .then(function onLoadResolved() {
-    // Second load call has completed.
-    checkExtensionAttribute(extensionview, extensionIdOne);
-    checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-        '/' + srcOne);
-    embedder.test.assertEq(2, loadCallCount);
-    // Checked for expected attributes and call order.
-    loadCallCount++;
-  }, function onLoadRejected() {
-    embedder.test.fail();
-  });
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionId + '/' + srcOne)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(2, loadCallCount);
+          }));
 
   // Call load a third time with the same extension Id and different src.
-  extensionview.load(extensionScheme + extensionIdOne + '/' + srcTwo)
-  .then(function onLoadResolved() {
-    // Third load call has completed.
-    checkExtensionAttribute(extensionview, extensionIdOne);
-    checkSrcAttribute(extensionview, extensionScheme + extensionIdOne +
-        '/' + srcTwo);
-    embedder.test.assertEq(3, loadCallCount);
-    // Checked for expected attributes and call order.
-    loadCallCount++;
-  }, function onLoadRejected() {
-    embedder.test.fail();
-  });
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionId + '/' + srcTwo)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(3, loadCallCount);
+          }));
 
-  // Call load a fourth time with a new extension Id and src.
-  extensionview.load(extensionScheme + extensionIdTwo + '/' + srcOne)
-  .then(function onLoadResolved() {
-    // Fourth load call has completed.
-    checkExtensionAttribute(extensionview, extensionIdTwo);
-    checkSrcAttribute(extensionview, extensionScheme + extensionIdTwo +
-        '/' + srcOne);
-    embedder.test.assertEq(4, loadCallCount);
-    // Checked for expected attributes and call order.
-    embedder.test.succeed();
-  }, function onLoadRejected() {
-    embedder.test.fail();
-  });
+  Promise.all(load_promises)
+      .then(function() {
+        // Ensure we have the expected attributes for the most recent load.
+        checkExtensionAttribute(extensionview, extensionId);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionId + '/' + srcTwo);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
+};
+
+function testQueuedLoadAPILoadOtherExtension(extensionIdOne, extensionIdTwo) {
+  var extensionview = document.querySelector('extensionview');
+
+  var loadCallCount = 0;
+  var load_promises = [];
+
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(1, loadCallCount);
+          }));
+
+  // Enqueue a load to another extension.
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionIdTwo + '/' + srcTwo)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(2, loadCallCount);
+          }));
+
+  // Enqueue a load to back to the original extension.
+  load_promises.push(
+      extensionview.load(extensionScheme + extensionIdOne + '/' + srcOne)
+          .then(function() {
+            loadCallCount++;
+            embedder.test.assertEq(3, loadCallCount);
+          }));
+
+  Promise.all(load_promises)
+      .then(function() {
+        // Ensure we have the expected attributes for the most recent load.
+        checkExtensionAttribute(extensionview, extensionIdOne);
+        checkSrcAttribute(
+            extensionview, extensionScheme + extensionIdOne + '/' + srcOne);
+      })
+      .then(embedder.test.succeed, embedder.test.fail);
 };
 
 embedder.test.testList = {
   'testLoadAPIFunction': testLoadAPIFunction,
+  'testLoadAPISameIdAndSrc': testLoadAPISameIdAndSrc,
+  'testLoadAPISameIdDifferentSrc': testLoadAPISameIdDifferentSrc,
+  'testLoadAPILoadOtherExtension': testLoadAPILoadOtherExtension,
+  'testLoadAPIInvalidExtension': testLoadAPIInvalidExtension,
+  'testLoadAPIAfterInvalidCall': testLoadAPIAfterInvalidCall,
+  'testLoadAPINullExtension': testLoadAPINullExtension,
   'testQueuedLoadAPIFunction': testQueuedLoadAPIFunction,
+  'testQueuedLoadAPILoadOtherExtension': testQueuedLoadAPILoadOtherExtension,
 };
 
 onload = function() {

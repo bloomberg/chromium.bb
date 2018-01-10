@@ -118,28 +118,60 @@ IN_PROC_BROWSER_TEST_P(ExtensionViewTest, ShimSrcAttribute) {
              skeleton_app->id(), "");
 }
 
-// Tests that verify that <extensionview> can call the load function.
-// Flaky under MemorySanitizer: https://crbug.com/545656
-IN_PROC_BROWSER_TEST_P(ExtensionViewTest, DISABLED_LoadAPICall) {
-  const extensions::Extension* skeleton_app =
-      InstallPlatformApp("extension_view/skeleton");
-  const extensions::Extension* skeleton_app_two =
-      InstallPlatformApp("extension_view/skeleton_two");
-  TestHelper("testLoadAPIFunction", "extension_view/load_api",
-             skeleton_app->id(),
-             skeleton_app_two->id());
+class ExtensionViewLoadApiTest : public ExtensionViewTest {
+ public:
+  void TestLoadApiHelper(const std::string& test_name) {
+    const extensions::Extension* skeleton_app =
+        InstallPlatformApp("extension_view/skeleton");
+    const extensions::Extension* skeleton_app_two =
+        InstallPlatformApp("extension_view/skeleton_two");
+    TestHelper(test_name, "extension_view/load_api", skeleton_app->id(),
+               skeleton_app_two->id());
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(ExtensionViewTests,
+                        ExtensionViewLoadApiTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIFunction) {
+  TestLoadApiHelper("testLoadAPIFunction");
 }
 
-// Flaky under MemorySanitizer: https://crbug.com/512092
-// Flaky elsewhere: https://crbug.com/538114
-// Tests that verify that <extensionview> can queue up multiple calls to the
-// load function.
-IN_PROC_BROWSER_TEST_P(ExtensionViewTest, DISABLED_QueuedLoadAPICall) {
-  const extensions::Extension* skeleton_app =
-      InstallPlatformApp("extension_view/skeleton");
-  const extensions::Extension* skeleton_app_two =
-      InstallPlatformApp("extension_view/skeleton_two");
-  TestHelper("testQueuedLoadAPIFunction", "extension_view/load_api",
-             skeleton_app->id(),
-             skeleton_app_two->id());
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdAndSrc) {
+  TestLoadApiHelper("testLoadAPISameIdAndSrc");
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPISameIdDifferentSrc) {
+  TestLoadApiHelper("testLoadAPISameIdDifferentSrc");
+}
+
+// extensionview cannot do cross extension navigation with OOPIF based guests.
+// crbug.com/800407
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
+                       DISABLED_LoadAPILoadOtherExtension) {
+  TestLoadApiHelper("testLoadAPILoadOtherExtension");
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIInvalidExtension) {
+  TestLoadApiHelper("testLoadAPIInvalidExtension");
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPIAfterInvalidCall) {
+  TestLoadApiHelper("testLoadAPIAfterInvalidCall");
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, LoadAPINullExtension) {
+  TestLoadApiHelper("testLoadAPINullExtension");
+}
+
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest, QueuedLoadAPIFunction) {
+  TestLoadApiHelper("testQueuedLoadAPIFunction");
+}
+
+// extensionview cannot do cross extension navigation with OOPIF based guests.
+// crbug.com/800407
+IN_PROC_BROWSER_TEST_P(ExtensionViewLoadApiTest,
+                       DISABLED_QueuedLoadAPILoadOtherExtension) {
+  TestLoadApiHelper("testQueuedLoadAPILoadOtherExtension");
 }
