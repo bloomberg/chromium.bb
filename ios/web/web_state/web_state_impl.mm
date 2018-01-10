@@ -17,6 +17,7 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#include "ios/web/navigation/placeholder_navigation_util.h"
 #import "ios/web/navigation/session_storage_builder.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #include "ios/web/public/browser_state.h"
@@ -47,6 +48,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using web::placeholder_navigation_util::IsPlaceholderUrl;
 
 namespace web {
 
@@ -245,6 +248,11 @@ bool WebStateImpl::IsBeingDestroyed() const {
 }
 
 void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
+  // Native Content and WebUI placeholder URL is an internal implementation
+  // detail of //ios/web/ navigation. Do not trigger external callbacks.
+  if (IsPlaceholderUrl(url))
+    return;
+
   PageLoadCompletionStatus load_completion_status =
       load_success ? PageLoadCompletionStatus::SUCCESS
                    : PageLoadCompletionStatus::FAILURE;
@@ -673,7 +681,8 @@ const GURL& WebStateImpl::GetLastCommittedURL() const {
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   GURL URL = [web_controller_ currentURLWithTrustLevel:trust_level];
   bool equalOrigins = URL.GetOrigin() == GetLastCommittedURL().GetOrigin();
-  DCHECK(equalOrigins);
+  DCHECK(equalOrigins) << "Origin mismatch. URL: " << URL.spec()
+                       << " Last committed: " << GetLastCommittedURL().spec();
   UMA_HISTOGRAM_BOOLEAN("Web.CurrentOriginEqualsLastCommittedOrigin",
                         equalOrigins);
   return URL;
@@ -726,11 +735,21 @@ void WebStateImpl::TakeSnapshot(const SnapshotCallback& callback,
 }
 
 void WebStateImpl::OnNavigationStarted(web::NavigationContext* context) {
+  // Native Content and WebUI placeholder URL is an internal implementation
+  // detail of //ios/web/ navigation. Do not trigger external callbacks.
+  if (IsPlaceholderUrl(context->GetUrl()))
+    return;
+
   for (auto& observer : observers_)
     observer.DidStartNavigation(this, context);
 }
 
 void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
+  // Native Content and WebUI placeholder URL is an internal implementation
+  // detail of //ios/web/ navigation. Do not trigger external callbacks.
+  if (IsPlaceholderUrl(context->GetUrl()))
+    return;
+
   for (auto& observer : observers_)
     observer.DidFinishNavigation(this, context);
 

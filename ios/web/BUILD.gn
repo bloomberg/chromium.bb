@@ -373,6 +373,7 @@ source_set("ios_web_web_state_unittests") {
     "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
+    "//ios/web/navigation",
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
