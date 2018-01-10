@@ -50,13 +50,6 @@ const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 // be switched to high contrast, not other system colors.
 const char kForceHighContrast[] = "force-high-contrast";
 
-// TODO(dcastagna): Draw debug quad borders only when it is actually
-// an overlay candidate.
-// Renders a border around GL composited overlay candidate quads to
-// help debug and study overlay support.
-const char kGlCompositedOverlayCandidateQuadBorder[] =
-    "gl-composited-overlay-candidate-quad-border";
-
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";
