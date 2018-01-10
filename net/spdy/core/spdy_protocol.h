@@ -51,6 +51,12 @@ const uint32_t kSpdyMaxFrameSizeLimit = (1 << 24) - 1;
 // the maximum control frame size we accept.
 const uint32_t kHttp2DefaultFramePayloadLimit = 1 << 14;
 
+// The maximum size of the control frames that we send, including the size of
+// the header. This limit is arbitrary. We can enforce it here or at the
+// application layer. We chose the framing layer, but this can be changed (or
+// removed) if necessary later down the line.
+const size_t kHttp2MaxControlFrameSendSize = kHttp2DefaultFramePayloadLimit - 1;
+
 // Number of octets in the frame header.
 const size_t kFrameHeaderSize = 9;
 
@@ -276,6 +282,8 @@ const size_t kPriorityFrameSize = kFrameHeaderSize + 5;
 // RST_STREAM frame has error_code (4 octets) field.
 const size_t kRstStreamFrameSize = kFrameHeaderSize + 4;
 const size_t kSettingsFrameMinimumSize = kFrameHeaderSize;
+const size_t kSettingsOneSettingSize =
+    sizeof(uint32_t) + sizeof(SpdySettingsIds);
 // PUSH_PROMISE frame has promised_stream_id (4 octet) field.
 const size_t kPushPromiseFrameMinimumSize = kFrameHeaderSize + 4;
 // PING frame has opaque_bytes (8 octet) field.
@@ -300,6 +308,10 @@ const int32_t kInitialStreamWindowSize = 64 * 1024 - 1;
 const int32_t kInitialSessionWindowSize = 64 * 1024 - 1;
 // The NPN string for HTTP2, "h2".
 extern const char* const kHttp2Npn;
+// An estimate size of the HPACK overhead for each header field. 1 bytes for
+// indexed literal, 1 bytes for key literal and length encoding, and 2 bytes for
+// value literal and length encoding.
+const size_t kPerHeaderHpackOverhead = 4;
 
 // Names of pseudo-headers defined for HTTP/2 requests.
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2AuthorityHeader;
@@ -309,6 +321,8 @@ SPDY_EXPORT_PRIVATE extern const char* const kHttp2SchemeHeader;
 
 // Name of pseudo-header defined for HTTP/2 responses.
 SPDY_EXPORT_PRIVATE extern const char* const kHttp2StatusHeader;
+
+SPDY_EXPORT_PRIVATE size_t GetNumberRequiredContinuationFrames(size_t size);
 
 // Variant type (i.e. tagged union) that is either a SPDY 3.x priority value,
 // or else an HTTP/2 stream dependency tuple {parent stream ID, weight,
@@ -417,6 +431,9 @@ class SPDY_EXPORT_PRIVATE SpdyFrameIR {
   virtual SpdyFrameType frame_type() const = 0;
   SpdyStreamId stream_id() const { return stream_id_; }
   virtual bool fin() const;
+  // Returns an estimate of the size of the serialized frame, without applying
+  // compression. May not be exact.
+  virtual size_t size() const = 0;
 
   // Returns the number of bytes of flow control window that would be consumed
   // by this frame if written to the wire.
@@ -535,6 +552,8 @@ class SPDY_EXPORT_PRIVATE SpdyDataIR : public SpdyFrameWithFinIR {
 
   int flow_control_window_consumed() const override;
 
+  size_t size() const override;
+
  private:
   // Used to store data that this SpdyDataIR should own.
   std::unique_ptr<SpdyString> data_store_;
@@ -561,6 +580,8 @@ class SPDY_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameIR {
 
   SpdyFrameType frame_type() const override;
 
+  size_t size() const override;
+
  private:
   SpdyErrorCode error_code_;
 
@@ -583,6 +604,8 @@ class SPDY_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
 
   SpdyFrameType frame_type() const override;
 
+  size_t size() const override;
+
  private:
   SettingsMap values_;
   bool is_ack_;
@@ -601,6 +624,8 @@ class SPDY_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
   void Visit(SpdyFrameVisitor* visitor) const override;
 
   SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
 
  private:
   SpdyPingId id_;
@@ -648,6 +673,8 @@ class SPDY_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 
   SpdyFrameType frame_type() const override;
 
+  size_t size() const override;
+
  private:
   SpdyStreamId last_good_stream_id_;
   SpdyErrorCode error_code_;
@@ -667,6 +694,8 @@ class SPDY_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
   void Visit(SpdyFrameVisitor* visitor) const override;
 
   SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
 
   bool has_priority() const { return has_priority_; }
   void set_has_priority(bool has_priority) { has_priority_ = has_priority; }
@@ -714,6 +743,8 @@ class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
 
   SpdyFrameType frame_type() const override;
 
+  size_t size() const override;
+
  private:
   int32_t delta_;
 
@@ -737,6 +768,8 @@ class SPDY_EXPORT_PRIVATE SpdyPushPromiseIR
   void Visit(SpdyFrameVisitor* visitor) const override;
 
   SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
 
   bool padded() const { return padded_; }
   int padding_payload_len() const { return padding_payload_len_; }
@@ -772,6 +805,7 @@ class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameIR {
   void take_encoding(std::unique_ptr<SpdyString> encoding) {
     encoding_ = std::move(encoding);
   }
+  size_t size() const override;
 
  private:
   std::unique_ptr<SpdyString> encoding_;
@@ -798,6 +832,8 @@ class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameIR {
 
   SpdyFrameType frame_type() const override;
 
+  size_t size() const override;
+
  private:
   SpdyString origin_;
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector_;
@@ -821,6 +857,8 @@ class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
   void Visit(SpdyFrameVisitor* visitor) const override;
 
   SpdyFrameType frame_type() const override;
+
+  size_t size() const override;
 
  private:
   SpdyStreamId parent_stream_id_;
@@ -851,6 +889,8 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
   SpdyFrameType frame_type() const override;
 
   int flow_control_window_consumed() const override;
+
+  size_t size() const override;
 
  protected:
   // Allows subclasses to overwrite the default length.

@@ -206,6 +206,15 @@ const char* ErrorCodeToString(SpdyErrorCode error_code) {
   return "UNKNOWN_ERROR_CODE";
 }
 
+size_t GetNumberRequiredContinuationFrames(size_t size) {
+  DCHECK_GT(size, kHttp2MaxControlFrameSendSize);
+  size_t overflow = size - kHttp2MaxControlFrameSendSize;
+  int payload_size =
+      kHttp2MaxControlFrameSendSize - kContinuationFrameMinimumSize;
+  // This is ceiling(overflow/payload_size) using integer arithmetics.
+  return (overflow - 1) / payload_size + 1;
+}
+
 const char* const kHttp2Npn = "h2";
 
 const char* const kHttp2AuthorityHeader = ":authority";
@@ -272,7 +281,12 @@ SpdyFrameType SpdyDataIR::frame_type() const {
 }
 
 int SpdyDataIR::flow_control_window_consumed() const {
-  return padded() ? 1 + padding_payload_len() + data_len() : data_len();
+  return padded_ ? 1 + padding_payload_len_ + data_len_ : data_len_;
+}
+
+size_t SpdyDataIR::size() const {
+  return kFrameHeaderSize +
+         (padded() ? 1 + padding_payload_len() + data_len() : data_len());
 }
 
 SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
@@ -291,6 +305,10 @@ SpdyFrameType SpdyRstStreamIR::frame_type() const {
   return SpdyFrameType::RST_STREAM;
 }
 
+size_t SpdyRstStreamIR::size() const {
+  return kRstStreamFrameSize;
+}
+
 SpdySettingsIR::SpdySettingsIR() : is_ack_(false) {}
 
 SpdySettingsIR::~SpdySettingsIR() = default;
@@ -303,12 +321,20 @@ SpdyFrameType SpdySettingsIR::frame_type() const {
   return SpdyFrameType::SETTINGS;
 }
 
+size_t SpdySettingsIR::size() const {
+  return kFrameHeaderSize + values_.size() * kSettingsOneSettingSize;
+}
+
 void SpdyPingIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitPing(*this);
 }
 
 SpdyFrameType SpdyPingIR::frame_type() const {
   return SpdyFrameType::PING;
+}
+
+size_t SpdyPingIR::size() const {
+  return kPingFrameSize;
 }
 
 SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
@@ -345,6 +371,10 @@ SpdyFrameType SpdyGoAwayIR::frame_type() const {
   return SpdyFrameType::GOAWAY;
 }
 
+size_t SpdyGoAwayIR::size() const {
+  return kGoawayFrameMinimumSize + description_.size();
+}
+
 SpdyContinuationIR::SpdyContinuationIR(SpdyStreamId stream_id)
     : SpdyFrameIR(stream_id), end_headers_(false) {
   encoding_ = SpdyMakeUnique<SpdyString>();
@@ -360,12 +390,42 @@ SpdyFrameType SpdyContinuationIR::frame_type() const {
   return SpdyFrameType::CONTINUATION;
 }
 
+size_t SpdyContinuationIR::size() const {
+  // We don't need to get the size of CONTINUATION frame directly. It is
+  // calculated in HEADERS or PUSH_PROMISE frame.
+  SPDY_BUG << "Shouldn't not call size() for CONTINUATION frame.";
+  return 0;
+}
+
 void SpdyHeadersIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitHeaders(*this);
 }
 
 SpdyFrameType SpdyHeadersIR::frame_type() const {
   return SpdyFrameType::HEADERS;
+}
+
+size_t SpdyHeadersIR::size() const {
+  size_t size = kHeadersFrameMinimumSize;
+
+  if (padded_) {
+    // Padding field length.
+    size += 1;
+    size += padding_payload_len_;
+  }
+
+  if (has_priority_) {
+    size += 5;
+  }
+
+  // Assume no hpack encoding is applied.
+  size += header_block().TotalBytesUsed() +
+          header_block().size() * kPerHeaderHpackOverhead;
+  if (size > kHttp2MaxControlFrameSendSize) {
+    size += GetNumberRequiredContinuationFrames(size) *
+            kContinuationFrameMinimumSize;
+  }
+  return size;
 }
 
 void SpdyWindowUpdateIR::Visit(SpdyFrameVisitor* visitor) const {
@@ -376,12 +436,33 @@ SpdyFrameType SpdyWindowUpdateIR::frame_type() const {
   return SpdyFrameType::WINDOW_UPDATE;
 }
 
+size_t SpdyWindowUpdateIR::size() const {
+  return kWindowUpdateFrameSize;
+}
+
 void SpdyPushPromiseIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitPushPromise(*this);
 }
 
 SpdyFrameType SpdyPushPromiseIR::frame_type() const {
   return SpdyFrameType::PUSH_PROMISE;
+}
+
+size_t SpdyPushPromiseIR::size() const {
+  size_t size = kPushPromiseFrameMinimumSize;
+
+  if (padded_) {
+    // Padding length field.
+    size += 1;
+    size += padding_payload_len_;
+  }
+
+  size += header_block().TotalBytesUsed();
+  if (size > kHttp2MaxControlFrameSendSize) {
+    size += GetNumberRequiredContinuationFrames(size) *
+            kContinuationFrameMinimumSize;
+  }
+  return size;
 }
 
 SpdyAltSvcIR::SpdyAltSvcIR(SpdyStreamId stream_id) : SpdyFrameIR(stream_id) {}
@@ -396,6 +477,16 @@ SpdyFrameType SpdyAltSvcIR::frame_type() const {
   return SpdyFrameType::ALTSVC;
 }
 
+size_t SpdyAltSvcIR::size() const {
+  size_t size = kGetAltSvcFrameMinimumSize;
+  size += origin_.length();
+  // TODO(yasong): estimates the size without serializing the vector.
+  SpdyString str =
+      SpdyAltSvcWireFormat::SerializeHeaderFieldValue(altsvc_vector_);
+  size += str.size();
+  return size;
+}
+
 void SpdyPriorityIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitPriority(*this);
 }
@@ -404,12 +495,20 @@ SpdyFrameType SpdyPriorityIR::frame_type() const {
   return SpdyFrameType::PRIORITY;
 }
 
+size_t SpdyPriorityIR::size() const {
+  return kPriorityFrameSize;
+}
+
 void SpdyUnknownIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitUnknown(*this);
 }
 
 SpdyFrameType SpdyUnknownIR::frame_type() const {
   return static_cast<SpdyFrameType>(type());
+}
+
+size_t SpdyUnknownIR::size() const {
+  return kFrameHeaderSize + payload_.size();
 }
 
 int SpdyUnknownIR::flow_control_window_consumed() const {

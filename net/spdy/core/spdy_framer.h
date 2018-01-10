@@ -72,12 +72,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   // Gets the serialized flags for the given |frame|.
   static uint8_t GetSerializedFlags(const SpdyFrameIR& frame);
 
-  // The maximum size of the control frames that we send, including the size of
-  // the header. This limit is arbitrary. We can enforce it here or at the
-  // application layer. We chose the framing layer, but this can be changed (or
-  // removed) if necessary later down the line.
-  static const size_t kMaxControlFrameSendSize;
-
   // Serialize a data frame.
   static SpdySerializedFrame SerializeData(const SpdyDataIR& data_ir);
   // Serializes the data frame header and optionally padding length fields,
@@ -369,8 +363,6 @@ class SPDY_EXPORT_PRIVATE SpdyFramer {
   };
 
  private:
-  static size_t GetNumberRequiredContinuationFrames(size_t size);
-
   void SerializeHeadersBuilderHelper(const SpdyHeadersIR& headers,
                                      uint8_t* flags,
                                      size_t* size,
