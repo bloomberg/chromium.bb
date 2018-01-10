@@ -61,10 +61,10 @@ display ^ 4
 display \s 0
 display @ 345
 display ó 346
-display à 12356
-display ù 23456
-display [ 12356
-display ] 23456
+#display à 12356
+#display ù 23456
+#display [ 12356
+#display ] 23456
 
 
 space \s 0      	# blank 32
@@ -76,7 +76,6 @@ space \x000D 0    # cr
 space \x00A0 a    # no-break space
 space \x007f 0
 
-#punctuation = 2356
 include latinLetterDef6Dots.uti
 
 uplow \x00c7\x00e7  12346 # c cédille (Çç)
@@ -124,6 +123,9 @@ math - 36
 math * 35   # astérisque
 math / 34   # barre oblique
 math = 2356 # égal
+#math ( 236
+#math ) 356
+
 
 math \x00F7 25     # divisé par
 math \x003c 5-126  # inférieur à
