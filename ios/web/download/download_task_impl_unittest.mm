@@ -118,6 +118,7 @@ class DownloadTaskImplTest : public PlatformTest {
             kContentDisposition,
             /*total_bytes=*/-1,
             kMimeType,
+            ui::PageTransition::PAGE_TRANSITION_TYPED,
             task_delegate_.configuration().identifier,
             &task_delegate_)),
         session_delegate_callbacks_queue_(
@@ -238,6 +239,8 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(-1, task_->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task_->GetContentDisposition());
   EXPECT_EQ(kMimeType, task_->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task_->GetTransitionType(), ui::PageTransition::PAGE_TRANSITION_TYPED));
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
 
   EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));

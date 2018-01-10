@@ -4230,11 +4230,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
     int64_t contentLength = navigationResponse.response.expectedContentLength;
     web::BrowserState* browserState = self.webState->GetBrowserState();
+    web::NavigationContext* context =
+        [self contextForPendingNavigationWithURL:responseURL];
     web::DownloadController::FromBrowserState(browserState)
         ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
                              responseURL, contentDisposition, contentLength,
-                             base::SysNSStringToUTF8(MIMEType));
-
+                             base::SysNSStringToUTF8(MIMEType),
+                             context->GetPageTransition());
     BOOL downloadItem =
         (base::FeatureList::IsEnabled(web::features::kNewPassKitDownload) ||
          base::FeatureList::IsEnabled(web::features::kNewFileDownload));

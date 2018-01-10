@@ -66,6 +66,7 @@ TEST_F(DownloadTest, SucessfullDownload) {
   ASSERT_TRUE(server_.Start());
   GURL url(server_.GetURL("/"));
   web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PageTransition::PAGE_TRANSITION_TYPED;
   web_state()->GetNavigationManager()->LoadURLWithParams(params);
 
   // Wait until download task is created.
@@ -85,6 +86,8 @@ TEST_F(DownloadTest, SucessfullDownload) {
   EXPECT_EQ(-1, task->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
   EXPECT_EQ(kMimeType, task->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(), ui::PageTransition::PAGE_TRANSITION_TYPED));
   EXPECT_EQ("download.test", base::UTF16ToUTF8(task->GetSuggestedFilename()));
 
   // Start the download task and wait for completion.

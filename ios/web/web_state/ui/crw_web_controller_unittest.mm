@@ -553,6 +553,8 @@ class CRWWebControllerDownloadTest : public CRWWebControllerTest {
     // Wait for decidePolicyForNavigationResponse: callback.
     __block bool callback_called = false;
     [navigation_delegate_ webView:mock_web_view_
+        didStartProvisionalNavigation:nil];
+    [navigation_delegate_ webView:mock_web_view_
         decidePolicyForNavigationResponse:navigation_response
                           decisionHandler:^(WKNavigationResponsePolicy policy) {
                             callback_called = true;
@@ -590,6 +592,9 @@ TEST_F(CRWWebControllerDownloadTest, CreationWithNSURLResponse) {
   EXPECT_EQ(content_length, task->GetTotalBytes());
   EXPECT_EQ("", task->GetContentDisposition());
   EXPECT_EQ(kTestMimeType, task->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(),
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: creates
@@ -615,6 +620,9 @@ TEST_F(CRWWebControllerDownloadTest, CreationWithNSHTTPURLResponse) {
   EXPECT_EQ(-1, task->GetTotalBytes());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
   EXPECT_EQ("", task->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(),
+      ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT));
 }
 
 // Tests |currentURLWithTrustLevel:| method.

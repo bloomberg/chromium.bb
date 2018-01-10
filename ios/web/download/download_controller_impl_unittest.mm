@@ -62,9 +62,9 @@ TEST_F(DownloadControllerImplTest, FromBrowserState) {
 TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
   NSString* identifier = [NSUUID UUID].UUIDString;
   GURL url("https://download.test");
-  download_controller()->CreateDownloadTask(&web_state_, identifier, url,
-                                            kContentDisposition,
-                                            /*total_bytes=*/-1, kMimeType);
+  download_controller()->CreateDownloadTask(
+      &web_state_, identifier, url, kContentDisposition,
+      /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_TYPED);
 
   ASSERT_EQ(1U, delegate_.alive_download_tasks().size());
   DownloadTask* task = delegate_.alive_download_tasks()[0].second.get();
@@ -77,6 +77,8 @@ TEST_F(DownloadControllerImplTest, OnDownloadCreated) {
   EXPECT_EQ(-1, task->GetPercentComplete());
   EXPECT_EQ(kContentDisposition, task->GetContentDisposition());
   EXPECT_EQ(kMimeType, task->GetMimeType());
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      task->GetTransitionType(), ui::PageTransition::PAGE_TRANSITION_TYPED));
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task->GetSuggestedFilename()));
 }
 
@@ -87,7 +89,7 @@ TEST_F(DownloadControllerImplTest, NullDelegate) {
   GURL url("https://download.test");
   download_controller()->CreateDownloadTask(
       &web_state_, [NSUUID UUID].UUIDString, url, kContentDisposition,
-      /*total_bytes=*/-1, kMimeType);
+      /*total_bytes=*/-1, kMimeType, ui::PageTransition::PAGE_TRANSITION_LINK);
 }
 
 }  // namespace web
