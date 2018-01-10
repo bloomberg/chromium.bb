@@ -184,7 +184,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
     DiscardReason discard_reason) {
-  if (GetState() == State::DISCARDED)
+  if (IsDiscarded())
     return false;
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -291,8 +291,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetAutoDiscardable(
     observer.OnAutoDiscardableStateChange(GetWebContents(), auto_discardable_);
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::DiscardTab() {
-  Discard(DiscardReason::kExternal);
+bool TabLifecycleUnitSource::TabLifecycleUnit::DiscardTab() {
+  return Discard(DiscardReason::kExternal);
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {

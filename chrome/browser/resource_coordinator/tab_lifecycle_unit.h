@@ -83,7 +83,7 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   bool IsMediaTab() const override;
   bool IsAutoDiscardable() const override;
   void SetAutoDiscardable(bool auto_discardable) override;
-  void DiscardTab() override;
+  bool DiscardTab() override;
   bool IsDiscarded() const override;
   int GetDiscardCount() const override;
 
