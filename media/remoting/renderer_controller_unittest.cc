@@ -86,7 +86,7 @@ class RendererControllerTest : public ::testing::Test,
     sink_name_ = remote_device_friendly_name;
   }
 
-  void SwitchToLocalRenderer() override {
+  void SwitchToLocalRenderer(ReasonToSwitchToLocal reason) override {
     is_rendering_remotely_ = false;
     disable_pipeline_suspend_ = false;
     sink_name_.clear();

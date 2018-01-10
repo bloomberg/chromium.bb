@@ -32,6 +32,7 @@
 #define WebMediaPlayerClient_h
 
 #include "WebCommon.h"
+#include "WebLocalizedString.h"
 #include "WebMediaPlayer.h"
 #include "ui/gfx/color_space.h"
 
@@ -117,13 +118,16 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Returns the selected video track id (or an empty id if there's none).
   virtual WebMediaPlayer::TrackId GetSelectedVideoTrackId() = 0;
 
-  // Informs that media starts/stops being rendered and played back remotely.
+  // Informs that media starts being rendered and played back remotely.
   // |remote_device_friendly_name| will be shown in the remoting UI to indicate
   // which device the content is rendered on. An empty name indicates an unknown
   // remote device. A default message will be shown in this case.
   virtual void MediaRemotingStarted(
       const WebString& remote_device_friendly_name) = 0;
-  virtual void MediaRemotingStopped() = 0;
+
+  // Informs that media stops being rendered remotely. |error_msg| corresponds
+  // to a localized string that explains the reason as user-readable text.
+  virtual void MediaRemotingStopped(WebLocalizedString::Name error_msg) = 0;
 
   // Returns whether the media element has native controls. It does not mean
   // that the controls are currently visible.

@@ -66,6 +66,43 @@ StopTrigger GetStopTrigger(mojom::RemotingStopReason reason) {
   return UNKNOWN_STOP_TRIGGER;  // To suppress compiler warning on Windows.
 }
 
+MediaObserverClient::ReasonToSwitchToLocal GetSwitchReason(
+    StopTrigger stop_trigger) {
+  switch (stop_trigger) {
+    case FRAME_DROP_RATE_HIGH:
+    case PACING_TOO_SLOWLY:
+      return MediaObserverClient::ReasonToSwitchToLocal::POOR_PLAYBACK_QUALITY;
+    case EXITED_FULLSCREEN:
+    case BECAME_AUXILIARY_CONTENT:
+    case DISABLED_BY_PAGE:
+    case USER_DISABLED:
+    case UNKNOWN_STOP_TRIGGER:
+      return MediaObserverClient::ReasonToSwitchToLocal::NORMAL;
+    case UNSUPPORTED_AUDIO_CODEC:
+    case UNSUPPORTED_VIDEO_CODEC:
+    case UNSUPPORTED_AUDIO_AND_VIDEO_CODECS:
+    case DECRYPTION_ERROR:
+    case RECEIVER_INITIALIZE_FAILED:
+    case RECEIVER_PIPELINE_ERROR:
+    case PEERS_OUT_OF_SYNC:
+    case RPC_INVALID:
+    case DATA_PIPE_CREATE_ERROR:
+    case MOJO_PIPE_ERROR:
+    case MESSAGE_SEND_FAILED:
+    case DATA_SEND_FAILED:
+    case UNEXPECTED_FAILURE:
+      return MediaObserverClient::ReasonToSwitchToLocal::PIPELINE_ERROR;
+    case ROUTE_TERMINATED:
+    case MEDIA_ELEMENT_DESTROYED:
+    case START_RACE:
+    case SERVICE_GONE:
+      return MediaObserverClient::ReasonToSwitchToLocal::ROUTE_TERMINATED;
+  }
+
+  // To suppress compiler warning on Windows.
+  return MediaObserverClient::ReasonToSwitchToLocal::ROUTE_TERMINATED;
+}
+
 }  // namespace
 
 RendererController::RendererController(scoped_refptr<SharedSession> session)
@@ -438,9 +475,9 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
     // force-stop the session when remoting has ended; so no need to call
     // StopRemoting() from here.
     DCHECK(!is_encrypted_);
-    DCHECK_NE(stop_trigger, UNKNOWN_STOP_TRIGGER);
+    DCHECK_NE(UNKNOWN_STOP_TRIGGER, stop_trigger);
     metrics_recorder_.WillStopSession(stop_trigger);
-    client_->SwitchToLocalRenderer();
+    client_->SwitchToLocalRenderer(GetSwitchReason(stop_trigger));
     VLOG(2) << "Request to stop remoting: stop_trigger=" << stop_trigger;
     session_->StopRemoting(this);
   }
@@ -499,7 +536,7 @@ void RendererController::StartRemoting(StartTrigger start_trigger) {
     client_->SwitchToRemoteRenderer(session_->sink_name());
     return;
   }
-  DCHECK_NE(start_trigger, UNKNOWN_START_TRIGGER);
+  DCHECK_NE(UNKNOWN_START_TRIGGER, start_trigger);
   metrics_recorder_.WillStartSession(start_trigger);
   // |MediaObserverClient::SwitchToRemoteRenderer()| will be called after
   // remoting is started successfully.
