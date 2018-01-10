@@ -11,6 +11,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class TabStripModel;
@@ -112,7 +113,12 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Last time at which this tab was focused, or TimeTicks::Max() if it is
   // currently focused.
-  base::TimeTicks last_focused_time_;
+  //
+  // TODO(fdoray): To keep old behavior (sort order and protection of recently
+  // focused tabs), this is initialized with NowTicks(). Consider initializing
+  // this with a null TimeTicks when the tab isn't initially focused.
+  // https://crbug.com/800885
+  base::TimeTicks last_focused_time_ = NowTicks();
 
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
