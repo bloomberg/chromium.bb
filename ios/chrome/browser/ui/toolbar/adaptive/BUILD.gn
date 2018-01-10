@@ -6,6 +6,8 @@ source_set("adaptive") {
   sources = [
     "primary_toolbar_coordinator.h",
     "primary_toolbar_coordinator.mm",
+    "secondary_toolbar_coordinator.h",
+    "secondary_toolbar_coordinator.mm",
   ]
   deps = [
     ":adaptive_ui",
@@ -34,6 +36,10 @@ source_set("adaptive_ui") {
     "primary_toolbar_view.mm",
     "primary_toolbar_view_controller.h",
     "primary_toolbar_view_controller.mm",
+    "secondary_toolbar_view.h",
+    "secondary_toolbar_view.mm",
+    "secondary_toolbar_view_controller.h",
+    "secondary_toolbar_view_controller.mm",
   ]
   deps = [
     "//base",

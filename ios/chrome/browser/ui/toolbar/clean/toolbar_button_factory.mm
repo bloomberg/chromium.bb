@@ -323,6 +323,15 @@ const int styleCount = 2;
   return contractButton;
 }
 
+- (ToolbarButton*)omniboxButton {
+  ToolbarButton* omniboxButton = [ToolbarButton
+      toolbarButtonWithImageForNormalState:NativeImage(IDR_IOS_OMNIBOX_SEARCH)
+                  imageForHighlightedState:NativeImage(IDR_IOS_OMNIBOX_SEARCH)
+                     imageForDisabledState:nil];
+  [self configureButton:omniboxButton width:kToolbarButtonWidth];
+  return omniboxButton;
+}
+
 - (ToolbarButton*)locationBarLeadingButton {
   ToolbarButton* locationBarLeadingButton;
   if (self.style == INCOGNITO) {
