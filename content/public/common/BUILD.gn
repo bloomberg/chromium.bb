@@ -206,6 +206,8 @@ jumbo_source_set("common_sources") {
     "resource_request.h",
     "resource_request_body.cc",
     "resource_request_body.h",
+    "resource_request_body_android.cc",
+    "resource_request_body_android.h",
     "resource_response.cc",
     "resource_response.h",
     "resource_response_info.cc",
@@ -305,6 +307,10 @@ jumbo_source_set("common_sources") {
 
   if (use_aura) {
     deps += [ "//ui/aura" ]
+  }
+
+  if (is_android) {
+    deps += [ "//content/public/android:jni" ]
   }
 
   # //content/common needs to include public headers.

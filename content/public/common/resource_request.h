@@ -85,7 +85,7 @@ struct CONTENT_EXPORT ResourceRequest {
 
   // Indicates which frame (or worker context) the request is being loaded into,
   // or kAppCacheNoHostId.
-  int appcache_host_id;
+  int appcache_host_id = 0;
 
   // True if corresponding AppCache group should be resetted.
   bool should_reset_appcache = false;
