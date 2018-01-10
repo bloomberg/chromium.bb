@@ -282,6 +282,18 @@ TEST_F(TabLifecycleUnitTest, CannotDiscardRecentlyAudible) {
   EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
 }
 
+TEST_F(TabLifecycleUnitTest, CanDiscardNeverAudibleTab) {
+  TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_.get(),
+                                      tab_strip_model_.get());
+  test_clock_.Advance(kTabFocusedProtectionTime);
+  tab_lifecycle_unit.SetRecentlyAudible(false);
+  // Since the tab was never audible, it should be possible to discard it,
+  // even if there was a recent call to SetRecentlyAudible(false).
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kExternal));
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kProactive));
+  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(DiscardReason::kUrgent));
+}
+
 TEST_F(TabLifecycleUnitTest, CannotDiscardPDF) {
   TabLifecycleUnit tab_lifecycle_unit(&observers_, web_contents_.get(),
                                       tab_strip_model_.get());
