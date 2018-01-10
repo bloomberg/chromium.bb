@@ -107,13 +107,20 @@ class BASE_EXPORT StatisticsRecorder {
   // This method is thread safe.
   static std::string ToJSON(JSONVerbosityLevel verbosity_level);
 
-  // Extracts histograms which were marked for use by UMA.
+  // Gets existing histograms.
+  //
+  // The returned histograms are sorted by name.
+  //
+  // Ownership of the individual histograms remains with the StatisticsRecorder.
   //
   // This method is thread safe.
-  static void GetHistograms(Histograms* output);
+  static Histograms GetHistograms();
 
-  // Extracts BucketRanges used by all histograms registered.
-  static void GetBucketRanges(std::vector<const BucketRanges*>* output);
+  // Gets BucketRanges used by all histograms registered. The order of returned
+  // BucketRanges is not guaranteed.
+  //
+  // This method is thread safe.
+  static std::vector<const BucketRanges*> GetBucketRanges();
 
   // Finds a histogram by name. Matches the exact name. Returns a null pointer
   // if a matching histogram is not found.
@@ -136,12 +143,16 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramBase::Flags required_flags,
                             HistogramSnapshotManager* snapshot_manager);
 
-  // Extracts registered histograms. Only histograms which have |query| as a
-  // substring are extracted. An empty query will extract all registered
-  // histograms.
+  // Gets registered histograms. Only histograms which have |query| as a
+  // substring in their name are extracted. An empty query returns all
+  // registered histograms.
+  //
+  // The returned histograms are sorted by name.
+  //
+  // Ownership of the individual histograms remains with the StatisticsRecorder.
   //
   // This method is thread safe.
-  static void GetSnapshot(const std::string& query, Histograms* snapshot);
+  static Histograms GetSnapshot(const std::string& query);
 
   typedef base::Callback<void(HistogramBase::Sample)> OnSampleCallback;
 
@@ -244,8 +255,22 @@ class BASE_EXPORT StatisticsRecorder {
   // Precondition: The global lock is already acquired.
   static void EnsureGlobalRecorderWhileLocked();
 
-  // Fetches set of existing histograms. Ownership of the individual histograms
-  // remains with the StatisticsRecorder.
+  // Gets existing histograms matching |predicate|. |Predicate| must have the
+  // signature bool(const HistogramBase&).
+  //
+  // The returned histograms are sorted by name.
+  //
+  // Ownership of the individual histograms remains with the StatisticsRecorder.
+  //
+  // This method is thread safe.
+  template <typename Predicate>
+  static Histograms GetHistogramsWithPredicate(Predicate predicate);
+
+  // Gets existing histograms.
+  //
+  // The returned histograms are sorted by name.
+  //
+  // Ownership of the individual histograms remains with the StatisticsRecorder.
   //
   // This method is thread safe.
   static Histograms GetKnownHistograms(bool include_persistent);

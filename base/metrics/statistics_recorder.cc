@@ -137,10 +137,7 @@ const BucketRanges* StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
 // static
 void StatisticsRecorder::WriteHTMLGraph(const std::string& query,
                                         std::string* output) {
-  Histograms snapshot;
-  GetSnapshot(query, &snapshot);
-  std::sort(snapshot.begin(), snapshot.end(), &HistogramNameLesser);
-  for (const HistogramBase* histogram : snapshot) {
+  for (const HistogramBase* const histogram : GetSnapshot(query)) {
     histogram->WriteHTMLGraph(output);
     *output += "<br><hr><br>";
   }
@@ -154,10 +151,7 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
   else
     output->append("Collections of all histograms\n");
 
-  Histograms snapshot;
-  GetSnapshot(query, &snapshot);
-  std::sort(snapshot.begin(), snapshot.end(), &HistogramNameLesser);
-  for (const HistogramBase* histogram : snapshot) {
+  for (const HistogramBase* const histogram : GetSnapshot(query)) {
     histogram->WriteAscii(output);
     output->append("\n");
   }
@@ -165,12 +159,9 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
 
 // static
 std::string StatisticsRecorder::ToJSON(JSONVerbosityLevel verbosity_level) {
-  Histograms snapshot;
-  GetSnapshot(std::string(), &snapshot);
-
   std::string output = "{\"histograms\":[";
   const char* sep = "";
-  for (const HistogramBase* const histogram : snapshot) {
+  for (const HistogramBase* const histogram : GetHistograms()) {
     output += sep;
     sep = ",";
     std::string json;
@@ -182,24 +173,13 @@ std::string StatisticsRecorder::ToJSON(JSONVerbosityLevel verbosity_level) {
 }
 
 // static
-void StatisticsRecorder::GetHistograms(Histograms* output) {
+std::vector<const BucketRanges*> StatisticsRecorder::GetBucketRanges() {
+  std::vector<const BucketRanges*> out;
   const AutoLock auto_lock(lock_.Get());
   EnsureGlobalRecorderWhileLocked();
-
-  for (const auto& entry : top_->histograms_) {
-    output->push_back(entry.second);
-  }
-}
-
-// static
-void StatisticsRecorder::GetBucketRanges(
-    std::vector<const BucketRanges*>* output) {
-  const AutoLock auto_lock(lock_.Get());
-  EnsureGlobalRecorderWhileLocked();
-
-  for (const BucketRanges* const p : top_->ranges_) {
-    output->push_back(p);
-  }
+  out.reserve(top_->ranges_.size());
+  out.assign(top_->ranges_.begin(), top_->ranges_.end());
+  return out;
 }
 
 // static
@@ -241,38 +221,14 @@ void StatisticsRecorder::PrepareDeltas(
     HistogramBase::Flags flags_to_set,
     HistogramBase::Flags required_flags,
     HistogramSnapshotManager* snapshot_manager) {
-  if (include_persistent)
-    ImportGlobalPersistentHistograms();
-
-  Histograms known = GetKnownHistograms(include_persistent);
-  std::sort(known.begin(), known.end(), &HistogramNameLesser);
-  snapshot_manager->PrepareDeltas(known, flags_to_set, required_flags);
+  snapshot_manager->PrepareDeltas(GetKnownHistograms(include_persistent),
+                                  flags_to_set, required_flags);
 }
 
 // static
 void StatisticsRecorder::InitLogOnShutdown() {
   const AutoLock auto_lock(lock_.Get());
   InitLogOnShutdownWhileLocked();
-}
-
-// static
-void StatisticsRecorder::GetSnapshot(const std::string& query,
-                                     Histograms* snapshot) {
-  // This must be called *before* the lock is acquired below because it will
-  // call back into this object to register histograms. Those called methods
-  // will acquire the lock at that time.
-  ImportGlobalPersistentHistograms();
-
-  const AutoLock auto_lock(lock_.Get());
-  EnsureGlobalRecorderWhileLocked();
-
-  // Need a C-string query for comparisons against C-string histogram name.
-  const char* const query_string = query.c_str();
-
-  for (const auto& entry : top_->histograms_) {
-    if (strstr(entry.second->histogram_name(), query_string) != nullptr)
-      snapshot->push_back(entry.second);
-  }
 }
 
 // static
@@ -367,19 +323,56 @@ bool StatisticsRecorder::ShouldRecordHistogram(uint64_t histogram_hash) {
 }
 
 // static
-StatisticsRecorder::Histograms StatisticsRecorder::GetKnownHistograms(
-    bool include_persistent) {
-  Histograms known;
-  const AutoLock auto_lock(lock_.Get());
-  EnsureGlobalRecorderWhileLocked();
-  known.reserve(top_->histograms_.size());
-  for (const auto& h : top_->histograms_) {
-    if (include_persistent ||
-        (h.second->flags() & HistogramBase::kIsPersistent) == 0)
-      known.push_back(h.second);
+template <typename Predicate>
+StatisticsRecorder::Histograms StatisticsRecorder::GetHistogramsWithPredicate(
+    const Predicate predicate) {
+  // This must be called *before* the lock is acquired below because it will
+  // call back into this object to register histograms. Those called methods
+  // will acquire the lock at that time.
+  ImportGlobalPersistentHistograms();
+
+  Histograms out;
+
+  {
+    const AutoLock auto_lock(lock_.Get());
+    EnsureGlobalRecorderWhileLocked();
+    out.reserve(top_->histograms_.size());
+    for (const auto& entry : top_->histograms_) {
+      const HistogramBase* const histogram = entry.second;
+      DCHECK(histogram);
+      if (predicate(*histogram))
+        out.push_back(entry.second);
+    }
   }
 
-  return known;
+  std::sort(out.begin(), out.end(), &HistogramNameLesser);
+  return out;
+}
+
+// static
+StatisticsRecorder::Histograms StatisticsRecorder::GetHistograms() {
+  return GetHistogramsWithPredicate([](const HistogramBase&) { return true; });
+}
+
+// static
+StatisticsRecorder::Histograms StatisticsRecorder::GetKnownHistograms(
+    bool include_persistent) {
+  return GetHistogramsWithPredicate(
+      [include_persistent](const HistogramBase& histogram) {
+        return include_persistent ||
+               (histogram.flags() & HistogramBase::kIsPersistent) == 0;
+      });
+}
+
+// static
+StatisticsRecorder::Histograms StatisticsRecorder::GetSnapshot(
+    const std::string& query) {
+  // Need a C-string query for comparisons against C-string histogram name.
+  const char* const query_string = query.c_str();
+  return GetHistogramsWithPredicate(
+      [query_string](const HistogramBase& histogram) {
+        return strstr(histogram.histogram_name(), query_string) != nullptr;
+      });
 }
 
 // static

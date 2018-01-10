@@ -126,8 +126,8 @@ class MetricsServiceTest : public testing::Test {
   void CheckForNonStabilityHistograms(
       const ChromeUserMetricsExtension& uma_log) {
     const int kStabilityFlags = base::HistogramBase::kUmaStabilityHistogramFlag;
-    base::StatisticsRecorder::Histograms histograms;
-    base::StatisticsRecorder::GetHistograms(&histograms);
+    const base::StatisticsRecorder::Histograms histograms =
+        base::StatisticsRecorder::GetHistograms();
     for (int i = 0; i < uma_log.histogram_event_size(); ++i) {
       const uint64_t hash = uma_log.histogram_event(i).name_hash();
 
