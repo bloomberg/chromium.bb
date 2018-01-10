@@ -41,7 +41,7 @@ namespace {
 
 using OpenURLCallback = base::Callback<void(int, int)>;
 using GetWindowClientsCallback =
-    base::Callback<void(std::unique_ptr<ServiceWorkerClients>)>;
+    base::Callback<void(std::unique_ptr<ServiceWorkerClientPtrs>)>;
 
 // The OpenURLObserver class is a WebContentsObserver that will wait for a
 // WebContents to be initialized, run the |callback| passed to its constructor
@@ -311,24 +311,25 @@ void AddWindowClient(
                                          host->client_uuid()));
 }
 
-void AddNonWindowClient(ServiceWorkerProviderHost* host,
-                        const ServiceWorkerClientQueryOptions& options,
-                        ServiceWorkerClients* clients) {
+void AddNonWindowClient(
+    const ServiceWorkerProviderHost* host,
+    blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
+    ServiceWorkerClientPtrs* out_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blink::mojom::ServiceWorkerClientType host_client_type = host->client_type();
   if (host_client_type == blink::mojom::ServiceWorkerClientType::kWindow)
     return;
-  if (options.client_type != blink::mojom::ServiceWorkerClientType::kAll &&
-      options.client_type != host_client_type)
+  if (options->client_type != blink::mojom::ServiceWorkerClientType::kAll &&
+      options->client_type != host_client_type)
     return;
 
-  blink::mojom::ServiceWorkerClientInfo client_info(
+  auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       host->document_url(), host->client_uuid(), host_client_type,
       blink::mojom::PageVisibilityState::kHidden,
       false,  // is_focused
       network::mojom::RequestContextFrameType::kNone, base::TimeTicks(),
       host->create_time());
-  clients->push_back(client_info);
+  out_clients->push_back(std::move(client_info));
 }
 
 void OnGetWindowClientsOnUI(
@@ -337,7 +338,7 @@ void OnGetWindowClientsOnUI(
         clients_info,
     const GURL& script_url,
     const GetWindowClientsCallback& callback,
-    std::unique_ptr<ServiceWorkerClients> clients) {
+    std::unique_ptr<ServiceWorkerClientPtrs> out_clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const auto& it : clients_info) {
@@ -357,37 +358,37 @@ void OnGetWindowClientsOnUI(
     if (info.url.GetOrigin() != script_url.GetOrigin())
       continue;
 
-    clients->push_back(info);
+    out_clients->push_back(info.Clone());
   }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, base::Passed(&clients)));
+                          base::BindOnce(callback, base::Passed(&out_clients)));
 }
 
 struct ServiceWorkerClientInfoSort {
-  bool operator()(const blink::mojom::ServiceWorkerClientInfo& a,
-                  const blink::mojom::ServiceWorkerClientInfo& b) const {
+  bool operator()(const blink::mojom::ServiceWorkerClientInfoPtr& a,
+                  const blink::mojom::ServiceWorkerClientInfoPtr& b) const {
     // Clients for windows should be appeared earlier.
-    if (a.client_type == blink::mojom::ServiceWorkerClientType::kWindow &&
-        b.client_type != blink::mojom::ServiceWorkerClientType::kWindow) {
+    if (a->client_type == blink::mojom::ServiceWorkerClientType::kWindow &&
+        b->client_type != blink::mojom::ServiceWorkerClientType::kWindow) {
       return true;
     }
-    if (a.client_type != blink::mojom::ServiceWorkerClientType::kWindow &&
-        b.client_type == blink::mojom::ServiceWorkerClientType::kWindow) {
+    if (a->client_type != blink::mojom::ServiceWorkerClientType::kWindow &&
+        b->client_type == blink::mojom::ServiceWorkerClientType::kWindow) {
       return false;
     }
 
     // Clients focused recently should be appeared earlier.
-    if (a.last_focus_time != b.last_focus_time)
-      return a.last_focus_time > b.last_focus_time;
+    if (a->last_focus_time != b->last_focus_time)
+      return a->last_focus_time > b->last_focus_time;
 
     // Clients created before should be appeared earlier.
-    return a.creation_time < b.creation_time;
+    return a->creation_time < b->creation_time;
   }
 };
 
 void DidGetClients(const ClientsCallback& callback,
-                   std::unique_ptr<ServiceWorkerClients> clients) {
+                   std::unique_ptr<ServiceWorkerClientPtrs> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::sort(clients->begin(), clients->end(), ServiceWorkerClientInfoSort());
@@ -395,47 +396,51 @@ void DidGetClients(const ClientsCallback& callback,
   callback.Run(std::move(clients));
 }
 
-void GetNonWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
-                         const ServiceWorkerClientQueryOptions& options,
-                         const ClientsCallback& callback,
-                         std::unique_ptr<ServiceWorkerClients> clients) {
+void GetNonWindowClients(
+    const base::WeakPtr<ServiceWorkerVersion>& controller,
+    blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
+    const ClientsCallback& callback,
+    std::unique_ptr<ServiceWorkerClientPtrs> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!options.include_uncontrolled) {
+  if (!options->include_uncontrolled) {
     for (auto& controllee : controller->controllee_map())
-      AddNonWindowClient(controllee.second, options, clients.get());
+      AddNonWindowClient(controllee.second, std::move(options), clients.get());
   } else if (controller->context()) {
     GURL origin = controller->script_url().GetOrigin();
     for (auto it = controller->context()->GetClientProviderHostIterator(origin);
          !it->IsAtEnd(); it->Advance()) {
-      AddNonWindowClient(it->GetProviderHost(), options, clients.get());
+      AddNonWindowClient(it->GetProviderHost(), std::move(options),
+                         clients.get());
     }
   }
   DidGetClients(callback, std::move(clients));
 }
 
-void DidGetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
-                         const ServiceWorkerClientQueryOptions& options,
-                         const ClientsCallback& callback,
-                         std::unique_ptr<ServiceWorkerClients> clients) {
+void DidGetWindowClients(
+    const base::WeakPtr<ServiceWorkerVersion>& controller,
+    blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
+    const ClientsCallback& callback,
+    std::unique_ptr<ServiceWorkerClientPtrs> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (options.client_type == blink::mojom::ServiceWorkerClientType::kAll) {
-    GetNonWindowClients(controller, options, callback, std::move(clients));
+  if (options->client_type == blink::mojom::ServiceWorkerClientType::kAll) {
+    GetNonWindowClients(controller, std::move(options), callback,
+                        std::move(clients));
     return;
   }
   DidGetClients(callback, std::move(clients));
 }
 
 void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
-                      const ServiceWorkerClientQueryOptions& options,
+                      blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
                       const ClientsCallback& callback,
-                      std::unique_ptr<ServiceWorkerClients> clients) {
+                      std::unique_ptr<ServiceWorkerClientPtrs> clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(options.client_type ==
+  DCHECK(options->client_type ==
              blink::mojom::ServiceWorkerClientType::kWindow ||
-         options.client_type == blink::mojom::ServiceWorkerClientType::kAll);
+         options->client_type == blink::mojom::ServiceWorkerClientType::kAll);
 
   std::vector<std::tuple<int, int, base::TimeTicks, std::string>> clients_info;
-  if (!options.include_uncontrolled) {
+  if (!options->include_uncontrolled) {
     for (auto& controllee : controller->controllee_map())
       AddWindowClient(controllee.second, &clients_info);
   } else if (controller->context()) {
@@ -447,16 +452,18 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
   }
 
   if (clients_info.empty()) {
-    DidGetWindowClients(controller, options, callback, std::move(clients));
+    DidGetWindowClients(controller, std::move(options), callback,
+                        std::move(clients));
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &OnGetWindowClientsOnUI, clients_info, controller->script_url(),
-          base::Bind(&DidGetWindowClients, controller, options, callback),
-          base::Passed(&clients)));
+      base::BindOnce(&OnGetWindowClientsOnUI, clients_info,
+                     controller->script_url(),
+                     base::Bind(&DidGetWindowClients, controller,
+                                base::Passed(std::move(options)), callback),
+                     base::Passed(&clients)));
 }
 
 }  // namespace
@@ -534,24 +541,26 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
 }
 
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
-                const ServiceWorkerClientQueryOptions& options,
+                blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
                 const ClientsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto clients = std::make_unique<ServiceWorkerClients>();
-  if (!controller->HasControllee() && !options.include_uncontrolled) {
+  auto clients = std::make_unique<ServiceWorkerClientPtrs>();
+  if (!controller->HasControllee() && !options->include_uncontrolled) {
     DidGetClients(callback, std::move(clients));
     return;
   }
 
   // For Window clients we want to query the info on the UI thread first.
-  if (options.client_type == blink::mojom::ServiceWorkerClientType::kWindow ||
-      options.client_type == blink::mojom::ServiceWorkerClientType::kAll) {
-    GetWindowClients(controller, options, callback, std::move(clients));
+  if (options->client_type == blink::mojom::ServiceWorkerClientType::kWindow ||
+      options->client_type == blink::mojom::ServiceWorkerClientType::kAll) {
+    GetWindowClients(controller, std::move(options), callback,
+                     std::move(clients));
     return;
   }
 
-  GetNonWindowClients(controller, options, callback, std::move(clients));
+  GetNonWindowClients(controller, std::move(options), callback,
+                      std::move(clients));
 }
 
 }  // namespace service_worker_client_utils

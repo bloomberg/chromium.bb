@@ -19,6 +19,16 @@ enum ServiceWorkerClientType {
   kLast = kAll
 };
 
+// Indicates the options for the service worker clients matching operation.
+// https://w3c.github.io/ServiceWorker/#dictdef-clientqueryoptions.
+struct ServiceWorkerClientQueryOptions {
+  // ClientQueryOptions#includeUncontrolled
+  bool include_uncontrolled = false;
+
+  // ClientQueryOptions#type
+  ServiceWorkerClientType client_type = ServiceWorkerClientType.kWindow;
+};
+
 // Holds the information related to a service worker window or non-window
 // client.
 // https://w3c.github.io/ServiceWorker/#client

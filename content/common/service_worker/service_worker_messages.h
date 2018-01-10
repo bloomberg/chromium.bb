@@ -96,11 +96,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::ServiceWorkerClientInfo)
   IPC_STRUCT_TRAITS_MEMBER(client_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
-  IPC_STRUCT_TRAITS_MEMBER(client_type)
-  IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::PushEventPayload)
   IPC_STRUCT_TRAITS_MEMBER(data)
   IPC_STRUCT_TRAITS_MEMBER(is_null)
@@ -135,11 +130,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClient,
                     int /* request_id */,
                     std::string /* client_uuid */)
-
-// Asks the browser to retrieve clients of the sender ServiceWorker.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClients,
-                    int /* request_id */,
-                    content::ServiceWorkerClientQueryOptions)
 
 // Sends MessageEvent to a client (renderer->browser).
 IPC_MESSAGE_ROUTED3(
@@ -195,11 +185,6 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidSkipWaiting,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClient,
                      int /* request_id */,
                      blink::mojom::ServiceWorkerClientInfo)
-
-// Sent via EmbeddedWorker as a response of GetClients.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidGetClients,
-                     int /* request_id */,
-                     std::vector<blink::mojom::ServiceWorkerClientInfo>)
 
 // Sent via EmbeddedWorker as a response of OpenWindow.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowResponse,

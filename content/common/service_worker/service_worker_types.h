@@ -182,12 +182,6 @@ class ChangedVersionAttributesMask {
   int changed_;
 };
 
-struct ServiceWorkerClientQueryOptions {
-  ServiceWorkerClientQueryOptions();
-  blink::mojom::ServiceWorkerClientType client_type;
-  bool include_uncontrolled;
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_TYPES_H_

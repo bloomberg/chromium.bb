@@ -365,8 +365,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void OnDidGetClient(int request_id,
                       const blink::mojom::ServiceWorkerClientInfo& client);
   void OnDidGetClients(
-      int request_id,
-      const std::vector<blink::mojom::ServiceWorkerClientInfo>& clients);
+      std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks,
+      std::vector<blink::mojom::ServiceWorkerClientInfoPtr> clients);
   void OnOpenWindowResponse(
       int request_id,
       const blink::mojom::ServiceWorkerClientInfo& client);

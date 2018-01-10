@@ -385,8 +385,6 @@ void OnResponseBlobDispatchDone(
 // Holding data that needs to be bound to the worker context on the
 // worker thread.
 struct ServiceWorkerContextClient::WorkerContextData {
-  using ClientsCallbacksMap =
-      base::IDMap<std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>>;
   using ClientCallbacksMap =
       base::IDMap<std::unique_ptr<blink::WebServiceWorkerClientCallbacks>>;
   using SkipWaitingCallbacksMap =
@@ -412,9 +410,6 @@ struct ServiceWorkerContextClient::WorkerContextData {
   // only owner is |this|.
   scoped_refptr<blink::mojom::ThreadSafeServiceWorkerHostAssociatedPtr>
       service_worker_host;
-
-  // Pending callbacks for GetClientDocuments().
-  ClientsCallbacksMap clients_callbacks;
 
   // Pending callbacks for OpenWindow() and FocusClient().
   ClientCallbacksMap client_callbacks;
@@ -692,7 +687,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerContextClient, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClient, OnDidGetClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClients, OnDidGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowResponse,
                         OnOpenWindowResponse)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_OpenWindowError,
@@ -722,12 +716,16 @@ void ServiceWorkerContextClient::GetClients(
     const blink::WebServiceWorkerClientQueryOptions& weboptions,
     std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->clients_callbacks.Add(std::move(callbacks));
-  ServiceWorkerClientQueryOptions options;
-  options.client_type = weboptions.client_type;
-  options.include_uncontrolled = weboptions.include_uncontrolled;
-  Send(new ServiceWorkerHostMsg_GetClients(
-      GetRoutingID(), request_id, options));
+  auto options = blink::mojom::ServiceWorkerClientQueryOptions::New(
+      weboptions.include_uncontrolled, weboptions.client_type);
+  // base::Unretained(this) is safe because the callback passed to
+  // GetClients() is owned by |context_->service_worker_host|, whose only
+  // owner is |this| and won't outlive |this|.
+  (*context_->service_worker_host)
+      ->GetClients(
+          std::move(options),
+          base::BindOnce(&ServiceWorkerContextClient::OnDidGetClients,
+                         base::Unretained(this), std::move(callbacks)));
 }
 
 void ServiceWorkerContextClient::OpenNewTab(
@@ -1661,24 +1659,17 @@ void ServiceWorkerContextClient::OnDidGetClient(
 }
 
 void ServiceWorkerContextClient::OnDidGetClients(
-    int request_id,
-    const std::vector<blink::mojom::ServiceWorkerClientInfo>& clients) {
+    std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks,
+    std::vector<blink::mojom::ServiceWorkerClientInfoPtr> clients) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnDidGetClients");
-  blink::WebServiceWorkerClientsCallbacks* callbacks =
-      context_->clients_callbacks.Lookup(request_id);
-  if (!callbacks) {
-    NOTREACHED() << "Got stray response: " << request_id;
-    return;
-  }
   blink::WebServiceWorkerClientsInfo info;
-  blink::WebVector<blink::WebServiceWorkerClientInfo> convertedClients(
+  blink::WebVector<blink::WebServiceWorkerClientInfo> web_clients(
       clients.size());
   for (size_t i = 0; i < clients.size(); ++i)
-    convertedClients[i] = ToWebServiceWorkerClientInfo(clients[i]);
-  info.clients.Swap(convertedClients);
+    web_clients[i] = ToWebServiceWorkerClientInfo(*(clients[i]));
+  info.clients.Swap(web_clients);
   callbacks->OnSuccess(info);
-  context_->clients_callbacks.Remove(request_id);
 }
 
 void ServiceWorkerContextClient::OnOpenWindowResponse(

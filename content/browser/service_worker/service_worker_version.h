@@ -43,6 +43,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "third_party/WebKit/common/service_worker/service_worker.mojom.h"
+#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_event_status.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
@@ -570,8 +571,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     std::set<InflightRequestTimeoutInfo>::iterator timeout_iter;
   };
 
-  using ServiceWorkerClients =
-      std::vector<blink::mojom::ServiceWorkerClientInfo>;
+  using ServiceWorkerClientPtrs =
+      std::vector<blink::mojom::ServiceWorkerClientInfoPtr>;
 
   // The timeout timer interval.
   static constexpr base::TimeDelta kTimeoutTimerDelay =
@@ -619,6 +620,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
                          const std::vector<uint8_t>& data) override;
   void ClearCachedMetadata(const GURL& url) override;
   void ClaimClients(ClaimClientsCallback callback) override;
+  void GetClients(blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
+                  GetClientsCallback callback) override;
 
   void OnSetCachedMetadataFinished(int64_t callback_id,
                                    size_t size,
@@ -629,10 +632,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // This corresponds to the spec's get(id) steps.
   void OnGetClient(int request_id, const std::string& client_uuid);
-
-  // This corresponds to the spec's matchAll(options) steps.
-  void OnGetClients(int request_id,
-                    const ServiceWorkerClientQueryOptions& options);
 
   // Currently used for Clients.openWindow() only.
   void OnOpenNewTab(int request_id, const GURL& url);
@@ -689,8 +688,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       int request_id,
       const blink::mojom::ServiceWorkerClientInfo& client_info);
 
-  void OnGetClientsFinished(int request_id,
-                            std::unique_ptr<ServiceWorkerClients> clients);
+  void OnGetClientsFinished(GetClientsCallback callback,
+                            std::unique_ptr<ServiceWorkerClientPtrs> clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.
