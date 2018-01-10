@@ -46,7 +46,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
-#include "third_party/WebKit/common/service_worker/service_worker_client.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -999,8 +998,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerVersion, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClient, OnGetClient)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GetClients,
-                        OnGetClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenNewTab, OnOpenNewTab)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenNewPopup, OnOpenNewPopup)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToClient,
@@ -1074,6 +1071,31 @@ void ServiceWorkerVersion::ClaimClients(ClaimClientsCallback callback) {
                           base::nullopt);
 }
 
+void ServiceWorkerVersion::GetClients(
+    blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
+    GetClientsCallback callback) {
+  service_worker_client_utils::GetClients(
+      weak_factory_.GetWeakPtr(), std::move(options),
+      base::Bind(&ServiceWorkerVersion::OnGetClientsFinished,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(std::move(callback))));
+}
+
+void ServiceWorkerVersion::OnGetClientsFinished(
+    GetClientsCallback callback,
+    std::unique_ptr<ServiceWorkerClientPtrs> clients) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // When Clients.matchAll() is called on the script evaluation phase, the
+  // running status can be STARTING here.
+  if (running_status() != EmbeddedWorkerStatus::STARTING &&
+      running_status() != EmbeddedWorkerStatus::RUNNING) {
+    return;
+  }
+
+  std::move(callback).Run(std::move(*clients));
+}
+
 void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
                                                        size_t size,
                                                        int result) {
@@ -1130,38 +1152,6 @@ void ServiceWorkerVersion::OnGetClientFinished(
 
   embedded_worker_->SendIpcMessage(
       ServiceWorkerMsg_DidGetClient(request_id, client_info));
-}
-
-void ServiceWorkerVersion::OnGetClients(
-    int request_id,
-    const ServiceWorkerClientQueryOptions& options) {
-  TRACE_EVENT_ASYNC_BEGIN2(
-      "ServiceWorker", "ServiceWorkerVersion::OnGetClients", request_id,
-      "client_type",
-      ServiceWorkerUtils::ClientTypeToString(options.client_type),
-      "include_uncontrolled", options.include_uncontrolled);
-  service_worker_client_utils::GetClients(
-      weak_factory_.GetWeakPtr(), options,
-      base::Bind(&ServiceWorkerVersion::OnGetClientsFinished,
-                 weak_factory_.GetWeakPtr(), request_id));
-}
-
-void ServiceWorkerVersion::OnGetClientsFinished(
-    int request_id,
-    std::unique_ptr<ServiceWorkerClients> clients) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClients",
-                         request_id, "The number of clients", clients->size());
-
-  // When Clients.matchAll() is called on the script evaluation phase, the
-  // running status can be STARTING here.
-  if (running_status() != EmbeddedWorkerStatus::STARTING &&
-      running_status() != EmbeddedWorkerStatus::RUNNING) {
-    return;
-  }
-
-  embedded_worker_->SendIpcMessage(
-      ServiceWorkerMsg_DidGetClients(request_id, *clients));
 }
 
 void ServiceWorkerVersion::OnSimpleEventFinished(

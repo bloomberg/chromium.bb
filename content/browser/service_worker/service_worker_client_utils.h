@@ -21,7 +21,6 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerVersion;
-struct ServiceWorkerClientQueryOptions;
 
 namespace service_worker_client_utils {
 
@@ -30,9 +29,10 @@ using NavigationCallback = base::Callback<void(
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
 using ClientCallback = base::Callback<void(
     const blink::mojom::ServiceWorkerClientInfo& client_info)>;
-using ServiceWorkerClients = std::vector<blink::mojom::ServiceWorkerClientInfo>;
+using ServiceWorkerClientPtrs =
+    std::vector<blink::mojom::ServiceWorkerClientInfoPtr>;
 using ClientsCallback =
-    base::Callback<void(std::unique_ptr<ServiceWorkerClients> clients)>;
+    base::Callback<void(std::unique_ptr<ServiceWorkerClientPtrs> clients)>;
 
 // Focuses the window client associated with |provider_host|. |callback| is
 // called with the client information on completion.
@@ -65,7 +65,7 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
 // Collects clients matched with |options|. |callback| is called with the client
 // information sorted in MRU order (most recently focused order) on completion.
 void GetClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
-                const ServiceWorkerClientQueryOptions& options,
+                blink::mojom::ServiceWorkerClientQueryOptionsPtr options,
                 const ClientsCallback& callback);
 
 }  // namespace service_worker_client_utils

@@ -147,8 +147,4 @@ size_t ServiceWorkerResponse::EstimatedStructSize() {
   return size;
 }
 
-ServiceWorkerClientQueryOptions::ServiceWorkerClientQueryOptions()
-    : client_type(blink::mojom::ServiceWorkerClientType::kWindow),
-      include_uncontrolled(false) {}
-
 }  // namespace content
