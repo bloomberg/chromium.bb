@@ -39,7 +39,7 @@ static INLINE int quantize_coeff_nuq(
     tmp -= cuml_bins_ptr[0];
     q = NUQ_KNOTS + (((((tmp * quant) >> 16) + tmp) * quant_shift) >> 16);
 
-    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val);
+    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val, 0);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -64,10 +64,8 @@ static INLINE int quantize_coeff_bigtx_nuq(
     tmp -= ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
     q = NUQ_KNOTS +
         (((((tmp * quant) >> 16) + tmp) * quant_shift) >> (16 - logsizeby16));
-    *dqcoeff_ptr = ROUND_POWER_OF_TWO(
-        av1_dequant_abscoeff_nuq(q, dequant, dequant_val), logsizeby16);
-    // *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val) >>
-    // (logsizeby16);
+    *dqcoeff_ptr =
+        av1_dequant_abscoeff_nuq(q, dequant, dequant_val, logsizeby16);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -88,7 +86,7 @@ static INLINE int quantize_coeff_fp_nuq(
   int tmp = clamp(abs_coeff, INT16_MIN, INT16_MAX);
   if (tmp > cuml_bins_ptr[0]) {
     q = NUQ_KNOTS + ((((int64_t)tmp - cuml_bins_ptr[0]) * quant) >> 16);
-    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val);
+    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val, 0);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -112,10 +110,8 @@ static INLINE int quantize_coeff_bigtx_fp_nuq(
         ((((int64_t)tmp - ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16)) *
           quant) >>
          (16 - logsizeby16));
-    *dqcoeff_ptr = ROUND_POWER_OF_TWO(
-        av1_dequant_abscoeff_nuq(q, dequant, dequant_val), logsizeby16);
-    // *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val) >>
-    // (logsizeby16);
+    *dqcoeff_ptr =
+        av1_dequant_abscoeff_nuq(q, dequant, dequant_val, logsizeby16);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -982,7 +978,7 @@ static INLINE int highbd_quantize_coeff_nuq(
   if (tmp >= zbin) {
     tmp -= cuml_bins_ptr[0];
     q = NUQ_KNOTS + (int)(((((tmp * quant) >> 16) + tmp) * quant_shift) >> 16);
-    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val);
+    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val, 0);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -1003,7 +999,7 @@ static INLINE int highbd_quantize_coeff_fp_nuq(
   int64_t tmp = clamp(abs_coeff, INT32_MIN, INT32_MAX);
   if (tmp > cuml_bins_ptr[0]) {
     q = NUQ_KNOTS + (int)(((tmp - cuml_bins_ptr[0]) * quant) >> 16);
-    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val);
+    *dqcoeff_ptr = av1_dequant_abscoeff_nuq(q, dequant, dequant_val, 0);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -1027,8 +1023,8 @@ static INLINE int highbd_quantize_coeff_bigtx_fp_nuq(
         (int)(((tmp - ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16)) *
                quant) >>
               (16 - logsizeby16));
-    *dqcoeff_ptr = ROUND_POWER_OF_TWO(
-        av1_dequant_abscoeff_nuq(q, dequant, dequant_val), logsizeby16);
+    *dqcoeff_ptr =
+        av1_dequant_abscoeff_nuq(q, dequant, dequant_val, logsizeby16);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {
@@ -1053,8 +1049,8 @@ static INLINE int highbd_quantize_coeff_bigtx_nuq(
     tmp -= ROUND_POWER_OF_TWO(cuml_bins_ptr[0], logsizeby16);
     q = NUQ_KNOTS + (int)(((((tmp * quant) >> 16) + tmp) * quant_shift) >>
                           (16 - logsizeby16));
-    *dqcoeff_ptr = ROUND_POWER_OF_TWO(
-        av1_dequant_abscoeff_nuq(q, dequant, dequant_val), logsizeby16);
+    *dqcoeff_ptr =
+        av1_dequant_abscoeff_nuq(q, dequant, dequant_val, logsizeby16);
     *qcoeff_ptr = (q ^ coeff_sign) - coeff_sign;
     *dqcoeff_ptr = *qcoeff_ptr < 0 ? -*dqcoeff_ptr : *dqcoeff_ptr;
   } else {

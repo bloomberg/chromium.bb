@@ -143,8 +143,8 @@ static INLINE tran_low_t qcoeff_to_dqcoeff(tran_low_t qc,
                                            int dqv, int shift) {
   int sgn = qc < 0 ? -1 : 1;
 #if CONFIG_NEW_QUANT
-  int dqcoeff = av1_dequant_coeff_nuq(abs(qc), dqv, nq_dq);
-  return sgn * (shift ? ROUND_POWER_OF_TWO(dqcoeff, shift) : dqcoeff);
+  int dqcoeff = av1_dequant_coeff_nuq(abs(qc), dqv, nq_dq, shift);
+  return sgn * dqcoeff;
 #endif  // CONFIG_NEW_QUANT
 
   return sgn * ((abs(qc) * dqv) >> shift);

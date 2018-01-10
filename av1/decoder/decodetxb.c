@@ -285,9 +285,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         cul_level += level;
 #if CONFIG_NEW_QUANT
         dqv_val = &dq_val[pos != 0][0];
-        v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val);
 #if !CONFIG_DAALA_TX
-        v = shift ? ROUND_POWER_OF_TWO(v, shift) : v;
+        v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, shift);
+#else
+        v = av1_dequant_abscoeff_nuq(level, dequant[!!c], dqv_val, 0);
 #endif  // !CONFIG_DAALA_TX
 #else
         v = level * dequant[!!c];
@@ -326,9 +327,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
           cul_level += k + 1;
 #if CONFIG_NEW_QUANT
           dqv_val = &dq_val[pos != 0][0];
-          v = av1_dequant_abscoeff_nuq(k + 1, dequant[!!c], dqv_val);
 #if !CONFIG_DAALA_TX
-          v = shift ? ROUND_POWER_OF_TWO(v, shift) : v;
+          v = av1_dequant_abscoeff_nuq(k + 1, dequant[!!c], dqv_val, shift);
+#else
+          v = av1_dequant_abscoeff_nuq(k + 1, dequant[!!c], dqv_val, 0);
 #endif  // !CONFIG_DAALA_TX
 #else
           v = (k + 1) * dequant[!!c];
@@ -410,9 +412,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
         tran_low_t t;
 #if CONFIG_NEW_QUANT
         dqv_val = &dq_val[pos != 0][0];
-        t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val);
 #if !CONFIG_DAALA_TX
-        t = shift ? ROUND_POWER_OF_TWO(t, shift) : t;
+        t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, shift);
+#else
+        t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, 0);
 #endif  // !CONFIG_DAALA_TX
 #else
         t = *level * dequant[!!pos];
@@ -454,9 +457,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
           tran_high_t t;
 #if CONFIG_NEW_QUANT
           dqv_val = &dq_val[pos != 0][0];
-          t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val);
 #if !CONFIG_DAALA_TX
-          t = shift ? ROUND_POWER_OF_TWO(t, shift) : t;
+          t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, shift);
+#else
+          t = av1_dequant_abscoeff_nuq(*level, dequant[!!pos], dqv_val, 0);
 #endif  // !CONFIG_DAALA_TX
 #else
           t = *level * dequant[!!pos];
@@ -480,9 +484,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
       cul_level += (int)t;
 #if CONFIG_NEW_QUANT
       dqv_val = &dq_val[pos != 0][0];
-      t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val);
 #if !CONFIG_DAALA_TX
-      t = shift ? ROUND_POWER_OF_TWO(t, shift) : t;
+      t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val, shift);
+#else
+      t = av1_dequant_abscoeff_nuq(t, dequant[!!pos], dqv_val, 0);
 #endif  // !CONFIG_DAALA_TX
 #else
       t = t * dequant[!!pos];

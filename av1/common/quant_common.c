@@ -192,15 +192,19 @@ void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
   // This is computed as: ((x0 - 64 - d) / 128) * Q
   doff = quant_to_doff_fixed(is_ac_coeff, q_profile);
   dq[0] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 7);
+  dq[1] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 8);
+  dq[2] = ROUND_POWER_OF_TWO((zbin - 64 - doff) * q, 9);
 }
 
-tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq) {
+tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq,
+                                    int shift) {
   if (v == 0) return 0;
-  return (q * v) + *dq;
+  return ((q * v) >> shift) + dq[shift];
 }
 
-tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq) {
-  tran_low_t dqmag = av1_dequant_abscoeff_nuq(abs(v), q, dq);
+tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq,
+                                 int shift) {
+  tran_low_t dqmag = av1_dequant_abscoeff_nuq(abs(v), q, dq, shift);
   return (v < 0 ? -dqmag : dqmag);
 }
 #endif  // CONFIG_NEW_QUANT

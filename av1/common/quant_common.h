@@ -64,12 +64,15 @@ qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
 #define QUANT_RANGES 2
 #define NUQ_KNOTS 1
 
-typedef tran_low_t dequant_val_type_nuq[NUQ_KNOTS];
+// dequant_val_type_nuq needs space for the 3 possible shift values
+// for different tx sizes
+typedef tran_low_t dequant_val_type_nuq[NUQ_KNOTS * 3];
 typedef tran_low_t cuml_bins_type_nuq[NUQ_KNOTS];
 void av1_get_dequant_val_nuq(int q, int is_ac_coeff, tran_low_t *dq,
                              tran_low_t *cuml_bins, int dq_off_index);
-tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq);
-tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq);
+tran_low_t av1_dequant_abscoeff_nuq(int v, int q, const tran_low_t *dq,
+                                    int shift);
+tran_low_t av1_dequant_coeff_nuq(int v, int q, const tran_low_t *dq, int shift);
 
 static INLINE int qindex_to_qrange(int qindex) {
   return (qindex < 140 ? 1 : 0);

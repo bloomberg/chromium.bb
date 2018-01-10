@@ -169,9 +169,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif
 
 #if CONFIG_NEW_QUANT
-    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val);
 #if !CONFIG_DAALA_TX
-    v = dq_shift ? ROUND_POWER_OF_TWO(v, dq_shift) : v;
+    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, dq_shift);
+#else
+    v = av1_dequant_abscoeff_nuq(val, dqv, dqv_val, 0);
 #endif
 #else
 #if CONFIG_AOM_QM
