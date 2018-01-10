@@ -81,10 +81,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  protected:
   explicit CSSImageGeneratorValue(ClassType);
 
-  Image* GetImage(const ImageResourceObserver*,
-                  const Document&,
-                  const ComputedStyle&,
-                  const LayoutSize&);
+  Image* GetImage(const ImageResourceObserver*, const LayoutSize&);
   void PutImage(const LayoutSize&, scoped_refptr<Image>);
   const ClientSizeCountMap& Clients() const { return clients_; }
 
