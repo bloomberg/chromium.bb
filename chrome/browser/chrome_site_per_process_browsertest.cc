@@ -854,9 +854,9 @@ class TestBrowserClientForSpellCheck : public ChromeContentBrowserClient {
         content::BrowserThread::UI);
     ui_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&TestBrowserClientForSpellCheck::BindSpellCheckHostRequest,
-                   base::Unretained(this), base::Passed(&request),
-                   remote_info));
+        base::BindOnce(
+            &TestBrowserClientForSpellCheck::BindSpellCheckHostRequest,
+            base::Unretained(this), base::Passed(&request), remote_info));
   }
 
 #endif  // !BUILDFLAG(USE_BROWSER_SPELLCHECKER)

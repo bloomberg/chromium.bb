@@ -128,7 +128,7 @@ void SpellcheckHunspellDictionary::Load() {
     spellcheck_platform::SetLanguage(language_);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SpellcheckHunspellDictionary::InformListenersOfInitialization,
             weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -140,8 +140,8 @@ void SpellcheckHunspellDictionary::Load() {
 #if !defined(OS_ANDROID)
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&InitializeDictionaryLocation, language_),
-      base::Bind(
+      base::BindOnce(&InitializeDictionaryLocation, language_),
+      base::BindOnce(
           &SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete,
           weak_ptr_factory_.GetWeakPtr()));
 #endif  // !OS_ANDROID
@@ -227,10 +227,10 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
 
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&SaveDictionaryData, base::Passed(&data),
-                 dictionary_file_.path),
-      base::Bind(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&SaveDictionaryData, base::Passed(&data),
+                     dictionary_file_.path),
+      base::BindOnce(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 GURL SpellcheckHunspellDictionary::GetDictionaryURL() {

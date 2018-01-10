@@ -82,8 +82,8 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
     // interface so we can test the SpellChecker request flow.
     renderer_->OverrideBinderForTesting(
         spellcheck::mojom::SpellChecker::Name_,
-        base::Bind(&SpellcheckServiceBrowserTest::Bind,
-                   base::Unretained(this)));
+        base::BindRepeating(&SpellcheckServiceBrowserTest::Bind,
+                            base::Unretained(this)));
   }
 
   void EnableSpellcheck(bool enable_spellcheck) {

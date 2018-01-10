@@ -220,7 +220,7 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   bool is_loaded_;
 
   // A post-startup task to fix the invalid custom dictionary file.
-  base::CancelableClosure fix_invalid_file_;
+  base::CancelableOnceClosure fix_invalid_file_;
 
   // Used to create weak pointers for an instance of this class.
   base::WeakPtrFactory<SpellcheckCustomDictionary> weak_ptr_factory_;
