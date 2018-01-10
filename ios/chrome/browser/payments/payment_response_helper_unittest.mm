@@ -258,9 +258,9 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseSomeContact) {
 }
 
 // Tests that the phone number in the contact information of the generated
-// PaymentResponse is formatted.
+// PaymentResponse is formatted into E.164 if the number is valid.
 TEST_F(PaymentRequestPaymentResponseHelperTest,
-       PaymentResponseContactPhoneIsFormatted) {
+       PaymentResponseContactPhoneIsFormatted_IfNumberIsValid) {
   // Mock the consumer.
   id consumer =
       [OCMockObject mockForProtocol:@protocol(PaymentResponseHelperConsumer)];
@@ -270,7 +270,35 @@ TEST_F(PaymentRequestPaymentResponseHelperTest,
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
        callBlockExpectation:^(const PaymentResponse& response) {
-         EXPECT_EQ(base::ASCIIToUTF16("+15151231234"), response.payer_phone);
+         EXPECT_EQ(base::ASCIIToUTF16("+15152231234"), response.payer_phone);
+       }];
+
+  payment_request()->selected_contact_profile()->SetRawInfo(
+      autofill::PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16("(515) 223-1234"));
+
+  payment_request()->web_payment_request().options.request_payer_name = false;
+  payment_request()->web_payment_request().options.request_payer_email = false;
+  PaymentResponseHelper payment_response_helper(consumer_mock,
+                                                payment_request());
+  payment_response_helper.OnInstrumentDetailsReady(GetMethodName(),
+                                                   GetStringifiedDetails());
+}
+
+// Tests that the phone number in the contact information of the generated
+// PaymentResponse is not minimumly formatted(removing non-digit letters) if
+// the number is invalid.
+TEST_F(PaymentRequestPaymentResponseHelperTest,
+       PaymentResponseContactPhoneIsMinimumlyFormatted_IfNumberIsInValid) {
+  // Mock the consumer.
+  id consumer =
+      [OCMockObject mockForProtocol:@protocol(PaymentResponseHelperConsumer)];
+  id consumer_mock([[PaymentResponseHelperConsumerMock alloc]
+      initWithRepresentedObject:consumer]);
+  SEL selector =
+      @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
+  [consumer_mock onSelector:selector
+       callBlockExpectation:^(const PaymentResponse& response) {
+         EXPECT_EQ(base::ASCIIToUTF16("5151231234"), response.payer_phone);
        }];
 
   payment_request()->selected_contact_profile()->SetRawInfo(

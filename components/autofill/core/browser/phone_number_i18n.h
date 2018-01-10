@@ -15,8 +15,8 @@
 namespace i18n {
 namespace phonenumbers {
 class PhoneNumber;
-}
-}
+}  // namespace phonenumbers
+}  // namespace i18n
 
 namespace autofill {
 
@@ -24,6 +24,20 @@ class AutofillProfile;
 
 // Utilities to process, normalize and compare international phone numbers.
 namespace i18n {
+
+// Return true if the given |phone_number| object is likely to be a phone number
+// This method uses IsPossibleNumber from libphonenumber, instead of
+// IsValidNumber. IsPossibleNumber does a less strict check, it will not try to
+// check for carrier code validility.
+bool IsPossiblePhoneNumber(
+    const ::i18n::phonenumbers::PhoneNumber& phone_number);
+
+// Return true if the given |phone_number| is likely to be a phone number for
+// the |country_code|. This method uses IsPossibleNumber from libphonenumber,
+// instead of IsValidNumber. IsPossibleNumber does a less strict check, it
+// will not try to check for carrier code validility.
+bool IsPossiblePhoneNumber(const std::string& phone_number,
+                           const std::string& country_code);
 
 // Most of the following functions require |region| to operate. The |region| is
 // a ISO 3166 standard code ("US" for USA, "CZ" for Czech Republic, etc.).
@@ -35,14 +49,14 @@ namespace i18n {
 // |default_region| if |value| has an international country code, for example).
 // This is an internal function, exposed in the header file so that it can be
 // tested.
-bool ParsePhoneNumber(
-    const base::string16& value,
-    const std::string& default_region,
-    base::string16* country_code,
-    base::string16* city_code,
-    base::string16* number,
-    std::string* inferred_region,
-    ::i18n::phonenumbers::PhoneNumber* i18n_number) WARN_UNUSED_RESULT;
+bool ParsePhoneNumber(const base::string16& value,
+                      const std::string& default_region,
+                      base::string16* country_code,
+                      base::string16* city_code,
+                      base::string16* number,
+                      std::string* inferred_region,
+                      ::i18n::phonenumbers::PhoneNumber* i18n_number)
+    WARN_UNUSED_RESULT;
 
 // Normalizes phone number, by changing digits in the extended fonts
 // (such as \xFF1x) into '0'-'9'. Also strips out non-digit characters.
@@ -71,6 +85,9 @@ bool PhoneNumbersMatch(const base::string16& number_a,
                        const std::string& app_locale);
 
 // Returns the phone number from the given |profile| formatted for display.
+// If it's valid number for the country of profile, or for the |locale| given
+// as a fall back, return the number in internaional format; otherwise return
+// the raw number string from profile.
 base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
                                                  const std::string& locale);
 
@@ -85,14 +102,15 @@ std::string FormatPhoneForDisplay(const std::string& phone_number,
 // i18n::phonenumbers::PhoneNumberUtil::Format, as defined in the Payment
 // Request spec
 // (https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm)
+// if the number is a valid number for the given country code.
+// Returns the given_number without formatting if the number is invalid.
 std::string FormatPhoneForResponse(const std::string& phone_number,
                                    const std::string& country_code);
 
 // The cached phone number, does parsing only once, improves performance.
 class PhoneObject {
  public:
-  PhoneObject(const base::string16& number,
-              const std::string& default_region);
+  PhoneObject(const base::string16& number, const std::string& default_region);
   PhoneObject(const PhoneObject&);
   PhoneObject();
   ~PhoneObject();

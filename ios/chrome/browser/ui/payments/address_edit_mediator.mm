@@ -192,8 +192,8 @@ NSString* NormalizeRegionName(NSString* region, NSArray<RegionData*>* regions) {
       case AutofillUITypeProfileHomePhoneWholeNumber: {
         const std::string selectedCountryCode =
             base::SysNSStringToUTF8(self.selectedCountryCode);
-        if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
-                                          selectedCountryCode)) {
+        if (!autofill::IsPossiblePhoneNumber(
+                base::SysNSStringToUTF16(field.value), selectedCountryCode)) {
           return l10n_util::GetNSString(
               IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
         }

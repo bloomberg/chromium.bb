@@ -116,8 +116,8 @@
         const std::string countryCode =
             autofill::AutofillCountry::CountryCodeForLocale(
                 self.paymentRequest->GetApplicationLocale());
-        if (!autofill::IsValidPhoneNumber(base::SysNSStringToUTF16(field.value),
-                                          countryCode)) {
+        if (!autofill::IsPossiblePhoneNumber(
+                base::SysNSStringToUTF16(field.value), countryCode)) {
           return l10n_util::GetNSString(
               IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE);
         }

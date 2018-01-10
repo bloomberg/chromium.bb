@@ -317,7 +317,7 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
   if (!value.empty()) {
     if (field_.type == autofill::PHONE_HOME_WHOLE_NUMBER &&
         controller_->chosen_country_index_ < controller_->countries_.size() &&
-        !autofill::IsValidPhoneNumber(
+        !autofill::IsPossiblePhoneNumber(
             value, controller_->countries_[controller_->chosen_country_index_]
                        .first)) {
       if (error_message) {
