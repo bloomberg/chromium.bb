@@ -5641,6 +5641,12 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
   // Since we have scaled the reference frames to match the size of the current
   // frame we must use a unit scaling factor during mode selection.
+  assert(IMPLIES(scaled_ref_frame[0] != NULL,
+                 cm->width == scaled_ref_frame[0]->y_crop_width &&
+                     cm->height == scaled_ref_frame[0]->y_crop_height));
+  assert(IMPLIES(scaled_ref_frame[1] != NULL,
+                 cm->width == scaled_ref_frame[1]->y_crop_width &&
+                     cm->height == scaled_ref_frame[1]->y_crop_height));
   av1_setup_scale_factors_for_frame(&sf, cm->width, cm->height, cm->width,
                                     cm->height, cm->use_highbitdepth);
 
