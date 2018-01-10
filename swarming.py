@@ -1623,12 +1623,17 @@ def CMDreproduce(parser, args):
 
   # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
   command = tools.fix_python_path(command)
-  new_command = run_isolated.process_command(command, options.output_dir, None)
-  if new_command != command:
-    if not options.output_dir:
+  if not options.output_dir:
+    new_command = run_isolated.process_command(command, 'invalid', None)
+    if new_command != command:
       parser.error('The task has outputs, you must use --output-dir')
+  else:
+    # Make the path absolute, as the process will run from a subdirectory.
+    options.output_dir = os.path.abspath(options.output_dir)
+    new_command = run_isolated.process_command(
+        command, options.output_dir, None)
     if not os.path.isdir(options.output_dir):
-      os.makedir(options.output_dir)
+      os.makedirs(options.output_dir)
   command = new_command
   file_path.ensure_command_has_abs_path(command, workdir)
 

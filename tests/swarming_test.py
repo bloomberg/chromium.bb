@@ -279,7 +279,11 @@ class TestIsolated(auto_stub.TestCase, Common):
       os.chdir(self.tempdir)
 
       def call(cmd, env, cwd):
-        self.assertEqual([sys.executable, u'main.py', u'foo', '--bar'], cmd)
+        # 'out' is the default value for --output-dir.
+        outdir = os.path.join(self.tempdir, 'out')
+        self.assertTrue(os.path.isdir(outdir))
+        self.assertEqual(
+            [sys.executable, u'main.py', u'foo', outdir, '--bar'], cmd)
         expected = os.environ.copy()
         expected['SWARMING_TASK_ID'] = 'reproduce'
         expected['SWARMING_BOT_ID'] = 'reproduce'
@@ -310,7 +314,7 @@ class TestIsolated(auto_stub.TestCase, Common):
             'namespace': 'default-gzip',
             'isolated': isolated_hash,
           },
-          'extra_args': ['foo'],
+          'extra_args': ['foo', '${ISOLATED_OUTDIR}'],
           'secret_bytes': None,
         },
       }
