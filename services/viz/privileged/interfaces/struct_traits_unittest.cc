@@ -37,7 +37,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.finish_rendering_on_resize = true;
   input.should_clear_root_render_pass = false;
   input.release_overlay_resources_after_gpu_query = true;
-  input.gl_composited_overlay_candidate_quad_border = true;
   input.show_overdraw_feedback = true;
   input.enable_draw_occlusion = true;
   input.highp_threshold_min = -1;
@@ -62,8 +61,6 @@ TEST_F(StructTraitsTest, RendererSettings) {
             output.should_clear_root_render_pass);
   EXPECT_EQ(input.release_overlay_resources_after_gpu_query,
             output.release_overlay_resources_after_gpu_query);
-  EXPECT_EQ(input.gl_composited_overlay_candidate_quad_border,
-            output.gl_composited_overlay_candidate_quad_border);
   EXPECT_EQ(input.show_overdraw_feedback, output.show_overdraw_feedback);
   EXPECT_EQ(input.enable_draw_occlusion, output.enable_draw_occlusion);
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);

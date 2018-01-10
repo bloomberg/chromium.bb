@@ -12,7 +12,6 @@ struct RendererSettings {
   bool finish_rendering_on_resize;
   bool force_antialiasing;
   bool force_blending_with_shaders;
-  bool gl_composited_overlay_candidate_quad_border;
   int32 highp_threshold_min;
   bool partial_swap_enabled;
   bool release_overlay_resources_after_gpu_query;

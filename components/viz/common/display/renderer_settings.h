@@ -26,7 +26,6 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool finish_rendering_on_resize = false;
   bool should_clear_root_render_pass = true;
   bool release_overlay_resources_after_gpu_query = false;
-  bool gl_composited_overlay_candidate_quad_border = false;
   bool show_overdraw_feedback = false;
   bool enable_draw_occlusion = false;
   bool use_skia_renderer = false;
