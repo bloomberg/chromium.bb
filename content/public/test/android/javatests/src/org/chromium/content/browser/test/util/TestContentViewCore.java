@@ -5,10 +5,8 @@
 package org.chromium.content.browser.test.util;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.view.ActionMode;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -16,21 +14,17 @@ import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content.browser.PopupZoomer;
-import org.chromium.content.browser.SelectionPopupController;
 import org.chromium.content.browser.WindowAndroidChangedObserver;
 import org.chromium.content.browser.accessibility.WebContentsAccessibility;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
-import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ImeEventObserver;
-import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -61,14 +55,6 @@ public class TestContentViewCore implements ContentViewCore {
     public WindowAndroid getWindowAndroid() {
         return null;
     }
-
-    @Override
-    public SelectionPopupController getSelectionPopupControllerForTesting() {
-        return null;
-    }
-
-    @Override
-    public void setSelectionPopupControllerForTesting(SelectionPopupController actionMode) {}
 
     @Override
     public TextSuggestionHost getTextSuggestionHostForTesting() {
@@ -105,17 +91,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void updateWindowAndroid(WindowAndroid windowAndroid) {}
 
     @Override
-    public void setActionModeCallback(ActionMode.Callback callback) {}
-
-    @Override
-    public void setNonSelectionActionModeCallback(ActionMode.Callback callback) {}
-
-    @Override
-    public SelectionClient.ResultCallback getPopupControllerResultCallback() {
-        return null;
-    }
-
-    @Override
     public void setContainerView(ViewGroup containerView) {}
 
     @Override
@@ -144,16 +119,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public String getSelectedText() {
-        return null;
-    }
-
-    @Override
-    public boolean isFocusedNodeEditable() {
-        return false;
-    }
-
-    @Override
     public boolean isScrollInProgress() {
         return false;
     }
@@ -177,14 +142,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void onHide() {}
-
-    @Override
-    public void destroySelectActionMode() {}
-
-    @Override
-    public boolean isSelectActionBarShowing() {
-        return false;
-    }
 
     @Override
     public boolean isAttachedToWindow() {
@@ -294,14 +251,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void selectPopupMenuItems(int[] indices) {}
 
     @Override
-    public ActionModeCallbackHelper getActionModeCallbackHelper() {
-        return null;
-    }
-
-    @Override
-    public void clearSelection() {}
-
-    @Override
     public void preserveSelectionOnNextLossOfFocus() {}
 
     @Override
@@ -336,9 +285,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void setObscuredByAnotherView(boolean isObscured) {}
 
     @Override
-    public void onReceivedProcessTextResult(int resultCode, Intent data) {}
-
-    @Override
     public boolean isTouchExplorationEnabled() {
         return false;
     }
@@ -359,22 +305,6 @@ public class TestContentViewCore implements ContentViewCore {
 
     @Override
     public void setFullscreenRequiredForOrientationLock(boolean value) {}
-
-    @Override
-    public void setSelectionClient(SelectionClient selectionClient) {}
-
-    @Override
-    public void setTextClassifier(TextClassifier textClassifier) {}
-
-    @Override
-    public TextClassifier getTextClassifier() {
-        return null;
-    }
-
-    @Override
-    public TextClassifier getCustomTextClassifier() {
-        return null;
-    }
 
     @Override
     public int getTopControlsShrinkBlinkHeightForTesting() {

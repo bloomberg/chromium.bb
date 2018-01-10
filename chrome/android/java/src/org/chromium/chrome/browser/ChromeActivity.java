@@ -147,6 +147,7 @@ import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
@@ -1758,9 +1759,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (layoutManager != null && layoutManager.onBackPressed()) return;
         }
 
-        ContentViewCore contentViewCore = getContentViewCore();
-        if (contentViewCore != null && contentViewCore.isSelectActionBarShowing()) {
-            contentViewCore.clearSelection();
+        SelectionPopupController controller = getSelectionPopupController();
+        if (controller != null && controller.isSelectActionBarShowing()) {
+            controller.clearSelection();
             return;
         }
 
@@ -1787,6 +1788,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         Tab tab = getActivityTab();
         if (tab == null) return null;
         return tab.getContentViewCore();
+    }
+
+    private WebContents getWebContents() {
+        Tab tab = getActivityTab();
+        if (tab == null) return null;
+        return tab.getWebContents();
+    }
+
+    private SelectionPopupController getSelectionPopupController() {
+        WebContents webContents = getWebContents();
+        return webContents != null ? SelectionPopupController.fromWebContents(webContents) : null;
     }
 
     @Override

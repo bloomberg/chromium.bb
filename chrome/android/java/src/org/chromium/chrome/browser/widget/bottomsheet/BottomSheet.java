@@ -57,8 +57,9 @@ import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.SelectionPopupController;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 
@@ -1352,9 +1353,9 @@ public class BottomSheet
         Tab activeTab = getActiveTab();
         if (activeTab == null) return;
 
-        ContentViewCore contentViewCore = activeTab.getContentViewCore();
-        if (contentViewCore == null) return;
-        contentViewCore.clearSelection();
+        WebContents webContents = activeTab.getWebContents();
+        if (webContents == null) return;
+        SelectionPopupController.fromWebContents(webContents).clearSelection();
     }
 
     /**

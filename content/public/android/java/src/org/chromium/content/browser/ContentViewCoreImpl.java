@@ -8,14 +8,12 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
@@ -30,7 +28,6 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
@@ -57,7 +54,6 @@ import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.ImeEventObserver;
-import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
@@ -190,7 +186,6 @@ public class ContentViewCoreImpl
 
     private boolean mIsMobileOptimizedHint;
 
-    private SelectionPopupController mSelectionPopupController;
     private boolean mPreserveSelectionOnNextLossOfFocus;
 
     // Whether native accessibility, i.e. without any script injection, is allowed.
@@ -302,20 +297,13 @@ public class ContentViewCoreImpl
 
     @VisibleForTesting
     @Override
-    public SelectionPopupController getSelectionPopupControllerForTesting() {
-        return mSelectionPopupController;
-    }
-
-    @VisibleForTesting
-    @Override
-    public void setSelectionPopupControllerForTesting(SelectionPopupController actionMode) {
-        mSelectionPopupController = actionMode;
-    }
-
-    @VisibleForTesting
-    @Override
     public TextSuggestionHost getTextSuggestionHostForTesting() {
         return mTextSuggestionHost;
+    }
+
+    @VisibleForTesting
+    void setWebContentsForTesting(WebContentsImpl webContents) {
+        mWebContents = webContents;
     }
 
     @VisibleForTesting
@@ -365,7 +353,6 @@ public class ContentViewCoreImpl
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             WindowAndroid windowAndroid) {
         mViewAndroidDelegate = viewDelegate;
-        setContainerView(viewDelegate.getContainerView());
         long windowNativePointer = windowAndroid.getNativePointer();
         assert windowNativePointer != 0;
 
@@ -374,6 +361,11 @@ public class ContentViewCoreImpl
         mNativeContentViewCore =
                 nativeInit(webContents, mViewAndroidDelegate, windowNativePointer, dipScale);
         mWebContents = (WebContentsImpl) nativeGetWebContentsAndroid(mNativeContentViewCore);
+        ViewGroup containerView = viewDelegate.getContainerView();
+        SelectionPopupControllerImpl controller = SelectionPopupControllerImpl.create(
+                mContext, windowAndroid, webContents, containerView);
+        controller.setActionModeCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
+        setContainerView(containerView);
         mRenderCoordinates = mWebContents.getRenderCoordinates();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext().get());
 
@@ -384,11 +376,6 @@ public class ContentViewCoreImpl
                 mWebContents, mContainerView, new InputMethodManagerWrapper(mContext));
         mImeAdapter.addEventObserver(this);
         mTextSuggestionHost = new TextSuggestionHost(this);
-
-        mSelectionPopupController =
-                new SelectionPopupController(mContext, windowAndroid, webContents, mContainerView);
-        mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
-        mSelectionPopupController.setContainerView(mContainerView);
 
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
@@ -422,21 +409,6 @@ public class ContentViewCoreImpl
         return getWebContents().getEventForwarder();
     }
 
-    @Override
-    public void setActionModeCallback(ActionMode.Callback callback) {
-        mSelectionPopupController.setCallback(callback);
-    }
-
-    @Override
-    public void setNonSelectionActionModeCallback(ActionMode.Callback callback) {
-        mSelectionPopupController.setNonSelectionCallback(callback);
-    }
-
-    @Override
-    public SelectionClient.ResultCallback getPopupControllerResultCallback() {
-        return mSelectionPopupController.getResultCallback();
-    }
-
     private void addDisplayAndroidObserverIfNeeded() {
         if (!mAttachedToWindow) return;
         WindowAndroid windowAndroid = getWindowAndroid();
@@ -467,12 +439,14 @@ public class ContentViewCoreImpl
 
             mContainerView = containerView;
             mContainerView.setClickable(true);
-            if (mSelectionPopupController != null) {
-                mSelectionPopupController.setContainerView(containerView);
-            }
+            getSelectionPopupController().setContainerView(containerView);
         } finally {
             TraceEvent.end("ContentViewCore.setContainerView");
         }
+    }
+
+    private SelectionPopupControllerImpl getSelectionPopupController() {
+        return SelectionPopupControllerImpl.fromWebContents(mWebContents);
     }
 
     @CalledByNative
@@ -501,10 +475,9 @@ public class ContentViewCoreImpl
         mWebContentsObserver.destroy();
         mWebContentsObserver = null;
         mImeAdapter.resetAndHideKeyboard();
+        hidePopupsAndPreserveSelection();
         mWebContents = null;
         mNativeContentViewCore = 0;
-        hidePopupsAndPreserveSelection();
-        destroyPastePopup();
 
         // See warning in javadoc before adding more clean up code here.
     }
@@ -537,22 +510,11 @@ public class ContentViewCoreImpl
 
     @VisibleForTesting
     @Override
-    public String getSelectedText() {
-        return mSelectionPopupController.getSelectedText();
-    }
-
-    @VisibleForTesting
-    @Override
     public int getTopControlsShrinkBlinkHeightForTesting() {
         // TODO(jinsukkim): Let callsites provide with its own top controls height to remove
         //                  the test-only method in content layer.
         if (mNativeContentViewCore == 0) return 0;
         return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
-    }
-
-    @Override
-    public boolean isFocusedNodeEditable() {
-        return mSelectionPopupController.isSelectionEditable();
     }
 
     @CalledByNative
@@ -567,7 +529,7 @@ public class ContentViewCoreImpl
 
     private void setTouchScrollInProgress(boolean inProgress) {
         mTouchScrollInProgress = inProgress;
-        mSelectionPopupController.setScrollInProgress(inProgress, isScrollInProgress());
+        getSelectionPopupController().setScrollInProgress(inProgress, isScrollInProgress());
     }
 
     /**
@@ -630,8 +592,10 @@ public class ContentViewCoreImpl
     }
 
     private void hidePopupsAndClearSelection() {
-        mSelectionPopupController.destroyActionModeAndUnselect();
-        destroyPastePopup();
+        if (isAlive()) {
+            getSelectionPopupController().destroyActionModeAndUnselect();
+            destroyPastePopup();
+        }
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
         mTextSuggestionHost.hidePopups();
@@ -640,25 +604,17 @@ public class ContentViewCoreImpl
 
     @CalledByNative
     private void hidePopupsAndPreserveSelection() {
-        mSelectionPopupController.destroyActionModeAndKeepSelection();
-        destroyPastePopup();
+        if (isAlive()) {
+            getSelectionPopupController().destroyActionModeAndKeepSelection();
+            destroyPastePopup();
+        }
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
         mTextSuggestionHost.hidePopups();
     }
 
     private void restoreSelectionPopupsIfNecessary() {
-        mSelectionPopupController.restoreSelectionPopupsIfNecessary();
-    }
-
-    @Override
-    public void destroySelectActionMode() {
-        mSelectionPopupController.finishActionMode();
-    }
-
-    @Override
-    public boolean isSelectActionBarShowing() {
-        return mSelectionPopupController.isActionModeValid();
+        getSelectionPopupController().restoreSelectionPopupsIfNecessary();
     }
 
     private void resetGestureDetection() {
@@ -712,7 +668,7 @@ public class ContentViewCoreImpl
         // Override the handle visibility explicitly to address this, but
         // preserve the underlying selection for detachment cases like screen
         // locking and app switching.
-        updateTextSelectionUI(false);
+        if (isAlive()) updateTextSelectionUI(false);
         mSystemCaptioningBridge.removeListener(this);
         if (mWebContentsAccessibility != null) {
             mWebContentsAccessibility.onDetachedFromWindow();
@@ -792,7 +748,7 @@ public class ContentViewCoreImpl
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         mImeAdapter.onWindowFocusChanged(hasWindowFocus);
         if (!hasWindowFocus) resetGestureDetection();
-        mSelectionPopupController.onWindowFocusChanged(hasWindowFocus);
+        if (isAlive()) getSelectionPopupController().onWindowFocusChanged(hasWindowFocus);
         mGestureListenerManager.updateOnWindowFocusChanged(hasWindowFocus);
     }
 
@@ -802,7 +758,8 @@ public class ContentViewCoreImpl
         mHasViewFocus = gainFocus;
         mImeAdapter.onViewFocusChanged(gainFocus, hideKeyboardOnBlur);
 
-        mJoystickScrollEnabled = gainFocus && !isFocusedNodeEditable();
+        mJoystickScrollEnabled =
+                gainFocus && !getSelectionPopupController().isFocusedNodeEditable();
 
         if (gainFocus) {
             restoreSelectionPopupsIfNecessary();
@@ -816,7 +773,7 @@ public class ContentViewCoreImpl
                 // Clear the selection. The selection is cleared on destroying IME
                 // and also here since we may receive destroy first, for example
                 // when focus is lost in webview.
-                clearSelection();
+                if (isAlive()) getSelectionPopupController().clearSelection();
             }
         }
         if (mNativeContentViewCore != 0) nativeSetFocus(mNativeContentViewCore, gainFocus);
@@ -1027,20 +984,6 @@ public class ContentViewCoreImpl
     }
 
     @Override
-    public ActionModeCallbackHelper getActionModeCallbackHelper() {
-        return mSelectionPopupController;
-    }
-
-    private void showSelectActionMode() {
-        mSelectionPopupController.showActionModeOrClearOnFailure();
-    }
-
-    @Override
-    public void clearSelection() {
-        mSelectionPopupController.clearSelection();
-    }
-
-    @Override
     public void preserveSelectionOnNextLossOfFocus() {
         mPreserveSelectionOnNextLossOfFocus = true;
     }
@@ -1106,7 +1049,7 @@ public class ContentViewCoreImpl
     @Override
     public void onNodeAttributeUpdated(boolean editable, boolean password) {
         mJoystickScrollEnabled = !editable;
-        mSelectionPopupController.updateSelectionState(editable, password);
+        getSelectionPopupController().updateSelectionState(editable, password);
     }
 
     @Override
@@ -1182,7 +1125,7 @@ public class ContentViewCoreImpl
     }
 
     private void destroyPastePopup() {
-        mSelectionPopupController.destroyPastePopup();
+        getSelectionPopupController().destroyPastePopup();
     }
 
     @SuppressWarnings("unused")
@@ -1332,11 +1275,6 @@ public class ContentViewCoreImpl
     }
 
     @Override
-    public void onReceivedProcessTextResult(int resultCode, Intent data) {
-        mSelectionPopupController.onReceivedProcessTextResult(resultCode, data);
-    }
-
-    @Override
     public boolean isTouchExplorationEnabled() {
         return mTouchExplorationEnabled;
     }
@@ -1412,9 +1350,9 @@ public class ContentViewCoreImpl
         // action mode menu items according to the new rotation. So Chrome
         // has to re-create the action mode.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && mSelectionPopupController.isActionModeValid()) {
+                && getSelectionPopupController().isActionModeValid()) {
             hidePopupsAndPreserveSelection();
-            showSelectActionMode();
+            getSelectionPopupController().showActionModeOrClearOnFailure();
         }
         mTextSuggestionHost.hidePopups();
 
@@ -1458,32 +1396,6 @@ public class ContentViewCoreImpl
     @CalledByNative
     private boolean isFullscreenRequiredForOrientationLock() {
         return mFullscreenRequiredForOrientationLock;
-    }
-
-    @Override
-    public void setSelectionClient(SelectionClient selectionClient) {
-        mSelectionPopupController.setSelectionClient(selectionClient);
-    }
-
-    @Override
-    public void setTextClassifier(TextClassifier textClassifier) {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        SelectionClient client = mSelectionPopupController.getSelectionClient();
-        if (client != null) client.setTextClassifier(textClassifier);
-    }
-
-    @Override
-    public TextClassifier getTextClassifier() {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        SelectionClient client = mSelectionPopupController.getSelectionClient();
-        return client == null ? null : client.getTextClassifier();
-    }
-
-    @Override
-    public TextClassifier getCustomTextClassifier() {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-        SelectionClient client = mSelectionPopupController.getSelectionClient();
-        return client == null ? null : client.getCustomTextClassifier();
     }
 
     @NativeClassQualifiedName("ContentViewCore")

@@ -21,7 +21,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SelectionPopupController;
+import org.chromium.content.browser.SelectionPopupControllerImpl;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -51,14 +51,15 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     static final String PASSWORD_FORM_HTML = "content/test/data/android/input/password_form.html";
 
     private ContentViewCore mContentViewCore;
-    private SelectionPopupController mSelectionPopupController;
+    private SelectionPopupControllerImpl mSelectionPopupController;
     private TestCallbackHelperContainer mCallbackContainer;
     private TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
     public void setUpForUrl(String url) throws Exception {
         launchContentShellWithUrlSync(url);
         mContentViewCore = getContentViewCore();
-        mSelectionPopupController = mContentViewCore.getSelectionPopupControllerForTesting();
+        mSelectionPopupController =
+                SelectionPopupControllerImpl.fromWebContents(mContentViewCore.getWebContents());
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore) {
             private boolean mExpectsSelectionOutsideComposition;
 
@@ -119,7 +120,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         resetAllStates();
     }
 
-    SelectionPopupController getSelectionPopupController() {
+    SelectionPopupControllerImpl getSelectionPopupController() {
         return mSelectionPopupController;
     }
 
@@ -246,7 +247,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return mContentViewCore.isSelectActionBarShowing();
+                return mSelectionPopupController.isSelectActionBarShowing();
             }
         }));
     }

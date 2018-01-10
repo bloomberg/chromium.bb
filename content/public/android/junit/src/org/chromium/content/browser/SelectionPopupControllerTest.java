@@ -39,6 +39,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.MenuSourceType;
 import org.chromium.ui.base.WindowAndroid;
@@ -50,7 +51,7 @@ import org.chromium.ui.touch_selection.SelectionEventType;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SelectionPopupControllerTest {
-    private SelectionPopupController mController;
+    private SelectionPopupControllerImpl mController;
     private Context mContext;
     private WindowAndroid mWindowAndroid;
     private WebContentsImpl mWebContents;
@@ -140,7 +141,7 @@ public class SelectionPopupControllerTest {
         when(mWebContents.getRenderCoordinates()).thenReturn(mRenderCoordinates);
         when(mRenderCoordinates.getDeviceScaleFactor()).thenReturn(1.f);
 
-        mController = SelectionPopupController.createForTesting(
+        mController = SelectionPopupControllerImpl.createForTesting(
                 mContext, mWindowAndroid, mWebContents, mView);
     }
 
