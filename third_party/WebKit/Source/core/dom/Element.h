@@ -295,7 +295,7 @@ class CORE_EXPORT Element : public ContainerNode {
   AccessibleNode* ExistingAccessibleNode() const;
   AccessibleNode* accessibleNode();
 
-  ComputedAccessibleNode* ComputedAccessibleNode();
+  ComputedAccessibleNode* GetComputedAccessibleNode();
 
   void DidMoveToNewDocument(Document&) override;
 
