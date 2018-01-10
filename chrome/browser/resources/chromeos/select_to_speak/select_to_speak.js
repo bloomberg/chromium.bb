@@ -388,6 +388,8 @@ var SelectToSpeak = function() {
    */
   this.intervalId_;
 
+  this.readSelectionEnabled_ = READ_SELECTION_ENABLED;
+
   this.initPreferences_();
 
   this.setUpEventListeners_();
@@ -528,7 +530,7 @@ SelectToSpeak.prototype = {
         evt.keyCode == SelectToSpeak.SEARCH_KEY_CODE) {
       this.isSearchKeyDown_ = true;
     } else if (
-        READ_SELECTION_ENABLED && this.keysCurrentlyDown_.size == 1 &&
+        this.readSelectionEnabled_ && this.keysCurrentlyDown_.size == 1 &&
         evt.keyCode == SelectToSpeak.READ_SELECTION_KEY_CODE &&
         !this.trackingMouse_) {
       // Only go into selection mode if we aren't already tracking the mouse.
@@ -1150,5 +1152,34 @@ SelectToSpeak.prototype = {
       this.currentNodeWord_ = {'start': nodeStart, 'end': nodeEnd};
       this.testCurrentNode_();
     }
+  },
+
+  // ---------- Functionality for testing ---------- //
+
+  /**
+   * Fires a mock key down event for testing.
+   * @param {!Event} event The fake key down event to fire. The object
+   * must contain at minimum a keyCode.
+   */
+  fireMockKeyDownEvent: function(event) {
+    this.onKeyDown_(event);
+  },
+
+  /**
+   * Fires a mock key up event for testing.
+   * @param {!Event} event The fake key up event to fire. The object
+   * must contain at minimum a keyCode.
+   */
+  fireMockKeyUpEvent: function(event) {
+    this.onKeyUp_(event);
+  },
+
+  /**
+   * Overrides default setting to read selected text and enables the
+   * ability to read selected text at a keystroke. Should only be used
+   * for testing.
+   */
+  enableReadSelectedTextForTesting: function() {
+    this.readSelectionEnabled_ = true;
   }
 };

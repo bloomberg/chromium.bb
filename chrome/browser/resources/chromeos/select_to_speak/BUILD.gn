@@ -88,3 +88,69 @@ manifest("select_to_speak_guest_manifest") {
   output_file = "$select_to_speak_out_dir/manifest_guest.json"
   is_guest_manifest = true
 }
+
+test("select_to_speak_extension_tests") {
+  sources = [
+    "//chrome/browser/extensions/browsertest_util.cc",
+    "//chrome/browser/extensions/browsertest_util.h",
+    "//chrome/browser/ui/webui/web_ui_test_handler.cc",
+    "//chrome/browser/ui/webui/web_ui_test_handler.h",
+    "//chrome/test/base/extension_js_browser_test.cc",
+    "//chrome/test/base/extension_js_browser_test.h",
+    "//chrome/test/base/extension_load_waiter_one_shot.cc",
+    "//chrome/test/base/extension_load_waiter_one_shot.h",
+    "//chrome/test/base/javascript_browser_test.cc",
+    "//chrome/test/base/javascript_browser_test.h",
+    "//chrome/test/base/test_chrome_web_ui_controller_factory.cc",
+    "//chrome/test/base/test_chrome_web_ui_controller_factory.h",
+    "//chrome/test/base/web_ui_browser_test.cc",
+    "//chrome/test/base/web_ui_browser_test.h",
+  ]
+
+  deps = [
+    ":select_to_speak_extjs_tests",
+    "//base",
+    "//base/test:test_support",
+    "//chrome:browser_tests_pak",
+    "//chrome:packed_resources",
+    "//chrome:resources",
+    "//chrome/browser",
+    "//chrome/renderer",
+    "//chrome/test:browser_tests_runner",
+    "//chrome/test:test_support",
+    "//chrome/test:test_support_ui",
+    "//content/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  data = [
+    "$root_out_dir/chrome_100_percent.pak",
+    "$root_out_dir/chrome_200_percent.pak",
+    "$root_out_dir/locales/en-US.pak",
+    "$root_out_dir/resources.pak",
+    "$root_out_dir/resources/chromeos/select_to_speak/",
+    "$root_out_dir/test_data/chrome/browser/resources/chromeos/select_to_speak/",
+
+    # The test uses data from the original location, not the copied one.
+    "//chrome/browser/resources/chromeos/chromevox/",
+    "//chrome/browser/resources/chromeos/select_to_speak/",
+    "//chrome/test/data/webui/test_api.js",
+    "//chrome/third_party/mock4js/",
+    "//third_party/accessibility-audit/axs_testing.js",
+    "//third_party/chaijs/chai.js",
+  ]
+}
+
+js2gtest("select_to_speak_extjs_tests") {
+  test_type = "extension"
+  sources = [
+    "select_to_speak_keystroke_selection_test.extjs",
+  ]
+  gen_include_files = [
+    "../chromevox/testing/callback_helper.js",
+    "mock_tts.js",
+    "select_to_speak_e2e_test_base.js",
+  ]
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+}
