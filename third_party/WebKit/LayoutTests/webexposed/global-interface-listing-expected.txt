@@ -4511,7 +4511,6 @@ interface Navigator
     getter webkitPersistentStorage
     getter webkitTemporaryStorage
     getter xr
-    method cancelKeyboardLock
     method constructor
     method getBattery
     method getGamepads
@@ -4519,8 +4518,9 @@ interface Navigator
     method getUserMedia
     method getVRDisplays
     method javaEnabled
+    method keyboardLock
+    method keyboardUnlock
     method registerProtocolHandler
-    method requestKeyboardLock
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon

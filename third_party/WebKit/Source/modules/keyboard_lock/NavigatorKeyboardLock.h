@@ -17,8 +17,8 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-// The supplement of Navigator to process navigator.requestKeyboardLock() and
-// navigator.cancelKeyboardLock() web APIs. This class forwards both requests
+// The supplement of Navigator to process navigator.keyboardLock() and
+// navigator.keyboardUnlock() web APIs. This class forwards both requests
 // directly to the browser process through mojo.
 class NavigatorKeyboardLock final
     : public GarbageCollectedFinalized<NavigatorKeyboardLock>,
@@ -28,24 +28,25 @@ class NavigatorKeyboardLock final
  public:
   // Requests to receive a set of key codes
   // (https://w3c.github.io/uievents/#dom-keyboardevent-code) in string format.
-  // The Promise will be rejected if the user or browser do not allow the web
-  // page to use this API. Otherwise, web page should expect to receive the key
-  // presses once the Promise has been resolved. This API does best effort to
-  // deliver the key codes: due to the platform restrictions, some keys or key
-  // combinations may not be able to receive or intercept by the user agent.
+  // The Promise will be rejected if the user or browser does not allow the web
+  // page to use this API. Otherwise, the web page should expect to receive the
+  // key presses once the Promise has been resolved. This API does best effort
+  // to deliver the key codes: due to the platform restrictions, some keys or
+  // key combinations cannot be received or intercepted by the user agent.
+  // - TODO(joedow): Update concurrent promise behavior to match spec.
   // - Making two requests concurrently without waiting for one Promise to
   //   finish is disallowed, the second Promise will be rejected immediately.
   // - Making a second request after the Promise of the first one has finished
   //   is allowed; the second request will overwrite the key codes reserved.
   // - Passing in an empty keyCodes array will reserve all keys.
-  static ScriptPromise requestKeyboardLock(ScriptState*,
-                                      Navigator&,
-                                      const Vector<String>&);
+  static ScriptPromise keyboardLock(ScriptState*,
+                                    Navigator&,
+                                    const Vector<String>&);
 
-  // Removes all reserved keys. This function is also asynchronized, the web
-  // page may still receive reserved keys after this function has finished. Once
+  // Removes all reserved keys. This function is asynchronous so the web page
+  // may still receive reserved keys after this function has returned. Once
   // the web page is closed, the user agent implicitly executes this API.
-  static void cancelKeyboardLock(Navigator&);
+  static void keyboardUnlock(Navigator&);
 
   void Trace(blink::Visitor*);
 
@@ -55,11 +56,10 @@ class NavigatorKeyboardLock final
 
   static NavigatorKeyboardLock& From(Navigator&);
 
-  ScriptPromise requestKeyboardLock(ScriptState*, const Vector<String>&);
-  void cancelKeyboardLock();
+  ScriptPromise keyboardLock(ScriptState*, const Vector<String>&);
+  void keyboardUnlock();
 
-  // Ensures the |service_| is correctly initialized. In case of the |service_|
-  // cannot be initialized, this function returns false.
+  // Returns true if |service_| is initialized and ready to be called.
   bool EnsureServiceConnected();
 
   void LockRequestFinished(mojom::KeyboardLockRequestResult);

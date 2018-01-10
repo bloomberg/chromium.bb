@@ -7,19 +7,19 @@
 // 1. "System" should be removed from both the function names: these functions
 //    are not for system keys or key combinations only.
 //    See https://github.com/w3c/keyboard-lock/issues/6
-// 2. Returns Promise<void> from requestKeyboardLock() function: user agents can
+// 2. Returns Promise<void> from keyboardLock() function: user agents can
 //    decline the request, and web page can get a notification once the
 //    requested keys should be received.
 //    See https://github.com/w3c/keyboard-lock/issues/7
-// 3. The parameter of requestKeyboardLock() should be
+// 3. The parameter of keyboardLock() should be
 //        optional sequence<DOMString> keyCodes = []
 //    See https://github.com/w3c/keyboard-lock/issues/21
-// 4. cancelKeyboardLock() function is implicitly called whenever the unloading
+// 4. keyboardUnlock() function is implicitly called whenever the unloading
 //    document cleanup steps run with a document.
 //    See https://github.com/w3c/keyboard-lock/issues/22
 [
     ImplementedAs=NavigatorKeyboardLock
 ] partial interface Navigator {
-    [SecureContext, RuntimeEnabled=KeyboardLock, CallWith=ScriptState] Promise<void> requestKeyboardLock(optional sequence<DOMString> keyCodes = []);
-    [SecureContext, RuntimeEnabled=KeyboardLock] void cancelKeyboardLock();
+    [SecureContext, RuntimeEnabled=KeyboardLock, CallWith=ScriptState] Promise<void> keyboardLock(optional sequence<DOMString> keyCodes = []);
+    [SecureContext, RuntimeEnabled=KeyboardLock] void keyboardUnlock();
 };
