@@ -22,7 +22,7 @@ namespace {
 // Known user keys.
 const char kWallpaperFilesId[] = "wallpaper-files-id";
 
-WallpaperControllerClient* g_instance = nullptr;
+WallpaperControllerClient* g_wallpaper_controller_client_instance = nullptr;
 
 // Creates a mojom::WallpaperUserInfo for the account id. Returns nullptr if
 // user manager cannot find the user.
@@ -88,13 +88,13 @@ wallpaper::WallpaperFilesId HashWallpaperFilesIdStr(
 
 WallpaperControllerClient::WallpaperControllerClient()
     : policy_handler_(this), binding_(this) {
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_wallpaper_controller_client_instance);
+  g_wallpaper_controller_client_instance = this;
 }
 
 WallpaperControllerClient::~WallpaperControllerClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  DCHECK_EQ(this, g_wallpaper_controller_client_instance);
+  g_wallpaper_controller_client_instance = nullptr;
 }
 
 void WallpaperControllerClient::Init() {
@@ -112,7 +112,7 @@ void WallpaperControllerClient::InitForTesting(
 
 // static
 WallpaperControllerClient* WallpaperControllerClient::Get() {
-  return g_instance;
+  return g_wallpaper_controller_client_instance;
 }
 
 bool WallpaperControllerClient::CanGetWallpaperFilesId() const {

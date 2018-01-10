@@ -18,28 +18,28 @@ namespace metrics {
 
 namespace {
 
-RendererUptimeTracker* g_instance = nullptr;
+RendererUptimeTracker* g_renderer_uptime_tracker_instance = nullptr;
 
 }  // namespace
 
 // static
 void RendererUptimeTracker::Initialize() {
-  DCHECK(!g_instance);
-  g_instance = new RendererUptimeTracker;
+  DCHECK(!g_renderer_uptime_tracker_instance);
+  g_renderer_uptime_tracker_instance = new RendererUptimeTracker;
 }
 
 // static
 RendererUptimeTracker* RendererUptimeTracker::SetMockRendererUptimeTracker(
     RendererUptimeTracker* tracker) {
-  RendererUptimeTracker* old_tracker = g_instance;
-  g_instance = tracker;
+  RendererUptimeTracker* old_tracker = g_renderer_uptime_tracker_instance;
+  g_renderer_uptime_tracker_instance = tracker;
   return old_tracker;
 }
 
 // static
 RendererUptimeTracker* RendererUptimeTracker::Get() {
-  DCHECK(g_instance);
-  return g_instance;
+  DCHECK(g_renderer_uptime_tracker_instance);
+  return g_renderer_uptime_tracker_instance;
 }
 
 RendererUptimeTracker::RendererUptimeTracker() {

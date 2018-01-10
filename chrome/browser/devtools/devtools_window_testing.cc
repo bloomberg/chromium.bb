@@ -20,9 +20,8 @@ namespace {
 const char kHarnessScript[] = "Tests.js";
 
 typedef std::vector<DevToolsWindowTesting*> DevToolsWindowTestings;
-base::LazyInstance<DevToolsWindowTestings>::Leaky g_instances =
-    LAZY_INSTANCE_INITIALIZER;
-
+base::LazyInstance<DevToolsWindowTestings>::Leaky
+    g_devtools_window_testing_instances = LAZY_INSTANCE_INITIALIZER;
 }
 
 DevToolsWindowTesting::DevToolsWindowTesting(DevToolsWindow* window)
@@ -30,11 +29,12 @@ DevToolsWindowTesting::DevToolsWindowTesting(DevToolsWindow* window)
   DCHECK(window);
   window->close_callback_ =
       base::Bind(&DevToolsWindowTesting::WindowClosed, window);
-  g_instances.Get().push_back(this);
+  g_devtools_window_testing_instances.Get().push_back(this);
 }
 
 DevToolsWindowTesting::~DevToolsWindowTesting() {
-  DevToolsWindowTestings* instances = g_instances.Pointer();
+  DevToolsWindowTestings* instances =
+      g_devtools_window_testing_instances.Pointer();
   DevToolsWindowTestings::iterator it(
       std::find(instances->begin(), instances->end(), this));
   DCHECK(it != instances->end());
@@ -55,9 +55,10 @@ DevToolsWindowTesting* DevToolsWindowTesting::Get(DevToolsWindow* window) {
 
 // static
 DevToolsWindowTesting* DevToolsWindowTesting::Find(DevToolsWindow* window) {
-  if (!g_instances.IsCreated())
+  if (!g_devtools_window_testing_instances.IsCreated())
     return NULL;
-  DevToolsWindowTestings* instances = g_instances.Pointer();
+  DevToolsWindowTestings* instances =
+      g_devtools_window_testing_instances.Pointer();
   for (DevToolsWindowTestings::iterator it(instances->begin());
        it != instances->end();
        ++it) {

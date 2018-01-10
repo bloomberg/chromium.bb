@@ -61,7 +61,7 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
-SessionControllerClient* g_instance = nullptr;
+SessionControllerClient* g_session_controller_client_instance = nullptr;
 
 // Returns the session id of a given user or 0 if user has no session.
 uint32_t GetSessionId(const User& user) {
@@ -174,13 +174,13 @@ SessionControllerClient::SessionControllerClient()
   chromeos::DeviceSettingsService::Get()
       ->device_off_hours_controller()
       ->AddObserver(this);
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_session_controller_client_instance);
+  g_session_controller_client_instance = this;
 }
 
 SessionControllerClient::~SessionControllerClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  DCHECK_EQ(this, g_session_controller_client_instance);
+  g_session_controller_client_instance = nullptr;
 
   if (supervised_user_profile_) {
     SupervisedUserServiceFactory::GetForProfile(supervised_user_profile_)
@@ -208,7 +208,7 @@ void SessionControllerClient::Init() {
 
 // static
 SessionControllerClient* SessionControllerClient::Get() {
-  return g_instance;
+  return g_session_controller_client_instance;
 }
 
 void SessionControllerClient::PrepareForLock(base::OnceClosure callback) {
@@ -434,7 +434,7 @@ void SessionControllerClient::DoCycleActiveUser(
 
 // static
 void SessionControllerClient::FlushForTesting() {
-  g_instance->session_controller_.FlushForTesting();
+  g_session_controller_client_instance->session_controller_.FlushForTesting();
 }
 
 void SessionControllerClient::OnSessionStateChanged() {

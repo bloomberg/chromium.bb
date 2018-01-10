@@ -16,16 +16,16 @@
 #include "components/user_manager/user_manager.h"
 
 namespace {
-MultiUserWindowManager* g_instance = nullptr;
+MultiUserWindowManager* g_multi_user_window_manager_instance = nullptr;
 }  // namespace
 
 // static
 MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
-  return g_instance;
+  return g_multi_user_window_manager_instance;
 }
 
 MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
-  DCHECK(!g_instance);
+  DCHECK(!g_multi_user_window_manager_instance);
   ash::MultiProfileUMA::SessionMode mode =
       ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
   // TODO(crbug.com/557406): Enable this component in Mash. The object itself
@@ -35,43 +35,43 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
     MultiUserWindowManagerChromeOS* manager =
         new MultiUserWindowManagerChromeOS(
             user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
-    g_instance = manager;
+    g_multi_user_window_manager_instance = manager;
     manager->Init();
     mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
   }
   ash::MultiProfileUMA::RecordSessionMode(mode);
 
   // If there was no instance created yet we create a dummy instance.
-  if (!g_instance)
-    g_instance = new MultiUserWindowManagerStub();
+  if (!g_multi_user_window_manager_instance)
+    g_multi_user_window_manager_instance = new MultiUserWindowManagerStub();
 
-  return g_instance;
+  return g_multi_user_window_manager_instance;
 }
 
 // static
 bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
   // Session restore can open a window for the first user before the instance
   // is created.
-  if (!g_instance)
+  if (!g_multi_user_window_manager_instance)
     return false;
 
   // Show the avatar icon if the window is on a different desktop than the
   // window's owner's desktop. The stub implementation does the right thing
   // for single-user mode.
-  return !g_instance->IsWindowOnDesktopOfUser(
-      window, g_instance->GetWindowOwner(window));
+  return !g_multi_user_window_manager_instance->IsWindowOnDesktopOfUser(
+      window, g_multi_user_window_manager_instance->GetWindowOwner(window));
 }
 
 // static
 void MultiUserWindowManager::DeleteInstance() {
-  DCHECK(g_instance);
-  delete g_instance;
-  g_instance = nullptr;
+  DCHECK(g_multi_user_window_manager_instance);
+  delete g_multi_user_window_manager_instance;
+  g_multi_user_window_manager_instance = nullptr;
 }
 
 void MultiUserWindowManager::SetInstanceForTest(
     MultiUserWindowManager* instance) {
-  if (g_instance)
+  if (g_multi_user_window_manager_instance)
     DeleteInstance();
-  g_instance = instance;
+  g_multi_user_window_manager_instance = instance;
 }

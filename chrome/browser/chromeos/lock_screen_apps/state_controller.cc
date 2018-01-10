@@ -56,7 +56,7 @@ namespace {
 // encrypt persisted user data created on the lock screen.
 constexpr char kDataCryptoKeyPref[] = "lockScreenAppDataCryptoKey";
 
-StateController* g_instance = nullptr;
+StateController* g_state_controller_instance = nullptr;
 
 // Generates a random 256 bit AES key. Returns an empty string on error.
 std::string GenerateCryptoKey() {
@@ -77,8 +77,8 @@ bool StateController::IsEnabled() {
 
 // static
 StateController* StateController::Get() {
-  DCHECK(g_instance || !IsEnabled());
-  return g_instance;
+  DCHECK(g_state_controller_instance || !IsEnabled());
+  return g_state_controller_instance;
 }
 
 // static
@@ -94,15 +94,15 @@ StateController::StateController()
       input_devices_observer_(this),
       power_manager_client_observer_(this),
       weak_ptr_factory_(this) {
-  DCHECK(!g_instance);
+  DCHECK(!g_state_controller_instance);
   DCHECK(IsEnabled());
 
-  g_instance = this;
+  g_state_controller_instance = this;
 }
 
 StateController::~StateController() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
+  DCHECK_EQ(g_state_controller_instance, this);
+  g_state_controller_instance = nullptr;
 }
 
 void StateController::SetTrayActionPtrForTesting(

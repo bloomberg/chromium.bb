@@ -78,7 +78,7 @@ using base::android::JavaParamRef;
 namespace vr_shell {
 
 namespace {
-vr_shell::VrShell* g_instance;
+vr_shell::VrShell* g_vr_shell_instance;
 
 constexpr base::TimeDelta poll_media_access_interval_ =
     base::TimeDelta::FromSecondsD(0.2);
@@ -147,8 +147,8 @@ VrShell::VrShell(JNIEnv* env,
       display_size_pixels_(display_width_pixels, display_height_pixels),
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
-  DCHECK(g_instance == nullptr);
-  g_instance = this;
+  DCHECK(g_vr_shell_instance == nullptr);
+  g_vr_shell_instance = this;
   j_vr_shell_.Reset(env, obj);
 
   gl_thread_ = base::MakeUnique<VrGLThread>(
@@ -279,7 +279,7 @@ VrShell::~VrShell() {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
     gl_thread_.reset();
   }
-  g_instance = nullptr;
+  g_vr_shell_instance = nullptr;
 }
 
 void VrShell::PostToGlThread(const base::Location& from_here,

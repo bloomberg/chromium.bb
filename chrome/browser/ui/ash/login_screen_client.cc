@@ -15,7 +15,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
-LoginScreenClient* g_instance = nullptr;
+LoginScreenClient* g_login_screen_client_instance = nullptr;
 }  // namespace
 
 LoginScreenClient::Delegate::Delegate() = default;
@@ -30,24 +30,24 @@ LoginScreenClient::LoginScreenClient() : binding_(this) {
   binding_.Bind(mojo::MakeRequest(&client));
   login_screen_->SetClient(std::move(client));
 
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_login_screen_client_instance);
+  g_login_screen_client_instance = this;
 }
 
 LoginScreenClient::~LoginScreenClient() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
+  DCHECK_EQ(this, g_login_screen_client_instance);
+  g_login_screen_client_instance = nullptr;
 }
 
 // static
 bool LoginScreenClient::HasInstance() {
-  return !!g_instance;
+  return !!g_login_screen_client_instance;
 }
 
 // static
 LoginScreenClient* LoginScreenClient::Get() {
-  DCHECK(g_instance);
-  return g_instance;
+  DCHECK(g_login_screen_client_instance);
+  return g_login_screen_client_instance;
 }
 
 void LoginScreenClient::AuthenticateUser(const AccountId& account_id,

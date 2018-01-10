@@ -36,7 +36,8 @@ TEST_F(MemoryKillsMonitorTest, TestHistograms) {
   std::unique_ptr<base::StatisticsRecorder> statistic_recorder(
       base::StatisticsRecorder::CreateTemporaryForTesting());
 
-  MemoryKillsMonitor* g_instance = MemoryKillsMonitor::GetForTesting();
+  MemoryKillsMonitor* g_memory_kills_monitor_unittest_instance =
+      MemoryKillsMonitor::GetForTesting();
 
   MemoryKillsMonitor::LogLowMemoryKill("APP", 123);
   MemoryKillsMonitor::LogLowMemoryKill("APP", 100);
@@ -49,7 +50,7 @@ TEST_F(MemoryKillsMonitorTest, TestHistograms) {
   ASSERT_FALSE(oom_count_histogram);
 
   // Start monitoring.
-  g_instance->StartMonitoring();
+  g_memory_kills_monitor_unittest_instance->StartMonitoring();
   lmk_count_histogram = GetLowMemoryKillsCountHistogram();
   oom_count_histogram = GetOOMKillsCountHistogram();
   ASSERT_TRUE(lmk_count_histogram);
@@ -157,9 +158,11 @@ TEST_F(MemoryKillsMonitorTest, TestHistograms) {
   }
 
   // Call StartMonitoring multiple times.
-  base::PlatformThreadId tid1 = g_instance->non_joinable_worker_thread_->tid();
-  g_instance->StartMonitoring();
-  base::PlatformThreadId tid2 = g_instance->non_joinable_worker_thread_->tid();
+  base::PlatformThreadId tid1 = g_memory_kills_monitor_unittest_instance
+                                    ->non_joinable_worker_thread_->tid();
+  g_memory_kills_monitor_unittest_instance->StartMonitoring();
+  base::PlatformThreadId tid2 = g_memory_kills_monitor_unittest_instance
+                                    ->non_joinable_worker_thread_->tid();
   EXPECT_EQ(tid1, tid2);
 
   lmk_count_histogram = GetLowMemoryKillsCountHistogram();

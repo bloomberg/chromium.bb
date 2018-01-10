@@ -36,7 +36,7 @@
 
 namespace {
 
-ChromeNewWindowClient* g_instance = nullptr;
+ChromeNewWindowClient* g_chrome_new_window_client_instance = nullptr;
 
 void RestoreTabUsingProfile(Profile* profile) {
   sessions::TabRestoreService* service =
@@ -63,18 +63,18 @@ ChromeNewWindowClient::ChromeNewWindowClient() : binding_(this) {
   binding_.Bind(mojo::MakeRequest(&ptr_info));
   new_window_controller_->SetClient(std::move(ptr_info));
 
-  DCHECK(!g_instance);
-  g_instance = this;
+  DCHECK(!g_chrome_new_window_client_instance);
+  g_chrome_new_window_client_instance = this;
 }
 
 ChromeNewWindowClient::~ChromeNewWindowClient() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
+  DCHECK_EQ(g_chrome_new_window_client_instance, this);
+  g_chrome_new_window_client_instance = nullptr;
 }
 
 // static
 ChromeNewWindowClient* ChromeNewWindowClient::Get() {
-  return g_instance;
+  return g_chrome_new_window_client_instance;
 }
 
 // TabRestoreHelper is used to restore a tab. In particular when the user
