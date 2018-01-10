@@ -22,6 +22,7 @@ static_library("in_progress") {
   deps = [
     "//base",
     "//components/download/downloader/in_progress/proto",
+    "//services/metrics/public/cpp:metrics_cpp",
   ]
 }
 

@@ -29,6 +29,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/ssl_status.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace content {
 class DownloadFileFactory;
@@ -60,6 +61,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const GURL& page_url,
       const std::string& mime_type,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& item_created);
 
   // DownloadManager functions.
@@ -175,6 +177,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const GURL& page_url,
       const std::string& mime_type,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+      const ukm::SourceId ukm_source_id,
       const DownloadItemImplCreated& on_started,
       uint32_t id);
 

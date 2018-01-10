@@ -22,6 +22,7 @@ TEST_F(InProgressConversionsTest, DownloadEntry) {
   entry.guid = "guid";
   entry.request_origin = "request origin";
   entry.download_source = DownloadSource::DRAG_AND_DROP;
+  entry.ukm_download_id = 123;
   EXPECT_EQ(entry, DownloadEntryFromProto(DownloadEntryToProto(entry)));
 }
 
@@ -32,12 +33,12 @@ TEST_F(InProgressConversionsTest, DownloadEntries) {
 
   // Entries vector with one entry.
   entries.push_back(
-      DownloadEntry("guid", "request origin", DownloadSource::UNKNOWN));
+      DownloadEntry("guid", "request origin", DownloadSource::UNKNOWN, 123));
   EXPECT_EQ(entries, DownloadEntriesFromProto(DownloadEntriesToProto(entries)));
 
   // Entries vector with multiple entries.
   entries.push_back(
-      DownloadEntry("guid2", "request origin", DownloadSource::UNKNOWN));
+      DownloadEntry("guid2", "request origin", DownloadSource::UNKNOWN, 456));
   EXPECT_EQ(entries, DownloadEntriesFromProto(DownloadEntriesToProto(entries)));
 }
 

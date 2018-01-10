@@ -26,7 +26,8 @@ DownloadCreateInfo::DownloadCreateInfo(
       save_info(std::move(save_info)),
       accept_range(false),
       connection_info(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
-      method("GET") {}
+      method("GET"),
+      ukm_source_id(ukm::kInvalidSourceId) {}
 
 DownloadCreateInfo::DownloadCreateInfo()
     : DownloadCreateInfo(base::Time(),

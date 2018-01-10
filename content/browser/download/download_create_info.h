@@ -21,6 +21,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "net/http/http_response_info.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -141,6 +142,9 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // Whether the download should fetch the response body for non successful HTTP
   // response.
   bool fetch_error_body = false;
+
+  // Source ID generated for UKM.
+  ukm::SourceId ukm_source_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadCreateInfo);
