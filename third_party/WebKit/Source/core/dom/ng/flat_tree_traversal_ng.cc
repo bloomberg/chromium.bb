@@ -33,11 +33,11 @@
 
 namespace blink {
 
-static inline ElementShadow* ShadowFor(const Node& node) {
+ElementShadow* ShadowFor(const Node& node) {
   return node.IsElementNode() ? ToElement(node).Shadow() : nullptr;
 }
 
-static inline bool CanBeDistributedToV0InsertionPoint(const Node& node) {
+bool CanBeDistributedToV0InsertionPoint(const Node& node) {
   return node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost();
 }
 
