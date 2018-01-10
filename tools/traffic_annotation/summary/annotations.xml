@@ -25,6 +25,7 @@ Refer to README.md for content description and update process.
  <item id="blob_reader" hash_code="5154306" type="0" content_hash_code="39702178" os_list="linux,windows" file_path="extensions/browser/blob_reader.cc"/>
  <item id="brandcode_config" hash_code="109679553" type="0" content_hash_code="128843792" os_list="linux,windows" file_path="chrome/browser/profile_resetter/brandcode_config_fetcher.cc"/>
  <item id="captive_portal_service" hash_code="88754904" type="0" content_hash_code="70737580" os_list="linux,windows" file_path="chrome/browser/captive_portal/captive_portal_service.cc"/>
+ <item id="cast_udp_transport" hash_code="5576536" type="0" content_hash_code="107643273" os_list="linux,windows" file_path="media/cast/net/udp_transport.cc"/>
  <item id="certificate_verifier" hash_code="113553577" type="0" content_hash_code="62346354" os_list="linux,windows" file_path="net/cert_net/cert_net_fetcher_impl.cc"/>
  <item id="chrome_apps_socket_api" hash_code="8591273" type="0" content_hash_code="70868355" os_list="linux,windows" file_path="extensions/browser/api/socket/socket.cc"/>
  <item id="chrome_cleaner" hash_code="27071967" type="0" content_hash_code="111240292" os_list="windows" file_path="chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.cc"/>
@@ -60,6 +61,7 @@ Refer to README.md for content description and update process.
  <item id="devtools_hard_coded_data_source" hash_code="111565057" type="0" content_hash_code="46074423" os_list="linux,windows" file_path="chrome/browser/ui/webui/devtools_ui.cc"/>
  <item id="devtools_interceptor" hash_code="98123737" type="0" content_hash_code="19053470" os_list="linux,windows" file_path="content/browser/devtools/devtools_url_interceptor_request_job.cc"/>
  <item id="devtools_network_resource" hash_code="129652775" type="0" content_hash_code="24059212" os_list="linux,windows" file_path="chrome/browser/devtools/devtools_ui_bindings.cc"/>
+ <item id="dial_get_app_info" hash_code="15952025" type="0" content_hash_code="90542080" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/dial_app_info_fetcher.cc"/>
  <item id="dial_get_device_description" hash_code="50422598" type="0" content_hash_code="129827780" os_list="linux,windows" file_path="chrome/browser/media/router/discovery/dial/device_description_fetcher.cc"/>
  <item id="dom_distiller" hash_code="3989826" type="0" content_hash_code="106153970" os_list="linux,windows" file_path="components/dom_distiller/core/distiller_url_fetcher.cc"/>
  <item id="domain_reliability_report_upload" hash_code="108804096" type="0" content_hash_code="35902036" os_list="linux,windows" file_path="components/domain_reliability/uploader.cc"/>
@@ -137,6 +139,7 @@ Refer to README.md for content description and update process.
  <item id="payment_manifest_downloader" hash_code="84045030" type="0" content_hash_code="19293316" os_list="linux,windows" file_path="components/payments/core/payment_manifest_downloader.cc"/>
  <item id="payments_sync_cards" hash_code="95588446" type="0" content_hash_code="56526513" os_list="linux,windows" file_path="components/autofill/core/browser/payments/payments_client.cc"/>
  <item id="pdf_plugin_placeholder" hash_code="56866367" type="0" content_hash_code="16907221" os_list="linux,windows" file_path="chrome/browser/plugins/pdf_plugin_placeholder_observer.cc"/>
+ <item id="pepper_tcp_socket" hash_code="120623198" type="0" content_hash_code="55474823" os_list="linux,windows" file_path="content/browser/renderer_host/pepper/pepper_tcp_socket_message_filter.cc"/>
  <item id="permission_reporting" hash_code="131741641" type="0" content_hash_code="7213535" os_list="linux,windows" file_path="chrome/browser/safe_browsing/permission_reporter.cc"/>
  <item id="permission_request_creator" hash_code="43206794" type="0" content_hash_code="73571699" os_list="linux,windows" file_path="chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.cc"/>
  <item id="persist_blob_to_indexed_db" hash_code="32030464" type="0" content_hash_code="35410079" os_list="linux,windows" file_path="content/browser/indexed_db/indexed_db_backing_store.cc"/>
@@ -195,7 +198,7 @@ Refer to README.md for content description and update process.
  <item id="test" hash_code="3556498" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="test_partial" hash_code="22096011" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="thumbnail_source" hash_code="135251783" type="0" content_hash_code="31086298" os_list="linux,windows" file_path="chrome/browser/search/thumbnail_source.cc"/>
- <item id="translate_url_fetcher" hash_code="137116619" type="0" content_hash_code="1127120" os_list="linux,windows" file_path="components/translate/core/browser/translate_url_fetcher.cc"/>
+ <item id="translate_url_fetcher" hash_code="137116619" type="0" content_hash_code="104217506" os_list="linux,windows" file_path="components/translate/core/browser/translate_url_fetcher.cc"/>
  <item id="undefined" hash_code="45578882" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="undefined-656607" hash_code="28406789" type="0" reserved="1" os_list="linux,windows" file_path=""/>
  <item id="url_fetcher_downloader" hash_code="113231892" type="0" content_hash_code="61085066" os_list="linux,windows" file_path="components/update_client/url_fetcher_downloader.cc"/>

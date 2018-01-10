@@ -42687,6 +42687,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="5151071" label="extension_manifest_fetcher"/>
   <int value="5154306" label="blob_reader"/>
   <int value="5492492" label="google_url_tracker"/>
+  <int value="5576536" label="cast_udp_transport"/>
   <int value="5637379" label="gaia_oauth_client_get_tokens"/>
   <int value="6019475" label="safe_browsing_module_loader"/>
   <int value="7433837" label="refresh_token_annotation_request"/>
@@ -42699,6 +42700,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="13694792" label="desktop_ios_promotion"/>
   <int value="14257952" label="supervised_user_url_filter"/>
   <int value="15418154" label="ntp_snippets_fetch"/>
+  <int value="15952025" label="dial_get_app_info"/>
   <int value="16469669" label="background_fetch_context"/>
   <int value="16653985" label="content_suggestion_get_favicon"/>
   <int value="17188928" label="websocket_stream"/>
@@ -42864,6 +42866,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="119542033" label="gcm_unregistration"/>
   <int value="119677115" label="safe_search_url_reporter"/>
   <int value="120000562" label="cryptauth_find_eligible_unlock_devices"/>
+  <int value="120623198" label="pepper_tcp_socket"/>
   <int value="121068967" label="downloads_api_run_async"/>
   <int value="124950347" label="safe_browsing_incident"/>
   <int value="125522256" label="client_download_request"/>
