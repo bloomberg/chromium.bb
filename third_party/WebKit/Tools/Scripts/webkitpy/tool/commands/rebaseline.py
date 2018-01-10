@@ -32,6 +32,7 @@ import logging
 import optparse
 import re
 
+from webkitpy.common.memoized import memoized
 from webkitpy.common.net.buildbot import Build
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.layout_tests.models.test_expectations import TestExpectations
@@ -264,11 +265,15 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
             suffixes = self._suffixes_for_actual_failures(test, build)
             if not suffixes:
-                # If we're not going to rebaseline the test because it's passing on this
-                # builder, we still want to remove the line from TestExpectations.
-                if test not in lines_to_remove:
-                    lines_to_remove[test] = []
-                lines_to_remove[test].append(port_name)
+                # Only try to remove the expectation if the test
+                #   1. ran and passed ([ Skip ], [ WontFix ] should be kept)
+                #   2. passed unexpectedly (flaky expectations should be kept)
+                if self._test_passed_unexpectedly(test, build, port_name):
+                    _log.debug('Test %s passed unexpectedly in %s. '
+                               'Will try to remove it from TestExpectations.', test, build)
+                    if test not in lines_to_remove:
+                        lines_to_remove[test] = []
+                    lines_to_remove[test].append(port_name)
                 continue
 
             args = []
@@ -395,6 +400,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for test in sorted({t for t, _, _ in test_baseline_set}):
             _log.info('Rebaselining %s', test)
 
+        # extra_lines_to_remove are unexpected passes, while lines_to_remove are
+        # failing tests that have been rebaselined.
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
             test_baseline_set, options)
         lines_to_remove = {}
@@ -449,15 +456,47 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         Returns:
             A set of file suffix strings.
         """
-        results = self._tool.buildbot.fetch_results(build)
-        if not results:
-            _log.debug('No results found for build %s', build)
-            return set()
-        test_result = results.result_for_test(test)
+        test_result = self._result_for_test(test, build)
         if not test_result:
-            _log.debug('No test result for test %s in build %s', test, build)
             return set()
         return TestExpectations.suffixes_for_test_result(test_result)
+
+    def _test_passed_unexpectedly(self, test, build, port_name):
+        """Determines if a test passed unexpectedly in a build.
+
+        The routine also takes into account the port that is being rebaselined.
+        It is possible to use builds from a different port to rebaseline the
+        current port, e.g. rebaseline-cl --fill-missing, in which case the test
+        will not be considered passing regardless of the result.
+
+        Args:
+            test: A full test path string.
+            build: A Build object.
+            port_name: The name of port currently being rebaselined.
+
+        Returns:
+            A boolean.
+        """
+        if self._tool.builders.port_name_for_builder_name(build.builder_name) != port_name:
+            return False
+        test_result = self._result_for_test(test, build)
+        if not test_result:
+            return False
+        return test_result.did_pass() and not test_result.did_run_as_expected()
+
+    @memoized
+    def _result_for_test(self, test, build):
+        # We need full results to know if a test passed or was skipped.
+        # TODO(robertma): Make memoized support kwargs, and use full=True here.
+        results = self._tool.buildbot.fetch_results(build, True)
+        if not results:
+            _log.debug('No results found for build %s', build)
+            return None
+        test_result = results.result_for_test(test)
+        if not test_result:
+            _log.info('No test result for test %s in build %s', test, build)
+            return None
+        return test_result
 
 
 class RebaselineExpectations(AbstractParallelRebaselineCommand):

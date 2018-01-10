@@ -79,7 +79,7 @@ class TestRebaselineTest(BaseTestCase):
         # pylint: disable=protected-access
         self._zero_out_test_expectations()
         self._write(
-            self.mac_expectations_path,
+            self.test_expectations_path,
             ('Bug(B) [ Mac Linux Win7 Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]\n'
              'Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]\n'))
         self._write('fast/dom/Window/window-postmessage-clone-really-deep-array.html', 'Dummy test contents')
@@ -92,7 +92,7 @@ class TestRebaselineTest(BaseTestCase):
                               [self.WEB_PREFIX + '/userscripts/another-test-actual.png',
                                self.WEB_PREFIX + '/userscripts/another-test-actual.wav',
                                self.WEB_PREFIX + '/userscripts/another-test-actual.txt'])
-        new_expectations = self._read(self.mac_expectations_path)
+        new_expectations = self._read(self.test_expectations_path)
         self.assertMultiLineEqual(
             new_expectations,
             ('Bug(B) [ Mac Linux Win7 Debug ] fast/dom/Window/window-postmessage-clone-really-deep-array.html [ Pass ]\n'
@@ -108,7 +108,7 @@ class TestRebaselineTest(BaseTestCase):
         # pylint: disable=protected-access
         self._write('userscripts/another-test.html', 'test data')
         self._write(
-            self.mac_expectations_path,
+            self.test_expectations_path,
             ('Bug(x) [ Mac ] userscripts/another-test.html [ Failure ]\n'
              'bug(z) [ Linux ] userscripts/another-test.html [ Failure ]\n'))
         self.command._rebaseline_test_and_update_expectations(self.options(results_directory='/tmp'))
