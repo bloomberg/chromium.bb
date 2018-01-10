@@ -135,10 +135,3 @@ chromium/third_party/sqlite4java version:0.282-cr0
 @Subdir third_party/xstream
 chromium/third_party/xstream version:1.4.8-cr0
 
-# Three unchanging lines
-# avoid the horror that is
-# endless merge conflicts
-
-@Subdir chrome/android/profiles
-chromium/afdo/profiles/android version:3309
-

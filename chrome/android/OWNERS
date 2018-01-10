@@ -5,6 +5,7 @@ nyquist@chromium.org
 tedchoc@chromium.org
 yfriedman@chromium.org
 
+per-file android.ensure=*
 per-file static_initializers.gni=*
 per-file java_sources.gni=*
 per-file *.gn*=agrieve@chromium.org
