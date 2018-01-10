@@ -770,7 +770,11 @@ def main():
       args.canary)
   logging.warning('Creating project at: %s', generator.project_dir)
 
-  args.all = args.all or not args.split_projects
+  # Generate for "all targets" by default when not using --split-projects (too
+  # slow), and when no --target has been explicitly set. "all targets" means all
+  # java targets that are depended on by an apk or java_binary (leaf
+  # java_library targets will not be included).
+  args.all = args.all or (not args.split_projects and not args.targets)
 
   targets_from_args = set(args.targets or _DEFAULT_TARGETS)
   if args.extra_targets:
