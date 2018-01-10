@@ -2027,30 +2027,30 @@
     "NTPPopularSites": [
         {
             "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledFull"
-                }
-            ]
-        }
-    ],
-    "NTPPopularSitesWithShortNames": [
-        {
-            "platforms": [
                 "android",
                 "ios"
             ],
             "experiments": [
                 {
-                    "name": "HoldbackControl",
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UsePopularSitesSuggestions"
+                    ]
+                },
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "UsePopularSitesSuggestions"
+                    ]
+                },
+                {
+                    "name": "EnabledShortNamesHoldbackControl",
                     "params": {
                         "version": "5_shortname"
                     }
                 },
                 {
-                    "name": "Holdback",
+                    "name": "EnabledShortNamesHoldback",
                     "params": {
                         "version": "5_shortname-control"
                     }
