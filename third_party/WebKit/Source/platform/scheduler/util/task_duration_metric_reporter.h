@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
+#include "platform/scheduler/util/aggregated_metric_reporter.h"
 
 namespace base {
 class HistogramBase;
@@ -19,6 +20,9 @@ class HistogramBase;
 
 namespace blink {
 namespace scheduler {
+namespace internal {
+PLATFORM_EXPORT int TakeFullMilliseconds(base::TimeDelta& duration);
+}  // namespace internal
 
 // A helper class to report task duration split by a specific type.
 // Aggregates small tasks internally and reports only whole milliseconds.
@@ -26,42 +30,23 @@ namespace scheduler {
 // |TaskClass| is an enum which should have COUNT field.
 // All values reported to RecordTask should have lower values.
 template <class TaskClass>
-class TaskDurationMetricReporter {
+class TaskDurationMetricReporter
+    : public AggregatedMetricReporter<TaskClass, base::TimeDelta> {
  public:
   explicit TaskDurationMetricReporter(const char* metric_name)
-      : TaskDurationMetricReporter(base::Histogram::FactoryGet(
+      : AggregatedMetricReporter<TaskClass, base::TimeDelta>(
             metric_name,
-            1,
-            static_cast<int>(TaskClass::kCount),
-            static_cast<int>(TaskClass::kCount) + 1,
-            base::HistogramBase::kUmaTargetedHistogramFlag)) {}
+            &internal::TakeFullMilliseconds) {}
 
   ~TaskDurationMetricReporter() = default;
-
-  void RecordTask(TaskClass task_class, base::TimeDelta duration) {
-    DCHECK_LT(static_cast<int>(task_class),
-              static_cast<int>(TaskClass::kCount));
-    // Report only whole milliseconds to avoid overflow.
-    base::TimeDelta& unreported_duration =
-        unreported_task_duration_[static_cast<int>(task_class)];
-    unreported_duration += duration;
-    int64_t milliseconds = unreported_duration.InMilliseconds();
-    if (milliseconds > 0) {
-      unreported_duration -= base::TimeDelta::FromMilliseconds(milliseconds);
-      task_duration_per_type_histogram_->AddCount(
-          static_cast<int>(task_class), static_cast<int>(milliseconds));
-    }
-  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TaskDurationMetricReporterTest, Test);
 
   TaskDurationMetricReporter(base::HistogramBase* histogram)
-      : task_duration_per_type_histogram_(histogram) {}
-
-  std::array<base::TimeDelta, static_cast<size_t>(TaskClass::kCount)>
-      unreported_task_duration_;
-  base::HistogramBase* task_duration_per_type_histogram_;
+      : AggregatedMetricReporter<TaskClass, base::TimeDelta>(
+            histogram,
+            &internal::TakeFullMilliseconds) {}
 
   DISALLOW_COPY_AND_ASSIGN(TaskDurationMetricReporter);
 };

@@ -249,7 +249,7 @@ class PLATFORM_EXPORT FetchContext
 
   // Obtains WebFrameScheduler instance that is used in the attached frame.
   // May return nullptr if a frame is not attached or detached.
-  virtual WebFrameScheduler* GetFrameScheduler() { return nullptr; }
+  virtual WebFrameScheduler* GetFrameScheduler() const { return nullptr; }
 
   // Returns a task runner intended for loading tasks. Should work even in a
   // worker context, where WebFrameScheduler doesn't exist, but the returned

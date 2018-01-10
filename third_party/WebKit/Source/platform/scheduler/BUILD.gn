@@ -115,6 +115,8 @@ blink_platform_sources("scheduler") {
     "renderer/web_view_scheduler_impl.h",
     "renderer/webthread_impl_for_renderer_scheduler.cc",
     "renderer/webthread_impl_for_renderer_scheduler.h",
+    "util/aggregated_metric_reporter.h",
+    "util/task_duration_metric_reporter.cc",
     "util/task_duration_metric_reporter.h",
     "util/thread_cpu_throttler.cc",
     "util/thread_cpu_throttler.h",
