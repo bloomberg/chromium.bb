@@ -45,24 +45,14 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
       layout_svg_container_.LocalToSVGParentTransform());
   {
     Optional<FloatClipRecorder> clip_recorder;
-    Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
     if (layout_svg_container_.IsSVGViewportContainer() &&
         SVGLayoutSupport::IsOverflowHidden(&layout_svg_container_)) {
-      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-        const auto* properties =
-            layout_svg_container_.FirstFragment().PaintProperties();
-        DCHECK(properties && properties->OverflowClip());
-        scoped_paint_chunk_properties.emplace(
-            paint_info.context.GetPaintController(), properties->OverflowClip(),
-            layout_svg_container_, paint_info.DisplayItemTypeForClipping());
-      } else {
-        FloatRect viewport =
-            layout_svg_container_.LocalToSVGParentTransform().Inverse().MapRect(
-                ToLayoutSVGViewportContainer(layout_svg_container_).Viewport());
-        clip_recorder.emplace(paint_info_before_filtering.context,
-                              layout_svg_container_,
-                              paint_info_before_filtering.phase, viewport);
-      }
+      FloatRect viewport =
+          layout_svg_container_.LocalToSVGParentTransform().Inverse().MapRect(
+              ToLayoutSVGViewportContainer(layout_svg_container_).Viewport());
+      clip_recorder.emplace(paint_info_before_filtering.context,
+                            layout_svg_container_,
+                            paint_info_before_filtering.phase, viewport);
     }
 
     SVGPaintContext paint_context(layout_svg_container_,
