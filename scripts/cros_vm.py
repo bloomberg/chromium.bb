@@ -101,6 +101,24 @@ class VM(object):
     if recreate:
       osutils.SafeMakedirs(self.vm_dir)
 
+  def _GetCachePath(self, key):
+    """Get cache path for key.
+
+    Args:
+      key: cache key.
+    """
+    tarball_cache = cache.TarballCache(os.path.join(
+        path_util.GetCacheDir(),
+        cros_chrome_sdk.COMMAND_NAME,
+        cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
+    lkgm = cros_chrome_sdk.SDKFetcher.GetChromeLKGM()
+    if lkgm:
+      cache_key = (self.board, lkgm, key)
+      with tarball_cache.Lookup(cache_key) as ref:
+        if ref.Exists():
+          return ref.path
+    return None
+
   @cros_build_lib.MemoizedSingleCall
   def QemuVersion(self):
     """Determine QEMU version."""
@@ -130,38 +148,53 @@ class VM(object):
 
   def _SetQemuPath(self):
     """Find a suitable Qemu executable."""
+    qemu_exe = 'qemu-system-x86_64'
+    qemu_exe_path = os.path.join('usr/bin', qemu_exe)
+
+    # Check SDK cache.
     if not self.qemu_path:
-      self.qemu_path = osutils.Which('qemu-system-x86_64')
+      qemu_dir = self._GetCachePath(cros_chrome_sdk.SDKFetcher.QEMU_BIN_KEY)
+      if qemu_dir:
+        qemu_path = os.path.join(qemu_dir, qemu_exe_path)
+        if os.path.isfile(qemu_path):
+          self.qemu_path = qemu_path
+
+    # Check chroot.
     if not self.qemu_path:
-      raise VMError('Qemu not found.')
-    logging.debug('Qemu path: %s', self.qemu_path)
+      qemu_path = os.path.join(
+          constants.SOURCE_ROOT, constants.DEFAULT_CHROOT_DIR, qemu_exe_path)
+      if os.path.isfile(qemu_path):
+        self.qemu_path = qemu_path
+
+    # Check system.
+    if not self.qemu_path:
+      self.qemu_path = osutils.Which(qemu_exe)
+
+    if not self.qemu_path or not os.path.isfile(self.qemu_path):
+      raise VMError('QEMU not found.')
+    logging.debug('QEMU path: %s', self.qemu_path)
     self._CheckQemuMinVersion()
 
   def _GetBuiltVMImagePath(self):
     """Get path of a locally built VM image."""
-    return os.path.join(constants.SOURCE_ROOT, 'src/build/images',
-                        cros_build_lib.GetBoard(self.board),
-                        'latest', constants.VM_IMAGE_BIN)
+    vm_image_path = os.path.join(constants.SOURCE_ROOT, 'src/build/images',
+                                 cros_build_lib.GetBoard(self.board),
+                                 'latest', constants.VM_IMAGE_BIN)
+    return vm_image_path if os.path.isfile(vm_image_path) else None
 
-  def _GetDownloadedVMImagePath(self):
-    """Get path of a downloaded VM image."""
-    tarball_cache = cache.TarballCache(os.path.join(
-        path_util.GetCacheDir(),
-        cros_chrome_sdk.COMMAND_NAME,
-        cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
-    lkgm = cros_chrome_sdk.SDKFetcher.GetChromeLKGM()
-    if not lkgm:
-      return None
-    cache_key = (self.board, lkgm, constants.VM_IMAGE_TAR)
-    with tarball_cache.Lookup(cache_key) as ref:
-      if ref.Exists():
-        return os.path.join(ref.path, constants.VM_IMAGE_BIN)
+  def _GetCacheVMImagePath(self):
+    """Get path of a cached VM image."""
+    cache_path = self._GetCachePath(constants.VM_IMAGE_TAR)
+    if cache_path:
+      vm_image = os.path.join(cache_path, constants.VM_IMAGE_BIN)
+      if os.path.isfile(vm_image):
+        return vm_image
     return None
 
   def _SetVMImagePath(self):
     """Detect VM image path in SDK and chroot."""
     if not self.image_path:
-      self.image_path = (self._GetDownloadedVMImagePath() or
+      self.image_path = (self._GetCacheVMImagePath() or
                          self._GetBuiltVMImagePath())
     if not self.image_path:
       raise VMError('No VM image found. Use cros chrome-sdk --download-vm.')

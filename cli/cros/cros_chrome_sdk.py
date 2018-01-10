@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import argparse
+import base64
 import collections
 import contextlib
 import glob
@@ -18,6 +19,7 @@ from chromite.cli import command
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -82,6 +84,9 @@ class SDKFetcher(object):
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
+  QEMU_BIN_KEY = 'app-emulation/qemu-2.6.0-r2.tbz2'
+  PREBUILT_CONF_PATH = ('chromiumos/overlays/board-overlays.git/+/'
+                        'master/overlay-amd64-host/prebuilt.conf')
 
   CANARIES_PER_DAY = 3
   DAYS_TO_CONSIDER = 14
@@ -189,6 +194,17 @@ class SDKFetcher(object):
     version = osutils.ReadFile(lkgm_file).rstrip()
     logging.debug('Read LKGM version from %s: %s', lkgm_file, version)
     return version
+
+  @staticmethod
+  def _GetQemuBinPath():
+    """Get prebuilt QEMU binary path from google storage."""
+    contents_b64 = gob_util.FetchUrl(
+        constants.EXTERNAL_GOB_HOST,
+        '%s?format=TEXT' % SDKFetcher.PREBUILT_CONF_PATH)
+    binhost, path = base64.b64decode(contents_b64.read()).strip().split('=')
+    if binhost != 'FULL_BINHOST' or not path:
+      return None
+    return path.strip('"')
 
   def _GetFullVersionFromRecentLatest(self, version):
     """Gets the full version number from a recent LATEST- file.
@@ -386,6 +402,15 @@ class SDKFetcher(object):
       fetch_urls[self.TARGET_TOOLCHAIN_KEY] = os.path.join(
           self.toolchain_path, toolchain_url % {'target': target_tc})
       components.remove(self.TARGET_TOOLCHAIN_KEY)
+
+    # Also fetch QEMU binary if VM_IMAGE_TAR is specified.
+    if constants.VM_IMAGE_TAR in components:
+      qemu_bin_path = self._GetQemuBinPath()
+      if qemu_bin_path:
+        fetch_urls[self.QEMU_BIN_KEY] = os.path.join(
+            qemu_bin_path, self.QEMU_BIN_KEY)
+      else:
+        logging.warning('Failed to find a QEMU binary to download.')
 
     version_base = self._GetVersionGSBase(version)
     fetch_urls.update((t, os.path.join(version_base, t)) for t in components)
