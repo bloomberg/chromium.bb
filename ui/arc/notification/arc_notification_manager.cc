@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/arc_util.h"
 #include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/arc/notification/arc_notification_item_impl.h"
 #include "ui/arc/notification/arc_notification_view.h"
@@ -22,6 +23,8 @@
 
 namespace arc {
 namespace {
+
+constexpr char kPlayStorePackageName[] = "com.android.vending";
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
     const message_center::Notification& notification) {
@@ -119,6 +122,11 @@ void ArcNotificationManager::OnConnectionClosed() {
 
 void ArcNotificationManager::OnNotificationPosted(
     mojom::ArcNotificationDataPtr data) {
+  if (ShouldIgnoreNotification(data.get())) {
+    VLOG(3) << "Posted notification was ignored.";
+    return;
+  }
+
   const std::string& key = data->key;
   auto it = items_.find(key);
   if (it == items_.end()) {
@@ -136,6 +144,11 @@ void ArcNotificationManager::OnNotificationPosted(
 
 void ArcNotificationManager::OnNotificationUpdated(
     mojom::ArcNotificationDataPtr data) {
+  if (ShouldIgnoreNotification(data.get())) {
+    VLOG(3) << "Updated notification was ignored.";
+    return;
+  }
+
   const std::string& key = data->key;
   auto it = items_.find(key);
   if (it == items_.end())
@@ -338,6 +351,14 @@ void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
   ash::Shell::Get()->toast_manager()->Cancel(data->id);
+}
+
+bool ArcNotificationManager::ShouldIgnoreNotification(
+    arc::mojom::ArcNotificationData* data) {
+  // Notifications from Play Store are ignored in Public Session and Kiosk mode.
+  // TODO: Use centralized const for Play Store package.
+  return data->package_name.has_value() &&
+         *data->package_name == kPlayStorePackageName && IsRobotAccountMode();
 }
 
 }  // namespace arc

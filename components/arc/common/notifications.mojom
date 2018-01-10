@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 15
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -135,6 +135,8 @@ struct ArcNotificationData {
   // of the notification.
   [MinVersion=14]
   Rect? swipe_input_rect;
+  [MinVersion=15]
+  string? package_name;
 };
 
 [MinVersion=2]
