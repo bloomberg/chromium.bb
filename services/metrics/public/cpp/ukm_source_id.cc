@@ -41,4 +41,8 @@ SourceId ConvertSourceIdFromInstance(int64_t instance_id, int64_t source_id) {
   return ((instance_id & kLowBitsMask) << 32) | (source_id & kLowBitsMask);
 }
 
+SourceIdType GetSourceIdType(SourceId source_id) {
+  return static_cast<SourceIdType>(source_id & kTypeMask);
+}
+
 }  // namespace ukm
