@@ -31,7 +31,6 @@ class UiController;
 namespace ash {
 class AshPopupAlignmentDelegate;
 class MessageCenterBubble;
-class SystemTray;
 class WebNotificationBubbleWrapper;
 class WebNotificationImage;
 class WebNotificationLabel;
@@ -49,9 +48,7 @@ class ASH_EXPORT WebNotificationTray
       public base::SupportsWeakPtr<WebNotificationTray>,
       public ui::SimpleMenuModel::Delegate {
  public:
-  WebNotificationTray(Shelf* shelf,
-                      aura::Window* status_area_window,
-                      SystemTray* system_tray);
+  WebNotificationTray(Shelf* shelf, aura::Window* status_area_window);
   ~WebNotificationTray() override;
 
   static void DisableAnimationsForTest(bool disable);
@@ -153,7 +150,6 @@ class ASH_EXPORT WebNotificationTray
   MessageCenterBubble* GetMessageCenterBubbleForTest();
 
   aura::Window* status_area_window_;
-  SystemTray* system_tray_;
   std::unique_ptr<message_center::UiController> message_center_ui_controller_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
