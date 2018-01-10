@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
@@ -47,8 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * This view allows the user to select an account to log in to, add an account, cancel account
- * selection, etc. Users of this class should call {@link #initFromSelectionPage} or
- * {@link #initFromConfirmationPage} after the view has been inflated.
+ * selection, etc. Users of this class should call {@link #init} after the view has been inflated.
  */
 public class AccountSigninView extends FrameLayout {
     /**
@@ -105,6 +105,21 @@ public class AccountSigninView extends FrameLayout {
     private static final String SETTINGS_LINK_OPEN = "<LINK1>";
     private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
 
+    private static final String ARGUMENT_ACCESS_POINT = "AccountSigninView.AccessPoint";
+    private static final String ARGUMENT_SIGNIN_FLOW_TYPE = "AccountSigninView.FlowType";
+    private static final String ARGUMENT_ACCOUNT_NAME = "AccountSigninView.AccountName";
+    private static final String ARGUMENT_IS_DEFAULT_ACCOUNT = "AccountSigninView.IsDefaultAccount";
+    private static final String ARGUMENT_IS_CHILD_ACCOUNT = "AccountSigninView.IsChildAccount";
+    private static final String ARGUMENT_UNDO_BEHAVIOR = "AccountSigninView.UndoBehavior";
+
+    @IntDef({SIGNIN_FLOW_DEFAULT, SIGNIN_FLOW_CONFIRMATION_ONLY, SIGNIN_FLOW_ADD_NEW_ACCOUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SigninFlowType {}
+
+    public static final int SIGNIN_FLOW_DEFAULT = 0;
+    public static final int SIGNIN_FLOW_CONFIRMATION_ONLY = 1;
+    public static final int SIGNIN_FLOW_ADD_NEW_ACCOUNT = 2;
+
     /** Specifies different behaviors for "Undo" button on signin confirmation page. */
     @IntDef({UNDO_INVISIBLE, UNDO_BACK_TO_SELECTION, UNDO_ABORT})
     @Retention(RetentionPolicy.SOURCE)
@@ -127,6 +142,8 @@ public class AccountSigninView extends FrameLayout {
     private Button mMoreButton;
     private Listener mListener;
     private Delegate mDelegate;
+    private @SigninAccessPoint int mSigninAccessPoint;
+    private @SigninFlowType int mSigninFlowType;
     private @UndoBehavior int mUndoBehavior;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
@@ -153,70 +170,110 @@ public class AccountSigninView extends FrameLayout {
     }
 
     /**
-     * Initializes the view from account selection page. After selecting the account, signin
-     * confirmation page will be opened.
+     * Creates an argument bundle to start AccountSigninView from the account selection page.
      *
      * @param accessPoint The access point for starting signin flow.
      * @param isChildAccount Whether this view is for a child account.
-     * @param delegate The UI object creation delegate.
-     * @param listener The account selection event listener.
      */
-    public void initFromSelectionPage(@SigninAccessPoint int accessPoint, boolean isChildAccount,
-            Delegate delegate, Listener listener) {
-        initAccessPoint(accessPoint);
-        mIsChildAccount = isChildAccount;
-        mUndoBehavior = UNDO_BACK_TO_SELECTION;
-        mDelegate = delegate;
-        mListener = listener;
-        showSigninPage();
+    public static Bundle createArgumentsForDefaultFlow(
+            @SigninAccessPoint int accessPoint, boolean isChildAccount) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_DEFAULT);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putBoolean(ARGUMENT_IS_CHILD_ACCOUNT, isChildAccount);
+        result.putInt(ARGUMENT_UNDO_BEHAVIOR, UNDO_BACK_TO_SELECTION);
+        return result;
     }
 
     /**
-     * Initializes the view from account selection page. After selecting the account, signin
-     * confirmation page will be opened.
+     * Creates an argument bundle to start AccountSigninView from the new account creation screen.
      *
      * @param accessPoint The access point for starting signin flow.
-     * @param delegate The UI object creation delegate.
-     * @param listener The account selection event listener.
      */
-    public void initFromAddAccountPage(
-            @SigninAccessPoint int accessPoint, Delegate delegate, Listener listener) {
-        initAccessPoint(accessPoint);
-        mIsChildAccount = false; // Children profiles can't add accounts.
-        mUndoBehavior = UNDO_ABORT;
-        mDelegate = delegate;
-        mListener = listener;
-        showSigninPage();
-
-        RecordUserAction.record("Signin_AddAccountToDevice");
-        mListener.onNewAccount();
+    public static Bundle createArgumentsForAddAccountFlow(@SigninAccessPoint int accessPoint) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_ADD_NEW_ACCOUNT);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putBoolean(ARGUMENT_IS_CHILD_ACCOUNT, false); // Children profiles can't add accounts
+        result.putInt(ARGUMENT_UNDO_BEHAVIOR, UNDO_ABORT);
+        return result;
     }
 
     /**
-     * Initializes the view from signin confirmation page. The account name should be provided by
-     * the caller.
+     * Creates an argument bundle to start AccountSigninView from the signin confirmation page.
      *
      * @param accessPoint The access point for starting signin flow.
      * @param isChildAccount Whether this view is for a child account.
      * @param accountName An account that should be used for confirmation page and signin.
      * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
      * @param undoBehavior "Undo" button behavior (see {@link UndoBehavior}).
+     */
+    public static Bundle createArgumentsForConfirmationFlow(@SigninAccessPoint int accessPoint,
+            boolean isChildAccount, String accountName, boolean isDefaultAccount,
+            @UndoBehavior int undoBehavior) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, SIGNIN_FLOW_CONFIRMATION_ONLY);
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putBoolean(ARGUMENT_IS_CHILD_ACCOUNT, isChildAccount);
+        result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
+        result.putBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
+        result.putInt(ARGUMENT_UNDO_BEHAVIOR, undoBehavior);
+        return result;
+    }
+
+    /**
+     * Initializes the view.
+     *
+     * @param arguments The argument bundle created by {@link #createArgumentsForDefaultFlow},
+     *         {@link #createArgumentsForAddAccountFlow} or
+     *         {@link #createArgumentsForConfirmationFlow}.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromConfirmationPage(@SigninAccessPoint int accessPoint, boolean isChildAccount,
-            String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
-            Delegate delegate, Listener listener) {
+    public void init(Bundle arguments, Delegate delegate, Listener listener) {
+        @SigninAccessPoint int accessPoint = arguments.getInt(ARGUMENT_ACCESS_POINT, -1);
+        assert accessPoint != -1;
+
         initAccessPoint(accessPoint);
-        mIsChildAccount = isChildAccount;
-        mUndoBehavior = undoBehavior;
+        mIsChildAccount = arguments.getBoolean(ARGUMENT_IS_CHILD_ACCOUNT, false);
+        mUndoBehavior = arguments.getInt(ARGUMENT_UNDO_BEHAVIOR, -1);
         mDelegate = delegate;
         mListener = listener;
-        showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
-        triggerUpdateAccounts();
+
+        mSigninFlowType = arguments.getInt(ARGUMENT_SIGNIN_FLOW_TYPE, -1);
+        switch (mSigninFlowType) {
+            case SIGNIN_FLOW_DEFAULT:
+                showSigninPage();
+                break;
+            case SIGNIN_FLOW_CONFIRMATION_ONLY: {
+                String accountName = arguments.getString(ARGUMENT_ACCOUNT_NAME);
+                assert accountName != null;
+                boolean isDefaultAccount = arguments.getBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, false);
+                showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
+                triggerUpdateAccounts();
+                break;
+            }
+            case SIGNIN_FLOW_ADD_NEW_ACCOUNT:
+                showSigninPage();
+                RecordUserAction.record("Signin_AddAccountToDevice");
+                mListener.onNewAccount();
+                break;
+            default:
+                assert false : "Unknown or missing signin flow type: " + mSigninFlowType;
+                return;
+        }
+    }
+
+    public @SigninFlowType int getSigninFlowType() {
+        return mSigninFlowType;
+    }
+
+    public @SigninAccessPoint int getSigninAccessPoint() {
+        return mSigninAccessPoint;
     }
 
     private void initAccessPoint(@SigninAccessPoint int accessPoint) {
+        mSigninAccessPoint = accessPoint;
         if (accessPoint == SigninAccessPoint.START_PAGE
                 || accessPoint == SigninAccessPoint.SIGNIN_PROMO) {
             mCancelButtonTextId = R.string.no_thanks;
