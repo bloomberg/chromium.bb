@@ -120,13 +120,6 @@ void GetReportsImpl(std::vector<Report>* reports);
 // The implementation function for RequestSingleCrashUpload.
 void RequestSingleCrashUploadImpl(const std::string& local_id);
 
-// Sets a crash key value.
-void SetCrashKeyValue(const base::StringPiece& key,
-                      const base::StringPiece& value);
-
-// Clears a crash key value.
-void ClearCrashKey(const base::StringPiece& key);
-
 namespace internal {
 
 #if defined(OS_WIN)

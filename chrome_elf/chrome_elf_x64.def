@@ -8,23 +8,15 @@ EXPORTS
   ; chrome_elf_x86.def
 
   ; From components/crash/content/app/crash_export_stubs.cc
-  ClearCrashKeyValueEx_ExportThunk
-  ClearCrashKeyValue_ExportThunk
   CrashForException_ExportThunk
   GetCrashReports_ExportThunk
   InjectDumpForHungInput_ExportThunk
   RequestSingleCrashUpload_ExportThunk
-  SetCrashKeyValueEx_ExportThunk
-  SetCrashKeyValue_ExportThunk
   SetUploadConsent_ExportThunk
 
   ; X64-only exports
   RegisterNonABICompliantCodeRange_ExportThunk
   UnregisterNonABICompliantCodeRange_ExportThunk
-
-  ; This export is used by SyzyASAN, do not rename or remove without talking
-  ; to syzygy-team@chromium.org first.
-  SetCrashKeyValue = SetCrashKeyValue_ExportThunk
 
   ; From chrome_elf/crash_helper.cc
   SetMetricsClientId
