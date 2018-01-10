@@ -3031,6 +3031,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Source died in transit"/>
   <int value="4" label="Blob dereferenced while building"/>
   <int value="5" label="Referenced blob broken"/>
+  <int value="6" label="Referenced file unavailable"/>
 </enum>
 
 <enum name="BlobStorageDiskSpaceAdjustment">

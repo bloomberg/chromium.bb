@@ -507,7 +507,8 @@ TEST_F(BlobRegistryImplTest, Register_UnreadableFile) {
   WaitForBlobCompletion(handle.get());
 
   EXPECT_TRUE(handle->IsBroken());
-  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+  EXPECT_EQ(BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE,
+            handle->GetBlobStatus());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -556,7 +557,8 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_InvalidScheme) {
   WaitForBlobCompletion(handle.get());
 
   EXPECT_TRUE(handle->IsBroken());
-  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+  EXPECT_EQ(BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE,
+            handle->GetBlobStatus());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 
@@ -579,7 +581,8 @@ TEST_F(BlobRegistryImplTest, Register_FileSystemFile_UnreadablFile) {
   WaitForBlobCompletion(handle.get());
 
   EXPECT_TRUE(handle->IsBroken());
-  EXPECT_EQ(BlobStatus::ERR_FILE_WRITE_FAILED, handle->GetBlobStatus());
+  EXPECT_EQ(BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE,
+            handle->GetBlobStatus());
   EXPECT_EQ(0u, BlobsUnderConstruction());
 }
 

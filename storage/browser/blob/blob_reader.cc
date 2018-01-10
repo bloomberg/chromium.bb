@@ -57,6 +57,8 @@ int ConvertBlobErrorToNetError(BlobStatus reason) {
       return net::ERR_UNEXPECTED;
     case BlobStatus::ERR_REFERENCED_BLOB_BROKEN:
       return net::ERR_INVALID_HANDLE;
+    case BlobStatus::ERR_REFERENCED_FILE_UNAVAILABLE:
+      return net::ERR_INVALID_HANDLE;
     case BlobStatus::DONE:
     case BlobStatus::PENDING_QUOTA:
     case BlobStatus::PENDING_TRANSPORT:
