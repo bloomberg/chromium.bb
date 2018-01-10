@@ -59,6 +59,9 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   // time periods instead of BrowsingDataRemover::TimePeriod.
   void SetPeriodStartForTesting(const base::Time& period_start_for_testing);
 
+  // Set the ending of the time period for testing.
+  void SetPeriodEndForTesting(const base::Time& period_end_for_testing);
+
  private:
   void Count() override;
 
@@ -84,6 +87,7 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
   ResultInt num_addresses_;
 
   base::Time period_start_for_testing_;
+  base::Time period_end_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCounter);
 };
