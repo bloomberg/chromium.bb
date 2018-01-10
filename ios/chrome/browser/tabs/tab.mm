@@ -508,10 +508,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
-  if (!navigation->GetError()) {
-    [self countMainFrameLoad];
-  }
-
   [_parentTabModel notifyTabChanged:self];
 }
 
@@ -568,14 +564,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   [[self openInController]
       enableWithDocumentURL:lastCommittedURL
           suggestedFilename:base::SysUTF16ToNSString(filename)];
-}
-
-- (void)countMainFrameLoad {
-  if (self.isPrerenderTab ||
-      self.webState->GetLastCommittedURL().SchemeIs(kChromeUIScheme)) {
-    return;
-  }
-  base::RecordAction(base::UserMetricsAction("MobilePageLoaded"));
 }
 
 - (BOOL)shouldRecordPageLoadStartForNavigation:
