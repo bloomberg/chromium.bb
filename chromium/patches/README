@@ -122,3 +122,7 @@ Current patches:
   libavcodec/vorbis.c
     ff_vorbis_len2vlc() : Fix undefined shift. Pushed upstream, so should be
     upstream by M65 roll. http://crbug.com/787347
+
+  libavcodec/arm/sbrdsp_init_arm.c
+    ff_sbrdsp_init_arm() : Temporary fix for audio being played with screech
+    noises. A todo exists to investigate further. http://crbug.com/796028

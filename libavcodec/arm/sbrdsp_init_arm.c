@@ -65,9 +65,11 @@ av_cold void ff_sbrdsp_init_arm(SBRDSPContext *s)
         s->hf_g_filt = ff_sbr_hf_g_filt_neon;
         s->hf_gen = ff_sbr_hf_gen_neon;
         s->autocorrelate = ff_sbr_autocorrelate_neon;
-        s->hf_apply_noise[0] = ff_sbr_hf_apply_noise_0_neon;
-        s->hf_apply_noise[1] = ff_sbr_hf_apply_noise_1_neon;
-        s->hf_apply_noise[2] = ff_sbr_hf_apply_noise_2_neon;
-        s->hf_apply_noise[3] = ff_sbr_hf_apply_noise_3_neon;
+
+        // TODO(crbug/796028): Identify why these functions cause static noise.
+        //s->hf_apply_noise[0] = ff_sbr_hf_apply_noise_0_neon;
+        //s->hf_apply_noise[1] = ff_sbr_hf_apply_noise_1_neon;
+        //s->hf_apply_noise[2] = ff_sbr_hf_apply_noise_2_neon;
+        //s->hf_apply_noise[3] = ff_sbr_hf_apply_noise_3_neon;
     }
 }
