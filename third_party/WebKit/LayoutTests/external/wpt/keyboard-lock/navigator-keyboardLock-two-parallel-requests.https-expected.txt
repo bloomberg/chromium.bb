@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Keyboard Lock keyboardLock twice in parallel Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+
