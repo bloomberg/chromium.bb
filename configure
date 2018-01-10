@@ -488,6 +488,8 @@ post_process_cmdline() {
     soft_enable loop_restoration
     soft_enable ext_partition
     soft_enable ext_partition_types
+    soft_enable lv_map
+    soft_enable lv_map_multi
 
     # Provisional adopted
     soft_enable reference_buffer

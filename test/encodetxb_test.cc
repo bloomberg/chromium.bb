@@ -23,7 +23,6 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/scan.h"
 #include "av1/common/txb_common.h"
-#include "av1/decoder/decodeframe.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"

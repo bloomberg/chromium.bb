@@ -762,6 +762,7 @@ static INLINE int get_br_cost(tran_low_t abs_qc, int ctx,
   }
 }
 
+#if !CONFIG_LV_MAP_MULTI
 static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
                                 const int coeff_base[2], int base_idx) {
   const int level = base_idx + 1;
@@ -771,6 +772,7 @@ static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
   else
     return coeff_base[abs_qc == level];
 }
+#endif
 
 // Note: don't call this function when eob is 0.
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
@@ -1470,6 +1472,7 @@ static INLINE void set_eob(TxbInfo *txb_info, int eob) {
   txb_info->seg_eob = av1_get_max_eob(txb_info->tx_size);
 }
 
+#if !CONFIG_LV_MAP_MULTI
 static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
                               const TX_SIZE txs_ctx) {
   if (txs_ctx == TX_4X4) return av1_coeff_band_4x4[coeff_idx];
@@ -1487,7 +1490,6 @@ static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
   return 0;
 }
 
-#if !CONFIG_LV_MAP_MULTI
 // TODO(angiebird): add static to this function once it's called
 int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
                    const LV_MAP_COEFF_COST *txb_costs, TxbInfo *txb_info,
