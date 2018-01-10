@@ -11,6 +11,7 @@
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
+#include "platform/scheduler/child/worker_metrics_helper.h"
 #include "platform/scheduler/child/worker_scheduler.h"
 #include "platform/scheduler/util/task_duration_metric_reporter.h"
 #include "platform/scheduler/util/thread_load_tracker.h"
@@ -73,7 +74,8 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   ThreadLoadTracker load_tracker_;
   bool initialized_;
   base::TimeTicks thread_start_time_;
-  TaskDurationMetricReporter<ThreadType> worker_thread_task_duration_reporter_;
+
+  WorkerMetricsHelper worker_metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);
 };
