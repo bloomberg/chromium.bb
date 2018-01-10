@@ -679,7 +679,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   // Create and configure the webrtc::AudioProcessing.
-  audio_processing_.reset(webrtc::AudioProcessing::Create(config));
+  audio_processing_.reset(webrtc::AudioProcessingBuilder().Create(config));
 
   // Enable the audio processing components.
   webrtc::AudioProcessing::Config apm_config;
