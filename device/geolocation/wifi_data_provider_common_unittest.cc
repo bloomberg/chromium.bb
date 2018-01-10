@@ -14,6 +14,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
+#include "device/geolocation/wifi_polling_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,7 +61,8 @@ class MockPollingPolicy : public WifiPollingPolicy {
 class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
  public:
   WifiDataProviderCommonWithMock()
-      : wlan_api_(new MockWlanApi), polling_policy_(new MockPollingPolicy) {}
+      : wlan_api_(new MockWlanApi),
+        polling_policy_(std::make_unique<MockPollingPolicy>()) {}
 
   // WifiDataProviderCommon
   std::unique_ptr<WlanApiInterface> CreateWlanApi() override {
@@ -97,6 +99,7 @@ class GeolocationWifiDataProviderCommonTest : public testing::Test {
   void TearDown() override {
     provider_->RemoveCallback(&wifi_data_callback_);
     provider_->StopDataProvider();
+    WifiPollingPolicy::Shutdown();
   }
 
  protected:
