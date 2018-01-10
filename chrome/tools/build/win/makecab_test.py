@@ -3,11 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from StringIO import StringIO
 import makecab
-import unittest
+
+from StringIO import StringIO
 import sys
 import time
+import unittest
 
 # Test flag parsing.
 class ParseFlagsTest(unittest.TestCase):
@@ -35,6 +36,20 @@ class ParseFlagsTest(unittest.TestCase):
     self.assertEquals(flags.output, 'd/foo.cab')
     self.assertEquals(flags.output_dir, 'outdir')
 
+  def testHelp(self):
+    self.assertEquals(makecab.ParseFlags(['foo.txt', '--help']), None)
+
+  def assertFlagParseError(self, flags, expected_message_part):
+    with self.assertRaises(makecab.FlagParseError) as context:
+      makecab.ParseFlags(flags)
+    self.assertIn(expected_message_part, context.exception.message)
+
+  def testErrors(self):
+    for f in ['/D', '/L']:
+      self.assertFlagParseError([f], 'argument needed after')
+    self.assertFlagParseError(['/asdf'], 'unknown flag')
+    self.assertFlagParseError(['in', 'out', 'what'], 'too many paths')
+    self.assertFlagParseError([], 'no input file')
 
 # Test that compression doesn't throw, and on Windows also check that
 # expand.exe is able to recover input data.
@@ -46,19 +61,17 @@ class WriteCabTest(unittest.TestCase):
     makecab.WriteCab(output, StringIO(input_data), 'a.txt',
                      len(input_data), mtime)
     if sys.platform == 'win32':
-      import os, subprocess, tempfile
-      cab_handle, cab_path = tempfile.mkstemp(suffix='.makecab_test.cab')
-      os.write(cab_handle, output.getvalue())
-      os.close(cab_handle)
-      out_handle, out_path = tempfile.mkstemp(suffix='.makecab_test.out')
-      # Closing out_handle immediately defeats the purpose of mkstemp(), but I
-      # can't figure out how to write to the temp file on Windows otherwise.
-      os.close(out_handle)
-      FNULL = open(os.devnull, 'w')
-      subprocess.check_call(['expand.exe', cab_path, out_path], stdout=FNULL)
-      self.assertEquals(input_data, open(out_path, 'rb').read())
-      os.remove(cab_path)
-      os.remove(out_path)
+      import os, shutil, subprocess, tempfile
+      temp_dir = tempfile.mkdtemp(suffix='.makecab_test')
+      try:
+        cab_path = os.path.join(temp_dir, 'file.cab')
+        out_path = os.path.join(temp_dir, 'file.out')
+        open(cab_path, 'wb').write(output.getvalue())
+        FNULL = open(os.devnull, 'w')
+        subprocess.check_call(['expand.exe', cab_path, out_path], stdout=FNULL)
+        self.assertEquals(input_data, open(out_path, 'rb').read())
+      finally:
+        shutil.rmtree(temp_dir)
 
 
 if __name__ == '__main__':
