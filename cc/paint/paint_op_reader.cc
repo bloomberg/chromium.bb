@@ -25,6 +25,8 @@ namespace {
 // If we have more than this many colors, abort deserialization.
 const size_t kMaxShaderColorsSupported = 10000;
 const size_t kMaxMergeFilterCount = 10000;
+const long kMaxKernelSize = 1000;
+const size_t kMaxRegionSize = 1000;
 
 struct TypefacesCatalog {
   TransferCacheDeserializeHelper* transfer_cache;
@@ -483,6 +485,7 @@ void PaintOpReader::Read(sk_sp<PaintFilter>* filter) {
     crop_rect.emplace(rect, flags);
   }
 
+  AlignMemory(4);
   switch (type) {
     case PaintFilter::Type::kNullFilter:
       NOTREACHED();
@@ -565,7 +568,6 @@ void PaintOpReader::ReadColorFilterPaintFilter(
   sk_sp<SkColorFilter> color_filter;
   sk_sp<PaintFilter> input;
 
-  AlignMemory(4);
   ReadFlattenable(&color_filter);
   Read(&input);
   if (!valid_)
@@ -626,7 +628,17 @@ void PaintOpReader::ReadDropShadowPaintFilter(
 void PaintOpReader::ReadMagnifierPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  SkRect src_rect = SkRect::MakeEmpty();
+  SkScalar inset = 0.f;
+  sk_sp<PaintFilter> input;
+
+  ReadSimple(&src_rect);
+  ReadSimple(&inset);
+  Read(&input);
+  if (!valid_)
+    return;
+  filter->reset(new MagnifierPaintFilter(src_rect, inset, std::move(input),
+                                         crop_rect ? &*crop_rect : nullptr));
 }
 
 void PaintOpReader::ReadComposePaintFilter(
@@ -645,7 +657,29 @@ void PaintOpReader::ReadComposePaintFilter(
 void PaintOpReader::ReadAlphaThresholdPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  size_t region_size = 0;
+  SkScalar inner_min = 0.f;
+  SkScalar outer_max = 0.f;
+  sk_sp<PaintFilter> input;
+  ReadSimple(&region_size);
+  if (region_size > kMaxRegionSize)
+    SetInvalid();
+  if (!valid_)
+    return;
+  SkRegion region;
+  for (size_t i = 0; i < region_size; ++i) {
+    SkIRect rect;
+    ReadSimple(&rect);
+    region.op(rect, SkRegion::kUnion_Op);
+  }
+  ReadSimple(&inner_min);
+  ReadSimple(&outer_max);
+  Read(&input);
+  if (!valid_)
+    return;
+  filter->reset(new AlphaThresholdPaintFilter(
+      region, inner_min, outer_max, std::move(input),
+      crop_rect ? &*crop_rect : nullptr));
 }
 
 void PaintOpReader::ReadImageFilterPaintFilter(
@@ -703,13 +737,75 @@ void PaintOpReader::ReadArithmeticPaintFilter(
 void PaintOpReader::ReadMatrixConvolutionPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  SkISize kernel_size = SkISize::MakeEmpty();
+  SkScalar gain = 0.f;
+  SkScalar bias = 0.f;
+  SkIPoint kernel_offset = SkIPoint::Make(0, 0);
+  uint32_t tile_mode_int = 0;
+  bool convolve_alpha = false;
+  sk_sp<PaintFilter> input;
+
+  ReadSimple(&kernel_size);
+  if (!valid_)
+    return;
+  auto size = sk_64_mul(kernel_size.width(), kernel_size.height());
+  if (size > kMaxKernelSize) {
+    SetInvalid();
+    return;
+  }
+  std::vector<SkScalar> kernel(size);
+  for (long i = 0; i < size; ++i)
+    ReadSimple(&kernel[i]);
+  ReadSimple(&gain);
+  ReadSimple(&bias);
+  ReadSimple(&kernel_offset);
+  ReadSimple(&tile_mode_int);
+  ReadSimple(&convolve_alpha);
+  Read(&input);
+  if (tile_mode_int > SkMatrixConvolutionImageFilter::kMax_TileMode)
+    SetInvalid();
+  if (!valid_)
+    return;
+  MatrixConvolutionPaintFilter::TileMode tile_mode =
+      static_cast<MatrixConvolutionPaintFilter::TileMode>(tile_mode_int);
+  filter->reset(new MatrixConvolutionPaintFilter(
+      kernel_size, kernel.data(), gain, bias, kernel_offset, tile_mode,
+      convolve_alpha, std::move(input), crop_rect ? &*crop_rect : nullptr));
 }
 
 void PaintOpReader::ReadDisplacementMapEffectPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  // Unknown, R, G, B, A: max type is 4.
+  static const int kMaxChannelSelectorType = 4;
+
+  uint32_t channel_x_int = 0;
+  uint32_t channel_y_int = 0;
+  SkScalar scale = 0.f;
+  sk_sp<PaintFilter> displacement;
+  sk_sp<PaintFilter> color;
+
+  ReadSimple(&channel_x_int);
+  ReadSimple(&channel_y_int);
+  ReadSimple(&scale);
+  Read(&displacement);
+  Read(&color);
+
+  if (channel_x_int > kMaxChannelSelectorType ||
+      channel_y_int > kMaxChannelSelectorType) {
+    SetInvalid();
+  }
+  if (!valid_)
+    return;
+  DisplacementMapEffectPaintFilter::ChannelSelectorType channel_x =
+      static_cast<DisplacementMapEffectPaintFilter::ChannelSelectorType>(
+          channel_x_int);
+  DisplacementMapEffectPaintFilter::ChannelSelectorType channel_y =
+      static_cast<DisplacementMapEffectPaintFilter::ChannelSelectorType>(
+          channel_y_int);
+  filter->reset(new DisplacementMapEffectPaintFilter(
+      channel_x, channel_y, scale, std::move(displacement), std::move(color),
+      crop_rect ? &*crop_rect : nullptr));
 }
 
 void PaintOpReader::ReadImagePaintFilter(
@@ -792,7 +888,16 @@ void PaintOpReader::ReadOffsetPaintFilter(
 void PaintOpReader::ReadTilePaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  SkRect src = SkRect::MakeEmpty();
+  SkRect dst = SkRect::MakeEmpty();
+  sk_sp<PaintFilter> input;
+
+  ReadSimple(&src);
+  ReadSimple(&dst);
+  Read(&input);
+  if (!valid_)
+    return;
+  filter->reset(new TilePaintFilter(src, dst, std::move(input)));
 }
 
 void PaintOpReader::ReadTurbulencePaintFilter(
@@ -828,7 +933,13 @@ void PaintOpReader::ReadTurbulencePaintFilter(
 void PaintOpReader::ReadPaintFlagsPaintFilter(
     sk_sp<PaintFilter>* filter,
     const base::Optional<PaintFilter::CropRect>& crop_rect) {
-  // TODO(vmpstr): Implement this.
+  AlignMemory(4);
+  PaintFlags flags;
+  Read(&flags);
+  if (!valid_)
+    return;
+  filter->reset(
+      new PaintFlagsPaintFilter(flags, crop_rect ? &*crop_rect : nullptr));
 }
 
 void PaintOpReader::ReadMatrixPaintFilter(

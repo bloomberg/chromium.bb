@@ -15,6 +15,7 @@
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 
@@ -1284,6 +1285,17 @@ bool PaintOp::AreSkPointsEqual(const SkPoint& left, const SkPoint& right) {
 }
 
 // static
+bool PaintOp::AreSkPoint3sEqual(const SkPoint3& left, const SkPoint3& right) {
+  if (!AreEqualEvenIfNaN(left.fX, right.fX))
+    return false;
+  if (!AreEqualEvenIfNaN(left.fY, right.fY))
+    return false;
+  if (!AreEqualEvenIfNaN(left.fZ, right.fZ))
+    return false;
+  return true;
+}
+
+// static
 bool PaintOp::AreSkRectsEqual(const SkRect& left, const SkRect& right) {
   if (!AreEqualEvenIfNaN(left.fLeft, right.fLeft))
     return false;
@@ -1324,6 +1336,21 @@ bool PaintOp::AreSkMatricesEqual(const SkMatrix& left, const SkMatrix& right) {
   if (left.getType() != right.getType())
     return false;
 
+  return true;
+}
+
+// static
+bool PaintOp::AreSkFlattenablesEqual(SkFlattenable* left,
+                                     SkFlattenable* right) {
+  if (!right || !left)
+    return !right && !left;
+
+  sk_sp<SkData> left_data(SkValidatingSerializeFlattenable(left));
+  sk_sp<SkData> right_data(SkValidatingSerializeFlattenable(right));
+  if (left_data->size() != right_data->size())
+    return false;
+  if (!left_data->equals(right_data.get()))
+    return false;
   return true;
 }
 
