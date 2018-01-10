@@ -185,7 +185,7 @@ Polymer({
       case CrPicture.SelectionTypes.OLD:
         const imageIndex = image.dataset.imageIndex;
         if (imageIndex !== undefined && imageIndex >= 0 && image.src)
-          this.browserProxy_.selectDefaultImage(image.src);
+          this.browserProxy_.selectDefaultImage(image.dataset.url);
         else
           this.browserProxy_.selectOldImage();
         break;
