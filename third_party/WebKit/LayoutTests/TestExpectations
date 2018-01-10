@@ -62,6 +62,7 @@ crbug.com/769942 virtual/spv175/compositing/images/direct-image-dynamic-clip-pat
 crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path-text.html [ Failure ]
 crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-path.html [ Failure ]
 crbug.com/769942 virtual/spv175/compositing/overflow/accelerated-scrolling-with-clip-reference.html [ Failure ]
+crbug.com/769942 virtual/spv175/fast/borders/border-image-fill-inline-no-border.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-bigger-than-border-box-visual-rect.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-bigger-than-visual-overflow.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-with-background-and-box-behind.html [ Failure ]
@@ -79,7 +80,6 @@ crbug.com/769942 virtual/spv175/paint/invalidation/svg/resource-invalidate-on-ta
 
 crbug.com/771643 virtual/spv175/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/spv175/compositing/visibility/visibility-image-layers.html [ Failure Pass ]
-crbug.com/771643 virtual/spv175/fast/borders/border-image-fill-inline-no-border.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset-vertical-rl.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image-outset.html [ Failure ]
 crbug.com/771643 virtual/spv175/fast/borders/inline-mask-overlay-image.html [ Failure ]
@@ -90,8 +90,6 @@ crbug.com/771643 virtual/spv175/paint/invalidation/position/position-change-keep
 crbug.com/771643 virtual/spv175/paint/invalidation/svg/absolute-sized-content-with-resources.xhtml [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/svg/deep-dynamic-updates.svg [ Failure ]
 crbug.com/771643 virtual/spv175/paint/invalidation/svg/text-viewbox-rescale.html [ Failure ]
-crbug.com/771643 virtual/spv175/paint/invalidation/svg/use-clipped-hit.svg [ Failure ]
-crbug.com/771643 virtual/spv175/paint/invalidation/svg/zoom-coords-viewattr-01-b.svg [ Failure ]
 
 # spv175+root-layer-scrolls failures. They also fail with root-layer-scrolls without enable-slimming-paint-v175.
 crbug.com/417782 virtual/spv175/compositing/overflow/border-radius-composited-subframe.html [ Failure ]
