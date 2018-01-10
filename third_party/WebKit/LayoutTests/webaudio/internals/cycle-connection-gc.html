@@ -9,13 +9,12 @@
   <body>
     <script id="layout-test-code">
       description('Cycles of AudioNode connections should be collected.');
+      let context = new OfflineAudioContext(2, 44100, 44100);
       gc();
       let initialCount = internals.audioHandlerCount();
-      let context = new OfflineAudioContext(2, 1024, 44100);
       createCycle();
       debug('A cycle was created:');
       shouldBeTrue('internals.audioHandlerCount() > initialCount');
-      context = null;
       gc();
       debug('GC happened:');
       shouldBe('internals.audioHandlerCount()', 'initialCount');
