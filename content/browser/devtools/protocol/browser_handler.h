@@ -10,7 +10,6 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 
 namespace content {
-
 namespace protocol {
 
 class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
@@ -26,6 +25,14 @@ class BrowserHandler : public DevToolsDomainHandler, public Browser::Backend {
                       std::string* revision,
                       std::string* user_agent,
                       std::string* js_version) override;
+
+  Response GetHistograms(
+      Maybe<std::string> in_query,
+      std::unique_ptr<Array<Browser::Histogram>>* histograms) override;
+
+  Response GetHistogram(
+      const std::string& in_name,
+      std::unique_ptr<Browser::Histogram>* out_histogram) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserHandler);
