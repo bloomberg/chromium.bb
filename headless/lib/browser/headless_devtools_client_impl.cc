@@ -144,7 +144,7 @@ void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
       base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
   const base::DictionaryValue* message_dict;
   if (!message || !message->GetAsDictionary(&message_dict)) {
-    NOTREACHED() << "Badly formed reply";
+    NOTREACHED() << "Badly formed reply " << json_message;
     return;
   }
 

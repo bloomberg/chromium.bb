@@ -37,8 +37,7 @@ static const char kNavigatorPlatform[] = "navigatorPlatform";
 
 InspectorEmulationAgent::InspectorEmulationAgent(
     WebLocalFrameImpl* web_local_frame_impl)
-    : web_local_frame_(web_local_frame_impl),
-      virtual_time_observer_registered_(false) {}
+    : web_local_frame_(web_local_frame_impl) {}
 
 InspectorEmulationAgent::~InspectorEmulationAgent() {}
 
@@ -78,9 +77,10 @@ Response InspectorEmulationAgent::disable() {
   setEmulatedMedia(String());
   setCPUThrottlingRate(1);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
-  if (virtual_time_observer_registered_) {
+  if (virtual_time_setup_) {
+    instrumenting_agents_->removeInspectorEmulationAgent(this);
     web_local_frame_->View()->Scheduler()->RemoveVirtualTimeObserver(this);
-    virtual_time_observer_registered_ = false;
+    virtual_time_setup_ = false;
   }
   setNavigatorOverrides(String());
   return Response::OK();
@@ -131,43 +131,72 @@ Response InspectorEmulationAgent::setCPUThrottlingRate(double rate) {
 
 Response InspectorEmulationAgent::setVirtualTimePolicy(
     const String& policy,
-    Maybe<double> budget,
+    Maybe<double> virtual_time_budget_ms,
     protocol::Maybe<int> max_virtual_time_task_starvation_count,
+    protocol::Maybe<bool> wait_for_navigation,
     double* virtual_time_base_ms) {
+  PendingVirtualTimePolicy new_policy;
+  new_policy.policy = WebViewScheduler::VirtualTimePolicy::kPause;
   if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
-    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::kAdvance);
-  } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == policy) {
-    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::kPause);
+    new_policy.policy = WebViewScheduler::VirtualTimePolicy::kAdvance;
   } else if (protocol::Emulation::VirtualTimePolicyEnum::
                  PauseIfNetworkFetchesPending == policy) {
-    web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::kDeterministicLoading);
-  }
-  WTF::TimeTicks virtual_time_base_ticks(
-      web_local_frame_->View()->Scheduler()->EnableVirtualTime());
-  WTF::TimeDelta virtual_time_base_delta =
-      virtual_time_base_ticks - WTF::TimeTicks::UnixEpoch();
-  *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
-  if (!virtual_time_observer_registered_) {
-    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
-    virtual_time_observer_registered_ = true;
+    new_policy.policy =
+        WebViewScheduler::VirtualTimePolicy::kDeterministicLoading;
   }
 
-  if (budget.isJust()) {
+  if (virtual_time_budget_ms.isJust())
+    new_policy.virtual_time_budget_ms = virtual_time_budget_ms.fromJust();
+
+  if (max_virtual_time_task_starvation_count.isJust()) {
+    new_policy.max_virtual_time_task_starvation_count =
+        max_virtual_time_task_starvation_count.fromJust();
+  }
+
+  if (wait_for_navigation.fromMaybe(false)) {
+    *virtual_time_base_ms = 0;
+    pending_virtual_time_policy_ = std::move(new_policy);
+    return Response::OK();
+  }
+
+  WTF::TimeDelta virtual_time_base_delta =
+      ApplyVirtualTimePolicy(new_policy) - WTF::TimeTicks::UnixEpoch();
+  *virtual_time_base_ms = virtual_time_base_delta.InMillisecondsF();
+
+  return Response::OK();
+}
+
+WTF::TimeTicks InspectorEmulationAgent::ApplyVirtualTimePolicy(
+    const PendingVirtualTimePolicy& new_policy) {
+  web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
+      new_policy.policy);
+  WTF::TimeTicks virtual_time_base_ticks(
+      web_local_frame_->View()->Scheduler()->EnableVirtualTime());
+  if (!virtual_time_setup_) {
+    instrumenting_agents_->addInspectorEmulationAgent(this);
+    web_local_frame_->View()->Scheduler()->AddVirtualTimeObserver(this);
+    virtual_time_setup_ = true;
+  }
+  if (new_policy.virtual_time_budget_ms) {
     WTF::TimeDelta budget_amount =
-        WTF::TimeDelta::FromMillisecondsD(budget.fromJust());
+        WTF::TimeDelta::FromMillisecondsD(*new_policy.virtual_time_budget_ms);
     web_local_frame_->View()->Scheduler()->GrantVirtualTimeBudget(
         budget_amount,
         WTF::Bind(&InspectorEmulationAgent::VirtualTimeBudgetExpired,
                   WrapWeakPersistent(this)));
   }
-  if (max_virtual_time_task_starvation_count.isJust()) {
+  if (new_policy.max_virtual_time_task_starvation_count) {
     web_local_frame_->View()->Scheduler()->SetMaxVirtualTimeTaskStarvationCount(
-        max_virtual_time_task_starvation_count.fromJust());
+        *new_policy.max_virtual_time_task_starvation_count);
   }
-  return Response::OK();
+  return virtual_time_base_ticks;
+}
+
+void InspectorEmulationAgent::FrameStartedLoading(LocalFrame*, FrameLoadType) {
+  if (pending_virtual_time_policy_) {
+    ApplyVirtualTimePolicy(*pending_virtual_time_policy_);
+    pending_virtual_time_policy_ = WTF::nullopt;
+  }
 }
 
 Response InspectorEmulationAgent::setNavigatorOverrides(

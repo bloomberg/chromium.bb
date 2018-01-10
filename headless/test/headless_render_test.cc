@@ -49,8 +49,16 @@ void HeadlessRenderTest::RunDevTooledTest() {
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
+            .Build());
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(
+                emulation::VirtualTimePolicy::PAUSE_IF_NETWORK_FETCHES_PENDING)
+            .SetBudget(4001)
+            .SetWaitForNavigation(true)
             .Build(),
         base::Bind(&SetVirtualTimePolicyDoneCallback, &run_loop));
+
     base::MessageLoop::ScopedNestableTaskAllower nest_loop(
         base::MessageLoop::current());
     run_loop.Run();
