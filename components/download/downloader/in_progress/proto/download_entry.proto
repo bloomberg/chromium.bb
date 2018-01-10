@@ -15,6 +15,7 @@ message DownloadEntry {
   optional string guid = 1;
   optional string request_origin = 2;
   optional DownloadSource download_source = 3;
+  optional int64 ukm_download_id = 4;
 }
 
 // Contains a list of entries.

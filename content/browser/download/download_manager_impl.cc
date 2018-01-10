@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -60,6 +61,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request_context.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
 
@@ -129,6 +131,16 @@ void CreateInterruptedDownload(
                      std::make_unique<DownloadManager::InputStream>(
                          std::move(empty_byte_stream)),
                      params->callback()));
+}
+
+download::DownloadEntry CreateDownloadEntryFromItem(const DownloadItem& item) {
+  // Get a new UKM download_id that is not 0.
+  uint64_t download_id = 0;
+  do {
+    download_id = base::RandUint64();
+  } while (download_id == 0);
+
+  return download::DownloadEntry(item.GetGuid(), download_id);
 }
 
 DownloadManagerImpl::UniqueUrlDownloadHandlerPtr BeginDownload(
@@ -547,6 +559,17 @@ void DownloadManagerImpl::StartDownloadWithId(
 #endif
 
   if (delegate_) {
+    download::InProgressCache* in_progress_cache =
+        delegate_->GetInProgressCache();
+    if (in_progress_cache) {
+      base::Optional<download::DownloadEntry> entry_opt =
+          in_progress_cache->RetrieveEntry(download->GetGuid());
+      if (!entry_opt.has_value()) {
+        in_progress_cache->AddOrReplaceEntry(
+            CreateDownloadEntryFromItem(*download));
+      }
+    }
+
     if (!in_progress_download_observer_) {
       in_progress_download_observer_.reset(
           new InProgressDownloadObserver(delegate_->GetInProgressCache()));
@@ -629,12 +652,13 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const GURL& page_url,
     const std::string& mime_type,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    const ukm::SourceId ukm_source_id,
     const DownloadItemImplCreated& item_created) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(base::Bind(
       &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
       weak_factory_.GetWeakPtr(), main_file_path, page_url, mime_type,
-      base::Passed(std::move(request_handle)), item_created));
+      base::Passed(std::move(request_handle)), ukm_source_id, item_created));
 }
 
 void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
@@ -642,6 +666,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     const GURL& page_url,
     const std::string& mime_type,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
+    const ukm::SourceId ukm_source_id,
     const DownloadItemImplCreated& item_created,
     uint32_t id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -656,6 +681,21 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     observer.OnDownloadCreated(this, download_item);
   if (!item_created.is_null())
     item_created.Run(download_item);
+
+  // Add download_id and source_id for UKM.
+  auto* delegate = GetDelegate();
+  if (delegate) {
+    download::InProgressCache* in_progress_cache =
+        delegate_->GetInProgressCache();
+    if (in_progress_cache) {
+      base::Optional<download::DownloadEntry> entry_opt =
+          in_progress_cache->RetrieveEntry(download_item->GetGuid());
+      if (!entry_opt.has_value()) {
+        in_progress_cache->AddOrReplaceEntry(
+            CreateDownloadEntryFromItem(*download_item));
+      }
+    }
+  }
 }
 
 // Resume a download of a specific URL. We send the request to the
@@ -1038,14 +1078,6 @@ void DownloadManagerImpl::CreateDownloadHandlerForNavigation(
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
-  download::InProgressCache* in_progress_cache =
-      GetBrowserContext()->GetDownloadManagerDelegate()->GetInProgressCache();
-  if (in_progress_cache) {
-    in_progress_cache->AddOrReplaceEntry(
-        download::DownloadEntry(params->guid(), params->request_origin(),
-                                ToDownloadSource(params->download_source())));
-  }
-
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
         params.get());

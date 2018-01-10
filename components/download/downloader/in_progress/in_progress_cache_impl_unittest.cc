@@ -68,7 +68,7 @@ TEST_F(InProgressCacheImplTest, AddAndRetrieveAndReplaceAndRemove) {
 
   // Add entry.
   std::string guid1("guid");
-  DownloadEntry entry1(guid1, "request origin", DownloadSource::UNKNOWN);
+  DownloadEntry entry1(guid1, "request origin", DownloadSource::UNKNOWN, 999);
   cache_->AddOrReplaceEntry(entry1);
 
   base::Optional<DownloadEntry> retrieved_entry1 = cache_->RetrieveEntry(guid1);
@@ -87,7 +87,8 @@ TEST_F(InProgressCacheImplTest, AddAndRetrieveAndReplaceAndRemove) {
 
   // Add another entry.
   std::string guid2("guid2");
-  DownloadEntry entry2(guid2, "other request origin", DownloadSource::UNKNOWN);
+  DownloadEntry entry2(guid2, "other request origin", DownloadSource::UNKNOWN,
+                       888);
   cache_->AddOrReplaceEntry(entry2);
 
   base::Optional<DownloadEntry> retrieved_entry2 = cache_->RetrieveEntry(guid2);
