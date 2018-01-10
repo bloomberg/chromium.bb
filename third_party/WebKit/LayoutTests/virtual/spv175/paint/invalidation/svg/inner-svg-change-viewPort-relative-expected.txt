@@ -27,8 +27,13 @@
           "reason": "appeared"
         },
         {
+          "object": "LayoutSVGViewportContainer svg id='inner'",
+          "rect": [100, 0, 100, 200],
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'right-aligned text'",
-          "rect": [0, 85, 101, 19],
+          "rect": [0, 85, 100, 19],
           "reason": "disappeared"
         },
         {
@@ -39,12 +44,22 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [180, 60, 20, 20],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [180, 60, 20, 20],
           "reason": "full"
         },
         {
           "object": "LayoutSVGContainer use",
           "rect": [80, 120, 20, 20],
           "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [80, 60, 20, 20],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRect rect",

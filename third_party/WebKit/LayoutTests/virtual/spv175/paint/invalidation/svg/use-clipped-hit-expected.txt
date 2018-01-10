@@ -17,22 +17,34 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 200, 200],
-          "reason": "paint property change"
+          "object": "InlineTextBox 'Unknown'",
+          "rect": [90, 115, 64, 19],
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutSVGViewportContainer svg id='inner'",
-          "rect": [0, 0, 100, 100],
-          "reason": "paint property change"
+          "object": "InlineTextBox 'Passed'",
+          "rect": [90, 115, 44, 19],
+          "reason": "appeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutSVGViewportContainer svg id='inner'",
+      "object": "LayoutSVGText text id='status'",
       "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'Passed'",
+      "reason": "appeared"
     }
   ]
 }
