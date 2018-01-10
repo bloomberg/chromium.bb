@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
+#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -47,6 +48,11 @@ void AddWatcherOnUIThread(const storage::FileSystemURL& url,
     return;
   }
 
+  if (!parser.file_system()->GetFileSystemInfo().watchable()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
   parser.file_system()->AddWatcher(url.origin(),
                                    parser.file_path(),
                                    recursive,
@@ -63,6 +69,11 @@ void RemoveWatcherOnUIThread(const storage::FileSystemURL& url,
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  if (!parser.file_system()->GetFileSystemInfo().watchable()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
