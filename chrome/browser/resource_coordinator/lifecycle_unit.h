@@ -47,7 +47,7 @@ class LifecycleUnit {
   virtual ~LifecycleUnit();
 
   // Returns a unique id representing this LifecycleUnit.
-  uint32_t GetID() const;
+  int32_t GetID() const;
 
   // Returns a title describing this LifecycleUnit, or an empty string if no
   // title is available.
@@ -92,10 +92,10 @@ class LifecycleUnit {
   virtual bool Discard(DiscardReason discard_reason) = 0;
 
  private:
-  static uint32_t next_id_;
+  static int32_t next_id_;
 
   // A unique id representing this LifecycleUnit.
-  const uint32_t id_ = ++next_id_;
+  const int32_t id_ = ++next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleUnit);
 };
