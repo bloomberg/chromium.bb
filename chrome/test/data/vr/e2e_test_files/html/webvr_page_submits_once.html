@@ -12,14 +12,12 @@ WebVR page without any code specific to one test
     <script src="../resources/webvr_boilerplate.js"></script>
     <script>
       var has_submitted = false;
-      onAnimationFrameCallback = function() {
-        if (vrDisplay.isPresenting) {
-          if (has_submitted) {
-            shouldSubmitFrame = false;
-            finishJavaScriptStep();
-          }
-          has_submitted = true;
+      onPresentingAnimationFrameCallback = function() {
+        if (has_submitted) {
+          shouldSubmitFrame = false;
+          finishJavaScriptStep();
         }
+        has_submitted = true;
       };
     </script>
   </body>

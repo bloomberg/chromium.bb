@@ -252,4 +252,36 @@ public class VrShellTransitionTest {
         Assert.assertTrue(VrTestFramework.pollJavaScriptBoolean(
                 javascript, POLL_TIMEOUT_LONG_MS, mVrTestFramework.getFirstTabWebContents()));
     }
+
+    /**
+     * Tests that entering WebVR presentation from the VR browser, exiting presentation, and
+     * re-entering presentation works. This is a regression test for crbug.com/799999.
+     */
+    @Test
+    @CommandLineFlags.Add("enable-webvr")
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testWebVrReEntryFromVrBrowser() throws InterruptedException, TimeoutException {
+        VrTransitionUtils.forceEnterVr();
+        VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("test_webvr_reentry_from_vr_browser"),
+                PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+
+        VrTestFramework.executeStepAndWait(
+                "stepVerifyFirstPresent()", mVrTestFramework.getFirstTabWebContents());
+        // The bug does not reproduce with vrDisplay.exitPresent(), so use the controller to exit.
+        controller.pressReleaseAppButton();
+        VrTestFramework.executeStepAndWait(
+                "stepVerifyMagicWindow()", mVrTestFramework.getFirstTabWebContents());
+
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        VrTestFramework.executeStepAndWait(
+                "stepVerifySecondPresent()", mVrTestFramework.getFirstTabWebContents());
+
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+    }
 }

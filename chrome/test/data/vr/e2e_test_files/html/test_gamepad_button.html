@@ -26,7 +26,7 @@ View.
         });
         index = e.gamepad.index;
       });
-      onAnimationFrameCallback = function() {
+      onPresentingAnimationFrameCallback = function() {
         if (index == -1) return;
         if (!canStartTest) return;
         var gp = navigator.getGamepads()[index];
