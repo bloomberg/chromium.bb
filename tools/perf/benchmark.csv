@@ -25,7 +25,7 @@ gpu_perftests,"reveman@chromium.org, chrome-gpu-perf-owners@chromium.org",Intern
 jetstream,hablich@chromium.org,
 kraken,hablich@chromium.org,
 load_library_perf_tests,,
-loading.desktop,"kouhei@chormium.org, ksakamoto@chromium.org",
+loading.desktop,"kouhei@chromium.org, ksakamoto@chromium.org",
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.desktop,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media.mobile,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
