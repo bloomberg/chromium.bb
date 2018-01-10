@@ -680,13 +680,13 @@ TEST(IncrementalMarkingTest, HeapDequeSwapMember) {
 }
 
 // =============================================================================
-// HeapHashSet/HeapLinkedHashSet support. ======================================
+// HeapHashSet support. ========================================================
 // =============================================================================
 
 namespace {
 
 template <typename Container>
-void Set() {
+void Insert() {
   Object* obj = Object::Create();
   Container container;
   {
@@ -696,7 +696,7 @@ void Set() {
 }
 
 template <typename Container>
-void SetNoBarrier() {
+void InsertNoBarrier() {
   Object* obj = Object::Create();
   Container container;
   {
@@ -784,9 +784,9 @@ void SwapNoBarrier() {
 
 }  // namespace
 
-TEST(IncrementalMarkingTest, HeapHashSetSet) {
-  Set<HeapHashSet<Member<Object>>>();
-  SetNoBarrier<HeapHashSet<WeakMember<Object>>>();
+TEST(IncrementalMarkingTest, HeapHashSetInsert) {
+  Insert<HeapHashSet<Member<Object>>>();
+  InsertNoBarrier<HeapHashSet<WeakMember<Object>>>();
 }
 
 TEST(IncrementalMarkingTest, HeapHashSetCopy) {
@@ -802,26 +802,6 @@ TEST(IncrementalMarkingTest, HeapHashSetMove) {
 TEST(IncrementalMarkingTest, HeapHashSetSwap) {
   Swap<HeapHashSet<Member<Object>>>();
   SwapNoBarrier<HeapHashSet<WeakMember<Object>>>();
-}
-
-TEST(IncrementalMarkingTest, HeapLinkedHashSetSet) {
-  Set<HeapLinkedHashSet<Member<Object>>>();
-  SetNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
-}
-
-TEST(IncrementalMarkingTest, HeapLinkedHashSetCopy) {
-  Copy<HeapLinkedHashSet<Member<Object>>>();
-  CopyNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
-}
-
-TEST(IncrementalMarkingTest, HeapLinkedHashSetMove) {
-  Move<HeapLinkedHashSet<Member<Object>>>();
-  MoveNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
-}
-
-TEST(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
-  Swap<HeapLinkedHashSet<Member<Object>>>();
-  SwapNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
 }
 
 class StrongWeakPair : public std::pair<Member<Object>, WeakMember<Object>> {
@@ -940,6 +920,71 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
     ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
     set.insert(StrongWeakPair(obj1, obj2));
     EXPECT_FALSE(obj2->IsMarked());
+  }
+}
+
+// =============================================================================
+// HeapLinkedHashSet support. ==================================================
+// =============================================================================
+
+TEST(IncrementalMarkingTest, HeapLinkedHashSetInsert) {
+  Insert<HeapLinkedHashSet<Member<Object>>>();
+  InsertNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+}
+
+TEST(IncrementalMarkingTest, HeapLinkedHashSetCopy) {
+  Copy<HeapLinkedHashSet<Member<Object>>>();
+  CopyNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+}
+
+TEST(IncrementalMarkingTest, HeapLinkedHashSetMove) {
+  Move<HeapLinkedHashSet<Member<Object>>>();
+  MoveNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+}
+
+TEST(IncrementalMarkingTest, HeapLinkedHashSetSwap) {
+  Swap<HeapLinkedHashSet<Member<Object>>>();
+  SwapNoBarrier<HeapLinkedHashSet<WeakMember<Object>>>();
+}
+
+// =============================================================================
+// HeapHashCountedSet support. =================================================
+// =============================================================================
+
+// HeapHashCountedSet does not support copy or move.
+
+TEST(IncrementalMarkingTest, HeapHashCountedSetInsert) {
+  Insert<HeapHashCountedSet<Member<Object>>>();
+  InsertNoBarrier<HeapHashCountedSet<WeakMember<Object>>>();
+}
+
+TEST(IncrementalMarkingTest, HeapHashCountedSetSwap) {
+  // HeapHashCountedSet is not move constructible so we cannot use std::swap.
+  {
+    Object* obj1 = Object::Create();
+    Object* obj2 = Object::Create();
+    HeapHashCountedSet<Member<Object>> container1;
+    container1.insert(obj1);
+    HeapHashCountedSet<Member<Object>> container2;
+    container2.insert(obj2);
+    {
+      ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                            {obj1, obj2});
+      container1.swap(container2);
+    }
+  }
+  {
+    Object* obj1 = Object::Create();
+    Object* obj2 = Object::Create();
+    HeapHashCountedSet<WeakMember<Object>> container1;
+    container1.insert(obj1);
+    HeapHashCountedSet<WeakMember<Object>> container2;
+    container2.insert(obj2);
+    {
+      ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                              {obj1, obj2});
+      container1.swap(container2);
+    }
   }
 }
 
