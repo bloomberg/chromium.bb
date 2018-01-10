@@ -24,6 +24,9 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_urls.h"
@@ -60,8 +63,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
   icon_ = gfx::ImageSkia(
       base::MakeUnique<UrlIconSource>(
           base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),
-          profile_->GetRequestContext(), icon_url_, icon_dimension,
-          IDR_WEBSTORE_ICON_32),
+          profile_, icon_url_, icon_dimension, IDR_WEBSTORE_ICON_32),
       gfx::Size(icon_dimension, icon_dimension));
   SetIcon(icon_);
 }

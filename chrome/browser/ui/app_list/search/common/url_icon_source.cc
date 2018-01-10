@@ -7,10 +7,14 @@
 #include <string>
 #include <utility>
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/resource_request.h"
+#include "content/public/common/simple_url_loader.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -19,12 +23,12 @@ using content::BrowserThread;
 namespace app_list {
 
 UrlIconSource::UrlIconSource(const IconLoadedCallback& icon_loaded_callback,
-                             net::URLRequestContextGetter* context_getter,
+                             content::BrowserContext* browser_context,
                              const GURL& icon_url,
                              int icon_size,
                              int default_icon_resource_id)
     : icon_loaded_callback_(icon_loaded_callback),
-      context_getter_(context_getter),
+      browser_context_(browser_context),
       icon_url_(icon_url),
       icon_size_(icon_size),
       default_icon_resource_id_(default_icon_resource_id),
@@ -38,11 +42,37 @@ UrlIconSource::~UrlIconSource() {
 void UrlIconSource::StartIconFetch() {
   icon_fetch_attempted_ = true;
 
-  icon_fetcher_ =
-      net::URLFetcher::Create(icon_url_, net::URLFetcher::GET, this);
-  icon_fetcher_->SetRequestContext(context_getter_);
-  icon_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
-  icon_fetcher_->Start();
+  auto resource_request = std::make_unique<content::ResourceRequest>();
+  resource_request->url = icon_url_;
+  resource_request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("url_icon_source_fetch", R"(
+          semantics {
+            sender: "URL Icon Source"
+            description:
+              "Chrome OS downloads an icon for a web store result."
+            trigger:
+              "When a user initiates a web store search and views results. "
+            data:
+              "URL of the icon. "
+              "No user information is sent."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            setting: "Unconditionally enabled on Chrome OS."
+            policy_exception_justification:
+              "Not implemented, considered not useful."
+          })");
+  simple_loader_ = content::SimpleURLLoader::Create(std::move(resource_request),
+                                                    traffic_annotation);
+  content::mojom::URLLoaderFactory* loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  simple_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, base::BindOnce(&UrlIconSource::OnSimpleLoaderComplete,
+                                     base::Unretained(this)));
 }
 
 gfx::ImageSkiaRep UrlIconSource::GetImageForScale(float scale) {
@@ -56,21 +86,15 @@ gfx::ImageSkiaRep UrlIconSource::GetImageForScale(float scale) {
       .GetImageSkiaNamed(default_icon_resource_id_)->GetRepresentation(scale);
 }
 
-void UrlIconSource::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  CHECK_EQ(icon_fetcher_.get(), source);
-
-  std::unique_ptr<net::URLFetcher> fetcher(std::move(icon_fetcher_));
-
-  if (!fetcher->GetStatus().is_success() ||
-      fetcher->GetResponseCode() != 200) {
+void UrlIconSource::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  if (!response_body) {
     return;
   }
 
-  std::string unsafe_icon_data;
-  fetcher->GetResponseAsString(&unsafe_icon_data);
-
-  ImageDecoder::Start(this, unsafe_icon_data);
+  // Call start to begin decoding.  The ImageDecoder will call OnImageDecoded
+  // with the data when it is done.
+  ImageDecoder::Start(this, *response_body);
 }
 
 void UrlIconSource::OnImageDecoded(const SkBitmap& decoded_image) {
