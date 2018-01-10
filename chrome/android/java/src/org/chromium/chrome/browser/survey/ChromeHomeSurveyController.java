@@ -91,17 +91,8 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         mTabModelSelector = tabModelSelector;
 
         SurveyController surveyController = SurveyController.getInstance();
-        CommandLine commandLine = CommandLine.getInstance();
-        String siteId;
-        if (commandLine.hasSwitch(PARAM_NAME)) {
-            siteId = commandLine.getSwitchValue(PARAM_NAME);
-        } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
-            siteId = TEST_SITE_ID;
-        } else {
-            siteId = VariationsAssociatedData.getVariationParamValue(
-                    HAPPINESS_SURVEY_TRIAL_NAME, PARAM_NAME);
-        }
 
+        String siteId = getSiteId();
         if (TextUtils.isEmpty(siteId)) return;
 
         Runnable onSuccessRunnable = new Runnable() {
@@ -113,6 +104,18 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         String siteContext =
                 String.format("ChromeHomeEnabled=%s", FeatureUtilities.isChromeHomeEnabled());
         surveyController.downloadSurvey(context, siteId, onSuccessRunnable, siteContext);
+    }
+
+    private String getSiteId() {
+        CommandLine commandLine = CommandLine.getInstance();
+        if (commandLine.hasSwitch(PARAM_NAME)) {
+            return commandLine.getSwitchValue(PARAM_NAME);
+        } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
+            return TEST_SITE_ID;
+        } else {
+            return VariationsAssociatedData.getVariationParamValue(
+                    HAPPINESS_SURVEY_TRIAL_NAME, PARAM_NAME);
+        }
     }
 
     /** @return Whether the user qualifies for the survey. */
@@ -403,10 +406,14 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         @Override
         protected Boolean doInBackground(Void... params) {
             if (!mController.doesUserQualifyForSurvey()) return false;
-            return mController.isRandomlySelectedForSurvey()
-                    || CommandLine.getInstance().hasSwitch(
-                               ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
-                    || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY);
+            if (SurveyController.getInstance().doesSurveyExist(mController.getSiteId(), mContext)) {
+                return true;
+            } else {
+                return mController.isRandomlySelectedForSurvey()
+                        || CommandLine.getInstance().hasSwitch(
+                                   ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
+                        || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY);
+            }
         }
 
         @Override
