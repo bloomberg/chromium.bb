@@ -1189,64 +1189,6 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
             div_with_transform_properties->Transform()->Parent());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
-  SetBodyInnerHTML(R"HTML(
-    <svg id='svg'>
-      <svg id='container1' width='30' height='30'></svg>
-      <svg id='container2'
-          width='30' height='30' x='40' y='50' viewBox='0 0 60 60'></svg>
-      <svg id='container3' overflow='visible' width='30' height='30'></svg>
-      <svg id='container4' overflow='visible'
-          width='30' height='30' x='20' y='30'></svg>
-    </svg>
-  )HTML");
-
-  const auto* svg_properties = PaintPropertiesForElement("svg");
-  ASSERT_NE(nullptr, svg_properties);
-  const auto* parent_transform = svg_properties->PaintOffsetTranslation();
-  const auto* parent_clip = svg_properties->OverflowClip();
-
-  // overflow: hidden and zero offset: OverflowClip only.
-  const auto* properties1 = PaintPropertiesForElement("container1");
-  ASSERT_NE(nullptr, properties1);
-  const auto* clip = properties1->OverflowClip();
-  const auto* transform = properties1->Transform();
-  ASSERT_NE(nullptr, clip);
-  EXPECT_EQ(nullptr, transform);
-  EXPECT_EQ(parent_clip, clip->Parent());
-  EXPECT_EQ(FloatRect(0, 0, 30, 30), clip->ClipRect().Rect());
-  EXPECT_EQ(parent_transform, clip->LocalTransformSpace());
-
-  // overflow: hidden and non-zero offset and viewport scale:
-  // both Transform and OverflowClip.
-  const auto* properties2 = PaintPropertiesForElement("container2");
-  ASSERT_NE(nullptr, properties2);
-  clip = properties2->OverflowClip();
-  transform = properties2->Transform();
-  ASSERT_NE(nullptr, clip);
-  ASSERT_NE(nullptr, transform);
-  EXPECT_EQ(parent_clip, clip->Parent());
-  EXPECT_EQ(FloatRect(0, 0, 60, 60), clip->ClipRect().Rect());
-  EXPECT_EQ(transform, clip->LocalTransformSpace());
-  EXPECT_EQ(TransformationMatrix().Translate(40, 50).Scale(0.5),
-            transform->Matrix());
-  EXPECT_EQ(parent_transform, transform->Parent());
-
-  // overflow: visible and zero offset: no paint properties.
-  const auto* properties3 = PaintPropertiesForElement("container3");
-  EXPECT_EQ(nullptr, properties3);
-
-  // overflow: visible and non-zero offset: Transform only.
-  const auto* properties4 = PaintPropertiesForElement("container4");
-  ASSERT_NE(nullptr, properties4);
-  clip = properties4->OverflowClip();
-  transform = properties4->Transform();
-  EXPECT_EQ(nullptr, clip);
-  ASSERT_NE(nullptr, transform);
-  EXPECT_EQ(TransformationMatrix().Translate(20, 30), transform->Matrix());
-  EXPECT_EQ(parent_transform, transform->Parent());
-}
-
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetTranslationSVGHTMLBoundaryMulticol) {
   SetBodyInnerHTML(R"HTML(

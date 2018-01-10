@@ -33,7 +33,7 @@
         },
         {
           "object": "LayoutSVGViewportContainer svg",
-          "rect": [9, 3, 4, 3],
+          "rect": [9, 3, 5, 3],
           "reason": "paint property change"
         },
         {

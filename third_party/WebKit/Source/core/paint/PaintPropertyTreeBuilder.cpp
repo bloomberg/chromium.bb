@@ -16,7 +16,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -961,12 +960,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
 }
 
 static bool NeedsOverflowClip(const LayoutObject& object) {
-  if (object.IsBox() && ToLayoutBox(object).ShouldClipOverflow()) {
-    return !object.IsLayoutView() ||
-           NeedsFrameContentClip(*ToLayoutView(object).GetFrame());
-  }
-  return object.IsSVGViewportContainer() &&
-         SVGLayoutSupport::IsOverflowHidden(&object);
+  return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow() &&
+         (!object.IsLayoutView() ||
+          NeedsFrameContentClip(*ToLayoutView(object).GetFrame()));
 }
 
 static bool NeedsInnerBorderRadiusClip(const LayoutObject& object) {
@@ -1052,25 +1048,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateOverflowClip() {
       full_context_.force_subtree_update) {
     bool clip_added_or_removed;
     if (NeedsOverflowClip(object_)) {
-      FloatRoundedRect clip_rect;
-      if (object_.IsBox()) {
-        clip_rect =
-            FloatRoundedRect(FloatRect(ToLayoutBox(object_).OverflowClipRect(
-                context_.current.paint_offset)));
-      } else {
-        DCHECK(object_.IsSVGViewportContainer());
-        const auto& viewport_container = ToLayoutSVGViewportContainer(object_);
-        clip_rect = FloatRoundedRect(
-            viewport_container.LocalToSVGParentTransform().Inverse().MapRect(
-                viewport_container.Viewport()));
-      }
-
+      const LayoutBox& box = ToLayoutBox(object_);
+      LayoutRect clip_rect;
+      clip_rect = box.OverflowClipRect(context_.current.paint_offset);
+      FloatRoundedRect clipping_rect((FloatRect(clip_rect)));
       if (!full_context_.clip_changed && properties_->OverflowClip() &&
-          clip_rect != properties_->OverflowClip()->ClipRect())
+          clipping_rect != properties_->OverflowClip()->ClipRect())
         full_context_.clip_changed = true;
 
       auto result = properties_->UpdateOverflowClip(
-          context_.current.clip, context_.current.transform, clip_rect);
+          context_.current.clip, context_.current.transform,
+          FloatRoundedRect(FloatRect(clip_rect)));
       clip_added_or_removed = result.NewNodeCreated();
     } else {
       clip_added_or_removed = properties_->ClearOverflowClip();
