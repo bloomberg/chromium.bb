@@ -9,7 +9,6 @@ import logging
 import os
 import re
 import StringIO
-import subprocess
 import sys
 import tempfile
 import threading
@@ -30,6 +29,7 @@ import test_utils
 from depot_tools import fix_encoding
 from utils import file_path
 from utils import logging_utils
+from utils import subprocess42
 from utils import tools
 
 import httpserver_mock
@@ -253,7 +253,7 @@ class NetTestCase(net_utils.TestCase, Common):
     net_utils.TestCase.setUp(self)
     Common.setUp(self)
     self.mock(time, 'sleep', lambda _: None)
-    self.mock(subprocess, 'call', lambda *_: self.fail())
+    self.mock(subprocess42, 'call', lambda *_: self.fail())
     self.mock(threading, 'Event', NonBlockingEvent)
 
 
@@ -287,7 +287,7 @@ class TestIsolated(auto_stub.TestCase, Common):
         self.assertEqual(unicode(os.path.abspath('work')), cwd)
         return 0
 
-      self.mock(subprocess, 'call', call)
+      self.mock(subprocess42, 'call', call)
 
       main_hash = self._isolate.add_content_compressed(
           'default-gzip', 'not executed')
@@ -1130,7 +1130,7 @@ class TestMain(NetTestCase):
     write_json_calls = []
     self.mock(tools, 'write_json', lambda *args: write_json_calls.append(args))
     subprocess_calls = []
-    self.mock(subprocess, 'call', lambda *c: subprocess_calls.append(c))
+    self.mock(subprocess42, 'call', lambda *c: subprocess_calls.append(c))
     self.mock(swarming, 'now', lambda: 123456)
 
     isolated = os.path.join(self.tempdir, 'zaz.isolated')
@@ -1503,7 +1503,7 @@ class TestMain(NetTestCase):
         self.assertEqual(unicode(w), cwd)
         return 0
 
-      self.mock(subprocess, 'call', call)
+      self.mock(subprocess42, 'call', call)
 
       self.expected_requests(
           [

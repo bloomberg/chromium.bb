@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.10.1'
+__version__ = '0.10.2'
 
 import collections
 import datetime
@@ -14,7 +14,6 @@ import logging
 import optparse
 import os
 import re
-import subprocess
 import sys
 import textwrap
 import threading
@@ -1648,7 +1647,7 @@ def CMDreproduce(parser, args):
       client.ensure(workdir, by_path, cache_dir=cachedir)
 
   try:
-    return subprocess.call(command + extra_args, env=env, cwd=workdir)
+    return subprocess42.call(command + extra_args, env=env, cwd=workdir)
   except OSError as e:
     print >> sys.stderr, 'Failed to run: %s' % ' '.join(command)
     print >> sys.stderr, str(e)
