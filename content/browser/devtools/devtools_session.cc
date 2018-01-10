@@ -23,7 +23,7 @@ bool ShouldSendOnIO(const std::string& method) {
          method == "Debugger.setBreakpointByUrl" ||
          method == "Debugger.removeBreakpoint" ||
          method == "Debugger.setBreakpointsActive" ||
-         method == "Performance.getMetrics";
+         method == "Performance.getMetrics" || method == "Page.crash";
 }
 
 }  // namespace
