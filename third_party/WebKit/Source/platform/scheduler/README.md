@@ -53,7 +53,6 @@ Blink Scheduler as well as other schedulers in Chrome.
 * [Scheduling to avoid checkerboard in Chrome](https://docs.google.com/document/d/1OLp7x06CjBY-0J3TBQzXw8sALHznIx4rYixvnBTbUUA/edit#heading=h.9i2v5u7um22b)
 * [State of GPU scheduling](https://docs.google.com/document/d/15gbHgXPyhSlNu1Ku9HF-of8BNOpvsziV1F8IE-kRax4/edit#heading=h.jermw4ib9rwc)
 * [Scheduling architecture diagram](https://docs.google.com/drawings/d/1xcHpqhdcIsX0b_sGPuU1SZCsY87UTqJ67qvvbF29oLM/edit)
-* [Blink Scheduler-dev BrownBag presentation](https://docs.google.com/presentation/d/1uda_oY0XGMsTsDt9xuWv_eWHWpt_F9VRuL6-5XqBUVY/edit#slide=id.g5e1a23a4d_2274)
 * [Event dispatch diagram](https://docs.google.com/drawings/d/1bUukRm-DV34sM7rL2_bSdxaQkZVMQ_5vOa7nzDnmnx8/edit)
 * [Proxying MessageLoop tasks to the Scheduler](https://docs.google.com/a/chromium.org/document/d/1qxdh2I61_aB_Uzh1QgNqvdWFBCL_E65G2smoSySw7KU/edit#heading=h.vit0krths7ns)
 * [Scheduling JS timer execution](https://docs.google.com/a/chromium.org/document/d/163ow-1wjd6L0rAN3V_U6t12eqVkq4mXDDjVaA4OuvCA/edit?usp=sharing_eid)
