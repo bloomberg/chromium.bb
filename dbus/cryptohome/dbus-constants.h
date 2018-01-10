@@ -62,10 +62,6 @@ const char kCryptohomeInstallAttributesIsInvalid[] =
     "InstallAttributesIsInvalid";
 const char kCryptohomeInstallAttributesIsFirstInstall[] =
     "InstallAttributesIsFirstInstall";
-const char kCryptohomeStoreEnrollmentState[] =
-    "StoreEnrollmentState";
-const char kCryptohomeLoadEnrollmentState[] =
-    "LoadEnrollmentState";
 const char kCryptohomeTpmIsAttestationPrepared[] = "TpmIsAttestationPrepared";
 const char kCryptohomeTpmIsAttestationEnrolled[] = "TpmIsAttestationEnrolled";
 const char kCryptohomeTpmAttestationCreateEnrollRequest[] =
