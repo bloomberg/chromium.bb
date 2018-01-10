@@ -211,7 +211,7 @@ static ALWAYS_INLINE void Vsvesq(const float* source_p,
                                  int source_stride,
                                  float* sum_p,
                                  size_t frames_to_process) {
-  Scalar::Vsvesq(source_p, source_stride, sum_p, n);
+  Scalar::Vsvesq(source_p, source_stride, sum_p, frames_to_process);
 }
 
 static ALWAYS_INLINE void Zvmul(const float* real1p,
