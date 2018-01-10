@@ -42,10 +42,11 @@ constexpr const char* kPinLabels[] = {
 
 constexpr const char kLoginPinViewClassName[] = "LoginPinView";
 
-// How long does the user have to long-press a button before it auto-submits?
-const int kInitialLongPressDelayMs = 500;
-// After the first auto-submit, how long until the next auto-submit event?
-const int kRepeatingLongPressDelayMs = 150;
+// How long does the user have to long-press the backspace button before it
+// auto-submits?
+const int kInitialBackspaceDelayMs = 500;
+// After the first auto-submit, how long until the next backspace event fires?
+const int kRepeatingBackspaceDelayMs = 150;
 
 base::string16 GetButtonLabelForNumber(int value) {
   DCHECK(value >= 0 && value < int{arraysize(kPinLabels)});
@@ -67,11 +68,8 @@ int GetViewIdForPinNumber(int number) {
 // A base class for pin button in the pin keyboard.
 class BasePinButton : public LoginButton, public views::ButtonListener {
  public:
-  explicit BasePinButton(const base::RepeatingClosure& on_press)
-      : LoginButton(this),
-        on_press_(on_press),
-        delay_timer_(std::make_unique<base::OneShotTimer>()),
-        repeat_timer_(std::make_unique<base::RepeatingTimer>()) {
+  explicit BasePinButton(const base::Closure& on_press)
+      : LoginButton(this), on_press_(on_press) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetPreferredSize(
         gfx::Size(LoginPinView::kButtonSizeDp, LoginPinView::kButtonSizeDp));
@@ -89,38 +87,9 @@ class BasePinButton : public LoginButton, public views::ButtonListener {
 
   ~BasePinButton() override = default;
 
-  void SetTimersForTesting(std::unique_ptr<base::Timer> delay_timer,
-                           std::unique_ptr<base::Timer> repeat_timer) {
-    delay_timer_ = std::move(delay_timer);
-    repeat_timer_ = std::move(repeat_timer);
-  }
-
-  // LoginButton:
-  bool OnMousePressed(const ui::MouseEvent& event) override {
-    did_autosubmit_ = false;
-
-    if (IsTriggerableEvent(event) && enabled() &&
-        HitTestPoint(event.location())) {
-      delay_timer_->Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kInitialLongPressDelayMs),
-          base::BindRepeating(&BasePinButton::DispatchRepeatablePressEvent,
-                              base::Unretained(this)));
-    }
-
-    return LoginButton::OnMousePressed(event);
-  }
-  void OnMouseReleased(const ui::MouseEvent& event) override {
-    delay_timer_->Stop();
-    repeat_timer_->Stop();
-    LoginButton::OnMouseReleased(event);
-  }
-
   // views::ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
-    if (did_autosubmit_)
-      return;
 
     if (on_press_)
       on_press_.Run();
@@ -130,25 +99,6 @@ class BasePinButton : public LoginButton, public views::ButtonListener {
   base::Closure on_press_;
 
  private:
-  void DispatchRepeatablePressEvent() {
-    // Start repeat timer if this was fired by the initial delay timer.
-    if (!repeat_timer_->IsRunning()) {
-      repeat_timer_->Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kRepeatingLongPressDelayMs),
-          base::BindRepeating(&BasePinButton::DispatchRepeatablePressEvent,
-                              base::Unretained(this)));
-    }
-
-    did_autosubmit_ = true;
-    on_press_.Run();
-  }
-
-  // If true, then the button submitted from a long-press repeat.
-  bool did_autosubmit_ = false;
-  std::unique_ptr<base::Timer> delay_timer_;
-  std::unique_ptr<base::Timer> repeat_timer_;
-
   DISALLOW_COPY_AND_ASSIGN(BasePinButton);
 };
 
@@ -156,7 +106,7 @@ class BasePinButton : public LoginButton, public views::ButtonListener {
 class DigitPinButton : public BasePinButton {
  public:
   DigitPinButton(int value, const LoginPinView::OnPinKey& on_key)
-      : BasePinButton(base::BindRepeating(on_key, value)) {
+      : BasePinButton(base::Bind(on_key, value)) {
     set_id(GetViewIdForPinNumber(value));
     const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
     views::Label* label = new views::Label(GetButtonLabelForNumber(value),
@@ -199,8 +149,10 @@ const int LoginPinView::kButtonSizeDp = 48;
 // A PIN button that displays backspace icon.
 class LoginPinView::BackspacePinButton : public BasePinButton {
  public:
-  BackspacePinButton(const base::RepeatingClosure& on_press)
-      : BasePinButton(on_press) {
+  BackspacePinButton(const base::Closure& on_press)
+      : BasePinButton(on_press),
+        delay_timer_(std::make_unique<base::OneShotTimer>()),
+        repeat_timer_(std::make_unique<base::RepeatingTimer>()) {
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(kLockScreenBackspaceIcon,
                                    login_constants::kButtonEnabledColor));
@@ -216,7 +168,57 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
 
   ~BackspacePinButton() override = default;
 
+  void SetTimersForTesting(std::unique_ptr<base::Timer> delay_timer,
+                           std::unique_ptr<base::Timer> repeat_timer) {
+    delay_timer_ = std::move(delay_timer);
+    repeat_timer_ = std::move(repeat_timer);
+  }
+
+  // BasePinButton:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    did_autosubmit_ = false;
+
+    if (IsTriggerableEvent(event) && enabled() &&
+        HitTestPoint(event.location())) {
+      delay_timer_->Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kInitialBackspaceDelayMs),
+          base::Bind(&BackspacePinButton::DispatchRepeatablePressEvent,
+                     base::Unretained(this)));
+    }
+
+    return BasePinButton::OnMousePressed(event);
+  }
+  void OnMouseReleased(const ui::MouseEvent& event) override {
+    delay_timer_->Stop();
+    repeat_timer_->Stop();
+    BasePinButton::OnMouseReleased(event);
+  }
+  void ButtonPressed(Button* sender, const ui::Event& event) override {
+    if (did_autosubmit_)
+      return;
+    BasePinButton::ButtonPressed(sender, event);
+  }
+
  private:
+  void DispatchRepeatablePressEvent() {
+    // Start repeat timer if this was fired by the initial delay timer.
+    if (!repeat_timer_->IsRunning()) {
+      repeat_timer_->Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kRepeatingBackspaceDelayMs),
+          base::Bind(&BackspacePinButton::DispatchRepeatablePressEvent,
+                     base::Unretained(this)));
+    }
+
+    did_autosubmit_ = true;
+    on_press_.Run();
+  }
+
+  bool did_autosubmit_ = false;
+  std::unique_ptr<base::Timer> delay_timer_;
+  std::unique_ptr<base::Timer> repeat_timer_;
+
   DISALLOW_COPY_AND_ASSIGN(BackspacePinButton);
 };
 
