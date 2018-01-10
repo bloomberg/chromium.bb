@@ -104,6 +104,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
   } else {
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   }
+  compositor_attach_until_frame_lock_.reset();
 }
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
@@ -166,6 +167,16 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
     WindowAndroidCompositor* compositor) {
   if (registered_parent_compositor_)
     DetachFromCompositor();
+  // If this is the first frame since the compositor became visible, we want to
+  // take the compositor lock, preventing compositor frames from being produced
+  // until all delegated frames are ready. This improves the resume transition,
+  // preventing flashes. Set a 5 second timeout to prevent locking up the
+  // browser in cases where the renderer hangs or another factor prevents a
+  // frame from being produced.
+  if (compositor->IsDrawingFirstVisibleFrame()) {
+    compositor_attach_until_frame_lock_ =
+        compositor->GetCompositorLock(this, base::TimeDelta::FromSeconds(5));
+  }
   compositor->AddChildFrameSink(frame_sink_id_);
   client_->SetBeginFrameSource(&begin_frame_source_);
   registered_parent_compositor_ = compositor;
@@ -174,6 +185,7 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
 void DelegatedFrameHostAndroid::DetachFromCompositor() {
   if (!registered_parent_compositor_)
     return;
+  compositor_attach_until_frame_lock_.reset();
   client_->SetBeginFrameSource(nullptr);
   support_->SetNeedsBeginFrame(false);
   registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
@@ -221,6 +233,8 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
   client_->OnFrameTokenChanged(frame_token);
 }
+
+void DelegatedFrameHostAndroid::CompositorLockTimedOut() {}
 
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;

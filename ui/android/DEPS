@@ -16,6 +16,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/skia",
   "+ui/base",
+  "+ui/compositor/compositor_lock.h",
   "+ui/display",
   "+ui/events",
   "+ui/gfx",
