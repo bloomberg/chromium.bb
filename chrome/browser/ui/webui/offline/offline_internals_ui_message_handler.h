@@ -107,6 +107,10 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
       std::string callback_id,
       const offline_pages::MultipleItemStatuses& results);
 
+  // Callback for SavePageLater calls.
+  void HandleSavePageLaterCallback(std::string callback_id,
+                                   offline_pages::AddRequestResult result);
+
   // Offline page model to call methods on.
   offline_pages::OfflinePageModel* offline_page_model_;
 

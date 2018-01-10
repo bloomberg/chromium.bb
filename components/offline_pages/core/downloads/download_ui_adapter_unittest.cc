@@ -258,12 +258,15 @@ void DownloadUIAdapterTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+void SavePageLaterCallback(AddRequestResult ignored) {}
+
 int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
                                           const ClientId& client_id) {
   RequestCoordinator::SavePageLaterParams params;
   params.url = url;
   params.client_id = client_id;
-  return request_coordinator()->SavePageLater(params);
+  return request_coordinator()->SavePageLater(
+      params, base::Bind(&SavePageLaterCallback));
 }
 
 TEST_F(DownloadUIAdapterTest, InitialLoad) {

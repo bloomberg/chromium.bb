@@ -437,8 +437,8 @@ void OfflineInternalsUIMessageHandler::HandleGetEventLogs(
 
 void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
     const base::ListValue* args) {
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
 
   if (request_coordinator_) {
     std::string url;
@@ -453,12 +453,22 @@ void OfflineInternalsUIMessageHandler::HandleAddToRequestQueue(
     params.url = GURL(url);
     params.client_id = offline_pages::ClientId(offline_pages::kAsyncNamespace,
                                                id_stream.str());
-    ResolveJavascriptCallback(
-        *callback_id,
-        base::Value(request_coordinator_->SavePageLater(params) > 0));
+    request_coordinator_->SavePageLater(
+        params,
+        base::Bind(
+            &OfflineInternalsUIMessageHandler::HandleSavePageLaterCallback,
+            weak_ptr_factory_.GetWeakPtr(), callback_id));
   } else {
-    ResolveJavascriptCallback(*callback_id, base::Value(false));
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value(false));
   }
+}
+
+void OfflineInternalsUIMessageHandler::HandleSavePageLaterCallback(
+    std::string callback_id,
+    offline_pages::AddRequestResult result) {
+  ResolveJavascriptCallback(
+      base::Value(callback_id),
+      base::Value(result == offline_pages::AddRequestResult::SUCCESS));
 }
 
 void OfflineInternalsUIMessageHandler::RegisterMessages() {

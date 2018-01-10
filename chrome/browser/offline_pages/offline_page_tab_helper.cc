@@ -41,6 +41,10 @@ bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
 #endif
   return url.SchemeIsFile();
 }
+
+void SavePageLaterCallback(AddRequestResult result) {
+  // do nothing.
+}
 }  // namespace
 
 OfflinePageTabHelper::LoadedOfflinePageInfo::LoadedOfflinePageInfo()
@@ -379,7 +383,8 @@ void OfflinePageTabHelper::DoDownloadPageLater(
   params.url = url;
   params.client_id = offline_pages::ClientId(name_space, base::GenerateGUID());
   params.request_origin = request_origin;
-  request_coordinator->SavePageLater(params);
+  request_coordinator->SavePageLater(params,
+                                     base::Bind(&SavePageLaterCallback));
 
   if (static_cast<int>(ui_action) &
       static_cast<int>(OfflinePageUtils::DownloadUIActionFlags::

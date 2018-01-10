@@ -264,6 +264,11 @@ void OnRemoveRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                                         j_result_codes);
 }
 
+void SavePageLaterCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+                           AddRequestResult value) {
+  base::android::RunCallbackAndroid(j_callback_obj, static_cast<int>(value));
+}
+
 }  // namespace
 
 static jboolean JNI_OfflinePageBridge_IsOfflineBookmarksEnabled(
@@ -566,13 +571,19 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
       base::Bind(&SavePageCallback, j_callback_ref, save_page_params.url));
 }
 
-void OfflinePageBridge::SavePageLater(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj,
-                                      const JavaParamRef<jstring>& j_url,
-                                      const JavaParamRef<jstring>& j_namespace,
-                                      const JavaParamRef<jstring>& j_client_id,
-                                      const JavaParamRef<jstring>& j_origin,
-                                      jboolean user_requested) {
+void OfflinePageBridge::SavePageLater(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_callback_obj,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jstring>& j_namespace,
+    const JavaParamRef<jstring>& j_client_id,
+    const JavaParamRef<jstring>& j_origin,
+    jboolean user_requested) {
+  DCHECK(j_callback_obj);
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
   offline_pages::ClientId client_id;
   client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);
   client_id.id = ConvertJavaStringToUTF8(env, j_client_id);
@@ -588,7 +599,9 @@ void OfflinePageBridge::SavePageLater(JNIEnv* env,
   params.availability =
       RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER;
   params.request_origin = ConvertJavaStringToUTF8(env, j_origin);
-  coordinator->SavePageLater(params);
+
+  coordinator->SavePageLater(
+      params, base::Bind(&SavePageLaterCallback, j_callback_ref));
 }
 
 ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(

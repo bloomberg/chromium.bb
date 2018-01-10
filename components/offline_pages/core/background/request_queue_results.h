@@ -25,6 +25,7 @@ enum class AddRequestResult {
   ALREADY_EXISTS,
   REQUEST_QUOTA_HIT,  // Cannot add a request with this namespace, as it has
                       // reached a quota of active requests.
+  URL_ERROR,          // Cannot save this URL.
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages.background
