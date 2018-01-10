@@ -1588,10 +1588,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordGenerationDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(autofill::switches::kEnablePasswordGeneration,
                                autofill::switches::kDisablePasswordGeneration)},
-    {"enable-username-correction",
-     flag_descriptions::kEnableUsernameCorrectionName,
-     flag_descriptions::kEnableUsernameCorrectionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kEnableUsernameCorrection)},
     {"enable-password-force-saving",
      flag_descriptions::kPasswordForceSavingName,
      flag_descriptions::kPasswordForceSavingDescription, kOsAll,
@@ -3498,10 +3494,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-parallel-downloading", flag_descriptions::kParallelDownloadingName,
      flag_descriptions::kParallelDownloadingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kParallelDownloading)},
-
-    {"enable-password-selection", flag_descriptions::kPasswordSelectionName,
-     flag_descriptions::kPasswordSelectionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kEnablePasswordSelection)},
 
     {"enable-html-base-username-detector",
      flag_descriptions::kHtmlBasedUsernameDetectorName,

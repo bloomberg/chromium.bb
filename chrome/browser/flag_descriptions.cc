@@ -533,11 +533,6 @@ extern const char kEnableTouchpadAndWheelScrollLatchingDescription[] =
     "Wheel scroll latching enforces latching to a single element for the "
     "duration of a scroll sequence.";
 
-const char kEnableUsernameCorrectionName[] = "Enable username correction";
-const char kEnableUsernameCorrectionDescription[] =
-    "While on the pending password state, add an edit button to the bubble so "
-    "that user can edit the username.";
-
 const char kEnableUseZoomForDsfName[] =
     "Use Blink's zoom for device scale factor.";
 const char kEnableUseZoomForDsfDescription[] =
@@ -1095,11 +1090,6 @@ const char kPasswordExportDescription[] =
 const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
-
-const char kPasswordSelectionName[] =
-    "Password selection and eye icon in prompt";
-const char kPasswordSelectionDescription[] =
-    "Show a password selector and an eye icon in prompt";
 
 const char kPermissionActionReportingName[] = "Permission Action Reporting";
 const char kPermissionActionReportingDescription[] =

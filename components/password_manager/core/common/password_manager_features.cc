@@ -51,14 +51,6 @@ const base::Feature kEnablePasswordForceSaving = {
 const base::Feature kEnableManualPasswordGeneration = {
     "enable-manual-password-generation", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables username correction while saving username and password details.
-const base::Feature kEnableUsernameCorrection{"EnableUsernameCorrection",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables password selection while saving username and password details.
-const base::Feature kEnablePasswordSelection{"EnablePasswordSelection",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the "Show all saved passwords" option in Context Menu.
 const base::Feature kEnableShowAllSavedPasswordsContextMenu{
     "kEnableShowAllSavedPasswordsContextMenu",

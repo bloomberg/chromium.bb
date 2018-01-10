@@ -2546,24 +2546,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                              base::ASCIIToUTF16("pw"));
 }
 
-// This is a subclass to enable kEnablePasswordSelection feature.
-class PasswordManagerBrowserTestForPasswordSelection
-    : public PasswordManagerBrowserTestBase {
- public:
-  PasswordManagerBrowserTestForPasswordSelection() = default;
-  ~PasswordManagerBrowserTestForPasswordSelection() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnablePasswordSelection);
-    PasswordManagerBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForPasswordSelection,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        MultiplePasswordsWithPasswordSelectionEnabled) {
   NavigateToFile("/password/password_form.html");
   NavigationObserver observer(WebContents());

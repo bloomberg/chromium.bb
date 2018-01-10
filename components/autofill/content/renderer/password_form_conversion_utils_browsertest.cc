@@ -1796,10 +1796,6 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
 }
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest, SetOtherPossiblePasswords) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordSelection);
-
   PasswordFormBuilder builder(kTestFormActionURL);
   builder.AddTextField("username1", "John", nullptr);
   builder.AddPasswordField("password1", "alpha1", nullptr);
@@ -1829,10 +1825,6 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, SetOtherPossiblePasswords) {
 
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        AllPossiblePasswordsIncludeAutofilledValue) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordSelection);
-
   for (bool autofilled_value_was_modified_by_user : {false, true}) {
     PasswordFormBuilder builder(kTestFormActionURL);
     builder.AddTextField("username1", "John", nullptr);

@@ -678,30 +678,26 @@ bool GetPasswordForm(
   LocateSpecificPasswords(passwords, &password, &new_password,
                           &confirmation_password);
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordSelection)) {
-    bool form_has_autofilled_value = false;
-    // Add non-empty unique possible passwords to the vector.
-    std::vector<base::string16> all_possible_passwords;
-    for (const WebInputElement& password_element :
-         passwords_without_heuristics) {
-      const base::string16 value = password_element.Value().Utf16();
-      if (value.empty())
-        continue;
-      bool element_has_autofilled_value = FieldHasPropertiesMask(
-          field_value_and_properties_map, password_element,
-          FieldPropertiesFlags::AUTOFILLED);
-      form_has_autofilled_value |= element_has_autofilled_value;
-      if (find(all_possible_passwords.begin(), all_possible_passwords.end(),
-               value) == all_possible_passwords.end()) {
-        all_possible_passwords.push_back(std::move(value));
-      }
+  bool form_has_autofilled_value = false;
+  // Add non-empty unique possible passwords to the vector.
+  std::vector<base::string16> all_possible_passwords;
+  for (const WebInputElement& password_element : passwords_without_heuristics) {
+    const base::string16 value = password_element.Value().Utf16();
+    if (value.empty())
+      continue;
+    bool element_has_autofilled_value =
+        FieldHasPropertiesMask(field_value_and_properties_map, password_element,
+                               FieldPropertiesFlags::AUTOFILLED);
+    form_has_autofilled_value |= element_has_autofilled_value;
+    if (find(all_possible_passwords.begin(), all_possible_passwords.end(),
+             value) == all_possible_passwords.end()) {
+      all_possible_passwords.push_back(std::move(value));
     }
+  }
 
-    if (!all_possible_passwords.empty()) {
-      password_form->all_possible_passwords = std::move(all_possible_passwords);
-      password_form->form_has_autofilled_value = form_has_autofilled_value;
-    }
+  if (!all_possible_passwords.empty()) {
+    password_form->all_possible_passwords = std::move(all_possible_passwords);
+    password_form->form_has_autofilled_value = form_has_autofilled_value;
   }
 
   // Base heuristic for username detection.
