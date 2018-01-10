@@ -1622,11 +1622,13 @@ def CMDreproduce(parser, args):
     command.extend(properties['command'])
 
   # https://github.com/luci/luci-py/blob/master/appengine/swarming/doc/Magic-Values.md
-  new_command = tools.fix_python_path(command)
-  new_command = run_isolated.process_command(
-    new_command, options.output_dir, None)
-  if not options.output_dir and new_command != command:
-    parser.error('The task has outputs, you must use --output-dir')
+  command = tools.fix_python_path(command)
+  new_command = run_isolated.process_command(command, options.output_dir, None)
+  if new_command != command:
+    if not options.output_dir:
+      parser.error('The task has outputs, you must use --output-dir')
+    if not os.path.isdir(options.output_dir):
+      os.makedir(options.output_dir)
   command = new_command
   file_path.ensure_command_has_abs_path(command, workdir)
 
