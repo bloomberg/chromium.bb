@@ -79,7 +79,6 @@
 #include "core/xml/DocumentXPathEvaluator.h"
 #include "core/xml/XPathResult.h"
 #include "platform/graphics/Color.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
