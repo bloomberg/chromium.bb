@@ -1,7 +1,7 @@
 table: [tables/unicode.dis, tables/fr-bfu-g2.ctb]
 tests:
   - - foo 14035
-    - ⠋⠕⠕ ⠠⠡⠹⠼⠩⠱
+    - ⠋⠕⠕ ⠠14035
     - mode: [compbrlAtCursor]
       cursorPos: [0,0]
   - - foo 14035
