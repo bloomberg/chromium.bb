@@ -48,6 +48,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ActionableView:

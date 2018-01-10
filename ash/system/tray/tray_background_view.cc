@@ -260,6 +260,19 @@ void TrayBackgroundView::SetVisible(bool visible) {
   }
 }
 
+void TrayBackgroundView::Layout() {
+  ActionableView::Layout();
+
+  // The tray itself expands to the right and bottom edge of the screen to make
+  // sure clicking on the edges brings up the popup. However, the focus border
+  // should be only around the container.
+  gfx::Rect paint_bounds(GetBackgroundBounds());
+  paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
+  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
+      kFocusBorderColor, kFocusBorderThickness,
+      GetLocalBounds().InsetsFrom(paint_bounds)));
+}
+
 const char* TrayBackgroundView::GetClassName() const {
   return kViewClassName;
 }
@@ -380,15 +393,6 @@ void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
 void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
   tray_container_->UpdateAfterShelfAlignmentChange();
-
-  // The tray itself expands to the right and bottom edge of the screen to make
-  // sure clicking on the edges brings up the popup. However, the focus border
-  // should be only around the container.
-  gfx::Rect paint_bounds(GetBackgroundBounds());
-  paint_bounds.Inset(gfx::Insets(-kFocusBorderThickness));
-  SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, kFocusBorderThickness,
-      GetLocalBounds().InsetsFrom(paint_bounds)));
 }
 
 void TrayBackgroundView::AnchorUpdated() {
