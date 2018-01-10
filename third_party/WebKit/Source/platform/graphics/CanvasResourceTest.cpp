@@ -33,7 +33,7 @@ class MockGLES2InterfaceWithMailboxSupport : public FakeGLES2Interface {
                GLuint(ClientBuffer, GLsizei, GLsizei, GLenum));
 };
 
-class FakePlatformSupport : public TestingPlatformSupport {
+class FakeCanvasResourcePlatformSupport : public TestingPlatformSupport {
  public:
   void RunUntilStop() const { base::RunLoop().Run(); }
 
@@ -114,7 +114,7 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
 }
 
 TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
-  ScopedTestingPlatformSupport<FakePlatformSupport> platform;
+  ScopedTestingPlatformSupport<FakeCanvasResourcePlatformSupport> platform;
 
   constexpr GLuint image_id = 1;
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
