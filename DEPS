@@ -1217,6 +1217,7 @@ hooks = [
     'action': ['src/build/cipd/cipd_wrapper.py',
                '--chromium-root', 'src',
                '--ensure-file', 'src/build/cipd/android/android.ensure',
+               '--ensure-file', 'src/chrome/android/android.ensure',
     ],
   },
   {
