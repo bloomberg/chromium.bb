@@ -1044,7 +1044,7 @@ TEST(IncrementalMarkingTest, HeapHashMapSetMember) {
   }
 }
 
-TEST(IncrementalMarkingTest, HeapHashMapSetMemberOnlyValue) {
+TEST(IncrementalMarkingTest, HeapHashMapSetMemberUpdateValue) {
   Object* obj1 = Object::Create();
   Object* obj2 = Object::Create();
   Object* obj3 = Object::Create();
@@ -1088,7 +1088,7 @@ TEST(IncrementalMarkingTest, HeapHashMapIteratorChangeValue) {
   }
 }
 
-TEST(IncrementalMarkingTest, HeapHashMapCopyMember) {
+TEST(IncrementalMarkingTest, HeapHashMapCopyMemberMember) {
   Object* obj1 = Object::Create();
   Object* obj2 = Object::Create();
   HeapHashMap<Member<Object>, Member<Object>> map1;
@@ -1102,33 +1102,7 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyMember) {
   }
 }
 
-TEST(IncrementalMarkingTest, HeapHashMapInsertStrongWeakPairMember) {
-  Object* obj1 = Object::Create();
-  Object* obj2 = Object::Create();
-  Object* obj3 = Object::Create();
-  HeapHashMap<StrongWeakPair, Member<Object>> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj3});
-    map.insert(StrongWeakPair(obj1, obj2), obj3);
-  }
-}
-
-TEST(IncrementalMarkingTest, HeapHashMapInsertMemberStrongWeakPair) {
-  Object* obj1 = Object::Create();
-  Object* obj2 = Object::Create();
-  Object* obj3 = Object::Create();
-  HeapHashMap<Member<Object>, StrongWeakPair> map;
-  {
-    // Tests that the write barrier also fires for entities such as
-    // StrongWeakPair that don't overload assignment operators in translators.
-    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
-    map.insert(obj1, StrongWeakPair(obj2, obj3));
-  }
-}
-
-TEST(IncrementalMarkingTest, HeapHashMapCopyWeakMember) {
+TEST(IncrementalMarkingTest, HeapHashMapCopyWeakMemberWeakMember) {
   Object* obj1 = Object::Create();
   Object* obj2 = Object::Create();
   HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
@@ -1168,6 +1142,163 @@ TEST(IncrementalMarkingTest, HeapHashMapCopyWeakMemberMember) {
     HeapHashMap<WeakMember<Object>, Member<Object>> map2(map1);
     EXPECT_TRUE(map1.Contains(obj1));
     EXPECT_TRUE(map2.Contains(obj1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapMoveMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map1;
+  map1.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    HeapHashMap<Member<Object>, Member<Object>> map2(std::move(map1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapMoveWeakMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
+  map1.insert(obj1, obj2);
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                            {obj1, obj2});
+    HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2(std::move(map1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapMoveMemberWeakMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, WeakMember<Object>> map1;
+  map1.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    HeapHashMap<Member<Object>, WeakMember<Object>> map2(std::move(map1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapMoveWeakMemberMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<WeakMember<Object>, Member<Object>> map1;
+  map1.insert(obj1, obj2);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2});
+    HeapHashMap<WeakMember<Object>, Member<Object>> map2(std::move(map1));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSwapMemberMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  Object* obj4 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map1;
+  map1.insert(obj1, obj2);
+  HeapHashMap<Member<Object>, Member<Object>> map2;
+  map2.insert(obj3, obj4);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                          {obj1, obj2, obj3, obj4});
+    std::swap(map1, map2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSwapWeakMemberWeakMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  Object* obj4 = Object::Create();
+  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map1;
+  map1.insert(obj1, obj2);
+  HeapHashMap<WeakMember<Object>, WeakMember<Object>> map2;
+  map2.insert(obj3, obj4);
+  {
+    ExpectNoWriteBarrierFires<Object> scope(ThreadState::Current(),
+                                            {obj1, obj2, obj3, obj4});
+    std::swap(map1, map2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSwapMemberWeakMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  Object* obj4 = Object::Create();
+  HeapHashMap<Member<Object>, WeakMember<Object>> map1;
+  map1.insert(obj1, obj2);
+  HeapHashMap<Member<Object>, WeakMember<Object>> map2;
+  map2.insert(obj3, obj4);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj3});
+    std::swap(map1, map2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapSwapWeakMemberMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  Object* obj4 = Object::Create();
+  HeapHashMap<WeakMember<Object>, Member<Object>> map1;
+  map1.insert(obj1, obj2);
+  HeapHashMap<WeakMember<Object>, Member<Object>> map2;
+  map2.insert(obj3, obj4);
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj2, obj4});
+    std::swap(map1, map2);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapInsertStrongWeakPairMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<StrongWeakPair, Member<Object>> map;
+  {
+    // Tests that the write barrier also fires for entities such as
+    // StrongWeakPair that don't overload assignment operators in translators.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj3});
+    map.insert(StrongWeakPair(obj1, obj2), obj3);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapInsertMemberStrongWeakPair) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  Object* obj3 = Object::Create();
+  HeapHashMap<Member<Object>, StrongWeakPair> map;
+  {
+    // Tests that the write barrier also fires for entities such as
+    // StrongWeakPair that don't overload assignment operators in translators.
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1, obj2});
+    map.insert(obj1, StrongWeakPair(obj2, obj3));
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapCopyKeysToVectorMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  map.insert(obj1, obj2);
+  HeapVector<Member<Object>> vec;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    CopyKeysToVector(map, vec);
+  }
+}
+
+TEST(IncrementalMarkingTest, HeapHashMapCopyValuesToVectorMember) {
+  Object* obj1 = Object::Create();
+  Object* obj2 = Object::Create();
+  HeapHashMap<Member<Object>, Member<Object>> map;
+  map.insert(obj1, obj2);
+  HeapVector<Member<Object>> vec;
+  {
+    ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {obj1});
+    CopyValuesToVector(map, vec);
   }
 }
 
