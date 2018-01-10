@@ -28,12 +28,11 @@ class FormSaver {
   virtual void PermanentlyBlacklist(autofill::PasswordForm* observed) = 0;
 
   // Saves the |pending| form and updates the stored preference on
-  // |best_matches|. If |old_primary_key| is given, uses it for saving
-  // |pending|.
-  virtual void Save(const autofill::PasswordForm& pending,
-                    const std::map<base::string16,
-                                   const autofill::PasswordForm*>& best_matches,
-                    const autofill::PasswordForm* old_primary_key) = 0;
+  // |best_matches|.
+  virtual void Save(
+      const autofill::PasswordForm& pending,
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          best_matches) = 0;
 
   // Updates the |pending| form and updates the stored preference on
   // |best_matches|. If |old_primary_key| is given, uses it for saving

@@ -87,11 +87,10 @@ class MockFormSaver : public StubFormSaver {
 
   // FormSaver:
   MOCK_METHOD1(PermanentlyBlacklist, void(autofill::PasswordForm* observed));
-  MOCK_METHOD3(
+  MOCK_METHOD2(
       Save,
       void(const autofill::PasswordForm& pending,
-           const std::map<base::string16, const PasswordForm*>& best_matches,
-           const autofill::PasswordForm* old_primary_key));
+           const std::map<base::string16, const PasswordForm*>& best_matches));
   MOCK_METHOD4(
       Update,
       void(const autofill::PasswordForm& pending,
@@ -1124,7 +1123,7 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   EXPECT_CALL(
       *client()->mock_driver()->mock_autofill_download_manager(),
       StartUploadRequest(_, false, expected_available_field_types, _, true));
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
       .WillOnce(SaveArg<0>(&actual_saved_form));
   form_manager()->Save();
 
@@ -1540,7 +1539,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
       credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
   PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
       .WillOnce(SaveArg<0>(&saved_result));
   form_manager()->Save();
 
@@ -1576,7 +1575,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
       credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
 
   PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
       .WillOnce(SaveArg<0>(&saved_result));
   form_manager()->Save();
 
@@ -2099,7 +2098,7 @@ TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   EXPECT_TRUE(form_manager()->IsNewLogin());
 
   PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
       .WillOnce(SaveArg<0>(&saved_result));
 
   form_manager()->Save();
@@ -2408,7 +2407,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueOfAnotherField) {
 
     // User clicks save, the edited username is saved.
     PasswordForm saved_result;
-    EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, IsEmpty(), nullptr))
+    EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, IsEmpty()))
         .WillOnce(SaveArg<0>(&saved_result));
     // Expect a username edited vote.
     FieldTypeMap expected_types;
@@ -2557,10 +2556,8 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_NoMatchNeitherOnFormNorInStore) {
     // no username vote is uploaded.
     PasswordForm actual_saved_form;
     EXPECT_CALL(MockFormSaver::Get(&form_manager),
-                Save(_,
-                     ElementsAre(Pair(saved_match()->username_value,
-                                      Pointee(*saved_match()))),
-                     nullptr))
+                Save(_, ElementsAre(Pair(saved_match()->username_value,
+                                         Pointee(*saved_match())))))
         .WillOnce(SaveArg<0>(&actual_saved_form));
     EXPECT_CALL(
         *client()->mock_driver()->mock_autofill_download_manager(),
@@ -2603,7 +2600,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_UserRemovedUsername) {
 
   // The user clicks save, empty username is saved.
   PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, IsEmpty(), nullptr))
+  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, IsEmpty()))
       .WillOnce(SaveArg<0>(&saved_result));
   EXPECT_CALL(
       *client()->mock_driver()->mock_autofill_download_manager(),
@@ -2641,10 +2638,8 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_PslMatch) {
   // The user clicks save, the edited username is saved.
   PasswordForm saved_result;
   EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              Save(_,
-                   ElementsAre(Pair(psl_saved_match()->username_value,
-                                    Pointee(*psl_saved_match()))),
-                   nullptr))
+              Save(_, ElementsAre(Pair(psl_saved_match()->username_value,
+                                       Pointee(*psl_saved_match())))))
       .WillOnce(SaveArg<0>(&saved_result));
   // As the credential is re-used successfully, expect a username vote.
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
@@ -2677,7 +2672,7 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
 
   // User clicks save, selected password is saved.
   PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, IsEmpty(), nullptr))
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, IsEmpty()))
       .WillOnce(SaveArg<0>(&saved_result));
   form_manager()->Save();
   EXPECT_EQ(ASCIIToUTF16("username"), saved_result.username_value);
@@ -2995,7 +2990,7 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPslMatched) {
   // PSL matched credential should not be updated, since we are not sure that
   // this is the same credential as submitted one.
   PasswordForm new_credentials;
-  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, _))
       .WillOnce(testing::SaveArg<0>(&new_credentials));
   // As the username is re-used, expect a username vote.
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
@@ -3343,7 +3338,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   EXPECT_TRUE(form_manager.IsNewLogin());
 
   PasswordForm new_credentials;
-  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, _, nullptr))
+  EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, _))
       .WillOnce(SaveArg<0>(&new_credentials));
 
   form_manager.Save();
@@ -4207,7 +4202,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnSave) {
   std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
 
   PasswordForm passed;
-  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty(), nullptr))
+  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty()))
       .WillOnce(SaveArg<0>(&passed));
   clone->Save();
   // The date is expected to be different. Reset it so that we can easily
@@ -4260,7 +4255,7 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   form_manager.reset();
 
   PasswordForm passed;
-  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty(), nullptr))
+  EXPECT_CALL(MockFormSaver::Get(clone.get()), Save(_, IsEmpty()))
       .WillOnce(SaveArg<0>(&passed));
   clone->Save();
   // The date is expected to be different. Reset it so that we can easily

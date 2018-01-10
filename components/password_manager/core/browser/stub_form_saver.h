@@ -21,8 +21,7 @@ class StubFormSaver : public FormSaver {
   void PermanentlyBlacklist(autofill::PasswordForm* observed) override {}
   void Save(const autofill::PasswordForm& pending,
             const std::map<base::string16, const autofill::PasswordForm*>&
-                best_matches,
-            const autofill::PasswordForm* old_primary_key) override {}
+                best_matches) override {}
   void Update(const autofill::PasswordForm& pending,
               const std::map<base::string16, const autofill::PasswordForm*>&
                   best_matches,
