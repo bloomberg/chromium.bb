@@ -20,7 +20,11 @@
 // unsafe resources (such as mixed-content resource).
 // Call the factory method CreateSecurityFilterPeer() to obtain an instance of
 // SecurityFilterPeer based on the original Peer.
-class SecurityFilterPeer : public content::RequestPeer {
+// TODO(jcampan): For now the resource is still being fetched, but ignored, as
+// once we have provided the replacement content, the associated pending request
+// in ResourceDispatcher is removed and further OnReceived* notifications are
+// ignored.
+class SecurityFilterPeer final : public content::RequestPeer {
  public:
   ~SecurityFilterPeer() override;
 
@@ -30,50 +34,30 @@ class SecurityFilterPeer : public content::RequestPeer {
       std::unique_ptr<content::RequestPeer> peer,
       int os_error);
 
-  static std::unique_ptr<content::RequestPeer> CreateSecurityFilterPeerForFrame(
-      std::unique_ptr<content::RequestPeer> peer,
-      int os_error);
-
   // content::RequestPeer methods.
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
-  void OnDownloadedData(int len, int encoded_data_length) override {}
-  void OnTransferSizeUpdated(int transfer_size_diff) override;
-
- protected:
-  explicit SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer);
-
-  std::unique_ptr<content::RequestPeer> original_peer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
-};
-
-// The ReplaceContentPeer cancels the request and serves the provided data as
-// content instead.
-// TODO(jcampan): For now the resource is still being fetched, but ignored, as
-// once we have provided the replacement content, the associated pending request
-// in ResourceDispatcher is removed and further OnReceived* notifications are
-// ignored.
-class ReplaceContentPeer : public SecurityFilterPeer {
- public:
-  ReplaceContentPeer(std::unique_ptr<content::RequestPeer> peer,
-                     const std::string& mime_type,
-                     const std::string& data);
-  ~ReplaceContentPeer() override;
-
-  // content::RequestPeer Implementation.
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
+  void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
+  void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
 
  private:
+  SecurityFilterPeer(std::unique_ptr<content::RequestPeer> peer,
+                     const std::string& mime_type,
+                     const std::string& data);
+
+  static scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
+      const std::string& mime_type);
+
+  std::unique_ptr<content::RequestPeer> original_peer_;
   std::string mime_type_;
   std::string data_;
 
-  DISALLOW_COPY_AND_ASSIGN(ReplaceContentPeer);
+  DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
 };
 
 #endif  // CHROME_RENDERER_SECURITY_FILTER_PEER_H_
