@@ -67,8 +67,8 @@ struct LogoMetadata {
 
   // SIMPLE, ANIMATED: ignored
   // INTERACTIVE: appropriate dimensions for the iframe.
-  int iframe_width_px;
-  int iframe_height_px;
+  int iframe_width_px = 0;
+  int iframe_height_px = 0;
 
   // For use by LogoService ---------------------------------------------------
 
