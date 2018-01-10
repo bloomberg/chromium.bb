@@ -46,7 +46,7 @@ Blink Scheduler as well as other schedulers in Chrome.
 * [Virtual time in Headless Chrome](https://docs.google.com/document/d/1dIMHIl1xutUXqXWRXqXrDd3bo9hachIt_ZkPK_BshUs/edit)
 * [Task traits](https://docs.google.com/document/d/1d6t7CTobtXLj1gXiBE8SVl_fxJjEazATxYHYGp5ppvE)
 * [Compositor and Display Scheduling presentation from scheduling summit](https://docs.google.com/presentation/d/1FpTy5DpIGKt8r2t785y6yrHETkg8v7JfJ26zUxaNDUg/edit?usp=sharing)
-* [Modernizing task management in Chrome](https://docs.google.com/document/d/14Q22SKrhN9OykJgRLcHMQVzeXKVJCbx7xQvOeOoNQm4/edit#heading=h.rptt48atxb4e)
+* [Simplifying Task Management in Chromium](https://docs.google.com/document/d/1fn0AmFsY7gWvStShOh7dUxOfHXjKgcfsr9I1ETbNe2I/edit)
 * [Outline of known work needed to fix resize](https://docs.google.com/a/chromium.org/document/d/1POLDq-L_T9iZ_Ul39sjOMiOO-yvLnmb1WFsH4JfIyVU/edit?usp=sharing_eid)
 * [Blink spatial scheduling](https://docs.google.com/document/d/1k9fL01wwRliVzZW_ibPT8-B9BADz7I87hpFoXFG37aI/edit?pli=1#)
 * [Throttling Blink's rendering pipeline for hidden content](https://docs.google.com/document/d/1Dd4qi1b_iX-OCZpelvXxizjq6dDJ76XNtk37SZEoTYQ/edit)
