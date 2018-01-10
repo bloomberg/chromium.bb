@@ -42,23 +42,17 @@ namespace {
 // Note that at the time of this writing, access is only on the UI thread.
 volatile bool g_main_window_startup_interrupted = false;
 
-base::LazyInstance<base::TimeTicks>::Leaky g_process_creation_ticks =
-    LAZY_INSTANCE_INITIALIZER;
-
-base::LazyInstance<base::TimeTicks>::Leaky
-    g_browser_main_entry_point_ticks_computed_from_time =
-        LAZY_INSTANCE_INITIALIZER;
+base::TimeTicks g_process_creation_ticks;
 
 base::TimeTicks g_browser_main_entry_point_ticks;
 
-base::LazyInstance<base::TimeTicks>::Leaky g_renderer_main_entry_point_ticks =
-    LAZY_INSTANCE_INITIALIZER;
+base::TimeTicks g_browser_main_entry_point_ticks_computed_from_time;
 
-base::LazyInstance<base::TimeTicks>::Leaky
-    g_browser_exe_main_entry_point_ticks = LAZY_INSTANCE_INITIALIZER;
+base::TimeTicks g_renderer_main_entry_point_ticks;
 
-base::LazyInstance<base::TimeTicks>::Leaky g_message_loop_start_ticks =
-    LAZY_INSTANCE_INITIALIZER;
+base::TimeTicks g_browser_exe_main_entry_point_ticks;
+
+base::TimeTicks g_message_loop_start_ticks;
 
 // An enumeration of startup temperatures. This must be kept in sync with the
 // UMA StartupType enumeration defined in histograms.xml.
@@ -304,14 +298,14 @@ std::string GetSameVersionStartupCountSuffix() {
 // Returns the system uptime on process launch.
 base::TimeDelta GetSystemUptimeOnProcessLaunch() {
   // Process launch time is not available on Android.
-  if (g_process_creation_ticks.Get().is_null())
+  if (g_process_creation_ticks.is_null())
     return base::TimeDelta();
 
   // base::SysInfo::Uptime returns the time elapsed between system boot and now.
   // Substract the time elapsed between process launch and now to get the time
   // elapsed between system boot and process launch.
   return base::SysInfo::Uptime() -
-         (base::TimeTicks::Now() - g_process_creation_ticks.Get());
+         (base::TimeTicks::Now() - g_process_creation_ticks);
 }
 
 void RecordSystemUptimeHistogram() {
@@ -425,28 +419,23 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
   return trace_ticks_base - delta_since_base;
 }
 
-// Record renderer main entry time histogram.
 void RecordRendererMainEntryHistogram() {
-  const base::TimeTicks browser_main_entry_point_ticks =
-      g_browser_main_entry_point_ticks_computed_from_time.Get();
-  const base::TimeTicks renderer_main_entry_point_ticks =
-      g_renderer_main_entry_point_ticks.Get();
-
-  if (!browser_main_entry_point_ticks.is_null() &&
-      !renderer_main_entry_point_ticks.is_null()) {
+  if (!g_browser_main_entry_point_ticks_computed_from_time.is_null() &&
+      !g_renderer_main_entry_point_ticks.is_null()) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMainToRendererMain",
-        browser_main_entry_point_ticks, renderer_main_entry_point_ticks);
+        g_browser_main_entry_point_ticks_computed_from_time,
+        g_renderer_main_entry_point_ticks);
   }
 }
 
 void AddStartupEventsForTelemetry()
 {
-  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.Get().is_null());
+  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.is_null());
 
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "startup", "Startup.BrowserMainEntryPoint", 0,
-      g_browser_main_entry_point_ticks_computed_from_time.Get());
+      g_browser_main_entry_point_ticks_computed_from_time);
 }
 
 // Logs the Startup.TimeSinceLastStartup histogram. Obtains the timestamp of the
@@ -515,7 +504,7 @@ void RecordSameVersionStartupCount(PrefService* pref_service) {
 
 bool ShouldLogStartupHistogram() {
   return !WasMainWindowStartupInterrupted() &&
-         !g_process_creation_ticks.Get().is_null();
+         !g_process_creation_ticks.is_null();
 }
 
 }  // namespace
@@ -540,9 +529,9 @@ void SetBackgroundModeEnabled() {
 }
 
 void RecordStartupProcessCreationTime(base::Time time) {
-  DCHECK(g_process_creation_ticks.Get().is_null());
-  g_process_creation_ticks.Get() = StartupTimeToTimeTicks(time);
-  DCHECK(!g_process_creation_ticks.Get().is_null());
+  DCHECK(g_process_creation_ticks.is_null());
+  g_process_creation_ticks = StartupTimeToTimeTicks(time);
+  DCHECK(!g_process_creation_ticks.is_null());
 }
 
 void RecordMainEntryPointTime(base::Time wall_time, base::TimeTicks ticks) {
@@ -550,22 +539,22 @@ void RecordMainEntryPointTime(base::Time wall_time, base::TimeTicks ticks) {
   g_browser_main_entry_point_ticks = ticks;
   DCHECK(!g_browser_main_entry_point_ticks.is_null());
 
-  DCHECK(g_browser_main_entry_point_ticks_computed_from_time.Get().is_null());
-  g_browser_main_entry_point_ticks_computed_from_time.Get() =
+  DCHECK(g_browser_main_entry_point_ticks_computed_from_time.is_null());
+  g_browser_main_entry_point_ticks_computed_from_time =
       StartupTimeToTimeTicks(wall_time);
-  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.Get().is_null());
+  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.is_null());
 }
 
 void RecordExeMainEntryPointTicks(base::TimeTicks ticks) {
-  DCHECK(g_browser_exe_main_entry_point_ticks.Get().is_null());
-  g_browser_exe_main_entry_point_ticks.Get() = ticks;
-  DCHECK(!g_browser_exe_main_entry_point_ticks.Get().is_null());
+  DCHECK(g_browser_exe_main_entry_point_ticks.is_null());
+  g_browser_exe_main_entry_point_ticks = ticks;
+  DCHECK(!g_browser_exe_main_entry_point_ticks.is_null());
 }
 
 void RecordMessageLoopStartTicks(base::TimeTicks ticks) {
-  DCHECK(g_message_loop_start_ticks.Get().is_null());
-  g_message_loop_start_ticks.Get() = ticks;
-  DCHECK(!g_message_loop_start_ticks.Get().is_null());
+  DCHECK(g_message_loop_start_ticks.is_null());
+  g_message_loop_start_ticks = ticks;
+  DCHECK(!g_message_loop_start_ticks.is_null());
 }
 
 void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
@@ -584,11 +573,10 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
   // Record timing of the browser message-loop start time.
   base::StackSamplingProfiler::SetProcessMilestone(
       metrics::CallStackProfileMetricsProvider::MAIN_LOOP_START);
-  const base::TimeTicks process_creation_ticks = g_process_creation_ticks.Get();
-  if (!is_first_run && !process_creation_ticks.is_null()) {
+  if (!is_first_run && !g_process_creation_ticks.is_null()) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
-        process_creation_ticks, ticks);
+        g_process_creation_ticks, ticks);
   }
 
   // Record timing between the shared library's main() entry and the browser
@@ -597,14 +585,14 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2",
-        g_browser_main_entry_point_ticks_computed_from_time.Get(), ticks);
+        g_browser_main_entry_point_ticks_computed_from_time, ticks);
   } else {
     // TODO(pasko): Stop recording the "...MainEntry2" histogram after M65 hits
     // Stable.
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
-        g_browser_main_entry_point_ticks_computed_from_time.Get(), ticks);
+        g_browser_main_entry_point_ticks_computed_from_time, ticks);
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
@@ -617,27 +605,25 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
 
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
-  if (!process_creation_ticks.is_null() &&
-      !g_browser_exe_main_entry_point_ticks.Get().is_null()) {
-    const base::TimeTicks exe_main_ticks =
-        g_browser_exe_main_entry_point_ticks.Get();
-    const base::TimeTicks main_entry_ticks =
-        g_browser_main_entry_point_ticks_computed_from_time.Get();
+  if (!g_process_creation_ticks.is_null() &&
+      !g_browser_exe_main_entry_point_ticks.is_null()) {
     // Process create to chrome.exe:main().
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain2",
-        process_creation_ticks, exe_main_ticks);
+        g_process_creation_ticks, g_browser_exe_main_entry_point_ticks);
 
     // chrome.exe:main() to chrome.dll:main().
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
-        exe_main_ticks, main_entry_ticks);
+        g_browser_exe_main_entry_point_ticks,
+        g_browser_main_entry_point_ticks_computed_from_time);
 
     // Process create to chrome.dll:main(). Reported as a histogram only as
     // the other two events above are sufficient for tracing purposes.
     UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
-        main_entry_ticks - process_creation_ticks);
+        g_browser_main_entry_point_ticks_computed_from_time -
+            g_process_creation_ticks);
   }
 }
 
@@ -651,7 +637,7 @@ void RecordBrowserWindowDisplay(base::TimeTicks ticks) {
 
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
-      g_process_creation_ticks.Get(), ticks);
+      g_process_creation_ticks, ticks);
 }
 
 void RecordBrowserOpenTabsDelta(base::TimeDelta delta) {
@@ -667,8 +653,8 @@ void RecordBrowserOpenTabsDelta(base::TimeDelta delta) {
 void RecordRendererMainEntryTime(base::TimeTicks ticks) {
   // Record the renderer main entry time, but don't log the UMA metric
   // immediately because the startup temperature is not known yet.
-  if (g_renderer_main_entry_point_ticks.Get().is_null())
-    g_renderer_main_entry_point_ticks.Get() = ticks;
+  if (g_renderer_main_entry_point_ticks.is_null())
+    g_renderer_main_entry_point_ticks = ticks;
 }
 
 void RecordFirstWebContentsMainFrameLoad(base::TimeTicks ticks) {
@@ -681,7 +667,7 @@ void RecordFirstWebContentsMainFrameLoad(base::TimeTicks ticks) {
 
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad2",
-      g_process_creation_ticks.Get(), ticks);
+      g_process_creation_ticks, ticks);
 }
 
 void RecordFirstWebContentsNonEmptyPaint(
@@ -703,11 +689,11 @@ void RecordFirstWebContentsNonEmptyPaint(
       metrics::CallStackProfileMetricsProvider::FIRST_NONEMPTY_PAINT);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
-      g_process_creation_ticks.Get(), now);
+      g_process_creation_ticks, now);
   UMA_HISTOGRAM_WITH_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.BrowserMessageLoopStart.To.NonEmptyPaint2",
-      now - g_message_loop_start_ticks.Get());
+      now - g_message_loop_start_ticks);
 
   UMA_HISTOGRAM_WITH_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100,
@@ -728,12 +714,12 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
       metrics::CallStackProfileMetricsProvider::MAIN_NAVIGATION_START);
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
-      "Startup.FirstWebContents.MainNavigationStart",
-      g_process_creation_ticks.Get(), ticks);
+      "Startup.FirstWebContents.MainNavigationStart", g_process_creation_ticks,
+      ticks);
   UMA_HISTOGRAM_WITH_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.BrowserMessageLoopStart.To.MainNavigationStart",
-      ticks - g_message_loop_start_ticks.Get());
+      ticks - g_message_loop_start_ticks);
 
   // Log extra information about this startup's workload. Only added to this
   // histogram as this extra suffix can help making it less noisy but isn't
@@ -742,12 +728,12 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
     UMA_HISTOGRAM_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES_100,
         "Startup.FirstWebContents.MainNavigationStart.SingleTab",
-        ticks - g_process_creation_ticks.Get());
+        ticks - g_process_creation_ticks);
   } else {
     UMA_HISTOGRAM_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES_100,
         "Startup.FirstWebContents.MainNavigationStart.MultiTabs",
-        ticks - g_process_creation_ticks.Get());
+        ticks - g_process_creation_ticks);
   }
 }
 
@@ -764,7 +750,7 @@ void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks) {
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationFinished",
-      g_process_creation_ticks.Get(), ticks);
+      g_process_creation_ticks, ticks);
 }
 
 void RecordBrowserWindowFirstPaint(base::TimeTicks ticks) {
@@ -775,9 +761,9 @@ void RecordBrowserWindowFirstPaint(base::TimeTicks ticks) {
   if (!ShouldLogStartupHistogram())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserWindow.FirstPaint",
-      g_process_creation_ticks.Get(), ticks);
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
+                                           "Startup.BrowserWindow.FirstPaint",
+                                           g_process_creation_ticks, ticks);
 }
 
 void RecordBrowserWindowFirstPaintCompositingEnded(
@@ -792,11 +778,11 @@ void RecordBrowserWindowFirstPaintCompositingEnded(
   UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.BrowserWindow.FirstPaint.CompositingEnded",
-      g_process_creation_ticks.Get(), ticks);
+      g_process_creation_ticks, ticks);
 }
 
 base::TimeTicks MainEntryPointTicks() {
-  return g_browser_main_entry_point_ticks_computed_from_time.Get();
+  return g_browser_main_entry_point_ticks_computed_from_time;
 }
 
 }  // namespace startup_metric_utils
