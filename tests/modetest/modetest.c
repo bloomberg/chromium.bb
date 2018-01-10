@@ -656,10 +656,13 @@ static struct resources *get_resources(struct device *dev)
 	for (i = 0; i < res->res->count_connectors; i++) {
 		struct connector *connector = &res->connectors[i];
 		drmModeConnector *conn = connector->connector;
+		int num;
 
-		asprintf(&connector->name, "%s-%u",
+		num = asprintf(&connector->name, "%s-%u",
 			 util_lookup_connector_type_name(conn->connector_type),
 			 conn->connector_type_id);
+		if (num < 0)
+			goto error;
 	}
 
 #define get_properties(_res, __res, type, Type)					\
