@@ -106,7 +106,7 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
 
   if (tracks_.empty()) {
     if (callback) {
-      // Using StopForRestart() in order to get a notification of when the
+      // Use StopForRestart() in order to get a notification of when the
       // source is actually stopped (if supported). The source will not be
       // restarted.
       // The intent is to have the same effect as StopSource() (i.e., having

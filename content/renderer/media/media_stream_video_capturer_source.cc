@@ -227,6 +227,11 @@ void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
   }
   state_ = STOPPING_FOR_RESTART;
   source_->StopCapture();
+
+  // Force state update for nondevice sources, since they do not
+  // automatically update state after StopCapture().
+  if (device().type == MEDIA_NO_SERVICE)
+    OnRunStateChanged(capture_params_, false);
 }
 
 void MediaStreamVideoCapturerSource::RestartSourceImpl(
