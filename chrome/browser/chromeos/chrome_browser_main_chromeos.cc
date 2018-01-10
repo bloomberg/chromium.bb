@@ -10,10 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/shelf_model.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/process_creation_time_recorder.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -82,7 +78,6 @@
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
-#include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -112,10 +107,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
-#include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -162,7 +153,6 @@
 #include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -213,9 +203,9 @@ void ChromeOSVersionCallback(const std::string& version) {
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   return command_line.HasSwitch(switches::kLoginManager) &&
-      !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
-      app_manager->IsAutoLaunchEnabled() &&
-      KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
+         !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
+         app_manager->IsAutoLaunchEnabled() &&
+         KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 
 // Creates an instance of the NetworkPortalDetector implementation or a stub.
@@ -275,65 +265,9 @@ bool ShallAttemptTpmOwnership() {
 #endif
 }
 
-void PushProcessCreationTimeToAsh() {
-  ash::mojom::ProcessCreationTimeRecorderPtr recorder;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &recorder);
-  DCHECK(!startup_metric_utils::MainEntryPointTicks().is_null());
-  recorder->SetMainProcessCreationTime(
-      startup_metric_utils::MainEntryPointTicks());
-}
-
 }  // namespace
 
 namespace internal {
-
-// Creates a ChromeLauncherController on the first active session notification.
-// Used to avoid constructing a ChromeLauncherController with no active profile.
-class ChromeLauncherControllerInitializer
-    : public session_manager::SessionManagerObserver {
- public:
-  ChromeLauncherControllerInitializer() {
-    session_manager::SessionManager::Get()->AddObserver(this);
-  }
-
-  ~ChromeLauncherControllerInitializer() override {
-    if (!chrome_launcher_controller_)
-      session_manager::SessionManager::Get()->RemoveObserver(this);
-  }
-
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override {
-    DCHECK(!chrome_launcher_controller_);
-    DCHECK(!ChromeLauncherController::instance());
-
-    if (session_manager::SessionManager::Get()->session_state() ==
-        session_manager::SessionState::ACTIVE) {
-      chrome_shelf_model_ = std::make_unique<ash::ShelfModel>();
-      const bool should_synchronize_shelf_models =
-          ash_util::IsRunningInMash() ||
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ash::switches::kAshDisableShelfModelSynchronization);
-      ash::ShelfModel* model = should_synchronize_shelf_models
-                                   ? chrome_shelf_model_.get()
-                                   : ash::Shell::Get()->shelf_model();
-      chrome_launcher_controller_ =
-          std::make_unique<ChromeLauncherController>(nullptr, model);
-      chrome_launcher_controller_->Init();
-      session_manager::SessionManager::Get()->RemoveObserver(this);
-    }
-  }
-
- private:
-  // This shelf model is synced with Ash's ShelfController instance in Mash and
-  // if kAshDisableShelfModelSynchronization is not supplied in Classic Ash;
-  // otherwise ChromeLauncherController uses Ash's ShelfModel instance directly.
-  std::unique_ptr<ash::ShelfModel> chrome_shelf_model_;
-  std::unique_ptr<ChromeLauncherController> chrome_launcher_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerInitializer);
-};
 
 // Wrapper class for initializing dbus related services and shutting them
 // down. This gets instantiated in a scoped_ptr so that shutdown methods in the
@@ -624,8 +558,7 @@ class SystemTokenCertDBInitializer {
 
 ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
     const content::MainFunctionParams& parameters)
-    : ChromeBrowserMainPartsLinux(parameters) {
-}
+    : ChromeBrowserMainPartsLinux(parameters) {}
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // To be precise, logout (browser shutdown) is not yet done, but the
@@ -662,8 +595,9 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
                                                 chrome::kTestUserProfileDir);
     }
     LOG(WARNING) << "Running as stub user with profile dir: "
-                 << singleton_command_line->GetSwitchValuePath(
-                     switches::kLoginProfile).value();
+                 << singleton_command_line
+                        ->GetSwitchValuePath(switches::kLoginProfile)
+                        .value();
   }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -783,9 +717,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   g_browser_process->platform_part()->InitializeChromeUserManager();
   g_browser_process->platform_part()->InitializeSessionManager();
 
-  chrome_launcher_controller_initializer_ =
-      std::make_unique<internal::ChromeLauncherControllerInitializer>();
-
   ScreenLocker::InitClass();
 
   // This forces the ProfileManager to be created and register for the
@@ -800,8 +731,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // If kLoginUser is passed this indicates that user has already
   // logged in and we should behave accordingly.
-  bool immediate_login =
-      parsed_command_line().HasSwitch(switches::kLoginUser);
+  bool immediate_login = parsed_command_line().HasSwitch(switches::kLoginUser);
   if (immediate_login) {
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());
@@ -823,7 +753,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   AccessibilityManager::Initialize();
 
-  if (!ash_util::IsRunningInMash()) {
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
     // TODO(sad): These components expects the ash::Shell instance to be
@@ -864,6 +794,14 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     g_browser_process->platform_part()->RegisterKeepAlive();
   }
 
+  // AccelerometerReader is used by ash and content (via DeviceSensor).
+  // TODO(mash): Initialize this for Mash or use owned instances in src/ash and
+  // src/device. http://crbug.com/525658.
+  chromeos::AccelerometerReader::GetInstance()->Initialize(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
   // NOTE: Calls ChromeBrowserMainParts::PreProfileInit() which calls
   // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which initializes
   // ash::Shell.
@@ -872,21 +810,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Initialize the keyboard before any session state changes (i.e. before
   // loading the default profile).
   keyboard::InitializeKeyboard();
-
-  // AccelerometerReader is used by ash and content (via DeviceSensor).
-  chromeos::AccelerometerReader::GetInstance()->Initialize(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-
-  PushProcessCreationTimeToAsh();
-
-  // Makes mojo request to TabletModeController in ash.
-  tablet_mode_client_ = std::make_unique<TabletModeClient>();
-  tablet_mode_client_->Init();
-
-  wallpaper_controller_client_ = std::make_unique<WallpaperControllerClient>();
-  wallpaper_controller_client_->Init();
 
   if (lock_screen_apps::StateController::IsEnabled()) {
     lock_screen_apps_state_controller_ =
@@ -933,8 +856,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
 class GuestLanguageSetCallbackData {
  public:
-  explicit GuestLanguageSetCallbackData(Profile* profile) : profile(profile) {
-  }
+  explicit GuestLanguageSetCallbackData(Profile* profile) : profile(profile) {}
 
   // Must match SwitchLanguageCallback type.
   static void Callback(
@@ -992,8 +914,8 @@ void SetGuestLocale(Profile* const profile) {
       &GuestLanguageSetCallbackData::Callback, base::Passed(std::move(data))));
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
-  UserSessionManager::GetInstance()->RespectLocalePreference(
-      profile, user, callback);
+  UserSessionManager::GetInstance()->RespectLocalePreference(profile, user,
+                                                             callback);
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {
@@ -1100,7 +1022,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
-  if (!ash_util::IsRunningInMash()) {
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
     // These are dependent on the ash::Shell singleton already having been
     // initialized. Consequently, these cannot be used when running as a mus
     // client.
@@ -1129,12 +1051,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
 
-  if (ash::switches::IsNightLightEnabled()) {
-    night_light_client_ = base::MakeUnique<NightLightClient>(
-        g_browser_process->system_request_context());
-    night_light_client_->Start();
-  }
-
   if (base::FeatureList::IsEnabled(features::kUserActivityEventLogging)) {
     user_activity_logging_controller_ =
         std::make_unique<power::ml::UserActivityLoggingController>();
@@ -1146,8 +1062,6 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   chromeos::ResourceReporter::GetInstance()->StopMonitoring();
-
-  night_light_client_.reset();
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
@@ -1199,13 +1113,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   ScreenLocker::ShutDownClass();
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
-  chrome_launcher_controller_initializer_.reset();
   user_activity_logging_controller_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
 
-  if (!ash_util::IsRunningInMash())
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
     MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
@@ -1218,8 +1131,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // http://crbug.com/276659).
   g_browser_process->platform_part()->user_manager()->Shutdown();
   WallpaperManager::Shutdown();
-
-  wallpaper_controller_client_.reset();
 
   // Let the DeviceDisablingManager unregister itself as an observer of the
   // CrosSettings singleton before it is destroyed.
@@ -1238,18 +1149,15 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Give BrowserPolicyConnectorChromeOS a chance to unregister any observers
   // on services that are going to be deleted later but before its Shutdown()
   // is called.
-  g_browser_process->platform_part()->browser_policy_connector_chromeos()->
-      PreShutdown();
+  g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->PreShutdown();
 
   // Close the notification client before destroying the profile manager.
   notification_client_.reset();
 
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
-
-  // Some observers (e.g. SigninScreenHandler) may not be removed until Ash is
-  // closed.
-  tablet_mode_client_.reset();
 
   // Destroy ArcKioskAppManager after its observers are removed when Ash is
   // closed above.
@@ -1261,7 +1169,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun().
   arc_service_launcher_.reset();
 
-  if (!ash_util::IsRunningInMash())
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
     AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
