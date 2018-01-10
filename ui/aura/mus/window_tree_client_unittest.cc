@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -2602,6 +2603,54 @@ TEST_F(WindowTreeClientWmTest, FocusInDifferentDisplayThanEvent) {
   window_tree_client()->OnWindowInputEvent(1, server_id(&child2), kDisplayId2,
                                            Id(), gfx::PointF(),
                                            std::move(key_event), false);
+}
+
+// Test accelerated widget values cause compositor crashes without Ozone.
+#if defined(USE_OZONE)
+#define MAYBE_SwapDisplayRoots SwapDisplayRoots
+#else
+#define MAYBE_SwapDisplayRoots DISABLED_SwapDisplayRoots
+#endif
+TEST_F(WindowTreeClientWmTest, MAYBE_SwapDisplayRoots) {
+  display::Display display1(201);
+  ui::mojom::WindowDataPtr root_data1(ui::mojom::WindowData::New());
+  root_data1->window_id = 101;
+
+  display::Display display2(202);
+  ui::mojom::WindowDataPtr root_data2(ui::mojom::WindowData::New());
+  root_data2->window_id = 102;
+
+  const bool parent_drawn = true;
+
+  // AuraTestBase ends up owning WindowTreeHost.
+  WindowTreeHostMus* window_tree_host1 =
+      WindowTreeClientPrivate(window_tree_client_impl())
+          .CallWmNewDisplayAdded(display1, std::move(root_data1), parent_drawn);
+  WindowTreeHostMus* window_tree_host2 =
+      WindowTreeClientPrivate(window_tree_client_impl())
+          .CallWmNewDisplayAdded(display2, std::move(root_data2), parent_drawn);
+
+#if defined(OS_WIN) || defined(OS_ANDROID)
+  gfx::AcceleratedWidget widget1 = reinterpret_cast<gfx::AcceleratedWidget>(1U);
+  gfx::AcceleratedWidget widget2 = reinterpret_cast<gfx::AcceleratedWidget>(2U);
+#else
+  gfx::AcceleratedWidget widget1 = static_cast<gfx::AcceleratedWidget>(1U);
+  gfx::AcceleratedWidget widget2 = static_cast<gfx::AcceleratedWidget>(2U);
+#endif
+
+  window_tree_host1->OverrideAcceleratedWidget(widget1);
+  window_tree_host2->OverrideAcceleratedWidget(widget2);
+  EXPECT_EQ(widget1, window_tree_host1->GetAcceleratedWidget());
+  EXPECT_EQ(widget2, window_tree_host2->GetAcceleratedWidget());
+
+  static_cast<WindowManagerClient*>(window_tree_client_impl())
+      ->SwapDisplayRoots(window_tree_host1, window_tree_host2);
+
+  // SwapDisplayRoots swaps the display ids and accelerated widgets.
+  EXPECT_EQ(display2.id(), window_tree_host1->display_id());
+  EXPECT_EQ(display1.id(), window_tree_host2->display_id());
+  EXPECT_EQ(widget2, window_tree_host1->GetAcceleratedWidget());
+  EXPECT_EQ(widget1, window_tree_host2->GetAcceleratedWidget());
 }
 
 TEST_F(WindowTreeClientWmTestHighDPI, BoundsChangeWhenAdded) {
