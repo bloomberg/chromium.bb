@@ -34,7 +34,6 @@ UI_BASE_EXPORT extern const char kDisableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kEnableDrawOcclusion[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kForceHighContrast[];
-UI_BASE_EXPORT extern const char kGlCompositedOverlayCandidateQuadBorder[];
 UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeed[];
 UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeedFast[];
