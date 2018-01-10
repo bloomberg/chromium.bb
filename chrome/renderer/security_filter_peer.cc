@@ -18,11 +18,11 @@
 #include "ui/base/l10n/l10n_util.h"
 
 SecurityFilterPeer::SecurityFilterPeer(
-    std::unique_ptr<content::RequestPeer> peer)
-    : original_peer_(std::move(peer)) {}
-
-SecurityFilterPeer::~SecurityFilterPeer() {
-}
+    std::unique_ptr<content::RequestPeer> peer,
+    const std::string& mime_type,
+    const std::string& data)
+    : original_peer_(std::move(peer)), mime_type_(mime_type), data_(data) {}
+SecurityFilterPeer::~SecurityFilterPeer() {}
 
 // static
 std::unique_ptr<content::RequestPeer>
@@ -45,32 +45,26 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
     case net::ERR_INSECURE_RESPONSE:
-    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
-      if (content::IsResourceTypeFrame(resource_type))
-        return CreateSecurityFilterPeerForFrame(std::move(peer), os_error);
-      // Any other content is entirely filtered-out.
-      return base::MakeUnique<ReplaceContentPeer>(std::move(peer),
-                                                  std::string(), std::string());
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN: {
+      std::string mime_type;
+      std::string data;
+      if (content::IsResourceTypeFrame(resource_type)) {
+        // TODO(jcampan): use a different message when getting a
+        // phishing/malware error.
+        data = base::StringPrintf(
+            "<html><meta charset='UTF-8'>"
+            "<body style='background-color:#990000;color:white;'>"
+            "%s</body></html>",
+            l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
+        mime_type = "text/html";
+      }
+      return base::WrapUnique(
+          new SecurityFilterPeer(std::move(peer), mime_type, data));
+    }
     default:
       // For other errors, we use our normal error handling.
       return peer;
   }
-}
-
-// static
-std::unique_ptr<content::RequestPeer>
-SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
-    std::unique_ptr<content::RequestPeer> peer,
-    int os_error) {
-  // TODO(jcampan): use a different message when getting a phishing/malware
-  // error.
-  std::string html = base::StringPrintf(
-      "<html><meta charset='UTF-8'>"
-      "<body style='background-color:#990000;color:white;'>"
-      "%s</body></html>",
-      l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
-  return base::MakeUnique<ReplaceContentPeer>(std::move(peer), "text/html",
-                                              html);
 }
 
 void SecurityFilterPeer::OnUploadProgress(uint64_t position, uint64_t size) {
@@ -84,18 +78,37 @@ bool SecurityFilterPeer::OnReceivedRedirect(
   return false;
 }
 
+void SecurityFilterPeer::OnReceivedResponse(
+    const content::ResourceResponseInfo& info) {
+  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
+}
+
+void SecurityFilterPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
+  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
+}
+
 void SecurityFilterPeer::OnTransferSizeUpdated(int transfer_size_diff) {
   original_peer_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
-// static
-void ProcessResponseInfo(const content::ResourceResponseInfo& info_in,
-                         content::ResourceResponseInfo* info_out,
-                         const std::string& mime_type) {
-  DCHECK(info_out);
-  *info_out = info_in;
-  info_out->mime_type = mime_type;
-  // Let's create our own HTTP headers.
+void SecurityFilterPeer::OnCompletedRequest(
+    const network::URLLoaderCompletionStatus& status) {
+  content::ResourceResponseInfo info;
+  info.mime_type = mime_type_;
+  info.headers = CreateHeaders(mime_type_);
+  info.content_length = static_cast<int>(data_.size());
+  original_peer_->OnReceivedResponse(info);
+  if (!data_.empty()) {
+    original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
+        data_.data(), data_.size()));
+  }
+  network::URLLoaderCompletionStatus ok_status(status);
+  ok_status.error_code = net::OK;
+  original_peer_->OnCompletedRequest(ok_status);
+}
+
+scoped_refptr<net::HttpResponseHeaders> SecurityFilterPeer::CreateHeaders(
+    const std::string& mime_type) {
   std::string raw_headers;
   raw_headers.append("HTTP/1.1 200 OK");
   raw_headers.push_back('\0');
@@ -111,43 +124,5 @@ void ProcessResponseInfo(const content::ResourceResponseInfo& info_in,
     raw_headers.push_back('\0');
   }
   raw_headers.push_back('\0');
-  net::HttpResponseHeaders* new_headers =
-      new net::HttpResponseHeaders(raw_headers);
-  info_out->headers = new_headers;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ReplaceContentPeer
-
-ReplaceContentPeer::ReplaceContentPeer(
-    std::unique_ptr<content::RequestPeer> peer,
-    const std::string& mime_type,
-    const std::string& data)
-    : SecurityFilterPeer(std::move(peer)), mime_type_(mime_type), data_(data) {}
-
-ReplaceContentPeer::~ReplaceContentPeer() {
-}
-
-void ReplaceContentPeer::OnReceivedResponse(
-    const content::ResourceResponseInfo& info) {
-  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
-}
-
-void ReplaceContentPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
-  // Ignore this, we'll serve some alternate content in OnCompletedRequest.
-}
-
-void ReplaceContentPeer::OnCompletedRequest(
-    const network::URLLoaderCompletionStatus& status) {
-  content::ResourceResponseInfo info;
-  ProcessResponseInfo(info, &info, mime_type_);
-  info.content_length = static_cast<int>(data_.size());
-  original_peer_->OnReceivedResponse(info);
-  if (!data_.empty()) {
-    original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
-        data_.data(), data_.size()));
-  }
-  network::URLLoaderCompletionStatus ok_status(status);
-  ok_status.error_code = net::OK;
-  original_peer_->OnCompletedRequest(ok_status);
+  return base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers);
 }
