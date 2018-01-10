@@ -28,7 +28,6 @@
 #include "platform/heap/HeapAllocator.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
