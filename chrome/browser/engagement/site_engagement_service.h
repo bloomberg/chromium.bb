@@ -204,6 +204,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(banners::AppBannerManagerBrowserTest,
                            CheckOnLoadWithoutSufficientEngagement);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
+  FRIEND_TEST_ALL_PREFIXES(HostedAppPWAOnlyTest, EngagementHistogram);
 
 #if defined(OS_ANDROID)
   // Shim class to expose the service to Java.
