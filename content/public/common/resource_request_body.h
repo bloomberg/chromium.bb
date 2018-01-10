@@ -19,11 +19,6 @@
 #include "storage/common/data_element.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include <jni.h>
-#include "base/android/scoped_java_ref.h"
-#endif
-
 namespace content {
 
 // ResourceRequestBody represents body (i.e. upload data) of a HTTP request.
@@ -37,18 +32,6 @@ class CONTENT_EXPORT ResourceRequestBody
   // Creates ResourceRequestBody that holds a copy of |bytes|.
   static scoped_refptr<ResourceRequestBody> CreateFromBytes(const char* bytes,
                                                             size_t length);
-
-#if defined(OS_ANDROID)
-  // Returns a org.chromium.content_public.common.ResourceRequestBody Java
-  // object that wraps a ref-counted pointer to the |resource_request_body|.
-  base::android::ScopedJavaLocalRef<jobject> ToJavaObject(JNIEnv* env);
-
-  // Extracts and returns a C++ object out of Java's
-  // org.chromium.content_public.common.ResourceRequestBody.
-  static scoped_refptr<ResourceRequestBody> FromJavaObject(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& java_object);
-#endif
 
   void AppendBytes(const char* bytes, int bytes_len);
   void AppendFileRange(const base::FilePath& file_path,

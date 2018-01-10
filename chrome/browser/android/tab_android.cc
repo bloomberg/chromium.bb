@@ -70,7 +70,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/resource_request_body.h"
+#include "content/public/common/resource_request_body_android.h"
 #include "jni/Tab_jni.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/escape.h"
@@ -273,8 +273,10 @@ void TabAndroid::HandlePopupNavigation(NavigateParams* params) {
     ScopedJavaLocalRef<jstring> jheaders(
         ConvertUTF8ToJavaString(env, params->extra_headers));
     ScopedJavaLocalRef<jobject> jpost_data;
-    if (params->uses_post && params->post_data)
-      jpost_data = params->post_data->ToJavaObject(env);
+    if (params->uses_post && params->post_data) {
+      jpost_data = content::ConvertResourceRequestBodyToJavaObject(
+          env, params->post_data);
+    }
     Java_Tab_openNewTab(
         env, jobj, jurl, jheaders, jpost_data, static_cast<int>(disposition),
         params->created_with_opener, params->is_renderer_initiated);
@@ -568,7 +570,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
       load_params.load_type =
           content::NavigationController::LOAD_TYPE_HTTP_POST;
       load_params.post_data =
-          content::ResourceRequestBody::FromJavaObject(env, j_post_data);
+          content::ExtractResourceRequestBodyFromJavaObject(env, j_post_data);
     }
     load_params.transition_type =
         ui::PageTransitionFromInt(page_transition);

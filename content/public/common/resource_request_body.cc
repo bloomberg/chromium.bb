@@ -4,10 +4,6 @@
 
 #include "content/public/common/resource_request_body.h"
 
-#if defined(OS_ANDROID)
-#include "content/common/android/resource_request_body_android.h"
-#endif
-
 namespace content {
 
 ResourceRequestBody::ResourceRequestBody()
@@ -21,21 +17,6 @@ scoped_refptr<ResourceRequestBody> ResourceRequestBody::CreateFromBytes(
   result->AppendBytes(bytes, length);
   return result;
 }
-
-#if defined(OS_ANDROID)
-base::android::ScopedJavaLocalRef<jobject> ResourceRequestBody::ToJavaObject(
-    JNIEnv* env) {
-  return ConvertResourceRequestBodyToJavaObject(
-      env, static_cast<ResourceRequestBody*>(this));
-}
-
-// static
-scoped_refptr<ResourceRequestBody> ResourceRequestBody::FromJavaObject(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& java_object) {
-  return ExtractResourceRequestBodyFromJavaObject(env, java_object);
-}
-#endif
 
 void ResourceRequestBody::AppendBytes(const char* bytes, int bytes_len) {
   if (bytes_len > 0) {

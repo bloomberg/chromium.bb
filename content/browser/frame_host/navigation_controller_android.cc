@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/common/resource_request_body.h"
+#include "content/public/common/resource_request_body_android.h"
 #include "jni/NavigationControllerImpl_jni.h"
 #include "net/base/data_url.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -209,7 +210,7 @@ void NavigationControllerAndroid::LoadUrl(
   if (extra_headers)
     params.extra_headers = ConvertJavaStringToUTF8(env, extra_headers);
 
-  params.post_data = ResourceRequestBody::FromJavaObject(env, j_post_data);
+  params.post_data = ExtractResourceRequestBodyFromJavaObject(env, j_post_data);
 
   if (base_url_for_data_url) {
     params.base_url_for_data_url =

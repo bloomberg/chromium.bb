@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_RESOURCE_REQUEST_BODY_JNI_H_
-#define CONTENT_BROWSER_ANDROID_RESOURCE_REQUEST_BODY_JNI_H_
+#ifndef CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_ANDROID_H_
+#define CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_ANDROID_H_
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
@@ -16,7 +17,7 @@ class ResourceRequestBody;
 
 // Returns an instance of org.chromium.content_public.common.ResourceRequestBody
 // that contains serialized representation of the |native_object|.
-base::android::ScopedJavaLocalRef<jobject>
+CONTENT_EXPORT base::android::ScopedJavaLocalRef<jobject>
 ConvertResourceRequestBodyToJavaObject(
     JNIEnv* env,
     const scoped_refptr<ResourceRequestBody>& native_object);
@@ -24,10 +25,11 @@ ConvertResourceRequestBodyToJavaObject(
 // Reconstructs the native C++ content::ResourceRequestBody object based on
 // org.chromium.content_public.common.ResourceRequestBody (|java_object|) passed
 // in as an argument.
-scoped_refptr<ResourceRequestBody> ExtractResourceRequestBodyFromJavaObject(
+CONTENT_EXPORT scoped_refptr<ResourceRequestBody>
+ExtractResourceRequestBodyFromJavaObject(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& java_object);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_RESOURCE_REQUEST_BODY_JNI_H_
+#endif  // CONTENT_PUBLIC_COMMON_RESOURCE_REQUEST_BODY_ANDROID_H_

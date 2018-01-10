@@ -45,8 +45,6 @@ source_set("common") {
     "android/hash_set.h",
     "android/media_metadata_android.cc",
     "android/media_metadata_android.h",
-    "android/resource_request_body_android.cc",
-    "android/resource_request_body_android.h",
     "android/sync_compositor_statics.cc",
     "android/sync_compositor_statics.h",
     "appcache_interfaces.cc",
