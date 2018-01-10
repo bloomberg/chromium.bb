@@ -48,11 +48,6 @@ class NET_EXPORT Http2PushPromiseIndex {
     virtual bool ValidatePushedStream(const GURL& url,
                                       const SpdySessionKey& key) const = 0;
 
-    // Called when a pushed stream is claimed.  Guaranateed to be called
-    // synchronously after ValidatePushedStream() is called and returns true.
-    virtual void OnPushedStreamClaimed(const GURL& url,
-                                       SpdyStreamId stream_id) = 0;
-
     // Generate weak pointer.  Guaranateed to be called synchronously after
     // ValidatePushedStream() is called and returns true.
     virtual base::WeakPtr<SpdySession> GetWeakPtrToSession() = 0;

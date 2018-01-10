@@ -842,6 +842,10 @@ int SpdySession::GetPushedStream(const GURL& url,
     return ERR_SPDY_PUSHED_STREAM_NOT_AVAILABLE;
   }
 
+  net_log_.AddEvent(
+      NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
+      base::Bind(&NetLogSpdyAdoptedPushStreamCallback, pushed_stream_id, &url));
+
   *stream = active_it->second;
 
   DCHECK_LT(streams_pushed_and_claimed_count_, streams_pushed_count_);
@@ -1359,12 +1363,6 @@ bool SpdySession::ValidatePushedStream(const GURL& url,
          key.privacy_mode() == spdy_session_key_.privacy_mode() &&
          (!url.SchemeIsCryptographic() ||
           VerifyDomainAuthentication(key.host_port_pair().host()));
-}
-
-void SpdySession::OnPushedStreamClaimed(const GURL& url,
-                                        SpdyStreamId stream_id) {
-  DCHECK_NE(kNoPushedStreamFound, stream_id);
-  LogPushStreamClaimed(url, stream_id);
 }
 
 base::WeakPtr<SpdySession> SpdySession::GetWeakPtrToSession() {
@@ -2506,13 +2504,6 @@ void SpdySession::LogAbandonedStream(SpdyStream* stream, Error status) {
   // stream isn't active (i.e., it hasn't written anything to the wire
   // yet) then it's as if it never existed. If it is active, then
   // LogAbandonedActiveStream() will increment the counters.
-}
-
-void SpdySession::LogPushStreamClaimed(const GURL& url,
-                                       SpdyStreamId stream_id) {
-  net_log_.AddEvent(
-      NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
-      base::Bind(&NetLogSpdyAdoptedPushStreamCallback, stream_id, &url));
 }
 
 void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,

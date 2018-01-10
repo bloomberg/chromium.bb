@@ -102,7 +102,6 @@ void Http2PushPromiseIndex::ClaimPushedStream(
     if (it->delegate->ValidatePushedStream(url, key)) {
       *session = it->delegate->GetWeakPtrToSession();
       *stream_id = it->stream_id;
-      it->delegate->OnPushedStreamClaimed(it->url, it->stream_id);
       unclaimed_pushed_streams_.erase(it);
       return;
     }
