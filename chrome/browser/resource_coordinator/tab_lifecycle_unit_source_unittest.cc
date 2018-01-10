@@ -70,10 +70,6 @@ bool IsFocused(LifecycleUnit* lifecycle_unit) {
          base::TimeTicks::Max();
 }
 
-bool WasNeverFocused(LifecycleUnit* lifecycle_unit) {
-  return lifecycle_unit->GetSortKey().last_focused_time.is_null();
-}
-
 class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabLifecycleUnitSourceTest()
@@ -111,14 +107,17 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
     // Add a foreground tab to the tab strip.
     test_clock_.Advance(kShortDelay);
+    auto time_before_first_tab = test_clock_.NowTicks();
     EXPECT_CALL(source_observer_, OnLifecycleUnitCreated(testing::_))
         .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit) {
           *first_lifecycle_unit = lifecycle_unit;
 
-          if (focus_tab_strip)
+          if (focus_tab_strip) {
             EXPECT_TRUE(IsFocused(*first_lifecycle_unit));
-          else
-            EXPECT_TRUE(WasNeverFocused(*first_lifecycle_unit));
+          } else {
+            EXPECT_EQ(time_before_first_tab,
+                      (*first_lifecycle_unit)->GetSortKey().last_focused_time);
+          }
         }));
     content::WebContents* first_web_contents = CreateAndNavigateWebContents();
     tab_strip_model_->AppendWebContents(first_web_contents, true);
@@ -137,8 +136,10 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                       (*first_lifecycle_unit)->GetSortKey().last_focused_time);
             EXPECT_TRUE(IsFocused(*second_lifecycle_unit));
           } else {
-            EXPECT_TRUE(WasNeverFocused(*first_lifecycle_unit));
-            EXPECT_TRUE(WasNeverFocused(*second_lifecycle_unit));
+            EXPECT_EQ(time_before_first_tab,
+                      (*first_lifecycle_unit)->GetSortKey().last_focused_time);
+            EXPECT_EQ(time_before_second_tab,
+                      (*second_lifecycle_unit)->GetSortKey().last_focused_time);
           }
         }));
     content::WebContents* second_web_contents = CreateAndNavigateWebContents();
@@ -158,6 +159,8 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
 
     const base::TimeTicks first_tab_last_focused_time =
         first_lifecycle_unit->GetSortKey().last_focused_time;
+    const base::TimeTicks second_tab_last_focused_time =
+        second_lifecycle_unit->GetSortKey().last_focused_time;
 
     // Add a background tab to the focused tab strip.
     test_clock_.Advance(kShortDelay);
@@ -171,10 +174,13 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
                       first_lifecycle_unit->GetSortKey().last_focused_time);
             EXPECT_TRUE(IsFocused(second_lifecycle_unit));
           } else {
-            EXPECT_TRUE(WasNeverFocused(first_lifecycle_unit));
-            EXPECT_TRUE(WasNeverFocused(second_lifecycle_unit));
+            EXPECT_EQ(first_tab_last_focused_time,
+                      first_lifecycle_unit->GetSortKey().last_focused_time);
+            EXPECT_EQ(second_tab_last_focused_time,
+                      second_lifecycle_unit->GetSortKey().last_focused_time);
           }
-          EXPECT_TRUE(WasNeverFocused(third_lifecycle_unit));
+          EXPECT_EQ(NowTicks(),
+                    third_lifecycle_unit->GetSortKey().last_focused_time);
         }));
     content::WebContents* third_web_contents = CreateAndNavigateWebContents();
     tab_strip_model_->AppendWebContents(third_web_contents, false);
