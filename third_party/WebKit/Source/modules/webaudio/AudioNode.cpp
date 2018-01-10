@@ -542,7 +542,13 @@ void AudioNode::Dispose() {
 #endif
   BaseAudioContext::GraphAutoLocker locker(context());
   Handler().Dispose();
-  if (context()->ContextState() == BaseAudioContext::kRunning) {
+
+  // If the context is not closed, add this handler to the orphan
+  // list.  The audio thread could be running and processing this
+  // handler right now, so deleting it now would be bad.  By putting
+  // on the orphan list, the handler stays alive until it can be
+  // safely processed after the graph is not being processed.
+  if (context()->ContextState() != BaseAudioContext::kClosed) {
     context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
         std::move(handler_));
   }

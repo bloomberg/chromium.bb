@@ -8,17 +8,23 @@
   </head>
   <body>
     <script id="layout-test-code">
-      description('Cycles of AudioNode connections should be collected.');
-      gc();
-      let initialCount = internals.audioHandlerCount();
+      description(
+          'Cycles of AudioNode connections should be collected, after rendering.');
+      window.jsTestIsAsync = true;
+
       let context = new OfflineAudioContext(2, 1024, 44100);
+      let initialCount = internals.audioHandlerCount();
+      gc();
       createCycle();
       debug('A cycle was created:');
       shouldBeTrue('internals.audioHandlerCount() > initialCount');
-      context = null;
       gc();
       debug('GC happened:');
-      shouldBe('internals.audioHandlerCount()', 'initialCount');
+      context.startRendering()
+          .then(() => {
+            shouldBe('internals.audioHandlerCount()', 'initialCount');
+          })
+          .then(finishJSTest);
 
       function createCycle() {
         let source = context.createBufferSource();
