@@ -20,10 +20,9 @@
 // unsafe resources (such as mixed-content resource).
 // Call the factory method CreateSecurityFilterPeer() to obtain an instance of
 // SecurityFilterPeer based on the original Peer.
-// TODO(jcampan): For now the resource is still being fetched, but ignored, as
-// once we have provided the replacement content, the associated pending request
-// in ResourceDispatcher is removed and further OnReceived* notifications are
-// ignored.
+// A SecurityFilterPeer is created only when the associated request is rejected,
+// which means content::RequestPeer methods other than OnCompletedRequest must
+// not be called.
 class SecurityFilterPeer final : public content::RequestPeer {
  public:
   ~SecurityFilterPeer() override;
@@ -39,7 +38,7 @@ class SecurityFilterPeer final : public content::RequestPeer {
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
                           const content::ResourceResponseInfo& info) override;
   void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnDownloadedData(int len, int encoded_data_length) override {}
+  void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnCompletedRequest(
