@@ -385,10 +385,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool use_occlusion_query_ = false;
   bool use_swap_with_bounds_ = false;
 
-  // If true, draw a green border after compositing a overlay candidate quad
-  // using GL.
-  bool gl_composited_overlay_candidate_quad_border_;
-
   // The method FlippedFramebuffer determines whether the framebuffer associated
   // with a DrawingFrame is flipped. It makes the assumption that the
   // DrawingFrame is being used as part of a render pass. If a DrawingFrame is

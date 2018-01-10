@@ -47,11 +47,6 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.release_overlay_resources_after_gpu_query;
   }
 
-  static bool gl_composited_overlay_candidate_quad_border(
-      const viz::RendererSettings& input) {
-    return input.gl_composited_overlay_candidate_quad_border;
-  }
-
   static bool show_overdraw_feedback(const viz::RendererSettings& input) {
     return input.show_overdraw_feedback;
   }

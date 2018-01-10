@@ -413,8 +413,6 @@ GLRenderer::GLRenderer(
               &texture_deleter_,
               base::BindRepeating(&GLRenderer::MoveFromDrawToWindowSpace,
                                   base::Unretained(this))),
-      gl_composited_overlay_candidate_quad_border_(
-          settings->gl_composited_overlay_candidate_quad_border),
       bound_geometry_(NO_BINDING),
       color_lut_cache_(gl_,
                        output_surface_->context_provider()
@@ -1935,19 +1933,6 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 void GLRenderer::DrawTileQuad(const TileDrawQuad* quad,
                               const gfx::QuadF* clip_region) {
   DrawContentQuad(quad, quad->resource_id(), clip_region);
-  // Draw the border if requested.
-  if (gl_composited_overlay_candidate_quad_border_) {
-    float gl_matrix[16];
-    // Generate the transform matrix
-    gfx::Transform quad_rect_matrix;
-    QuadRectTransform(&quad_rect_matrix,
-                      quad->shared_quad_state->quad_to_target_transform,
-                      gfx::RectF(quad->rect));
-    quad_rect_matrix = current_frame()->projection_matrix * quad_rect_matrix;
-    ToGLMatrix(gl_matrix, quad_rect_matrix);
-
-    DrawOverlayCandidateQuadBorder(gl_matrix);
-  }
 }
 
 void GLRenderer::DrawContentQuad(const ContentDrawQuadBase* quad,
@@ -2393,26 +2378,6 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
   }
 }
 
-void GLRenderer::DrawOverlayCandidateQuadBorder(float* gl_matrix) {
-  SetBlendEnabled(false);
-  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
-                current_frame()->current_render_pass->color_space);
-
-  gl_->UniformMatrix4fv(current_program_->matrix_location(), 1, false,
-                        gl_matrix);
-
-  // Pick a random color based on the scale on X and Y.
-  int colorIndex = static_cast<int>(gl_matrix[0] * gl_matrix[5]);
-  SkColor color =
-      cc::DebugColors::GLCompositedTextureQuadBorderColor(colorIndex);
-  SetShaderColor(color, 1.f);
-
-  gl_->LineWidth(cc::DebugColors::GLCompositedTextureQuadBoderWidth());
-  // The indices for the line are stored in the same array as the triangle
-  // indices.
-  gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, nullptr);
-}
-
 void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
   if (draw_cache_.is_empty)
@@ -2478,14 +2443,6 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
                     6 * static_cast<int>(draw_cache_.matrix_data.size()),
                     GL_UNSIGNED_SHORT, nullptr);
   num_triangles_drawn_ += 2 * static_cast<int>(draw_cache_.matrix_data.size());
-
-  // Draw the border if requested.
-  if (gl_composited_overlay_candidate_quad_border_) {
-    // When we draw the composited borders we have one flush per quad.
-    DCHECK_EQ(1u, draw_cache_.matrix_data.size());
-    DrawOverlayCandidateQuadBorder(
-        reinterpret_cast<float*>(&draw_cache_.matrix_data.front()));
-  }
 
   // Clear the cache.
   draw_cache_.is_empty = true;
@@ -2609,8 +2566,7 @@ void GLRenderer::EnqueueTextureQuad(const TextureDrawQuad* quad,
     PrepareGeometry(CLIPPED_BINDING);
     clipped_geometry_->InitializeCustomQuadWithUVs(scaled_region, uv);
     FlushTextureQuadCache(CLIPPED_BINDING);
-  } else if (gl_composited_overlay_candidate_quad_border_ ||
-             need_tex_clamp_rect) {
+  } else if (need_tex_clamp_rect) {
     FlushTextureQuadCache(SHARED_BINDING);
   }
 }

@@ -19,8 +19,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
   out->should_clear_root_render_pass = data.should_clear_root_render_pass();
   out->release_overlay_resources_after_gpu_query =
       data.release_overlay_resources_after_gpu_query();
-  out->gl_composited_overlay_candidate_quad_border =
-      data.gl_composited_overlay_candidate_quad_border();
   out->show_overdraw_feedback = data.show_overdraw_feedback();
   out->enable_draw_occlusion = data.enable_draw_occlusion();
   out->highp_threshold_min = data.highp_threshold_min();
