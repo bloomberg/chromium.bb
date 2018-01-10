@@ -613,10 +613,16 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   RenderPassBacking& content_texture =
       render_pass_backings_[quad->render_pass_id];
   DCHECK(content_texture.gl_id);
-  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(
-      resource_provider_, content_texture.gl_id);
-  if (!lock.sk_image())
-    return;
+
+  GrGLTextureInfo texture_info;
+  texture_info.fID = content_texture.gl_id;
+  texture_info.fTarget = GL_TEXTURE_2D;
+  GrBackendTexture backend_texture(
+      content_texture.size.width(), content_texture.size.height(),
+      ToGrPixelConfig(content_texture.format), texture_info);
+  sk_sp<SkImage> content = SkImage::MakeFromTexture(
+      output_surface_->context_provider()->GrContext(), backend_texture,
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, nullptr);
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect dest_visible_rect =
@@ -625,10 +631,8 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
           gfx::RectF(quad->visible_rect)));
   SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
 
-  const SkImage* content = lock.sk_image();
-
-  current_canvas_->drawImageRect(lock.sk_image(), content_rect,
-                                 dest_visible_rect, &current_paint_);
+  current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
+                                 &current_paint_);
 
   const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
 
