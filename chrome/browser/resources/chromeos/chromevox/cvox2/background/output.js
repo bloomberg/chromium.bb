@@ -416,7 +416,7 @@ Output.RULES = {
     },
     paragraph: {speak: `$descendants`},
     popUpButton: {
-      speak: `$value $name $role @aria_has_popup
+      speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
           $state $restriction $description`
     },
     radioButton: {
@@ -1117,14 +1117,26 @@ Output.prototype = {
               this.format_(node, formatString, buff);
           }
         } else if (token == 'descendants') {
-          if (!node || AutomationPredicate.leafOrStaticText(node))
+          if (!node)
             return;
 
-          // Construct a range to the leftmost and rightmost leaves.
-          var leftmost = AutomationUtil.findNodePre(
-              node, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
-          var rightmost = AutomationUtil.findNodePre(
-              node, Dir.BACKWARD, AutomationPredicate.leafOrStaticText);
+          var leftmost = node;
+          var rightmost = node;
+          if (AutomationPredicate.leafOrStaticText(node)) {
+            // Find any deeper leaves, if any, by starting from one level down.
+            leftmost = node.firstChild;
+            rightmost = node.lastChild;
+            if (!leftmost || !rightmost)
+              return;
+          }
+
+          // Construct a range to the leftmost and rightmost leaves. This range
+          // gets rendered below which results in output that is the same as if
+          // a user navigated through the entire subtree of |node|.
+          leftmost = AutomationUtil.findNodePre(
+              leftmost, Dir.FORWARD, AutomationPredicate.leafOrStaticText);
+          rightmost = AutomationUtil.findNodePre(
+              rightmost, Dir.BACKWARD, AutomationPredicate.leafOrStaticText);
           if (!leftmost || !rightmost)
             return;
 
