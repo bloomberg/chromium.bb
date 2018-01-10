@@ -92,14 +92,14 @@ Memory map
  .text._ZN5blink23ContiguousContainerBase11shrinkToFitEv
                 0x002a0000       0x10 obj/third_party/WebKit.a(PaintChunker.o)
                 0x002a0001                blink::ContiguousContainerBase::shrinkToFit()
- .text.hot._ZN5blink23ContiguousContainerBase11shrinkToFitEv2
+ .text.hot._ZN5blink23ContiguousContainerBase11shrinkToFitEv2.part.1234.isra.2
                 0x002a0010       0xc obj/third_party/WebKit.a(PaintChunker.o)
-                0x002a0011                blink::ContiguousContainerBase::shrinkToFit() [clone .part.1234] [clone .isra.2]
+                0x002a0011                blink::ContiguousContainerBase::shrinkToFit()
  .text._ZN5blink23ContiguousContainerBaseC2EOS0_
                 0xffffffffffffffff       0x18 obj/third_party/WebKit.a(ContiguousContainer.o)
                 0x002a0021                blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&)
                 0x002a0021                blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&)
- .text._ZN5blink12PaintChunker18releasePaintChunksEv
+ .text._ZN10_GLOBAL__N5blink12PaintChunker18releasePaintChunksEv.part.1
                 0x002a1000       0x5e obj/third_party/WebKit.a(ContiguousContainer.o)
                 0x002a1001                (anonymous namespace)::blink::PaintChunker::releasePaintChunks() [clone .part.1]
 
@@ -127,7 +127,7 @@ Memory map
                 0x0284e398                chrome::mojom::FilePatcher::Name_
  .rodata._ZN12_GLOBAL__N_1L37kAnimationFrameTimeHistogramClassPathE
                 0x028f3450       0x30 obj/third_party/WebKit.a(PaintChunker.o)
- .rodata._ZZN5blink20CSSValueKeywordsHash13findValueImplEPKcjE15value_word_list
+ .rodata._ZZN10_GLOBAL__N5blink20CSSValueKeywordsHash13findValueImplEPKcjE15value_word_list
                 0x028f3480       0x4 obj/third_party/WebKit.a(PaintChunker.o)
                 0x028f3480                blink::(anonymous namespace)::CSSValueKeywordsHash::findValueImpl(char const*, unsigned int)::value_word_list
 

@@ -31,6 +31,34 @@ _MAPPINGS = {
          'aramRef<_jlongArray*> const&, int)::atomic_histogram_pointer'),
     '_ZN12_GLOBAL__N_135g_AnimationFrameTimeHistogram_clazzE': (
         '(anonymous namespace)::g_AnimationFrameTimeHistogram_clazz'),
+    '_ZN5blink23ContiguousContainerBase11shrinkToFitEv': (
+        'blink::ContiguousContainerBase::shrinkToFit()'),
+    '_ZN5blink23ContiguousContainerBase11shrinkToFitEv2.part.1234.isra.2': (
+        'blink::ContiguousContainerBase::shrinkToFit() [clone .part.1234] '
+        '[clone .isra.2]'),
+    '_ZN5blink23ContiguousContainerBaseC2EOS0_': (
+        'blink::ContiguousContainerBase::ContiguousContainerBase('
+        'blink::ContiguousContainerBase&&)'),
+    '_ZN5blink12PaintChunker18releasePaintChunksEv': (
+        'blink::PaintChunker::releasePaintChunks()'),
+    '_ZN10_GLOBAL__N5blink12PaintChunker18releasePaintChunksEv.part.1': (
+        '(anonymous namespace)::blink::PaintChunker::releasePaintChunks() '
+        '[clone .part.1]'),
+    '_ZN6chrome5mojom11FilePatcher5Name_E': 'chrome::mojom::FilePatcher::Name_',
+    '_ZTV18ChromeMainDelegate': 'vtable for ChromeMainDelegate',
+    '_ZTVN6chrome5mojom34FieldTrialRecorderRequestValidatorE': (
+        'vtable for chrome::mojom::FieldTrialRecorder'),
+    '_ZTVN6chrome5mojom23FieldTrialRecorderProxyE': (
+        'vtable for chrome::mojom::FieldTrialRecorderProxy'),
+    ('_ZZN10_GLOBAL__N5blink20CSSValueKeywordsHash13findValueImplEPKcjE15value_'
+        'word_list'): ('(anonymous namespace)::blink::CSSValueKeywordsHash::'
+        'findValueImpl(char const*, unsigned int)::value_word_list'),
+    '_ZTV25ChromeMainDelegateAndroid': 'vtable for ChromeMainDelegateAndroid',
+    '_ZTVN4mojo15MessageReceiverE': 'vtable for mojo::MessageReceiver',
+    '_ZN6google8protobuf8internal19pLinuxKernelCmpxchgE': (
+        'google::protobuf::internal::pLinuxKernelCmpxchg'),
+    '_ZN6google8protobuf8internal25pLinuxKernelMemoryBarrierE': (
+        'google::protobuf::internal::pLinuxKernelMemoryBarrier'),
 }
 
 
