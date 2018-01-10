@@ -16,6 +16,17 @@ html {
   --logo-margin-top: 56px; /* Expected OGB height, so logo doesn't overlap. */
   --logo-margin-bottom: 29px; /* Between logo and fakebox. */
 
+  /* Initial height determines the margin between the logo and the fakebox. If
+   * the iframe height exceeds the normal --logo-height, the difference is
+   * subtracted from the margin. The actual --logo-iframe-{width,height} can be
+   * changed later, but the initial height, and therefore the margin, remains
+   * the same.
+   */
+  --logo-iframe-initial-height: var(--logo-height);
+  --logo-iframe-height: var(--logo-iframe-initial-height);
+  --logo-iframe-resize-duration: 150ms;
+  --logo-iframe-width: 500px;
+
   --tile-height: 128px;
   --tile-margin: 16px;
   --tile-width: 154px;
@@ -180,9 +191,12 @@ body.alternate-logo #logo-non-white {
 
 #logo-doodle-iframe {
   border: 0;
-  height: var(--logo-height);
-  margin: 0 auto var(--logo-margin-bottom) auto;
-  width: var(--content-width);
+  height: var(--logo-iframe-height);
+  margin: 0 auto calc(var(--logo-height) + var(--logo-margin-bottom)
+                      - var(--logo-iframe-initial-height)) auto;
+  transition: width var(--logo-iframe-resize-duration),
+              height var(--logo-iframe-resize-duration);
+  width: var(--logo-iframe-width);
 }
 
 #logo-doodle-notifier {

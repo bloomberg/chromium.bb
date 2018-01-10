@@ -65,6 +65,11 @@ struct LogoMetadata {
   // SIMPLE, INTERACTIVE: not used.
   GURL animated_url;
 
+  // SIMPLE, ANIMATED: ignored
+  // INTERACTIVE: appropriate dimensions for the iframe.
+  int iframe_width_px;
+  int iframe_height_px;
+
   // For use by LogoService ---------------------------------------------------
 
   // The URL from which the logo was downloaded (without the fingerprint param).

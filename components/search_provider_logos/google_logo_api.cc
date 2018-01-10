@@ -26,6 +26,10 @@
 namespace search_provider_logos {
 
 namespace {
+
+const int kDefaultIframeWidthPx = 500;
+const int kDefaultIframeHeightPx = 200;
+
 // Appends the provided |value| to the "async" query param, according to the
 // format used by the Google doodle servers: "async=param:value,other:foo"
 // Derived from net::AppendOrReplaceQueryParameter, that can't be used because
@@ -181,7 +185,7 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   }
 
   const bool is_animated = (logo->metadata.type == LogoType::ANIMATED);
-  const bool is_interactive = (logo->metadata.type == LogoType::INTERACTIVE);
+  bool is_interactive = (logo->metadata.type == LogoType::INTERACTIVE);
 
   // Check if the main image is animated.
   if (is_animated) {
@@ -242,7 +246,19 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
         (behavior == "NEW_WINDOW")) {
       logo->metadata.type = LogoType::SIMPLE;
       logo->metadata.on_click_url = logo->metadata.full_page_url;
+      is_interactive = false;
     }
+  }
+
+  logo->metadata.iframe_width_px = 0;
+  logo->metadata.iframe_height_px = 0;
+  if (is_interactive) {
+    if (!ddljson->GetInteger("iframe_width_px",
+                             &logo->metadata.iframe_width_px))
+      logo->metadata.iframe_width_px = kDefaultIframeWidthPx;
+    if (!ddljson->GetInteger("iframe_height_px",
+                             &logo->metadata.iframe_height_px))
+      logo->metadata.iframe_height_px = kDefaultIframeHeightPx;
   }
 
   base::TimeDelta time_to_live;
