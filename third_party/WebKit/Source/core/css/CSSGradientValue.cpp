@@ -115,11 +115,7 @@ scoped_refptr<Image> CSSGradientValue::GetImage(
     if (!Clients().Contains(&client))
       return nullptr;
 
-    // Need to look up our size.  Create a string of width*height to use as a
-    // hash key.
-    Image* result =
-        this->CSSImageGeneratorValue::GetImage(&client, document, style, size);
-    if (result)
+    if (Image* result = CSSImageGeneratorValue::GetImage(&client, size))
       return result;
   }
 
