@@ -10,13 +10,10 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/account_consistency_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #import "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -257,10 +254,6 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   if ([tab loadFinished]) {
     [[OmniboxGeolocationController sharedInstance] finishPageLoadForTab:tab
                                                             loadSuccess:YES];
-
-    if (!webState->GetLastCommittedURL().SchemeIs(kChromeUIScheme)) {
-      base::RecordAction(base::UserMetricsAction("MobilePageLoaded"));
-    }
   }
 
   [tab setDelegate:nil];
