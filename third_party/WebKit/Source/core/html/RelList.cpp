@@ -31,7 +31,7 @@ static HashSet<AtomicString>& SupportedTokensLink() {
   return tokens;
 }
 
-static HashSet<AtomicString>& SupportedTokensAnchor() {
+static HashSet<AtomicString>& SupportedTokensAnchorAndArea() {
   DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tokens,
                       ({
                           "noreferrer", "noopener",
@@ -49,8 +49,9 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
          token_value == "modulepreload")) {
       return true;
     }
-  } else if (GetElement().HasTagName(aTag) &&
-             SupportedTokensAnchor().Contains(token_value)) {
+  } else if ((GetElement().HasTagName(aTag) ||
+              GetElement().HasTagName(areaTag)) &&
+             SupportedTokensAnchorAndArea().Contains(token_value)) {
     return true;
   }
   return false;

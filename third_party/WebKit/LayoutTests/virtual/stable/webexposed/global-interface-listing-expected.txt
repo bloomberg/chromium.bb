@@ -1602,6 +1602,7 @@ interface HTMLAreaElement : HTMLElement
     getter protocol
     getter referrerPolicy
     getter rel
+    getter relList
     getter search
     getter shape
     getter target
@@ -1623,6 +1624,7 @@ interface HTMLAreaElement : HTMLElement
     setter protocol
     setter referrerPolicy
     setter rel
+    setter relList
     setter search
     setter shape
     setter target
