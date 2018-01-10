@@ -471,11 +471,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
 
       // Horizontal filter
       for (k = -7; k < 8; ++k) {
-        int iy = iy4 + k;
-        if (iy < 0)
-          iy = 0;
-        else if (iy > height - 1)
-          iy = height - 1;
+        const int iy = clamp(iy4 + k, 0, height - 1);
 
         int sx = sx4 + beta * (k + 4);
         for (l = -4; l < 4; ++l) {
@@ -487,11 +483,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
 
           int32_t sum = 1 << offset_bits_horiz;
           for (m = 0; m < 8; ++m) {
-            int sample_x = ix + m;
-            if (sample_x < 0)
-              sample_x = 0;
-            else if (sample_x > width - 1)
-              sample_x = width - 1;
+            const int sample_x = clamp(ix + m, 0, width - 1);
             sum += ref[iy * stride + sample_x] * coeffs[m];
           }
           sum = ROUND_POWER_OF_TWO(sum, reduce_bits_horiz);
@@ -780,11 +772,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
       // Horizontal filter
       for (k = -7; k < 8; ++k) {
         // Clamp to top/bottom edge of the frame
-        int iy = iy4 + k;
-        if (iy < 0)
-          iy = 0;
-        else if (iy > height - 1)
-          iy = height - 1;
+        const int iy = clamp(iy4 + k, 0, height - 1);
 
         int sx = sx4 + beta * (k + 4);
 
@@ -799,11 +787,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
           int32_t sum = 1 << offset_bits_horiz;
           for (m = 0; m < 8; ++m) {
             // Clamp to left/right edge of the frame
-            int sample_x = ix + m;
-            if (sample_x < 0)
-              sample_x = 0;
-            else if (sample_x > width - 1)
-              sample_x = width - 1;
+            const int sample_x = clamp(ix + m, 0, width - 1);
 
             sum += ref[iy * stride + sample_x] * coeffs[m];
           }
