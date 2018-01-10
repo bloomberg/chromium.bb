@@ -16,13 +16,13 @@ focus, that the presenting frame still receives input.
       var t = async_test("Focus is locked to presentation");
       var rafCount = 0;
       window.onfocus = function() {
-        onAnimationFrameCallback = null;
+        onPresentingAnimationFrameCallback = null;
         setTimeout(function() {
           document.getElementById('externalframe').contentWindow.focus();
         }, 1000);
       };
       window.onblur = function() {
-        onAnimationFrameCallback = function() {
+        onPresentingAnimationFrameCallback = function() {
           if (rafCount == 3) {
             t.done();
           }
