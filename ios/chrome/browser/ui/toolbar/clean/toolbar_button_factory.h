@@ -60,6 +60,8 @@
 - (ToolbarButton*)voiceSearchButton;
 // ContractToolbar ToolbarButton.
 - (ToolbarButton*)contractButton;
+// ToolbarButton to focus the omnibox.
+- (ToolbarButton*)omniboxButton;
 // LocationBar LeadingButton. Currently used for the incognito icon when the
 // Toolbar is expanded on incognito mode. It can return nil.
 - (ToolbarButton*)locationBarLeadingButton;
