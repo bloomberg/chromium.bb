@@ -23,6 +23,7 @@
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::TracedValue;
+using Node = memory_instrumentation::GlobalDumpGraph::Node;
 
 namespace memory_instrumentation {
 
@@ -438,6 +439,26 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
     mojom::ChromeMemDumpPtr chrome_dump =
         request->should_return_summaries() ? CreateDumpSummary(*raw_chrome_dump)
                                            : mojom::ChromeMemDump::New();
+
+    // If we have to return a summary, add all entries for the requested
+    // allocator dumps.
+    if (request->should_return_summaries()) {
+      const auto& process_graph =
+          global_graph->process_dump_graphs().find(pid)->second;
+      for (const std::string& name : request->args.allocator_dump_names) {
+        auto* node = process_graph->FindNode(name);
+        // Silently ignore any missing node in the process graph.
+        if (!node)
+          continue;
+        std::unordered_map<std::string, uint64_t> numeric_entries;
+        for (const auto& entry : *node->entries()) {
+          if (entry.second.type == Node::Entry::Type::kUInt64)
+            numeric_entries.emplace(entry.first, entry.second.value_uint64);
+        }
+        chrome_dump->entries_for_allocator_dumps.emplace(
+            name, mojom::AllocatorMemDump::New(std::move(numeric_entries)));
+      }
+    }
 
     mojom::ProcessMemoryDumpPtr pmd = mojom::ProcessMemoryDump::New();
     pmd->pid = pid;
