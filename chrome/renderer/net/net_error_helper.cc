@@ -198,12 +198,12 @@ void NetErrorHelper::NetworkStateChanged(bool enabled) {
   core_->NetworkStateChanged(enabled);
 }
 
-void NetErrorHelper::GetErrorHTML(const error_page::Error& error,
-                                  bool is_failed_post,
-                                  bool is_ignoring_cache,
-                                  std::string* error_html) {
-  core_->GetErrorHTML(GetFrameType(render_frame()), error, is_failed_post,
-                      is_ignoring_cache, error_html);
+void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
+                                      bool is_failed_post,
+                                      bool is_ignoring_cache,
+                                      std::string* error_html) {
+  core_->PrepareErrorPage(GetFrameType(render_frame()), error, is_failed_post,
+                          is_ignoring_cache, error_html);
 }
 
 bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url) {

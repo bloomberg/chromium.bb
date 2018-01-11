@@ -38,11 +38,11 @@ class AwContentRendererClient : public content::ContentRendererClient,
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
-  void GetNavigationErrorStrings(content::RenderFrame* render_frame,
-                                 const blink::WebURLRequest& failed_request,
-                                 const blink::WebURLError& error,
-                                 std::string* error_html,
-                                 base::string16* error_description) override;
+  void PrepareErrorPage(content::RenderFrame* render_frame,
+                        const blink::WebURLRequest& failed_request,
+                        const blink::WebURLError& error,
+                        std::string* error_html,
+                        base::string16* error_description) override;
   unsigned long long VisitedLinkHash(const char* canonical_url,
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long link_hash) override;

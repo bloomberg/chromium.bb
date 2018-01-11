@@ -129,12 +129,12 @@ class ChromeContentRendererClient
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                const GURL& url) override;
   bool ShouldTrackUseCounter(const GURL& url) override;
-  void GetNavigationErrorStrings(content::RenderFrame* render_frame,
-                                 const blink::WebURLRequest& failed_request,
-                                 const blink::WebURLError& error,
-                                 std::string* error_html,
-                                 base::string16* error_description) override;
-  void GetNavigationErrorStringsForHttpStatusError(
+  void PrepareErrorPage(content::RenderFrame* render_frame,
+                        const blink::WebURLRequest& failed_request,
+                        const blink::WebURLError& error,
+                        std::string* error_html,
+                        base::string16* error_description) override;
+  void PrepareErrorPageForHttpStatusError(
       content::RenderFrame* render_frame,
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
@@ -259,12 +259,11 @@ class ChromeContentRendererClient
   // Initialises |safe_browsing_| if it is not already initialised.
   void InitSafeBrowsingIfNecessary();
 
-  void GetNavigationErrorStringsInternal(
-      content::RenderFrame* render_frame,
-      const blink::WebURLRequest& failed_request,
-      const error_page::Error& error,
-      std::string* error_html,
-      base::string16* error_description);
+  void PrepareErrorPageInternal(content::RenderFrame* render_frame,
+                                const blink::WebURLRequest& failed_request,
+                                const error_page::Error& error,
+                                std::string* error_html,
+                                base::string16* error_description);
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.
