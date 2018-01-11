@@ -374,6 +374,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
+  const SpdyHeaderBlock& request_headers() { return request_headers_; }
+
   // Get the URL from the appropriate stream headers, or the empty
   // GURL() if it is unknown.
   const GURL& GetUrlFromHeaders() const { return url_from_header_block_; }

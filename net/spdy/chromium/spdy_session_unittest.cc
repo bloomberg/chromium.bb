@@ -22,6 +22,7 @@
 #include "net/base/test_data_stream.h"
 #include "net/base/test_proxy_delegate.h"
 #include "net/cert/ct_policy_status.h"
+#include "net/http/http_request_info.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
@@ -1667,10 +1668,14 @@ TEST_F(SpdySessionTest, ClaimPushedStreamBeforeExpires) {
   EXPECT_EQ(0, session_unacked_recv_window_bytes());
 
   // Claim pushed stream from Http2PushPromiseIndex.
+  HttpRequestInfo push_request;
+  push_request.url = pushed_url;
+  push_request.method = "GET";
   base::WeakPtr<SpdySession> session_with_pushed_stream;
   SpdyStreamId pushed_stream_id;
   spdy_session_pool_->push_promise_index()->ClaimPushedStream(
-      key_, pushed_url, &session_with_pushed_stream, &pushed_stream_id);
+      key_, pushed_url, push_request, &session_with_pushed_stream,
+      &pushed_stream_id);
   EXPECT_EQ(session_.get(), session_with_pushed_stream.get());
   EXPECT_EQ(2u, pushed_stream_id);
 
@@ -5579,10 +5584,14 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
 
   // Claim pushed stream from Http2PushPromiseIndex.
   const GURL pushed_url(kPushedUrl);
+  HttpRequestInfo push_request;
+  push_request.url = pushed_url;
+  push_request.method = "GET";
   base::WeakPtr<SpdySession> session_with_pushed_stream;
   SpdyStreamId pushed_stream_id;
   spdy_session_pool_->push_promise_index()->ClaimPushedStream(
-      key_, pushed_url, &session_with_pushed_stream, &pushed_stream_id);
+      key_, pushed_url, push_request, &session_with_pushed_stream,
+      &pushed_stream_id);
   EXPECT_EQ(session_.get(), session_with_pushed_stream.get());
   EXPECT_EQ(2u, pushed_stream_id);
   EXPECT_EQ(0u, num_unclaimed_pushed_streams());
@@ -5686,10 +5695,14 @@ TEST_F(SpdySessionTest, GetPushedStream) {
 
   // Claim pushed stream from Http2PushPromiseIndex so that GetPushedStream()
   // can be called.
+  HttpRequestInfo push_request;
+  push_request.url = pushed_url;
+  push_request.method = "GET";
   base::WeakPtr<SpdySession> session_with_pushed_stream;
   SpdyStreamId pushed_stream_id;
   spdy_session_pool_->push_promise_index()->ClaimPushedStream(
-      key_, pushed_url, &session_with_pushed_stream, &pushed_stream_id);
+      key_, pushed_url, push_request, &session_with_pushed_stream,
+      &pushed_stream_id);
   EXPECT_EQ(session_.get(), session_with_pushed_stream.get());
   EXPECT_EQ(2u, pushed_stream_id);
 

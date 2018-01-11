@@ -87,6 +87,7 @@ SpdyStreamId Http2PushPromiseIndex::FindStream(const GURL& url,
 void Http2PushPromiseIndex::ClaimPushedStream(
     const SpdySessionKey& key,
     const GURL& url,
+    const HttpRequestInfo& request_info,
     base::WeakPtr<SpdySession>* session,
     SpdyStreamId* stream_id) {
   DCHECK(!url.is_empty());
@@ -99,7 +100,8 @@ void Http2PushPromiseIndex::ClaimPushedStream(
       UnclaimedPushedStream{url, nullptr, kNoPushedStreamFound});
 
   while (it != unclaimed_pushed_streams_.end() && it->url == url) {
-    if (it->delegate->ValidatePushedStream(url, key)) {
+    if (it->delegate->ValidatePushedStream(it->stream_id, url, request_info,
+                                           key)) {
       *session = it->delegate->GetWeakPtrToSession();
       *stream_id = it->stream_id;
       unclaimed_pushed_streams_.erase(it);

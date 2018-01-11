@@ -916,7 +916,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   // that.
   if (CanUseExistingSpdySession()) {
     session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
-        spdy_session_key_, origin_url_, &existing_spdy_session_,
+        spdy_session_key_, origin_url_, request_info_, &existing_spdy_session_,
         &pushed_stream_id_);
     if (!existing_spdy_session_) {
       existing_spdy_session_ =
@@ -1199,7 +1199,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   // time Job checked above.
   if (!existing_spdy_session_) {
     session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
-        spdy_session_key_, origin_url_, &existing_spdy_session_,
+        spdy_session_key_, origin_url_, request_info_, &existing_spdy_session_,
         &pushed_stream_id_);
     // It is also possible that an HTTP/2 connection has been established since
     // last time Job checked above.
