@@ -1017,7 +1017,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       mbmi->min_tx_size = mbmi->tx_size;
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
-    mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
+    mbmi->mode = DC_PRED;
+    mbmi->uv_mode = UV_DC_PRED;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
 
     int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
