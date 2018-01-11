@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/queue.h"
+#include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -3232,7 +3233,9 @@ bool RenderFrameHostImpl::CanCommitOrigin(
   }
 
   // It is safe to commit into a unique origin, regardless of the URL, as it is
-  // restricted from accessing other origins.
+  // restricted from accessing other origins.  Note that all error pages commit
+  // as a unique origin - this helps avoid renderer kills when
+  // ERR_BLOCKED_BY_CLIENT commits in an unexpected renderer process.
   if (origin.unique())
     return true;
 
@@ -3244,6 +3247,34 @@ bool RenderFrameHostImpl::CanCommitOrigin(
   // A non-unique origin must be a valid URL, which allows us to safely do a
   // conversion to GURL.
   GURL origin_url = origin.GetPhysicalOrigin().GetURL();
+
+  // Check the origin against the (potential) origin lock of the current
+  // process.
+  // TODO(lukasza): https://crbug.com/770239: Expand the check to cover other
+  // verifications from RenderProcessHostImpl::IsSuitableHost (e.g. WebUI
+  // bindings, extension process privilege level, etc.).  Avoid duplicating
+  // the code here and in IsSuitableHost.
+  BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
+  GURL site_url = SiteInstance::GetSiteForURL(browser_context, origin_url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  switch (policy->CheckOriginLock(GetProcess()->GetID(), site_url)) {
+    case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_EQUAL_LOCK:
+      break;
+    case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_WRONG_LOCK:
+      // If the process is locked to an origin, disallow reusing this process
+      // for a different origin.
+      base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
+                                     site_url.possibly_invalid_spec());
+      return false;
+    case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK:
+      // TODO(lukasza): https://crbug.com/794315: Return false if
+      // ShouldLockToOrigin(site_url) returns true, similarily to how this is
+      // done by RenderProcessHostImpl::IsSuitableHost.  We don't do this here,
+      // because this breaks hosted apps (which can return
+      // !ShouldLockToOrigin(full_url_with_path, but here they would return
+      // ShouldLockToOrigin(origin_only_part_of_url)).
+      break;
+  }
 
   // Verify that the origin is allowed to commit in this process.
   // Note: This also handles non-standard cases for |url|, such as
