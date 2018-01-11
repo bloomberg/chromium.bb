@@ -17,11 +17,13 @@ namespace scheduler {
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
     BudgetPoolController* budget_pool_controller,
+    TraceableVariableController* tracing_controller,
     base::TimeTicks now)
     : BudgetPool(name, budget_pool_controller),
       current_budget_level_(base::TimeDelta(),
                             "RendererScheduler.BackgroundBudgetMs",
                             budget_pool_controller,
+                            tracing_controller,
                             TimeDeltaToMilliseconds),
       last_checkpoint_(now),
       cpu_percentage_(1) {}
@@ -159,10 +161,6 @@ void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
   state->EndArray();
 
   state->EndDictionary();
-}
-
-void CPUTimeBudgetPool::OnTraceLogEnabled() {
-  current_budget_level_.Trace();
 }
 
 void CPUTimeBudgetPool::Advance(base::TimeTicks now) {

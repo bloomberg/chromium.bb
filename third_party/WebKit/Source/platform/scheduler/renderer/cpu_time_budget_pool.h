@@ -23,6 +23,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
  public:
   CPUTimeBudgetPool(const char* name,
                     BudgetPoolController* budget_pool_controller,
+                    TraceableVariableController* tracing_controller,
                     base::TimeTicks now);
 
   ~CPUTimeBudgetPool();
@@ -86,7 +87,6 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   void OnWakeUp(base::TimeTicks now) final;
   void AsValueInto(base::trace_event::TracedValue* state,
                    base::TimeTicks now) const final;
-  void OnTraceLogEnabled();
 
  protected:
   QueueBlockType GetBlockType() const final;

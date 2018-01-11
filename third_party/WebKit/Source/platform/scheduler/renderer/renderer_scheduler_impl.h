@@ -585,6 +585,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // TaskQueueThrottler.
   void VirtualTimeResumed();
 
+  // This controller should be initialized before any TraceableVariables
+  // because they require one to initialize themselves.
+  TraceableVariableController tracing_controller_;
+
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;

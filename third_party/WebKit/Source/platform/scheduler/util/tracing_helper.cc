@@ -61,5 +61,29 @@ double TimeDeltaToMilliseconds(const base::TimeDelta& value) {
   return value.InMillisecondsF();
 }
 
+TraceableVariableController::TraceableVariableController() {
+}
+
+TraceableVariableController::~TraceableVariableController() {
+  // Controller should have very same lifetime as their tracers.
+  DCHECK(traceable_variables_.empty());
+}
+
+void TraceableVariableController::RegisterTraceableVariable(
+    TraceableVariable* traceable_variable) {
+  traceable_variables_.insert(traceable_variable);
+}
+
+void TraceableVariableController::DeregisterTraceableVariable(
+    TraceableVariable* traceable_variable) {
+  traceable_variables_.erase(traceable_variable);
+}
+
+void TraceableVariableController::OnTraceLogEnabled() {
+  for (auto tracer : traceable_variables_) {
+    tracer->OnTraceLogEnabled();
+  }
+}
+
 }  // namespace scheduler
 }  // namespace blink

@@ -15,7 +15,6 @@
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
-#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -240,10 +239,10 @@ void WebViewSchedulerImpl::OnConnectionUpdated() {
 }
 
 void WebViewSchedulerImpl::OnTraceLogEnabled() {
+  tracing_controller_.OnTraceLogEnabled();
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->OnTraceLogEnabled();
   }
-  BackgroundCPUTimeBudgetPool()->OnTraceLogEnabled();
 }
 
 void WebViewSchedulerImpl::AsValueInto(
