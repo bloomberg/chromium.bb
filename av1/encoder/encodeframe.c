@@ -2521,7 +2521,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
   av1_init_rd_stats(&this_rdc);
-  av1_init_rd_stats(&sum_rdc);
   av1_invalid_rd_stats(&best_rdc);
   best_rdc.rdcost = best_rd;
 
@@ -2715,8 +2714,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // store estimated motion vector
   if (cpi->sf.adaptive_motion_search) store_pred_mv(x, ctx_none);
 
-  int64_t temp_best_rdcost = best_rdc.rdcost;
-
 #if CONFIG_DIST_8X8
   uint8_t *src_plane_8x8[MAX_MB_PLANE], *dst_plane_8x8[MAX_MB_PLANE];
 
@@ -2730,11 +2727,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   // PARTITION_SPLIT
   if (do_square_split) {
+    av1_init_rd_stats(&sum_rdc);
     int reached_last_index = 0;
     subsize = get_subsize(bsize, PARTITION_SPLIT);
     int idx;
 
-    for (idx = 0; idx < 4 && sum_rdc.rdcost < temp_best_rdcost; ++idx) {
+    for (idx = 0; idx < 4 && sum_rdc.rdcost < best_rdc.rdcost; ++idx) {
       const int x_idx = (idx & 1) * mi_step;
       const int y_idx = (idx >> 1) * mi_step;
 
@@ -2750,7 +2748,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       int64_t *p_split_rd = NULL;
 #endif  // CONFIG_EXT_PARTITION_TYPES
       rd_pick_partition(cpi, td, tile_data, tp, mi_row + y_idx, mi_col + x_idx,
-                        subsize, &this_rdc, temp_best_rdcost - sum_rdc.rdcost,
+                        subsize, &this_rdc, best_rdc.rdcost - sum_rdc.rdcost,
                         pc_tree->split[idx], p_split_rd);
 
       if (this_rdc.rate == INT_MAX) {
@@ -2793,7 +2791,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
       if (sum_rdc.rdcost < best_rdc.rdcost) {
         best_rdc = sum_rdc;
-        temp_best_rdcost = best_rdc.rdcost;
         pc_tree->partitioning = PARTITION_SPLIT;
       }
     } else if (cpi->sf.less_rectangular_check) {
@@ -2808,6 +2805,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // PARTITION_HORZ
   if (partition_horz_allowed &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
+    av1_init_rd_stats(&sum_rdc);
     subsize = get_subsize(bsize, PARTITION_HORZ);
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
     if (cpi->sf.adaptive_pred_interp_filter && bsize == BLOCK_8X8 &&
@@ -2824,7 +2822,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     horz_rd[0] = sum_rdc.rdcost;
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-    if (sum_rdc.rdcost < temp_best_rdcost && has_rows) {
+    if (sum_rdc.rdcost < best_rdc.rdcost && has_rows) {
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
 #if CONFIG_EXT_PARTITION_TYPES
       MB_MODE_INFO *const mbmi = &(pc_tree->horizontal[0].mic.mbmi);
@@ -2898,6 +2896,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // PARTITION_VERT
   if (partition_vert_allowed &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_col, mi_step))) {
+    av1_init_rd_stats(&sum_rdc);
     subsize = get_subsize(bsize, PARTITION_VERT);
 
     if (cpi->sf.adaptive_motion_search) load_pred_mv(x, ctx_none);
@@ -3134,6 +3133,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
   if (partition_horz4_allowed && has_rows &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
+    av1_init_rd_stats(&sum_rdc);
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
@@ -3177,6 +3177,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
   if (partition_vert4_allowed && has_cols &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
+    av1_init_rd_stats(&sum_rdc);
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
 
