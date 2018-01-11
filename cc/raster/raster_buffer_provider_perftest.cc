@@ -36,7 +36,6 @@
 #include "testing/perf/perf_test.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace cc {
 namespace {
@@ -116,20 +115,16 @@ class PerfContextProvider
   }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
   class GrContext* GrContext() override {
-    if (gr_context_)
-      return gr_context_.get();
-
-    sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
-    gr_context_ = GrContext::MakeGL(std::move(null_interface));
-    cache_controller_.SetGrContext(gr_context_.get());
-    return gr_context_.get();
+    if (!test_context_provider_) {
+      test_context_provider_ = TestContextProvider::Create();
+    }
+    return test_context_provider_->GrContext();
   }
   viz::ContextCacheController* CacheController() override {
     return &cache_controller_;
   }
   void InvalidateGrContext(uint32_t state) override {
-    if (gr_context_)
-      gr_context_.get()->resetContext(state);
+    test_context_provider_->GrContext()->resetContext(state);
   }
   base::Lock* GetLock() override { return &context_lock_; }
   void AddObserver(viz::ContextLostObserver* obs) override {}
@@ -142,7 +137,8 @@ class PerfContextProvider
 
   std::unique_ptr<PerfGLES2Interface> context_gl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_context_;
-  sk_sp<class GrContext> gr_context_;
+
+  scoped_refptr<TestContextProvider> test_context_provider_;
   TestContextSupport support_;
   viz::ContextCacheController cache_controller_;
   base::Lock context_lock_;
