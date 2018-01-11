@@ -828,9 +828,6 @@ if (enable_java_templates) {
       # compiling ResourceRewriter, there is no side effect because the
       # generated R.class isn't used in final apk.
       shared_resources = true
-      if (!defined(android_manifest)) {
-        android_manifest = "//build/android/AndroidManifest.xml"
-      }
     }
   }
 
