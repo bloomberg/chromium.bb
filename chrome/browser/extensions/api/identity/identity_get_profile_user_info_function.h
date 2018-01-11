@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_PROFILE_USER_INFO_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_PROFILE_USER_INFO_FUNCTION_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "components/signin/core/browser/account_info.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 namespace extensions {
 
-class IdentityGetProfileUserInfoFunction
-    : public ChromeUIThreadExtensionFunction {
+class IdentityGetProfileUserInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getProfileUserInfo",
                              IDENTITY_GETPROFILEUSERINFO);

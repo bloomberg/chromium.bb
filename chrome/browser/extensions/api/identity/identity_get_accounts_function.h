@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_ACCOUNTS_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_IDENTITY_GET_ACCOUNTS_FUNCTION_H_
 
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "services/identity/public/interfaces/identity_manager.mojom.h"
 
 namespace extensions {
 
-class IdentityGetAccountsFunction : public ChromeUIThreadExtensionFunction {
+class IdentityGetAccountsFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAccounts",
                              IDENTITY_GETACCOUNTS);
