@@ -554,6 +554,7 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     : LocatedEvent(native_event),
       changed_button_flags_(GetChangedMouseButtonFlagsFromNative(native_event)),
       pointer_details_(GetMousePointerDetailsFromNative(native_event)) {
+  latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, time_stamp(), 1);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
@@ -565,6 +566,7 @@ MouseEvent::MouseEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
       changed_button_flags_(pointer_event.changed_button_flags()),
       pointer_details_(pointer_event.pointer_details()) {
+  latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   DCHECK(pointer_event.IsMousePointerEvent());
   switch (pointer_event.type()) {
     case ET_POINTER_DOWN:
@@ -622,6 +624,7 @@ MouseEvent::MouseEvent(EventType type,
       changed_button_flags_(changed_button_flags),
       pointer_details_(pointer_details) {
   DCHECK_NE(ET_MOUSEWHEEL, type);
+  latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
     SetType(ET_MOUSE_DRAGGED);
@@ -971,6 +974,8 @@ PointerEvent::PointerEvent(const PointerEvent& pointer_event)
     latency()->set_source_event_type(ui::SourceEventType::TOUCH);
   else if (pointer_event.type() == ET_POINTER_WHEEL_CHANGED)
     latency()->set_source_event_type(ui::SourceEventType::WHEEL);
+  else if (details_.pointer_type == EventPointerType::POINTER_TYPE_MOUSE)
+    latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   else
     latency()->set_source_event_type(ui::SourceEventType::OTHER);
 }
@@ -983,28 +988,28 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
   switch (mouse_event.type()) {
     case ET_MOUSE_PRESSED:
       SetType(ET_POINTER_DOWN);
-      latency()->set_source_event_type(ui::SourceEventType::OTHER);
+      latency()->set_source_event_type(ui::SourceEventType::MOUSE);
       break;
 
     case ET_MOUSE_DRAGGED:
     case ET_MOUSE_MOVED:
       SetType(ET_POINTER_MOVED);
-      latency()->set_source_event_type(ui::SourceEventType::OTHER);
+      latency()->set_source_event_type(ui::SourceEventType::MOUSE);
       break;
 
     case ET_MOUSE_ENTERED:
       SetType(ET_POINTER_ENTERED);
-      latency()->set_source_event_type(ui::SourceEventType::OTHER);
+      latency()->set_source_event_type(ui::SourceEventType::MOUSE);
       break;
 
     case ET_MOUSE_EXITED:
       SetType(ET_POINTER_EXITED);
-      latency()->set_source_event_type(ui::SourceEventType::OTHER);
+      latency()->set_source_event_type(ui::SourceEventType::MOUSE);
       break;
 
     case ET_MOUSE_RELEASED:
       SetType(ET_POINTER_UP);
-      latency()->set_source_event_type(ui::SourceEventType::OTHER);
+      latency()->set_source_event_type(ui::SourceEventType::MOUSE);
       break;
 
     case ET_MOUSEWHEEL:
@@ -1070,6 +1075,8 @@ PointerEvent::PointerEvent(EventType type,
     latency()->set_source_event_type(ui::SourceEventType::TOUCH);
   else if (type == ET_POINTER_WHEEL_CHANGED)
     latency()->set_source_event_type(ui::SourceEventType::WHEEL);
+  else if (details_.pointer_type == EventPointerType::POINTER_TYPE_MOUSE)
+    latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   else
     latency()->set_source_event_type(ui::SourceEventType::OTHER);
 }
