@@ -21,9 +21,7 @@ namespace {
 static const int kTestDurationSecs = 2;
 static const int kNumPeerConnections = 3;
 #else
-// We would like to run this for 10 seconds, but it produces too much INFO logs
-// which fails the test.
-static const int kTestDurationSecs = 10;
+static const int kTestDurationSecs = 60;
 static const int kNumPeerConnections = 5;
 #endif
 }  // namespace
