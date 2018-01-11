@@ -559,7 +559,7 @@ index 1ec761448de9..aa0c9c67a6dc 100644
  local void putShortMSB    OF((deflate_state *s, uInt b));
  local void flush_pending  OF((z_streamp strm));
 -local unsigned read_buf   OF((z_streamp strm, Bytef *buf, unsigned size));
-+unsigned ZLIB_INTERNAL read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
++unsigned ZLIB_INTERNAL deflate_read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
  #ifdef ASMV
  #  pragma message("Assembler code may have bugs -- use at your own risk")
        void match_init OF((void)); /* asm code initialization */
@@ -703,7 +703,7 @@ index 1ec761448de9..aa0c9c67a6dc 100644
   * (See also flush_pending()).
   */
 -local unsigned read_buf(strm, buf, size)
-+ZLIB_INTERNAL unsigned read_buf(strm, buf, size)
++ZLIB_INTERNAL unsigned deflate_read_buf(strm, buf, size)
      z_streamp strm;
      Bytef *buf;
      unsigned size;
@@ -859,7 +859,7 @@ new file mode 100644
 index 000000000000..949ccce1ba9c
 --- /dev/null
 +++ b/fill_window_sse.c
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,177 @@
 +/*
 + * Fill Window with SSE2-optimized hash shifting
 + *
@@ -888,7 +888,7 @@ index 000000000000..949ccce1ba9c
 +        }\
 +    }\
 +
-+extern int read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
++extern int deflate_read_buf OF((z_streamp strm, Bytef *buf, unsigned size));
 +
 +void fill_window_sse(deflate_state *s)
 +{
@@ -979,7 +979,9 @@ index 000000000000..949ccce1ba9c
 +         */
 +        Assert(more >= 2, "more < 2");
 +
-+        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
++        n = deflate_read_buf(s->strm,
++                             s->window + s->strstart + s->lookahead,
++                             more);
 +        s->lookahead += n;
 +
 +        /* Initialize the hash value now that we have some input: */
@@ -1051,7 +1053,7 @@ index f18df5684dc5..3436baa4eb57 100644
 +#define crc_fold_init Cr_z_crc_fold_init
 +#define crc_reset Cr_z_crc_reset
 +#define fill_window_sse Cr_z_fill_window_sse
-+#define read_buf Cr_z_read_buf
++#define deflate_read_buf Cr_z_deflate_read_buf
 +#define x86_check_features Cr_z_x86_check_features
 +#define x86_cpu_enable_simd Cr_z_x86_cpu_enable_simd
 +

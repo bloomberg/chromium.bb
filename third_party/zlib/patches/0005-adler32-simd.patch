@@ -603,7 +603,7 @@ index 3436baa4eb57..cd98ec9940b6 100644
 +++ b/third_party/zlib/names.h
 @@ -162,6 +162,13 @@
  #define fill_window_sse Cr_z_fill_window_sse
- #define read_buf Cr_z_read_buf
+ #define deflate_read_buf Cr_z_deflate_read_buf
  #define x86_check_features Cr_z_x86_check_features
 +/* FIXME: x86_cpu_enable_ssse3 wasn't part of the simd.patch */
 +#define x86_cpu_enable_ssse3 Cr_z_x86_cpu_enable_ssse3
