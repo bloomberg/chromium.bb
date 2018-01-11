@@ -102,7 +102,7 @@ ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
 ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,
                                  'build-tools', ANDROID_SDK_BUILD_TOOLS_VERSION)
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
-                                'third_party', 'android_tools', 'ndk')
+                                'third_party', 'android_ndk')
 
 PROGUARD_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'proguard')
 

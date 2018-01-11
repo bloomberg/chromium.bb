@@ -263,6 +263,11 @@ deps = {
       'condition': 'checkout_android',
   },
 
+  'src/third_party/android_ndk': {
+      'url': Var('chromium_git') + '/android_ndk.git' + '@' + 'e951c37287c7d8cd915bf8d4149fd4a06d808b55',
+      'condition': 'checkout_android',
+  },
+
   'src/third_party/android_tools': {
       'url': Var('chromium_git') + '/android_tools.git' + '@' + 'c78b25872734e0038ae2a333edc645cd96bc232d',
       'condition': 'checkout_android',

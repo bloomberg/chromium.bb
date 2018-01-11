@@ -162,8 +162,8 @@ Memory map
  .init_array    0x02ddc60c        0x4 obj/base/base/page_allocator.o
 
 .fini_array     0x02ddc6f4        0x8
- .fini_array    0x02ddc6f4        0x4 ../../third_party/android_tools/ndk/platforms/android-16/arch-arm/usr/lib/crtbegin_so.o
- .fini_array    0x02ddc6f8        0x4 ../../third_party/android_tools/ndk/platforms/android-16/arch-arm/usr/lib/crtend_so.o
+ .fini_array    0x02ddc6f4        0x4 ../../third_party/android_ndk/platforms/android-16/arch-arm/usr/lib/crtbegin_so.o
+ .fini_array    0x02ddc6f8        0x4 ../../third_party/android_ndk/platforms/android-16/arch-arm/usr/lib/crtend_so.o
 
 .dynamic        0x02ddc6fc      0x130
  ** dynamic     0x02ddc6fc      0x130

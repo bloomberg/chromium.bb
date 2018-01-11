@@ -182,7 +182,7 @@ config("runtime_library") {
     # 64-bit targets build with NDK 21, 32-bit targets with NDK 16
     # (see ./config.gni).  When using clang, NDK 21 defines snprintf to
     # something for a kind of for of _FORTIFY_SOURCE support, see
-    # third_party/android_tools/ndk/platforms/android-21/arch-x86_64/usr/include/stdio.h
+    # third_party/android_ndk/platforms/android-21/arch-x86_64/usr/include/stdio.h
     # Making snprintf a macro breaks base/strings/string_utils.h which
     # defines base::snprintf().  So define snprintf to itself to force the
     # NDK to not redefine it.  This disables _chk for snprintf, but since
