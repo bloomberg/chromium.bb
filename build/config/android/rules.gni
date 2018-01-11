@@ -2004,6 +2004,7 @@ if (enable_java_templates) {
                                "exclude_xxxhdpi",
                                "png_to_webp",
                                "xxxhdpi_whitelist",
+                               "no_xml_namespaces",
                              ])
       android_manifest = _android_manifest
       version_code = _version_code

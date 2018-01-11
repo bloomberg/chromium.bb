@@ -122,6 +122,11 @@ template("monochrome_public_apk_tmpl") {
     # Incremental install doesn't work for monochrome. See crbug.com/663492.
     never_incremental = true
 
+    # Strip xml namespaces for monochrome. This should only be done for apks
+    # targeting API > 21 which for chrome is only Monochrome. This is due to
+    # how android public and private resource ids are namespaced.
+    no_xml_namespaces = true
+
     # Configrations to make android load shared library from APK.
     uncompress_shared_libraries = true
 

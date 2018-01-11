@@ -224,6 +224,10 @@ def _ParseArgs(args):
                     help='Convert png files to webp format.')
   parser.add_option('--webp-binary', default='',
                     help='Path to the cwebp binary.')
+  parser.add_option('--no-xml-namespaces',
+                    action='store_true',
+                    help='Whether to strip xml namespaces from processed xml '
+                    'resources')
 
   options, positional_args = parser.parse_args(args)
 
@@ -662,6 +666,9 @@ def _CreateLinkApkArgs(options):
         options.locale_whitelist, options.support_zh_hk)
     link_command += ['-c', ','.join(aapt_locales)]
 
+  if options.no_xml_namespaces:
+    link_command.append('--no-xml-namespaces')
+
   return link_command
 
 
@@ -986,6 +993,7 @@ def main(args):
     str(options.debuggable),
     str(options.png_to_webp),
     str(options.support_zh_hk),
+    str(options.no_xml_namespaces),
   ]
 
   if options.apk_path:
