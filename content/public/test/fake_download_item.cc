@@ -443,4 +443,8 @@ std::string FakeDownloadItem::DebugString(bool verbose) const {
   return std::string();
 }
 
+void FakeDownloadItem::SimulateErrorForTesting(DownloadInterruptReason reason) {
+  NOTREACHED();
+}
+
 }  // namespace content

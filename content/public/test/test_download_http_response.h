@@ -16,11 +16,7 @@
 
 namespace content {
 
-/*
- * Class for configuring and returning http responses for download requests.
- * TODO(qinmin): remove TestDownloadRequestHandler and port all tests to use
- * this class. http://crbug.com/776973.
- */
+// Class for configuring and returning http responses for download requests.
 class TestDownloadHttpResponse : public net::test_server::HttpResponse {
  public:
   static const char kTestDownloadHostName[];

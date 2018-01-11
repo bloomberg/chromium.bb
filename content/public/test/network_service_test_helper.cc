@@ -42,14 +42,6 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
       mock_cert_verifier_ = std::make_unique<net::MockCertVerifier>();
       NetworkContext::SetCertVerifierForTesting(mock_cert_verifier_.get());
     }
-
-    // This class is constructed in all test processes but we only want to
-    // add it in the utility process where the network service is run, to avoid
-    // clashing with the other HostResolver in browsertests.
-    if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kProcessType) == switches::kUtilityProcess) {
-      test_host_resolver_ = std::make_unique<TestHostResolver>();
-    }
   }
 
   ~NetworkServiceTestImpl() override {
@@ -60,8 +52,8 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   void AddRules(std::vector<mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
     for (const auto& rule : rules) {
-      test_host_resolver_->host_resolver()->AddRule(rule->host_pattern,
-                                                    rule->replacement);
+      test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
+                                                   rule->replacement);
     }
     std::move(callback).Run();
   }
@@ -106,7 +98,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
 
  private:
   mojo::BindingSet<mojom::NetworkServiceTest> bindings_;
-  std::unique_ptr<TestHostResolver> test_host_resolver_;
+  TestHostResolver test_host_resolver_;
   std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
