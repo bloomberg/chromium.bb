@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.suggestions;
 import android.animation.ValueAnimator;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -145,7 +146,6 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         mToolbarView = (BottomToolbarPhone) activity.findViewById(R.id.toolbar);
         mToolbarPullHandle = activity.findViewById(R.id.toolbar_handle);
         mToolbarShadow = activity.findViewById(R.id.bottom_toolbar_shadow);
-        sheet.getNewTabController().addObserver(this);
 
         mLocationBar.addUrlFocusChangeListener(this);
 
@@ -164,6 +164,13 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
                             mRecyclerView.setVisibility(View.VISIBLE);
                             loadingView.hideLoadingUI();
                             initializeWithNative(tabModelSelector, snackbarManager);
+
+                            // Update #mIsAttachedToWindow and #mNewTabShown since observers are
+                            // added after native is initialized.
+                            mIsAttachedToWindow = ViewCompat.isAttachedToWindow(mView);
+                            mNewTabShown = mSheet.getNewTabController().isShowingNewTabUi();
+                            updateLogoVisibility();
+                            updateLogoTransition();
                         }
 
                         @Override
@@ -285,6 +292,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
             loadSearchProviderLogo();
         }
         TemplateUrlService.getInstance().addObserver(this);
+        mSheet.getNewTabController().addObserver(this);
 
         mView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
