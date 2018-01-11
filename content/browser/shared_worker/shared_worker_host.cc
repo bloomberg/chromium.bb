@@ -56,13 +56,11 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
 SharedWorkerHost::SharedWorkerHost(
     SharedWorkerServiceImpl* service,
     std::unique_ptr<SharedWorkerInstance> instance,
-    int process_id,
-    int route_id)
+    int process_id)
     : binding_(this),
       service_(service),
       instance_(std::move(instance)),
       process_id_(process_id),
-      route_id_(route_id),
       next_connection_request_id_(1),
       creation_time_(base::TimeTicks::Now()),
       interface_provider_binding_(this),
@@ -99,7 +97,7 @@ void SharedWorkerHost::Start(
       instance_->creation_address_space()));
 
   factory->CreateSharedWorker(
-      std::move(info), pause_on_start, devtools_worker_token, route_id_,
+      std::move(info), pause_on_start, devtools_worker_token,
       std::move(content_settings), std::move(host), mojo::MakeRequest(&worker_),
       std::move(interface_provider));
 
@@ -239,6 +237,11 @@ bool SharedWorkerHost::ServesExternalClient() {
       return true;
   }
   return false;
+}
+
+void SharedWorkerHost::GetDevToolsAgent(
+    blink::mojom::DevToolsAgentAssociatedRequest request) {
+  worker_->GetDevToolsAgent(std::move(request));
 }
 
 void SharedWorkerHost::OnClientConnectionLost() {

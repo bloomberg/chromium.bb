@@ -22,7 +22,6 @@ class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
       mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
-      int32_t route_id,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,

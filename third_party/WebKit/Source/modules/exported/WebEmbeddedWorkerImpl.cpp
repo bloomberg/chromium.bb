@@ -308,12 +308,13 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   // invoked and |this| might have been deleted at this point.
 }
 
-void WebEmbeddedWorkerImpl::SendProtocolMessage(int session_id,
+bool WebEmbeddedWorkerImpl::SendProtocolMessage(int session_id,
                                                 int call_id,
                                                 const String& message,
                                                 const String& state) {
   worker_context_client_->SendDevToolsMessage(session_id, call_id, message,
                                               state);
+  return true;
 }
 
 void WebEmbeddedWorkerImpl::ResumeStartup() {

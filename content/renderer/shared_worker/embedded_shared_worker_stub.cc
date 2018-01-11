@@ -24,7 +24,6 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/worker_fetch_context_impl.h"
-#include "content/renderer/shared_worker/shared_worker_devtools_agent.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
 #include "third_party/WebKit/common/service_worker/service_worker_object.mojom.h"
@@ -131,25 +130,20 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     mojom::SharedWorkerInfoPtr info,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
-    int route_id,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider)
     : binding_(this, std::move(request)),
       host_(std::move(host)),
-      route_id_(route_id),
       name_(info->name),
       url_(info->url) {
-  RenderThreadImpl::current()->AddRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::Create(this);
   if (pause_on_start) {
     // Pause worker context when it starts and wait until either DevTools client
     // is attached or explicit resume notification is received.
     impl_->PauseWorkerContextOnStart();
   }
-  worker_devtools_agent_.reset(
-      new SharedWorkerDevToolsAgent(route_id, impl_));
   impl_->StartWorkerContext(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
@@ -164,17 +158,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 }
 
 EmbeddedSharedWorkerStub::~EmbeddedSharedWorkerStub() {
-  RenderThreadImpl::current()->RemoveRoute(route_id_);
   DCHECK(!impl_);
-}
-
-bool EmbeddedSharedWorkerStub::OnMessageReceived(const IPC::Message& message) {
-  // Just a simply pass-through for now until we can rework the DevTools IPC.
-  return worker_devtools_agent_->OnMessageReceived(message);
-}
-
-void EmbeddedSharedWorkerStub::OnChannelError() {
-  Terminate();
 }
 
 void EmbeddedSharedWorkerStub::WorkerReadyForInspection() {
@@ -238,20 +222,11 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
   // Create a content::ServiceWorkerNetworkProvider for this data source so
   // we can observe its requests.
   std::unique_ptr<ServiceWorkerNetworkProvider> provider(
-      ServiceWorkerNetworkProvider::CreateForSharedWorker(route_id_));
+      ServiceWorkerNetworkProvider::CreateForSharedWorker());
 
   // Blink is responsible for deleting the returned object.
   return std::make_unique<WebServiceWorkerNetworkProviderForSharedWorker>(
       std::move(provider), IsOriginSecure(url_));
-}
-
-void EmbeddedSharedWorkerStub::SendDevToolsMessage(
-    int session_id,
-    int call_id,
-    const blink::WebString& message,
-    const blink::WebString& state) {
-  worker_devtools_agent_->SendDevToolsMessage(
-      session_id, call_id, message, state);
 }
 
 std::unique_ptr<blink::WebWorkerFetchContext>
@@ -340,6 +315,11 @@ void EmbeddedSharedWorkerStub::Terminate() {
   // After this we wouldn't get any IPC for this stub.
   running_ = false;
   impl_->TerminateWorkerContext();
+}
+
+void EmbeddedSharedWorkerStub::GetDevToolsAgent(
+    blink::mojom::DevToolsAgentAssociatedRequest request) {
+  impl_->GetDevToolsAgent(request.PassHandle());
 }
 
 }  // namespace content

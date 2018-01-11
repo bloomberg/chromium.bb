@@ -41,7 +41,6 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebNotificationPresenter;
 class WebServiceWorkerNetworkProvider;
-class WebString;
 
 // Provides an interface back to the in-page script object for a worker.
 // All functions are expected to be called back on the thread that created
@@ -71,11 +70,6 @@ class WebSharedWorkerClient {
   // Called on the main thread during initialization.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() = 0;
-
-  virtual void SendDevToolsMessage(int session_id,
-                                   int call_id,
-                                   const WebString& message,
-                                   const WebString& state) {}
 
   // Returns a new WebWorkerFetchContext for the shared worker. Ownership of the
   // returned object is transferred to the caller.

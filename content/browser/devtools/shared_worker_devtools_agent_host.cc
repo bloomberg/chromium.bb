@@ -63,28 +63,17 @@ bool SharedWorkerDevToolsAgentHost::Close() {
 }
 
 void SharedWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
-  if (RenderProcessHost* host = GetProcess()) {
-    if (sessions().size() == 1)
-      host->AddRoute(worker_host_->route_id(), this);
-    session->SetRenderer(host, nullptr);
-    if (!waiting_ready_for_reattach_) {
-      host->Send(new DevToolsAgentMsg_Attach(worker_host_->route_id(),
-                                             session->session_id()));
-    }
-  }
   session->SetFallThroughForNotFound(true);
   session->AddHandler(std::make_unique<protocol::InspectorHandler>());
   session->AddHandler(std::make_unique<protocol::NetworkHandler>(GetId()));
   session->AddHandler(std::make_unique<protocol::SchemaHandler>());
+  session->SetRenderer(GetProcess(), nullptr);
+  if (!waiting_ready_for_reattach_ && EnsureAgent())
+    session->AttachToAgent(agent_ptr_);
 }
 
 void SharedWorkerDevToolsAgentHost::DetachSession(int session_id) {
-  if (RenderProcessHost* host = GetProcess()) {
-    host->Send(
-        new DevToolsAgentMsg_Detach(worker_host_->route_id(), session_id));
-    if (!sessions().size())
-      host->RemoveRoute(worker_host_->route_id());
-  }
+  // Destroying session automatically detaches in renderer.
 }
 
 bool SharedWorkerDevToolsAgentHost::DispatchProtocolMessage(
@@ -97,24 +86,9 @@ bool SharedWorkerDevToolsAgentHost::DispatchProtocolMessage(
     return true;
   }
 
-  if (RenderProcessHost* host = GetProcess()) {
-    host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-        worker_host_->route_id(), session->session_id(), call_id, method,
-        message));
-    session->waiting_messages()[call_id] = {method, message};
-  }
+  session->DispatchProtocolMessageToAgent(call_id, method, message);
+  session->waiting_messages()[call_id] = {method, message};
   return true;
-}
-
-bool SharedWorkerDevToolsAgentHost::OnMessageReceived(const IPC::Message& msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SharedWorkerDevToolsAgentHost, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 bool SharedWorkerDevToolsAgentHost::Matches(SharedWorkerHost* worker_host) {
@@ -126,18 +100,15 @@ void SharedWorkerDevToolsAgentHost::WorkerReadyForInspection() {
   if (!waiting_ready_for_reattach_)
     return;
   waiting_ready_for_reattach_ = false;
-  if (RenderProcessHost* host = GetProcess()) {
-    for (DevToolsSession* session : sessions()) {
-      host->Send(new DevToolsAgentMsg_Reattach(worker_host_->route_id(),
-                                               session->session_id(),
-                                               session->state_cookie()));
-      for (const auto& pair : session->waiting_messages()) {
-        int call_id = pair.first;
-        const DevToolsSession::Message& message = pair.second;
-        host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-            worker_host_->route_id(), session->session_id(), call_id,
-            message.method, message.message));
-      }
+  if (!EnsureAgent())
+    return;
+  for (DevToolsSession* session : sessions()) {
+    session->ReattachToAgent(agent_ptr_);
+    for (const auto& pair : session->waiting_messages()) {
+      int call_id = pair.first;
+      const DevToolsSession::Message& message = pair.second;
+      session->DispatchProtocolMessageToAgent(call_id, message.method,
+                                              message.message);
     }
   }
 }
@@ -146,12 +117,8 @@ bool SharedWorkerDevToolsAgentHost::WorkerRestarted(
     SharedWorkerHost* worker_host) {
   DCHECK(!worker_host_);
   worker_host_ = worker_host;
-  if (RenderProcessHost* host = GetProcess()) {
-    if (sessions().size())
-      host->AddRoute(worker_host_->route_id(), this);
-    for (DevToolsSession* session : sessions())
-      session->SetRenderer(host, nullptr);
-  }
+  for (DevToolsSession* session : sessions())
+    session->SetRenderer(GetProcess(), nullptr);
   waiting_ready_for_reattach_ = IsAttached();
   return waiting_ready_for_reattach_;
 }
@@ -162,11 +129,8 @@ void SharedWorkerDevToolsAgentHost::WorkerDestroyed() {
     inspector->TargetCrashed();
   for (DevToolsSession* session : sessions())
     session->SetRenderer(nullptr, nullptr);
-  if (sessions().size()) {
-    if (RenderProcessHost* host = GetProcess())
-      host->RemoveRoute(worker_host_->route_id());
-  }
   worker_host_ = nullptr;
+  agent_ptr_.reset();
 }
 
 RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcess() {
@@ -174,11 +138,12 @@ RenderProcessHost* SharedWorkerDevToolsAgentHost::GetProcess() {
                       : nullptr;
 }
 
-void SharedWorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
-    const DevToolsMessageChunk& message) {
-  DevToolsSession* session = SessionById(message.session_id);
-  if (session)
-    session->ReceiveMessageChunk(message);
+bool SharedWorkerDevToolsAgentHost::EnsureAgent() {
+  if (!worker_host_)
+    return false;
+  if (!agent_ptr_)
+    worker_host_->GetDevToolsAgent(mojo::MakeRequest(&agent_ptr_));
+  return true;
 }
 
 }  // namespace content

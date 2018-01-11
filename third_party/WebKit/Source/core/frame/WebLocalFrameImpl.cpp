@@ -208,6 +208,7 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Time.h"
+#include "public/platform/InterfaceRegistry.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
@@ -1755,8 +1756,11 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
     frame_->GetDocument()->GetMutableSecurityOrigin()->GrantUniversalAccess();
   }
 
-  if (frame_->IsLocalRoot())
-    dev_tools_agent_ = WebDevToolsAgentImpl::Create(this);
+  if (frame_->IsLocalRoot()) {
+    frame_->GetInterfaceRegistry()->AddAssociatedInterface(
+        WTF::BindRepeating(&WebLocalFrameImpl::BindDevToolsAgentRequest,
+                           WrapWeakPersistent(this)));
+  }
 
   if (!owner) {
     // This trace event is needed to detect the main frame of the
@@ -2599,6 +2603,18 @@ Node* WebLocalFrameImpl::ContextMenuNodeInner() const {
       ->GetPage()
       ->GetContextMenuController()
       .ContextMenuNodeForFrame(GetFrame());
+}
+
+void WebLocalFrameImpl::SetDevToolsAgentImpl(WebDevToolsAgentImpl* agent) {
+  DCHECK(!dev_tools_agent_);
+  dev_tools_agent_ = agent;
+}
+
+void WebLocalFrameImpl::BindDevToolsAgentRequest(
+    mojom::blink::DevToolsAgentAssociatedRequest request) {
+  if (!dev_tools_agent_)
+    dev_tools_agent_ = WebDevToolsAgentImpl::CreateForFrame(this);
+  dev_tools_agent_->BindRequest(std::move(request));
 }
 
 }  // namespace blink

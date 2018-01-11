@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
-#include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 
 namespace content {
 
@@ -16,8 +16,7 @@ class SharedWorkerInstance;
 class SharedWorkerHost;
 class RenderProcessHost;
 
-class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
-                                      public IPC::Listener {
+class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
  public:
   using List = std::vector<scoped_refptr<SharedWorkerDevToolsAgentHost>>;
 
@@ -40,9 +39,6 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   bool DispatchProtocolMessage(DevToolsSession* session,
                                const std::string& message) override;
 
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
-
   bool Matches(SharedWorkerHost* worker_host);
   void WorkerReadyForInspection();
   // Returns whether the worker should be paused for reattach.
@@ -58,9 +54,10 @@ class SharedWorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
 
   ~SharedWorkerDevToolsAgentHost() override;
   RenderProcessHost* GetProcess();
-  void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
+  bool EnsureAgent();
 
   SharedWorkerHost* worker_host_;
+  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr_;
   base::UnguessableToken devtools_worker_token_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   bool waiting_ready_for_reattach_ = false;

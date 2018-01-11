@@ -94,7 +94,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
  private:
   // WebDevToolsAgentImpl::Client overrides.
-  void SendProtocolMessage(int session_id,
+  bool SendProtocolMessage(int session_id,
                            int call_id,
                            const String&,
                            const String&) override;

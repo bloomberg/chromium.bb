@@ -212,11 +212,12 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
 
 // static
 std::unique_ptr<ServiceWorkerNetworkProvider>
-ServiceWorkerNetworkProvider::CreateForSharedWorker(int route_id) {
+ServiceWorkerNetworkProvider::CreateForSharedWorker() {
   // TODO(kinuko): Provide ChildURLLoaderFactoryGetter associated with
   // the SharedWorker.
   return base::WrapUnique(new ServiceWorkerNetworkProvider(
-      route_id, blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+      MSG_ROUTING_NONE,
+      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
       GetNextProviderId(), true /* is_parent_frame_secure */,
       nullptr /* controller_service_worker */,
       nullptr /* default_loader_factory_getter */));

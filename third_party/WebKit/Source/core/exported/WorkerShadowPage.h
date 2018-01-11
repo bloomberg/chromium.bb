@@ -33,7 +33,7 @@ class WebSettings;
 // TODO(kinuko): Make this go away (https://crbug.com/538751).
 class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
  public:
-  class CORE_EXPORT Client : public WebDevToolsAgentImpl::Client {
+  class CORE_EXPORT Client : public WebDevToolsAgentImpl::WorkerClient {
    public:
     virtual ~Client() = default;
 
@@ -77,6 +77,7 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   WebDevToolsAgentImpl* DevToolsAgent() {
     return main_frame_->DevToolsAgentImpl();
   }
+  void GetDevToolsAgent(mojom::blink::DevToolsAgentAssociatedRequest);
 
   bool WasInitialized() const;
 
