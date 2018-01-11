@@ -2,3 +2,11 @@ include_rules = [
   "+components/captive_portal",
   "+components/wifi",
 ]
+
+specific_include_rules = {
+  "cert_verifier_browser_test.cc": [
+    # TODO(jam): Temporary until it or a public header is available in
+    # services/network.
+    "+content/network/network_context.h",
+  ],
+}
