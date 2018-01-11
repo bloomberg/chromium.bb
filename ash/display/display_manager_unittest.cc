@@ -1268,6 +1268,101 @@ TEST_F(DisplayManagerTest, TouchCalibrationTest) {
                             touchdevice, GetDisplayInfoAt(1).id()));
 }
 
+TEST_F(DisplayManagerTest, UpdateDisplayZoomTest) {
+  // Initialize a display with 4 different resolution.
+  UpdateDisplay("1920x1080#1280x720|640x480%60, 600x400*2#600x400");
+  reset();
+
+  // The second display has a device scale factor of 2 set.
+  constexpr float display_2_dsf = 2.0f;
+
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+  const display::ManagedDisplayInfo& info_1 = GetDisplayInfoAt(0);
+
+  // The display should have 4 display modes based on the initialization spec.
+  ASSERT_EQ(2u, info_1.display_modes().size());
+
+  const display::ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info_1.display_modes();
+
+  // Set the display mode.
+  display::test::SetDisplayResolution(display_manager(), info_1.id(),
+                                      modes[0].size());
+  display_manager()->UpdateDisplays();
+
+  // Since no zoom factor or device scale factor has been set on the display,
+  // the total/effective device scale factor on the display is 1.
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
+      1.f);
+
+  float zoom_factor_1 = 2.0f;
+  display_manager()->UpdateZoomFactor(info_1.id(), zoom_factor_1);
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+            zoom_factor_1);
+
+  // With the zoom factor set for the display. The effective zoom factor
+  // returned should have the display zoom taken into consideration.
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
+      zoom_factor_1);
+
+  // Update the zoom factor for a different display mode.
+  float zoom_factor_2 = 1.5f;
+  display_manager()->UpdateZoomFactor(info_1.id(), zoom_factor_2);
+
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+            zoom_factor_2);
+
+  // Change the display mode of the device.
+  display::test::SetDisplayResolution(display_manager(), info_1.id(),
+                                      modes[1].size());
+  display_manager()->UpdateDisplays();
+
+  // The new display being created should use the newly set display mode's
+  // zoom factor to compute the final effective device scale factor.
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
+      zoom_factor_2);
+
+  // When setting the display mode back to the old one, the final effective
+  // device scale factor should be using the correct zoom factor.
+  display::test::SetDisplayResolution(display_manager(), info_1.id(),
+                                      modes[0].size());
+  display_manager()->UpdateDisplays();
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
+      zoom_factor_2);
+
+  // Update the zoom factor for the second display.
+  float zoom_factor_3 = 1.5f;
+  const display::ManagedDisplayInfo& info_2 = GetDisplayInfoAt(1);
+  display_manager()->UpdateZoomFactor(info_2.id(), zoom_factor_3);
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_2.id()),
+            zoom_factor_3);
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_2.id()).device_scale_factor(),
+      zoom_factor_3 * display_2_dsf);
+
+  // Modifying zoom factor for a display should not effect zoom factors of
+  // other displays.
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+            zoom_factor_2);
+
+  // Update the zoom factor for display to see if it gets reflected.
+  display_manager()->UpdateZoomFactor(info_1.id(), zoom_factor_3);
+
+  EXPECT_EQ(display_manager()->GetZoomFactorForDisplay(info_1.id()),
+            zoom_factor_3);
+  display::test::SetDisplayResolution(display_manager(), info_1.id(),
+                                      modes[0].size());
+  display_manager()->UpdateDisplays();
+
+  EXPECT_EQ(
+      display_manager()->GetDisplayForId(info_1.id()).device_scale_factor(),
+      zoom_factor_3);
+}
+
 TEST_F(DisplayManagerTest, TestDeviceScaleOnlyChange) {
   UpdateDisplay("1000x600");
   aura::WindowTreeHost* host = Shell::GetPrimaryRootWindow()->GetHost();

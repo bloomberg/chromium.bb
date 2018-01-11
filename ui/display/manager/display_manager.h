@@ -409,7 +409,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   void ClearTouchCalibrationData(
       int64_t display_id,
       base::Optional<TouchDeviceIdentifier> touch_device_identifier);
+  void UpdateZoomFactor(int64_t display_id, float zoom_factor);
 #endif
+  // Returns the zoom foactor for the display identified by |display_id|.
+  float GetZoomFactorForDisplay(int64_t display_id) const;
 
   // Sets/gets default multi display mode.
   void SetDefaultMultiDisplayModeForCurrentDisplays(MultiDisplayMode mode);
@@ -571,6 +574,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Selected display modes for displays. Key is the displays' ID.
   std::map<int64_t, ManagedDisplayMode> display_modes_;
+
+  // Zoom level for each display.
+  std::map<int64_t, float> display_zoom_factors_;
 
   // When set to true, the host window's resize event updates the display's
   // size. This is set to true when running on desktop environment (for
