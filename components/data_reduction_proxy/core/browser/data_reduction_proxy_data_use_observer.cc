@@ -156,7 +156,7 @@ void DataReductionProxyDataUseObserver::OnPageDidFinishLoad(
           data_use->GetUserData(kDataUsePreviewsUserDataKey));
   if (previews_user_data) {
     // Report estimated data savings for NOSCRIPT if applicable.
-    if (previews_user_data->committed_previews_type() ==
+    if (previews_user_data->GetCommittedPreviewsType() ==
         previews::PreviewsType::NOSCRIPT) {
       int inflated_bytes =
           (data_use->total_bytes_received() *

@@ -34773,15 +34773,6 @@ Called by update_net_trust_anchors.py.-->
       label="Timestamp shown indicating the page was just updated on reload"/>
 </enum>
 
-<enum name="PreviewsType">
-  <int value="0" label="None"/>
-  <int value="1" label="Offline"/>
-  <int value="2" label="LoFi"/>
-  <int value="3" label="LitePage"/>
-  <int value="4" label="AMP Redirection"/>
-  <int value="5" label="NoScript"/>
-</enum>
-
 <enum name="PreviewsUserOptedOut">
   <int value="0" label="The user did not choose to reload the full page."/>
   <int value="1" label="The user chose to reload the full page."/>

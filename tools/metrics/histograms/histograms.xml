@@ -67363,14 +67363,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Previews.CacheControlNoTransform.BlockedPreview"
-    enum="PreviewsType">
-  <owner>dougarnett@chromium.org</owner>
-  <summary>
-    Blocked previews due to Cache-Control:no-transform directive.
-  </summary>
-</histogram>
-
 <histogram name="Previews.ContentLength" units="KB">
   <owner>ryansturm@chromium.org</owner>
   <summary>
