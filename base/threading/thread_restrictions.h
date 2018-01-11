@@ -52,7 +52,7 @@ class TextInputClientMac;
 }  // namespace content
 namespace cronet {
 class CronetPrefsManager;
-class CronetURLRequestContextAdapter;
+class CronetURLRequestContext;
 }  // namespace cronet
 namespace dbus {
 class Bus;
@@ -203,7 +203,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   // in unit tests to avoid the friend requirement.
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
   friend class cronet::CronetPrefsManager;
-  friend class cronet::CronetURLRequestContextAdapter;
+  friend class cronet::CronetURLRequestContext;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ScopedAllowBlockingForTesting;
 
