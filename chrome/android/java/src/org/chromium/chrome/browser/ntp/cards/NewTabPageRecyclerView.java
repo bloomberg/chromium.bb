@@ -17,6 +17,7 @@ import android.view.animation.Interpolator;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
@@ -56,6 +57,9 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
     /** Whether the location bar is shown as part of the UI. */
     private boolean mContainsLocationBar;
 
+    /** The fake search box delegate used for determining if the url bar has focus. */
+    private FakeboxDelegate mFakeboxDelegate;
+
     public NewTabPageRecyclerView(Context context) {
         super(context);
 
@@ -82,6 +86,19 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
 
     public void setContainsLocationBar(boolean containsLocationBar) {
         mContainsLocationBar = containsLocationBar;
+    }
+
+    public void setFakeboxDelegate(FakeboxDelegate fakeboxDelegate) {
+        mFakeboxDelegate = fakeboxDelegate;
+    }
+
+    @Override
+    protected boolean getTouchEnabled() {
+        // The RecyclerView should not accept touch events while the URL bar is focused. This
+        // prevents the RecyclerView from requesting focus during the URL focus animation, which
+        // would cause the focus animation to be canceled. See https://crbug.com/798084.
+        return super.getTouchEnabled()
+                && (mFakeboxDelegate == null || !mFakeboxDelegate.isUrlBarFocused());
     }
 
     private void scrollToFirstCard() {
