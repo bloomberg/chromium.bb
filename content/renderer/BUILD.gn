@@ -465,8 +465,6 @@ target(link_target_type, "renderer") {
     "shared_worker/embedded_shared_worker_stub.h",
     "shared_worker/shared_worker_client_impl.cc",
     "shared_worker/shared_worker_client_impl.h",
-    "shared_worker/shared_worker_devtools_agent.cc",
-    "shared_worker/shared_worker_devtools_agent.h",
     "shared_worker/shared_worker_factory_impl.cc",
     "shared_worker/shared_worker_factory_impl.h",
     "shared_worker/shared_worker_repository.cc",

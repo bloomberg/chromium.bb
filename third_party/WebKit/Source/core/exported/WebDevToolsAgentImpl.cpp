@@ -84,7 +84,6 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/InterfaceRegistry.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -188,8 +187,8 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   void RunIfWaitingForDebugger(LocalFrame* frame) override {
     WebDevToolsAgentImpl* agent =
         WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
-    if (agent && agent->GetClient())
-      agent->GetClient()->ResumeStartup();
+    if (agent && agent->worker_client_)
+      agent->worker_client_->ResumeStartup();
   }
 
   bool running_for_debug_break_;
@@ -293,25 +292,39 @@ class WebDevToolsAgentImpl::Session : public GarbageCollectedFinalized<Session>,
 };
 
 // static
-WebDevToolsAgentImpl* WebDevToolsAgentImpl::Create(WebLocalFrameImpl* frame) {
+WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
+    WebLocalFrameImpl* frame) {
   if (!IsMainFrame(frame)) {
-    WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, false);
+    WebDevToolsAgentImpl* agent =
+        new WebDevToolsAgentImpl(frame, false, nullptr);
     if (frame->FrameWidget())
       agent->LayerTreeViewChanged(frame->FrameWidget()->GetLayerTreeView());
     return agent;
   }
 
   WebViewImpl* view = frame->ViewImpl();
-  WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, true);
+  WebDevToolsAgentImpl* agent = new WebDevToolsAgentImpl(frame, true, nullptr);
+  agent->LayerTreeViewChanged(view->LayerTreeView());
+  return agent;
+}
+
+// static
+WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForWorker(
+    WebLocalFrameImpl* frame,
+    WorkerClient* worker_client) {
+  WebViewImpl* view = frame->ViewImpl();
+  WebDevToolsAgentImpl* agent =
+      new WebDevToolsAgentImpl(frame, true, worker_client);
   agent->LayerTreeViewChanged(view->LayerTreeView());
   return agent;
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* web_local_frame_impl,
-    bool include_view_agents)
+    bool include_view_agents,
+    WorkerClient* worker_client)
     : binding_(this),
-      client_(nullptr),
+      worker_client_(worker_client),
       web_local_frame_impl_(web_local_frame_impl),
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(InspectorResourceContentLoader::Create(
@@ -324,14 +337,10 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       layer_tree_id_(0) {
   DCHECK(IsMainThread());
   DCHECK(web_local_frame_impl_->GetFrame());
-  web_local_frame_impl_->GetFrame()
-      ->GetInterfaceRegistry()
-      ->AddAssociatedInterface(WTF::BindRepeating(
-          &WebDevToolsAgentImpl::BindRequest, WrapWeakPersistent(this)));
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
-  DCHECK(!client_);
+  DCHECK(!worker_client_);
 }
 
 void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
@@ -359,7 +368,7 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
     Detach(session_id);
 
   resource_content_loader_->Dispose();
-  client_ = nullptr;
+  worker_client_ = nullptr;
   binding_.Close();
 }
 
@@ -512,10 +521,6 @@ void WebDevToolsAgentImpl::DestroySession(int session_id) {
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
 }
 
-void WebDevToolsAgentImpl::SetClient(WebDevToolsAgentImpl::Client* client) {
-  client_ = client;
-}
-
 void WebDevToolsAgentImpl::Attach(int session_id) {
   if (!session_id || sessions_.find(session_id) != sessions_.end())
     return;
@@ -528,6 +533,8 @@ void WebDevToolsAgentImpl::Reattach(int session_id, const String& saved_state) {
   String state = saved_state;
   InspectorSession* session = InitializeSession(session_id, &state);
   session->Restore();
+  if (worker_client_)
+    worker_client_->ResumeStartup();
 }
 
 void WebDevToolsAgentImpl::Detach(int session_id) {
@@ -664,8 +671,8 @@ void WebDevToolsAgentImpl::SendProtocolMessage(int session_id,
   if (LayoutTestSupport::IsRunningLayoutTest() && call_id)
     FlushProtocolNotifications();
 
-  if (client_) {
-    client_->SendProtocolMessage(session_id, call_id, response, state);
+  if (worker_client_ && worker_client_->SendProtocolMessage(session_id, call_id,
+                                                            response, state)) {
     return;
   }
 

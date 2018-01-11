@@ -73,7 +73,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void OnShadowPageInitialized() override;
 
   // WebDevToolsAgentImpl::Client overrides.
-  void SendProtocolMessage(int session_id,
+  bool SendProtocolMessage(int session_id,
                            int call_id,
                            const String&,
                            const String&) override;
@@ -94,13 +94,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
   void TerminateWorkerContext() override;
 
   void PauseWorkerContextOnStart() override;
-  void AttachDevTools(int session_id) override;
-  void ReattachDevTools(int sesion_id, const WebString& saved_state) override;
-  void DetachDevTools(int session_id) override;
-  void DispatchDevToolsMessage(int session_id,
-                               int call_id,
-                               const WebString& method,
-                               const WebString& message) override;
+  void GetDevToolsAgent(
+      mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
 
   // Callback methods for SharedWorkerReportingProxy.
   void CountFeature(WebFeature);

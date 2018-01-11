@@ -22,6 +22,7 @@
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
 
 class GURL;
 
@@ -44,8 +45,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
                    std::unique_ptr<SharedWorkerInstance> instance,
-                   int process_id,
-                   int route_id);
+                   int process_id);
   ~SharedWorkerHost() override;
 
   // Starts the SharedWorker in the renderer process.
@@ -70,9 +70,10 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   // Returns true if any clients live in a different process from this worker.
   bool ServesExternalClient();
 
+  void GetDevToolsAgent(blink::mojom::DevToolsAgentAssociatedRequest request);
+
   SharedWorkerInstance* instance() { return instance_.get(); }
   int process_id() const { return process_id_; }
-  int route_id() const { return route_id_; }
   bool IsAvailable() const;
 
  private:
@@ -118,7 +119,6 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   mojom::SharedWorkerPtr worker_;
 
   const int process_id_;
-  const int route_id_;
   int next_connection_request_id_;
   bool termination_message_sent_ = false;
   bool closed_ = false;

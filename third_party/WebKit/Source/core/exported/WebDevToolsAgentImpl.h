@@ -47,6 +47,7 @@
 
 namespace blink {
 
+class ClientMessageLoopAdapter;
 class GraphicsLayer;
 class InspectedFrames;
 class InspectorOverlayAgent;
@@ -65,7 +66,30 @@ class CORE_EXPORT WebDevToolsAgentImpl final
       public InspectorLayerTreeAgent::Client,
       private WebThread::TaskObserver {
  public:
-  static WebDevToolsAgentImpl* Create(WebLocalFrameImpl*);
+  // ------ Deprecated ------
+  // These public methods and client are temporary,
+  // until shared/service workers inspection migrates to Mojo.
+  class WorkerClient {
+   public:
+    virtual ~WorkerClient() {}
+    virtual bool SendProtocolMessage(int session_id,
+                                     int call_id,
+                                     const String& response,
+                                     const String& state) = 0;
+    virtual void ResumeStartup() = 0;
+  };
+  void Attach(int session_id);
+  void Reattach(int session_id, const String& saved_state);
+  void Detach(int session_id);
+  void DispatchOnInspectorBackend(int session_id,
+                                  int call_id,
+                                  const String& method,
+                                  const String& message);
+  // ------ End deprecated ------
+
+  static WebDevToolsAgentImpl* CreateForFrame(WebLocalFrameImpl*);
+  static WebDevToolsAgentImpl* CreateForWorker(WebLocalFrameImpl*,
+                                               WorkerClient*);
   ~WebDevToolsAgentImpl() override;
   virtual void Trace(blink::Visitor*);
 
@@ -75,29 +99,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   void LayoutOverlay();
   bool HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
-
-  // ------ Deprecated ------
-  // These public methods and client are temporary,
-  // until shared/service workers inspection migrates to Mojo.
-  class Client {
-   public:
-    virtual ~Client() {}
-    virtual void SendProtocolMessage(int session_id,
-                                     int call_id,
-                                     const String& response,
-                                     const String& state) = 0;
-    virtual void ResumeStartup() = 0;
-  };
-  void SetClient(Client*);
-  Client* GetClient() { return client_; }
-  void Attach(int session_id);
-  void Reattach(int session_id, const String& saved_state);
-  void Detach(int session_id);
-  void DispatchOnInspectorBackend(int session_id,
-                                  int call_id,
-                                  const String& method,
-                                  const String& message);
-  // ------ End deprecated ------
+  void BindRequest(mojom::blink::DevToolsAgentAssociatedRequest);
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);
@@ -109,10 +111,11 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   String EvaluateInOverlayForTesting(const String& script);
 
  private:
-  WebDevToolsAgentImpl(WebLocalFrameImpl*,
-                       bool include_view_agents);
+  friend class ClientMessageLoopAdapter;
 
-  void BindRequest(mojom::blink::DevToolsAgentAssociatedRequest);
+  WebDevToolsAgentImpl(WebLocalFrameImpl*,
+                       bool include_view_agents,
+                       WorkerClient*);
 
   // mojom::blink::DevToolsAgent implementation.
   void AttachDevToolsSession(
@@ -162,7 +165,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
   HashMap<int, IOSession*> io_sessions_;
   HashMap<int, mojom::blink::DevToolsSessionHostAssociatedPtr> hosts_;
 
-  Client* client_;
+  WorkerClient* worker_client_;
   Member<WebLocalFrameImpl> web_local_frame_impl_;
 
   Member<CoreProbeSink> probe_sink_;

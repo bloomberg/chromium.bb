@@ -36,9 +36,7 @@ struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
   int provider_id;
 
   // When this provider is created for a document, |route_id| is the frame ID of
-  // it. When this provider is created for a Shared Worker, |route_id| is the
-  // Shared Worker route ID. When this provider is created for a Service Worker,
-  // |route_id| is MSG_ROUTING_NONE.
+  // it. Otherwise |route_id| is MSG_ROUTING_NONE.
   int route_id;
 
   // This identifies whether this provider is for a service worker or for a

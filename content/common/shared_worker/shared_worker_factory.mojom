@@ -22,16 +22,12 @@ interface SharedWorkerFactory {
   // Create a new shared worker. The |host| interface receives events from the
   // shared worker.
   //
-  // TODO(darin): Eliminate |route_id| corresponding to legacy Chrome IPC,
-  // which is only needed for DevTools.
-  //
   // TODO(sammc): Change shared workers to obtain |content_settings| via
   // |interface_provider| instead of receiving plumbing it here.
   CreateSharedWorker(
       SharedWorkerInfo info,
       bool pause_on_start,
       mojo.common.mojom.UnguessableToken devtools_worker_token,
-      int32 route_id,
       blink.mojom.WorkerContentSettingsProxy content_settings,
       SharedWorkerHost host,
       SharedWorker& shared_worker,

@@ -30,7 +30,8 @@ WorkerShadowPage::WorkerShadowPage(Client* client)
   // not create graphics layers.
   web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
 
-  main_frame_->DevToolsAgentImpl()->SetClient(client_);
+  main_frame_->SetDevToolsAgentImpl(
+      WebDevToolsAgentImpl::CreateForWorker(main_frame_, client_));
 }
 
 WorkerShadowPage::~WorkerShadowPage() {
@@ -108,6 +109,11 @@ void WorkerShadowPage::AdvanceState(State new_state) {
       state_ = new_state;
       return;
   }
+}
+
+void WorkerShadowPage::GetDevToolsAgent(
+    mojom::blink::DevToolsAgentAssociatedRequest request) {
+  main_frame_->DevToolsAgentImpl()->BindRequest(std::move(request));
 }
 
 }  // namespace blink

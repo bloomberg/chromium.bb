@@ -78,8 +78,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // non-document service worker client).
   // TODO(kinuko): This should also take ChildURLLoaderFactoryGetter associated
   // with the SharedWorker.
-  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
-      int route_id);
+  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker();
 
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
   // a service worker execution context).

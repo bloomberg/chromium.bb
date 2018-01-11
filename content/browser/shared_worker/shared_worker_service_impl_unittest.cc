@@ -162,6 +162,10 @@ class MockSharedWorker : public mojom::SharedWorker {
     // Allow duplicate events.
     terminate_received_ = true;
   }
+  void GetDevToolsAgent(
+      blink::mojom::DevToolsAgentAssociatedRequest request) override {
+    NOTREACHED();
+  }
 
   mojo::Binding<mojom::SharedWorker> binding_;
   std::queue<std::pair<int, MessagePortChannel>> connect_received_;
@@ -202,7 +206,6 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
-      int32_t route_id,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
@@ -212,7 +215,6 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
     create_params_ = std::make_unique<CreateParams>();
     create_params_->info = std::move(info);
     create_params_->pause_on_start = pause_on_start;
-    create_params_->route_id = route_id;
     create_params_->content_settings = std::move(content_settings);
     create_params_->host = std::move(host);
     create_params_->request = std::move(request);
@@ -222,7 +224,6 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
   struct CreateParams {
     mojom::SharedWorkerInfoPtr info;
     bool pause_on_start;
-    int32_t route_id;
     blink::mojom::WorkerContentSettingsProxyPtr content_settings;
     mojom::SharedWorkerHostPtr host;
     mojom::SharedWorkerRequest request;
