@@ -7,7 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
+#include "base/files/file.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_debug_file_writer.h"
 
@@ -16,10 +17,12 @@ namespace media {
 AudioDebugRecordingHelper::AudioDebugRecordingHelper(
     const AudioParameters& params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    CreateFileCallback create_file_callback,
     base::OnceClosure on_destruction_closure)
     : params_(params),
       recording_enabled_(0),
       task_runner_(std::move(task_runner)),
+      create_file_callback_(std::move(create_file_callback)),
       on_destruction_closure_(std::move(on_destruction_closure)),
       weak_factory_(this) {}
 
@@ -35,8 +38,23 @@ void AudioDebugRecordingHelper::EnableDebugRecording(
   DCHECK(!file_name.empty());
 
   debug_writer_ = CreateAudioDebugFileWriter(params_);
-  debug_writer_->Start(
-      file_name.AddExtension(debug_writer_->GetFileNameExtension()));
+  create_file_callback_.Run(
+      file_name.AddExtension(debug_writer_->GetFileNameExtension()),
+      base::BindOnce(&AudioDebugRecordingHelper::StartDebugRecordingToFile,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void AudioDebugRecordingHelper::StartDebugRecordingToFile(base::File file) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!file.IsValid()) {
+    PLOG(ERROR) << "Invalid debug recording file, error="
+                << file.error_details();
+    debug_writer_.reset();
+    return;
+  }
+
+  debug_writer_->Start(std::move(file));
 
   base::subtle::NoBarrier_Store(&recording_enabled_, 1);
 }

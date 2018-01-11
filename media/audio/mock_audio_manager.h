@@ -18,7 +18,7 @@ namespace media {
 
 // This class is a simple mock around AudioManager, used exclusively for tests,
 // which avoids to use the actual (system and platform dependent) AudioManager.
-// Some bots does not have input devices, thus using the actual AudioManager
+// Some bots do not have input devices, thus using the actual AudioManager
 // would causing failures on classes which expect that.
 class MockAudioManager : public AudioManager {
  public:

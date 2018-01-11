@@ -17,6 +17,7 @@
 #include "media/base/media_export.h"
 
 namespace base {
+class File;
 class FilePath;
 class SingleThreadTaskRunner;
 }
@@ -49,14 +50,19 @@ class AudioDebugRecorder {
 // soundcard thread -> file thread.
 class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
  public:
+  using CreateFileCallback = base::RepeatingCallback<void(
+      const base::FilePath&,
+      base::OnceCallback<void(base::File)> reply_callback)>;
+
   AudioDebugRecordingHelper(
       const AudioParameters& params,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      CreateFileCallback create_file_callback,
       base::OnceClosure on_destruction_closure);
   ~AudioDebugRecordingHelper() override;
 
-  // Enable debug recording. The create callback is first run to create an
-  // AudioDebugFileWriter.
+  // Enable debug recording. The AudioDebugFileWriter is created and
+  // |create_file_callback_| is ran to create debug recording file.
   virtual void EnableDebugRecording(const base::FilePath& file_name);
 
   // Disable debug recording. The AudioDebugFileWriter is destroyed.
@@ -76,6 +82,10 @@ class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
   virtual std::unique_ptr<AudioDebugFileWriter> CreateAudioDebugFileWriter(
       const AudioParameters& params);
 
+  // Passed to |create_file_callback_|, to be called after debug recording
+  // file was created.
+  void StartDebugRecordingToFile(base::File file);
+
   const AudioParameters params_;
   std::unique_ptr<AudioDebugFileWriter> debug_writer_;
 
@@ -85,6 +95,9 @@ class MEDIA_EXPORT AudioDebugRecordingHelper : public AudioDebugRecorder {
 
   // The task runner for accessing |debug_writer_|.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Callback used for creating debug recording file.
+  CreateFileCallback create_file_callback_;
 
   // Runs in destructor if set.
   base::OnceClosure on_destruction_closure_;
