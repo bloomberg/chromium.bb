@@ -12,12 +12,6 @@ namespace identity {
 IdentityManager::IdentityManager(SigninManagerBase* signin_manager,
                                  ProfileOAuth2TokenService* token_service)
     : signin_manager_(signin_manager), token_service_(token_service) {
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, the authenticated account is set very early in startup and
-  // never changed. No client should be accessing the IdentityManager before the
-  // authenticated account is set.
-  DCHECK(signin_manager_->IsAuthenticated());
-#endif
   primary_account_info_ = signin_manager_->GetAuthenticatedAccountInfo();
   signin_manager_->AddObserver(this);
 }
@@ -27,6 +21,23 @@ IdentityManager::~IdentityManager() {
 }
 
 AccountInfo IdentityManager::GetPrimaryAccountInfo() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS in production, the authenticated account is set very early in
+  // startup and never changed. Hence, the information held by the
+  // IdentityManager should always correspond to that held by SigninManager.
+  // NOTE: the above invariant is not guaranteed to hold in tests. If you
+  // are seeing this DCHECK go off in a testing context, it means that you need
+  // to set the IdentityManager's primary account info in the test at the place
+  // where you are setting the authenticated account info in the SigninManager.
+  // TODO(blundell): Add the API to do this once we hit the first case and
+  // document the API to use here.
+  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().account_id,
+            primary_account_info_.account_id);
+  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().gaia,
+            primary_account_info_.gaia);
+  DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().email,
+            primary_account_info_.email);
+#endif
   return primary_account_info_;
 }
 
