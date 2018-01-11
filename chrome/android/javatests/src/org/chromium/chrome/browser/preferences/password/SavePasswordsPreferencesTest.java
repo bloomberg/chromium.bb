@@ -356,7 +356,6 @@ public class SavePasswordsPreferencesTest {
     @SmallTest
     @Feature({"Preferences"})
     @EnableFeatures("PasswordExport")
-    @DisabledTest(message = "crbug.com/796939")
     public void testExportMenuItem() throws Exception {
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
