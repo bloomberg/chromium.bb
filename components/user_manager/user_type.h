@@ -8,6 +8,7 @@
 namespace user_manager {
 
 // The user type. Used in a histogram; do not modify existing types.
+// When adding a new one, also update histograms/enums.xml.
 typedef enum {
   // Regular user, has a user name and password.
   USER_TYPE_REGULAR = 0,
