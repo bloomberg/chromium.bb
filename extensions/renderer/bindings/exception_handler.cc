@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
+#include "extensions/renderer/bindings/get_per_context_data.h"
 #include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/per_context_data.h"
@@ -16,31 +17,14 @@ namespace extensions {
 
 namespace {
 
-const char kExtensionExceptionHandlerPerContextKey[] =
-    "extension_exception_handler";
 
 struct ExceptionHandlerPerContextData : public base::SupportsUserData::Data {
+  static constexpr char kPerContextDataKey[] = "extension_exception_handler";
+
   v8::Global<v8::Function> custom_handler;
 };
 
-// TODO(devlin): Extract this to a utility method.
-ExceptionHandlerPerContextData* GetContextData(v8::Local<v8::Context> context,
-                                               bool should_create) {
-  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
-  if (!per_context_data)
-    return nullptr;
-  auto* data = static_cast<ExceptionHandlerPerContextData*>(
-      per_context_data->GetUserData(kExtensionExceptionHandlerPerContextKey));
-
-  if (!data && should_create) {
-    auto api_data = std::make_unique<ExceptionHandlerPerContextData>();
-    data = api_data.get();
-    per_context_data->SetUserData(kExtensionExceptionHandlerPerContextKey,
-                                  std::move(api_data));
-  }
-
-  return data;
-}
+constexpr char ExceptionHandlerPerContextData::kPerContextDataKey[];
 
 }  // namespace
 
@@ -102,14 +86,18 @@ void ExceptionHandler::HandleException(v8::Local<v8::Context> context,
 
 void ExceptionHandler::SetHandlerForContext(v8::Local<v8::Context> context,
                                             v8::Local<v8::Function> handler) {
-  ExceptionHandlerPerContextData* data = GetContextData(context, true);
+  ExceptionHandlerPerContextData* data =
+      GetPerContextData<ExceptionHandlerPerContextData>(context,
+                                                        kCreateIfMissing);
   DCHECK(data);
   data->custom_handler.Reset(context->GetIsolate(), handler);
 }
 
 v8::Local<v8::Function> ExceptionHandler::GetCustomHandler(
     v8::Local<v8::Context> context) {
-  ExceptionHandlerPerContextData* data = GetContextData(context, false);
+  ExceptionHandlerPerContextData* data =
+      GetPerContextData<ExceptionHandlerPerContextData>(context,
+                                                        kDontCreateIfMissing);
   return data ? data->custom_handler.Get(context->GetIsolate())
               : v8::Local<v8::Function>();
 }
