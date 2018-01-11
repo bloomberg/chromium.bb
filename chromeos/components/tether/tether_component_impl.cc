@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/synchronous_shutdown_object_container_impl.h"
 #include "chromeos/components/tether/tether_disconnector.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
+#include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -28,6 +29,34 @@ namespace {
 void OnDisconnectErrorDuringShutdown(const std::string& error_name) {
   PA_LOG(WARNING) << "Error disconnecting from Tether network during shutdown; "
                   << "Error name: " << error_name;
+}
+
+TetherSessionCompletionLogger::SessionCompletionReason
+GetSessionCompletionReasonFromShutdownReason(
+    TetherComponent::ShutdownReason shutdown_reason) {
+  switch (shutdown_reason) {
+    case TetherComponent::ShutdownReason::OTHER:
+      return TetherSessionCompletionLogger::SessionCompletionReason::OTHER;
+    case TetherComponent::ShutdownReason::USER_LOGGED_OUT:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          USER_LOGGED_OUT;
+    case TetherComponent::ShutdownReason::USER_CLOSED_LID:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          USER_CLOSED_LID;
+    case TetherComponent::ShutdownReason::PREF_DISABLED:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          PREF_DISABLED;
+    case TetherComponent::ShutdownReason::BLUETOOTH_DISABLED:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          BLUETOOTH_DISABLED;
+    case TetherComponent::ShutdownReason::CELLULAR_DISABLED:
+      return TetherSessionCompletionLogger::SessionCompletionReason::
+          CELLULAR_DISABLED;
+    default:
+      break;
+  }
+
+  return TetherSessionCompletionLogger::SessionCompletionReason::OTHER;
 }
 
 }  // namespace
@@ -131,12 +160,15 @@ TetherComponentImpl::TetherComponentImpl(
 
 TetherComponentImpl::~TetherComponentImpl() = default;
 
-void TetherComponentImpl::RequestShutdown() {
+void TetherComponentImpl::RequestShutdown(
+    const ShutdownReason& shutdown_reason) {
   has_shutdown_been_requested_ = true;
 
   // If shutdown has already happened, there is nothing else to do.
   if (status() != TetherComponent::Status::ACTIVE)
     return;
+
+  shutdown_reason_ = shutdown_reason;
 
   // If crash recovery has not yet completed, wait for it to complete before
   // continuing.
@@ -180,7 +212,8 @@ void TetherComponentImpl::InitiateShutdown() {
                  << "\".";
     tether_disconnector->DisconnectFromNetwork(
         active_host->GetTetherNetworkGuid(), base::Bind(&base::DoNothing),
-        base::Bind(&OnDisconnectErrorDuringShutdown));
+        base::Bind(&OnDisconnectErrorDuringShutdown),
+        GetSessionCompletionReasonFromShutdownReason(shutdown_reason_));
   }
 
   TransitionToStatus(TetherComponent::Status::SHUTTING_DOWN);

@@ -8,9 +8,12 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/network_configuration_remover.h"
+#include "chromeos/components/tether/tether_disconnector.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
+#include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -24,12 +27,13 @@ TetherNetworkDisconnectionHandler::TetherNetworkDisconnectionHandler(
     ActiveHost* active_host,
     NetworkStateHandler* network_state_handler,
     NetworkConfigurationRemover* network_configuration_remover,
-    DisconnectTetheringRequestSender* disconnect_tethering_request_sender)
+    DisconnectTetheringRequestSender* disconnect_tethering_request_sender,
+    TetherSessionCompletionLogger* tether_session_completion_logger)
     : active_host_(active_host),
       network_state_handler_(network_state_handler),
       network_configuration_remover_(network_configuration_remover),
-      disconnect_tethering_request_sender_(
-          disconnect_tethering_request_sender) {
+      disconnect_tethering_request_sender_(disconnect_tethering_request_sender),
+      tether_session_completion_logger_(tether_session_completion_logger) {
   network_state_handler_->AddObserver(this, FROM_HERE);
 }
 
@@ -45,6 +49,16 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
       !network->IsConnectedState()) {
     PA_LOG(INFO) << "Connection to active host (Wi-Fi network GUID "
                  << network->guid() << ") has been lost.";
+
+    // Check if Wi-Fi is enabled; if it is, this indicates that the connection
+    // to the Tether host dropped. If it isn't, then the event of Wi-Fi being
+    // disabled caused the connection to end.
+    tether_session_completion_logger_->RecordTetherSessionCompletion(
+        network_state_handler_->IsTechnologyEnabled(NetworkTypePattern::WiFi())
+            ? TetherSessionCompletionLogger::SessionCompletionReason::
+                  CONNECTION_DROPPED
+            : TetherSessionCompletionLogger::SessionCompletionReason::
+                  WIFI_DISABLED);
 
     network_configuration_remover_->RemoveNetworkConfiguration(
         active_host_->GetWifiNetworkGuid());

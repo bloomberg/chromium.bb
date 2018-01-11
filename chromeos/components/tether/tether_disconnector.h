@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/disconnect_tethering_operation.h"
+#include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/network/network_handler_callbacks.h"
 
 namespace chromeos {
@@ -30,7 +31,9 @@ class TetherDisconnector {
   virtual void DisconnectFromNetwork(
       const std::string& tether_network_guid,
       const base::Closure& success_callback,
-      const network_handler::StringResultCallback& error_callback) = 0;
+      const network_handler::StringResultCallback& error_callback,
+      const TetherSessionCompletionLogger::SessionCompletionReason&
+          session_completion_reason) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TetherDisconnector);

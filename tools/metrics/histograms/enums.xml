@@ -22984,6 +22984,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Hosts found but no notification shown"/>
 </enum>
 
+<enum name="InstantTethering_SessionCompletionReason">
+  <int value="0" label="Other"/>
+  <int value="1" label="User disconnected"/>
+  <int value="2" label="Connection dropped"/>
+  <int value="3" label="User logged out"/>
+  <int value="4" label="User closed lid"/>
+  <int value="5" label="Pref disabled"/>
+  <int value="6" label="Bluetooth disabled"/>
+  <int value="7" label="Cellular disabled"/>
+  <int value="8" label="Wi-Fi disabled"/>
+  <int value="9" label="Bluetooth controller disappeared"/>
+</enum>
+
 <enum name="IntelMaxMicroArchitecture">
   <int value="0" label="Pentium"/>
   <int value="1" label="SSE"/>

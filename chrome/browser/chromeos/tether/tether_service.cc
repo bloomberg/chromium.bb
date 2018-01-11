@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/tether/gms_core_notifications_state_tracker_impl.h"
+#include "chromeos/components/tether/tether_component.h"
 #include "chromeos/components/tether/tether_component_impl.h"
 #include "chromeos/components/tether/tether_host_fetcher_impl.h"
 #include "chromeos/network/device_state.h"
@@ -209,8 +210,42 @@ void TetherService::StopTetherIfNecessary() {
 
   PA_LOG(INFO) << "Shutting down TetherComponent.";
 
+  chromeos::tether::TetherComponent::ShutdownReason shutdown_reason;
+  switch (GetTetherFeatureState()) {
+    case SHUT_DOWN:
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::USER_LOGGED_OUT;
+      break;
+    case SUSPENDED:
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::USER_CLOSED_LID;
+      break;
+    case CELLULAR_DISABLED:
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::CELLULAR_DISABLED;
+      break;
+    case BLUETOOTH_DISABLED:
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::BLUETOOTH_DISABLED;
+      break;
+    case USER_PREFERENCE_DISABLED:
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::PREF_DISABLED;
+      break;
+    case BLE_NOT_PRESENT:
+      shutdown_reason = chromeos::tether::TetherComponent::ShutdownReason::
+          BLUETOOTH_CONTROLLER_DISAPPEARED;
+      break;
+    default:
+      PA_LOG(ERROR) << "Unexpected shutdown reason. FeatureState is "
+                    << GetTetherFeatureState() << ".";
+      shutdown_reason =
+          chromeos::tether::TetherComponent::ShutdownReason::OTHER;
+      break;
+  }
+
   tether_component_->AddObserver(this);
-  tether_component_->RequestShutdown();
+  tether_component_->RequestShutdown(shutdown_reason);
 }
 
 void TetherService::Shutdown() {
