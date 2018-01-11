@@ -54,7 +54,8 @@ class NetworkHandler : public DevToolsDomainHandler,
                    RenderFrameHostImpl* frame_host) override;
 
   Response Enable(Maybe<int> max_total_size,
-                  Maybe<int> max_resource_size) override;
+                  Maybe<int> max_resource_size,
+                  Maybe<int> max_post_data_size) override;
   Response Disable() override;
 
   void ClearBrowserCache(

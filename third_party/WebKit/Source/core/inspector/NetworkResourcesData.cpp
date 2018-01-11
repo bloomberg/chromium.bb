@@ -44,10 +44,9 @@ XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
                                      const AtomicString& method,
                                      const KURL& url,
                                      bool async,
-                                     scoped_refptr<EncodedFormData> form_data,
                                      bool include_credentials) {
   return new XHRReplayData(execution_context, method, url, async,
-                           std::move(form_data), include_credentials);
+                           include_credentials);
 }
 
 void XHRReplayData::AddHeader(const AtomicString& key,
@@ -59,13 +58,11 @@ XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
                              const AtomicString& method,
                              const KURL& url,
                              bool async,
-                             scoped_refptr<EncodedFormData> form_data,
                              bool include_credentials)
     : execution_context_(execution_context),
       method_(method),
       url_(url),
       async_(async),
-      form_data_(std::move(form_data)),
       include_credentials_(include_credentials) {}
 
 void XHRReplayData::Trace(blink::Visitor* visitor) {
@@ -157,7 +154,9 @@ void NetworkResourcesData::ResourceData::ClearWeakMembers(Visitor* visitor) {
 }
 
 size_t NetworkResourcesData::ResourceData::DataLength() const {
-  return data_buffer_ ? data_buffer_->size() : 0;
+  size_t data_buffer_size = data_buffer_ ? data_buffer_->size() : 0;
+  size_t post_data_size = post_data_ ? post_data_->SizeInBytes() : 0;
+  return data_buffer_size + post_data_size;
 }
 
 void NetworkResourcesData::ResourceData::AppendData(const char* data,
@@ -194,12 +193,19 @@ void NetworkResourcesData::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_id_to_resource_data_map_);
 }
 
-void NetworkResourcesData::ResourceCreated(const String& request_id,
-                                           const String& loader_id,
-                                           const KURL& requested_url) {
+void NetworkResourcesData::ResourceCreated(
+    const String& request_id,
+    const String& loader_id,
+    const KURL& requested_url,
+    scoped_refptr<EncodedFormData> post_data) {
   EnsureNoDataForRequestId(request_id);
-  request_id_to_resource_data_map_.Set(
-      request_id, new ResourceData(this, request_id, loader_id, requested_url));
+  ResourceData* data =
+      new ResourceData(this, request_id, loader_id, requested_url);
+  request_id_to_resource_data_map_.Set(request_id, data);
+  if (post_data &&
+      PrepareToAddResourceData(request_id, post_data->SizeInBytes())) {
+    data->SetPostData(post_data);
+  }
 }
 
 void NetworkResourcesData::ResponseReceived(const String& request_id,
@@ -419,7 +425,7 @@ void NetworkResourcesData::SetResourcesDataSizeLimits(
 }
 
 NetworkResourcesData::ResourceData*
-NetworkResourcesData::ResourceDataForRequestId(const String& request_id) {
+NetworkResourcesData::ResourceDataForRequestId(const String& request_id) const {
   if (request_id.IsNull())
     return nullptr;
   return request_id_to_resource_data_map_.at(request_id);

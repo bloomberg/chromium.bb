@@ -55,14 +55,12 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                                const AtomicString& method,
                                const KURL&,
                                bool async,
-                               scoped_refptr<EncodedFormData>,
                                bool include_credentials);
 
   void AddHeader(const AtomicString& key, const AtomicString& value);
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
   bool Async() const { return async_; }
-  scoped_refptr<EncodedFormData> FormData() const { return form_data_; }
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
   ExecutionContext* GetExecutionContext() const { return execution_context_; }
@@ -74,14 +72,12 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
                 const AtomicString& method,
                 const KURL&,
                 bool async,
-                scoped_refptr<EncodedFormData>,
                 bool include_credentials);
 
   Member<ExecutionContext> execution_context_;
   AtomicString method_;
   KURL url_;
   bool async_;
-  scoped_refptr<EncodedFormData> form_data_;
   HTTPHeaderMap headers_;
   bool include_credentials_;
 };
@@ -166,6 +162,10 @@ class NetworkResourcesData final
     void AddPendingEncodedDataLength(int encoded_data_length) {
       pending_encoded_data_length_ += encoded_data_length;
     }
+    void SetPostData(scoped_refptr<EncodedFormData> post_data) {
+      post_data_ = post_data;
+    }
+    scoped_refptr<EncodedFormData> PostData() const { return post_data_; }
 
     void Trace(blink::Visitor*);
 
@@ -198,6 +198,7 @@ class NetworkResourcesData final
     WeakMember<Resource> cached_resource_;
     scoped_refptr<BlobDataHandle> downloaded_file_blob_;
     Vector<AtomicString> certificate_;
+    scoped_refptr<EncodedFormData> post_data_;
   };
 
   static NetworkResourcesData* Create(size_t total_buffer_size,
@@ -208,7 +209,8 @@ class NetworkResourcesData final
 
   void ResourceCreated(const String& request_id,
                        const String& loader_id,
-                       const KURL&);
+                       const KURL&,
+                       scoped_refptr<EncodedFormData>);
   void ResponseReceived(const String& request_id,
                         const String& frame_id,
                         const ResourceResponse&);
@@ -237,13 +239,12 @@ class NetworkResourcesData final
   int GetAndClearPendingEncodedDataLength(const String& request_id);
   void AddPendingEncodedDataLength(const String& request_id,
                                    int encoded_data_length);
-
   void Trace(blink::Visitor*);
 
  private:
   NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);
 
-  ResourceData* ResourceDataForRequestId(const String& request_id);
+  ResourceData* ResourceDataForRequestId(const String& request_id) const;
   void EnsureNoDataForRequestId(const String& request_id);
   bool EnsureFreeSpace(size_t);
   ResourceData* PrepareToAddResourceData(const String& request_id,

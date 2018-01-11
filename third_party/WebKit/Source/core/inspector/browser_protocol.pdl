@@ -3256,6 +3256,8 @@ domain Network
       Headers headers
       # HTTP POST request data.
       optional string postData
+      # True when the request has POST data. Note that postData might still be omitted when this flag is true when the data is too long.
+      optional boolean hasPostData
       # The mixed content type of the request.
       optional Security.MixedContentType mixedContentType
       # Priority of the resource request at the time request is sent.
@@ -3619,6 +3621,8 @@ domain Network
       experimental optional integer maxTotalBufferSize
       # Per-resource buffer size in bytes to use when preserving network payloads (XHRs, etc).
       experimental optional integer maxResourceBufferSize
+      # Longest post body size (in bytes) that would be included in requestWillBeSent notification
+      optional integer maxPostDataSize
 
   # Returns all browser cookies. Depending on the backend support, will return detailed cookie
   # information in the `cookies` field.
@@ -3655,6 +3659,15 @@ domain Network
       string body
       # True, if content was sent as base64.
       boolean base64Encoded
+
+  # Returns post data sent with the request. Returns an error when no data was sent with the request.
+  command getRequestPostData
+    parameters
+      # Identifier of the network request to get content for.
+      RequestId requestId
+    returns
+      # Base64-encoded request body.
+      string postData
 
   # Returns content served for the given currently intercepted request.
   experimental command getResponseBodyForInterception
@@ -4978,7 +4991,7 @@ domain Security
   # Enables tracking security state changes.
   command enable
 
-  # Enable/disable whether all certificate errors should be ignored. 
+  # Enable/disable whether all certificate errors should be ignored.
   experimental command setIgnoreCertificateErrors
     parameters
       # If true, all certificate errors will be ignored.
