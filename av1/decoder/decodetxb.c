@@ -305,7 +305,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
     for (c = 0; c < num_updates; ++c) {
       const int pos = update_pos[c];
       uint8_t *const level = &levels[get_padded_idx(pos, bwl)];
-      int idx;
+      int idx = 0;
       int ctx;
 
       assert(*level > NUM_BASE_LEVELS);
@@ -315,7 +315,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #else
       ctx = get_br_ctx(levels, pos, bwl, level_counts[pos]);
 #endif
-      for (idx = 0; idx < COEFF_BASE_RANGE / (BR_CDF_SIZE - 1); ++idx) {
+      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         int k = av1_read_record_symbol(
             counts, r,
             ec_ctx->coeff_br_cdf[AOMMIN(txs_ctx, TX_32X32)][plane_type][ctx],
