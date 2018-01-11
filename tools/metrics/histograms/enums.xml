@@ -43008,6 +43008,8 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="4" label="Locally Managed"/>
   <int value="5" label="Kiosk App"/>
   <int value="6" label="Regular Supervised"/>
+  <int value="7" label="ARC Kiosk"/>
+  <int value="8" label="Active Directory"/>
 </enum>
 
 <enum name="V8CacheBehaviour">
