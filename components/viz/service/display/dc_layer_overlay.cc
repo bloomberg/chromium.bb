@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "cc/base/math_util.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
@@ -19,7 +19,7 @@ namespace viz {
 namespace {
 
 DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
-    cc::ResourceProvider* resource_provider,
+    cc::DisplayResourceProvider* resource_provider,
     const YUVVideoDrawQuad* quad,
     DCLayerOverlay* ca_layer_overlay) {
   for (const auto& resource : quad->resources) {
@@ -90,7 +90,7 @@ DCLayerOverlayProcessor::DCLayerOverlayProcessor() = default;
 DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
 DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
-    cc::ResourceProvider* resource_provider,
+    cc::DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad,
@@ -129,12 +129,13 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
   return result;
 }
 
-void DCLayerOverlayProcessor::Process(cc::ResourceProvider* resource_provider,
-                                      const gfx::RectF& display_rect,
-                                      RenderPassList* render_passes,
-                                      gfx::Rect* overlay_damage_rect,
-                                      gfx::Rect* damage_rect,
-                                      DCLayerOverlayList* ca_layer_overlays) {
+void DCLayerOverlayProcessor::Process(
+    cc::DisplayResourceProvider* resource_provider,
+    const gfx::RectF& display_rect,
+    RenderPassList* render_passes,
+    gfx::Rect* overlay_damage_rect,
+    gfx::Rect* damage_rect,
+    DCLayerOverlayList* ca_layer_overlays) {
   DCHECK(pass_info_.empty());
   processed_overlay_in_frame_ = false;
   if (base::FeatureList::IsEnabled(
@@ -217,7 +218,7 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
 }
 
 void DCLayerOverlayProcessor::ProcessRenderPass(
-    cc::ResourceProvider* resource_provider,
+    cc::DisplayResourceProvider* resource_provider,
     const gfx::RectF& display_rect,
     RenderPass* render_pass,
     bool is_root,

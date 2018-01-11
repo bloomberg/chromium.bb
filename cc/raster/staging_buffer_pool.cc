@@ -16,6 +16,7 @@
 #include "cc/resources/scoped_resource.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryAllocatorDumpGuid;
@@ -130,7 +131,7 @@ void StagingBuffer::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
 StagingBufferPool::StagingBufferPool(
     base::SequencedTaskRunner* task_runner,
     viz::RasterContextProvider* worker_context_provider,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes)
     : task_runner_(task_runner),

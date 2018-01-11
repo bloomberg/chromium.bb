@@ -432,8 +432,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
     }
 
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        context_provider_.get(), shared_bitmap_manager_.get(),
-        CreateResourceSettings());
+        context_provider_.get(), shared_bitmap_manager_.get());
 
     MakeChildResourceProvider();
   }
@@ -1898,8 +1897,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     parent_context_provider->BindToCurrentThread();
 
     auto parent_resource_provider(std::make_unique<DisplayResourceProvider>(
-        parent_context_provider.get(), shared_bitmap_manager.get(),
-        resource_settings));
+        parent_context_provider.get(), shared_bitmap_manager.get()));
 
     gfx::Size size(1, 1);
     viz::ResourceFormat format = viz::RGBA_8888;
@@ -2350,7 +2348,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
 
   viz::ResourceSettings resource_settings = CreateResourceSettings();
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(), resource_settings));
+      context_provider.get(), shared_bitmap_manager_.get()));
 
   auto child_context_owned = std::make_unique<TextureStateTrackingContext>();
   TextureStateTrackingContext* child_context = child_context_owned.get();
@@ -2573,7 +2571,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       CreateAndFillSharedBitmap(shared_bitmap_manager_.get(), size, kBadBeef));
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
-      nullptr, shared_bitmap_manager_.get(), CreateResourceSettings()));
+      nullptr, shared_bitmap_manager_.get()));
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
@@ -2645,8 +2643,7 @@ class ResourceProviderTestImportedResourceGLFilters
     context_provider->BindToCurrentThread();
 
     auto resource_provider(std::make_unique<DisplayResourceProvider>(
-        context_provider.get(), shared_bitmap_manager,
-        CreateResourceSettings()));
+        context_provider.get(), shared_bitmap_manager));
 
     auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
     TextureStateTrackingContext* child_context = child_context_owned.get();
@@ -2810,8 +2807,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(),
-      CreateResourceSettings()));
+      context_provider.get(), shared_bitmap_manager_.get()));
 
   auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* child_context = child_context_owned.get();
@@ -2918,8 +2914,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_ResourceFromChild) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(),
-      CreateResourceSettings());
+      context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -2975,8 +2970,7 @@ TEST_P(ResourceProviderTest, WaitSyncTokenIfNeeded_WithSyncToken) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(),
-      CreateResourceSettings());
+      context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -3019,8 +3013,7 @@ TEST_P(ResourceProviderTest,
   context_provider->BindToCurrentThread();
 
   auto resource_provider = std::make_unique<DisplayResourceProvider>(
-      context_provider.get(), shared_bitmap_manager_.get(),
-      CreateResourceSettings());
+      context_provider.get(), shared_bitmap_manager_.get());
 
   gpu::SyncToken sync_token;
   const GLuint64 current_fence_sync = context->GetNextFenceSync();
@@ -3634,7 +3627,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox) {
     EXPECT_CALL(*context, RetireTextureId(kWorkerTextureId));
     context_provider->ContextGL()->DeleteTextures(1, &kWorkerTextureId);
 
-    sync_token = ResourceProvider::GenerateSyncTokenHelper(
+    sync_token = LayerTreeResourceProvider::GenerateSyncTokenHelper(
         context_provider->RasterInterface());
     lock.set_sync_token(sync_token);
     Mock::VerifyAndClearExpectations(context);
@@ -3718,7 +3711,7 @@ TEST_P(ResourceProviderTest, ScopedWriteLockRaster_Mailbox_Overlay) {
               lock.ConsumeTexture(context_provider->RasterInterface()));
     Mock::VerifyAndClearExpectations(context);
 
-    sync_token = ResourceProvider::GenerateSyncTokenHelper(
+    sync_token = LayerTreeResourceProvider::GenerateSyncTokenHelper(
         context_provider->RasterInterface());
     lock.set_sync_token(sync_token);
 

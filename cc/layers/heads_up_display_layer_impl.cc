@@ -182,7 +182,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     LayerTreeResourceProvider::ScopedWriteLockGL lock(resource_provider,
                                                       resources_.back()->id());
 
-    ResourceProvider::ScopedSkSurface scoped_surface(
+    LayerTreeResourceProvider::ScopedSkSurface scoped_surface(
         context_provider->GrContext(), lock.GetTexture(), lock.target(),
         lock.size(), lock.format(), false /* use_distance_field_text */,
         false /* can_use_lcd_text */, 0 /* msaa_sample_count */);

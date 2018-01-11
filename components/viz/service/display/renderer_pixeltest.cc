@@ -347,7 +347,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   }
 
   ResourceFormat yuv_highbit_resource_format =
-      resource_provider->YuvResourceFormat(bits_per_channel);
+      child_resource_provider->YuvResourceFormat(bits_per_channel);
 
   float multiplier = 1.0;
 

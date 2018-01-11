@@ -117,7 +117,8 @@ void OneCopyRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "OneCopyRasterBufferProvider::OrderingBarrier");
 
   gpu::gles2::GLES2Interface* gl = compositor_context_provider_->ContextGL();
-  gpu::SyncToken sync_token = ResourceProvider::GenerateSyncTokenHelper(gl);
+  gpu::SyncToken sync_token =
+      LayerTreeResourceProvider::GenerateSyncTokenHelper(gl);
   for (RasterBufferImpl* buffer : pending_raster_buffers_)
     buffer->set_sync_token(sync_token);
   pending_raster_buffers_.clear();
@@ -391,7 +392,8 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
   ri->DeleteTextures(1, &texture_id);
 
   // Generate sync token for cross context synchronization.
-  resource_lock->set_sync_token(ResourceProvider::GenerateSyncTokenHelper(ri));
+  resource_lock->set_sync_token(
+      LayerTreeResourceProvider::GenerateSyncTokenHelper(ri));
 }
 
 gfx::BufferUsage OneCopyRasterBufferProvider::StagingBufferUsage() const {

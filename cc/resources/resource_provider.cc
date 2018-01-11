@@ -25,22 +25,14 @@
 #include "build/build_config.h"
 #include "cc/resources/resource_util.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/returned_resource.h"
-#include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
@@ -52,91 +44,18 @@ namespace cc {
 
 namespace {
 
-class ScopedSetActiveTexture {
- public:
-  ScopedSetActiveTexture(GLES2Interface* gl, GLenum unit)
-      : gl_(gl), unit_(unit) {
-    DCHECK_EQ(GL_TEXTURE0, ResourceProvider::GetActiveTextureUnit(gl_));
-
-    if (unit_ != GL_TEXTURE0)
-      gl_->ActiveTexture(unit_);
-  }
-
-  ~ScopedSetActiveTexture() {
-    // Active unit being GL_TEXTURE0 is effectively the ground state.
-    if (unit_ != GL_TEXTURE0)
-      gl_->ActiveTexture(GL_TEXTURE0);
-  }
-
- private:
-  GLES2Interface* gl_;
-  GLenum unit_;
-};
-
 // Generates process-unique IDs to use for tracing a ResourceProvider's
 // resources.
 base::AtomicSequenceNumber g_next_resource_provider_tracing_id;
 
 }  // namespace
 
-ResourceProvider::Settings::Settings(
-    viz::ContextProvider* compositor_context_provider,
-    bool delegated_sync_points_required,
-    const viz::ResourceSettings& resource_settings)
-    : yuv_highbit_resource_format(resource_settings.high_bit_for_testing
-                                      ? viz::R16_EXT
-                                      : viz::LUMINANCE_8),
-      use_gpu_memory_buffer_resources(
-          resource_settings.use_gpu_memory_buffer_resources),
-      delegated_sync_points_required(delegated_sync_points_required) {
-  if (!compositor_context_provider) {
-    // Pick an arbitrary limit here similar to what hardware might.
-    max_texture_size = 16 * 1024;
-    best_texture_format = viz::RGBA_8888;
-    return;
-  }
-
-  const auto& caps = compositor_context_provider->ContextCapabilities();
-  use_texture_storage = caps.texture_storage;
-  use_texture_format_bgra = caps.texture_format_bgra8888;
-  use_texture_usage_hint = caps.texture_usage;
-  use_texture_npot = caps.texture_npot;
-  use_sync_query = caps.sync_query;
-  use_texture_storage_image = caps.texture_storage_image;
-
-  if (caps.disable_one_component_textures) {
-    yuv_resource_format = yuv_highbit_resource_format = viz::RGBA_8888;
-  } else {
-    yuv_resource_format = caps.texture_rg ? viz::RED_8 : viz::LUMINANCE_8;
-    if (resource_settings.use_r16_texture && caps.texture_norm16)
-      yuv_highbit_resource_format = viz::R16_EXT;
-    else if (caps.texture_half_float_linear)
-      yuv_highbit_resource_format = viz::LUMINANCE_F16;
-  }
-
-  GLES2Interface* gl = compositor_context_provider->ContextGL();
-  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-
-  best_texture_format =
-      viz::PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra);
-  best_render_buffer_format = viz::PlatformColor::BestSupportedTextureFormat(
-      caps.render_buffer_format_bgra8888);
-}
-
 ResourceProvider::ResourceProvider(
-    viz::ContextProvider* compositor_context_provider,
-    viz::SharedBitmapManager* shared_bitmap_manager,
-    bool delegated_sync_points_required,
-    const viz::ResourceSettings& resource_settings)
-    : settings_(compositor_context_provider,
-                delegated_sync_points_required,
-                resource_settings),
-      compositor_context_provider_(compositor_context_provider),
-      shared_bitmap_manager_(shared_bitmap_manager),
+    viz::ContextProvider* compositor_context_provider)
+    : compositor_context_provider_(compositor_context_provider),
       next_child_(1),
       lost_context_provider_(false),
       tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
-  DCHECK(resource_settings.texture_id_allocation_chunk_size);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
@@ -168,93 +87,6 @@ ResourceProvider::~ResourceProvider() {
 #endif  // DCHECK_IS_ON()
 }
 
-bool ResourceProvider::IsTextureFormatSupported(
-    viz::ResourceFormat format) const {
-  gpu::Capabilities caps;
-  if (compositor_context_provider_)
-    caps = compositor_context_provider_->ContextCapabilities();
-
-  switch (format) {
-    case viz::ALPHA_8:
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::RGB_565:
-    case viz::LUMINANCE_8:
-      return true;
-    case viz::BGRA_8888:
-      return caps.texture_format_bgra8888;
-    case viz::ETC1:
-      return caps.texture_format_etc1;
-    case viz::RED_8:
-      return caps.texture_rg;
-    case viz::R16_EXT:
-      return caps.texture_norm16;
-    case viz::LUMINANCE_F16:
-    case viz::RGBA_F16:
-      return caps.texture_half_float_linear;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool ResourceProvider::IsRenderBufferFormatSupported(
-    viz::ResourceFormat format) const {
-  gpu::Capabilities caps;
-  if (compositor_context_provider_)
-    caps = compositor_context_provider_->ContextCapabilities();
-
-  switch (format) {
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::RGB_565:
-      return true;
-    case viz::BGRA_8888:
-      return caps.render_buffer_format_bgra8888;
-    case viz::RGBA_F16:
-      // TODO(ccameron): This will always return false on pixel tests, which
-      // makes it un-test-able until we upgrade Mesa.
-      // https://crbug.com/687720
-      return caps.texture_half_float_linear &&
-             caps.color_buffer_half_float_rgba;
-    case viz::LUMINANCE_8:
-    case viz::ALPHA_8:
-    case viz::RED_8:
-    case viz::ETC1:
-    case viz::LUMINANCE_F16:
-    case viz::R16_EXT:
-      // We don't currently render into these formats. If we need to render into
-      // these eventually, we should expand this logic.
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
-bool ResourceProvider::IsGpuMemoryBufferFormatSupported(
-    viz::ResourceFormat format,
-    gfx::BufferUsage usage) const {
-  switch (format) {
-    case viz::BGRA_8888:
-    case viz::RED_8:
-    case viz::R16_EXT:
-    case viz::RGBA_4444:
-    case viz::RGBA_8888:
-    case viz::ETC1:
-    case viz::RGBA_F16:
-      return true;
-    // These formats have no BufferFormat equivalent.
-    case viz::ALPHA_8:
-    case viz::LUMINANCE_8:
-    case viz::RGB_565:
-    case viz::LUMINANCE_F16:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
 bool ResourceProvider::InUseByConsumer(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
@@ -270,14 +102,6 @@ void ResourceProvider::LoseResourceForTesting(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->lost = true;
-}
-
-viz::ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
-  if (bits > 8) {
-    return settings_.yuv_highbit_resource_format;
-  } else {
-    return settings_.yuv_resource_format;
-  }
 }
 
 void ResourceProvider::DeleteResource(viz::ResourceId id) {
@@ -353,15 +177,6 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   resources_.erase(it);
 }
 
-void ResourceProvider::FlushPendingDeletions() const {
-  if (auto* gl = ContextGL())
-    gl->ShallowFlushCHROMIUM();
-}
-
-viz::ResourceType ResourceProvider::GetResourceType(viz::ResourceId id) {
-  return GetResource(id)->type;
-}
-
 GLenum ResourceProvider::GetResourceTextureTarget(viz::ResourceId id) {
   return GetResource(id)->target;
 }
@@ -383,67 +198,10 @@ viz::internal::Resource* ResourceProvider::GetResource(viz::ResourceId id) {
   return &it->second;
 }
 
-bool ResourceProvider::IsOverlayCandidate(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->is_overlay_candidate;
-}
-
-gfx::BufferFormat ResourceProvider::GetBufferFormat(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->buffer_format;
-}
-
-#if defined(OS_ANDROID)
-bool ResourceProvider::IsBackedBySurfaceTexture(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->is_backed_by_surface_texture;
-}
-
-bool ResourceProvider::WantsPromotionHintForTesting(viz::ResourceId id) {
-  return wants_promotion_hints_set_.count(id) > 0;
-}
-
-size_t ResourceProvider::CountPromotionHintRequestsForTesting() {
-  return wants_promotion_hints_set_.size();
-}
-#endif
-
 void ResourceProvider::EnableReadLockFencesForTesting(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->read_lock_fences_enabled = true;
-}
-
-ResourceProvider::ScopedSkSurface::ScopedSkSurface(GrContext* gr_context,
-                                                   GLuint texture_id,
-                                                   GLenum texture_target,
-                                                   const gfx::Size& size,
-                                                   viz::ResourceFormat format,
-                                                   bool use_distance_field_text,
-                                                   bool can_use_lcd_text,
-                                                   int msaa_sample_count) {
-  GrGLTextureInfo texture_info;
-  texture_info.fID = texture_id;
-  texture_info.fTarget = texture_target;
-  GrBackendTexture backend_texture(size.width(), size.height(),
-                                   ToGrPixelConfig(format), texture_info);
-  uint32_t flags =
-      use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
-  // Use unknown pixel geometry to disable LCD text.
-  SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
-  if (can_use_lcd_text) {
-    // LegacyFontHost will get LCD text and skia figures out what type to use.
-    surface_props =
-        SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
-  }
-  surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context, backend_texture, kTopLeft_GrSurfaceOrigin, msaa_sample_count,
-      nullptr, &surface_props);
-}
-
-ResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
-  if (surface_)
-    surface_->prepareForExternalIO();
 }
 
 void ResourceProvider::PopulateSkBitmapWithResource(
@@ -482,47 +240,6 @@ void ResourceProvider::SynchronousFence::Synchronize() {
   gl_->Finish();
 }
 
-GLenum ResourceProvider::BindForSampling(viz::ResourceId resource_id,
-                                         GLenum unit,
-                                         GLenum filter) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  GLES2Interface* gl = ContextGL();
-  ResourceMap::iterator it = resources_.find(resource_id);
-  DCHECK(it != resources_.end());
-  viz::internal::Resource* resource = &it->second;
-  DCHECK(resource->lock_for_read_count);
-  DCHECK(!resource->locked_for_write);
-
-  ScopedSetActiveTexture scoped_active_tex(gl, unit);
-  GLenum target = resource->target;
-  gl->BindTexture(target, resource->gl_id);
-  GLenum min_filter = filter;
-  if (filter == GL_LINEAR) {
-    switch (resource->mipmap_state) {
-      case viz::internal::Resource::INVALID:
-        break;
-      case viz::internal::Resource::GENERATE:
-        DCHECK(settings_.use_texture_npot);
-        gl->GenerateMipmap(target);
-        resource->mipmap_state = viz::internal::Resource::VALID;
-      // fall-through
-      case viz::internal::Resource::VALID:
-        min_filter = GL_LINEAR_MIPMAP_LINEAR;
-        break;
-    }
-  }
-  if (min_filter != resource->min_filter) {
-    gl->TexParameteri(target, GL_TEXTURE_MIN_FILTER, min_filter);
-    resource->min_filter = min_filter;
-  }
-  if (filter != resource->filter) {
-    gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, filter);
-    resource->filter = filter;
-  }
-
-  return target;
-}
-
 void ResourceProvider::WaitSyncTokenInternal(
     viz::internal::Resource* resource) {
   DCHECK(resource);
@@ -536,39 +253,6 @@ void ResourceProvider::WaitSyncTokenInternal(
   // state the synchronized.
   gl->WaitSyncTokenCHROMIUM(resource->sync_token().GetConstData());
   resource->SetSynchronized();
-}
-
-GLint ResourceProvider::GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl) {
-  GLint active_unit = 0;
-  gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
-  return active_unit;
-}
-
-gpu::SyncToken ResourceProvider::GenerateSyncTokenHelper(
-    gpu::gles2::GLES2Interface* gl) {
-  DCHECK(gl);
-  gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-  DCHECK(sync_token.HasData() ||
-         gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
-  return sync_token;
-}
-
-gpu::SyncToken ResourceProvider::GenerateSyncTokenHelper(
-    gpu::raster::RasterInterface* ri) {
-  DCHECK(ri);
-  gpu::SyncToken sync_token;
-  ri->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-  DCHECK(sync_token.HasData() ||
-         ri->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
-  return sync_token;
-}
-
-GLenum ResourceProvider::GetImageTextureTarget(
-    const gpu::Capabilities& caps,
-    gfx::BufferUsage usage,
-    viz::ResourceFormat format) const {
-  return gpu::GetBufferTextureTarget(usage, BufferFormat(format), caps);
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {

@@ -15,7 +15,7 @@
 #include "ui/gl/dc_renderer_layer_params.h"
 
 namespace cc {
-class ResourceProvider;
+class DisplayResourceProvider;
 }
 
 namespace viz {
@@ -96,7 +96,7 @@ class DCLayerOverlayProcessor {
   DCLayerOverlayProcessor();
   ~DCLayerOverlayProcessor();
 
-  void Process(cc::ResourceProvider* resource_provider,
+  void Process(cc::DisplayResourceProvider* resource_provider,
                const gfx::RectF& display_rect,
                RenderPassList* render_passes,
                gfx::Rect* overlay_damage_rect,
@@ -108,7 +108,7 @@ class DCLayerOverlayProcessor {
   }
 
  private:
-  DCLayerResult FromDrawQuad(cc::ResourceProvider* resource_provider,
+  DCLayerResult FromDrawQuad(cc::DisplayResourceProvider* resource_provider,
                              const gfx::RectF& display_rect,
                              QuadList::ConstIterator quad_list_begin,
                              QuadList::ConstIterator quad,
@@ -117,7 +117,7 @@ class DCLayerOverlayProcessor {
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
                                                QuadList::Iterator it);
-  void ProcessRenderPass(cc::ResourceProvider* resource_provider,
+  void ProcessRenderPass(cc::DisplayResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
                          bool is_root,
