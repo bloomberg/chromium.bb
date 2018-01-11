@@ -3789,7 +3789,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 
   if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
       feature_info_->feature_flags().khr_debug) {
-    InitializeGLDebugLogging();
+    InitializeGLDebugLogging(true, &logger_);
   }
 
   if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
