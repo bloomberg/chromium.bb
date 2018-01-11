@@ -27,7 +27,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -225,8 +227,11 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleControllerTest,
   NSButton* learn_more_link = [filter_controller learnMoreLink];
   [filter_controller learnMoreLinkClicked:learn_more_link];
 
-  EXPECT_EQ(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE)),
-            web_contents()->GetLastCommittedURL());
+  content::TestNavigationObserver observer(web_contents());
+  observer.Wait();
+
+  std::string link_value(subresource_filter::kLearnMoreLink);
+  EXPECT_EQ(link_value, web_contents()->GetLastCommittedURL().spec());
 
   [parent_ close];
 }
