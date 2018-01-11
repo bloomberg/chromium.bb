@@ -14,6 +14,7 @@
 #include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -137,6 +138,9 @@ class NET_EXPORT ProxyInfo {
 
   // Returns the source for configuration settings used for proxy resolution.
   ProxyConfigSource config_source() const { return config_source_; }
+
+  // Returns traffic annotation tag based on current config source.
+  const NetworkTrafficAnnotationTag traffic_annotation() const;
 
   // See description in ProxyList::ToPacString().
   std::string ToPacString() const;

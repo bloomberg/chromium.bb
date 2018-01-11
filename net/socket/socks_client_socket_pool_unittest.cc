@@ -19,6 +19,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,15 +57,15 @@ scoped_refptr<TransportSocketParams> CreateProxyHostParams() {
 }
 
 scoped_refptr<SOCKSSocketParams> CreateSOCKSv4Params() {
-  return new SOCKSSocketParams(
-      CreateProxyHostParams(), false /* socks_v5 */,
-      HostPortPair("host", 80));
+  return new SOCKSSocketParams(CreateProxyHostParams(), false /* socks_v5 */,
+                               HostPortPair("host", 80),
+                               TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 scoped_refptr<SOCKSSocketParams> CreateSOCKSv5Params() {
-  return new SOCKSSocketParams(
-      CreateProxyHostParams(), true /* socks_v5 */,
-      HostPortPair("host", 80));
+  return new SOCKSSocketParams(CreateProxyHostParams(), true /* socks_v5 */,
+                               HostPortPair("host", 80),
+                               TRAFFIC_ANNOTATION_FOR_TESTS);
 }
 
 class SOCKSClientSocketPoolTest : public testing::Test {
