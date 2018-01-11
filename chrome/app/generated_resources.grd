@@ -6909,8 +6909,8 @@ I don't think this site should be blocked!
       <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR" desc="The placeholder/label text for credit card expiration year in the card unmask dialog.">
         Year
       </message>
-      <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT" desc="The name of the Google product that stores user addresses or credit cards in the cloud." formatter_data="android_java">
-        Google Payments
+      <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT" desc="The name of the Google product that stores user addresses or credit cards in the cloud. This should not be translated." formatter_data="android_java">
+        Google Pay
       </message>
 
       <if expr="not is_linux or chromeos">
