@@ -118,7 +118,7 @@
 // Sets the leading stack view.
 - (void)setUpLeadingStackView {
   self.backButton = [self.buttonFactory backButton];
-  self.forwardLeadingButton = [self.buttonFactory forwardButton];
+  self.forwardLeadingButton = [self.buttonFactory leadingForwardButton];
   self.tabGridButton = [self.buttonFactory tabSwitcherStripButton];
   self.stopButton = [self.buttonFactory stopButton];
   self.stopButton.hiddenInCurrentState = YES;
@@ -136,7 +136,7 @@
 
 // Sets the trailing stack view.
 - (void)setUpTrailingStackView {
-  self.forwardTrailingButton = [self.buttonFactory forwardButton];
+  self.forwardTrailingButton = [self.buttonFactory trailingForwardButton];
   self.shareButton = [self.buttonFactory shareButton];
   self.bookmarkButton = [self.buttonFactory bookmarkButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];

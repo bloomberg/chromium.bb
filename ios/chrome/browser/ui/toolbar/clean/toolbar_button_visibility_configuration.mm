@@ -31,10 +31,11 @@
   }
 }
 
-- (ToolbarComponentVisibility)forwardButtonVisibility {
+- (ToolbarComponentVisibility)leadingForwardButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways;
+      return ToolbarComponentVisibilityAlways &
+             ~self.trailingForwardButtonVisibility;
     case SECONDARY:
       return ToolbarComponentVisibilityNone;
     case LEGACY:
@@ -44,11 +45,22 @@
   }
 }
 
+- (ToolbarComponentVisibility)trailingForwardButtonVisibility {
+  switch (self.type) {
+    case PRIMARY:
+      return ToolbarComponentVisibilityCompactWidthRegularHeight;
+    case SECONDARY:
+      return ToolbarComponentVisibilityNone;
+    case LEGACY:
+      return ToolbarComponentVisibilityNone;
+  }
+}
+
 - (ToolbarComponentVisibility)tabGridButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways &
-             ~ToolbarComponentVisibilityRegularWidthRegularHeight;
+      return ToolbarComponentVisibilityCompactWidthCompactHeight |
+             ToolbarComponentVisibilityRegularWidthCompactHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityAlways;
     case LEGACY:
@@ -59,7 +71,8 @@
 - (ToolbarComponentVisibility)toolsMenuButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityAlways;
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
       return ToolbarComponentVisibilityAlways;
     case LEGACY:

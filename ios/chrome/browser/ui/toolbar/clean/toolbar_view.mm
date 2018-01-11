@@ -130,7 +130,7 @@
 
 - (void)setUpToolbarButtons {
   self.backButton = [self.buttonFactory backButton];
-  self.forwardButton = [self.buttonFactory forwardButton];
+  self.forwardButton = [self.buttonFactory leadingForwardButton];
   self.tabSwitchStripButton = [self.buttonFactory tabSwitcherStripButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
   self.shareButton = [self.buttonFactory shareButton];
