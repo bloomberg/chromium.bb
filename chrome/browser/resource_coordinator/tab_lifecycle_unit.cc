@@ -35,7 +35,9 @@ TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
   DCHECK(tab_strip_model_);
 }
 
-TabLifecycleUnitSource::TabLifecycleUnit::~TabLifecycleUnit() = default;
+TabLifecycleUnitSource::TabLifecycleUnit::~TabLifecycleUnit() {
+  OnLifecycleUnitDestroyed();
+}
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetTabStripModel(
     TabStripModel* tab_strip_model) {

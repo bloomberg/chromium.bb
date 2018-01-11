@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/ui/browser.h"
@@ -103,9 +104,14 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
     auto res = tabs_.insert(std::make_pair(
         contents, std::make_unique<TabLifecycleUnit>(
                       &tab_lifecycle_observers_, contents, tab_strip_model)));
+    TabLifecycleUnit* lifecycle_unit = res.first->second.get();
     if (GetFocusedTabStripModel() == tab_strip_model && foreground)
-      UpdateFocusedTabTo(res.first->second.get());
-    NotifyLifecycleUnitCreated(res.first->second.get());
+      UpdateFocusedTabTo(lifecycle_unit);
+
+    // Add a self-owned observer to the LifecycleUnit to record metrics.
+    lifecycle_unit->AddObserver(new DiscardMetricsLifecycleUnitObserver());
+
+    NotifyLifecycleUnitCreated(lifecycle_unit);
   } else {
     // A tab was moved to another window.
     it->second->SetTabStripModel(tab_strip_model);
