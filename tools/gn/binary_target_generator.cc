@@ -50,9 +50,6 @@ void BinaryTargetGenerator::DoRun() {
   if (!FillCheckIncludes())
     return;
 
-  if (!FillInputs())
-    return;
-
   if (!FillConfigs())
     return;
 

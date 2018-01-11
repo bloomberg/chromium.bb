@@ -156,10 +156,6 @@ class Target : public Item {
     write_runtime_deps_output_ = value;
   }
 
-  // Compile-time extra dependencies.
-  const FileList& inputs() const { return inputs_; }
-  FileList& inputs() { return inputs_; }
-
   // Runtime dependencies. These are "file-like things" that can either be
   // directories or files. They do not need to exist, these are just passed as
   // runtime dependencies to external test systems as necessary.
@@ -350,7 +346,6 @@ class Target : public Item {
   bool check_includes_;
   bool complete_static_lib_;
   bool testonly_;
-  FileList inputs_;
   std::vector<std::string> data_;
   BundleData bundle_data_;
   OutputFile write_runtime_deps_output_;
@@ -381,9 +376,9 @@ class Target : public Item {
 
   std::vector<LabelPattern> assert_no_deps_;
 
-  // Used for all binary targets. The precompiled header values in this struct
-  // will be resolved to the ones to use for this target, if precompiled
-  // headers are used.
+  // Used for all binary targets, and for inputs in regular targets. The
+  // precompiled header values in this struct will be resolved to the ones to
+  // use for this target, if precompiled headers are used.
   ConfigValues config_values_;
 
   // Used for action[_foreach] targets.

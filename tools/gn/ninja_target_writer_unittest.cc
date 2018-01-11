@@ -47,7 +47,7 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
   target.set_output_type(Target::EXECUTABLE);
   target.visibility().SetPublic();
   target.SetToolchain(setup.toolchain());
-  target.inputs().push_back(SourceFile("//foo/input.txt"));
+  target.config_values().inputs().push_back(SourceFile("//foo/input.txt"));
   target.sources().push_back(SourceFile("//foo/source.txt"));
   target.public_deps().push_back(LabelTargetPair(&base_target));
 

@@ -171,7 +171,26 @@ TEST_F(AnalyzerTest, TargetRefersToInputs) {
       R"("test_targets":[])"
       "}");
 
-  t->inputs().push_back(SourceFile("//dir/extra_input.cc"));
+  SourceFile extra_input(SourceFile("//dir/extra_input.cc"));
+  t->config_values().inputs().push_back(extra_input);
+  RunAnalyzerTest(
+      R"({
+       "files": [ "//dir/extra_input.cc" ],
+       "additional_compile_targets": [ "all" ],
+       "test_targets": [ "//dir:target_name" ]
+       })",
+      "{"
+      R"("compile_targets":["all"],)"
+      R"/("status":"Found dependency",)/"
+      R"("test_targets":["//dir:target_name"])"
+      "}");
+
+  t->config_values().inputs().clear();
+  Config* c = MakeConfig("//dir", "config_name");
+  builder_.ItemDefined(std::unique_ptr<Item>(c));
+  c->own_values().inputs().push_back(extra_input);
+  t->configs().push_back(LabelConfigPair(c));
+
   RunAnalyzerTest(
       R"({
        "files": [ "//dir/extra_input.cc" ],

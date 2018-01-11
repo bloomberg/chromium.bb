@@ -37,9 +37,9 @@ class ConfigValuesGenerator {
 };
 
 // For using in documentation for functions which use this.
-#define CONFIG_VALUES_VARS_HELP \
-    "  Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,\n" \
-    "         asmflags, defines, include_dirs, ldflags, lib_dirs, libs,\n" \
-    "         precompiled_header, precompiled_source\n"
+#define CONFIG_VALUES_VARS_HELP                                            \
+  "  Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,\n"     \
+  "         asmflags, defines, include_dirs, inputs, ldflags, lib_dirs,\n" \
+  "         libs, precompiled_header, precompiled_source\n"
 
 #endif  // TOOLS_GN_CONFIG_VALUES_GENERATOR_H_

@@ -406,13 +406,20 @@ OutputFile NinjaBinaryTargetWriter::WriteInputsStampAndGetDep() const {
       << "Toolchain not set on target "
       << target_->label().GetUserVisibleName(true);
 
-  if (target_->inputs().size() == 0)
+  std::vector<const SourceFile*> inputs;
+  for (ConfigValuesIterator iter(target_); !iter.done(); iter.Next()) {
+    for (const auto& input : iter.cur().inputs()) {
+      inputs.push_back(&input);
+    }
+  }
+
+  if (inputs.size() == 0)
     return OutputFile();  // No inputs
 
   // If we only have one input, return it directly instead of writing a stamp
   // file for it.
-  if (target_->inputs().size() == 1)
-    return OutputFile(settings_->build_settings(), target_->inputs()[0]);
+  if (inputs.size() == 1)
+    return OutputFile(settings_->build_settings(), *inputs[0]);
 
   // Make a stamp file.
   OutputFile input_stamp_file =
@@ -427,9 +434,9 @@ OutputFile NinjaBinaryTargetWriter::WriteInputsStampAndGetDep() const {
        << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP);
 
   // File inputs.
-  for (const auto& input : target_->inputs()) {
+  for (const auto* input : inputs) {
     out_ << " ";
-    path_output_.WriteFile(out_, input);
+    path_output_.WriteFile(out_, *input);
   }
 
   out_ << "\n";

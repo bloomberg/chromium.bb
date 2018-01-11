@@ -862,7 +862,7 @@ TEST(Target, ObjectGeneratedInputs) {
   SourceFile object_file("//out/Debug/obj/source_target.source.o");
 
   TestTarget final_target(setup, "//:final", Target::ACTION);
-  final_target.inputs().push_back(object_file);
+  final_target.config_values().inputs().push_back(object_file);
   EXPECT_TRUE(final_target.OnResolved(&err));
 
   AssertSchedulerHasOneUnknownFileMatching(&final_target, object_file);

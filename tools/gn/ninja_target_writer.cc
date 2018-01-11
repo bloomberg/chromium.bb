@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/string_util.h"
+#include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
 #include "tools/gn/filesystem_utils.h"
@@ -200,8 +201,10 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   // implicit dependency instead. The implicit depedency in this case is
   // handled separately by the binary target writer.
   if (!target_->IsBinary()) {
-    for (const auto& input : target_->inputs())
-      input_deps_sources.push_back(&input);
+    for (ConfigValuesIterator iter(target_); !iter.done(); iter.Next()) {
+      for (const auto& input : iter.cur().inputs())
+        input_deps_sources.push_back(&input);
+    }
   }
 
   // For an action (where we run a script only once) the sources are the same

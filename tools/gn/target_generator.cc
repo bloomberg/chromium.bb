@@ -187,19 +187,6 @@ bool TargetGenerator::FillPublic() {
   return true;
 }
 
-bool TargetGenerator::FillInputs() {
-  const Value* value = scope_->GetValue(variables::kInputs, true);
- if (!value)
-   return true;
-
-  Target::FileList dest_inputs;
-  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
-                                  scope_->GetSourceDir(), &dest_inputs, err_))
-    return false;
-  target_->inputs().swap(dest_inputs);
-  return true;
-}
-
 bool TargetGenerator::FillConfigs() {
   return FillGenericConfigs(variables::kConfigs, &target_->configs());
 }

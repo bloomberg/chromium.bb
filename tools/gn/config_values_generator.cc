@@ -81,6 +81,14 @@ void ConfigValuesGenerator::Run() {
 #undef FILL_STRING_CONFIG_VALUE
 #undef FILL_DIR_CONFIG_VALUE
 
+  // Inputs
+  const Value* inputs_value = scope_->GetValue(variables::kInputs, true);
+  if (inputs_value) {
+    ExtractListOfRelativeFiles(scope_->settings()->build_settings(),
+                               *inputs_value, input_dir_,
+                               &config_values_->inputs(), err_);
+  }
+
   // Libs
   const Value* libs_value = scope_->GetValue("libs", true);
   if (libs_value) {

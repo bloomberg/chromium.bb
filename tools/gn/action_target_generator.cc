@@ -206,3 +206,16 @@ bool ActionTargetGenerator::CheckOutputs() {
   }
   return true;
 }
+
+bool ActionTargetGenerator::FillInputs() {
+  const Value* value = scope_->GetValue(variables::kInputs, true);
+  if (!value)
+    return true;
+
+  Target::FileList dest_inputs;
+  if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
+                                  scope_->GetSourceDir(), &dest_inputs, err_))
+    return false;
+  target_->config_values().inputs().swap(dest_inputs);
+  return true;
+}
