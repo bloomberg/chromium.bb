@@ -276,6 +276,11 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
   if (base::FeatureList::IsEnabled(
           omnibox::kUIExperimentShowSuggestionFavicons) &&
       !AutocompleteMatch::IsSearchType(match.type)) {
+    // Because the Views UI code calls GetMatchIcon in both the layout and
+    // painting code, we may generate multiple OnFaviconFetched callbacks,
+    // all run one after another. This seems to be harmless as the callback
+    // just flips a flag to schedule a repaint. However, if it turns out to be
+    // costly, we can optimize away the redundant extra callbacks.
     gfx::Image favicon = edit_model_->client()->GetFaviconForPageUrl(
         match.destination_url,
         base::Bind(&OmniboxPopupModel::OnFaviconFetched,
