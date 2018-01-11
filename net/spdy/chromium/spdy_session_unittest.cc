@@ -5421,7 +5421,7 @@ TEST_F(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
   spdy_util_.AddUrlToHeaderBlock("https://www.example.org/b.dat",
                                  &push_headers);
   SpdySerializedFrame push_b(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 4, 1));
+      spdy_util_.ConstructSpdyPushPromise(1, 4, std::move(push_headers)));
   SpdySerializedFrame headers_b(
       spdy_util_.ConstructSpdyPushHeaders(4, nullptr, 0));
   MockRead reads[] = {
@@ -5514,7 +5514,7 @@ TEST_F(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   push_headers[":method"] = "GET";
   spdy_util_.AddUrlToHeaderBlock(kPushedUrl, &push_headers);
   SpdySerializedFrame push_promise(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 2, 1));
+      spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(push_headers)));
   SpdySerializedFrame headers_frame(
       spdy_util_.ConstructSpdyPushHeaders(2, nullptr, 0));
   MockRead reads[] = {
@@ -5617,7 +5617,7 @@ TEST_F(SpdySessionTest, GetPushedStream) {
   push_headers[":method"] = "GET";
   spdy_util_.AddUrlToHeaderBlock(kPushedUrl, &push_headers);
   SpdySerializedFrame push_promise(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 2, 1));
+      spdy_util_.ConstructSpdyPushPromise(1, 2, std::move(push_headers)));
   SpdySerializedFrame headers_frame(
       spdy_util_.ConstructSpdyPushHeaders(2, nullptr, 0));
   MockRead reads[] = {
