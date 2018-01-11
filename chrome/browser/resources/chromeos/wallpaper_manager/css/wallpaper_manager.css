@@ -375,3 +375,34 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
 #surprise-me #checkbox.checked {
   background-image: url(../images/ui/checkbox_checked.png);
 }
+
+/**** New wallpaper picker rules **********************************************/
+
+body.v2 {
+  background-color: #fff;
+}
+
+.v2 .dialog-container {
+  flex-direction: row;
+}
+
+.v2 .dialog-topbar {
+  display: block;
+  height: 100%;
+}
+
+.v2 .image-picker {
+  height: 340px;
+}
+
+.v2 #categories-list {
+  display: block;
+}
+
+.v2 #categories-list > li[selected] > div {
+  color: #000;
+}
+
+.v2 #surprise-me {
+  display: none;
+}
