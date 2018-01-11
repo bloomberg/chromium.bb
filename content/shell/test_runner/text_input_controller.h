@@ -36,6 +36,7 @@ class TextInputController {
 
   void InsertText(const std::string& text);
   void UnmarkText();
+  void UnmarkAndUnselectText();
   void DoCommand(const std::string& text);
   void SetMarkedText(const std::string& text, int start, int length);
   bool HasMarkedText();
