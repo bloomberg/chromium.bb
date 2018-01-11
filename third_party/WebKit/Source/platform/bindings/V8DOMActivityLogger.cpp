@@ -35,8 +35,6 @@ DomActivityLoggersForIsolatedWorld() {
 
 void V8DOMActivityLogger::LogMethod(const char* api_name,
                                     v8::FunctionCallbackInfo<v8::Value> info) {
-  DCHECK(static_cast<size_t>(info.Length()) <=
-         Vector<v8::Local<v8::Value>>::MaxCapacity());
   Vector<v8::Local<v8::Value>> loggerArgs;
   loggerArgs.ReserveInitialCapacity(info.Length());
   for (int i = 0; i < info.Length(); ++i) {
