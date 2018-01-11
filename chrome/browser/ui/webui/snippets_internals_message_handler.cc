@@ -433,7 +433,7 @@ void SnippetsInternalsMessageHandler::HandleResetNotificationsState(
                             0);
   pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentDay, 0);
   AndroidContentSuggestionsNotifier().HideAllNotifications(
-      ContentSuggestionsNotificationAction::CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
+      ContentSuggestionsNotificationAction::HIDE_FRONTMOST);
 }
 
 void SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched(

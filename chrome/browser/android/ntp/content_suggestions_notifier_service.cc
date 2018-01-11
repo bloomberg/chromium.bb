@@ -174,21 +174,25 @@ class ContentSuggestionsNotifierService::NotifyingObserver
       return;
     }
     if (!ntp_snippets::IsCategoryStatusAvailable(new_status)) {
-      notifier_->HideAllNotifications(CONTENT_SUGGESTIONS_HIDE_DISABLED);
+      notifier_->HideAllNotifications(
+          ContentSuggestionsNotificationAction::HIDE_DISABLED);
     }
   }
 
   void OnSuggestionInvalidated(
       const ContentSuggestion::ID& suggestion_id) override {
-    notifier_->HideNotification(suggestion_id, CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+    notifier_->HideNotification(
+        suggestion_id, ContentSuggestionsNotificationAction::HIDE_EXPIRY);
   }
 
   void OnFullRefreshRequired() override {
-    notifier_->HideAllNotifications(CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+    notifier_->HideAllNotifications(
+        ContentSuggestionsNotificationAction::HIDE_EXPIRY);
   }
 
   void ContentSuggestionsServiceShutdown() override {
-    notifier_->HideAllNotifications(CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
+    notifier_->HideAllNotifications(
+        ContentSuggestionsNotificationAction::HIDE_SHUTDOWN);
   }
 
  private:
@@ -209,7 +213,8 @@ class ContentSuggestionsNotifierService::NotifyingObserver
       return;
     }
     if (!ShouldNotifyInState(state)) {
-      notifier_->HideAllNotifications(CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
+      notifier_->HideAllNotifications(
+          ContentSuggestionsNotificationAction::HIDE_FRONTMOST);
     }
   }
 
@@ -233,8 +238,8 @@ class ContentSuggestionsNotifierService::NotifyingObserver
                                     timeout_at, priority)) {
       RecordContentSuggestionsNotificationImpression(
           id.category().IsKnownCategory(KnownCategories::ARTICLES)
-              ? CONTENT_SUGGESTIONS_ARTICLE
-              : CONTENT_SUGGESTIONS_NONARTICLE);
+              ? ContentSuggestionsNotificationImpression::ARTICLE
+              : ContentSuggestionsNotificationImpression::NONARTICLE);
     }
   }
 
@@ -298,7 +303,8 @@ void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
     Enable();
   } else {
     Disable();
-    RecordContentSuggestionsNotificationOptOut(CONTENT_SUGGESTIONS_EXPLICIT);
+    RecordContentSuggestionsNotificationOptOut(
+        ContentSuggestionsNotificationOptOut::EXPLICIT);
   }
 }
 

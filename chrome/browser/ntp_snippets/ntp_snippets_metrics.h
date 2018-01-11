@@ -5,39 +5,35 @@
 #ifndef CHROME_BROWSER_NTP_SNIPPETS_NTP_SNIPPETS_METRICS_H_
 #define CHROME_BROWSER_NTP_SNIPPETS_NTP_SNIPPETS_METRICS_H_
 
-enum ContentSuggestionsNotificationImpression {
-  CONTENT_SUGGESTIONS_ARTICLE = 0,  // Server-provided "articles" category.
-  CONTENT_SUGGESTIONS_NONARTICLE,   // Anything else.
+enum class ContentSuggestionsNotificationImpression {
+  ARTICLE = 0,  // Server-provided "articles" category.
+  NONARTICLE,   // Anything else.
 
-  MAX_CONTENT_SUGGESTIONS_NOTIFICATION_IMPRESSION
-};
-
-// TODO(https://crbug.com/710254) Switch to enum class to remove need for
-// prefix strip.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
-// GENERATED_JAVA_PREFIX_TO_STRIP: CONTENT_SUGGESTIONS_
-enum ContentSuggestionsNotificationAction {
-  CONTENT_SUGGESTIONS_TAP = 0,    // User tapped notification to open article.
-  CONTENT_SUGGESTIONS_DISMISSAL,  // User swiped notification to dismiss it.
-
-  CONTENT_SUGGESTIONS_HIDE_DEADLINE,   // notification_extra().deadline passed.
-  CONTENT_SUGGESTIONS_HIDE_EXPIRY,     // NTP no longer shows notified article.
-  CONTENT_SUGGESTIONS_HIDE_FRONTMOST,  // Chrome became the frontmost app.
-  CONTENT_SUGGESTIONS_HIDE_DISABLED,   // NTP no longer shows whole category.
-  CONTENT_SUGGESTIONS_HIDE_SHUTDOWN,   // Content sugg service is shutting down.
-
-  CONTENT_SUGGESTIONS_OPEN_SETTINGS,  // User opened settings from notification.
-
-  MAX_CONTENT_SUGGESTIONS_NOTIFICATION_ACTION
+  MAX
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
-// GENERATED_JAVA_PREFIX_TO_STRIP: CONTENT_SUGGESTIONS_
-enum ContentSuggestionsNotificationOptOut {
-  CONTENT_SUGGESTIONS_IMPLICIT = 0,  // User ignored notifications.
-  CONTENT_SUGGESTIONS_EXPLICIT,      // User explicitly opted-out.
+enum class ContentSuggestionsNotificationAction {
+  TAP = 0,    // User tapped notification to open article.
+  DISMISSAL,  // User swiped notification to dismiss it.
 
-  MAX_CONTENT_SUGGESTIONS_NOTIFICATION_OPT_OUT
+  HIDE_DEADLINE,   // notification_extra().deadline passed.
+  HIDE_EXPIRY,     // NTP no longer shows notified article.
+  HIDE_FRONTMOST,  // Chrome became the frontmost app.
+  HIDE_DISABLED,   // NTP no longer shows whole category.
+  HIDE_SHUTDOWN,   // Content sugg service is shutting down.
+
+  OPEN_SETTINGS,  // User opened settings from notification.
+
+  MAX
+};
+
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
+enum class ContentSuggestionsNotificationOptOut {
+  IMPLICIT = 0,  // User ignored notifications.
+  EXPLICIT,      // User explicitly opted-out.
+
+  MAX
 };
 
 void RecordContentSuggestionsNotificationImpression(

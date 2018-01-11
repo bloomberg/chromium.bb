@@ -76,7 +76,8 @@ void AndroidContentSuggestionsNotifier::HideNotification(
 void AndroidContentSuggestionsNotifier::HideAllNotifications(
     ContentSuggestionsNotificationAction why) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotifier_hideAllNotifications(env, why);
+  Java_ContentSuggestionsNotifier_hideAllNotifications(env,
+                                                       static_cast<int>(why));
 }
 
 void AndroidContentSuggestionsNotifier::FlushCachedMetrics() {
@@ -133,29 +134,32 @@ static void JNI_ContentSuggestionsNotifier_ReceiveFlushedMetrics(
   PrefService* prefs = profile->GetPrefs();
 
   for (int i = 0; i < tap_count; ++i) {
-    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_TAP);
+    RecordContentSuggestionsNotificationAction(
+        ContentSuggestionsNotificationAction::TAP);
   }
   for (int i = 0; i < dismissal_count; ++i) {
-    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_DISMISSAL);
+    RecordContentSuggestionsNotificationAction(
+        ContentSuggestionsNotificationAction::DISMISSAL);
   }
   for (int i = 0; i < hide_deadline_count; ++i) {
     RecordContentSuggestionsNotificationAction(
-        CONTENT_SUGGESTIONS_HIDE_DEADLINE);
+        ContentSuggestionsNotificationAction::HIDE_DEADLINE);
   }
   for (int i = 0; i < hide_expiry_count; ++i) {
-    RecordContentSuggestionsNotificationAction(CONTENT_SUGGESTIONS_HIDE_EXPIRY);
+    RecordContentSuggestionsNotificationAction(
+        ContentSuggestionsNotificationAction::HIDE_EXPIRY);
   }
   for (int i = 0; i < hide_frontmost_count; ++i) {
     RecordContentSuggestionsNotificationAction(
-        CONTENT_SUGGESTIONS_HIDE_FRONTMOST);
+        ContentSuggestionsNotificationAction::HIDE_FRONTMOST);
   }
   for (int i = 0; i < hide_disabled_count; ++i) {
     RecordContentSuggestionsNotificationAction(
-        CONTENT_SUGGESTIONS_HIDE_DISABLED);
+        ContentSuggestionsNotificationAction::HIDE_DISABLED);
   }
   for (int i = 0; i < hide_shutdown_count; ++i) {
     RecordContentSuggestionsNotificationAction(
-        CONTENT_SUGGESTIONS_HIDE_SHUTDOWN);
+        ContentSuggestionsNotificationAction::HIDE_SHUTDOWN);
   }
 
   const bool was_enabled =
@@ -172,6 +176,7 @@ static void JNI_ContentSuggestionsNotifier_ReceiveFlushedMetrics(
   const bool is_enabled =
       ContentSuggestionsNotifier::ShouldSendNotifications(prefs);
   if (was_enabled && !is_enabled) {
-    RecordContentSuggestionsNotificationOptOut(CONTENT_SUGGESTIONS_IMPLICIT);
+    RecordContentSuggestionsNotificationOptOut(
+        ContentSuggestionsNotificationOptOut::IMPLICIT);
   }
 }
